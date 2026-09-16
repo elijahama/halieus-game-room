@@ -84,3 +84,11 @@ desktop.ini
 # Local launch/runtime state
 *.pid
 *.pid.lock
+
+# Duplicate/stale generated server-side client copy (canonical client lives at /client)
+server/client/
+
+# Local runtime state (not part of the 4.0.0 source release)
+server/data/feedback.json
+server/data/rankings.json
+server/data/rooms.json
