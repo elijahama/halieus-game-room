@@ -1,0 +1,7 @@
+HALIEUS GAME ROOM 3.5.2 — OWNER BUILD
+
+This copy intentionally preserves the server/data directory from the build you uploaded so your existing local accounts/session evidence are not discarded while Oracle migration is pending.
+
+DO NOT send this ZIP/folder to friends or use it as a public download. It contains private server-side runtime data.
+
+The future Halieus Game Room Setup.exe / portable desktop package will contain the desktop client only and will never include server/data.

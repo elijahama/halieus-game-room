@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
+const read=(p)=>readFileSync(p,'utf8');
+const pkg=JSON.parse(read('package.json'));
+assert.match(pkg.version, /^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/i);
+assert.equal(read('VERSION').trim(),pkg.version);
+for (const p of ['Halieus Game Room.ico','Halieus Game Room.png','client/public/favicon.ico','client/public/favicon-32.png','client/public/app-icon-180.png','client/public/app-icon-192.png','client/public/app-icon-512.png','assets/branding/Halieus Game Room.ico','assets/branding/Halieus Game Room.png']) assert.ok(existsSync(p), p);
+const html=read('client/index.html');
+assert.match(html,/favicon\.ico\?v=\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?/);
+assert.match(html,/app-icon-180\.png\?v=\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?/);
+console.log('RC 3.4.0a Halieus icon branding hotfix regression passed.');

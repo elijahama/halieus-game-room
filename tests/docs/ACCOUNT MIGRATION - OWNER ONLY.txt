@@ -1,0 +1,5 @@
+HALIEUS GAME ROOM 3.5.2 — OWNER ACCOUNT-PRESERVED BUILD
+
+This package includes the server/data directory from the owner's uploaded 3.4.4b baseline so existing Halieus accounts, sessions, rankings, room persistence and session archive data carry forward into local 3.5.2.
+
+PRIVATE OWNER BUILD — DO NOT DISTRIBUTE TO FRIENDS.

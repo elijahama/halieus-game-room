@@ -1,0 +1,22 @@
+[Unit]
+Description=Halieus Game Room
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=halieus
+Group=halieus
+WorkingDirectory=/opt/halieus-game-room/server
+EnvironmentFile=/etc/halieus-game-room/halieus.env
+ExecStart=/usr/bin/node /opt/halieus-game-room/server/dist/server/src/index.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/halieus-game-room
+
+[Install]
+WantedBy=multi-user.target

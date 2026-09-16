@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Hidden Dictator">
+  <defs>
+    <linearGradient id="hdbg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b2c0b"/><stop offset="1" stop-color="#211108"/></linearGradient>
+    <radialGradient id="table"><stop stop-color="#7c2d12"/><stop offset="1" stop-color="#3b180b"/></radialGradient>
+  </defs>
+  <rect x="3" y="3" width="122" height="122" rx="28" fill="url(#hdbg)"/>
+  <ellipse cx="64" cy="66" rx="40" ry="29" fill="url(#table)" stroke="#fb923c" stroke-width="3"/>
+  <g fill="#fed7aa" stroke="#7c2d12" stroke-width="2">
+    <circle cx="64" cy="23" r="10"/><circle cx="102" cy="45" r="10"/><circle cx="94" cy="92" r="10"/><circle cx="34" cy="92" r="10"/><circle cx="26" cy="45" r="10"/>
+  </g>
+  <circle cx="64" cy="66" r="20" fill="#1f130d" stroke="#fdba74" stroke-width="3"/>
+  <path d="M49 64c7-9 23-9 30 0-7 9-23 9-30 0z" fill="#fff7ed"/>
+  <circle cx="64" cy="64" r="5.5" fill="#ea580c"/>
+  <text x="64" y="86" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" font-weight="950" fill="#ffedd5">?</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Ludo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#b45309"/>
+    </linearGradient>
+    <filter id="s" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="7" stdDeviation="7" flood-opacity=".28"/></filter>
+  </defs>
+  <rect x="12" y="12" width="168" height="168" rx="44" fill="url(#g)" filter="url(#s)"/>
+  <path d="M30 30h66v66H30z" fill="#ef4444" opacity=".28"/><path d="M96 30h66v66H96z" fill="#22c55e" opacity=".24"/><path d="M96 96h66v66H96z" fill="#eab308" opacity=".22"/><path d="M30 96h66v66H30z" fill="#3b82f6" opacity=".25"/>
+  <path d="M58 46h27v72h50v25H58z" fill="#fff"/>
+  <path d="M26 38c18-18 49-20 67-15" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="7" stroke-linecap="round"/>
+</svg>

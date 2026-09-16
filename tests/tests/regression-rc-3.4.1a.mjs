@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read=(p)=>readFileSync(p,"utf8");
+const pkg=JSON.parse(read("package.json"));
+const intro=read("client/src/platform/components/HalieusIntro.tsx");
+const css=read("client/src/index.css");
+assert.match(pkg.version, /^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/i);
+assert.match(intro,/Game night,/);
+assert.match(intro,/Enter Halieus/);
+assert.match(intro,/Mega Board/);
+assert.match(intro,/Blackjack/);
+assert.match(intro,/Invite-only accounts/);
+assert.match(css,/RC 3\.4\.1a — Halieus front-door rebuild/);
+assert.match(css,/grid-template-columns: minmax\(0, 1\.08fr\) minmax\(360px, \.92fr\)/);
+console.log("RC 3.4.1a intro redesign regression passed.");

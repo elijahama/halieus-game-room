@@ -1,0 +1,530 @@
+import { randomBytes } from "node:crypto";
+import type { Server, Socket } from "socket.io";
+import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
+import type {
+  WhotActionLogEntry,
+  WhotAiDifficulty,
+  WhotCard,
+  WhotMatchMode,
+  WhotMotionEvent,
+  WhotPublicState,
+  WhotRules,
+  WhotShape,
+} from "../../../../shared/games/whot/types.js";
+import { finalizeSession, recordWorkingSession } from "../../platform/sessionArchive.js";
+
+interface WhotPlayer {
+  id: string;
+  reconnectToken: string;
+  name: string;
+  isHost: boolean;
+  isAi: boolean;
+  aiDifficulty: WhotAiDifficulty | null;
+  isConnected: boolean;
+  seat: number;
+  hand: WhotCard[];
+  score: number;
+  result: string | null;
+  autopilotEnabled: boolean;
+}
+
+interface WhotRoom {
+  code: string;
+  createdAt: number;
+  startedAt: number | null;
+  updatedAt: number;
+  started: boolean;
+  phase: "lobby" | "playing" | "round-over" | "finished";
+  players: WhotPlayer[];
+  spectators: Map<string, string>;
+  rules: WhotRules;
+  roundNumber: number;
+  matchMode: WhotMatchMode;
+  drawPile: WhotCard[];
+  discardPile: WhotCard[];
+  currentTurnPlayerId: string | null;
+  pendingDraw: number;
+  pendingDrawNumber: 2 | 5 | null;
+  requestedShape: WhotShape | null;
+  winnerPlayerId: string | null;
+  status: string;
+  motionSequence: number;
+  motion: WhotMotionEvent | null;
+  actionSequence: number;
+  actionLog: WhotActionLogEntry[];
+}
+
+const rooms = new Map<string, WhotRoom>();
+
+export function getWhotChatIdentity(code: string, socketId: string): { name: string; role: "player" | "spectator" } | null {
+  const room = rooms.get(normaliseCode(code));
+  if (!room) return null;
+  const player = room.players.find((candidate) => candidate.id === socketId && candidate.isConnected);
+  if (player) return { name: player.name, role: "player" };
+  const spectator = room.spectators.get(socketId);
+  return spectator ? { name: spectator, role: "spectator" } : null;
+}
+const aiTimers = new Map<string, NodeJS.Timeout>();
+const globalFinishNoticeKeys = new Map<string, string>();
+const MAX_PLAYERS = 8;
+const SHAPES: WhotShape[] = ["circle", "triangle", "cross", "square", "star"];
+const AI_NAMES = ["Atlas", "Nova", "Rook", "Echo", "Mira", "Juno", "Sol", "Vale", "Orion", "Sage", "Flint", "Lyra", "Cedar", "Pixel"];
+
+const DEFAULT_RULES: WhotRules = {
+  startingHandSize: 5,
+  stackPickTwo: true,
+  stackPickThree: true,
+  whotCancelsPenalty: false,
+  starScoresDouble: true,
+  lastCardCallPenalty: false,
+};
+
+function token(): string { return randomBytes(8).toString("base64url").slice(0, 10).toUpperCase(); }
+function normaliseCode(value: unknown): string { return typeof value === "string" ? value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) : ""; }
+function normaliseName(value: unknown): string { return typeof value === "string" ? value.trim().slice(0, 24) : ""; }
+function difficulty(value: unknown): WhotAiDifficulty { return value === "easy" || value === "hard" ? value : "normal"; }
+function matchMode(value: unknown): WhotMatchMode { return value === "ranked" ? "ranked" : "casual"; }
+function shuffle<T>(input: T[]): T[] { const cards = input.slice(); for (let i = cards.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [cards[i], cards[j]] = [cards[j], cards[i]]; } return cards; }
+
+function createDeck(): WhotCard[] {
+  const numbers: Record<WhotShape, number[]> = {
+    circle: [1,2,3,4,5,7,8,10,11,12,13,14],
+    triangle: [1,2,3,4,5,7,8,10,11,12,13,14],
+    cross: [1,2,3,5,7,10,11,13,14],
+    square: [1,2,3,5,7,10,11,13,14],
+    star: [1,2,3,4,5,7,8],
+  };
+  const deck: WhotCard[] = [];
+  for (const shape of SHAPES) {
+    for (const number of numbers[shape]) deck.push({ id: `${shape}-${number}-${deck.length}`, shape, number });
+  }
+  for (let index = 0; index < 5; index += 1) deck.push({ id: `whot-20-${index}`, shape: "whot", number: 20 });
+  return deck;
+}
+
+function cardScore(card: WhotCard, rules: WhotRules): number {
+  if (card.shape === "whot") return 20;
+  return rules.starScoresDouble && card.shape === "star" ? card.number * 2 : card.number;
+}
+
+function refillDrawPile(room: WhotRoom): void {
+  if (room.drawPile.length > 0 || room.discardPile.length <= 1) return;
+  const top = room.discardPile.at(-1)!;
+  room.drawPile = shuffle(room.discardPile.slice(0, -1));
+  room.discardPile = [top];
+}
+
+function drawCards(room: WhotRoom, player: WhotPlayer, count: number): void {
+  for (let i = 0; i < count; i += 1) {
+    refillDrawPile(room);
+    const card = room.drawPile.pop();
+    if (card) player.hand.push(card);
+  }
+}
+
+function activePlayers(room: WhotRoom): WhotPlayer[] { return room.players.slice().sort((a,b) => a.seat-b.seat); }
+function nextPlayer(room: WhotRoom, playerId: string, skips = 0): WhotPlayer | null {
+  const ordered = activePlayers(room);
+  const index = ordered.findIndex((player) => player.id === playerId);
+  if (index < 0 || ordered.length === 0) return ordered[0] ?? null;
+  return ordered[(index + 1 + skips) % ordered.length] ?? null;
+}
+
+function isPlayable(room: WhotRoom, card: WhotCard): boolean {
+  const top = room.discardPile.at(-1);
+  if (!top) return true;
+  if (room.pendingDraw > 0 && room.pendingDrawNumber) {
+    if (card.shape === "whot" && room.rules.whotCancelsPenalty) return true;
+    return card.number === room.pendingDrawNumber;
+  }
+  if (card.shape === "whot") return true;
+  if (room.requestedShape) return card.shape === room.requestedShape;
+  return card.shape === top.shape || card.number === top.number;
+}
+
+function playableIds(room: WhotRoom, player: WhotPlayer): string[] {
+  return player.hand.filter((card) => isPlayable(room, card)).map((card) => card.id);
+}
+
+function publicState(room: WhotRoom, viewerId: string | null, isSpectator: boolean): WhotPublicState {
+  const viewer = viewerId ? room.players.find((p) => p.id === viewerId) : null;
+  return {
+    code: room.code,
+    phase: room.phase,
+    started: room.started,
+    createdAt: room.createdAt,
+    startedAt: room.startedAt,
+    updatedAt: room.updatedAt,
+    roundNumber: room.roundNumber,
+    matchMode: room.matchMode,
+    rules: room.rules,
+    players: activePlayers(room).map((player) => ({
+      id: player.id, name: player.name, isHost: player.isHost, isAi: player.isAi,
+      aiDifficulty: player.aiDifficulty, isConnected: player.isConnected, seat: player.seat,
+      cardCount: player.hand.length, hand: !isSpectator && viewerId === player.id ? player.hand : null,
+      score: player.score, result: player.result, autopilotEnabled: player.autopilotEnabled,
+    })),
+    topCard: room.discardPile.at(-1) ?? null,
+    drawPileCount: room.drawPile.length,
+    currentTurnPlayerId: room.currentTurnPlayerId,
+    pendingDraw: room.pendingDraw,
+    pendingDrawNumber: room.pendingDrawNumber,
+    requestedShape: room.requestedShape,
+    spectatorCount: room.spectators.size,
+    viewerPlayerId: viewerId,
+    isSpectator,
+    status: room.status,
+    playableCardIds: viewer && room.currentTurnPlayerId === viewer.id ? playableIds(room, viewer) : [],
+    winnerPlayerId: room.winnerPlayerId,
+    motion: room.motion,
+    actionLog: room.actionLog.slice(-240),
+  };
+}
+
+function setMotion(room: WhotRoom, motion: Omit<WhotMotionEvent, "sequence" | "at">): void {
+  room.motionSequence += 1;
+  room.motion = { ...motion, sequence: room.motionSequence, at: Date.now() };
+}
+
+function recordAction(room: WhotRoom, entry: Omit<WhotActionLogEntry, "sequence" | "at">): void {
+  room.actionSequence += 1;
+  room.actionLog.push({ ...entry, sequence: room.actionSequence, at: Date.now() });
+  if (room.actionLog.length > 240) room.actionLog.splice(0, room.actionLog.length - 240);
+}
+
+function archivePayload(room: WhotRoom) {
+  return { ...room, spectators: [...room.spectators.entries()] };
+}
+
+function emitRoom(io: Server, room: WhotRoom): void {
+  room.updatedAt = Date.now();
+  recordWorkingSession("whot", room.code, room.createdAt, archivePayload(room));
+  if (room.phase === "finished") {
+    const winner = room.players.find((player) => player.id === room.winnerPlayerId)?.name ?? null;
+    const key = `${room.roundNumber}|${winner ?? "none"}|${room.status}`;
+    if (globalFinishNoticeKeys.get(room.code) !== key) {
+      globalFinishNoticeKeys.set(room.code, key);
+      io.emit("platform:game-finished", { id: `whot-${room.code}-${room.roundNumber}-${room.actionSequence}`, game: "whot", gameTitle: "WHOT", code: room.code, status: "round-finished", winner, message: room.status, at: room.updatedAt });
+    }
+  } else {
+    globalFinishNoticeKeys.delete(room.code);
+  }
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("whot:state", publicState(room, player.id, false));
+  for (const spectatorId of room.spectators.keys()) io.to(spectatorId).emit("whot:state", publicState(room, null, true));
+  scheduleAi(io, room);
+}
+
+function concludeRound(room: WhotRoom, winner: WhotPlayer): void {
+  room.winnerPlayerId = winner.id;
+  room.phase = "finished";
+  room.currentTurnPlayerId = null;
+  for (const player of room.players) {
+    const penalty = player.id === winner.id ? 0 : player.hand.reduce((sum, card) => sum + cardScore(card, room.rules), 0);
+    player.score += penalty;
+    player.result = player.id === winner.id ? "Winner" : `${penalty} points left`;
+  }
+  room.status = `${winner.name} wins the WHOT round.`;
+  recordAction(room, { playerId: winner.id, playerName: winner.name, playerIsAi: winner.isAi, action: "round", card: null, count: 0, requestedShape: null, pendingDraw: room.pendingDraw, handCountBefore: 0, handCountAfter: 0, detail: room.status, aiReason: null });
+  void finalizeSession("whot", room.code, room.createdAt, "completed", archivePayload(room), {
+    winner: winner.name,
+    players: room.players.length,
+    durationMs: Date.now() - room.createdAt,
+    matchMode: room.matchMode,
+    mode: room.matchMode,
+  });
+}
+
+function applyCard(room: WhotRoom, player: WhotPlayer, card: WhotCard, requestedShape?: WhotShape, aiReason: string | null = null): string | null {
+  if (!isPlayable(room, card)) return "That card cannot be played now.";
+  const handCountBefore = player.hand.length;
+  player.hand = player.hand.filter((candidate) => candidate.id !== card.id);
+  room.discardPile.push(card);
+  setMotion(room, { kind: "play", playerId: player.id, card, count: 1, targetPlayerIds: [] });
+  room.requestedShape = null;
+  let skips = 0;
+  let keepTurn = false;
+
+  if (room.pendingDraw > 0 && room.pendingDrawNumber && card.number === room.pendingDrawNumber) {
+    room.pendingDraw += card.number === 2 ? 2 : 3;
+  } else if (card.number === 2) {
+    room.pendingDraw = 2; room.pendingDrawNumber = 2;
+  } else if (card.number === 5) {
+    room.pendingDraw = 3; room.pendingDrawNumber = 5;
+  }
+
+  if (card.shape === "whot") {
+    if (room.pendingDraw > 0 && room.rules.whotCancelsPenalty) { room.pendingDraw = 0; room.pendingDrawNumber = null; }
+    room.requestedShape = requestedShape && SHAPES.includes(requestedShape) ? requestedShape : "circle";
+    room.status = `${player.name} calls ${room.requestedShape}.`;
+  } else if (card.number === 1) {
+    keepTurn = true;
+    room.status = `${player.name}: Hold On.`;
+  } else if (card.number === 8) {
+    skips = 1;
+    room.status = `${player.name}: Suspension.`;
+  } else if (card.number === 14) {
+    const targets = room.players.filter((other) => other.id !== player.id);
+    for (const other of targets) drawCards(room, other, 1);
+    setMotion(room, { kind: "general-market", playerId: player.id, card, count: targets.length, targetPlayerIds: targets.map((other) => other.id) });
+    room.status = `${player.name}: General Market.`;
+  } else if (card.number === 2) {
+    room.status = `${player.name}: Pick Two.`;
+  } else if (card.number === 5) {
+    room.status = `${player.name}: Pick Three.`;
+  } else {
+    room.status = `${player.name} plays ${card.shape} ${card.number}.`;
+  }
+
+  recordAction(room, { playerId: player.id, playerName: player.name, playerIsAi: player.isAi, action: "play", card, count: 1, requestedShape: card.shape === "whot" ? room.requestedShape : null, pendingDraw: room.pendingDraw, handCountBefore, handCountAfter: player.hand.length, detail: room.status, aiReason });
+  if (player.hand.length === 0) { concludeRound(room, player); return null; }
+  if (!keepTurn) room.currentTurnPlayerId = nextPlayer(room, player.id, skips)?.id ?? null;
+  return null;
+}
+
+function chooseAiMove(room: WhotRoom, player: WhotPlayer): { card?: WhotCard; requestedShape?: WhotShape; reason: string } {
+  const legal = player.hand.filter((card) => isPlayable(room, card));
+  if (!legal.length) return { reason: room.pendingDraw > 0 ? "No legal stacking response; take the pending penalty." : "No legal match; draw from the market." };
+  let sorted = legal.slice();
+  if (player.aiDifficulty === "hard") {
+    sorted.sort((a,b) => {
+      const tactical = (card: WhotCard) => card.shape === "whot" ? 80 : card.number === 5 ? 65 : card.number === 2 ? 60 : card.number === 14 ? 55 : card.number === 8 ? 50 : card.number === 1 ? 45 : cardScore(card, room.rules);
+      return tactical(b) - tactical(a);
+    });
+  } else if (player.aiDifficulty === "normal") {
+    sorted.sort((a,b) => cardScore(b, room.rules) - cardScore(a, room.rules));
+  } else {
+    sorted = shuffle(sorted);
+  }
+  const card = sorted[0];
+  const reason = player.aiDifficulty === "hard" ? "Prioritised the strongest legal tactical action card/value." : player.aiDifficulty === "normal" ? "Prioritised shedding the highest-value legal card." : "Easy AI selected randomly from legal cards.";
+  if (card.shape !== "whot") return { card, reason };
+  const shapeCounts = new Map<WhotShape, number>();
+  for (const held of player.hand) if (held.shape !== "whot") shapeCounts.set(held.shape, (shapeCounts.get(held.shape) ?? 0) + 1);
+  const requestedShape = SHAPES.slice().sort((a,b) => (shapeCounts.get(b) ?? 0) - (shapeCounts.get(a) ?? 0))[0];
+  return { card, requestedShape, reason: `${reason} WHOT calls ${requestedShape} because it is the most common shape remaining in hand.` };
+}
+
+function scheduleAi(io: Server, room: WhotRoom): void {
+  const existing = aiTimers.get(room.code); if (existing) clearTimeout(existing); aiTimers.delete(room.code);
+  if (room.phase !== "playing" || !room.currentTurnPlayerId) return;
+  const player = room.players.find((candidate) => candidate.id === room.currentTurnPlayerId);
+  if (!player || (!player.isAi && !player.autopilotEnabled)) return;
+  aiTimers.set(room.code, setTimeout(() => {
+    aiTimers.delete(room.code);
+    const latest = rooms.get(room.code); if (!latest || latest.phase !== "playing") return;
+    const ai = latest.players.find((candidate) => candidate.id === latest.currentTurnPlayerId); if (!ai || (!ai.isAi && !ai.autopilotEnabled)) return;
+    if (latest.pendingDraw > 0 && !ai.hand.some((card) => isPlayable(latest, card))) {
+      const drawCount = latest.pendingDraw;
+      const handCountBefore = ai.hand.length;
+      drawCards(latest, ai, drawCount);
+      setMotion(latest, { kind: "draw", playerId: ai.id, card: null, count: drawCount, targetPlayerIds: [ai.id] });
+      latest.status = `${ai.name} picks ${drawCount}.`;
+      recordAction(latest, { playerId: ai.id, playerName: ai.name, playerIsAi: ai.isAi, action: "draw", card: null, count: drawCount, requestedShape: null, pendingDraw: drawCount, handCountBefore, handCountAfter: ai.hand.length, detail: latest.status, aiReason: "No legal stacking response; took the full pending draw penalty." });
+      latest.pendingDraw = 0; latest.pendingDrawNumber = null;
+      latest.currentTurnPlayerId = nextPlayer(latest, ai.id)?.id ?? null;
+      emitRoom(io, latest); return;
+    }
+    const delegatedDifficulty: WhotAiDifficulty = ai.aiDifficulty ?? "normal";
+    const originalDifficulty = ai.aiDifficulty;
+    ai.aiDifficulty = delegatedDifficulty;
+    const move = chooseAiMove(latest, ai);
+    ai.aiDifficulty = originalDifficulty;
+    if (move.card) applyCard(latest, ai, move.card, move.requestedShape, move.reason);
+    else {
+      const handCountBefore = ai.hand.length;
+      drawCards(latest, ai, 1); setMotion(latest, { kind: "draw", playerId: ai.id, card: null, count: 1, targetPlayerIds: [ai.id] }); latest.status = `${ai.name} goes to market.`;
+      recordAction(latest, { playerId: ai.id, playerName: ai.name, playerIsAi: ai.isAi, action: "draw", card: null, count: 1, requestedShape: null, pendingDraw: 0, handCountBefore, handCountAfter: ai.hand.length, detail: latest.status, aiReason: move.reason });
+      latest.currentTurnPlayerId = nextPlayer(latest, ai.id)?.id ?? null;
+    }
+    emitRoom(io, latest);
+  }, Math.max(
+    room.motion?.kind === "general-market" ? 1850 : room.motion?.kind === "deal" ? 1500 : room.motion?.kind === "draw" && room.motion.count > 1 ? 1250 : 1020,
+    (player.aiDifficulty ?? "normal") === "easy" ? 1450 : (player.aiDifficulty ?? "normal") === "hard" ? 980 : 1180,
+  )));
+}
+
+function startRoom(room: WhotRoom): string | null {
+  if (room.players.length < 2) return "Add at least two players or AI seats.";
+  room.started = true; room.startedAt ??= Date.now(); room.phase = "playing"; room.roundNumber += 1; room.winnerPlayerId = null;
+  room.actionSequence = 0; room.actionLog = [];
+  room.drawPile = shuffle(createDeck()); room.discardPile = []; room.pendingDraw = 0; room.pendingDrawNumber = null; room.requestedShape = null;
+  for (const player of room.players) { player.hand = []; player.result = null; drawCards(room, player, room.rules.startingHandSize); }
+  let starter: WhotCard | undefined;
+  while (room.drawPile.length) {
+    const candidate = room.drawPile.pop()!;
+    if (![1,2,5,8,14,20].includes(candidate.number)) { starter = candidate; break; }
+    room.drawPile.unshift(candidate);
+  }
+  starter ??= room.drawPile.pop();
+  if (starter) room.discardPile.push(starter);
+  room.currentTurnPlayerId = activePlayers(room)[0]?.id ?? null;
+  room.status = `WHOT started. Match ${starter?.shape ?? "any shape"} or ${starter?.number ?? "number"}.`;
+  setMotion(room, { kind: "deal", playerId: null, card: null, count: room.players.length * room.rules.startingHandSize, targetPlayerIds: room.players.map((player) => player.id) });
+  recordAction(room, { playerId: null, playerName: null, playerIsAi: false, action: "deal", card: starter ?? null, count: room.players.length * room.rules.startingHandSize, requestedShape: null, pendingDraw: 0, handCountBefore: null, handCountAfter: null, detail: `${room.matchMode === "ranked" ? "Ranked" : "Casual"} WHOT started with ${room.players.length} players. ${room.status}`, aiReason: null });
+  return null;
+}
+
+function addAi(room: WhotRoom, level: WhotAiDifficulty): string | null {
+  if (room.started) return "AI seats can only be changed before the game starts.";
+  if (room.players.length >= MAX_PLAYERS) return "This WHOT room is full.";
+  const used = new Set(room.players.map((p) => p.name));
+  const name = AI_NAMES.find((candidate) => !used.has(candidate)) ?? `AI ${room.players.length + 1}`;
+  room.players.push({ id: `whot-ai-${token()}`, reconnectToken: "", name, isHost: false, isAi: true, aiDifficulty: level, isConnected: true, seat: room.players.length, hand: [], score: 0, result: null, autopilotEnabled: false });
+  return null;
+}
+
+export function getWhotRoomCount(): number { return [...rooms.values()].filter((room) => room.phase !== "finished" && (room.players.some((player) => !player.isAi && player.isConnected) || room.spectators.size > 0)).length; }
+
+export function registerWhotHandlers(io: Server, socket: Socket): void {
+  socket.on("whot:create", (payload: any, ack: (response: any) => void) => {
+    const code = normaliseCode(payload?.code); const name = normaliseName(payload?.playerName);
+    if (!code || !name) return ack({ ok: false, reason: "Name and room code are required." });
+    if (rooms.has(code)) return ack({ ok: false, reason: "That WHOT room already exists." });
+    const createdAt = Date.now();
+    const player: WhotPlayer = { id: socket.id, reconnectToken: token(), name, isHost: true, isAi: false, aiDifficulty: null, isConnected: true, seat: 0, hand: [], score: 0, result: null, autopilotEnabled: false };
+    const rules: WhotRules = { ...DEFAULT_RULES, ...(payload?.rules ?? {}) };
+    const room: WhotRoom = { code, createdAt, startedAt: null, updatedAt: createdAt, started: false, phase: "lobby", players: [player], spectators: new Map(), rules, roundNumber: 0, matchMode: matchMode(payload?.matchMode), drawPile: [], discardPile: [], currentTurnPlayerId: null, pendingDraw: 0, pendingDrawNumber: null, requestedShape: null, winnerPlayerId: null, status: "Waiting for players.", motionSequence: 0, motion: null, actionSequence: 0, actionLog: [] };
+    const aiCount = Math.max(0, Math.min(MAX_PLAYERS - 1, Math.floor(Number(payload?.aiCount) || 0)));
+    const aiDifficulty = difficulty(payload?.aiDifficulty);
+    for (let index = 0; index < aiCount; index += 1) addAi(room, aiDifficulty);
+    rooms.set(code, room); socket.join(socket.id); emitRoom(io, room);
+    ack({ ok: true, code, playerId: player.id, reconnectToken: player.reconnectToken, state: publicState(room, player.id, false) });
+  });
+
+  socket.on("whot:join", (payload: any, ack: (response: any) => void) => {
+    const code = normaliseCode(payload?.code); const room = rooms.get(code); const name = normaliseName(payload?.playerName);
+    if (!room) return ack({ ok: false, reason: "WHOT room not found." });
+    if (room.started) return ack({ ok: false, reason: "This WHOT game has already started. Rejoin with your recovery key or spectate." });
+    if (!name || room.players.length >= MAX_PLAYERS) return ack({ ok: false, reason: "A valid name is required and the room must have space." });
+    if (room.players.some((p) => p.name.toLowerCase() === name.toLowerCase())) return ack({ ok: false, reason: "That name is already seated." });
+    const player: WhotPlayer = { id: socket.id, reconnectToken: token(), name, isHost: false, isAi: false, aiDifficulty: null, isConnected: true, seat: room.players.length, hand: [], score: 0, result: null, autopilotEnabled: false };
+    room.players.push(player); socket.join(socket.id); emitRoom(io, room);
+    ack({ ok: true, code, playerId: player.id, reconnectToken: player.reconnectToken, state: publicState(room, player.id, false) });
+  });
+
+  socket.on("whot:reconnect", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); const reconnectToken = typeof payload?.reconnectToken === "string" ? payload.reconnectToken.trim().toUpperCase() : "";
+    const player = room?.players.find((p) => p.reconnectToken === reconnectToken && !p.isAi);
+    if (!room || !player) return ack({ ok: false, reason: "WHOT recovery key not found." });
+    player.id = socket.id; player.isConnected = true; if (normaliseName(payload?.playerName)) player.name = normaliseName(payload.playerName); socket.join(socket.id); emitRoom(io, room);
+    ack({ ok: true, code: room.code, playerId: player.id, reconnectToken: player.reconnectToken, state: publicState(room, player.id, false) });
+  });
+
+  socket.on("whot:spectate", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); if (!room) return ack({ ok: false, reason: "WHOT room not found." });
+    room.spectators.set(socket.id, normaliseName(payload?.playerName) || "Spectator"); socket.join(socket.id); emitRoom(io, room); ack({ ok: true, code: room.code, state: publicState(room, null, true) });
+  });
+
+  socket.on("whot:add-ai", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); const host = room?.players.find((p) => p.id === socket.id && p.isHost);
+    if (!room || !host) return ack({ ok: false, reason: "Only the host can add AI." });
+    const reason = addAi(room, difficulty(payload?.difficulty)); if (reason) return ack({ ok: false, reason }); emitRoom(io, room); ack({ ok: true, state: publicState(room, host.id, false) });
+  });
+
+  socket.on("whot:remove-ai", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); const host = room?.players.find((p) => p.id === socket.id && p.isHost);
+    if (!room || !host || room.started) return ack({ ok: false, reason: "Only the host can remove AI before play." });
+    room.players = room.players.filter((p) => !(p.id === payload?.playerId && p.isAi)); room.players.forEach((p,i) => { p.seat = i; }); emitRoom(io, room); ack({ ok: true, state: publicState(room, host.id, false) });
+  });
+
+  socket.on("whot:start", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); const host = room?.players.find((p) => p.id === socket.id && p.isHost);
+    if (!room || !host) return ack({ ok: false, reason: "Only the host can start WHOT." });
+    const reason = startRoom(room); if (reason) return ack({ ok: false, reason }); emitRoom(io, room); ack({ ok: true, state: publicState(room, host.id, false) });
+  });
+
+  socket.on("whot:play", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); const player = room?.players.find((p) => p.id === socket.id);
+    if (!room || !player || room.phase !== "playing") return ack({ ok: false, reason: "WHOT game is not ready." });
+    if (room.currentTurnPlayerId !== player.id) return ack({ ok: false, reason: "It is not your turn." });
+    if (player.autopilotEnabled) return ack({ ok: false, reason: "Take Control before playing a card manually." });
+    const card = player.hand.find((candidate) => candidate.id === payload?.cardId); if (!card) return ack({ ok: false, reason: "Card not found." });
+    const requested = SHAPES.includes(payload?.requestedShape) ? payload.requestedShape as WhotShape : undefined;
+    const reason = applyCard(room, player, card, requested); if (reason) return ack({ ok: false, reason }); emitRoom(io, room); ack({ ok: true, state: publicState(room, player.id, false) });
+  });
+
+  socket.on("whot:draw", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); const player = room?.players.find((p) => p.id === socket.id);
+    if (!room || !player || room.phase !== "playing" || room.currentTurnPlayerId !== player.id) return ack({ ok: false, reason: "You cannot draw now." });
+    if (player.autopilotEnabled) return ack({ ok: false, reason: "Take Control before drawing manually." });
+    const count = room.pendingDraw > 0 ? room.pendingDraw : 1; const handCountBefore = player.hand.length; drawCards(room, player, count);
+    setMotion(room, { kind: "draw", playerId: player.id, card: null, count, targetPlayerIds: [player.id] });
+    room.status = room.pendingDraw > 0 ? `${player.name} picks ${count}.` : `${player.name} goes to market.`;
+    recordAction(room, { playerId: player.id, playerName: player.name, playerIsAi: false, action: "draw", card: null, count, requestedShape: null, pendingDraw: room.pendingDraw, handCountBefore, handCountAfter: player.hand.length, detail: room.status, aiReason: null });
+    room.pendingDraw = 0; room.pendingDrawNumber = null; room.currentTurnPlayerId = nextPlayer(room, player.id)?.id ?? null; emitRoom(io, room); ack({ ok: true, state: publicState(room, player.id, false) });
+  });
+
+  socket.on("whot:set-autopilot", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code));
+    const player = room?.players.find((candidate) => candidate.id === socket.id && !candidate.isAi);
+    if (!room || !player) return ack({ ok: false, reason: "WHOT seat not found." });
+    player.autopilotEnabled = Boolean(payload?.enabled);
+    room.status = player.autopilotEnabled ? `${player.name} enabled Autopilot.` : `${player.name} took control.`;
+    recordAction(room, { playerId: player.id, playerName: player.name, playerIsAi: false, action: "table", card: null, count: 0, requestedShape: null, pendingDraw: room.pendingDraw, handCountBefore: player.hand.length, handCountAfter: player.hand.length, detail: room.status, aiReason: player.autopilotEnabled ? "AI may temporarily make legal WHOT decisions for this same seat." : null });
+    emitRoom(io, room);
+    ack({ ok: true, state: publicState(room, player.id, false) });
+  });
+
+  socket.on("whot:end-game", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code));
+    const host = room?.players.find((p) => p.id === socket.id && p.isHost);
+    if (!room || !host) return ack({ ok: false, reason: "Only the host can end WHOT." });
+    room.phase = "finished";
+    room.currentTurnPlayerId = null;
+    room.status = `${host.name} ended the WHOT game.`;
+    recordAction(room, { playerId: host.id, playerName: host.name, playerIsAi: false, action: "table", card: null, count: 0, requestedShape: null, pendingDraw: room.pendingDraw, handCountBefore: host.hand.length, handCountAfter: host.hand.length, detail: room.status, aiReason: null });
+    const leader = room.players.slice().sort((a,b) => a.score-b.score)[0];
+    void finalizeSession("whot", room.code, room.createdAt, "host-ended", archivePayload(room), {
+      winner: leader?.name ?? null, players: room.players.length, durationMs: Date.now() - room.createdAt, matchMode: room.matchMode, mode: room.matchMode,
+    });
+    emitRoom(io, room);
+    ack({ ok: true, state: publicState(room, host.id, false) });
+  });
+
+  socket.on("whot:forfeit", (payload: any, ack: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code));
+    const player = room?.players.find((candidate) => candidate.id === socket.id && !candidate.isAi);
+    if (!room || !player) return ack({ ok: false, reason: "WHOT seat not found." });
+    const nextId = room.currentTurnPlayerId === player.id ? nextPlayer(room, player.id)?.id ?? null : room.currentTurnPlayerId;
+    const wasHost = player.isHost;
+    recordAction(room, { playerId: player.id, playerName: player.name, playerIsAi: false, action: "forfeit", card: null, count: 0, requestedShape: null, pendingDraw: room.pendingDraw, handCountBefore: player.hand.length, handCountAfter: 0, detail: `${player.name} forfeited the WHOT game.`, aiReason: null });
+    room.players = room.players.filter((candidate) => candidate.id !== player.id);
+    room.players.forEach((candidate, index) => { candidate.seat = index; });
+    if (wasHost && room.players.length) room.players[0].isHost = true;
+    if (room.started && room.players.length === 1) concludeRound(room, room.players[0]);
+    else if (room.started && room.phase === "playing") { room.currentTurnPlayerId = nextId && room.players.some((candidate) => candidate.id === nextId) ? nextId : room.players[0]?.id ?? null; room.status = `${player.name} forfeited the WHOT game.`; }
+    else if (!room.players.length) { room.phase = "finished"; room.currentTurnPlayerId = null; room.status = `${player.name} forfeited the last seat.`; }
+    emitRoom(io, room);
+    ack({ ok: true });
+  });
+
+  socket.on("whot:leave", (payload: any, ack?: (response: any) => void) => {
+    const room = rooms.get(normaliseCode(payload?.code)); if (!room) { ack?.({ ok: true }); return; }
+    const player = room.players.find((p) => p.id === socket.id); if (player) player.isConnected = false; room.spectators.delete(socket.id); emitRoom(io, room); ack?.({ ok: true });
+  });
+
+  socket.on("disconnect", () => {
+    for (const room of rooms.values()) {
+      const player = room.players.find((p) => p.id === socket.id); if (player) { player.isConnected = false; emitRoom(io, room); }
+      if (room.spectators.delete(socket.id)) emitRoom(io, room);
+    }
+  });
+}
+
+
+export function getWhotLiveRoomSummaries(): HalieusLiveRoomSummary[] {
+  return [...rooms.values()]
+    .filter((room) => room.phase !== "finished" && (room.players.some((player) => !player.isAi && player.isConnected) || room.spectators.size > 0))
+    .map((room) => ({
+      game: "whot", gameTitle: "WHOT", code: room.code, phase: room.phase, matchMode: room.matchMode, started: room.started,
+      createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt, playerCount: room.players.length, maximumPlayers: 8,
+      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
+      joinable: room.phase === "lobby" && room.players.length < 8, spectatable: true,
+    }));
+}
+export function closeAllWhotRooms(): number {
+  const count = rooms.size;
+  for (const timer of aiTimers.values()) clearTimeout(timer);
+  aiTimers.clear(); rooms.clear();
+  return count;
+}

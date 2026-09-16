@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Blackjack">
+  <defs>
+    <linearGradient id="bjbg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10274e"/><stop offset="1" stop-color="#07101f"/></linearGradient>
+    <radialGradient id="chip"><stop stop-color="#60a5fa"/><stop offset=".72" stop-color="#2563eb"/><stop offset="1" stop-color="#173b8f"/></radialGradient>
+  </defs>
+  <rect x="3" y="3" width="122" height="122" rx="28" fill="url(#bjbg)"/>
+  <circle cx="64" cy="79" r="34" fill="url(#chip)" opacity=".3" stroke="#93c5fd" stroke-width="3" stroke-dasharray="7 5"/>
+  <g transform="rotate(-10 43 59)">
+    <rect x="19" y="22" width="52" height="78" rx="9" fill="#f8fafc" stroke="#dbeafe" stroke-width="2"/>
+    <text x="28" y="45" font-family="Arial,sans-serif" font-size="24" font-weight="900" fill="#111827">A</text>
+    <text x="45" y="76" text-anchor="middle" font-family="Georgia,serif" font-size="34" fill="#111827">♠</text>
+  </g>
+  <g transform="rotate(9 85 61)">
+    <rect x="57" y="20" width="52" height="80" rx="9" fill="#fff7f7" stroke="#bfdbfe" stroke-width="2"/>
+    <text x="66" y="44" font-family="Arial,sans-serif" font-size="24" font-weight="900" fill="#dc2626">K</text>
+    <text x="84" y="77" text-anchor="middle" font-family="Georgia,serif" font-size="34" fill="#dc2626">♥</text>
+  </g>
+  <circle cx="65" cy="99" r="18" fill="#0b1f42" stroke="#60a5fa" stroke-width="3"/>
+  <text x="65" y="106" text-anchor="middle" font-family="Arial,sans-serif" font-size="20" font-weight="950" fill="#eff6ff">21</text>
+</svg>

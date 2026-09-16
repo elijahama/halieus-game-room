@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const root = resolve(import.meta.dirname, '..');
+const read = (name) => readFileSync(resolve(root, name), 'utf8');
+
+for (const file of [
+  'Start Halieus Game Room.cmd',
+  'Restart Halieus Game Room.cmd',
+  'Close Halieus Game Room.cmd',
+  'Start Halieus Game Room.lnk',
+  'Restart Halieus Game Room.lnk',
+  'launcher-shortcuts.ps1',
+]) assert.ok(existsSync(resolve(root, file)), `${file} must exist`);
+
+assert.equal(existsSync(resolve(root, 'dev-tools/Local Development')), false, 'user workspace must not ship localhost launch controls');
+
+const productionStart = read('Start Halieus Game Room.cmd');
+const productionRestart = read('Restart Halieus Game Room.cmd');
+const productionClose = read('Close Halieus Game Room.cmd');
+const shortcuts = read('launcher-shortcuts.ps1');
+
+for (const launcher of [productionStart, productionRestart]) {
+  assert.match(launcher, /https:\/\/halieus\.remotewire\.net/);
+  assert.doesNotMatch(launcher, /http:\/\/halieus\.remotewire\.net/);
+  assert.doesNotMatch(launcher, /localhost/i);
+  assert.match(launcher, /Halieus Game Room\\Website/,'site launchers use persistent dedicated website profile');
+}
+assert.match(productionRestart, /refresh=/);
+assert.match(productionRestart, /Get-CimInstance Win32_Process/,'restart closes the dedicated site window before reopening');
+assert.match(productionClose, /Get-CimInstance Win32_Process/);
+assert.match(productionClose, /Halieus Game Room\\Website/);
+assert.doesNotMatch(productionClose, /localhost/i);
+assert.doesNotMatch(productionClose, /halieus-game-room/i,'Close must not stop the Oracle/server service');
+assert.match(shortcuts, /\$CloseShortcut/);
+assert.match(shortcuts, /Close Halieus Game Room/);
+assert.doesNotMatch(shortcuts, /Remove-Item[^\n]+Close Halieus Game Room\.lnk/);
+
+console.log('launcher website-only Start/Restart/Close regression PASS');

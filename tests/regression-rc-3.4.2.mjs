@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read=(p)=>readFileSync(p,"utf8");
+const pkg=JSON.parse(read("package.json"));
+const app=read("client/src/App.tsx");
+const home=read("client/src/platform/components/HomeScreen.tsx");
+const portal=read("client/src/platform/accounts/AccountPortal.tsx");
+const invite=read("client/src/games/mega-board/components/InviteJoinScreen.tsx");
+assert.match(pkg.version, /^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/i);
+assert.match(portal,/Sign in/); assert.match(portal,/Sign up/); assert.match(portal,/One-time play/);
+assert.match(portal,/Permanent accounts are invite-only/); assert.doesNotMatch(portal,/Request access/);
+assert.match(portal,/guestPaths/); assert.match(portal,/returnPath/);
+assert.match(app,/guestAccessRequested/); assert.match(app,/returnPath=\{directGuestRoute \? currentRoomReturnPath\(\) : null\}/);
+assert.match(invite,/playerNameLocked/);
+assert.ok(/Your rooms/.test(home) || /CURRENTLY PLAYING/.test(home) || /Ready to rejoin/.test(home)); assert.match(home,/readOnly=\{Boolean\(account && !betaMode\)\}/);
+const catalog=read("client/src/platform/games/catalog.ts");
+for (const game of ["Mega Board","Poker","WHOT","Ludo","Blackjack"]) assert.match(catalog,new RegExp(`name: "${game}"`));
+console.log("RC 3.4.2 account-link regression passed.");

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { createInitialGameState } from '../server/dist/shared/games/mega-board/game-state.js';
+import { replacePlayerId } from '../server/dist/server/src/games/mega-board/utils/reconnection.js';
+const state=createInitialGameState('TEST40',[{id:'old',name:'Alice'},{id:'other',name:'Bob'}]);
+state.turnRollDeadline=Date.now()+12345;state.turnRollDeadlinePlayerId='old';
+state.playerStats.old={...state.playerStats.old,cashEarned:42};
+state.tradeRejectAllTurnByPlayerId={old:3};
+const deadline=state.turnRollDeadline;const stats=structuredClone(state.playerStats.old);
+replacePlayerId(state,'old','old');assert.deepEqual(state.playerStats.old,stats);assert.equal(state.tradeRejectAllTurnByPlayerId.old,3);
+replacePlayerId(state,'old','new');assert.deepEqual(state.playerStats.new,stats);assert.equal(state.playerStats.old,undefined);assert.equal(state.turnRollDeadline,deadline);assert.equal(state.turnRollDeadlinePlayerId,'new');assert.equal(state.tradeRejectAllTurnByPlayerId.new,3);
+console.log('PASS same-socket recovery is idempotent; new-socket recovery retains stats and deadline');

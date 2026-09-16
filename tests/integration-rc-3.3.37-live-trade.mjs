@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const app = fs.readFileSync(new URL('../client/src/App.tsx', import.meta.url), 'utf8');
+const handlers = fs.readFileSync(new URL('../server/src/games/mega-board/handlers/tradeHandlers.ts', import.meta.url), 'utf8');
+const overlay = fs.readFileSync(new URL('../client/src/games/mega-board/components/LiveTradeOverlay.tsx', import.meta.url), 'utf8');
+assert.match(app, /socket\.emit\("game:trade-live-update"/);
+assert.match(app, /socket\.on\("game:trade-live"/);
+assert.match(handlers, /socket\.on\("game:trade-live-update"/);
+assert.match(handlers, /io\.to\(code\)\.emit\("game:trade-live", preview\)/);
+assert.match(handlers, /socket\.on\("game:trade-live-close"/);
+assert.match(overlay, /readOnly|read-only|Live deal negotiation/i);
+console.log('RC 3.3.37 live-trade source integration guard passed.');

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ludo">
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#151719"/>
+  <path d="M28 10h8v18h18v8H36v18h-8V36H10v-8h18z" fill="#f2eadc" opacity=".92"/>
+  <circle cx="18" cy="18" r="7" fill="#dc2626" stroke="#fff" stroke-opacity=".78" stroke-width="1.5"/>
+  <circle cx="46" cy="18" r="7" fill="#eab308" stroke="#fff" stroke-opacity=".78" stroke-width="1.5"/>
+  <circle cx="18" cy="46" r="7" fill="#2563eb" stroke="#fff" stroke-opacity=".78" stroke-width="1.5"/>
+  <circle cx="46" cy="46" r="7" fill="#16a34a" stroke="#fff" stroke-opacity=".78" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="5" fill="#111315" stroke="#f2eadc" stroke-width="1.5"/>
+</svg>

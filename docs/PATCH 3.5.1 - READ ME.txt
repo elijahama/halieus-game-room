@@ -1,0 +1,18 @@
+HALIEUS GAME ROOM 3.5.1
+
+WHAT CHANGED
+- Start Halieus Game Room now opens the live Oracle-hosted site.
+- Local start/restart/stop controls live under dev-tools\Local Development.
+- Production hostname is halieus.remotewire.net.
+- The Halieus H seam artifact is fixed across web/Windows icon assets.
+- Link-preview metadata is included for normal sharing previews.
+- Generated node_modules/dist/log/runtime bloat and stale nested source copies are not shipped.
+- Routine Oracle updates preserve /var/lib/halieus-game-room and do not upload laptop server\data.
+
+IMPORTANT
+Extract this as a fresh replacement project folder rather than merging it over an older folder, otherwise obsolete Restart/Close files from the previous layout can remain behind.
+
+Keep your Oracle private SSH key outside shareable project ZIPs, preferably under %USERPROFILE%\.ssh\.
+
+HTTPS
+The source is configured for https://halieus.remotewire.net. The live Oracle VM still needs the final port-443/Certbot activation before the browser will show a secure connection.

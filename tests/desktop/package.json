@@ -1,0 +1,50 @@
+{
+  "name": "halieus-game-room-desktop",
+  "version": "3.7.0-b",
+  "private": true,
+  "type": "module",
+  "description": "Secure Windows desktop shell for Halieus Game Room.",
+  "main": "main.mjs",
+  "scripts": {
+    "dev": "electron .",
+    "package:win": "electron-builder --win nsis --x64",
+    "package:portable": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "44.0.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "net.halieus.gameroom",
+    "productName": "Halieus Game Room",
+    "asar": true,
+    "files": [
+      "main.mjs",
+      "package.json",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "win": {
+      "executableName": "Halieus Game Room",
+      "icon": "assets/Halieus Game Room.ico",
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Halieus Game Room",
+      "artifactName": "Halieus Game Room Setup.exe",
+      "deleteAppDataOnUninstall": false
+    },
+    "portable": {
+      "artifactName": "Halieus Game Room.exe"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="28" fill="#0b1a38"/>
+  <rect x="17" y="24" width="94" height="79" rx="13" fill="#2563eb" stroke="#93c5fd" stroke-width="3"/>
+  <g fill="#08142b">
+    <circle cx="31" cy="40" r="8"/><circle cx="53" cy="40" r="8"/><circle cx="75" cy="40" r="8"/><circle cx="97" cy="40" r="8"/>
+    <circle cx="31" cy="62" r="8"/><circle cx="53" cy="62" r="8"/><circle cx="75" cy="62" r="8"/><circle cx="97" cy="62" r="8"/>
+    <circle cx="31" cy="84" r="8"/><circle cx="53" cy="84" r="8"/><circle cx="75" cy="84" r="8"/><circle cx="97" cy="84" r="8"/>
+  </g>
+  <circle cx="31" cy="84" r="7" fill="#ef4444"/><circle cx="53" cy="84" r="7" fill="#ef4444"/><circle cx="75" cy="84" r="7" fill="#ef4444"/><circle cx="97" cy="84" r="7" fill="#ef4444"/>
+  <circle cx="53" cy="62" r="7" fill="#facc15"/><circle cx="75" cy="62" r="7" fill="#facc15"/>
+  <path d="M23 107h82" stroke="#60a5fa" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+</svg>

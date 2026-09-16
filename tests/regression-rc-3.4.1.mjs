@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read=(p)=>readFileSync(p,'utf8');
+const pkg=JSON.parse(read('package.json'));
+const panel=read('client/src/platform/accounts/AccountPanel.tsx');
+const portal=read('client/src/platform/accounts/AccountPortal.tsx');
+const css=read('client/src/index.css');
+assert.match(pkg.version, /^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/i);
+assert.match(panel,/Owner control panel/);
+assert.match(panel,/Invite new player/);
+assert.match(panel,/Copy invite link/);
+assert.match(panel,/Copy code/);
+assert.match(panel,/Public signup stays closed/);
+assert.match(panel,/Approve & create invite/);
+assert.match(panel,/Access via/);
+assert.match(panel,/auditTitle\(entry\)/);
+assert.match(portal,/account-invite/);
+assert.match(portal,/clearAccountInviteFromUrl/);
+
+assert.match(portal,/Sign in/);
+assert.match(portal,/Sign up/);
+assert.match(portal,/One-time play/);
+assert.match(portal,/guestPaths/);
+assert.match(css,/RC 3\.4\.1 — private entry redesign/);
+assert.match(css,/RC 3\.4\.1 — owner\/player-management UX pass/);
+console.log('RC 3.4.1 player-management UX regression passed.');

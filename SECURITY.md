@@ -1,29 +1,17 @@
-# Security Policy
+# Security and public-source preparation
 
-Halieus Game Room is a private-first multiplayer project that is being prepared for public portfolio use.
+Report suspected vulnerabilities privately to the repository owner. Do not post recovery keys, invitation codes, cookies, account records or live-room snapshots in public issues. No public security contact is designated in this source package.
 
-## Do not commit
+## Runtime boundary
 
-The repository must never contain:
+Use HTTPS and the supplied reverse proxy. Node trusts one proxy hop; restrict direct access to the Node port. Keep HALIEUS_DATA_DIR outside the deployed source directory. Back up that directory separately and protect it as private account/game data. Recovery tokens are bearer credentials: possession can recover a seat. Guest room links are intentionally supported; the account portal is not a blanket authentication barrier over Socket.IO.
 
-- SSH/private keys or cloud credentials
-- real `.env` secret values
-- production account, player, session, invite or recovery data
-- runtime databases or backups
-- private deployment archives
-- passwords, API tokens or authentication secrets
-- machine-specific operator files that expose private infrastructure
+Account response routes send Cache-Control: no-store. Production client source maps are disabled. This does not make delivered JavaScript confidential. No secrets may be compiled into client assets.
 
-## Repository vs production
+## Before publishing on GitHub
 
-GitHub stores the safe engineering history of the project. Oracle remains the production deployment target.
+This is an owner release package, not a sanitized public repository. The new .gitignore prevents common accidental additions but does not remove files already tracked or erase history. Build a fresh public staging directory; do not upload this ZIP wholesale.
 
-Repository documentation such as `README.md`, `SECURITY.md` and `.gitignore` is not automatically a production build dependency. Oracle deployment packaging should include only files required to install, build and run HGR.
+Exclude owner-only documents, operational backups, local Windows shortcuts, deployment machine addresses/configuration, runtime accounts/sessions/feedback, bootstrap files, private keys, .env files, build outputs and archived release packages. Review scripts and documentation for identifying infrastructure details. Scan the complete staged tree and any Git history. Preserve the SCOWL dictionary copyright file. The project has no root license; the owner must choose publication/licensing terms before presenting it as open source.
 
-## Reporting
-
-If this repository becomes public and you discover a security issue, do not publish credentials, exploit details or private player information in a public issue. Contact the repository owner privately first.
-
-## Development principle
-
-HGR clients must not be trusted as the authority for multiplayer game outcomes. Game actions are validated by the server against the authoritative room/game state before accepted state is broadcast to connected clients.
+Current audit findings and limitations are in docs/AUDIT_4.0.0.md. Deployment to the real Oracle host was not performed as part of this audit.

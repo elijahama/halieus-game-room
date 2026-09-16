@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read=(p)=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
+const json=(p)=>JSON.parse(read(p));
+assert.match(read('VERSION').trim(),/^(?:3\.7\.0[c-z]|4\.0\.0)$/);
+for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) assert.match(json(file).version,/^(?:3\.7\.0-[c-z]|4\.0\.0)$/,`${file} version mismatch`);
+const archive=read('server/src/platform/sessionArchive.ts');
+assert.match(archive,/\| "ayo" \| "word-board";/,'session archive game union must include both new game modules');
+const ayo=read('server/src/games/ayo/handlers.ts');
+assert.match(ayo,/function maybeFinish\(io:Server,room:Room\):boolean/,'Ayo finish evaluation must return an explicit result');
+assert.match(ayo,/const finished=maybeFinish\(io,room\);if\(!finished\)emit\(io,room\)/,'Ayo move flow must use finish result instead of an impossible phase comparison');
+assert.doesNotMatch(ayo,/maybeFinish\(io,room\);if\(room\.phase!=="finished"\)/,'Ayo must not retain the TypeScript-narrowed finished-phase comparison');
+console.log('Halieus Game Room 3.7.0c new-game server type contract hotfix regression: PASS');

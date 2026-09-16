@@ -1,0 +1,157 @@
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import type { BlackjackAction, BlackjackAiDifficulty, BlackjackPublicState } from "../../../../shared/games/blackjack/types";
+import { GameChrome } from "../../platform/components/GameChrome";
+import { GameBrandIcon } from "../../platform/components/GameBrandIcon";
+import { GAME_BY_ID } from "../../platform/games/catalog";
+import { DisplaySettingsPanel } from "../../platform/components/DisplaySettingsPanel";
+import { InviteLobbyBar } from "../../platform/components/InviteLobbyBar";
+import { InviteLobbyPanel } from "../../platform/components/InviteLobbyPanel";
+import { RecoveryKeyPanel } from "../../platform/components/RecoveryKeyPanel";
+import { RoomTimeMeta } from "../../platform/components/RoomTimeMeta";
+import { ConfirmDialog } from "../../platform/components/ConfirmDialog";
+import { downloadBlackjackGameReport } from "./utils/gameReport";
+
+interface ThemeLike {
+  pageBackground: string;
+  cardBackground: string;
+  secondaryBackground: string;
+  inputBackground: string;
+  text: string;
+  mutedText: string;
+  border: string;
+}
+
+interface Props {
+  state: BlackjackPublicState;
+  connectionStatus: string;
+  message: string;
+  darkMode: boolean;
+  theme: ThemeLike;
+  playerName: string;
+  soundEnabled: boolean;
+  recoveryKey: string | null;
+  onToggleFullscreen: () => void;
+  onToggleDarkMode: () => void;
+  onToggleSound: () => void;
+  onStart: () => void;
+  onAddAi: (difficulty: BlackjackAiDifficulty) => void;
+  onRemoveAi: (playerId: string) => void;
+  onAction: (action: BlackjackAction) => void;
+  onNextRound: () => void;
+  onEndTable: () => void;
+  onForfeit: () => void;
+  onLeave: () => void;
+  roomActivity?: ReactNode;
+}
+
+const BLACKJACK_ACCENT = GAME_BY_ID["blackjack"].accent;
+const suitGlyph: Record<string, string> = { spades: "♠", hearts: "♥", diamonds: "♦", clubs: "♣" };
+
+function Card({ card, hidden = false }: { card?: { rank: string; suit: string }; hidden?: boolean }) {
+  if (hidden) return <span className="bj-card bj-card-back" aria-label="Hidden dealer card"><span>H</span></span>;
+  if (!card) return null;
+  const red = card.suit === "hearts" || card.suit === "diamonds";
+  return <span className={`bj-card ${red ? "is-red" : ""}`}><strong>{card.rank}</strong><em>{suitGlyph[card.suit]}</em></span>;
+}
+
+function handValue(cards: Array<{ rank: string }>): number {
+  let total = cards.reduce((sum, card) => sum + (card.rank === "A" ? 11 : ["J", "Q", "K"].includes(card.rank) ? 10 : Number(card.rank)), 0);
+  let aces = cards.filter((card) => card.rank === "A").length;
+  while (total > 21 && aces > 0) { total -= 10; aces -= 1; }
+  return total;
+}
+
+function blackjackSeatPoint(index: number, total: number): { left: number; top: number } {
+  // 3.6.1 viewport contract: every player card must remain fully inside the
+  // visible felt at native 100% browser zoom. Keep the near rail high enough
+  // that six-player cards cannot be clipped by the bottom edge.
+  if (total <= 1) return { left: 50, top: 68 };
+  const angle = (160 - (140 * index) / Math.max(1, total - 1)) * (Math.PI / 180);
+  return { left: 50 + Math.cos(angle) * 40, top: 39 + Math.sin(angle) * 28 };
+}
+
+export function BlackjackScreen({ state, connectionStatus, message, darkMode, theme, soundEnabled, recoveryKey, onToggleFullscreen, onToggleDarkMode, onToggleSound, onStart, onAddAi, onRemoveAi, onAction, onNextRound, onEndTable, onForfeit, onLeave, roomActivity }: Props) {
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<"forfeit" | "end" | null>(null);
+  const [aiDifficulty, setAiDifficulty] = useState<BlackjackAiDifficulty>("normal");
+  const viewer = state.players.find((player) => player.id === state.viewerPlayerId);
+  const isHost = Boolean(viewer?.isHost);
+  const rulesText = `${state.rules.deckCount} decks · dealer ${state.rules.dealerHitsSoft17 ? "hits" : "stands"} soft 17 · blackjack ${state.rules.blackjackPayout === 1.5 ? "3:2" : "6:5"}`;
+  const activePlayer = state.players.find((player) => player.id === state.currentTurnPlayerId);
+  const dealerValue = handValue(state.dealerHand);
+  const playerCountLabel = `${state.players.length} player${state.players.length === 1 ? "" : "s"}`;
+  const liveStatus = useMemo(() => state.phase === "round-over" || state.phase === "finished" ? state.status : activePlayer ? `${activePlayer.name}'s turn` : state.status, [state.phase, state.status, activePlayer]);
+  const tablePlayers = useMemo(() => {
+    const players = state.players.slice();
+    const viewerIndex = players.findIndex((player) => player.id === state.viewerPlayerId);
+    if (viewerIndex < 0 || players.length < 2) return players;
+    const [viewerSeat] = players.splice(viewerIndex, 1);
+    players.splice(Math.floor((players.length + 1) / 2), 0, viewerSeat);
+    return players;
+  }, [state.players, state.viewerPlayerId]);
+
+  return (
+    <main className="card-game-page blackjack-page page-enter" style={{ background: theme.pageBackground, color: theme.text, ["--game-accent" as string]: BLACKJACK_ACCENT }}>
+      <GameChrome accent={BLACKJACK_ACCENT} onBackToGameRoom={onLeave} onOpenMenu={() => setMenuOpen(true)} />
+      <header className="card-game-header card-game-header-polished">
+        <div className="card-game-brand-lockup">
+          <GameBrandIcon game="blackjack" className="card-game-letter-token" />
+          <div><p>Halieus Game Room</p><h1>Blackjack</h1></div>
+        </div>
+        <div className="card-game-meta"><span>Room <strong>{state.code}</strong></span><span>{state.matchMode === "ranked" ? "🏆 Ranked" : "Casual"}</span><span>{playerCountLabel}</span><span className={connectionStatus === "Connected" ? "is-online" : ""}>{connectionStatus}</span></div>
+      </header>
+
+      {!state.started || state.phase === "lobby" ? (
+        <section className="card-game-lobby blackjack-lobby">
+          <section className="card-game-lobby-card glass-card">
+            <p className="modal-eyebrow">{state.matchMode === "ranked" ? "🏆 Ranked" : "Casual"} · Private virtual-chip table</p>
+            <h2>Blackjack waiting room</h2>
+            <p className="card-game-intro-copy">Clean casino-style play with every active table rule visible before the first deal.</p>
+            <div className="rules-contract">
+              <strong>Active table rules</strong>
+              <span>{rulesText}</span>
+              <small>Double on any first two cards · dealer peeks for blackjack · virtual chips only.</small>
+            </div>
+            <InviteLobbyBar accent={BLACKJACK_ACCENT} onOpen={() => setInviteOpen(true)} title="Bring friends straight to this Blackjack table" />
+            <RecoveryKeyPanel recoveryKey={recoveryKey} />
+            {isHost && (
+              <div className="card-game-host-actions">
+                <label className="ai-inline-control card-game-ai-control"><span>AI difficulty<small>Applies to new AI seats</small></span><select value={aiDifficulty} onChange={(event) => setAiDifficulty(event.target.value as BlackjackAiDifficulty)}><option value="easy">Easy</option><option value="normal">Normal</option><option value="hard">Hard</option></select></label>
+                <button type="button" className="button-outline" onClick={() => onAddAi(aiDifficulty)}>＋ Add AI player</button>
+                <button type="button" className="button-primary" disabled={state.players.length < 1} onClick={onStart}>Deal first round</button>
+              </div>
+            )}
+          </section>
+          <section className="card-game-roster glass-card">
+            <header><div><p className="modal-eyebrow">Table</p><h2>Players</h2></div><span>{state.players.length}/6</span></header>
+            <div className="card-game-player-list">{state.players.map((player) => <article key={player.id} className="card-game-player-row"><span className="card-game-avatar">{player.name.slice(0, 2).toUpperCase()}</span><div><strong>{player.name}</strong><small>{player.isHost ? "Host" : player.isAi ? "AI player" : player.isConnected ? "Connected" : "Recoverable"}</small></div><b>{player.chips.toLocaleString()} chips</b>{isHost && player.isAi && <button type="button" className="icon-button compact-icon" onClick={() => onRemoveAi(player.id)}>×</button>}</article>)}</div>
+          </section>
+        </section>
+      ) : (
+        <section className="blackjack-live-shell blackjack355-live card-game-live-shell">
+          <section className="blackjack-table blackjack355-table">
+            <div className="blackjack355-felt" aria-hidden="true"><span>BLACKJACK</span><small>BLACKJACK PAYS 3 TO 2 · DEALER {state.rules.dealerHitsSoft17 ? "HITS" : "STANDS"} SOFT 17</small></div>
+            <div className="blackjack-dealer-zone blackjack355-dealer"><p className="modal-eyebrow">Dealer</p><div className="bj-hand">{state.dealerHand.map((card) => <Card key={card.id} card={card} />)}{state.dealerHoleHidden && <Card hidden />}</div><strong>{state.dealerHoleHidden ? `${dealerValue}+` : dealerValue || "—"}</strong></div>
+            <div className="blackjack-status-pill blackjack355-status">{liveStatus}</div>
+            <div className="blackjack-player-grid blackjack355-player-ring">{tablePlayers.map((player, index) => { const seat = blackjackSeatPoint(index, tablePlayers.length); return <article key={player.id} style={{ "--blackjack-seat-left": `${seat.left}%`, "--blackjack-seat-top": `${seat.top}%` } as CSSProperties} className={`blackjack-seat blackjack355-seat ${player.id === state.viewerPlayerId ? "is-you" : ""} ${player.id === state.currentTurnPlayerId ? "is-turn" : ""} ${player.busted ? "is-busted" : ""}`}><header><div><strong>{player.name}</strong><small>{player.isHost ? "Host" : player.isAi ? "AI" : player.id === state.viewerPlayerId ? "You" : "Player"}</small></div><b>{player.chips.toLocaleString()}</b></header><div className="bj-hand">{player.hand.map((card) => <Card key={card.id} card={card} />)}</div>{player.bet > 0 && <span className="blackjack355-bet-chip" aria-label={`Bet ${player.bet}`}>{player.bet}</span>}<footer><b>{player.hand.length ? handValue(player.hand) : "—"}</b><span>{player.result ?? (player.bet ? `Bet ${player.bet}` : "Sitting out")}</span></footer></article>; })}</div>
+          </section>
+          <aside className="card-game-control-panel glass-card">
+            <div className="card-game-control-heading"><div><p className="modal-eyebrow">Round {state.roundNumber}</p><h2>{viewer ? viewer.name : "Spectating"}</h2></div><span>{state.phase.replace("-", " ")}</span></div>
+            <p className="card-game-status-copy">{state.status}</p>
+            {viewer && !state.isSpectator && <div className="blackjack-action-grid"><button type="button" disabled={!state.legalActions.includes("hit")} onClick={() => onAction("hit")}>Hit</button><button type="button" disabled={!state.legalActions.includes("stand")} onClick={() => onAction("stand")}>Stand</button><button type="button" disabled={!state.legalActions.includes("double")} onClick={() => onAction("double")}>Double</button></div>}
+            {isHost && state.phase === "round-over" && <button type="button" className="button-primary full-button" onClick={onNextRound}>Deal next round</button>}
+            <div className="card-game-round-summary"><span>Minimum bet</span><strong>{state.minimumBet} chips</strong><span>Dealer</span><strong>{state.rules.dealerHitsSoft17 ? "Hits soft 17" : "Stands soft 17"}</strong></div>
+            {state.phase === "finished" && <button type="button" className="button-outline full-button" onClick={() => downloadBlackjackGameReport(state)}>📄 Download Game Report</button>}
+            <div className="blackjack-room-panel-slot">{roomActivity}</div>
+            {message && <p className="status-toast">{message}</p>}
+          </aside>
+        </section>
+      )}
+
+      {inviteOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setInviteOpen(false)}><section className="card-game-invite-modal"><button type="button" className="icon-button invite-modal-close" onClick={() => setInviteOpen(false)}>×</button><InviteLobbyPanel roomCode={state.code} darkMode={darkMode} gameTitle="Blackjack" invitePathPrefix="/blackjack" accent={BLACKJACK_ACCENT} theme={theme} /></section></div>}
+      {menuOpen && <div className="modal-backdrop game-menu-top-layer" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setMenuOpen(false)}><section className="game-menu-modal card-game-menu-modal"><div className="modal-handle"/><header className="modal-heading-row"><div><p className="modal-eyebrow">Blackjack · Room {state.code}</p><h2>Game menu</h2></div><button type="button" className="icon-button" onClick={() => setMenuOpen(false)}>×</button></header><button type="button" className="menu-action menu-action-primary" onClick={() => setMenuOpen(false)}><span>▶</span><span><strong>Resume game</strong><small>Return to the table</small></span></button><DisplaySettingsPanel darkMode={darkMode} soundEnabled={soundEnabled} onToggleDarkMode={onToggleDarkMode} onToggleSound={onToggleSound} onToggleFullscreen={onToggleFullscreen} /><button type="button" className="menu-action" onClick={() => downloadBlackjackGameReport(state)}><span>📄</span><span><strong>Download Game Report</strong><small>Export this table state for testing and analysis</small></span></button><RecoveryKeyPanel recoveryKey={recoveryKey} /><button type="button" className="menu-action" onClick={onLeave}><span>←</span><span><strong>Back to Game Room</strong><small>Keep this seat recoverable</small></span></button>{viewer && !state.isSpectator && <button type="button" className="menu-action menu-action-danger" onClick={() => { setMenuOpen(false); setConfirmAction("forfeit"); }}><span>⚑</span><span><strong>Forfeit seat</strong><small>Leave this table permanently</small></span></button>}{isHost && <button type="button" className="menu-action menu-action-danger" onClick={() => { setMenuOpen(false); setConfirmAction("end"); }}><span>■</span><span><strong>End Blackjack table</strong><small>Finalise and archive this session for everyone</small></span></button>}</section></div>}
+      <ConfirmDialog open={confirmAction !== null} title={confirmAction === "end" ? "End Blackjack table?" : "Forfeit your Blackjack seat?"} message={confirmAction === "end" ? "This will finalise the Blackjack table for everyone and archive the session." : "Your seat will close permanently and the table will continue without you."} confirmLabel={confirmAction === "end" ? "End table" : "Forfeit"} destructive onCancel={() => setConfirmAction(null)} onConfirm={() => { const action = confirmAction; setConfirmAction(null); if (action === "end") onEndTable(); else if (action === "forfeit") onForfeit(); }} />
+    </main>
+  );
+}

@@ -1,0 +1,15 @@
+HALIEUS GAME ROOM — ORACLE UPDATE
+
+Normal updates now use the one Halieus Game Room workspace.
+You do NOT need a separate Oracle Clean Source ZIP.
+
+Normal owner update:
+  Run "Update Halieus Website.cmd" from the Halieus Game Room root.
+
+The updater first tries your existing OpenSSH agent/config, then a previously remembered key path, then likely private keys under .ssh, Downloads, Desktop, Documents, OneDrive and nearby Halieus/project folders. An explicit update also offers a Windows file picker if automatic discovery cannot authenticate. If your Oracle private key lives elsewhere, set HALIEUS_ORACLE_KEY or pass -KeyPath to update-website.ps1. Halieus remembers only a proven key file path; the private key itself is never copied into release ZIPs.
+
+The script packages only the deployment source it needs, uploads it, and builds a candidate on Oracle before touching the live app. If install/build fails, the current site stays in place. If the new service fails its health check after activation, the previous app is restored automatically. The temporary ZIP is then deleted. It does NOT upload laptop server/data.
+Oracle /var/lib/halieus-game-room remains the authoritative production data root.
+
+The live Certbot-managed HTTPS nginx configuration is preserved during routine updates.
+3.7.0a: If Windows OpenSSH rejects the selected Oracle private key because its local ACL is too broad, the updater now tightens inherited/extra read permissions for that key and retries authentication automatically. The private key remains in place and is never copied into the Halieus release.

@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read=(p)=>readFileSync(p,"utf8");
+const pkg=JSON.parse(read("package.json"));
+const panel=read("client/src/platform/accounts/AccountPanel.tsx");
+const accounts=read("server/src/platform/accounts.ts");
+const css=read("client/src/index.css");
+assert.match(pkg.version, /^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/i);
+assert.match(panel,/const \[username, setUsername\] = useState\(account\.username\)/);
+assert.match(panel,/Sign-in username/);
+assert.match(panel,/account-username-input/);
+assert.match(accounts,/accountConflict\(username, auth\.account\.id\)/);
+assert.match(accounts,/account\.username-changed/);
+assert.match(accounts,/auth\.account\.username = username/);
+assert.match(css,/RC 3\.4\.1b — self-service username editing/);
+console.log("RC 3.4.1b username editing regression passed.");
