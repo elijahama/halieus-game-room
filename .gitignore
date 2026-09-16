@@ -92,3 +92,9 @@ server/client/
 server/data/feedback.json
 server/data/rankings.json
 server/data/rooms.json
+
+# Owner-only local documentation / setup notes
+OWNER SETUP CODE.txt
+docs/OWNER SETUP CODE.txt
+docs/ACCOUNT MIGRATION - OWNER ONLY.txt
+docs/OWNER BUILD - DO NOT SHARE.txt
