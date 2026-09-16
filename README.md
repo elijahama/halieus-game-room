@@ -1,505 +1,362 @@
 # Halieus Game Room
 
-**Current milestone: 4.0.0** — branded arrival experience, platform/documentation consolidation, and the complete 3.7.x gameplay/reliability work carried forward.
+**A private, real-time multiplayer game platform for board, card, word and social games.**
 
-**A private, real-time multiplayer game platform that brings board, card, word and social games into one shared game room.**
+**Current milestone:** 4.0.0  
+**Frontend:** React · TypeScript · Vite  
+**Backend:** Node.js · Express · Socket.IO  
+**Development model:** Human-directed, AI-assisted engineering
 
-Halieus Game Room (HGR) is a modular multiplayer application built around one central idea: **the platform should own the shared experience, while each game owns its own rules**.
+Halieus Game Room (HGR) began as one large property-trading board game and grew into a shared multiplayer platform. The project now focuses on the systems that make many different games feel like part of the same product: accounts, rooms, invitations, reconnect/recovery, spectators, timers, results, responsive layouts, AI players and production deployment.
 
-What began as a single property-trading board game grew into a broader platform with accounts, rooms, invitations, spectators, reconnection, shared navigation, responsive layouts, AI players, production deployment and a growing catalogue of games.
-
-> **Development model:** Halieus Game Room is a **human-directed, AI-assisted software project**. AI tools are used extensively during implementation, debugging, testing and documentation. Product direction, rules, UX requirements, testing, acceptance/rejection decisions and deployment are directed and validated by the project owner.
+> **Core design rule:** the platform owns the shared multiplayer experience; each game owns its own rules.
 
 ---
 
-## 1. What Halieus Game Room is
+## Contents
 
-HGR is designed primarily for **private games between friends**, not for real-money play, public matchmaking economies, stores or monetisation-led systems.
+- [What HGR is](#what-hgr-is)
+- [From one game to a platform](#from-one-game-to-a-platform)
+- [Player journey](#player-journey)
+- [Game catalogue](#game-catalogue)
+- [Architecture](#architecture)
+- [Shared platform systems](#shared-platform-systems)
+- [Mega Board as a case study](#mega-board-as-a-case-study)
+- [Engineering problems solved](#engineering-problems-solved)
+- [Production and release engineering](#production-and-release-engineering)
+- [Testing and validation](#testing-and-validation)
+- [Development process](#development-process)
+- [My role](#my-role)
+- [AI-assisted development](#ai-assisted-development)
+- [Technology stack](#technology-stack)
+- [Repository structure](#repository-structure)
+- [Running locally](#running-locally)
+- [Documentation](#documentation)
+- [Security and publication boundaries](#security-and-publication-boundaries)
 
-The application provides one place to:
+---
 
-- sign in and enter the Game Room;
-- browse the available game catalogue;
-- create or join private rooms;
-- invite other players;
-- reconnect to games after refreshes or temporary disconnections;
+## What HGR is
+
+HGR is designed primarily for **private multiplayer sessions between friends**. It is not built around real-money play, public wagering, a store, or a paid virtual-currency economy.
+
+The platform provides one place to:
+
+- sign in with a persistent account;
+- browse a shared game catalogue;
+- create private rooms;
+- join with room codes or invitations;
+- play with human players or supported AI opponents;
+- recover the same seat after refreshes or temporary disconnects;
 - watch supported games as a spectator;
-- play against human players or supported AI opponents;
-- use the same account, room and social systems across multiple games;
-- move between desktop, tablet and phone layouts without changing platforms.
+- move between desktop, tablet and phone layouts;
+- return to the Game Room without treating every game as a separate application.
 
-The project is still actively evolving, but the long-term direction is clear: **adding another game should extend HGR, not create another standalone application.**
-
-### Sign-in
-
-![Halieus Game Room sign-in screen](docs/assets/screenshots/01-sign-in.jpg)
+The project is still evolving, but the long-term direction is consistent: **adding another game should extend HGR rather than create another standalone product.**
 
 ---
 
-## 2. Project evolution
+## From one game to a platform
 
-HGR did not begin as a fourteen-game platform.
+HGR originally centred on the property-trading game that became **Mega Board**.
 
-The project originally centred on a large property-trading board game that later became **Mega Board**. As that game grew, more of the difficult work stopped being specific to the board itself.
+As Mega Board became more complex, many difficult problems stopped being board-specific. Room creation, reconnect logic, player identity, spectators, timers, results, invitations, responsive navigation and deployment were all useful beyond one game.
 
-Features such as:
-
-- room creation;
-- player identity;
-- invites;
-- spectators;
-- reconnect/recovery;
-- timers;
-- chat;
-- results;
-- responsive navigation;
-- AI configuration;
-- deployment;
-- release validation;
-
-were useful beyond one game.
-
-That led to a structural change:
+That led to a structural shift:
 
 > **Halieus Game Room became the application. Individual games became modules inside it.**
 
-This shift is one of the most important architectural decisions in the project. It allows shared multiplayer behaviour to be improved once at platform level while game-specific rules remain isolated inside each game module.
+This matters because shared multiplayer behaviour can now improve once at platform level while each game remains responsible for its own rules and state.
 
 ---
 
-## 3. The player experience
+## Player journey
 
-A typical HGR session follows one continuous product flow.
+A typical HGR session follows one continuous flow.
 
-### Arrival
+### 1. Arrival and sign-in
 
-On a fresh visit or sign-in, HGR presents a short branded introduction such as:
+A fresh visit can present a short branded **Welcome to Halieus Game Room** arrival experience. Theme state should remain consistent from the first frame.
 
-**Welcome to Halieus Game Room**
+Direct room links, spectators and active-game recovery bypass decorative arrival flows when necessary.
 
-The intro is intended to feel like an arrival into the platform rather than a loading screen. It respects the saved light/dark theme and should not interrupt direct room links, game recovery or routine refreshes.
+### 2. Game Room
 
-### Game Room
+The Game Room is the central hub. From there a player can:
 
-After entry, the player reaches the main Game Room, where they can:
+- continue an active room;
+- browse games;
+- create a new room;
+- join with a code;
+- see relevant player/room activity;
+- access account and shared platform controls.
 
-- browse available games;
-- continue an active session;
-- create a room;
-- join with a room code or invite;
-- see relevant live-game activity;
-- access account and social controls.
+### 3. Room setup
 
-### Room setup
+Games reuse the shared room model while exposing game-specific configuration such as:
 
-Each game reuses the same broader room philosophy while exposing the settings that are relevant to that game.
-
-Examples include:
-
-- human/AI player configuration;
-- difficulty;
+- player count;
+- human/AI seats;
+- AI difficulty;
 - timers;
-- game variants;
-- room visibility;
+- variants;
 - spectator availability;
-- game-specific rule options.
+- rule options.
 
-### Live game
+### 4. Live game
 
-Once a match begins, the client sends player actions to the server. The server validates those actions against the authoritative room and game state before broadcasting accepted results.
+The client requests actions; the server validates them against authoritative room and game state before accepted results are broadcast.
 
-### Recovery
+### 5. Recovery
 
-Refreshing the website or temporarily disconnecting should not create a new match. HGR attempts to restore the existing player seat, game state and server-owned timers.
+Refreshing the page creates a new network connection, but it should not create a new player, new match or fresh timer.
 
-### Results
+### 6. Results and return
 
-Completed games use shared result and return-to-room patterns so every game does not need to invent a completely separate end-of-match system.
-
-### Game Room home
-
-![Halieus Game Room home screen](docs/assets/screenshots/02-game-room-home.jpg)
-
-Additional create-room, live-game and results captures will be added as the portfolio set expands.
+Completed games use shared result and navigation patterns so players can return to the Game Room without each module inventing an unrelated end flow.
 
 ---
 
-## 4. Game catalogue
+## Game catalogue
 
-HGR currently contains a mixture of board, card, word and social games.
+HGR currently contains fourteen active game entries.
 
-### Board and strategy games
+| Category | Games |
+| --- | --- |
+| **Board & strategy** | Mega Board, Ludo, Connect Four, Ayo |
+| **Card & table** | Poker, WHOT, Blackjack, Cheat, Dominoes |
+| **Word & party** | Word Board, Word Game, Password, Anagrams Race, Hidden Dictator |
 
-| Game | Description | Status |
-| --- | --- | --- |
-| **Mega Board** | Large property-trading board game with trading, auctions, development, debt resolution and multiple rule variants | Live |
-| **Ludo** | Multiplayer race board game | Live |
-| **Connect Four** | Server-validated turn-based strategy game | Live |
-| **Ayo** | Traditional Yoruba seed game | Live |
+Game identities are defined through shared catalogue data so names, icons and branding can be reused across the homepage, setup screens and live-room UI.
 
-### Card and table games
-
-| Game | Description | Status |
-| --- | --- | --- |
-| **Poker** | Multiplayer Texas Hold'em with shared table systems | Live |
-| **WHOT** | Card-shedding game with Nigerian-oriented rules support | Live |
-| **Blackjack** | Multiplayer casino-style card game | Live |
-| **Cheat** | Bluffing card game | Live |
-| **Dominoes** | Multiplayer tile game | Live |
-
-### Word and party games
-
-| Game | Description | Status |
-| --- | --- | --- |
-| **Word Board** | Board-based word game | Live |
-| **Word Game** | Five-letter word game | Live |
-| **Password** | Clue-and-guessing game | Live |
-| **Anagrams Race** | Real-time word race | Live |
-| **Hidden Dictator** | Social-deduction game | Beta |
-
-All game identities are defined through shared platform data so the same game name, icon and branding can be reused consistently on the homepage, setup screens and live-room UI.
-
-### Catalogue view
-
-![Halieus Game Room game catalogue](docs/assets/screenshots/03-game-catalogue.jpg)
+See [docs/GAME_CATALOGUE.md](docs/GAME_CATALOGUE.md) for the catalogue summary.
 
 ---
 
-## 5. Shared platform systems
-
-The games are different, but the surrounding systems are intentionally shared.
-
-### Accounts and identity
-
-HGR provides persistent player identity across the platform rather than treating every game as an isolated session.
-
-### Rooms and invitations
-
-The platform manages:
-
-- room creation;
-- room codes;
-- invite links;
-- player presence;
-- host controls;
-- join/rejoin behaviour;
-- active-game discovery where appropriate.
-
-### Reconnection and recovery
-
-A browser refresh creates a new network connection, but it should not create a new player or reset the match.
-
-HGR therefore separates **player identity and authoritative game state** from temporary Socket.IO connection identity.
-
-### Timers
-
-Turn and action timers are server-owned. Clients display the remaining time from an absolute server deadline instead of independently restarting timers after refresh.
-
-Mega Board also supports live host control over its configured turn duration while retaining server authority.
-
-### Spectators
-
-Supported games can expose read-only spectator state through shared platform infrastructure.
-
-Spectators may observe the information they are allowed to see, but they cannot submit gameplay actions or receive private player information that should remain hidden.
-
-### Chat, activity and results
-
-Shared room-level presentation includes features such as:
-
-- room activity;
-- chat;
-- player lists;
-- spectators;
-- result presentation;
-- return/continue navigation.
-
-### Responsive platform shell
-
-Desktop, tablet and mobile layouts use the same core application. Shared navigation, top-level controls and account UI are treated as platform concerns, while each game remains responsible for adapting its own table or board.
-
----
-
-## 6. Architecture
+## Architecture
 
 HGR uses a **server-authoritative real-time multiplayer architecture**.
 
 ```text
-┌──────────────────────────────────┐
-│          React + Vite UI         │
-│     desktop · tablet · mobile    │
-└────────────────┬─────────────────┘
-                 │
-          HTTP + Socket.IO
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│      Node.js + Express server    │
-│                                  │
-│  Shared platform services        │
-│  • accounts / identity           │
-│  • rooms / invitations           │
-│  • recovery / presence           │
-│  • chat / spectators             │
-│                                  │
-│  Authoritative game modules      │
-│  • state                         │
-│  • rules                         │
-│  • validation                    │
-│  • AI where supported            │
-└────────────────┬─────────────────┘
-                 │
-        validated state update
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│      Players and spectators      │
-│       render server state        │
-└──────────────────────────────────┘
+┌──────────────────────────────┐
+│ React + TypeScript client    │
+│ desktop · tablet · mobile    │
+└──────────────┬───────────────┘
+               │
+        HTTP + Socket.IO
+               │
+               ▼
+┌──────────────────────────────┐
+│ Node.js + Express server     │
+│                              │
+│ Shared platform services     │
+│ • accounts / identity        │
+│ • rooms / invitations        │
+│ • recovery / presence        │
+│ • chat / spectators          │
+│                              │
+│ Authoritative game modules   │
+│ • state                      │
+│ • rules                      │
+│ • validation                 │
+│ • AI where supported         │
+└──────────────┬───────────────┘
+               │
+      validated state update
+               │
+               ▼
+┌──────────────────────────────┐
+│ Players and spectators       │
+│ render server state          │
+└──────────────────────────────┘
 ```
 
-The browser handles presentation and user input.
+The browser handles presentation and player input. The server handles **game truth**.
 
-The server handles **game truth**.
+### Connect Four request flow
 
----
-
-## 7. Example: how a Connect Four move works
-
-Connect Four is a simple example of the broader HGR architecture.
-
-When a player selects a column:
-
-1. the React client captures the requested move;
-2. the request is sent over Socket.IO;
-3. the server identifies the room and requesting player;
-4. the Connect Four game handler checks whether the move is legal;
-5. the authoritative board state is changed only if validation passes;
-6. the server broadcasts the resulting state;
-7. connected players and spectators render the accepted server state.
-
-In simplified form:
+Connect Four provides a simple example:
 
 ```text
-Player input
-    ↓
+Player selects a column
+        ↓
 React client
-    ↓
-Socket.IO
-    ↓
-Room lookup
-    ↓
+        ↓
+Socket.IO request
+        ↓
+Room + player lookup
+        ↓
 Server-side rule validation
-    ↓
-Authoritative state update
-    ↓
+        ↓
+Authoritative board update
+        ↓
 Broadcast
-    ↓
-Client render
+        ↓
+Players/spectators render state
 ```
 
-This same principle applies across HGR even when the rules become much more complex.
+The same pattern is reused for more complex games.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the current 4.0.0 runtime architecture.
 
 ---
 
-## 8. Game modules vs platform systems
+## Shared platform systems
 
-One of the project's core design rules is to keep **shared platform behaviour** separate from **game-specific behaviour**.
+The catalogue contains very different games, but their surrounding systems are intentionally shared.
 
-### Platform responsibilities
+### Accounts and identity
 
-Examples:
+Player identity persists across games rather than treating every room as a completely isolated session.
 
-- accounts;
-- player identity;
-- rooms;
-- invitations;
-- recovery;
-- connection management;
-- spectators;
-- chat;
-- common navigation;
-- results;
-- themes;
-- live-game discovery;
-- deployment/release identity.
+### Rooms and invitations
 
-### Game responsibilities
+The platform handles room creation, room codes, joins/rejoins, invitations, host controls and presence.
 
-Examples:
+### Reconnect and seat recovery
 
-- Connect Four move legality;
-- Poker betting and hand progression;
-- Ludo movement;
-- WHOT card rules;
-- Mega Board rent, auctions, mortgages and development;
-- Blackjack hand resolution;
-- Word Board validation.
+A Socket.IO connection is temporary. A player seat is not.
 
-This division reduces duplication and makes it easier to add another game without rebuilding the entire multiplayer shell.
+Reconnect logic maps a returning connection back to the live player/room state instead of silently creating a new match state.
+
+### Server-owned timers
+
+Timers use authoritative deadlines. A browser refresh must not award a fresh turn.
+
+### Spectators
+
+Supported games can expose a read-only state projection to spectators without granting gameplay actions or private information.
+
+### Shared shell and responsive UI
+
+Navigation, account controls, themes, Game Room layout and common result patterns are platform concerns. Individual games remain responsible for adapting their own boards/tables.
 
 ---
 
-## 9. Mega Board as the deepest game system
+## Mega Board as a case study
 
-Mega Board is the largest and most mature rules system inside HGR and has driven many of the platform's more difficult edge cases.
+Mega Board is the deepest game system in HGR and has driven many of the platform's harder state-management problems.
 
-Its systems include areas such as:
+Its systems include:
 
-- property ownership;
-- rent;
+- property ownership and rent;
 - auctions;
 - trading;
 - mortgages;
-- building development;
-- bank building inventory;
+- houses, hotels and bank building inventory;
 - debt resolution;
 - bankruptcy;
+- configurable rule variants;
+- human/AI seats;
 - turn/action timers;
-- configurable game modes;
-- AI/autopilot strategy;
 - reconnectable multiplayer state.
 
 ### Debt resolution
 
-A player who owes more cash than they currently hold is not necessarily bankrupt.
+A player who owes more cash than they currently hold is not immediately bankrupt.
 
-The game can enter a debt-resolution state where the player may perform legal actions such as:
-
-- selling buildings;
-- mortgaging eligible properties;
-- managing assets;
-
-before the debt is resolved.
+The game can enter a debt-resolution state where legal actions such as selling buildings and mortgaging eligible property can raise enough cash to settle the debt.
 
 ### Shared rent outcomes
 
-Some rules can produce multiple eligible rent recipients.
+Some rule combinations can produce more than one eligible maximum-rent recipient. The server can divide the single rent obligation deterministically rather than assuming every payment has one creditor.
 
-Instead of assuming every payment has one creditor, the server can split a single rent amount deterministically between tied eligible players.
+### Reconnect-safe turns
 
-### Building inventory
-
-Available houses/hotels/buildings are treated as real bank inventory rather than purely decorative UI values.
-
-These examples show why Mega Board is useful as a stress test for HGR's broader state-management model.
-
----
-
-## 10. AI and automated players
-
-HGR includes rule-based AI in supported games.
-
-The design principle is:
-
-> **AI should make decisions using information a human player could legally know.**
-
-AI should not gain access to hidden cards, unrevealed roles or other private state simply because it runs on the server.
-
-Mega Board also contains an Autopilot path that reuses strategic decision systems for a human-controlled seat.
-
-Longer-term AI development is informed by real playtesting and observed human behaviour rather than only abstract optimal play.
-
----
-
-## 11. Reconnection, timers and state continuity
-
-Real-time multiplayer creates problems that are easy to miss in a single-browser prototype.
-
-For example, refreshing a webpage changes the Socket.IO connection ID.
-
-If timers were attached only to that socket ID, a refresh could accidentally create another full turn.
-
-HGR instead preserves the existing server-owned deadline and reconnects the returning player to the live seat.
-
-Example:
+A refresh changes the socket connection, not the authoritative deadline.
 
 ```text
-Blitz turn begins at 2:30
-        ↓
+Turn begins at 2:30
+      ↓
 1:00 passes
-        ↓
+      ↓
 1:30 remains
-        ↓
-Player refreshes
-        ↓
-New socket connection
-        ↓
-Existing player/seat recovered
-        ↓
-Original deadline retained
-        ↓
-~1:30 remains
+      ↓
+browser refresh
+      ↓
+new socket
+      ↓
+existing seat recovered
+      ↓
+original deadline retained
 ```
 
-The refresh changes the connection, not the game clock.
+Mega Board therefore acts as a useful stress test for the wider HGR platform.
 
 ---
 
-## 12. Production environment
+## Engineering problems solved
 
-HGR is not only a local prototype.
+HGR development has involved more than adding game screens. Examples of recurring engineering work include:
 
-The web application is deployed to a Linux production environment with:
+### Reconnection without timer resets
 
-- Node.js;
-- Nginx;
-- HTTPS;
-- service-managed backend processes;
-- persistent runtime data kept outside replaceable application releases;
-- candidate-build validation;
-- release fingerprints;
-- rollback protection.
+Socket IDs change after a refresh. Recovery logic must reconnect the new socket to the same player seat while preserving the server's absolute deadline.
 
-The live server remains the authoritative source for multiplayer state and persistent platform data.
+### Complex payment/debt state
+
+Mega Board must allow legal liquidation actions before bankruptcy and support debt involving more than one recipient.
+
+### Shared systems without flattening game rules
+
+Room, spectator and recovery infrastructure is shared, while game-specific legality remains inside each module.
+
+### Responsive multiplayer interfaces
+
+The same product needs to remain usable across desktop, tablet and phone layouts without duplicating the application.
+
+### Release-integrity boundaries
+
+Repository files, source-release inputs and production deployment files are not identical sets. Release validation must distinguish them rather than accidentally making portfolio metadata a production dependency.
 
 ---
 
-## 13. Deployment and release safety
+## Production and release engineering
 
-Deployment is treated as part of the engineering work rather than an afterthought.
+HGR is deployed to a Linux production environment with Node.js, Nginx and HTTPS.
 
-A normal release flow is:
+The deployment model is **candidate-first**:
 
 ```text
-Development workspace
-        ↓
-Release preparation
-        ↓
-Integrity manifest / fingerprint
-        ↓
-Source package
-        ↓
-Secure transfer to server
-        ↓
-Candidate dependency install
-        ↓
-Candidate build
-        ↓
-Validation
-        ↓
-Activate release
-        ↓
-Health + fingerprint verification
-        ↓
-Keep release OR restore previous version
+development
+   ↓
+local validation
+   ↓
+release preparation
+   ↓
+release fingerprint / integrity manifest
+   ↓
+secure transfer
+   ↓
+candidate dependency install + build
+   ↓
+candidate validation
+   ↓
+activation
+   ↓
+health + fingerprint verification
+   ↓
+keep release or rollback
 ```
 
-A failed candidate build should **not replace the working production application**.
+A failed candidate build should leave the current production application untouched.
 
-Private credentials, runtime databases and user data are intentionally kept outside public release packages.
+Persistent runtime data is kept outside replaceable application releases.
+
+GitHub and Oracle also have intentionally different inclusion rules:
+
+- **GitHub** tracks safe source, documentation, tests and project history.
+- **Oracle deployment** receives only what is required to build and run production.
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/DEPLOYMENT_FIX_4.0.0.md](docs/DEPLOYMENT_FIX_4.0.0.md).
 
 ---
 
-## 14. Testing and regression workflow
+## Testing and validation
 
-HGR has been developed through repeated build → test → reject/correct → rebuild cycles.
+HGR uses both automated checks and real multiplayer testing.
 
-Testing includes both automated checks and live use.
-
-### Automated validation
-
-The project uses checks such as:
+Typical release validation includes:
 
 ```bash
 npm run typecheck
@@ -508,178 +365,151 @@ npm run test:regression
 npm run validate:release
 ```
 
-Regression coverage has grown alongside the project because fixing one multiplayer system can affect older behaviour elsewhere.
+Manual testing covers areas that are easy to miss in a single-browser prototype:
 
-### Real-world testing
-
-Manual testing includes:
-
-- multiple browsers;
-- multiple devices;
+- multiple browsers and devices;
 - real multiplayer sessions;
-- refresh/reconnect scenarios;
+- refresh/reconnect;
+- turn timers;
 - mobile/tablet layouts;
-- spectator behaviour;
-- timers;
+- spectators;
 - trading;
-- debt/bankruptcy;
-- game-specific rule edge cases;
-- candidate deployment validation.
+- debt and bankruptcy;
+- game-specific edge cases;
+- candidate deployment behaviour.
 
-A feature is not considered correct only because it compiles.
+A feature is not considered correct simply because it compiles.
+
+See [docs/TESTING.md](docs/TESTING.md) and [docs/VALIDATION_4.0.0.md](docs/VALIDATION_4.0.0.md).
 
 ---
 
-## 15. Development process
+## Development process
 
 A typical HGR iteration looks like this:
 
 ```text
-Idea / playtest problem
+idea / playtest finding
         ↓
-Define desired behaviour
+define intended behaviour
         ↓
-Clarify rules and edge cases
+clarify edge cases
         ↓
 AI-assisted implementation
         ↓
-Static checks
+static / type / build checks
         ↓
-Regression tests
+regression testing
         ↓
-Package candidate
+candidate package
         ↓
-Production candidate build
+production candidate build
         ↓
-Browser/device/playtest validation
+browser/device/playtest validation
         ↓
-Accept, reject or revise
+accept, reject or revise
 ```
 
-Many changes begin with screenshots, observed multiplayer behaviour or a rule inconsistency rather than with a formal specification.
-
-Those observations are converted into concrete implementation requirements before the next build.
+Many changes begin with an observed multiplayer problem, screenshot or rule inconsistency. The issue is converted into a concrete requirement, implemented, tested and then either accepted or revised.
 
 ---
 
-## 16. My role in the project
+## My role
 
-My role is best described as **product direction, technical project development, systems specification, gameplay design and QA**.
+My role in HGR covers **product direction, technical project development, systems specification, gameplay design and QA**.
 
 I am responsible for:
 
-- defining the overall HGR product direction;
-- deciding how the original board-game project evolved into a shared game platform;
+- defining the overall product direction;
+- deciding how the original board-game project evolved into a platform;
 - specifying gameplay rules and edge cases;
-- deciding which systems belong to the platform and which belong to individual games;
+- defining platform-vs-game responsibilities;
 - directing UX and responsive behaviour;
 - testing on real devices and in multiplayer sessions;
 - identifying regressions;
-- deciding whether an implementation is accepted, rejected or revised;
-- maintaining and operating the deployment workflow;
-- shaping AI behaviour and information boundaries;
-- documenting the intended architecture and behaviour;
-- learning and explaining how the systems I am directing work.
+- accepting, rejecting or revising implementations;
+- operating the deployment workflow;
+- setting AI behaviour/information boundaries;
+- maintaining project documentation and technical understanding.
 
 I do **not** present HGR as software where every line was manually typed by me.
 
-The portfolio value of the project is in the combination of **requirements, technical reasoning, systems design, iteration, testing, deployment and ownership of the final product direction**.
+The portfolio value is in the combination of requirements, systems thinking, iteration, testing, deployment and ownership of the final product direction.
 
 ---
 
-## 17. AI-assisted development
+## AI-assisted development
 
-AI assistance is a substantial part of HGR's implementation process and is intentionally disclosed.
+AI assistance is a substantial and intentionally disclosed part of the project.
 
-AI tools have been used to help with:
+AI tools are used for areas such as:
 
-- TypeScript, React and Node implementation;
-- debugging from logs and screenshots;
+- React / TypeScript / Node implementation;
+- debugging;
 - refactoring;
 - regression-test creation;
-- code review;
-- edge-case analysis;
+- technical analysis;
 - documentation;
 - release preparation.
 
-This does not mean that the project was produced from one prompt.
-
-The process is iterative: generated implementations are tested against the intended rules and product behaviour, then accepted, corrected or rejected.
-
-I describe the project as:
+The project is best described as:
 
 > **Human-directed, AI-assisted engineering.**
 
-That description is intended to be transparent about how the software was produced while also accurately representing the design, testing and operational work involved.
+The product owner defines the product, rules, requirements, testing and acceptance decisions. AI tools assist heavily with implementation and iteration.
+
+See [docs/AI_ASSISTED_DEVELOPMENT.md](docs/AI_ASSISTED_DEVELOPMENT.md).
 
 ---
 
-## 18. Technology stack
+## Technology stack
 
-### Frontend
-
-- React 18
-- TypeScript
-- Vite
-- Socket.IO client
-
-### Backend
-
-- Node.js
-- Express
-- TypeScript
-- Socket.IO
-
-### Desktop / local experience
-
-- Electron-based Windows shell / launcher tooling
-
-### Production
-
-- Linux
-- Nginx
-- HTTPS
-- Node.js services
-- release-integrity validation
-- candidate deployment and rollback workflow
+| Area | Technology |
+| --- | --- |
+| Frontend | React 18, TypeScript, Vite |
+| Realtime | Socket.IO |
+| Backend | Node.js, Express, TypeScript |
+| Desktop/local integration | Windows launcher / Electron-oriented tooling |
+| Production | Linux, Nginx, HTTPS, Node.js services |
+| Quality | Type checking, regression tests, release-integrity validation |
+| Source control | Git + GitHub |
 
 ---
 
-## 19. Repository structure
-
-The public repository is organised around the platform/game boundary.
+## Repository structure
 
 ```text
 Halieus Game Room/
-├── client/
+├── client/                 # React application
 │   └── src/
-│       ├── platform/      # Shared UI, networking and account systems
-│       └── games/         # Game-specific interfaces
-│
-├── server/
+│       ├── platform/       # Shared client/platform systems
+│       └── games/          # Game-specific UI
+├── server/                 # Node/Express/Socket.IO backend
 │   └── src/
-│       ├── platform/      # Shared rooms, identity, recovery, etc.
-│       └── games/         # Authoritative game logic
-│
-├── shared/                # Shared contracts/models
-├── desktop/               # Desktop/launcher integration
-├── docs/                  # Public technical documentation
-├── scripts/               # Build/release tooling
-└── tests/                 # Regression coverage
+│       ├── platform/       # Shared server systems
+│       └── games/          # Authoritative game logic
+├── shared/                 # Shared contracts/models
+├── desktop/                # Desktop integration
+├── assets/                 # Shared/static assets
+├── docs/                   # Technical and project documentation
+├── scripts/                # Build/release tooling
+├── tests/                  # Regression/runtime checks
+├── RELEASE.json            # Release integrity identity
+└── VERSION                 # Current product version
 ```
 
-The public portfolio edition intentionally excludes private operational material and obsolete internal release history.
+The same HGR folder is used for development, Git history and release preparation. Private runtime/deployment material is excluded through repository safety rules.
 
 ---
 
-## 20. Local development
+## Running locally
 
 ### Requirements
 
-- Node.js **20.19+**
+- Node.js 20.19+
 - npm
 
-### Install dependencies
+### Install
 
 ```bash
 npm install
@@ -709,105 +539,65 @@ npm run typecheck
 npm run build
 ```
 
-Environment-specific values should be created from safe example files.
-
-Never commit real `.env` files, private keys or production data.
+Environment-specific values should come from safe example configuration. Real secrets must never be committed.
 
 ---
 
-## 21. Public repository and security boundaries
+## Documentation
 
-The public HGR repository is a **portfolio-safe edition** of the development project.
+The repository contains both current technical documentation and historical development records.
 
-It should contain enough real source and documentation to demonstrate how the application works without exposing operational secrets or private player information.
+Start here:
 
-The public repository must exclude:
+- [Current architecture](ARCHITECTURE.md)
+- [Documentation index](docs/README.md)
+- [Project overview](docs/PROJECT_OVERVIEW.md)
+- [Game catalogue](docs/GAME_CATALOGUE.md)
+- [Data model](docs/DATA_MODEL.md)
+- [Socket events](docs/SOCKET_EVENTS.md)
+- [Testing](docs/TESTING.md)
+- [Deployment](docs/DEPLOYMENT.md)
+- [Development process](docs/DEVELOPMENT_PROCESS.md)
+- [AI-assisted development](docs/AI_ASSISTED_DEVELOPMENT.md)
+- [4.0.0 audit](docs/AUDIT_4.0.0.md)
+- [4.0.0 validation](docs/VALIDATION_4.0.0.md)
+
+Older RC and patch notes remain part of the project's history but are not the current source of truth.
+
+---
+
+## Security and publication boundaries
+
+The repository is being prepared as a portfolio-safe engineering record.
+
+It must not contain:
 
 - SSH/private keys;
 - cloud credentials;
-- secret environment values;
-- production account/player data;
+- real `.env` secrets;
+- production account/player/session data;
 - invite/recovery secrets;
 - runtime databases;
-- backups;
-- private workstation files;
-- machine-specific operational data;
-- `node_modules`;
-- generated production build output;
-- internal documents that contain obsolete or private deployment information.
+- private backups;
+- workstation-specific operator files;
+- generated dependency/build directories.
 
-A safe `.env.example` may document required variable names without real values.
+See [SECURITY.md](SECURITY.md) and [docs/PUBLICATION_CHECKLIST.md](docs/PUBLICATION_CHECKLIST.md).
 
 ---
 
-## 22. Current development direction
+## Current direction
 
-HGR remains under active development.
+Current work is focused on:
 
-Current priorities include:
-
-- increasing visual consistency between game modules;
-- improving the Game Room arrival experience;
-- adding a polished **Welcome to Halieus Game Room** intro for fresh sessions/sign-in;
-- strengthening refresh/reconnect behaviour;
-- continuing responsive/mobile refinement;
-- expanding game-specific polish;
-- improving automated regression coverage;
-- documenting the platform for public portfolio use;
-- preparing a clean public GitHub edition without private production material.
+- visual consistency across game modules;
+- reconnect/recovery reliability;
+- responsive/mobile refinement;
+- stronger automated regression coverage;
+- clearer current-vs-historical documentation;
+- public portfolio presentation;
+- continuing gameplay polish across the catalogue.
 
 ---
 
-## 23. Portfolio screenshots
-
-The README uses **real screenshots of the running application**, not generated images pretending to be the product.
-
-Current captures include the sign-in screen, Game Room home and game catalogue. Before the repository becomes public, screenshots should be checked for reusable room codes, usernames and other information that should not be published.
-
-Additional recommended captures:
-
-1. **Welcome / Game Room landing**
-2. **Full game catalogue**
-3. **Create-game / room setup**
-4. **Mega Board live match**
-5. **Poker or WHOT table**
-6. **Connect Four or Ludo**
-7. **Mobile Game Room**
-8. **Spectator / social-room example**
-9. **Results screen**
-
-Short GIFs can later demonstrate:
-
-- creating/joining a room;
-- moving from the Game Room into a match;
-- reconnecting after refresh;
-- live multiplayer state updates.
-
----
-
-## 24. Summary
-
-Halieus Game Room is both a multiplayer application and an ongoing systems-development project.
-
-It demonstrates the progression from one game into a modular platform, including:
-
-- server-authoritative multiplayer;
-- reusable room infrastructure;
-- state recovery;
-- spectators;
-- timers;
-- AI players;
-- responsive UX;
-- complex board-game state;
-- automated regression testing;
-- production deployment;
-- release verification;
-- AI-assisted development under human direction.
-
-The project is designed to show not only **what was built**, but also **how requirements, technical decisions, testing and iteration shaped it over time**.
-
-## 4.0.0 corrective audit
-
-The intro handoff and safe audit fixes retain version 4.0.0. See [audit and changelog](docs/AUDIT_4.0.0.md), [validation](docs/VALIDATION_4.0.0.md), and [security/publication guidance](SECURITY.md). Historical release notes are not current validation evidence. This owner release is not a sanitized public GitHub upload.
-
-The replacement **Deployment Fix** package also corrects the Oracle archive's missing root files. See [deployment correction and packaging test](docs/DEPLOYMENT_FIX_4.0.0.md).
+Halieus Game Room is intended to show not only **what was built**, but **how a single game evolved into a multiplayer platform through requirements, architecture, testing, deployment and repeated iteration**.
