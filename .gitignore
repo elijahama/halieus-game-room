@@ -11,7 +11,7 @@ coverage/
 .vite/
 *.tsbuildinfo
 
-# Environment/secrets
+# Environment / secrets
 .env
 .env.*
 !.env.example
@@ -23,6 +23,11 @@ coverage/
 *.cer
 *.jks
 *.keystore
+*.ppk
+id_rsa
+id_ed25519
+*oracle*.key
+*ssh*.key
 
 # Runtime / production data
 server/data/runtime/
@@ -36,12 +41,24 @@ data/runtime/
 *.sqlite
 *.sqlite3
 
-# Deployment/private workstation material
-*oracle*.key
-*ssh*.key
-id_rsa
-id_ed25519
-*.ppk
+# Private deployment / owner-only material
+dev-tools/Oracle Quick Deploy/
+update-website.ps1
+Update Halieus Website.cmd
+Update Halieus Website.ico
+docs/OWNER BUILD - DO NOT SHARE.txt
+
+# Internal/stale documentation retained locally but not published
+analysis/
+docs/archive/
+docs/project/
+docs/releases/
+docs/developer/analysis/
+
+# Windows shortcut files can contain workstation paths
+*.lnk
+
+# Deployment temp / backup material
 deploy-temp/
 deployment-temp/
 backups/
@@ -57,7 +74,7 @@ Backups/
 *.tar
 *.tar.gz
 
-# OS/editor files
+# OS / editor files
 .DS_Store
 Thumbs.db
 desktop.ini
