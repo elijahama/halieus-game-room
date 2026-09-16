@@ -30,7 +30,9 @@ The application provides one place to:
 
 The project is still actively evolving, but the long-term direction is clear: **adding another game should extend HGR, not create another standalone application.**
 
-<!-- Screenshot: HGR welcome / Game Room landing page -->
+### Sign-in
+
+![Halieus Game Room sign-in screen](docs/assets/screenshots/01-sign-in.jpg)
 
 ---
 
@@ -114,12 +116,11 @@ Refreshing the website or temporarily disconnecting should not create a new matc
 
 Completed games use shared result and return-to-room patterns so every game does not need to invent a completely separate end-of-match system.
 
-<!-- Screenshot set:
-1. Game Room
-2. Create-game screen
-3. Live game
-4. Results screen
--->
+### Game Room home
+
+![Halieus Game Room home screen](docs/assets/screenshots/02-game-room-home.jpg)
+
+Additional create-room, live-game and results captures will be added as the portfolio set expands.
 
 ---
 
@@ -158,7 +159,9 @@ HGR currently contains a mixture of board, card, word and social games.
 
 All game identities are defined through shared platform data so the same game name, icon and branding can be reused consistently on the homepage, setup screens and live-room UI.
 
-<!-- Screenshot: full game catalogue -->
+### Catalogue view
+
+![Halieus Game Room game catalogue](docs/assets/screenshots/03-game-catalogue.jpg)
 
 ---
 
@@ -757,9 +760,11 @@ Current priorities include:
 
 ## 23. Portfolio screenshots
 
-The public README should use **real screenshots of the running application**, not generated images pretending to be the product.
+The README uses **real screenshots of the running application**, not generated images pretending to be the product.
 
-Recommended captures:
+Current captures include the sign-in screen, Game Room home and game catalogue. Before the repository becomes public, screenshots should be checked for reusable room codes, usernames and other information that should not be published.
+
+Additional recommended captures:
 
 1. **Welcome / Game Room landing**
 2. **Full game catalogue**
