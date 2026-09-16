@@ -1,0 +1,69 @@
+# Halieus Game Room — local/generated/private files
+
+# Dependencies and generated output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+*.keystore
+
+# Runtime / production data
+server/data/runtime/
+server/data/accounts/
+server/data/sessions/
+server/data/invites/
+server/data/backups/
+runtime/
+data/runtime/
+*.db
+*.sqlite
+*.sqlite3
+
+# Deployment/private workstation material
+*oracle*.key
+*ssh*.key
+id_rsa
+id_ed25519
+*.ppk
+deploy-temp/
+deployment-temp/
+backups/
+Backups/
+*.bak
+*.tmp
+*.log
+
+# Archives should not become source history
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Local launch/runtime state
+*.pid
+*.pid.lock
