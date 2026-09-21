@@ -119,6 +119,10 @@ function canManage(role: HalieusGuildRole): boolean {
   return role === "owner" || role === "admin";
 }
 
+function canModerate(role: HalieusGuildRole): boolean {
+  return role === "owner" || role === "admin" || role === "moderator";
+}
+
 function canCreateRoom(role: HalieusGuildRole, policy: HalieusGuildRoomPolicy): boolean {
   if (role === "owner" || role === "admin") return true;
   if (policy === "admins") return false;
@@ -366,6 +370,31 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
     response.status(201).json({ ok: true, message });
   });
 
+  app.delete("/guilds/:guildId/messages/:messageId", async (request, response) => {
+    const account = requireAccount(resolveAccount, request, response);
+    if (!account) return;
+    const membership = requireGuildMember(request.params.guildId, account, response);
+    if (!membership) return;
+
+    const message = membership.guild.messages.find((candidate) => candidate.id === request.params.messageId);
+    if (!message) {
+      response.status(404).json({ ok: false, reason: "Guild message not found." });
+      return;
+    }
+
+    // Members may clean up their own posts. Moderator+ can remove any guild
+    // message, including stale system chatter, without receiving admin powers.
+    if (message.senderAccountId !== account.id && !canModerate(membership.member.role)) {
+      response.status(403).json({ ok: false, reason: "Moderator access is required to remove another player's message." });
+      return;
+    }
+
+    membership.guild.messages = membership.guild.messages.filter((candidate) => candidate.id !== message.id);
+    membership.guild.updatedAt = Date.now();
+    await saveStore();
+    response.json({ ok: true });
+  });
+
   app.post("/guilds/:guildId/rooms", async (request, response) => {
     const account = requireAccount(resolveAccount, request, response);
     if (!account) return;
@@ -517,8 +546,9 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
 
     const selfLeave = target.accountId === account.id;
     const managerRemoval = canManage(membership.member.role) && target.role !== "owner";
-    if (!selfLeave && !managerRemoval) {
-      response.status(403).json({ ok: false, reason: "Guild admin access is required." });
+    const moderatorRemoval = membership.member.role === "moderator" && target.role === "member";
+    if (!selfLeave && !managerRemoval && !moderatorRemoval) {
+      response.status(403).json({ ok: false, reason: "Your guild role cannot remove that member." });
       return;
     }
     if (membership.member.role === "admin" && target.role === "admin" && !selfLeave) {
