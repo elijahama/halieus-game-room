@@ -22394,3 +22394,482 @@ html[data-theme="light"] .halieus-intro-v4-card {
   .halieus-intro-v4.is-exiting { animation: none !important; }
   .halieus-intro-v4.is-exiting { opacity: 0 !important; }
 }
+
+
+/* 4.0.0 — mobile orientation recovery pass */
+@media (max-width: 680px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Shared live-game shell: navigation participates in the mobile layout
+     instead of floating above it and creating a large dead zone. */
+  .card-game-page {
+    padding:
+      max(10px, env(safe-area-inset-top))
+      10px
+      calc(20px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .halieus-game-chrome {
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    margin: 0 0 12px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 5px;
+    border-radius: 14px;
+  }
+
+  .halieus-game-chrome .game-room-back-button,
+  .halieus-game-menu-trigger {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
+    padding: 8px 10px;
+  }
+
+  .card-game-header-polished {
+    display: grid !important;
+    gap: 11px;
+    min-height: 0;
+    margin-bottom: 12px !important;
+  }
+
+  .card-game-brand-lockup {
+    gap: 10px;
+  }
+
+  .card-game-brand-lockup img,
+  .card-game-letter-token.halieus-game-brand-icon {
+    width: 44px !important;
+    height: 44px !important;
+    flex-basis: 44px !important;
+    border-radius: 13px;
+  }
+
+  .card-game-brand-lockup h1 {
+    font-size: clamp(1.7rem, 8vw, 2.15rem);
+  }
+
+  .card-game-brand-lockup p {
+    font-size: 9px;
+  }
+
+  /* Room/mode/time metadata stays one compact, swipeable rail rather than
+     consuming several rows above the game. */
+  .card-game-meta {
+    width: 100%;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .card-game-meta::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card-game-meta > span {
+    flex: 0 0 auto;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 9px;
+    font-size: .66rem;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  /* Ludo: make the board, turn controls, race status and room activity form
+     one natural document flow. No absolute turn panel / Autopilot overlap. */
+  .ludo-live-shell {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .ludo-table-wrap {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px !important;
+    overflow: visible !important;
+    border-radius: 22px !important;
+  }
+
+  .ludo-table-glow {
+    inset: 8% 3% 30%;
+  }
+
+  .ludo-board {
+    align-self: center;
+    width: min(100%, 560px) !important;
+    max-width: 100% !important;
+    padding: 5px;
+    gap: 1px;
+    border-radius: 19px;
+  }
+
+  .ludo-turn-console {
+    position: relative !important;
+    inset: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin-top: 12px;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+    padding: 11px !important;
+    border-radius: 16px !important;
+  }
+
+  .ludo-turn-console > div:first-child strong {
+    font-size: .92rem;
+  }
+
+  .ludo-turn-console > .halieus-autopilot-control {
+    grid-column: 1 / -1;
+    width: 100% !important;
+    min-height: 40px;
+    justify-content: center;
+  }
+
+  .ludo-dice-panel {
+    gap: 8px;
+  }
+
+  .ludo-die {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+  }
+
+  .ludo-dice-panel .button-primary {
+    min-height: 44px;
+    padding-inline: 12px;
+  }
+
+  .ludo-side-stack {
+    height: auto !important;
+    min-height: 0;
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    overflow: visible !important;
+  }
+
+  .ludo-side-stack .ludo-status-panel {
+    width: 100%;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 14px !important;
+  }
+
+  .ludo-progress-list {
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .ludo-progress-list article {
+    min-height: 54px;
+    padding: 8px 10px;
+  }
+
+  .ludo-side-stack .room-chat-shell.is-embedded {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .ludo-side-stack .room-chat-shell.is-embedded .room-chat-panel {
+    height: min(360px, 52dvh) !important;
+    min-height: 240px !important;
+    max-height: 360px !important;
+  }
+
+  .room-chat-shell.is-embedded .room-chat-trigger {
+    min-height: 42px !important;
+  }
+
+  /* Shared game menu becomes a mobile bottom sheet with its own scrolling.
+     Settings stay compact rather than turning into a page of oversized rows. */
+  .modal-backdrop.game-menu-top-layer {
+    place-items: end center !important;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      10px
+      0 !important;
+  }
+
+  .game-menu-modal.card-game-menu-modal {
+    width: min(100%, 560px) !important;
+    max-height: calc(100dvh - max(10px, env(safe-area-inset-top))) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding:
+      15px
+      13px
+      calc(18px + env(safe-area-inset-bottom)) !important;
+    border-radius: 24px 24px 0 0 !important;
+  }
+
+  .game-menu-modal .modal-handle {
+    margin-top: -4px;
+    margin-bottom: 12px;
+  }
+
+  .game-menu-modal .modal-heading-row h2 {
+    font-size: 1.55rem;
+  }
+
+  .game-menu-modal .menu-action {
+    min-height: 58px;
+    margin-top: 8px;
+    padding: 10px 11px;
+    border-radius: 14px;
+  }
+
+  .game-menu-modal .menu-action > span:first-child {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+
+  .game-menu-modal .menu-action strong {
+    font-size: .95rem;
+  }
+
+  .game-menu-modal .menu-action small {
+    font-size: .68rem;
+  }
+
+  .game-menu-modal .halieus-display-settings {
+    padding: 10px;
+    gap: 7px;
+  }
+
+  .game-menu-modal .halieus-theme-mode-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+
+  .game-menu-modal .halieus-theme-mode-grid button {
+    min-height: 50px;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  .game-menu-modal .halieus-theme-mode-grid button > span:first-child {
+    font-size: 16px;
+  }
+
+  .game-menu-modal .halieus-theme-mode-grid small {
+    display: none;
+  }
+
+  .game-menu-modal .halieus-settings-grid-secondary {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+
+  .game-menu-modal .halieus-settings-grid-secondary button {
+    min-height: 54px;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    padding: 7px 4px;
+    text-align: center;
+  }
+
+  .game-menu-modal .halieus-settings-grid-secondary button > span:first-child {
+    font-size: 16px;
+  }
+
+  .game-menu-modal .halieus-settings-grid-secondary small {
+    display: none;
+  }
+
+  .game-menu-modal .recovery-key-panel {
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .game-menu-modal .recovery-key-panel > div {
+    min-width: 0;
+  }
+
+  .game-menu-modal .recovery-key-panel strong {
+    max-width: 100%;
+    font-size: .78rem;
+    letter-spacing: .08em;
+    overflow-wrap: anywhere;
+  }
+
+  .game-menu-modal .recovery-key-panel button {
+    flex: 0 0 auto;
+  }
+
+  /* Game Room mobile shell: safe areas, four real nav items, denser history
+     cards and horizontal quick-play rails with clear snap behaviour. */
+  .halieus-main {
+    padding:
+      calc(72px + env(safe-area-inset-top))
+      12px
+      calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .halieus-mobile-bar {
+    height: calc(62px + env(safe-area-inset-top)) !important;
+    padding-top: env(safe-area-inset-top);
+    padding-inline: 12px;
+  }
+
+  .halieus-mobile-brand {
+    min-width: 0;
+  }
+
+  .halieus-mobile-brand span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .halieus-mobile-nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    gap: 4px;
+    padding:
+      6px
+      8px
+      calc(6px + env(safe-area-inset-bottom)) !important;
+    border-radius: 18px 18px 0 0 !important;
+    border-bottom: 0;
+  }
+
+  .halieus-mobile-nav button {
+    min-height: 54px;
+    padding: 6px 2px !important;
+  }
+
+  .halieus-hero {
+    gap: 15px;
+    padding: 18px 0 14px;
+  }
+
+  .halieus-hero h1 {
+    font-size: clamp(2.45rem, 12vw, 3.25rem) !important;
+    line-height: .96;
+  }
+
+  .halieus-featured-row {
+    margin-inline: -12px !important;
+    padding: 0 12px 7px !important;
+    gap: 10px !important;
+    scroll-padding-inline: 12px;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+  }
+
+  .halieus-featured-game {
+    scroll-snap-align: start;
+  }
+
+  .halieus-home-recent > div {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .halieus-home-recent article {
+    min-height: 0 !important;
+    grid-template-columns: 40px minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+    padding: 10px 11px !important;
+  }
+
+  .halieus-home-recent img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .halieus-home-recent article button {
+    grid-column: auto !important;
+    justify-self: end !important;
+    align-self: center;
+    padding: 8px 9px;
+    white-space: nowrap;
+  }
+
+  .halieus-home-recent strong {
+    font-size: .76rem;
+  }
+
+  .halieus-home-recent small {
+    font-size: .61rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .card-game-page {
+    padding-inline: 8px !important;
+  }
+
+  .ludo-table-wrap {
+    padding: 8px !important;
+  }
+
+  .ludo-turn-console {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+
+  .ludo-turn-console > div:first-child small {
+    display: none;
+  }
+
+  .ludo-die {
+    width: 42px;
+    height: 42px;
+  }
+
+  .ludo-dice-panel .button-primary {
+    font-size: .78rem;
+    padding-inline: 10px;
+  }
+
+  .halieus-hero h1 {
+    font-size: clamp(2.25rem, 12vw, 2.85rem) !important;
+  }
+
+  .halieus-home-recent article {
+    grid-template-columns: 38px minmax(0, 1fr) auto !important;
+  }
+
+  .halieus-home-recent article button {
+    font-size: .58rem;
+  }
+}
