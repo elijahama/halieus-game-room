@@ -24,11 +24,12 @@ import { ThemeButton } from "./ThemeButton";
 import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
 import { GameBrandIcon } from "./GameBrandIcon";
+import { GuildsPanel } from "./GuildsPanel";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
-type HomeView = "home" | "games" | "players";
+type HomeView = "home" | "games" | "players" | "guilds";
 
 type PokerVariant = "texas-holdem" | "omaha" | "five-card-draw" | "seven-card-stud";
 
@@ -301,9 +302,10 @@ export function HomeScreen(props: HomeScreenProps) {
   }
 
   function selectGame(game: GameSelection, openGames = false) { onGameSelect(game); setShowRecovery(false); if (openGames) setView("games"); }
-  function openCreate(game: GameSelection) {
+  function prepareCreate(game: GameSelection, guildRoomCode: string | null = null) {
     onGameSelect(game); setShowRecovery(false); setView("games");
-    onGenerateRoomCode();
+    if (guildRoomCode) onRoomCodeChange(guildRoomCode);
+    else onGenerateRoomCode();
     if (game === "word-game") { setWordArenaMatchMode("casual"); setWordArenaTargetScore(1); setWordGameMode("daily"); }
     else if (game === "password" || game === "anagrams-race") { setWordArenaMatchMode("casual"); setWordArenaTargetScore(5); }
     else if (game === "blackjack") { setBlackjackAiCount((current) => current === 0 ? 1 : current); setBlackjackAiDifficulty("normal"); }
@@ -311,6 +313,10 @@ export function HomeScreen(props: HomeScreenProps) {
     else if (game === "cheat" || game === "dominoes") { setClassicAiCount((current) => current === 0 ? 1 : current); setClassicAiDifficulty("normal"); onClassicMatchModeChange(game, "casual"); }
     setCreateOpen(true);
   }
+  function openCreate(game: GameSelection) { prepareCreate(game); }
+  // Guilds reserve a normal HGR room code before opening the existing game
+  // setup. The game module remains authoritative once Create is confirmed.
+  function openGuildCreate(game: GameId, roomCode: string) { prepareCreate(game, roomCode); }
   function openJoin(intent: "join" | "watch" = "join") { setJoinIntent(intent); setJoinOpen(true); setShowRecovery(false); }
   function openLiveRoom(room: HalieusLiveRoomSummary, intent: "join" | "watch") {
     onGameSelect(room.game);
@@ -475,7 +481,7 @@ export function HomeScreen(props: HomeScreenProps) {
         <nav className="halieus-side-nav">
           <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span>⌂</span><b>Home</b></button>
           <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span>▦</span><b>Games</b></button>
-          <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span>◉</span><b>Players</b></button>
+          <button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span>◉</span><b>Players</b></button>
         </nav>
         <button type="button" className="halieus-global-join" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }}><span>＋</span><b>Join Game</b></button>
         <div className="halieus-side-spacer" />
@@ -568,7 +574,7 @@ export function HomeScreen(props: HomeScreenProps) {
         </section>}
 
         {view === "players" && <section className="halieus-view view-players panel-enter">
-          <header className="halieus-page-heading"><div><p>HALIEUS PLAYERS</p><h1>Players</h1><span>Find friends, see who is in a room, and open a useful game record instead of a plain contact list.</span></div></header>
+          <header className="halieus-page-heading"><div><p>HALIEUS SOCIAL</p><h1>Players</h1><span>Find friends, see who is in a room, and open a useful game record instead of a plain contact list.</span></div><button type="button" className="button-outline halieus-open-guilds" onClick={() => { setView("guilds"); setSelectedPlayerId(null); }}>Guilds →</button></header>
           <div className="halieus-player-tools">
             <label><span>Search players</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
             <div className="halieus-player-filters" role="group" aria-label="Player status filter">
@@ -602,9 +608,21 @@ export function HomeScreen(props: HomeScreenProps) {
             </aside>}
           </div>
         </section>}
+
+        {view === "guilds" && account && (
+          <section className="halieus-view view-guilds panel-enter">
+            <GuildsPanel
+              account={account}
+              liveRooms={liveRooms}
+              onBackToPlayers={() => setView("players")}
+              onCreateRoom={openGuildCreate}
+              onOpenLiveRoom={openLiveRoom}
+            />
+          </section>
+        )}
       </section>
 
-      <nav className="halieus-mobile-nav" aria-label="Mobile navigation"><button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}>⌂<span>Home</span></button><button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}>▦<span>Games</span></button><button type="button" onClick={() => openJoin("join")}>＋<span>Join</span></button><button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}>◉<span>Players</span></button></nav>
+      <nav className="halieus-mobile-nav" aria-label="Mobile navigation"><button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}>⌂<span>Home</span></button><button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}>▦<span>Games</span></button><button type="button" onClick={() => openJoin("join")}>＋<span>Join</span></button><button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}>◉<span>Players</span></button></nav>
 
       {createOverlay}
       {joinOverlay}
