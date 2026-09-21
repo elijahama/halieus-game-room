@@ -36,6 +36,14 @@ assert.match(css,/4\.0\.0 — Halieus branded arrival/,'4.0.0 intro CSS marker m
 assert.match(css,/html\[data-theme="light"\] \.halieus-intro-v4/,'Intro must respect the saved light theme');
 assert.match(css,/@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.halieus-intro-v4/s,'Intro must respect reduced-motion preferences');
 
+assert.match(css,/4\.0\.0 — mobile orientation recovery pass/,'4.0.0 mobile recovery CSS marker missing');
+assert.match(css,/\.halieus-mobile-nav\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,/s,'Mobile Game Room nav must use four real navigation columns');
+assert.match(css,/\.ludo-turn-console\s*\{[\s\S]*?position:\s*relative\s*!important/s,'Mobile Ludo turn console must participate in normal flow');
+assert.match(css,/\.ludo-side-stack \.room-chat-shell\.is-embedded \.room-chat-panel\s*\{[\s\S]*?max-height:\s*360px\s*!important/s,'Mobile embedded room chat must be height-bounded');
+assert.match(css,/\.game-menu-modal\.card-game-menu-modal\s*\{[\s\S]*?overflow-y:\s*auto\s*!important/s,'Mobile game menu must scroll inside its own bottom sheet');
+assert.match(css,/\.game-menu-modal \.halieus-theme-mode-grid\s*\{[\s\S]*?repeat\(3,/s,'Mobile theme controls should remain compact in three columns');
+
+
 assert.match(readme,/Current milestone: 4\.0\.0/,'Root README must describe the 4.0.0 milestone');
 assert.match(readme,/Human-directed, AI-assisted engineering/,'README must transparently describe the AI-assisted development model');
 assert.match(readme,/server-authoritative real-time multiplayer architecture/i,'README must explain the authoritative architecture');
