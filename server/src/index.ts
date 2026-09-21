@@ -48,7 +48,8 @@ import { APP_VERSION } from "../../shared/version.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
 import { getFeedbackFilePath } from "./platform/dataPaths.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
-import { configureAccountAdminRuntimeControls, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
+import { configureAccountAdminRuntimeControls, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
+import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
 import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHandlers.js";
@@ -155,11 +156,12 @@ app.use(
 
 // Account responses contain private profile/session information and must never
 // be stored by a browser or shared cache. Apply headers before route handlers.
-app.use(["/auth", "/accounts", "/admin"], (_request, response, next) => {
+app.use(["/auth", "/accounts", "/admin", "/guilds"], (_request, response, next) => {
   response.setHeader("Cache-Control", "no-store");
   next();
 });
 registerAccountRoutes(app);
+registerGuildRoutes(app, getAuthenticatedAccount);
 
 const feedbackFilePath = getFeedbackFilePath();
 const feedbackDataDirectory = dirname(feedbackFilePath);
@@ -643,6 +645,7 @@ io.on(
 );
 
 await loadAccountStore();
+await loadGuildStore();
 
 const recoveredRoomCount =
   await loadRoomsFromDisk();
