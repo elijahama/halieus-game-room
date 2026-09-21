@@ -12,9 +12,11 @@ const json=(p)=>JSON.parse(read(p));
  * width=980 or depend on a 680px minimum Mega Board to make the phone UI work.
  */
 
-assert.equal(read('VERSION').trim(),'4.0.2');
+// Historical 4.0.2 contract: later HGR 4.x releases must retain the true
+// device-width mobile rules without pinning the current version to 4.0.2.
+assert.match(read('VERSION').trim(),/^4\.\d+\.\d+$/,'4.x product version expected');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.equal(json(file).version,'4.0.2',`${file} version mismatch`);
+  assert.match(json(file).version,/^4\.\d+\.\d+$/,`${file} must remain on the HGR 4.x line`);
 }
 
 const rootPackage=json('package.json');
@@ -42,7 +44,7 @@ assert.match(
   'Static viewport must remain device-width and safe-area aware',
 );
 assert.doesNotMatch(html,/width=980/,'HTML viewport must never request the old desktop mobile width');
-assert.match(html,/favicon\.ico\?v=4\.0\.2/,'4.0.2 browser asset cache identity missing');
+assert.match(html,/favicon\.ico\?v=4\.\d+\.\d+/,'4.0.2 browser asset cache identity missing');
 
 assert.match(ordering,/className="mega-ordering-page"/,'Mega ordering screen needs its mobile layout hook');
 
@@ -83,8 +85,8 @@ assert.match(
   'Short landscape phones need explicit density safeguards',
 );
 
-assert.match(serviceWorker,/halieus-shell-v4-0-2/,'PWA cache must be bumped for 4.0.2');
-assert.match(intro,/app-icon-192\.png\?v=4\.0\.2/,'Intro asset cache-buster must match 4.0.2');
-assert.match(readme,/Current milestone:\*\* 4\.0\.2/,'README must advertise the 4.0.2 milestone');
+assert.match(serviceWorker,/halieus-shell-v4-\d+-\d+/,'PWA cache must remain versioned on the HGR 4.x line');
+assert.match(intro,/app-icon-192\.png\?v=4\.\d+\.\d+/,'Intro asset cache-buster must remain versioned on the HGR 4.x line');
+assert.match(readme,/Current milestone:\*\* 4\.\d+\.\d+/,'README must advertise the current HGR 4.x milestone');
 
 console.log('Halieus Game Room 4.0.2 device-width mobile regression: PASS');
