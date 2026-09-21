@@ -89,7 +89,7 @@ desktop.ini
 # Duplicate/stale generated server-side client copy (canonical client lives at /client)
 server/client/
 
-# Local runtime state (not part of the 4.0.0 source release)
+# Local runtime state (never part of a source release)
 server/data/feedback.json
 server/data/feedback.ndjson
 server/data/rankings.json
