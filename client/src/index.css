@@ -23825,3 +23825,35 @@ html[data-theme="light"] .halieus-intro-v4-card {
     padding: 9px !important;
   }
 }
+
+
+/* HGR 4.0.2 — shared phone game-menu sheet completion */
+@media (max-width: 680px) {
+  /*
+   * Mega Board uses the original GameMenu component rather than the newer
+   * card-game menu subclass. Scope through the shared backdrop so both menu
+   * implementations receive the same physical-phone bottom-sheet contract.
+   */
+  .modal-backdrop.game-menu-top-layer {
+    align-items: flex-end !important;
+    justify-items: center !important;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      8px
+      0 !important;
+  }
+
+  .game-menu-top-layer > .game-menu-modal {
+    width: min(100%, 560px) !important;
+    max-width: 560px !important;
+    max-height: calc(100dvh - max(8px, env(safe-area-inset-top))) !important;
+    margin: 0 !important;
+    padding:
+      14px
+      12px
+      calc(16px + env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    border-radius: 22px 22px 0 0 !important;
+  }
+}
