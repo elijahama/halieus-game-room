@@ -1,4 +1,4 @@
-const CACHE = 'halieus-shell-v4-0-2';
+const CACHE = 'halieus-shell-v4-1-0';
 const SHELL = ['/', '/site.webmanifest', '/app-icon-192.png', '/app-icon-512.png'];
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).catch(() => undefined));
