@@ -17,7 +17,7 @@ For the current project story, start with the root [README](../README.md).
 - [Known limitations](KNOWN_LIMITATIONS.md)
 
 ### Architecture and engineering
-- [Current 4.0.0 architecture](../ARCHITECTURE.md)
+- [Current architecture](../ARCHITECTURE.md)
 - [Architecture overview](ARCHITECTURE.md)
 - [Data model](DATA_MODEL.md)
 - [Socket events](SOCKET_EVENTS.md)
@@ -33,6 +33,8 @@ For the current project story, start with the root [README](../README.md).
 - [4.0.0 deployment correction](DEPLOYMENT_FIX_4.0.0.md)
 - [4.0.0 audit](AUDIT_4.0.0.md)
 - [4.0.0 validation](VALIDATION_4.0.0.md)
+- [4.0.1 implementation log](project/HGR_4.0.1_IMPLEMENTATION_LOG.md)
+- [4.0.1 release notes](releases/RELEASE_4.0.1.md)
 - [Publication checklist](PUBLICATION_CHECKLIST.md)
 
 ## Historical development records
@@ -45,7 +47,7 @@ Examples include:
 - `PATCH 3.5.* - READ ME.txt`
 - [Development timeline](DEVELOPMENT_TIMELINE.md)
 
-These files are **historical records**, not the current source of truth for 4.0.0 behaviour or validation.
+These files are **historical records**, not the current source of truth for 4.0.1 behaviour or validation.
 
 ## Documentation principle
 
