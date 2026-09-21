@@ -23857,3 +23857,808 @@ html[data-theme="light"] .halieus-intro-v4-card {
     border-radius: 22px 22px 0 0 !important;
   }
 }
+
+
+/* HGR 4.1.0 — Guilds & persistent groups */
+/*
+ * Guilds live inside the existing Players/social area. They deliberately use
+ * the shared Halieus surfaces, buttons and safe-area shell instead of creating
+ * a second app visual language.
+ */
+.view-guilds {
+  min-width: 0;
+}
+
+.halieus-open-guilds {
+  align-self: center;
+  white-space: nowrap;
+}
+
+.halieus-guilds-panel {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.halieus-guilds-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.halieus-guilds-heading > div {
+  min-width: 0;
+}
+
+.halieus-guilds-heading p,
+.halieus-guilds-heading h1,
+.halieus-guilds-heading span {
+  margin: 0;
+}
+
+.halieus-guilds-heading p {
+  color: var(--mm-warning);
+  font-size: .68rem;
+  font-weight: 950;
+  letter-spacing: .15em;
+}
+
+.halieus-guilds-heading h1 {
+  margin-top: 5px;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  letter-spacing: -.045em;
+}
+
+.halieus-guilds-heading span {
+  display: block;
+  margin-top: 6px;
+  max-width: 780px;
+  color: var(--mm-muted);
+  line-height: 1.45;
+}
+
+.halieus-guild-join-create {
+  display: grid;
+  grid-template-columns: minmax(280px, .72fr) minmax(420px, 1.28fr);
+  gap: 12px;
+}
+
+.halieus-guild-join-create form,
+.halieus-guild-settings,
+.halieus-guild-create-room {
+  min-width: 0;
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid var(--mm-border);
+  border-radius: 18px;
+  background: var(--mm-surface-1);
+}
+
+.halieus-guild-join-create form > span,
+.halieus-guild-settings header small,
+.halieus-guild-create-room small,
+.halieus-guild-room-list header small,
+.halieus-guild-leaderboard header small {
+  color: var(--mm-warning);
+  font-size: .62rem;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+
+.halieus-guild-join-create form > div,
+.halieus-guild-create-room > div:last-child {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.halieus-guild-join-create input,
+.halieus-guild-join-create select,
+.halieus-guild-create-room select,
+.halieus-guild-settings input,
+.halieus-guild-settings select,
+.halieus-guild-chat input,
+.halieus-guild-members select {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  border: 1px solid var(--mm-border);
+  border-radius: 11px;
+  background: var(--mm-surface-2);
+  color: var(--mm-text);
+  font: inherit;
+}
+
+.halieus-guild-error,
+.halieus-guild-notice {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--mm-border);
+  border-radius: 12px;
+  background: var(--mm-surface-1);
+  font-size: .76rem;
+}
+
+.halieus-guild-error {
+  border-color: color-mix(in srgb, #ef4444 45%, var(--mm-border));
+}
+
+.halieus-guild-notice {
+  border-color: color-mix(in srgb, #22c55e 42%, var(--mm-border));
+}
+
+.halieus-guild-workspace {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.halieus-guild-list,
+.halieus-guild-detail {
+  min-width: 0;
+  border: 1px solid var(--mm-border);
+  border-radius: 20px;
+  background: var(--mm-surface-1);
+}
+
+.halieus-guild-list {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 10px;
+}
+
+.halieus-guild-list > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 4px 8px;
+}
+
+.halieus-guild-list > header > span {
+  display: grid;
+  place-items: center;
+  min-width: 27px;
+  height: 27px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--mm-surface-2);
+  color: var(--mm-muted);
+  font-size: .66rem;
+  font-weight: 900;
+}
+
+.halieus-guild-list > button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.halieus-guild-list > button:hover,
+.halieus-guild-list > button.is-selected {
+  border-color: color-mix(in srgb, var(--mm-warning) 38%, var(--mm-border));
+  background: color-mix(in srgb, var(--mm-warning) 7%, var(--mm-surface-2));
+}
+
+.halieus-guild-list > button > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.halieus-guild-list > button strong,
+.halieus-guild-list > button small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.halieus-guild-list > button small {
+  color: var(--mm-muted);
+  font-size: .62rem;
+}
+
+.halieus-guild-list > button b {
+  color: var(--mm-muted);
+  font-size: .58rem;
+}
+
+.halieus-guild-emblem {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid color-mix(in srgb, var(--mm-warning) 38%, var(--mm-border));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--mm-warning) 10%, var(--mm-surface-2));
+  font-size: .76rem;
+  font-weight: 950;
+  letter-spacing: -.02em;
+}
+
+.halieus-guild-emblem.is-large {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  font-size: 1rem;
+}
+
+.halieus-guild-detail {
+  overflow: hidden;
+}
+
+.halieus-guild-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-bottom: 1px solid var(--mm-border);
+  background:
+    radial-gradient(circle at 0 0, color-mix(in srgb, var(--mm-warning) 10%, transparent), transparent 40%),
+    var(--mm-surface-1);
+}
+
+.halieus-guild-hero > div:nth-child(2) {
+  min-width: 0;
+}
+
+.halieus-guild-hero p,
+.halieus-guild-hero h2,
+.halieus-guild-hero span {
+  margin: 0;
+}
+
+.halieus-guild-hero p {
+  color: var(--mm-warning);
+  font-size: .58rem;
+  font-weight: 950;
+  letter-spacing: .11em;
+}
+
+.halieus-guild-hero h2 {
+  margin-top: 3px;
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  letter-spacing: -.035em;
+}
+
+.halieus-guild-hero > div:nth-child(2) > span {
+  display: block;
+  margin-top: 4px;
+  color: var(--mm-muted);
+  line-height: 1.4;
+}
+
+.halieus-guild-hero-stats {
+  display: flex;
+  gap: 6px;
+}
+
+.halieus-guild-hero-stats > span {
+  display: grid;
+  min-width: 66px;
+  gap: 2px;
+  padding: 8px 9px;
+  border: 1px solid var(--mm-border);
+  border-radius: 11px;
+  background: var(--mm-surface-2);
+  color: var(--mm-muted);
+  font-size: .55rem;
+}
+
+.halieus-guild-hero-stats strong {
+  color: var(--mm-text);
+  font-size: 1rem;
+}
+
+.halieus-guild-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  padding: 9px;
+  border-bottom: 1px solid var(--mm-border);
+}
+
+.halieus-guild-tabs button {
+  min-width: 0;
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--mm-muted);
+  font: inherit;
+  font-size: .7rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.halieus-guild-tabs button.is-active {
+  border-color: color-mix(in srgb, var(--mm-warning) 42%, var(--mm-border));
+  background: color-mix(in srgb, var(--mm-warning) 8%, var(--mm-surface-2));
+  color: var(--mm-text);
+}
+
+.halieus-guild-section,
+.halieus-guild-chat,
+.halieus-guild-leaderboard,
+.halieus-guild-members {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.halieus-guild-create-room {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr);
+  align-items: center;
+}
+
+.halieus-guild-create-room > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.halieus-guild-create-room > div:first-child > span {
+  color: var(--mm-muted);
+  font-size: .68rem;
+}
+
+.halieus-guild-room-list {
+  display: grid;
+  gap: 7px;
+}
+
+.halieus-guild-room-list > header,
+.halieus-guild-leaderboard > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 2px 6px;
+}
+
+.halieus-guild-room-list > header > div,
+.halieus-guild-leaderboard > header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.halieus-guild-room-list > article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--mm-border);
+  border-radius: 13px;
+  background: var(--mm-surface-2);
+}
+
+.halieus-guild-room-list > article > img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 11px;
+}
+
+.halieus-guild-room-list > article > div:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.halieus-guild-room-list > article small,
+.halieus-guild-room-list > article span {
+  color: var(--mm-muted);
+  font-size: .62rem;
+}
+
+.halieus-guild-room-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.halieus-guild-room-waiting {
+  max-width: 150px;
+  text-align: right;
+}
+
+.halieus-guild-settings {
+  margin-top: 3px;
+}
+
+.halieus-guild-settings header {
+  display: grid;
+  gap: 2px;
+}
+
+.halieus-guild-settings label {
+  display: grid;
+  grid-template-columns: minmax(130px, .35fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.halieus-guild-settings label > span {
+  color: var(--mm-muted);
+  font-size: .68rem;
+  font-weight: 800;
+}
+
+.halieus-guild-invite {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  padding-top: 9px;
+  border-top: 1px solid var(--mm-border);
+}
+
+.halieus-guild-invite > span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.halieus-guild-invite small {
+  color: var(--mm-muted);
+  font-size: .55rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.halieus-guild-invite code {
+  overflow-wrap: anywhere;
+  font-size: .72rem;
+}
+
+.halieus-guild-messages {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-height: 220px;
+  max-height: 52dvh;
+  overflow-y: auto;
+  padding: 3px;
+  scrollbar-width: thin;
+}
+
+.halieus-guild-messages article {
+  width: min(78%, 680px);
+  display: grid;
+  gap: 4px;
+  padding: 9px 11px;
+  border: 1px solid var(--mm-border);
+  border-radius: 13px;
+  background: var(--mm-surface-2);
+}
+
+.halieus-guild-messages article.is-own {
+  justify-self: end;
+  border-color: color-mix(in srgb, var(--mm-warning) 38%, var(--mm-border));
+}
+
+.halieus-guild-messages article.is-system {
+  width: 100%;
+  justify-self: stretch;
+  background: color-mix(in srgb, var(--mm-warning) 6%, var(--mm-surface-2));
+}
+
+.halieus-guild-messages article header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.halieus-guild-messages article header small {
+  color: var(--mm-muted);
+  font-size: .55rem;
+}
+
+.halieus-guild-messages article p {
+  margin: 0;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.halieus-guild-chat > form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--mm-border);
+}
+
+.halieus-guild-leaderboard {
+  overflow-x: auto;
+}
+
+.halieus-guild-leaderboard-head,
+.halieus-guild-leaderboard > article {
+  min-width: 620px;
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) repeat(4, minmax(74px, .45fr));
+  align-items: center;
+  gap: 8px;
+}
+
+.halieus-guild-leaderboard-head {
+  padding: 7px 12px;
+  color: var(--mm-muted);
+  font-size: .58rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.halieus-guild-leaderboard > article {
+  position: relative;
+  padding: 10px 12px 10px 42px;
+  border: 1px solid var(--mm-border);
+  border-radius: 12px;
+  background: var(--mm-surface-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.halieus-guild-leaderboard > article > b {
+  position: absolute;
+  left: 12px;
+  color: var(--mm-muted);
+  font-size: .72rem;
+}
+
+.halieus-guild-player-dot {
+  position: absolute;
+  left: 25px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.halieus-guild-members {
+  align-content: start;
+}
+
+.halieus-guild-members > article {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) minmax(100px, auto) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid var(--mm-border);
+  border-radius: 13px;
+  background: var(--mm-surface-2);
+}
+
+.halieus-guild-members > article > .halieus-avatar-media {
+  width: 42px;
+  height: 42px;
+}
+
+.halieus-guild-members > article > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.halieus-guild-members > article small {
+  color: var(--mm-muted);
+  font-size: .62rem;
+}
+
+.halieus-guild-members > article > b {
+  color: var(--mm-muted);
+  font-size: .68rem;
+}
+
+.halieus-guild-remove-member {
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, #ef4444 38%, var(--mm-border));
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: .62rem;
+  font-weight: 800;
+}
+
+.halieus-guild-empty {
+  padding: 22px 14px;
+  color: var(--mm-muted);
+  text-align: center;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .halieus-guild-join-create,
+  .halieus-guild-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .halieus-guild-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .halieus-guild-list > header,
+  .halieus-guild-list > .halieus-guild-empty {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .halieus-guilds-panel {
+    gap: 10px;
+  }
+
+  .halieus-guilds-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .halieus-guilds-heading h1 {
+    font-size: 2.25rem;
+  }
+
+  .halieus-guild-join-create {
+    gap: 8px;
+  }
+
+  .halieus-guild-join-create form,
+  .halieus-guild-settings,
+  .halieus-guild-create-room {
+    padding: 11px;
+    border-radius: 15px;
+  }
+
+  .halieus-guild-join-create form > div,
+  .halieus-guild-create-room > div:last-child,
+  .halieus-guild-chat > form {
+    grid-template-columns: 1fr;
+  }
+
+  .halieus-guild-list {
+    grid-template-columns: 1fr;
+    padding: 8px;
+    border-radius: 16px;
+  }
+
+  .halieus-guild-list > header,
+  .halieus-guild-list > .halieus-guild-empty {
+    grid-column: auto;
+  }
+
+  .halieus-guild-detail {
+    border-radius: 16px;
+  }
+
+  .halieus-guild-hero {
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .halieus-guild-emblem.is-large {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .halieus-guild-hero-stats {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .halieus-guild-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 7px;
+  }
+
+  .halieus-guild-tabs button {
+    min-height: 38px;
+  }
+
+  .halieus-guild-section,
+  .halieus-guild-chat,
+  .halieus-guild-leaderboard,
+  .halieus-guild-members {
+    gap: 9px;
+    padding: 9px;
+  }
+
+  .halieus-guild-create-room {
+    grid-template-columns: 1fr;
+  }
+
+  .halieus-guild-room-list > article {
+    grid-template-columns: 40px minmax(0, 1fr);
+    padding: 9px;
+  }
+
+  .halieus-guild-room-list > article > img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .halieus-guild-room-list > article > :last-child {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .halieus-guild-room-actions {
+    width: 100%;
+  }
+
+  .halieus-guild-room-actions > button {
+    flex: 1;
+  }
+
+  .halieus-guild-settings label {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .halieus-guild-invite {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .halieus-guild-invite > span {
+    grid-column: 1 / -1;
+  }
+
+  .halieus-guild-messages {
+    min-height: 180px;
+    max-height: 46dvh;
+  }
+
+  .halieus-guild-messages article {
+    width: 88%;
+  }
+
+  .halieus-guild-members > article {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+  }
+
+  .halieus-guild-members > article > .halieus-avatar-media {
+    width: 38px;
+    height: 38px;
+  }
+
+  .halieus-guild-members > article select,
+  .halieus-guild-members > article > b {
+    min-width: 0;
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .halieus-guild-members > article .halieus-guild-remove-member {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  .halieus-open-guilds {
+    width: 100%;
+    margin-top: 8px;
+  }
+}
