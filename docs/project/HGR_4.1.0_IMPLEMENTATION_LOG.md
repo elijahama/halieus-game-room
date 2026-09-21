@@ -27,10 +27,10 @@ Public guild search/discovery is intentionally not part of 4.1.0.
 
 Each guild has server-validated roles:
 
-- Owner
-- Admin
-- Moderator
-- Member
+- Owner — full guild control;
+- Admin — settings, invite and member-role management below the owner boundary;
+- Moderator — chat moderation, regular-member moderation and room creation when policy allows;
+- Member — chat, membership and room creation when policy allows.
 
 Room-creation policy can be configured as:
 
@@ -156,6 +156,7 @@ POST   /guilds
 POST   /guilds/join
 GET    /guilds/:guildId
 POST   /guilds/:guildId/messages
+DELETE /guilds/:guildId/messages/:messageId
 POST   /guilds/:guildId/rooms
 PATCH  /guilds/:guildId
 POST   /guilds/:guildId/invite/regenerate
