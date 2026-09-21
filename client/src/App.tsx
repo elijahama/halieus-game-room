@@ -574,89 +574,16 @@ export default function App() {
     Boolean(!megaBoardParked && !pokerState && gameStarted),
   );
 
-  useEffect(() => {
-    if (!gameStarted || gameState?.phase === "finished") return;
+  /*
+   * 4.0.2 mobile viewport contract:
+   *
+   * The document viewport stays device-width for every game and every phase.
+   * Older Mega Board builds forced a desktop-sized layout viewport on phones,
+   * shrinking turn order, menus and the live board and sometimes leaking that
+   * scale into later screens. Responsive CSS now owns layout; runtime code must
+   * not rewrite the browser viewport.
+   */
 
-    const viewport = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
-    if (!viewport) return;
-
-    const isTouchDevice = navigator.maxTouchPoints > 0;
-    const shortScreenEdge = Math.min(window.screen.width, window.screen.height);
-    const isPhone = isTouchDevice && shortScreenEdge <= 600;
-    const isPhoneOrTablet = isTouchDevice && shortScreenEdge <= 1000;
-
-    if (!isPhoneOrTablet) return;
-
-    const originalContent = viewport.content;
-    const desktopMobileContent = "width=980, viewport-fit=cover";
-    let viewportRepairFrame: number | null = null;
-    let viewportRepairTimer: number | null = null;
-
-    const enforceDesktopMobileViewport = (forceReparse = false) => {
-      if (viewportRepairFrame !== null) {
-        window.cancelAnimationFrame(viewportRepairFrame);
-      }
-      if (viewportRepairTimer !== null) {
-        window.clearTimeout(viewportRepairTimer);
-      }
-
-      // Chrome mobile can silently fall back to device-width when the browser
-      // UI disappears for Fullscreen API, even though the meta tag still says
-      // width=980. Merely assigning the same string is a no-op, so pulse the
-      // width once and then restore 980 to force Chrome to rebuild the layout
-      // viewport. This keeps fullscreen identical to the proven Desktop-site
-      // composition instead of activating the narrow phone media queries.
-      if (forceReparse) {
-        viewport.content = "width=981, viewport-fit=cover";
-      }
-
-      viewportRepairFrame = window.requestAnimationFrame(() => {
-        viewport.content = desktopMobileContent;
-        viewportRepairFrame = null;
-
-        // Fullscreen metrics can settle one beat after fullscreenchange on
-        // Android Chrome. A second repair catches that late viewport reset.
-        if (forceReparse) {
-          viewportRepairTimer = window.setTimeout(() => {
-            viewport.content = "width=982, viewport-fit=cover";
-            window.requestAnimationFrame(() => {
-              viewport.content = desktopMobileContent;
-              window.dispatchEvent(new Event("resize"));
-            });
-            viewportRepairTimer = null;
-          }, 90);
-        }
-      });
-    };
-
-    const handleFullscreenChange = () => {
-      if (document.fullscreenElement) {
-        enforceDesktopMobileViewport(true);
-      } else if (isPhone) {
-        enforceDesktopMobileViewport(true);
-      } else {
-        viewport.content = originalContent;
-        window.dispatchEvent(new Event("resize"));
-      }
-    };
-
-    // Preserve the already-approved phone composition during normal play.
-    // Tablets keep their normal viewport until Fullscreen API is entered, at
-    // which point the same 980px composition is forced instead of reflowing.
-    if (isPhone) enforceDesktopMobileViewport();
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      if (viewportRepairFrame !== null) {
-        window.cancelAnimationFrame(viewportRepairFrame);
-      }
-      if (viewportRepairTimer !== null) {
-        window.clearTimeout(viewportRepairTimer);
-      }
-      viewport.content = originalContent;
-    };
-  }, [gameStarted, gameState?.phase]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
