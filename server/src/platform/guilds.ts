@@ -376,8 +376,9 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
       return;
     }
 
-    const game = typeof request.body?.game === "string" && request.body.game in GAME_TITLES
-      ? request.body.game as HalieusGameStatLine["game"]
+    const requestedGame = typeof request.body?.game === "string" ? request.body.game : "";
+    const game = Object.prototype.hasOwnProperty.call(GAME_TITLES, requestedGame)
+      ? requestedGame as HalieusGameStatLine["game"]
       : null;
     if (!game) {
       response.status(400).json({ ok: false, reason: "Choose a supported HGR game." });
