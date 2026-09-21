@@ -1,10 +1,10 @@
 # Security and public-source preparation
 
-Report suspected vulnerabilities privately to the repository owner. Do not post recovery keys, invitation codes, cookies, account records or live-room snapshots in public issues. No public security contact is designated in this source package.
+Report suspected vulnerabilities privately to the repository owner. Do not post recovery keys, account or guild invitation codes, cookies, account records, guild chat/history data or live-room snapshots in public issues. No public security contact is designated in this source package.
 
 ## Runtime boundary
 
-Use HTTPS and the supplied reverse proxy. Node trusts one proxy hop; restrict direct access to the Node port. Keep HALIEUS_DATA_DIR outside the deployed source directory. Back up that directory separately and protect it as private account/game data. Recovery tokens are bearer credentials: possession can recover a seat. Guest room links are intentionally supported; the account portal is not a blanket authentication barrier over Socket.IO.
+Use HTTPS and the supplied reverse proxy. Node trusts one proxy hop; restrict direct access to the Node port. Keep HALIEUS_DATA_DIR outside the deployed source directory. Back up that directory separately and protect it as private account/game/social data. Guild membership, chat history and private guild invite codes are runtime data and must never be committed or packaged as source. Recovery tokens are bearer credentials: possession can recover a seat. Guest room links are intentionally supported; the account portal is not a blanket authentication barrier over Socket.IO.
 
 Account response routes send Cache-Control: no-store. Production client source maps are disabled. This does not make delivered JavaScript confidential. No secrets may be compiled into client assets.
 
