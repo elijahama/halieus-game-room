@@ -80,6 +80,10 @@ The board now:
 
 The Players control also returns to normal flow on the phone so it does not compete with the shared Game Room/Menu chrome.
 
+### Game menu
+
+Mega Board still uses the original shared `GameMenu` component rather than the newer card-game menu subclass. 4.0.2 explicitly gives that original menu the same phone bottom-sheet contract: full usable width, bounded `100dvh` height, internal scrolling and safe-area padding.
+
 ### Metadata
 
 Mega Board room/mode/player/time/status metadata becomes a horizontally scrollable phone rail rather than being hidden or creating multiple header rows.
