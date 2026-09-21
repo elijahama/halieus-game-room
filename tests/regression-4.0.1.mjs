@@ -44,7 +44,7 @@ assert.match(css,/@media \(max-width: 760px\)[\s\S]*?\.ranked-result-card\s*\{[\
 assert.match(css,/\.final-results-heading\.final-results-grid\s*\{[\s\S]*?display:\s*none\s*!important/s,'Desktop result heading must be removed from phone card layout');
 assert.match(css,/\.final-player-row \.final-result-metric::before\s*\{[\s\S]*?content:\s*attr\(data-label\)/s,'Phone metrics must expose their labels');
 assert.match(css,/HGR 4\.0\.1 — shared non-Mega phone results cards/,'Shared phone-results CSS marker missing');
-assert.match(css,/\.final-player-row\.halieus-final-results-grid\s*\{[\s\S]*?grid-template-columns:\s*58px minmax\(0, 1fr\)/s,'Shared game results must collapse to phone cards');
+assert.match(css,/\.final-player-row\.halieus-final-results-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s,'Shared game results must collapse to balanced phone cards');
 assert.match(css,/\.results-tabs\s*\{\s*grid-template-columns:\s*repeat\(3,/s,'Results tabs must match the three actual tabs');
 
 assert.match(serviceWorker,/halieus-shell-v4-0-1/,'PWA cache must be bumped for 4.0.1');
