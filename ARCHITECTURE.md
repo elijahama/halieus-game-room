@@ -1,4 +1,4 @@
-# Halieus Game Room architecture — 4.0.0
+# Halieus Game Room architecture — 4.1.0
 
 ## Runtime structure
 
@@ -6,17 +6,38 @@ React/TypeScript renders a shared platform shell and isolated game screens. App.
 
 The game catalogue contains 14 active entries. Mega Board has separated handlers, state, AI and rule utilities. Most other games use larger handler modules. Blackjack and WHOT register their rebuild modules; older implementations in the documentation archive are historical references.
 
+
+## Guilds and persistent social state
+
+Guilds is a platform subsystem rather than a game module. Persistent guild state is exposed through authenticated Express routes and stored under the durable Halieus data root. It contains membership, roles, one persistent chat, room reservations, guild room history and the internal guild leaderboard.
+
+Guild permissions are server-validated. The browser can hide or show controls, but owner/admin/moderator/member authority is decided by the Guild service using the authenticated HGR account.
+
+Guild-created rooms do not introduce a second game server. A Guild reservation allocates a normal HGR room code and the client opens the existing game setup using that code. Socket.IO game modules remain authoritative once the room is created.
+
+Completed games reach Guilds through the canonical session archive. After the final session archive is safely written, a matching game + room-code reservation can be projected into guild history. A failure in that social projection must not invalidate the canonical game result.
+
+Guild data follows the runtime-data rule:
+
+```text
+HALIEUS_DATA_DIR/
+└── guilds/
+    └── guilds.json
+```
+
+Local development falls back to `server/data/guilds/guilds.json`.
+
 ## Arrival and recovery
 
 index.html applies the persisted theme and displays a boot curtain before React loads. Auth resolution reveals either the account portal or a usable application screen. Signed-in home visits mount HomeScreen underneath a once-per-session intro. Its automatic timer requests an exit; a separate effect owns the fade-completion timer. Parent clock/socket renders cannot cancel completion. The home subtree is inert while covered.
 
 Direct joins, game links, spectators and saved-seat recovery bypass the intro. Marking the intro seen is best-effort session storage; React state completes the current transition without reloading. Theme ownership remains in the existing document/app theme flow.
 
-Reconnect tokens identify seats. Mega Board migrates socket-dependent player references while retaining absolute timer deadlines. Other games define their own public projections and reconnect lifecycle. Account identities and game display names are not yet a unified identity system; see the audit before expanding authorization features.
+Reconnect tokens identify seats. Mega Board migrates socket-dependent player references while retaining absolute timer deadlines. Other games define their own public projections and reconnect lifecycle. HGR account identity is authoritative for persistent social systems such as Guilds; live game seats still retain their existing game-specific reconnect/display-name lifecycle.
 
 ## Release and deployment
 
-VERSION and all workspace versions remain 4.0.0. RELEASE.json records a source fingerprint, generated into shared/release.ts and exposed by /health. Start and Restart launch the app; Update is the explicit deployment operation. The updater builds a candidate and checks its release identity before activation. Provisioning remains separate. Runtime data must live outside the application release tree.
+VERSION and all workspace versions identify the current 4.1.0 development line. RELEASE.json records a source fingerprint, generated into shared/release.ts and exposed by /health. Start and Restart launch the app; Update is the explicit deployment operation. The updater builds a candidate and checks its release identity before activation. Provisioning remains separate. Runtime data must live outside the application release tree.
 
 Run npm ci, npm run typecheck, npm run test:regression, npm run prepare:release, npm run build, and npm run test:browser. Install the test browser with npx playwright install chromium. Regenerate release identity before the final build. Historical tests may assert retired versions and layouts; they are not all current release gates.
 
@@ -24,4 +45,4 @@ Run npm ci, npm run typecheck, npm run test:regression, npm run prepare:release,
 
 Game icons come from the shared catalogue and GameBrandIcon fallback. Create/join overlays use portals so fullscreen and transformed ancestors do not trap them. Ludo and Poker retain their existing protected layouts. Mega Board observes its available frame rather than applying a global zoom override.
 
-App.tsx and the accumulated stylesheet remain large. Split orchestration and game bundles incrementally under behavioral tests; a bulk rewrite is outside this corrective release. See docs/AUDIT_4.0.0.md for prioritized findings and deferred work.
+App.tsx and the accumulated stylesheet remain large. Split orchestration and game bundles incrementally under behavioral tests rather than through an unbounded rewrite. The 4.0.0 audit remains useful historical context; 4.1.0 extends the shared platform with persistent social state.
