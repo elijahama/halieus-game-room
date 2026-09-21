@@ -55,7 +55,7 @@ export function HalieusIntro({ displayName, onEnter }: HalieusIntroProps) {
 
       <section className="halieus-intro-v4-card">
         <span className="halieus-intro-v4-logo" aria-hidden="true">
-          <img src="/app-icon-192.png?v=4.0.2" alt="" />
+          <img src="/app-icon-192.png?v=4.1.0" alt="" />
         </span>
 
         <p className="halieus-intro-v4-kicker">
