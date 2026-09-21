@@ -99,9 +99,13 @@ export function GuildsPanel({
     try {
       const result = await accountApi<{ ok: true; guild: HalieusGuildDetail }>(`/guilds/${encodeURIComponent(guildId)}`);
       setDetail(result.guild);
-      setSettingsName(result.guild.name);
-      setSettingsDescription(result.guild.description);
-      setSettingsPolicy(result.guild.roomCreationPolicy);
+      // Background chat/room polling must not overwrite an admin who is
+      // actively typing in the settings form.
+      if (!quiet) {
+        setSettingsName(result.guild.name);
+        setSettingsDescription(result.guild.description);
+        setSettingsPolicy(result.guild.roomCreationPolicy);
+      }
       setGuilds((current) => current.map((guild) => guild.id === result.guild.id ? {
         ...guild,
         name: result.guild.name,
