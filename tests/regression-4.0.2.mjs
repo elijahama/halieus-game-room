@@ -49,7 +49,7 @@ assert.match(ordering,/className="mega-ordering-page"/,'Mega ordering screen nee
 assert.match(css,/HGR 4\.0\.2 — true device-width gameplay recovery/,'4.0.2 mobile CSS marker missing');
 assert.match(
   css,
-  /\.mega-live-page \.board-grid\s*\{[\s\S]*?min-width:\s*0\s*!important;[\s\S]*?width:\s*100%\s*!important/s,
+  /\.mega-live-page \.board-grid\s*\{[\s\S]*?width:\s*100%\s*!important;[\s\S]*?min-width:\s*0\s*!important/s,
   'Mega Board must fit the physical phone width',
 );
 assert.match(
