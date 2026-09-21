@@ -69,16 +69,32 @@ const singles = [
 ];
 const excludedNames = new Set(['RELEASE.json', 'release.ts']);
 const excludedExtensions = new Set(['.key', '.pem', '.ppk', '.pub']);
+// server/data contains both shipped dictionaries and local runtime state.
+// Fingerprint only the shipped source assets; account/social/session state must
+// never become part of a release identity or deployment archive.
+const excludedRuntimePaths = new Set([
+  'server/data/accounts',
+  'server/data/sessions',
+  'server/data/guilds',
+  'server/data/invites',
+  'server/data/backups',
+  'server/data/runtime',
+  'server/data/feedback.json',
+  'server/data/feedback.ndjson',
+  'server/data/rankings.json',
+  'server/data/rooms.json',
+]);
 const files = [];
 
 function walk(dir) {
   for (const name of readdirSync(dir).sort()) {
     if (name === 'node_modules' || name === 'dist' || name === '.git' || name === '.runtime' || name === 'logs') continue;
     const full = resolve(dir, name);
+    const rel = posix(relative(root, full));
+    if (excludedRuntimePaths.has(rel)) continue;
     const st = statSync(full);
     if (st.isDirectory()) walk(full);
     else {
-      const rel = posix(relative(root, full));
       if (excludedNames.has(name)) continue;
       const lower = name.toLowerCase();
       if ([...excludedExtensions].some((ext) => lower.endsWith(ext))) {
