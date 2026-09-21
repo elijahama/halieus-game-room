@@ -37,6 +37,8 @@ For the current project story, start with the root [README](../README.md).
 - [4.0.1 release notes](releases/RELEASE_4.0.1.md)
 - [4.0.2 implementation log](project/HGR_4.0.2_IMPLEMENTATION_LOG.md)
 - [4.0.2 release notes](releases/RELEASE_4.0.2.md)
+- [4.1.0 implementation log](project/HGR_4.1.0_IMPLEMENTATION_LOG.md)
+- [4.1.0 release notes](releases/RELEASE_4.1.0.md)
 - [Publication checklist](PUBLICATION_CHECKLIST.md)
 
 ## Historical development records
@@ -49,7 +51,7 @@ Examples include:
 - `PATCH 3.5.* - READ ME.txt`
 - [Development timeline](DEVELOPMENT_TIMELINE.md)
 
-These files are **historical records**, not the current source of truth for 4.0.2 behaviour or validation.
+These files are **historical records**, not the current source of truth for 4.1.0 behaviour or validation.
 
 ## Documentation principle
 
