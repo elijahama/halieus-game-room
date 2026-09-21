@@ -50,6 +50,8 @@ assert.match(accounts,/export function getAuthenticatedAccount\(/,'Guilds must a
 assert.match(guildServer,/export function registerGuildRoutes\(/,'Guild REST routes missing');
 assert.match(guildServer,/app\.post\("\/guilds\/join"/,'Private guild invite-code join route missing');
 assert.match(guildServer,/app\.post\("\/guilds\/:guildId\/messages"/,'Persistent guild chat route missing');
+assert.match(guildServer,/app\.delete\("\/guilds\/:guildId\/messages\/:messageId"/,'Guild chat moderation route missing');
+assert.match(guildServer,/function canModerate\(/,'Guild moderator permission boundary missing');
 assert.match(guildServer,/app\.post\("\/guilds\/:guildId\/rooms"/,'Guild room reservation route missing');
 assert.match(guildServer,/app\.post\("\/guilds\/:guildId\/members\/:accountId\/role"/,'Guild role-management route missing');
 assert.match(guildServer,/function canCreateRoom\(/,'Server-side guild room permissions missing');
