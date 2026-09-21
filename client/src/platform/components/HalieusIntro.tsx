@@ -9,7 +9,7 @@ const AUTO_ENTER_MS = 3200;
 const EXIT_MS = 520;
 
 /**
- * 4.0.0 branded arrival screen.
+ * 4.0.x branded arrival screen.
  *
  * The parent decides when the intro is eligible so direct room links and live
  * recovery routes are never blocked by presentation. The intro itself stays
@@ -55,7 +55,7 @@ export function HalieusIntro({ displayName, onEnter }: HalieusIntroProps) {
 
       <section className="halieus-intro-v4-card">
         <span className="halieus-intro-v4-logo" aria-hidden="true">
-          <img src="/app-icon-192.png?v=4.0.0" alt="" />
+          <img src="/app-icon-192.png?v=4.0.1" alt="" />
         </span>
 
         <p className="halieus-intro-v4-kicker">
