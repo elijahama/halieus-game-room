@@ -224,6 +224,22 @@ export function GuildsPanel({
     }
   }
 
+  async function deleteMessage(messageId: string) {
+    if (!detail) return;
+    setBusy(true);
+    try {
+      await accountApi<{ ok: true }>(
+        `/guilds/${encodeURIComponent(detail.id)}/messages/${encodeURIComponent(messageId)}`,
+        { method: "DELETE" },
+      );
+      await loadDetail(detail.id, true);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to remove that guild message.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function saveSettings(event: FormEvent) {
     event.preventDefault();
     if (!detail) return;
@@ -443,7 +459,10 @@ export function GuildsPanel({
             {view === "chat" && (
               <div className="halieus-guild-chat">
                 <div className="halieus-guild-messages">
-                  {detail.messages.map((message) => <article key={message.id} className={message.senderAccountId === account.id ? "is-own" : message.senderAccountId === "system" ? "is-system" : ""}><header><strong>{message.senderDisplayName}</strong><small>{new Date(message.createdAt).toLocaleString()}</small></header><p>{message.body}</p></article>)}
+                  {detail.messages.map((message) => {
+                    const canDeleteMessage = message.senderAccountId === account.id || detail.role !== "member";
+                    return <article key={message.id} className={message.senderAccountId === account.id ? "is-own" : message.senderAccountId === "system" ? "is-system" : ""}><header><strong>{message.senderDisplayName}</strong><span><small>{new Date(message.createdAt).toLocaleString()}</small>{canDeleteMessage && <button type="button" className="halieus-guild-message-delete" disabled={busy} onClick={() => void deleteMessage(message.id)} aria-label={`Remove message from ${message.senderDisplayName}`}>×</button>}</span></header><p>{message.body}</p></article>;
+                  })}
                   {detail.messages.length === 0 && <div className="halieus-guild-empty">No messages yet. This chat stays with the guild between game nights.</div>}
                 </div>
                 <form onSubmit={sendMessage}><input value={messageBody} onChange={(event) => setMessageBody(event.target.value)} maxLength={600} placeholder={`Message ${detail.name}…`} /><button type="submit" className="button-primary" disabled={busy || !messageBody.trim()}>Send</button></form>
@@ -461,8 +480,11 @@ export function GuildsPanel({
             {view === "members" && (
               <div className="halieus-guild-members">
                 {detail.members.map((member) => {
-                  const canEdit = detail.canManage && member.role !== "owner" && member.accountId !== account.id;
-                  return <article key={member.accountId}><span className="halieus-avatar-media" style={{ background: member.playerColor }}>{member.profilePicture ? <img src={member.profilePicture} alt="" /> : member.avatar}</span><div><strong>{member.displayName}</strong><small>@{member.username} · joined {new Date(member.joinedAt).toLocaleDateString()}</small></div>{canEdit ? <select value={member.role} disabled={busy} onChange={(event) => void changeRole(member.accountId, event.target.value as Exclude<HalieusGuildRole, "owner">)}><option value="admin">Admin</option><option value="moderator">Moderator</option><option value="member">Member</option></select> : <b>{ROLE_LABELS[member.role]}</b>}{canEdit && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Remove</button>}{member.accountId === account.id && member.role !== "owner" && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Leave</button>}</article>;
+                  const canEditRole = detail.canManage && member.role !== "owner" && member.accountId !== account.id;
+                  const canRemove = member.accountId !== account.id && member.role !== "owner" && (
+                    detail.canManage || (detail.role === "moderator" && member.role === "member")
+                  );
+                  return <article key={member.accountId}><span className="halieus-avatar-media" style={{ background: member.playerColor }}>{member.profilePicture ? <img src={member.profilePicture} alt="" /> : member.avatar}</span><div><strong>{member.displayName}</strong><small>@{member.username} · joined {new Date(member.joinedAt).toLocaleDateString()}</small></div>{canEditRole ? <select value={member.role} disabled={busy} onChange={(event) => void changeRole(member.accountId, event.target.value as Exclude<HalieusGuildRole, "owner">)}><option value="admin">Admin</option><option value="moderator">Moderator</option><option value="member">Member</option></select> : <b>{ROLE_LABELS[member.role]}</b>}{canRemove && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Remove</button>}{member.accountId === account.id && member.role !== "owner" && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Leave</button>}</article>;
                 })}
               </div>
             )}
