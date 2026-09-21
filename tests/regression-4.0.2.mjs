@@ -64,6 +64,16 @@ assert.match(
 );
 assert.match(
   css,
+  /HGR 4\.0\.2 — shared phone game-menu sheet completion/,
+  'Shared phone game-menu sheet marker missing',
+);
+assert.match(
+  css,
+  /\.game-menu-top-layer > \.game-menu-modal\s*\{[\s\S]*?max-height:\s*calc\(100dvh/s,
+  'Mega/shared game menu must stay bounded to the physical phone viewport',
+);
+assert.match(
+  css,
   /\.hidden-dictator-live\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)\s*!important/s,
   'Hidden Dictator must collapse to one phone column',
 );
