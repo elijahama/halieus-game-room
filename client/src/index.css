@@ -23321,3 +23321,507 @@ html[data-theme="light"] .halieus-intro-v4-card {
     min-height: 0 !important;
   }
 }
+
+
+/* HGR 4.0.2 — true device-width gameplay recovery */
+/*
+ * 4.0.2 removes the runtime 980px viewport emulation from App.tsx. These
+ * rules are therefore intentionally written for the phone's real CSS width.
+ * Keep the board/game geometry responsive here rather than changing the meta
+ * viewport or scaling an entire desktop scene.
+ */
+@media (max-width: 680px) {
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  /*
+   * Mega Board ordering is a normal phone page. The two navigation actions
+   * stay in flow/sticky, while the order card owns the full usable width.
+   */
+  .mega-ordering-page {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 100dvh !important;
+    box-sizing: border-box !important;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      10px
+      calc(18px + env(safe-area-inset-bottom)) !important;
+    overflow-x: hidden !important;
+  }
+
+  .mega-ordering-page .ordering-top-actions {
+    position: sticky !important;
+    z-index: 80;
+    top: max(6px, env(safe-area-inset-top));
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px !important;
+    width: 100%;
+    margin: 0 0 10px !important;
+    padding: 4px;
+    border: 1px solid var(--mm-border);
+    border-radius: 15px;
+    background: color-mix(in srgb, var(--mm-surface-1) 92%, transparent);
+    backdrop-filter: blur(14px);
+  }
+
+  .mega-ordering-page .ordering-top-actions .game-room-back-button,
+  .mega-ordering-page .ordering-menu-button {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    padding: 8px 9px !important;
+    font-size: .72rem !important;
+  }
+
+  .mega-ordering-page .ordering-card {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 14px !important;
+    border-radius: 20px !important;
+  }
+
+  .mega-ordering-page .ordering-card > h1 {
+    font-size: clamp(1.8rem, 8.5vw, 2.5rem) !important;
+    line-height: .96 !important;
+  }
+
+  .mega-ordering-page .mega-token-picker {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .mega-ordering-page .mega-token-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .mega-ordering-page .mega-token-options button {
+    min-width: 0;
+    min-height: 54px;
+    padding: 5px 2px;
+  }
+
+  .mega-ordering-page .mega-token-options button span {
+    overflow: hidden;
+    font-size: .52rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /*
+   * Mega Board live play now fills the physical phone width. Old rules gave
+   * .board-grid a 680px minimum and depended on viewport shrinking; explicitly
+   * cancel that contract for the real device-width layout.
+   */
+  .game-page.mega-live-page {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      8px
+      calc(58px + env(safe-area-inset-bottom)) !important;
+    overflow: visible !important;
+  }
+
+  .mega-live-page .mega-game-chrome {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 0 7px !important;
+  }
+
+  .mega-live-page .mega-active-header {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 0 7px !important;
+    padding: 9px !important;
+    border: 1px solid var(--mm-border) !important;
+    border-radius: 15px !important;
+    background: color-mix(in srgb, var(--mm-surface-1) 92%, transparent) !important;
+  }
+
+  /* Keep game identity visible on phones; the older portrait rule hid it. */
+  .mega-live-page .mega-active-header > .mega-game-brand-lockup {
+    display: flex !important;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .mega-live-page .mega-game-brand-lockup img,
+  .mega-live-page .mega-game-brand-lockup .card-game-letter-token {
+    width: 38px !important;
+    height: 38px !important;
+    flex-basis: 38px !important;
+  }
+
+  .mega-live-page .mega-game-brand-lockup p {
+    font-size: .5rem !important;
+  }
+
+  .mega-live-page .mega-game-brand-lockup h1 {
+    font-size: 1.35rem !important;
+  }
+
+  /*
+   * The six desktop metadata cards become one swipe rail. Hiding every field
+   * made the phone header contextless; a rail keeps the information without
+   * making the board start several screens lower.
+   */
+  .mega-live-page .mega-game-meta {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+    padding: 0 !important;
+    overflow-x: auto !important;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  .mega-live-page .mega-game-meta::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mega-live-page .mega-game-meta > span {
+    flex: 0 0 auto !important;
+    display: grid !important;
+    min-width: 78px !important;
+    min-height: 38px !important;
+    padding: 5px 7px !important;
+  }
+
+  .mega-live-page .mega-game-meta > span small {
+    font-size: .46rem !important;
+  }
+
+  .mega-live-page .mega-game-meta > span strong {
+    font-size: .62rem !important;
+  }
+
+  .mega-live-page .mega-game-meta .halieus-autopilot-control {
+    flex: 0 0 auto;
+    width: auto !important;
+    min-height: 38px !important;
+    margin: 0 !important;
+  }
+
+  /* The Players control joins normal flow instead of occupying/covering the
+     same top-left phone space as Game Room/Menu chrome. */
+  .mega-live-page > .tablet-players-trigger {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    min-height: 38px !important;
+    margin: 0 0 7px !important;
+    justify-content: center;
+    border-radius: 12px !important;
+  }
+
+  .mega-live-page > .tablet-players-trigger strong {
+    display: inline !important;
+  }
+
+  .mega-live-page .mega-live-layout-v3 {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  .mega-live-page .board-frame {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    padding: 4px !important;
+    overflow: hidden !important;
+    border-radius: 14px !important;
+  }
+
+  .mega-live-page .board-grid {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    border-width: 2px !important;
+  }
+
+  /* Board-centre decoration has desktop minimums. Reduce only the decorative
+     furniture; the authoritative spaces/tokens keep the same board geometry. */
+  .mega-live-page .board-centre-authentic {
+    gap: 4px !important;
+    padding: 7px !important;
+  }
+
+  .mega-live-page .board-centre-logo {
+    max-width: 88% !important;
+    font-size: clamp(15px, 5.2vw, 22px) !important;
+    line-height: .92 !important;
+  }
+
+  .mega-live-page .board-room-code {
+    margin: 0 !important;
+    font-size: .45rem !important;
+  }
+
+  .mega-live-page .board-deck {
+    width: clamp(32px, 9.5vw, 43px) !important;
+    padding: 3px !important;
+  }
+
+  .mega-live-page .board-deck span {
+    font-size: clamp(12px, 4vw, 17px) !important;
+  }
+
+  .mega-live-page .board-deck small {
+    display: none !important;
+  }
+
+  .mega-live-page .board-bank-live-stock {
+    display: none !important;
+  }
+
+  .mega-live-page .centre-turn-status {
+    min-width: 0 !important;
+    max-width: 84% !important;
+    padding: 4px 6px !important;
+    border-radius: 8px !important;
+  }
+
+  .mega-live-page .centre-turn-status span {
+    font-size: .42rem !important;
+  }
+
+  .mega-live-page .centre-turn-status strong {
+    font-size: .55rem !important;
+  }
+
+  .mega-live-page .board-action-dock {
+    width: min(94%, 250px) !important;
+    gap: 4px !important;
+  }
+
+  .mega-live-page .board-primary-action {
+    min-height: 30px !important;
+    padding: 4px 6px !important;
+    font-size: .48rem !important;
+  }
+
+  .mega-live-page .centre-roll-readout {
+    font-size: .48rem !important;
+  }
+
+  /*
+   * Mandatory decisions are phone sheets, not cards scaled over the middle of
+   * the board. They own a bounded portion of the physical viewport and scroll
+   * internally, which also makes browser zoom/orientation changes survivable.
+   */
+  .mega-live-page .board-decision-layer {
+    position: fixed !important;
+    z-index: 92000 !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      8px
+      max(8px, env(safe-area-inset-bottom)) !important;
+    overflow: hidden !important;
+    border-radius: 0 !important;
+    background: rgba(5, 8, 12, .54) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    pointer-events: auto !important;
+  }
+
+  .mega-live-page .board-decision-card-shell {
+    width: min(100%, 560px) !important;
+    max-height: min(76dvh, 700px) !important;
+    display: grid !important;
+    align-items: end !important;
+    overflow: hidden !important;
+  }
+
+  .mega-live-page .board-decision-card-shell > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: min(76dvh, 700px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 20px !important;
+  }
+
+  /*
+   * Hidden Dictator: the 4.0.0 generic card-game rules were not enough for the
+   * role/government panels. Keep every section within the phone viewport and
+   * remove desktop minimums from choices/policy cards.
+   */
+  .hidden-dictator-page {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .hidden-dictator-live {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 8px auto 0 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  .hidden-dictator-role-card,
+  .hidden-dictator-table {
+    min-width: 0 !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .hidden-dictator-role-card {
+    position: static !important;
+  }
+
+  .hidden-dictator-role-card h2 {
+    font-size: 1.45rem !important;
+  }
+
+  .hd-policy-tracks {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .hd-policy-tracks article {
+    min-width: 0;
+    padding: 9px !important;
+  }
+
+  .hd-government {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 5px !important;
+    margin: 12px 0 !important;
+  }
+
+  .hd-government > div {
+    min-width: 0 !important;
+    padding: 9px 5px !important;
+  }
+
+  .hd-government strong {
+    overflow: hidden;
+    font-size: .9rem !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hd-choice-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hd-policy-hand {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px !important;
+  }
+
+  .hd-policy-hand button {
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .hd-action-panel {
+    width: 100%;
+    max-width: none !important;
+    margin-top: 12px !important;
+    padding: 12px !important;
+  }
+}
+
+/*
+ * Short landscape phones need density rather than a second desktop layout.
+ * This does not force orientation; it simply prevents the rotated browser from
+ * producing oversized role/policy cards when vertical space is scarce.
+ */
+@media (max-height: 560px) and (pointer: coarse) and (orientation: landscape) {
+  .card-game-page.hidden-dictator-page {
+    padding:
+      max(6px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left)) !important;
+  }
+
+  .hidden-dictator-page .halieus-game-chrome {
+    margin-bottom: 6px !important;
+  }
+
+  .hidden-dictator-page .card-game-header-polished {
+    margin-bottom: 6px !important;
+  }
+
+  .hidden-dictator-live {
+    grid-template-columns: minmax(180px, .62fr) minmax(0, 1.38fr) !important;
+    gap: 8px !important;
+    margin-top: 4px !important;
+  }
+
+  .hidden-dictator-role-card,
+  .hidden-dictator-table {
+    padding: 9px !important;
+    border-radius: 13px !important;
+  }
+
+  .hidden-dictator-role-card h2 {
+    font-size: 1.15rem !important;
+  }
+
+  .hidden-dictator-role-card > span {
+    font-size: .68rem;
+    line-height: 1.35;
+  }
+
+  .hd-policy-tracks article {
+    padding: 7px !important;
+  }
+
+  .hd-government {
+    margin: 8px 0 !important;
+  }
+
+  .hd-action-panel {
+    margin-top: 8px !important;
+    padding: 9px !important;
+  }
+}
