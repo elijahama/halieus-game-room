@@ -37,6 +37,8 @@ const sw=read('client/public/sw.js');
 const intro=read('client/src/platform/components/HalieusIntro.tsx');
 const html=read('client/index.html');
 const readme=read('README.md');
+const gitignore=read('.gitignore');
+const releaseIntegrity=read('scripts/release-integrity.mjs');
 
 assert.match(contracts,/HalieusGuildRole = "owner" \| "admin" \| "moderator" \| "member"/,'Guild role contract missing');
 assert.match(contracts,/HalieusGuildRoomPolicy = "members" \| "moderators" \| "admins"/,'Guild room permission contract missing');
@@ -82,6 +84,10 @@ assert.match(guildPanel,/PRIVATE INVITE CODE/,'Private guild invite UI missing')
 
 assert.match(css,/HGR 4\.1\.0 — Guilds & persistent groups/,'4.1.0 Guild CSS marker missing');
 assert.match(css,/@media \(max-width: 680px\)[\s\S]*?\.halieus-guilds-panel/s,'Guilds need an explicit phone layout');
+
+assert.match(gitignore,/server\/data\/guilds\//,'Local guild runtime data must never be committed');
+assert.match(releaseIntegrity,/server\/data\/guilds/,'Guild runtime data must be excluded from release fingerprint inputs');
+assert.match(releaseIntegrity,/persistent-guilds-4\.1\.0/,'4.1.0 Guilds must be part of the signed release contract');
 
 assert.match(sw,/halieus-shell-v4-1-0/,'PWA shell cache must be 4.1.0');
 assert.match(intro,/app-icon-192\.png\?v=4\.1\.0/,'Intro asset cache-buster must match 4.1.0');
