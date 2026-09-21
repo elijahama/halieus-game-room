@@ -53,6 +53,8 @@ Mobile cards expose:
 - Builds
 - Trades
 
+The same CSS pass also collapses the shared non-Mega `GameResultsScreen` standings into phone cards, so other games do not inherit a horizontally scrolling desktop table on mobile.
+
 ### 3. Results navigation and responsive hierarchy
 
 File: `client/src/index.css`
