@@ -91,6 +91,7 @@ server/client/
 
 # Local runtime state (not part of the 4.0.0 source release)
 server/data/feedback.json
+server/data/feedback.ndjson
 server/data/rankings.json
 server/data/rooms.json
 
