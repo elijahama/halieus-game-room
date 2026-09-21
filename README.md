@@ -2,12 +2,12 @@
 
 **A private, real-time multiplayer game platform for board, card, word and social games.**
 
-**Current milestone:** 4.0.2  
+**Current milestone:** 4.1.0  
 **Frontend:** React · TypeScript · Vite  
 **Backend:** Node.js · Express · Socket.IO  
 **Development model:** Human-directed, AI-assisted engineering
 
-Halieus Game Room (HGR) began as one large property-trading board game and grew into a shared multiplayer platform. The project now focuses on the systems that make many different games feel like part of the same product: accounts, rooms, invitations, reconnect/recovery, spectators, timers, results, responsive layouts, AI players and production deployment.
+Halieus Game Room (HGR) began as one large property-trading board game and grew into a shared multiplayer platform. The project now focuses on the systems that make many different games feel like part of the same product: accounts, persistent guilds, rooms, invitations, reconnect/recovery, spectators, timers, results, responsive layouts, AI players and production deployment.
 
 > **Core design rule:** the platform owns the shared multiplayer experience; each game owns its own rules.
 
@@ -43,8 +43,11 @@ HGR is designed primarily for **private multiplayer sessions between friends**. 
 The platform provides one place to:
 
 - sign in with a persistent account;
+- create or join private persistent guilds;
+- use guild chat, member roles and an internal guild game record;
 - browse a shared game catalogue;
 - create private rooms;
+- organise normal HGR game rooms from inside a guild;
 - join with room codes or invitations;
 - play with human players or supported AI opponents;
 - recover the same seat after refreshes or temporary disconnects;
@@ -212,6 +215,12 @@ Player identity persists across games rather than treating every room as a compl
 ### Rooms and invitations
 
 The platform handles room creation, room codes, joins/rejoins, invitations, host controls and presence.
+
+### Guilds and persistent groups
+
+HGR 4.1.0 adds a persistent social layer above individual game rooms. Players can create or join private guilds, keep a group chat between game nights, organise members with server-validated roles and permissions, and reserve normal HGR game rooms from inside the guild.
+
+Guilds deliberately do **not** own gameplay state. A guild room reservation hands the player back to the existing game setup and server-authoritative game module. When that normal HGR session is finalized, the session archive projects the result into the matching guild history and internal leaderboard.
 
 ### Reconnect and seat recovery
 
@@ -590,7 +599,8 @@ See [SECURITY.md](SECURITY.md) and [docs/PUBLICATION_CHECKLIST.md](docs/PUBLICAT
 
 Current work is focused on:
 
-- 4.0.2 device-width mobile gameplay recovery, with Mega Board phone layout and decision-sheet corrections;
+- 4.1.0 Guilds & Persistent Groups: private groups, persistent chat, member roles, guild-organised rooms and internal group records;
+- continued mobile containment and responsive QA building on the 4.0.2 device-width recovery;
 - 4.0.1 clearer post-match/ranked results presentation;
 - visual consistency across game modules;
 - reconnect/recovery reliability;
