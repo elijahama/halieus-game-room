@@ -24,6 +24,12 @@ export function getSessionDataDirectory(): string {
   return root ? resolve(root, "sessions") : resolve(process.cwd(), "data", "sessions");
 }
 
+export function getGuildDataDirectory(): string {
+  const root = configuredDataRoot();
+  return root ? resolve(root, "guilds") : resolve(process.cwd(), "data", "guilds");
+}
+
+
 export function getFeedbackFilePath(): string {
   const root = configuredDataRoot();
   return root ? resolve(root, "feedback", "feedback.ndjson") : resolve(process.cwd(), "data", "feedback.ndjson");
