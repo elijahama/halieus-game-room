@@ -196,6 +196,7 @@ export function TurnOrderScreen({
 
   return (
     <main
+      className="mega-ordering-page"
       style={{
         ...styles.gamePage,
         background: theme.pageBackground,
