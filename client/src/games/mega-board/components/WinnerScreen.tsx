@@ -119,6 +119,19 @@ function formatMoney(value: number): string {
   return `${value < 0 ? "−" : ""}£${Math.abs(value).toLocaleString()}`;
 }
 
+/**
+ * Ranked result presentation helper.
+ *
+ * Rating maths remains server-authoritative; this function only converts the
+ * recorded finishing position into a compact visual marker for the results UI.
+ */
+function rankedPlaceMark(position: number): string {
+  if (position === 1) return "👑";
+  if (position === 2) return "🥈";
+  if (position === 3) return "🥉";
+  return `#${position}`;
+}
+
 export function WinnerScreen({
   gameState,
   darkMode,
@@ -284,16 +297,77 @@ export function WinnerScreen({
           {activeTab === "results" && (
             <div className="final-results-table-wrap">
               {gameState.ranked && gameState.rankedResults?.length > 0 && (
-                <section className="ranked-result-summary" style={{ borderColor: theme.border, background: theme.secondaryBackground }}>
-                  <div><strong>🏆 Ranked match</strong><small style={{ color: theme.mutedText }}>{gameState.rankedMatchId}</small></div>
-                  {gameState.rankedResults.map((result) => (
-                    <div key={result.playerId} className="ranked-result-row">
-                      <strong>#{result.finishPosition} {result.playerName}</strong>
-                      <span>{result.ratingBefore} → {result.ratingAfter}</span>
-                      <b className={result.ratingDelta >= 0 ? "result-profit-positive" : "result-profit-negative"}>{result.ratingDelta >= 0 ? "+" : ""}{result.ratingDelta}</b>
-                      <small style={{ color: theme.mutedText }}>Placement {result.placementDelta >= 0 ? "+" : ""}{result.placementDelta} · Performance +{result.performanceBonus} · Awards +{result.awardBonus}{result.awards.length ? ` · ${result.awards.join(", ")}` : ""}</small>
+                <section
+                  className="ranked-result-summary ranked-result-summary-v401"
+                  style={{ borderColor: theme.border, background: theme.secondaryBackground }}
+                  aria-label="Ranked rating changes"
+                >
+                  {/*
+                    4.0.1 ranked-results hierarchy:
+                    keep the server-recorded rating breakdown intact, but present it
+                    as readable player cards instead of one dense spreadsheet row.
+                  */}
+                  <header className="ranked-result-header">
+                    <div>
+                      <p className="modal-eyebrow">Ranked match</p>
+                      <h2>Rating movement</h2>
+                      <span style={{ color: theme.mutedText }}>
+                        Placement sets the base change. Performance and earned awards add bonus rating.
+                      </span>
                     </div>
-                  ))}
+                    <small className="ranked-match-id" style={{ color: theme.mutedText }}>
+                      {gameState.rankedMatchId}
+                    </small>
+                  </header>
+
+                  <div className="ranked-result-list">
+                    {gameState.rankedResults.map((result) => (
+                      <article
+                        key={result.playerId}
+                        className={`ranked-result-card ${result.finishPosition === 1 ? "is-first" : ""}`}
+                      >
+                        <div className="ranked-result-player">
+                          <span className="ranked-place-mark" aria-hidden="true">{rankedPlaceMark(result.finishPosition)}</span>
+                          <div>
+                            <small>{result.finishPosition === 1 ? "Winner" : `Finished #${result.finishPosition}`}</small>
+                            <strong>{result.playerName}</strong>
+                          </div>
+                        </div>
+
+                        <div className="ranked-rating-move" aria-label={`${result.playerName} rating change`}>
+                          <span>{result.ratingBefore}</span>
+                          <i aria-hidden="true">→</i>
+                          <strong>{result.ratingAfter}</strong>
+                          <b className={result.ratingDelta >= 0 ? "result-profit-positive" : "result-profit-negative"}>
+                            {result.ratingDelta >= 0 ? "+" : ""}{result.ratingDelta}
+                          </b>
+                        </div>
+
+                        <div className="ranked-bonus-breakdown" aria-label="Rating breakdown">
+                          <span>
+                            <small>Placement</small>
+                            <strong className={result.placementDelta >= 0 ? "result-profit-positive" : "result-profit-negative"}>
+                              {result.placementDelta >= 0 ? "+" : ""}{result.placementDelta}
+                            </strong>
+                          </span>
+                          <span>
+                            <small>Performance</small>
+                            <strong>+{result.performanceBonus}</strong>
+                          </span>
+                          <span>
+                            <small>Awards</small>
+                            <strong>+{result.awardBonus}</strong>
+                          </span>
+                        </div>
+
+                        <div className="ranked-award-strip">
+                          {result.awards.length > 0
+                            ? result.awards.map((award) => <span key={award}>⭐ {award}</span>)
+                            : <span className="is-empty">No award bonus</span>}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </section>
               )}
               <div className="final-results-heading final-results-grid">
@@ -303,13 +377,22 @@ export function WinnerScreen({
                 <article key={row.player.id} className={`final-player-row final-results-grid ${row.player.id === gameState.winnerId ? "is-winner" : ""}`} style={{ borderColor: theme.border, background: theme.secondaryBackground }}>
                   <span className="final-placement">{index === 0 ? "👑 1st" : index === 1 ? "🥈 2nd" : index === 2 ? "🥉 3rd" : `${index + 1}th`}</span>
                   <div className="final-player-name-cell"><span className="final-token" style={{ background: row.player.colour }}>{row.player.name.charAt(0).toUpperCase()}</span><div><strong>{row.player.name}</strong><small style={{ color: theme.mutedText }}>{row.player.isBankrupt ? `Bankrupt${row.stats.eliminatedTurn ? ` · Turn ${row.stats.eliminatedTurn}` : ""}` : row.player.id === gameState.winnerId ? "Winner" : "Finished"}</small></div></div>
-                  <strong>£{row.revenue.toLocaleString()}</strong>
-                  <span>£{row.expenses.toLocaleString()}</span>
-                  <strong className={row.profit >= 0 ? "result-profit-positive" : "result-profit-negative"}>{row.profit >= 0 ? "+" : "−"}£{Math.abs(row.profit).toLocaleString()}</strong>
-                  <span>{row.properties}</span>
-                  <span>£{row.stats.rentCollected.toLocaleString()}</span>
-                  <span>{row.stats.buildingEvents}</span>
-                  <span>{row.stats.tradeEvents}</span>
+                  {/*
+                    Mobile result cards use data-label instead of duplicating
+                    markup. Desktop keeps the same table columns and values.
+                  */}
+                  <strong className="final-result-metric" data-label="Revenue">£{row.revenue.toLocaleString()}</strong>
+                  <span className="final-result-metric" data-label="Expenses">£{row.expenses.toLocaleString()}</span>
+                  <strong
+                    className={`final-result-metric ${row.profit >= 0 ? "result-profit-positive" : "result-profit-negative"}`}
+                    data-label="Profit / loss"
+                  >
+                    {row.profit >= 0 ? "+" : "−"}£{Math.abs(row.profit).toLocaleString()}
+                  </strong>
+                  <span className="final-result-metric" data-label="Properties">{row.properties}</span>
+                  <span className="final-result-metric" data-label="Rent collected">£{row.stats.rentCollected.toLocaleString()}</span>
+                  <span className="final-result-metric" data-label="Builds">{row.stats.buildingEvents}</span>
+                  <span className="final-result-metric" data-label="Trades">{row.stats.tradeEvents}</span>
                 </article>
               ))}
             </div>
