@@ -322,6 +322,17 @@ function currentSession(request: Request): { session: StoredSession; account: St
   return { session, account };
 }
 
+
+/**
+ * Platform subsystems (Guilds, future social features) authenticate through
+ * the canonical account/session store instead of re-parsing the private
+ * session cookie. Only the public account summary crosses this boundary.
+ */
+export function getAuthenticatedAccount(request: Request): HalieusAccountSummary | null {
+  const auth = currentSession(request);
+  return auth ? publicAccount(auth.account) : null;
+}
+
 // Operational endpoints can use the same authenticated account store without
 // exposing account internals or duplicating cookie/session parsing.
 export function hasAdminSession(request: Request): boolean {
