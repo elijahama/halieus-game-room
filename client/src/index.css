@@ -24373,6 +24373,32 @@ html[data-theme="light"] .halieus-intro-v4-card {
   font-size: .55rem;
 }
 
+.halieus-guild-messages article header > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.halieus-guild-message-delete {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, #ef4444 30%, var(--mm-border));
+  border-radius: 7px;
+  background: transparent;
+  color: var(--mm-muted);
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+}
+
+.halieus-guild-message-delete:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #ef4444 60%, var(--mm-border));
+  color: #ef4444;
+}
+
 .halieus-guild-messages article p {
   margin: 0;
   line-height: 1.4;
