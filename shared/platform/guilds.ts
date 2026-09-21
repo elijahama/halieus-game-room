@@ -37,7 +37,9 @@ export interface HalieusGuildRoom {
   updatedAt: number;
   completedAt: number | null;
   winner: string | null;
+  winnerAccountId: string | null;
   participants: string[];
+  participantAccountIds: string[];
 }
 
 export interface HalieusGuildLeaderboardEntry {
