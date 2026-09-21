@@ -197,7 +197,7 @@ Players/spectators render state
 
 The same pattern is reused for more complex games.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the current 4.0.0 runtime architecture.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the current runtime architecture.
 
 ---
 
