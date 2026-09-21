@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 import { APP_VERSION } from "../../../shared/version.js";
 import { getSessionDataDirectory } from "./dataPaths.js";
+import { recordGuildSessionResult } from "./guilds.js";
 
 export type ArchiveGame = "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "word-board";
 export type ArchiveStatus = "completed" | "forfeit-completed" | "host-ended" | "incomplete";
@@ -130,6 +131,14 @@ export async function finalizeSession(
     summary: sanitise(summary),
   };
   await writeFile(finalPath, JSON.stringify(record, null, 2), "utf8");
+
+  // Guilds never own game truth. Once the canonical archive is safely written,
+  // project the completed normal HGR room into any matching guild history.
+  try {
+    await recordGuildSessionResult(game, code, status, payload, summary);
+  } catch (error) {
+    console.error("Guild session result projection failed:", error);
+  }
 
   const workingPath = resolve(workingDir, `${key}.json`);
   if (existsSync(workingPath)) {
