@@ -12,9 +12,11 @@ const json=(p)=>JSON.parse(read(p));
  * clearer desktop and mobile result layouts.
  */
 
-assert.equal(read('VERSION').trim(),'4.0.1');
+// Historical 4.0.1 contract: later 4.0.x patches must preserve these UI
+// behaviours without forcing the current product version back to 4.0.1.
+assert.match(read('VERSION').trim(),/^4\.0\.\d+$/,'4.0.x product version expected');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.equal(json(file).version,'4.0.1',`${file} version mismatch`);
+  assert.match(json(file).version,/^4\.0\.\d+$/,`${file} must remain on the 4.0.x line`);
 }
 
 const rootPackage=json('package.json');
@@ -47,8 +49,8 @@ assert.match(css,/HGR 4\.0\.1 — shared non-Mega phone results cards/,'Shared p
 assert.match(css,/\.final-player-row\.halieus-final-results-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/s,'Shared game results must collapse to balanced phone cards');
 assert.match(css,/\.results-tabs\s*\{\s*grid-template-columns:\s*repeat\(3,/s,'Results tabs must match the three actual tabs');
 
-assert.match(serviceWorker,/halieus-shell-v4-0-1/,'PWA cache must be bumped for 4.0.1');
-assert.match(intro,/app-icon-192\.png\?v=4\.0\.1/,'Intro asset cache-buster must match 4.0.1');
-assert.match(readme,/Current milestone:\*\* 4\.0\.1/,'README must advertise the 4.0.1 milestone');
+assert.match(serviceWorker,/halieus-shell-v4-0-\d+/,'PWA cache must remain versioned on the 4.0.x line');
+assert.match(intro,/app-icon-192\.png\?v=4\.0\.\d+/,'Intro asset cache-buster must remain versioned on the 4.0.x line');
+assert.match(readme,/Current milestone:\*\* 4\.0\.\d+/,'README must advertise the current 4.0.x milestone');
 
 console.log('Halieus Game Room 4.0.1 mobile + ranked results regression: PASS');
