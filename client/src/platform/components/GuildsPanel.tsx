@@ -69,7 +69,6 @@ export function GuildsPanel({
   const [settingsPolicy, setSettingsPolicy] = useState<HalieusGuildRoomPolicy>("members");
   const [busy, setBusy] = useState(false);
 
-  const selectedSummary = guilds.find((guild) => guild.id === selectedGuildId) ?? null;
 
   const liveByGuildRoom = useMemo(() => {
     const map = new Map<string, HalieusLiveRoomSummary>();
