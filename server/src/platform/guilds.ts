@@ -132,9 +132,15 @@ function leaderboardFor(guild: StoredGuild): HalieusGuildLeaderboardEntry[] {
       const aliases = new Set([member.displayName, member.username].map((value) => value.trim().toLowerCase()));
       const completed = guild.rooms.filter((room) =>
         room.status === "completed" &&
-        room.participants.some((name) => aliases.has(name.trim().toLowerCase())),
+        (
+          room.participantAccountIds?.includes(member.accountId) ||
+          room.participants.some((name) => aliases.has(name.trim().toLowerCase()))
+        ),
       );
-      const wins = completed.filter((room) => room.winner && aliases.has(room.winner.trim().toLowerCase())).length;
+      const wins = completed.filter((room) =>
+        room.winnerAccountId === member.accountId ||
+        Boolean(room.winner && aliases.has(room.winner.trim().toLowerCase())),
+      ).length;
       const hosted = guild.rooms.filter((room) => room.createdByAccountId === member.accountId).length;
       return {
         accountId: member.accountId,
@@ -218,6 +224,11 @@ export async function loadGuildStore(): Promise<void> {
     guild.members = Array.isArray(guild.members) ? guild.members : [];
     guild.messages = Array.isArray(guild.messages) ? guild.messages.slice(-MAX_MESSAGES_PER_GUILD) : [];
     guild.rooms = Array.isArray(guild.rooms) ? guild.rooms.slice(-MAX_ROOMS_PER_GUILD) : [];
+    for (const room of guild.rooms) {
+      room.participants = Array.isArray(room.participants) ? room.participants : [];
+      room.participantAccountIds = Array.isArray(room.participantAccountIds) ? room.participantAccountIds : [];
+      room.winnerAccountId = typeof room.winnerAccountId === "string" ? room.winnerAccountId : null;
+    }
   }
   await saveStore();
 }
@@ -387,7 +398,9 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
       updatedAt: now,
       completedAt: null,
       winner: null,
+      winnerAccountId: null,
       participants: [],
+      participantAccountIds: [],
     };
     membership.guild.rooms.push(room);
     membership.guild.rooms = membership.guild.rooms.slice(-MAX_ROOMS_PER_GUILD);
@@ -553,11 +566,22 @@ export async function recordGuildSessionResult(
   const now = Date.now();
 
   for (const { guild, room } of matches) {
+    const participantKeys = new Set(participants.map((name) => name.trim().toLowerCase()));
+    const matchedParticipantIds = guild.members
+      .filter((member) => participantKeys.has(member.displayName.trim().toLowerCase()) || participantKeys.has(member.username.trim().toLowerCase()))
+      .map((member) => member.accountId);
+    const winnerKey = winner?.trim().toLowerCase() ?? null;
+    const winnerMember = winnerKey
+      ? guild.members.find((member) => member.displayName.trim().toLowerCase() === winnerKey || member.username.trim().toLowerCase() === winnerKey)
+      : null;
+
     room.status = completed ? "completed" : "ended";
     room.updatedAt = now;
     room.completedAt = now;
     room.winner = winner;
+    room.winnerAccountId = winnerMember?.accountId ?? null;
     room.participants = participants;
+    room.participantAccountIds = matchedParticipantIds;
     guild.updatedAt = now;
     guild.messages.push({
       id: id("guild-message"),
