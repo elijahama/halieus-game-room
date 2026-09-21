@@ -23179,7 +23179,7 @@ html[data-theme="light"] .halieus-intro-v4-card {
   .final-player-row.final-results-grid {
     min-width: 0 !important;
     min-height: 0;
-    grid-template-columns: 58px minmax(0, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 9px 10px;
     padding: 11px !important;
   }
@@ -23268,7 +23268,7 @@ html[data-theme="light"] .halieus-intro-v4-card {
   }
 
   .final-player-row.final-results-grid {
-    grid-template-columns: 50px minmax(0, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
@@ -23292,7 +23292,7 @@ html[data-theme="light"] .halieus-intro-v4-card {
   .final-player-row.halieus-final-results-grid {
     min-width: 0 !important;
     min-height: 0;
-    grid-template-columns: 58px minmax(0, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 9px 10px;
     padding: 11px !important;
   }
