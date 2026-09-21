@@ -23271,3 +23271,53 @@ html[data-theme="light"] .halieus-intro-v4-card {
     grid-template-columns: 50px minmax(0, 1fr) !important;
   }
 }
+
+
+/* HGR 4.0.1 — shared non-Mega phone results cards */
+/*
+ * GameResultsScreen shares the winner-shell/result classes with Mega Board but
+ * has a shorter four-field standings row. Phones collapse that row into a
+ * compact card too, so every game gets the same no-horizontal-table contract.
+ */
+@media (max-width: 760px) {
+  .halieus-final-results-table-wrap {
+    overflow: visible !important;
+    padding-bottom: 0 !important;
+  }
+
+  .final-results-heading.halieus-final-results-grid {
+    display: none !important;
+  }
+
+  .final-player-row.halieus-final-results-grid {
+    min-width: 0 !important;
+    min-height: 0;
+    grid-template-columns: 58px minmax(0, 1fr) !important;
+    gap: 9px 10px;
+    padding: 11px !important;
+  }
+
+  .final-player-row.halieus-final-results-grid > strong:nth-child(3) {
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--results-accent, var(--mm-green)) 10%, var(--mm-surface-2));
+    font-size: 9px;
+  }
+
+  .final-player-row.halieus-final-results-grid > span:nth-child(4) {
+    grid-column: 1 / -1;
+    color: var(--mm-muted);
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .halieus-results-podium {
+    grid-template-columns: 1fr !important;
+  }
+
+  .halieus-results-podium > article {
+    min-height: 0 !important;
+  }
+}
