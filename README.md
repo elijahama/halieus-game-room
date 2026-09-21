@@ -2,7 +2,7 @@
 
 **A private, real-time multiplayer game platform for board, card, word and social games.**
 
-**Current milestone:** 4.0.0  
+**Current milestone:** 4.0.1  
 **Frontend:** React · TypeScript · Vite  
 **Backend:** Node.js · Express · Socket.IO  
 **Development model:** Human-directed, AI-assisted engineering
@@ -590,6 +590,7 @@ See [SECURITY.md](SECURITY.md) and [docs/PUBLICATION_CHECKLIST.md](docs/PUBLICAT
 
 Current work is focused on:
 
+- 4.0.1 mobile-first layout recovery and clearer post-match/ranked results;
 - visual consistency across game modules;
 - reconnect/recovery reliability;
 - responsive/mobile refinement;
