@@ -707,11 +707,15 @@ export function HomeScreen(props: HomeScreenProps) {
               {filteredDirectory.map((person) => {
                 const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase()) ?? null;
                 const liveGame = liveRoom ? GAME_BY_ID[liveRoom.game] : null;
-                return <button type="button" key={person.id} className={`${person.online ? "is-online" : "is-offline"} ${liveRoom ? "is-in-game" : ""} ${selectedPlayerId === person.id ? "is-selected" : ""}`} onClick={() => setSelectedPlayerId(person.id)}>
-                  <span className="halieus-directory-avatar halieus-avatar-media" style={{ background: person.playerColor }}>{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.avatar}<i /></span>
-                  <div><strong>{person.displayName}</strong><small>@{person.username}</small>{liveRoom && liveGame && <em>Playing {liveGame.name} · {liveRoom.code}</em>}</div>
-                  <b>{liveRoom ? "In Game" : person.online ? "Online" : "Offline"}</b>
-                </button>;
+                return <PlayerIdentityCard
+                  key={person.id}
+                  player={person}
+                  selected={selectedPlayerId === person.id}
+                  className={`${person.online ? "is-online" : "is-offline"} ${liveRoom ? "is-in-game" : ""}`}
+                  detail={liveRoom && liveGame ? `Playing ${liveGame.name} · ${liveRoom.code}` : person.online ? "Online" : "Offline"}
+                  status="•••"
+                  onClick={() => setSelectedPlayerId(person.id)}
+                />;
               })}
               {filteredDirectory.length === 0 && <div className="halieus-player-empty">No players match this filter.</div>}
             </div>
