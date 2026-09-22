@@ -6,6 +6,12 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$IconGenerator = Join-Path $PSScriptRoot 'generate-launcher-icons.ps1'
+if (-not (Test-Path -LiteralPath $IconGenerator)) {
+    throw "Required HGR icon generator is missing: $IconGenerator"
+}
+& $IconGenerator
+
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
 $StartIconPath = Join-Path $LauncherIconRoot 'Start Halieus Game Room.ico'

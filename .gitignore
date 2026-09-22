@@ -100,3 +100,7 @@ OWNER SETUP CODE.txt
 docs/OWNER SETUP CODE.txt
 docs/ACCOUNT MIGRATION - OWNER ONLY.txt
 docs/OWNER BUILD - DO NOT SHARE.txt
+
+
+# Generated Windows launcher icons (source is scripts/windows/generate-launcher-icons.ps1)
+assets/branding/launchers/*.ico

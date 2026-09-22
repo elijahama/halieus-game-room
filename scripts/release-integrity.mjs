@@ -43,10 +43,10 @@ const singles = [
   'client/package.json', 'client/index.html', 'client/vite.config.ts',
   'server/package.json', 'shared/package.json',
   'Start Halieus Game Room.cmd', 'Restart Halieus Game Room.cmd', 'Close Halieus Game Room.cmd',
-  // Windows branding assets are explicit release inputs so launcher refreshes
-  // cannot silently point at missing or stale icons.
+  // The main product icon is tracked; action-coloured launcher ICOs are generated
+  // locally from the tracked Windows branding generator.
   'assets/branding/Halieus Game Room.ico',
-  'assets/branding/launchers/Start Halieus Game Room.ico', 'assets/branding/launchers/Restart Halieus Game Room.ico', 'assets/branding/launchers/Update Halieus Website.ico', 'assets/branding/launchers/Close Halieus Game Room.ico', 'assets/branding/launchers/HGR PowerShell.ico',
+  'scripts/windows/generate-launcher-icons.ps1',
   'FIRST RUN - Refresh Halieus Launchers.cmd',
   'scripts/windows/launcher-shortcuts.ps1', 'scripts/windows/start-background.ps1', 'scripts/windows/restart-background.ps1', 'scripts/windows/stop-background.ps1', 'scripts/windows/start-production.ps1', 'scripts/windows/tailscale-funnel.ps1', 'scripts/windows/show-feedback.ps1', 'scripts/windows/HGR GitHub Sync.cmd', 'scripts/windows/Install HGR GitHub Shortcut.cmd',
   'Update Halieus Website.cmd', 'update-website.ps1',
