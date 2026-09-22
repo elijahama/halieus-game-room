@@ -139,6 +139,8 @@ export function GuildsPanel({
 
   useEffect(() => {
     void loadGuilds();
+    const poll = window.setInterval(() => void loadGuilds(), 10_000);
+    return () => window.clearInterval(poll);
   }, []);
 
   useEffect(() => {
