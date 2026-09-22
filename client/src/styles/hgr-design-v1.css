@@ -1552,6 +1552,11 @@ button.halieus-player-identity {
 .halieus-guild-invite-results {
   grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   align-items: start;
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 3px;
+  scrollbar-width: thin;
 }
 .halieus-guild-invite-results .halieus-player-identity {
   min-width: 0;
