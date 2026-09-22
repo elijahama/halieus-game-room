@@ -94,14 +94,10 @@ if errorlevel 1 (
 echo.
 echo [OK] Typecheck, build and regression tests passed.
 echo.
-
-choice /c YN /n /m "Is this a release-finalisation commit? Run npm run prepare:release? [Y/N]: "
-if errorlevel 2 goto :SKIP_RELEASE
-if errorlevel 1 goto :PREP_RELEASE
-
-:PREP_RELEASE
+echo STEP 3 - Finalising release identity...
+echo This keeps VERSION, RELEASE.json and shared/release.ts in sync
+echo before a validated HGR change can be committed or deployed.
 echo.
-echo STEP 3 - Generating release identity...
 call npm run prepare:release
 if errorlevel 1 (
     echo.
@@ -109,12 +105,7 @@ if errorlevel 1 (
     echo Nothing has been committed or pushed by this script.
     goto :PAUSE_EXIT
 )
-echo [OK] Release manifest/fingerprint generated.
-goto :STAGE
-
-:SKIP_RELEASE
-echo.
-echo STEP 3 - Release generation skipped.
+echo [OK] Release manifest/fingerprint generated and verified.
 echo.
 
 :STAGE
