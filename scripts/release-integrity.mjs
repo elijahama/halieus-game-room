@@ -43,9 +43,10 @@ const singles = [
   'client/package.json', 'client/index.html', 'client/vite.config.ts',
   'server/package.json', 'shared/package.json',
   'Start Halieus Game Room.cmd', 'Restart Halieus Game Room.cmd', 'Close Halieus Game Room.cmd',
-  // The main root ICO is a Windows launcher convenience, not an Oracle runtime input.
-  // It still ships in the downloadable ZIP but its absence must not invalidate website deployment.
-  'assets/branding/launchers/Start Halieus Game Room.ico', 'assets/branding/launchers/Restart Halieus Game Room.ico', 'Update Halieus Website.ico', 'assets/branding/launchers/Close Halieus Game Room.ico',
+  // Windows branding assets are explicit release inputs so launcher refreshes
+  // cannot silently point at missing or stale icons.
+  'assets/branding/Halieus Game Room.ico',
+  'assets/branding/launchers/Start Halieus Game Room.ico', 'assets/branding/launchers/Restart Halieus Game Room.ico', 'assets/branding/launchers/Update Halieus Website.ico', 'assets/branding/launchers/Close Halieus Game Room.ico', 'assets/branding/launchers/HGR PowerShell.ico',
   'FIRST RUN - Refresh Halieus Launchers.cmd',
   'scripts/windows/launcher-shortcuts.ps1', 'scripts/windows/start-background.ps1', 'scripts/windows/restart-background.ps1', 'scripts/windows/stop-background.ps1', 'scripts/windows/start-production.ps1', 'scripts/windows/tailscale-funnel.ps1', 'scripts/windows/show-feedback.ps1', 'scripts/windows/HGR GitHub Sync.cmd', 'scripts/windows/Install HGR GitHub Shortcut.cmd',
   'Update Halieus Website.cmd', 'update-website.ps1',

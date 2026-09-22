@@ -16,7 +16,7 @@ rem ============================================================
 
 for %%I in ("%~dp0\..\..") do set "PROJECT=%%~fI\"
 set "TARGET=%PROJECT%Update HGR GitHub.cmd"
-set "ICON=%PROJECT%Halieus Game Room.ico"
+set "ICON=%PROJECT%assets\branding\launchers\Update Halieus Website.ico"
 set "STARTDIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Halieus Game Room"
 set "SHORTCUT=%STARTDIR%\Update Halieus Website.lnk"
 set "OLD_SHORTCUT=%STARTDIR%\HGR GitHub Update.lnk"

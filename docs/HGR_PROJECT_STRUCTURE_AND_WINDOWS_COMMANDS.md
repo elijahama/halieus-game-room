@@ -164,3 +164,63 @@ If a launcher stops working:
 7. refresh the launch shortcuts.
 
 Avoid "fixing" it by copying duplicate scripts back into the root. Fix the path instead.
+
+
+## Branding asset map
+
+The project root should not carry launcher artwork. The canonical Windows branding paths are:
+
+- `assets/branding/Halieus Game Room.ico` — primary HGR/folder identity
+- `assets/branding/launchers/Start Halieus Game Room.ico`
+- `assets/branding/launchers/Restart Halieus Game Room.ico`
+- `assets/branding/launchers/Close Halieus Game Room.ico`
+- `assets/branding/launchers/Update Halieus Website.ico`
+- `assets/branding/launchers/HGR PowerShell.ico`
+
+The launcher refresh script owns the Start Menu shortcuts. Changing an icon should normally mean replacing the icon asset at its canonical path and refreshing launchers, not changing the launcher command itself.
+
+## Start GitHub on day one for future projects
+
+For a normal programming project, connecting Git at the beginning is the preferred default. It avoids repeatedly passing ZIP files around and gives you a permanent history of what changed.
+
+A sensible bootstrap is:
+
+```text
+create project folder
+→ create/clone GitHub repository
+→ add .gitignore before secrets, dependencies or runtime data appear
+→ make the first small commit
+→ push regularly
+```
+
+If the folder already exists locally:
+
+```powershell
+git init
+git branch -M main
+git remote add origin <repository-url>
+git add .
+git commit -m "Initial project structure"
+git push -u origin main
+```
+
+If the GitHub repository already exists, cloning it is usually cleaner:
+
+```powershell
+git clone <repository-url>
+```
+
+Then work inside the cloned folder.
+
+Do **not** use GitHub as a dumping ground for everything. Keep secrets, `.env` files, private keys, runtime databases, generated builds, dependency folders and personal/private deployment material out through `.gitignore`.
+
+For future AI-assisted projects, the useful pattern is:
+
+```text
+GitHub is the shared source of truth
+→ AI/code changes can land in the repository
+→ git pull brings them to your computer
+→ your local commits use git push to send them back
+```
+
+ZIPs still have a place for frozen backups, external handoffs or release archives, but they should not be the normal development transport.
