@@ -1,6 +1,6 @@
 ﻿@echo off
 setlocal EnableExtensions
-title Install HGR GitHub Shortcut
+title Install Halieus Update Shortcut
 color 0E
 chcp 65001 >nul 2>&1
 
@@ -18,12 +18,13 @@ set "PROJECT=%~dp0"
 set "TARGET=%PROJECT%Update HGR GitHub.cmd"
 set "ICON=%PROJECT%Halieus Game Room.ico"
 set "STARTDIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Halieus Game Room"
-set "SHORTCUT=%STARTDIR%\HGR GitHub Update.lnk"
+set "SHORTCUT=%STARTDIR%\Update Halieus Game Room.lnk"
+set "OLD_SHORTCUT=%STARTDIR%\HGR GitHub Update.lnk"
 
 cls
 echo.
 echo ============================================================
-echo        HALIEUS GAME ROOM - GITHUB SHORTCUT INSTALLER
+echo        HALIEUS GAME ROOM - UPDATE SHORTCUT INSTALLER
 echo ============================================================
 echo.
 
@@ -37,6 +38,7 @@ if not exist "%TARGET%" (
 )
 
 if not exist "%STARTDIR%" mkdir "%STARTDIR%" >nul 2>&1
+if exist "%OLD_SHORTCUT%" del /q "%OLD_SHORTCUT%" >nul 2>&1
 
 set "ICONLOCATION=%SystemRoot%\System32\shell32.dll,167"
 if exist "%ICON%" set "ICONLOCATION=%ICON%,0"
@@ -47,7 +49,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$s.TargetPath = '%TARGET%'; " ^
   "$s.WorkingDirectory = '%PROJECT%'; " ^
   "$s.IconLocation = '%ICONLOCATION%'; " ^
-  "$s.Description = 'Update Halieus Game Room with GitHub'; " ^
+  "$s.Description = 'Validate, sync to GitHub, and deploy the Halieus website'; " ^
   "$s.WindowStyle = 1; " ^
   "$s.Save()"
 
@@ -60,7 +62,7 @@ if errorlevel 1 (
 
 echo [OK] Shortcut created:
 echo.
-echo   HGR GitHub Update
+echo   Update Halieus Game Room
 echo.
 echo Start Menu folder:
 echo   %STARTDIR%
@@ -76,7 +78,7 @@ if exist "%ICON%" (
 echo.
 echo NEXT:
 echo   1. Press the Windows key.
-echo   2. Search for: HGR GitHub Update
+echo   2. Search for: Update Halieus Game Room
 echo   3. Right-click it.
 echo   4. Choose "Pin to Start".
 echo.
