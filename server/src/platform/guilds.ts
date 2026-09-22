@@ -545,7 +545,7 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
     }
 
     const selfLeave = target.accountId === account.id;
-    const managerRemoval = canManage(membership.member.role) && target.role !== "owner";
+    const managerRemoval = canManage(membership.member.role);
     const moderatorRemoval = membership.member.role === "moderator" && target.role === "member";
     if (!selfLeave && !managerRemoval && !moderatorRemoval) {
       response.status(403).json({ ok: false, reason: "Your guild role cannot remove that member." });
@@ -584,14 +584,20 @@ export async function recordGuildSessionResult(
   if (!matches.length) return;
 
   const object = payload && typeof payload === "object" ? payload as Record<string, any> : {};
-  const playerList = Array.isArray(object.players)
+  const playerList: unknown[] = Array.isArray(object.players)
     ? object.players
     : Array.isArray(object.gameState?.players)
       ? object.gameState.players
       : [];
-  const participants = [...new Set(playerList
-    .map((player: any) => typeof player?.name === "string" && !player?.isAi ? player.name.trim() : "")
-    .filter(Boolean))];
+  const participants: string[] = [...new Set(
+    playerList
+      .map((player): string => {
+        if (!player || typeof player !== "object") return "";
+        const candidate = player as { name?: unknown; isAi?: unknown };
+        return typeof candidate.name === "string" && !candidate.isAi ? candidate.name.trim() : "";
+      })
+      .filter((name) => name.length > 0),
+  )];
   const winner = typeof summary.winner === "string" && summary.winner.trim() ? summary.winner.trim() : null;
   const completed = archiveStatus === "completed" || archiveStatus === "forfeit-completed";
   const now = Date.now();
