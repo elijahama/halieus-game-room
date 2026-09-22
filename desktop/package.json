@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room-desktop",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "private": true,
   "type": "module",
   "description": "Secure Windows desktop shell for Halieus Game Room.",
