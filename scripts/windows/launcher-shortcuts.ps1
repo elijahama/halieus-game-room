@@ -82,17 +82,21 @@ if (Test-Path -LiteralPath $UpdateScript) {
     New-HalieusShortcut -ShortcutPath $UpdateShortcut -CommandScript $UpdateScript -Description 'Validate, sync and deploy Halieus Game Room' -IconPath $UpdateIconPath
 }
 
-$PowerShellExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-if (Test-Path -LiteralPath $PowerShellExe) {
-    $terminal = $wsh.CreateShortcut($PowerShellShortcut)
+$terminal = $wsh.CreateShortcut($PowerShellShortcut)
+$WindowsTerminal = Get-Command wt.exe -ErrorAction SilentlyContinue
+if ($WindowsTerminal) {
+    $terminal.TargetPath = $WindowsTerminal.Source
+    $terminal.Arguments = "-d `"$ProjectRoot`" --title `"HGR PowerShell`""
+} else {
+    $PowerShellExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
     $terminal.TargetPath = $PowerShellExe
     $terminal.Arguments = '-NoExit -Command "$Host.UI.RawUI.WindowTitle = ''HGR PowerShell''"'
-    $terminal.WorkingDirectory = $ProjectRoot
-    $terminal.Description = 'Open PowerShell at the Halieus Game Room project root'
-    $terminal.IconLocation = "$PowerShellIconPath,0"
-    $terminal.WindowStyle = 1
-    $terminal.Save()
 }
+$terminal.WorkingDirectory = $ProjectRoot
+$terminal.Description = 'Open PowerShell at the Halieus Game Room project root'
+$terminal.IconLocation = "$PowerShellIconPath,0"
+$terminal.WindowStyle = 1
+$terminal.Save()
 
 # Shortcuts belong in the Start Menu. Remove old generated root shortcuts so
 # the source folder stays readable and moving helpers cannot leave stale links.
