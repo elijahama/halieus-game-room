@@ -8,6 +8,7 @@ import type { Express, Request, Response } from "express";
 import type { HalieusAccountSummary, HalieusGameStatLine } from "../../../shared/platform/accounts.js";
 import type {
   HalieusGuildDetail,
+  HalieusGuildInvitation,
   HalieusGuildLeaderboardEntry,
   HalieusGuildMember,
   HalieusGuildMessage,
@@ -19,6 +20,9 @@ import type {
 import { getGuildDataDirectory } from "./dataPaths.js";
 
 type GuildAuthResolver = (request: Request) => HalieusAccountSummary | null;
+type GuildAccountLookup = (accountId: string) => HalieusAccountSummary | null;
+
+let lookupAccountById: GuildAccountLookup = () => null;
 
 interface StoredGuild {
   id: string;
@@ -32,6 +36,7 @@ interface StoredGuild {
   members: HalieusGuildMember[];
   messages: HalieusGuildMessage[];
   rooms: HalieusGuildRoom[];
+  invitations: HalieusGuildInvitation[];
 }
 
 interface GuildStore {
@@ -184,13 +189,26 @@ function detailFor(guild: StoredGuild, accountId: string): HalieusGuildDetail | 
   if (!summary) return null;
   return {
     ...summary,
-    members: guild.members.slice().sort((a, b) => {
-      const weight: Record<HalieusGuildRole, number> = { owner: 4, admin: 3, moderator: 2, member: 1 };
-      return weight[b.role] - weight[a.role] || a.displayName.localeCompare(b.displayName);
-    }),
     rooms: guild.rooms.slice().sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 80),
     messages: guild.messages.slice(-100),
     leaderboard: leaderboardFor(guild),
+    members: guild.members.slice().sort((a, b) => {
+      const weight: Record<HalieusGuildRole, number> = { owner: 4, admin: 3, moderator: 2, member: 1 };
+      return weight[b.role] - weight[a.role] || a.displayName.localeCompare(b.displayName);
+    }).map((member) => {
+      const current = lookupAccountById(member.accountId);
+      return current ? {
+        ...member,
+        username: current.username,
+        displayName: current.displayName,
+        avatar: current.avatar,
+        profilePicture: current.profilePicture,
+        playerColor: current.playerColor,
+      } : member;
+    }),
+    pendingInvitations: summary.canManage
+      ? guild.invitations.filter((invitation) => invitation.status === "pending").slice().sort((a, b) => b.createdAt - a.createdAt)
+      : [],
   };
 }
 
@@ -228,6 +246,7 @@ export async function loadGuildStore(): Promise<void> {
     guild.members = Array.isArray(guild.members) ? guild.members : [];
     guild.messages = Array.isArray(guild.messages) ? guild.messages.slice(-MAX_MESSAGES_PER_GUILD) : [];
     guild.rooms = Array.isArray(guild.rooms) ? guild.rooms.slice(-MAX_ROOMS_PER_GUILD) : [];
+    guild.invitations = Array.isArray(guild.invitations) ? guild.invitations.slice(-200) : [];
     for (const room of guild.rooms) {
       room.participants = Array.isArray(room.participants) ? room.participants : [];
       room.participantAccountIds = Array.isArray(room.participantAccountIds) ? room.participantAccountIds : [];
@@ -261,7 +280,8 @@ function requireGuildMember(guildId: string, account: HalieusAccountSummary, res
  * creates and validates the actual live room. This keeps one authoritative
  * room/game stack instead of inventing a second multiplayer implementation.
  */
-export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResolver): void {
+export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResolver, resolveAccountById: GuildAccountLookup): void {
+  lookupAccountById = resolveAccountById;
   app.get("/guilds", (request, response) => {
     const account = requireAccount(resolveAccount, request, response);
     if (!account) return;
@@ -302,6 +322,7 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
       members: [memberFromAccount(account, "owner")],
       messages: [],
       rooms: [],
+      invitations: [],
     };
     store.guilds.push(guild);
     await saveStore();
@@ -331,9 +352,60 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
         createdAt: Date.now(),
       });
       guild.messages = guild.messages.slice(-MAX_MESSAGES_PER_GUILD);
+      guild.invitations.forEach((invitation) => {
+        if (invitation.recipientAccountId === account.id && invitation.status === "pending") {
+          invitation.status = "accepted";
+          invitation.respondedAt = Date.now();
+        }
+      });
       await saveStore();
     }
     response.json({ ok: true, guild: detailFor(guild, account.id) });
+  });
+
+  app.get("/guilds/invitations", (request, response) => {
+    const account = requireAccount(resolveAccount, request, response);
+    if (!account) return;
+    const invitations = store.guilds
+      .flatMap((guild) => guild.invitations)
+      .filter((invitation) => invitation.recipientAccountId === account.id && invitation.status === "pending")
+      .sort((a, b) => b.createdAt - a.createdAt);
+    response.json({ ok: true, invitations });
+  });
+
+  app.post("/guilds/invitations/:invitationId/respond", async (request, response) => {
+    const account = requireAccount(resolveAccount, request, response);
+    if (!account) return;
+    const match = store.guilds
+      .map((guild) => ({ guild, invitation: guild.invitations.find((candidate) => candidate.id === request.params.invitationId) }))
+      .find((candidate) => candidate.invitation);
+    const invitation = match?.invitation;
+    if (!match || !invitation || invitation.recipientAccountId !== account.id || invitation.status !== "pending") {
+      response.status(404).json({ ok: false, reason: "Guild invitation not found." });
+      return;
+    }
+    const action = request.body?.action;
+    if (action !== "accept" && action !== "decline") {
+      response.status(400).json({ ok: false, reason: "Choose accept or decline." });
+      return;
+    }
+    invitation.status = action === "accept" ? "accepted" : "declined";
+    invitation.respondedAt = Date.now();
+    if (action === "accept" && !memberFor(match.guild, account.id)) {
+      match.guild.members.push(memberFromAccount(account, "member"));
+      match.guild.messages.push({
+        id: id("guild-message"),
+        guildId: match.guild.id,
+        senderAccountId: account.id,
+        senderDisplayName: account.displayName,
+        body: `${account.displayName} joined the guild.`,
+        createdAt: Date.now(),
+      });
+      match.guild.messages = match.guild.messages.slice(-MAX_MESSAGES_PER_GUILD);
+    }
+    match.guild.updatedAt = Date.now();
+    await saveStore();
+    response.json({ ok: true, invitation, guild: action === "accept" ? detailFor(match.guild, account.id) : null });
   });
 
   app.get("/guilds/:guildId", (request, response) => {
@@ -480,6 +552,49 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
     membership.guild.updatedAt = Date.now();
     await saveStore();
     response.json({ ok: true, guild: detailFor(membership.guild, account.id) });
+  });
+
+  app.post("/guilds/:guildId/invitations", async (request, response) => {
+    const account = requireAccount(resolveAccount, request, response);
+    if (!account) return;
+    const membership = requireGuildMember(request.params.guildId, account, response);
+    if (!membership) return;
+    if (!canManage(membership.member.role)) {
+      response.status(403).json({ ok: false, reason: "Guild admin access is required to invite players." });
+      return;
+    }
+    const targetAccountId = typeof request.body?.accountId === "string" ? request.body.accountId : "";
+    const target = lookupAccountById(targetAccountId);
+    if (!target || target.id === account.id) {
+      response.status(400).json({ ok: false, reason: "Choose another active Halieus player." });
+      return;
+    }
+    if (memberFor(membership.guild, target.id)) {
+      response.status(409).json({ ok: false, reason: "That player is already in this guild." });
+      return;
+    }
+    const existing = membership.guild.invitations.find((invitation) => invitation.recipientAccountId === target.id && invitation.status === "pending");
+    if (existing) {
+      response.status(409).json({ ok: false, reason: "That player already has a pending guild invitation." });
+      return;
+    }
+    const invitation: HalieusGuildInvitation = {
+      id: id("guild-invite"),
+      guildId: membership.guild.id,
+      guildName: membership.guild.name,
+      senderAccountId: account.id,
+      senderDisplayName: account.displayName,
+      recipientAccountId: target.id,
+      recipientDisplayName: target.displayName,
+      status: "pending",
+      createdAt: Date.now(),
+      respondedAt: null,
+    };
+    membership.guild.invitations.push(invitation);
+    membership.guild.invitations = membership.guild.invitations.slice(-200);
+    membership.guild.updatedAt = Date.now();
+    await saveStore();
+    response.status(201).json({ ok: true, invitation, guild: detailFor(membership.guild, account.id) });
   });
 
   app.post("/guilds/:guildId/invite/regenerate", async (request, response) => {
