@@ -1,6 +1,6 @@
 ﻿@echo off
 setlocal EnableExtensions
-title Install Halieus Update Shortcut
+title Install Halieus Website Update Shortcut
 color 0E
 chcp 65001 >nul 2>&1
 
@@ -18,8 +18,9 @@ set "PROJECT=%~dp0"
 set "TARGET=%PROJECT%Update HGR GitHub.cmd"
 set "ICON=%PROJECT%Halieus Game Room.ico"
 set "STARTDIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Halieus Game Room"
-set "SHORTCUT=%STARTDIR%\Update Halieus Game Room.lnk"
+set "SHORTCUT=%STARTDIR%\Update Halieus Website.lnk"
 set "OLD_SHORTCUT=%STARTDIR%\HGR GitHub Update.lnk"
+set "OLD_SHORTCUT_2=%STARTDIR%\Update Halieus Game Room.lnk"
 
 cls
 echo.
@@ -39,6 +40,7 @@ if not exist "%TARGET%" (
 
 if not exist "%STARTDIR%" mkdir "%STARTDIR%" >nul 2>&1
 if exist "%OLD_SHORTCUT%" del /q "%OLD_SHORTCUT%" >nul 2>&1
+if exist "%OLD_SHORTCUT_2%" del /q "%OLD_SHORTCUT_2%" >nul 2>&1
 
 set "ICONLOCATION=%SystemRoot%\System32\shell32.dll,167"
 if exist "%ICON%" set "ICONLOCATION=%ICON%,0"
@@ -62,7 +64,7 @@ if errorlevel 1 (
 
 echo [OK] Shortcut created:
 echo.
-echo   Update Halieus Game Room
+echo   Update Halieus Website
 echo.
 echo Start Menu folder:
 echo   %STARTDIR%
@@ -78,7 +80,7 @@ if exist "%ICON%" (
 echo.
 echo NEXT:
 echo   1. Press the Windows key.
-echo   2. Search for: Update Halieus Game Room
+echo   2. Search for: Update Halieus Website
 echo   3. Right-click it.
 echo   4. Choose "Pin to Start".
 echo.
