@@ -45,6 +45,34 @@ if /i not "!CURRENT_BRANCH!"=="%BRANCH%" (
     goto :PAUSE_EXIT
 )
 
+rem RELEASE.json and shared/release.ts are generated release-identity files.
+rem A copied ZIP can preserve stale unmerged index entries for those two files.
+rem Recover ONLY those generated conflicts automatically; never auto-resolve source conflicts.
+set "HGR_UNMERGED="
+set "HGR_UNSAFE_CONFLICT="
+for /f "delims=" %%F in ('git diff --name-only --diff-filter^=U 2^>nul') do (
+    set "HGR_UNMERGED=1"
+    if /i not "%%F"=="RELEASE.json" if /i not "%%F"=="shared/release.ts" set "HGR_UNSAFE_CONFLICT=1"
+)
+if defined HGR_UNMERGED (
+    if defined HGR_UNSAFE_CONFLICT (
+        echo [STOPPED] Git has a real source-file conflict that Update will not guess at.
+        git status --short
+        goto :PAUSE_EXIT
+    )
+    echo [RECOVERY] Clearing stale generated release-file conflict state...
+    git restore --source=HEAD --staged --worktree -- RELEASE.json shared/release.ts
+    if errorlevel 1 (
+        echo [STOPPED] Could not clear the generated release-file conflict state.
+        goto :PAUSE_EXIT
+    )
+    echo [OK] Generated release-file conflict state cleared safely.
+)
+
+rem Generated release identity is disposable before a pull; STEP 2 recreates it
+rem from the source tree. Clearing local drift here prevents repeat pull conflicts.
+git restore --staged --worktree -- RELEASE.json shared/release.ts >nul 2>&1
+
 echo Current Git status:
 echo ------------------------------------------------------------
 git status -sb
@@ -139,7 +167,7 @@ rem Safety check for private/sensitive-looking files.
 set "BLOCKED=0"
 for /f "delims=" %%F in ('git diff --cached --name-only') do (
     echo %%F | findstr /i /r ^
-      /c:"Oracle Quick Deploy" ^
+      /c:"^dev-tools/Oracle Quick Deploy/" ^
       /c:"OWNER SETUP CODE" ^
       /c:"ACCOUNT MIGRATION" ^
       /c:"OWNER BUILD" ^
