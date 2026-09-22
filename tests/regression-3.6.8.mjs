@@ -5,8 +5,8 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const json = (path) => JSON.parse(read(path));
 
 const displayVersion = read('VERSION').trim();
-assert.match(displayVersion, /^(?:3\.6\.8[a-z]?|3\.7\.0[a-z]?|4\.0\.0)$/, '3.6.8 regression must run only on the 3.6.8 line');
-const npmVersion = displayVersion === '4.0.0' ? '4.0.0' : displayVersion.startsWith('3.7.0') ? (displayVersion === '3.7.0' ? '3.7.0' : `3.7.0-${displayVersion.slice(-1)}`) : displayVersion === '3.6.8' ? '3.6.8' : `3.6.8-${displayVersion.slice(-1)}`;
+assert.match(displayVersion, /^(?:3\.6\.8[a-z]?|3\.7\.0[a-z]?|4\.\d+\.\d+)$/, 'Historical 3.6.8 regression must remain valid on later HGR 4.x releases');
+const npmVersion = displayVersion.replace(/^(\d+\.\d+\.\d+)([a-z])$/, '$1-$2')
 for (const file of ['package.json','client/package.json','server/package.json','shared/package.json']) assert.equal(json(file).version, npmVersion, `${file} version mismatch`);
 
 const home = read('client/src/platform/components/HomeScreen.tsx');
