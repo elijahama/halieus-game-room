@@ -14,14 +14,19 @@ if (-not (Test-Path -LiteralPath $IconGenerator)) {
 
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$BrandingRevision = 'r5'
+$BrandingRevision = 'r6'
 $StartIconPath = Join-Path $LauncherIconRoot "Start Halieus Game Room-$BrandingRevision.ico"
 $RestartIconPath = Join-Path $LauncherIconRoot "Restart Halieus Game Room-$BrandingRevision.ico"
 $CloseIconPath = Join-Path $LauncherIconRoot "Close Halieus Game Room-$BrandingRevision.ico"
 $UpdateIconPath = Join-Path $LauncherIconRoot "Update Halieus Website-$BrandingRevision.ico"
 $PowerShellIconPath = Join-Path $LauncherIconRoot "HGR PowerShell-$BrandingRevision.ico"
-$ShortcutDirectory = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Halieus Game Room'
-New-Item -ItemType Directory -Force -Path $ShortcutDirectory | Out-Null
+$ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
+$LegacyShortcutDirectory = Join-Path $ProgramsRoot 'Halieus Game Room'
+New-Item -ItemType Directory -Force -Path $ProgramsRoot | Out-Null
+
+# Windows Search/Pin-to-Start is most reliable when these utility shortcuts sit
+# directly in the user's Programs root rather than inside an extra nested folder.
+$ShortcutDirectory = $ProgramsRoot
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
 $StartShortcut = Join-Path $ShortcutDirectory 'Start Halieus Game Room.lnk'
 $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
@@ -99,11 +104,39 @@ $terminal.IconLocation = "$PowerShellIconPath,0"
 $terminal.WindowStyle = 1
 $terminal.Save()
 
+# Remove the older nested Start Menu copies so Search does not show duplicates.
+if (Test-Path -LiteralPath $LegacyShortcutDirectory) {
+    Get-ChildItem -LiteralPath $LegacyShortcutDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
+        Remove-Item -Force -ErrorAction SilentlyContinue
+    try { Remove-Item -LiteralPath $LegacyShortcutDirectory -Force -ErrorAction Stop } catch {}
+}
+
+# Verify every Start Menu entry exists before reporting success.
+$CreatedShortcuts = @(
+    $StartShortcut,
+    $RestartShortcut,
+    $CloseShortcut,
+    $UpdateShortcut,
+    $PowerShellShortcut
+)
+foreach ($shortcutPath in $CreatedShortcuts) {
+    if (-not (Test-Path -LiteralPath $shortcutPath)) {
+        throw "Halieus shortcut creation failed: $shortcutPath"
+    }
+}
+
 # Nudge Windows to re-read shortcut artwork after the icon paths change.
 $IconRefresh = Join-Path $env:SystemRoot 'System32\ie4uinit.exe'
 if (Test-Path -LiteralPath $IconRefresh) {
     try { Start-Process -FilePath $IconRefresh -ArgumentList '-show' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
 }
+
+Write-Host ''
+Write-Host 'Start Menu shortcuts created:' -ForegroundColor Cyan
+foreach ($shortcutPath in $CreatedShortcuts) {
+    Write-Host "  $shortcutPath" -ForegroundColor DarkGray
+}
+Write-Host 'Search these names in Start, then choose Pin to Start.' -ForegroundColor Green
 
 # Shortcuts belong in the Start Menu. Remove old generated root shortcuts so
 # the source folder stays readable and moving helpers cannot leave stale links.
