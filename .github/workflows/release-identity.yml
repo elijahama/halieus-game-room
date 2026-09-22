@@ -7,8 +7,6 @@ on:
     paths-ignore:
       - RELEASE.json
       - shared/release.ts
-      - .github/debug/typecheck-failure.txt
-      - .github/debug/regression-failure.txt
   workflow_dispatch:
 
 permissions:
@@ -53,42 +51,10 @@ jobs:
         run: npm ci
 
       - name: Typecheck current HGR source
-        id: typecheck
-        continue-on-error: true
-        shell: bash
-        run: npm run typecheck 2>&1 | tee typecheck-failure.txt
-
-      - name: Publish typecheck failure for repair
-        if: steps.typecheck.outcome == 'failure'
-        shell: bash
-        run: |
-          mkdir -p .github/debug
-          cp typecheck-failure.txt .github/debug/typecheck-failure.txt
-          git config user.name "HGR Release Bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add .github/debug/typecheck-failure.txt
-          git commit -m "ci: capture typecheck failure"
-          git push origin HEAD:main
-          exit 1
+        run: npm run typecheck
 
       - name: Run HGR regression chain
-        id: regression
-        continue-on-error: true
-        shell: bash
-        run: npm run test:regression 2>&1 | tee regression-failure.txt
-
-      - name: Publish regression failure for repair
-        if: steps.regression.outcome == 'failure'
-        shell: bash
-        run: |
-          mkdir -p .github/debug
-          cp regression-failure.txt .github/debug/regression-failure.txt
-          git config user.name "HGR Release Bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add .github/debug/regression-failure.txt
-          git commit -m "ci: capture regression failure"
-          git push origin HEAD:main
-          exit 1
+        run: npm run test:regression
 
       - name: Generate exact HGR release identity
         run: npm run prepare:release
