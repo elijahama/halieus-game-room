@@ -1,0 +1,485 @@
+/*
+ * HGR Design System v1
+ * Approved implementation foundation for the 4.1.x redesign.
+ *
+ * This file is loaded after index.css and hgr-theme.css. It is intentionally
+ * conservative about game geometry: shared product chrome and reusable
+ * controls are normalized here, while individual boards/tables keep their
+ * protected layout rules until their own redesign pass.
+ */
+
+:root {
+  /* Brand */
+  --hgr-yellow: #ffc200;
+  --hgr-yellow-strong: #e7a900;
+  --hgr-yellow-soft: #ffe08a;
+  --hgr-navy: #081b2b;
+  --hgr-sky: #00aef0;
+  --hgr-coral: #ff5b5b;
+  --hgr-green: #22c77a;
+  --hgr-violet: #8b5cf6;
+
+  /* Light mode surfaces */
+  --hgr-page: #f4f7fb;
+  --hgr-surface: #ffffff;
+  --hgr-surface-raised: #ffffff;
+  --hgr-surface-soft: #eef3f8;
+  --hgr-surface-strong: #e1e8f0;
+  --hgr-surface-inverse: #0b1826;
+
+  /* Type */
+  --hgr-text: #101828;
+  --hgr-text-soft: #344054;
+  --hgr-muted: #667085;
+  --hgr-text-inverse: #f8fafc;
+
+  /* Lines */
+  --hgr-border: rgba(8, 27, 43, 0.10);
+  --hgr-border-strong: rgba(8, 27, 43, 0.18);
+  --hgr-border-brand: rgba(255, 194, 0, 0.46);
+
+  /* Semantic aliases */
+  --hgr-brand: var(--hgr-yellow);
+  --hgr-brand-soft: var(--hgr-yellow-soft);
+  --hgr-brand-ink: var(--hgr-navy);
+  --hgr-success: var(--hgr-green);
+  --hgr-info: var(--hgr-sky);
+  --hgr-danger: var(--hgr-coral);
+  --hgr-warning: #f5a524;
+  --hgr-offline: #8a98a8;
+  --hgr-start: var(--hgr-green);
+  --hgr-restart: #d59a33;
+  --hgr-close: var(--hgr-coral);
+  --hgr-update: #4e84d9;
+  --hgr-dev: #64748b;
+
+  /* Geometry */
+  --hgr-radius-xs: 8px;
+  --hgr-radius-sm: 12px;
+  --hgr-radius-md: 16px;
+  --hgr-radius-lg: 20px;
+  --hgr-radius-xl: 24px;
+  --hgr-radius-2xl: 30px;
+  --hgr-radius-pill: 999px;
+
+  /* Spacing */
+  --hgr-space-1: 4px;
+  --hgr-space-2: 8px;
+  --hgr-space-3: 12px;
+  --hgr-space-4: 16px;
+  --hgr-space-5: 24px;
+  --hgr-space-6: 32px;
+  --hgr-space-7: 48px;
+
+  /* Type scale */
+  --hgr-type-caption: 12px;
+  --hgr-type-small: 14px;
+  --hgr-type-body: 16px;
+  --hgr-type-h3: clamp(18px, 1.8vw, 22px);
+  --hgr-type-h2: clamp(24px, 3vw, 32px);
+  --hgr-type-h1: clamp(34px, 5vw, 48px);
+
+  /* Depth */
+  --hgr-shadow-soft: 0 8px 24px rgba(17, 24, 39, 0.08);
+  --hgr-shadow-panel: 0 20px 54px rgba(17, 24, 39, 0.12);
+  --hgr-shadow-float: 0 24px 80px rgba(17, 24, 39, 0.16);
+  --hgr-shadow-brand: 0 14px 32px rgba(255, 194, 0, 0.20);
+  --hgr-focus: 0 0 0 3px rgba(255, 194, 0, 0.28);
+
+  /* Motion */
+  --hgr-motion-fast: 120ms;
+  --hgr-motion-default: 180ms;
+  --hgr-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html[data-theme="dark"] {
+  --hgr-page: #06111c;
+  --hgr-surface: #0b1826;
+  --hgr-surface-raised: #102338;
+  --hgr-surface-soft: #142b41;
+  --hgr-surface-strong: #1c3852;
+  --hgr-surface-inverse: #ffffff;
+
+  --hgr-text: #f8fafc;
+  --hgr-text-soft: #d6deea;
+  --hgr-muted: #9eabba;
+  --hgr-text-inverse: #101828;
+
+  --hgr-border: rgba(255, 255, 255, 0.09);
+  --hgr-border-strong: rgba(255, 255, 255, 0.16);
+  --hgr-border-brand: rgba(255, 194, 0, 0.42);
+
+  --hgr-shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.24);
+  --hgr-shadow-panel: 0 22px 64px rgba(0, 0, 0, 0.32);
+  --hgr-shadow-float: 0 28px 90px rgba(0, 0, 0, 0.42);
+  --hgr-shadow-brand: 0 14px 36px rgba(255, 194, 0, 0.14);
+  --hgr-focus: 0 0 0 3px rgba(255, 194, 0, 0.24);
+}
+
+html,
+body,
+#root {
+  background: var(--hgr-page);
+  color: var(--hgr-text);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Shared buttons                                                        */
+/* ---------------------------------------------------------------------- */
+
+.button-primary,
+.button-outline,
+.button-muted,
+.button-danger,
+.button-ghost,
+.hgr-button {
+  min-height: 42px;
+  border-radius: var(--hgr-radius-sm) !important;
+  border: 1px solid transparent;
+  padding: 0 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transition:
+    transform var(--hgr-motion-fast) var(--hgr-ease),
+    background-color var(--hgr-motion-default) var(--hgr-ease),
+    border-color var(--hgr-motion-default) var(--hgr-ease),
+    box-shadow var(--hgr-motion-default) var(--hgr-ease);
+}
+
+.button-primary,
+.hgr-button--primary {
+  border-color: color-mix(in srgb, var(--hgr-yellow) 72%, #9f7200) !important;
+  background: linear-gradient(180deg, #ffd84a 0%, var(--hgr-yellow) 52%, #efad00 100%) !important;
+  color: var(--hgr-navy) !important;
+  box-shadow: var(--hgr-shadow-brand) !important;
+}
+
+.button-primary:hover:not(:disabled),
+.hgr-button--primary:hover:not(:disabled) {
+  filter: brightness(1.03);
+}
+
+.button-outline,
+.hgr-button--secondary {
+  border-color: var(--hgr-border-strong) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: none !important;
+}
+
+.button-muted,
+.hgr-button--muted {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text-soft) !important;
+}
+
+.button-ghost,
+.hgr-button--ghost {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: var(--hgr-text-soft) !important;
+}
+
+.button-danger,
+.mini-danger-button,
+.hgr-button--danger {
+  border-color: color-mix(in srgb, var(--hgr-danger) 72%, #7a2020) !important;
+  background: var(--hgr-danger) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px rgba(255, 91, 91, 0.18) !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Inputs and form controls                                               */
+/* ---------------------------------------------------------------------- */
+
+input,
+select,
+textarea,
+.hgr-input,
+.hgr-select {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--hgr-muted);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid transparent !important;
+  box-shadow: var(--hgr-focus) !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Platform navigation and chrome                                         */
+/* ---------------------------------------------------------------------- */
+
+.halieus-sidebar,
+.halieus-mobile-bar,
+.halieus-home-build-popover,
+.halieus-game-chrome {
+  border-color: var(--hgr-border) !important;
+  background: color-mix(in srgb, var(--hgr-surface) 96%, transparent) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.halieus-side-nav button,
+.halieus-game-menu-trigger,
+.halieus-side-display-controls > button {
+  border-radius: var(--hgr-radius-sm) !important;
+  color: var(--hgr-text-soft);
+}
+
+.halieus-side-nav button.is-active {
+  border-color: var(--hgr-border-brand) !important;
+  background: color-mix(in srgb, var(--hgr-yellow) 14%, var(--hgr-surface)) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: inset 3px 0 0 var(--hgr-yellow);
+}
+
+.halieus-side-nav button.is-active svg,
+.halieus-side-nav button.is-active span:first-child {
+  color: var(--hgr-yellow-strong);
+}
+
+.halieus-global-join {
+  border-radius: var(--hgr-radius-sm) !important;
+  background: linear-gradient(180deg, #ffd84a 0%, var(--hgr-yellow) 58%, #efad00 100%) !important;
+  color: var(--hgr-navy) !important;
+  box-shadow: var(--hgr-shadow-brand);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Shared cards and panels                                                */
+/* ---------------------------------------------------------------------- */
+
+.halieus-section-card,
+.halieus-game-inbox,
+.halieus-live-games,
+.halieus-home-games,
+.halieus-home-recent,
+.halieus-future-games,
+.halieus-player-tools,
+.halieus-games-layout > section,
+.guilds-panel,
+.guild-card,
+.card-game-lobby-card,
+.card-game-control-panel,
+.rebuild-panel,
+.word-arena-intro,
+.word-arena-roster,
+.word-arena-scoreboard,
+.word-arena-stage,
+.word-arena-room-activity,
+.hgr-card {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-soft);
+}
+
+.halieus-showcase {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-2xl) !important;
+  box-shadow: var(--hgr-shadow-panel);
+}
+
+.halieus-section-card header p,
+.halieus-home-games header p,
+.halieus-home-recent header p,
+.halieus-live-games header p,
+.halieus-game-inbox header p,
+.halieus-page-heading p,
+.modal-eyebrow {
+  color: var(--hgr-yellow-strong) !important;
+}
+
+html[data-theme="dark"] .halieus-section-card header p,
+html[data-theme="dark"] .halieus-home-games header p,
+html[data-theme="dark"] .halieus-home-recent header p,
+html[data-theme="dark"] .halieus-live-games header p,
+html[data-theme="dark"] .halieus-game-inbox header p,
+html[data-theme="dark"] .halieus-page-heading p,
+html[data-theme="dark"] .modal-eyebrow {
+  color: var(--hgr-yellow) !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Tabs, chips and status                                                 */
+/* ---------------------------------------------------------------------- */
+
+.hgr-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+
+.hgr-tab {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--hgr-radius-sm);
+  background: transparent;
+  color: var(--hgr-muted);
+  font-weight: 750;
+}
+
+.hgr-tab[aria-selected="true"],
+.hgr-tab.is-active {
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+  box-shadow: inset 0 -2px 0 var(--hgr-yellow), var(--hgr-shadow-soft);
+}
+
+.hgr-chip,
+.hgr-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-pill);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text-soft);
+  font-size: var(--hgr-type-caption);
+  font-weight: 800;
+}
+
+.hgr-status--online { color: var(--hgr-success); }
+.hgr-status--progress { color: var(--hgr-info); }
+.hgr-status--waiting { color: var(--hgr-warning); }
+.hgr-status--danger { color: var(--hgr-danger); }
+.hgr-status--offline { color: var(--hgr-offline); }
+
+/* ---------------------------------------------------------------------- */
+/* Shared modal / floating surfaces                                       */
+/* ---------------------------------------------------------------------- */
+
+.game-menu-modal,
+.card-game-invite-modal,
+.hgr-modal {
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+
+.status-toast,
+.hgr-toast {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text-soft) !important;
+  box-shadow: var(--hgr-shadow-panel) !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Typography contracts                                                   */
+/* ---------------------------------------------------------------------- */
+
+.hgr-display {
+  margin: 0;
+  font-size: var(--hgr-type-h1);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-weight: 900;
+}
+
+.hgr-heading {
+  margin: 0;
+  font-size: var(--hgr-type-h2);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  font-weight: 850;
+}
+
+.hgr-subheading {
+  margin: 0;
+  font-size: var(--hgr-type-h3);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
+.hgr-body {
+  font-size: var(--hgr-type-body);
+  line-height: 1.55;
+  color: var(--hgr-text-soft);
+}
+
+.hgr-caption {
+  font-size: var(--hgr-type-caption);
+  line-height: 1.4;
+  color: var(--hgr-muted);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Responsive product contracts                                           */
+/* ---------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  :root {
+    --hgr-space-6: 28px;
+    --hgr-space-7: 40px;
+  }
+
+  .halieus-sidebar {
+    box-shadow: none;
+  }
+
+  .hgr-desktop-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --hgr-radius-lg: 18px;
+    --hgr-radius-xl: 20px;
+    --hgr-radius-2xl: 22px;
+    --hgr-space-5: 20px;
+    --hgr-space-6: 24px;
+    --hgr-space-7: 32px;
+  }
+
+  .button-primary,
+  .button-outline,
+  .button-muted,
+  .button-danger,
+  .button-ghost,
+  .hgr-button {
+    min-height: 44px;
+  }
+
+  .halieus-section-card,
+  .halieus-game-inbox,
+  .halieus-live-games,
+  .halieus-home-games,
+  .halieus-home-recent,
+  .halieus-future-games,
+  .guild-card,
+  .hgr-card {
+    border-radius: var(--hgr-radius-md) !important;
+  }
+
+  .hgr-mobile-stack {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
