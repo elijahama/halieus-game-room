@@ -11,7 +11,7 @@ echo  Halieus Game Room %HGR_VERSION% - First Run
 echo  Folder: %CD%
 echo =============================================================
 echo.
-echo Creating fresh launchers for THIS extracted folder...
+echo Refreshing shortcuts for THIS folder without changing icon files...
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\windows\launcher-shortcuts.ps1" -UnhideScripts
 if errorlevel 1 (
   echo.
@@ -21,7 +21,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo Launchers refreshed successfully.
+echo Shortcuts refreshed successfully. Existing launcher icons were preserved.
 echo Use the "Update Halieus Website" Start Menu shortcut for the full GitHub + validation + deploy workflow.
 echo.
 pause
