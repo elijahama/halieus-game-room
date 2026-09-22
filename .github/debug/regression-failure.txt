@@ -4,21 +4,26 @@
 
 Halieus Game Room 3.6.8 regression: PASS
 Halieus Game Room 3.6.8a security / leaderboard / icon regression: PASS
+Halieus Game Room 3.6.8b npm security regression: PASS
+Halieus Game Room 3.6.8c Oracle audit-gate regression: PASS
+Halieus Game Room 3.6.8d single-outline game icon regression: PASS
+Halieus Game Room 3.6.8e Mega Board Bank inventory regression: PASS
+Halieus Game Room 3.7.0 platform + Ayo + Word Board regression: PASS
 node:fs:440
     return binding.readFileUtf8(path, stringToFlags(options.flag));
                    ^
 
-Error: ENOENT: no such file or directory, open '/home/runner/work/halieus-game-room/halieus-game-room/dev-tools/Oracle Quick Deploy/quick-install.sh'
+Error: ENOENT: no such file or directory, open '/home/runner/work/halieus-game-room/halieus-game-room/update-website.ps1'
     at readFileSync (node:fs:440:20)
-    at read (file:///home/runner/work/halieus-game-room/halieus-game-room/tests/regression-3.6.8b.mjs:4:24)
-    at file:///home/runner/work/halieus-game-room/halieus-game-room/tests/regression-3.6.8b.mjs:44:25
+    at read (file:///home/runner/work/halieus-game-room/halieus-game-room/tests/regression-3.7.0a.mjs:4:17)
+    at file:///home/runner/work/halieus-game-room/halieus-game-room/tests/regression-3.7.0a.mjs:14:15
     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
   errno: -2,
   code: 'ENOENT',
   syscall: 'open',
-  path: '/home/runner/work/halieus-game-room/halieus-game-room/dev-tools/Oracle Quick Deploy/quick-install.sh'
+  path: '/home/runner/work/halieus-game-room/halieus-game-room/update-website.ps1'
 }
 
 Node.js v22.23.2
