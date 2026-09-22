@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.1.0",
-  "fingerprint": "hgr-4.1.0-2a28f1b159ebf310",
+  "fingerprint": "hgr-4.1.0-e5852fe9e851a19b",
   "algorithm": "sha256",
-  "sourceHash": "2a28f1b159ebf310b02bf791140ebf5d00c3dc5ff6c72c797972c33bebe7b69a",
-  "integrityFileCount": 339,
+  "sourceHash": "e5852fe9e851a19b31c93b3877a01e5f559e9f43d8363d6a8074d9d9e2e071a9",
+  "integrityFileCount": 340,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -158,6 +158,7 @@
     "client/src/platform/network/socket.ts",
     "client/src/platform/network/sockets.ts",
     "client/src/platform/projectTimeline.ts",
+    "client/src/platform/theme.ts",
     "client/src/styles/hgr-design-v1.css",
     "client/src/styles/hgr-theme.css",
     "client/src/types/qrcode.d.ts",
