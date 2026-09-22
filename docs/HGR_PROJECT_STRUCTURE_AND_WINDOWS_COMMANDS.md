@@ -241,3 +241,20 @@ Colour map:
 - HGR PowerShell — dark blue with a terminal badge
 
 If Windows still shows an old icon on an already pinned Start item, unpin that old item and pin the freshly regenerated Start Menu shortcut. Windows can cache pinned shortcut artwork independently of the underlying `.lnk` file.
+
+
+## Windows icon cache and branding revisions
+
+Windows can cache a shortcut icon even after the underlying `.ico` is replaced. HGR therefore gives generated launcher icons a branding revision in the filename, for example `Start Halieus Game Room-r2.ico`.
+
+Changing the icon path as well as the image contents forces Windows to notice a new asset much more reliably. When the launcher design changes again, increment the branding revision in both `generate-launcher-icons.ps1` and `launcher-shortcuts.ps1`.
+
+The current r2 palette is:
+
+- Start — bright green `#22C55E`
+- Restart — amber/orange `#F59E0B`
+- Close — red `#DC2626`
+- Update — blue `#2563EB`
+- HGR PowerShell — dark blue `#0F4C81`
+
+If Search shows two HGR PowerShell results, one is normally the old manually-created shortcut and the other is the generated HGR shortcut. Keep the generated one with the HGR-branded icon and delete the old manual shortcut after confirming the generated shortcut opens at the HGR root.
