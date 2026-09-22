@@ -31,6 +31,7 @@ const guildServer=read('server/src/platform/guilds.ts');
 const server=read('server/src/index.ts');
 const archive=read('server/src/platform/sessionArchive.ts');
 const home=read('client/src/platform/components/HomeScreen.tsx');
+const main=read('client/src/main.tsx');
 const guildPanel=read('client/src/platform/components/GuildsPanel.tsx');
 const css=read('client/src/index.css');
 const sw=read('client/public/sw.js');
