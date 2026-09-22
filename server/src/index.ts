@@ -48,7 +48,7 @@ import { APP_VERSION } from "../../shared/version.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
 import { getFeedbackFilePath } from "./platform/dataPaths.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
-import { configureAccountAdminRuntimeControls, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
+import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
@@ -161,7 +161,7 @@ app.use(["/auth", "/accounts", "/admin", "/guilds"], (_request, response, next) 
   next();
 });
 registerAccountRoutes(app);
-registerGuildRoutes(app, getAuthenticatedAccount);
+registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 
 const feedbackFilePath = getFeedbackFilePath();
 const feedbackDataDirectory = dirname(feedbackFilePath);
