@@ -13,7 +13,7 @@ public static class HgrNativeIcon {
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$BrandingRevision = 'r3'
+$BrandingRevision = 'r4'
 New-Item -ItemType Directory -Force -Path $LauncherRoot | Out-Null
 Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
 
@@ -54,67 +54,135 @@ function Save-BitmapAsIcon {
     }
 }
 
+function Get-Color {
+    param([Parameter(Mandatory = $true)][string]$Hex)
+    return [System.Drawing.ColorTranslator]::FromHtml($Hex)
+}
+
 function New-HgrLauncherIcon {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string]$AccentHex,
-        [switch]$WhiteH,
+        [Parameter(Mandatory = $true)][string]$TopHex,
+        [Parameter(Mandatory = $true)][string]$BaseHex,
+        [Parameter(Mandatory = $true)][string]$BottomHex,
+        [Parameter(Mandatory = $true)][string]$RimHex,
         [switch]$PowerShellBadge
     )
 
     $size = 256
     $bitmap = [System.Drawing.Bitmap]::new($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+
     try {
         $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+        $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+        $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
         $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
         $graphics.Clear([System.Drawing.Color]::Transparent)
 
-        $accent = [System.Drawing.ColorTranslator]::FromHtml($AccentHex)
-        $surface = [System.Drawing.ColorTranslator]::FromHtml('#20252D')
-        $surfaceRaised = [System.Drawing.ColorTranslator]::FromHtml('#2A303A')
-        $warmGold = [System.Drawing.ColorTranslator]::FromHtml('#E7C15B')
-        $white = [System.Drawing.Color]::FromArgb(245, 247, 250)
+        $top = Get-Color $TopHex
+        $base = Get-Color $BaseHex
+        $bottom = Get-Color $BottomHex
+        $rim = Get-Color $RimHex
+        $navy = Get-Color '#18253D'
+        $badgeSurface = Get-Color '#243247'
+        $badgeText = [System.Drawing.Color]::FromArgb(248, 250, 252)
 
-        # Soft outer shadow.
-        $shadow = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(20, 24, 216, 216)) -Radius 38
-        $graphics.FillPath(([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(52, 0, 0, 0))), $shadow)
-
-        # Main dark HGR tile.
-        $outer = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(18, 18, 216, 216)) -Radius 38
-        $graphics.FillPath(([System.Drawing.SolidBrush]::new($surface)), $outer)
-
-        # Raised inner surface; deliberately no black cap or high-contrast split.
-        $inner = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(30, 30, 192, 176)) -Radius 29
-        $graphics.FillPath(([System.Drawing.SolidBrush]::new($surfaceRaised)), $inner)
-
-        # Muted action colour appears as a slim border and footer accent.
-        $pen = [System.Drawing.Pen]::new($accent, 7)
+        # Soft drop shadow underneath the glossy tile.
+        $shadowPath = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(24, 27, 208, 216)) -Radius 46
+        $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(74, 0, 0, 0))
         try {
-            $graphics.DrawPath($pen, $outer)
+            $graphics.FillPath($shadowBrush, $shadowPath)
         } finally {
-            $pen.Dispose()
+            $shadowBrush.Dispose()
+            $shadowPath.Dispose()
         }
 
-        $accentBar = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(52, 208, 152, 11)) -Radius 5
-        $graphics.FillPath(([System.Drawing.SolidBrush]::new($accent)), $accentBar)
+        # Main rounded Halieus pillow tile.
+        $tileRect = [System.Drawing.RectangleF]::new(20, 14, 216, 220)
+        $tilePath = New-RoundedRectanglePath -Rect $tileRect -Radius 48
 
-        $fontFamily = [System.Drawing.FontFamily]::new('Arial')
-        $font = [System.Drawing.Font]::new($fontFamily, 104, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+        $tileGradient = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+            $tileRect,
+            $top,
+            $bottom,
+            [System.Drawing.Drawing2D.LinearGradientMode]::Vertical
+        )
+        $blend = [System.Drawing.Drawing2D.ColorBlend]::new()
+        $blend.Colors = [System.Drawing.Color[]]@($top, $base, $bottom)
+        $blend.Positions = [single[]]@(0.0, 0.48, 1.0)
+        $tileGradient.InterpolationColors = $blend
+
         try {
-            $hColor = if ($WhiteH) { $white } else { $warmGold }
-            $hBrush = [System.Drawing.SolidBrush]::new($hColor)
-            $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(58, 0, 0, 0))
+            $graphics.FillPath($tileGradient, $tilePath)
+        } finally {
+            $tileGradient.Dispose()
+        }
+
+        # Darker rim: this is the equivalent of the gold/orange border on the
+        # main Halieus icon, but tinted to each launcher action.
+        $rimPen = [System.Drawing.Pen]::new($rim, 8)
+        $rimPen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+        try {
+            $graphics.DrawPath($rimPen, $tilePath)
+        } finally {
+            $rimPen.Dispose()
+        }
+
+        # Glossy top highlight, clipped inside the tile so it feels like the
+        # existing Halieus app icon rather than a flat utility glyph.
+        $state = $graphics.Save()
+        try {
+            $graphics.SetClip($tilePath)
+            $glossRect = [System.Drawing.RectangleF]::new(32, 28, 192, 96)
+            $glossPath = New-RoundedRectanglePath -Rect $glossRect -Radius 38
+            $glossBrush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+                $glossRect,
+                [System.Drawing.Color]::FromArgb(125, 255, 255, 255),
+                [System.Drawing.Color]::FromArgb(8, 255, 255, 255),
+                [System.Drawing.Drawing2D.LinearGradientMode]::Vertical
+            )
+            try {
+                $graphics.FillPath($glossBrush, $glossPath)
+            } finally {
+                $glossBrush.Dispose()
+                $glossPath.Dispose()
+            }
+
+            # Slight lower shading adds the same chunky depth as the main icon.
+            $shadeRect = [System.Drawing.RectangleF]::new(26, 150, 204, 80)
+            $shadeBrush = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
+                $shadeRect,
+                [System.Drawing.Color]::FromArgb(0, 0, 0, 0),
+                [System.Drawing.Color]::FromArgb(42, 0, 0, 0),
+                [System.Drawing.Drawing2D.LinearGradientMode]::Vertical
+            )
+            try {
+                $graphics.FillRectangle($shadeBrush, $shadeRect)
+            } finally {
+                $shadeBrush.Dispose()
+            }
+        } finally {
+            $graphics.Restore($state)
+        }
+
+        # Central navy H mirrors the primary Halieus mark.
+        $fontFamily = [System.Drawing.FontFamily]::new('Arial')
+        $font = [System.Drawing.Font]::new($fontFamily, 112, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+        try {
+            $hBrush = [System.Drawing.SolidBrush]::new($navy)
+            $hShadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(42, 255, 255, 255))
             try {
                 $format = [System.Drawing.StringFormat]::new()
                 $format.Alignment = [System.Drawing.StringAlignment]::Center
                 $format.LineAlignment = [System.Drawing.StringAlignment]::Center
 
-                $graphics.DrawString('H', $font, $shadowBrush, ([System.Drawing.RectangleF]::new(61, 59, 138, 134)), $format)
-                $graphics.DrawString('H', $font, $hBrush, ([System.Drawing.RectangleF]::new(58, 56, 138, 134)), $format)
+                $graphics.DrawString('H', $font, $hShadowBrush, ([System.Drawing.RectangleF]::new(58, 61, 144, 140)), $format)
+                $graphics.DrawString('H', $font, $hBrush, ([System.Drawing.RectangleF]::new(56, 59, 144, 140)), $format)
             } finally {
                 $hBrush.Dispose()
-                $shadowBrush.Dispose()
+                $hShadowBrush.Dispose()
+                $format.Dispose()
             }
         } finally {
             $font.Dispose()
@@ -122,37 +190,52 @@ function New-HgrLauncherIcon {
         }
 
         if ($PowerShellBadge) {
-            $badge = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(158, 166, 70, 48)) -Radius 12
-            $graphics.FillPath(([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(235, 45, 54, 66))), $badge)
-
-            $badgePen = [System.Drawing.Pen]::new($accent, 3)
+            $badgeRect = [System.Drawing.RectangleF]::new(158, 168, 72, 48)
+            $badgePath = New-RoundedRectanglePath -Rect $badgeRect -Radius 12
+            $badgeBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(240, $badgeSurface.R, $badgeSurface.G, $badgeSurface.B))
+            $badgePen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(180, 255, 255, 255), 2)
             try {
-                $graphics.DrawPath($badgePen, $badge)
+                $graphics.FillPath($badgeBrush, $badgePath)
+                $graphics.DrawPath($badgePen, $badgePath)
             } finally {
+                $badgeBrush.Dispose()
                 $badgePen.Dispose()
+                $badgePath.Dispose()
             }
 
             $badgeFont = [System.Drawing.Font]::new('Consolas', 26, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-            $badgeBrush = [System.Drawing.SolidBrush]::new($white)
+            $badgeTextBrush = [System.Drawing.SolidBrush]::new($badgeText)
             try {
-                $graphics.DrawString('>_', $badgeFont, $badgeBrush, 166, 174)
+                $graphics.DrawString('>_', $badgeFont, $badgeTextBrush, 165, 176)
             } finally {
                 $badgeFont.Dispose()
-                $badgeBrush.Dispose()
+                $badgeTextBrush.Dispose()
             }
         }
 
         Save-BitmapAsIcon -Bitmap $bitmap -Path $Path
+        $tilePath.Dispose()
     } finally {
         $graphics.Dispose()
         $bitmap.Dispose()
     }
 }
 
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") -AccentHex '#3F7D62'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") -AccentHex '#B47A35'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") -AccentHex '#A94F55' -WhiteH
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") -AccentHex '#4C6F9F'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") -AccentHex '#4A6178' -PowerShellBadge
+# r4 follows the actual Halieus app-icon language: glossy rounded pillow,
+# darker rim, central navy H, and action colour in the body itself.
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") `
+    -TopHex '#69D28C' -BaseHex '#3FAE63' -BottomHex '#248B48' -RimHex '#1D6C39'
+
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") `
+    -TopHex '#F7C766' -BaseHex '#D89A34' -BottomHex '#B66B19' -RimHex '#945616'
+
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") `
+    -TopHex '#F0837E' -BaseHex '#D45656' -BottomHex '#AA343C' -RimHex '#84272E'
+
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") `
+    -TopHex '#7FB0EB' -BaseHex '#4F85CF' -BottomHex '#2D60A5' -RimHex '#244F89'
+
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") `
+    -TopHex '#7FA7BF' -BaseHex '#557990' -BottomHex '#385A70' -RimHex '#2D485B' -PowerShellBadge
 
 Write-Host 'HGR launcher icons generated successfully.'
