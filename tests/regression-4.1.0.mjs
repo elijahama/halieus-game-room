@@ -42,6 +42,9 @@ const gitignore=read('.gitignore');
 const releaseIntegrity=read('scripts/release-integrity.mjs');
 const hgrTheme=read('client/src/styles/hgr-theme.css');
 const hgrDesignV1=read('client/src/styles/hgr-design-v1.css');
+const themeButton=read('client/src/platform/components/ThemeButton.tsx');
+const displaySettings=read('client/src/platform/components/DisplaySettingsPanel.tsx');
+const themeModel=read('client/src/platform/theme.ts');
 const hgrDesignV1Doc=read('docs/HGR_DESIGN_SYSTEM_V1.md');
 const projectTimeline=read('client/src/platform/projectTimeline.ts');
 const projectTimelineComponent=read('client/src/platform/components/ProjectTimeline.tsx');
@@ -61,6 +64,7 @@ assert.match(contracts,/interface HalieusGuildDetail/,'Guild detail contract mis
 assert.match(contracts,/participantAccountIds: string\[\]/,'Guild history must retain stable participant account ids');
 
 assert.match(accounts,/export function getAuthenticatedAccount\(/,'Guilds must authenticate through the canonical account store');
+assert.match(accounts,/export function getAccountSummaryById\(/,'Guild direct invites must resolve canonical account identity server-side');
 
 assert.match(guildServer,/export function registerGuildRoutes\(/,'Guild REST routes missing');
 assert.match(guildServer,/app\.post\("\/guilds\/join"/,'Private guild invite-code join route missing');
@@ -69,11 +73,13 @@ assert.match(guildServer,/app\.delete\("\/guilds\/:guildId\/messages\/:messageId
 assert.match(guildServer,/function canModerate\(/,'Guild moderator permission boundary missing');
 assert.match(guildServer,/app\.post\("\/guilds\/:guildId\/rooms"/,'Guild room reservation route missing');
 assert.match(guildServer,/app\.post\("\/guilds\/:guildId\/members\/:accountId\/role"/,'Guild role-management route missing');
+assert.match(guildServer,/app\.post\("\/guilds\/:guildId\/invitations"/,'Guild direct-player invitation route missing');
+assert.match(guildServer,/app\.post\("\/guilds\/invitations\/:invitationId\/respond"/,'Guild invitation response route missing');
 assert.match(guildServer,/function canCreateRoom\(/,'Server-side guild room permissions missing');
 assert.match(guildServer,/export async function recordGuildSessionResult\(/,'Guild result projection missing');
 assert.doesNotMatch(guildServer,/app\.get\("\/guilds\/search"/,'4.1.0 guilds must remain private/invite-led');
 
-assert.match(server,/registerGuildRoutes\(app, getAuthenticatedAccount\)/,'Server must register Guild routes');
+assert.match(server,/registerGuildRoutes\(app, getAuthenticatedAccount, getAccountSummaryById\)/,'Server must register Guild routes with canonical account lookup');
 assert.match(server,/await loadGuildStore\(\)/,'Server must load persistent guild data at startup');
 assert.match(server,/\["\/auth", "\/accounts", "\/admin", "\/guilds"\]/,'Guild responses must use no-store cache policy');
 
@@ -92,7 +98,7 @@ assert.match(home,/type HomeView = "home" \| "games" \| "players" \| "guilds"/,'
 assert.match(home,/import \{ GuildsPanel \} from "\.\/GuildsPanel"/,'Game Room must import the Guilds surface');
 assert.match(home,/function openGuildCreate\(game: GameId, roomCode: string\)/,'Guild rooms must hand off to the existing game create flow');
 assert.match(home,/view === "players" \|\| view === "guilds"/,'Players navigation must remain active while browsing Guilds');
-assert.match(home,/import \{ ProjectTimeline \} from "\.\/ProjectTimeline"/,'Home must import the project timeline');
+assert.doesNotMatch(home,/import \{ ProjectTimeline \} from "\.\/ProjectTimeline"/,'Project history should no longer occupy the player Home screen');
 assert.match(home,/import \{ HgrIcon \} from "\.\/HgrIcon"/,'Home navigation must import the shared SVG icon system');
 assert.match(home,/HgrIcon name="home"/,'Home navigation SVG icon missing');
 assert.match(home,/HgrIcon name="games"/,'Games navigation SVG icon missing');
@@ -102,13 +108,15 @@ assert.match(home,/HgrIcon name="info"/,'Build Info SVG icon missing');
 assert.doesNotMatch(home,/<span>⌂<\/span>|<span>▦<\/span>|<span>◉<\/span>|<span>＋<\/span>|<span>ⓘ<\/span>/,'Legacy text navigation glyphs must not return');
 assert.match(hgrIcon,/export function HgrIcon/,'Shared HGR SVG icon component missing');
 
-assert.match(home,/<ProjectTimeline currentVersion=\{APP_VERSION\} \/>/,'Home must render the full project timeline');
+assert.doesNotMatch(home,/<ProjectTimeline\b/,'Project history belongs in project/about documentation rather than Home');
 
 assert.match(guildPanel,/type GuildView = "rooms" \| "chat" \| "leaderboard" \| "members"/,'Guild UI must expose Rooms, Chat, Leaderboard and Members');
 assert.match(guildPanel,/Guilds is deliberately REST-backed rather than tied to a game socket/,'Guild architecture comment missing');
 assert.match(guildPanel,/setInterval\(\(\) => void loadDetail\(selectedGuildId, true\), 5000\)/,'Guild chat/detail persistence polling missing');
 assert.match(guildPanel,/Create guild room/,'Guild room creation action missing');
 assert.match(guildPanel,/PRIVATE INVITE CODE/,'Private guild invite UI missing');
+assert.match(guildPanel,/INVITE PLAYERS/,'Guild member surface must expose direct player invitations');
+assert.match(guildPanel,/pendingInvitations/,'Guild UI must surface pending invitations');
 
 assert.match(css,/HGR 4\.1\.0 — Guilds & persistent groups/,'4.1.0 Guild CSS marker missing');
 assert.match(css,/@media \(max-width: 680px\)[\s\S]*?\.halieus-guilds-panel/s,'Guilds need an explicit phone layout');
@@ -121,12 +129,18 @@ assert.match(hgrTheme,/--hgr-update:/,'Shared HGR semantic Update token missing'
 assert.match(hgrTheme,/\.hgr-project-history/,'Project timeline design-system styling missing');
 assert.match(hgrDesignV1,/--hgr-yellow:\s*#ffc200/i,'HGR Design System v1 primary yellow token missing');
 assert.match(hgrDesignV1,/--hgr-navy:\s*#081b2b/i,'HGR Design System v1 navy token missing');
-assert.match(hgrDesignV1,/html\[data-theme="dark"\][\s\S]*?--hgr-page:/s,'Design System v1 must define an intentional dark surface stack');
+assert.match(hgrDesignV1,/html\[data-theme="dark"\][\s\S]*?--hgr-page:\s*#0f1012/s,'Dark mode must remain chromatic-neutral rather than blue');
+assert.match(hgrDesignV1,/html\[data-theme="blue"\]/,'Blue must be an explicit optional theme');
 assert.match(hgrDesignV1,/\.button-primary,[\s\S]*?var\(--hgr-yellow\)/s,'Shared primary actions must use HGR yellow');
 assert.match(hgrDesignV1,/\.hgr-tabs/,'Reusable HGR tabs primitive missing');
 assert.match(hgrDesignV1,/\.hgr-status--online/,'Reusable HGR status primitive missing');
 assert.match(hgrDesignV1,/\.halieus-nav-icon/,'Shared navigation SVG icon styling missing');
 assert.match(hgrDesignV1,/\.halieus-mobile-menu-button::before[\s\S]*?content:\s*none !important/s,'Legacy mobile hamburger pseudo-glyph must be disabled');
+assert.match(themeButton,/mode: "custom"/,'Theme selector must expose Custom');
+assert.match(themeButton,/type="color"/,'Custom theme must expose RGB colour controls');
+assert.match(themeModel,/CUSTOM_THEME_KEY/,'Custom theme palette must persist separately');
+assert.match(displaySettings,/\["dark", "light", "blue", "custom"\]/,'Game menus must expose Dark, Light, Blue and Custom');
+assert.doesNotMatch(read('client/src/App.tsx'),/classList\.add\("theme-transitioning"\)/,'Theme changes must apply immediately without transition choreography');
 assert.match(hgrDesignV1,/@media \(max-width: 1024px\)/,'Design System v1 tablet contract missing');
 assert.match(hgrDesignV1,/@media \(max-width: 720px\)/,'Design System v1 phone contract missing');
 assert.match(main,/import "\.\/styles\/hgr-design-v1\.css";/,'HGR Design System v1 must load after the legacy theme layer');
