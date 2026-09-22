@@ -242,22 +242,44 @@ echo.
 echo STEP 9 - Publishing the validated HGR release to the website...
 echo.
 
-set "WEBSITE_UPDATER=%~dp0Update Halieus Website.cmd"
-if not exist "%WEBSITE_UPDATER%" (
-    echo [STOPPED] The private website updater was not found:
-    echo   %WEBSITE_UPDATER%
-    echo.
-    echo GitHub sync is complete, but Oracle deployment was not started.
-    goto :PAUSE_EXIT
+set "PRIVATE_UPDATE_PS1=%~dp0update-website.ps1"
+set "ORACLE_DEPLOY_PS1=%~dp0dev-tools\Oracle Quick Deploy\deploy-from-windows.ps1"
+
+if exist "%PRIVATE_UPDATE_PS1%" (
+    echo Using owner website updater:
+    echo   %PRIVATE_UPDATE_PS1%
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PRIVATE_UPDATE_PS1%"
+    if errorlevel 1 (
+        echo.
+        echo [STOPPED] GitHub sync succeeded, but the private website updater failed.
+        echo Review the updater output above. Your GitHub commit remains safe.
+        goto :PAUSE_EXIT
+    )
+    goto :DEPLOY_DONE
 )
 
-call "%WEBSITE_UPDATER%"
-if errorlevel 1 (
-    echo.
-    echo [STOPPED] GitHub sync succeeded, but the website deployment failed.
-    echo Review the updater output above. Your GitHub commit remains safe.
-    goto :PAUSE_EXIT
+if exist "%ORACLE_DEPLOY_PS1%" (
+    echo Owner wrapper was not found. Falling back to the Oracle deployment helper:
+    echo   %ORACLE_DEPLOY_PS1%
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%ORACLE_DEPLOY_PS1%" -UseDefaultSshAuth
+    if errorlevel 1 (
+        echo.
+        echo [STOPPED] GitHub sync succeeded, but Oracle deployment could not complete.
+        echo If your Oracle key is not loaded in ssh-agent, restore the private
+        echo update-website.ps1 owner helper and run this updater again.
+        goto :PAUSE_EXIT
+    )
+    goto :DEPLOY_DONE
 )
+
+echo.
+echo [OK] GitHub sync, validation and release preparation completed.
+echo [INFO] No private Oracle deployment helper was found on this computer.
+echo        Nothing is wrong with GitHub; website deployment was skipped.
+echo.
+goto :PAUSE_SUCCESS
+
+:DEPLOY_DONE
 
 echo.
 echo ============================================================
@@ -273,6 +295,17 @@ echo   5. Release identity generated and verified
 echo   6. Changes committed/pushed when needed
 echo   7. Final release identity re-verified
 echo   8. Website deployment completed
+echo.
+pause
+popd
+endlocal
+exit /b 0
+
+:PAUSE_SUCCESS
+echo.
+echo ============================================================
+echo                 HGR UPDATE COMPLETE
+echo ============================================================
 echo.
 pause
 popd
