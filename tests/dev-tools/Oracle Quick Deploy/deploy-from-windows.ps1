@@ -4,6 +4,7 @@ param(
     [string]$KeyPath = "",
     [switch]$UseDefaultSshAuth,
     [string]$SourceZip = "",
+    [switch]$PackageOnly,
     [int]$SshPort = 22,
     [string]$PublicAppUrl = "https://halieus.remotewire.net"
 )
@@ -229,6 +230,12 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
     $createdTempSource = $true
 } elseif (-not (Test-Path -LiteralPath $SourceZip)) {
     throw "Source ZIP not found: $SourceZip"
+}
+
+if ($PackageOnly) {
+    $createdTempSource = $false
+    Write-Output $SourceZip
+    exit 0
 }
 
 $target = "$OracleUser@$OracleHost"
