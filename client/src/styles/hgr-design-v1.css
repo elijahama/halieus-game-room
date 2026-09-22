@@ -1536,3 +1536,59 @@ button.halieus-player-identity {
   .halieus-custom-theme-dialog > footer .button-muted,
   .halieus-custom-theme-dialog > footer .button-primary { order: initial; }
 }
+
+
+/* Player directory and guild membership share the same identity geometry. */
+.halieus-player-directory .halieus-player-identity {
+  min-height: 72px;
+}
+.halieus-player-directory .halieus-player-identity.is-online {
+  border-color: color-mix(in srgb, var(--hgr-success) 32%, var(--hgr-border));
+}
+.halieus-player-directory .halieus-player-identity.is-in-game {
+  border-color: color-mix(in srgb, var(--hgr-info) 42%, var(--hgr-border));
+  background: color-mix(in srgb, var(--hgr-info) 6%, var(--hgr-surface-raised));
+}
+.halieus-guild-invite-results {
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  align-items: start;
+}
+.halieus-guild-invite-results .halieus-player-identity {
+  min-width: 0;
+}
+.halieus-guild-invite-results .halieus-player-identity-trailing .button-primary {
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.halieus-guild-invite-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--hgr-border);
+  border-radius: 12px;
+  color: var(--hgr-muted);
+  font-size: 10px;
+  text-align: center;
+}
+.halieus-guild-member-row {
+  min-height: 64px;
+  border-radius: 14px !important;
+  background: color-mix(in srgb, var(--hgr-surface-raised) 96%, var(--hgr-brand) 4%) !important;
+}
+.halieus-guild-member-row > .halieus-avatar-media {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+.halieus-guild-member-row > .halieus-avatar-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 860px) {
+  .halieus-guild-invite-results { grid-template-columns: minmax(0,1fr) !important; }
+}
