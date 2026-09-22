@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - RELEASE.json
       - shared/release.ts
+      - .github/debug/typecheck-failure.txt
   workflow_dispatch:
 
 permissions:
@@ -51,7 +52,23 @@ jobs:
         run: npm ci
 
       - name: Typecheck current HGR source
-        run: npm run typecheck
+        id: typecheck
+        continue-on-error: true
+        shell: bash
+        run: npm run typecheck 2>&1 | tee typecheck-failure.txt
+
+      - name: Publish typecheck failure for repair
+        if: steps.typecheck.outcome == 'failure'
+        shell: bash
+        run: |
+          mkdir -p .github/debug
+          cp typecheck-failure.txt .github/debug/typecheck-failure.txt
+          git config user.name "HGR Release Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add .github/debug/typecheck-failure.txt
+          git commit -m "ci: capture typecheck failure"
+          git push origin HEAD:main
+          exit 1
 
       - name: Run HGR regression chain
         run: npm run test:regression
