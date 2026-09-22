@@ -258,3 +258,25 @@ The current r2 palette is:
 - HGR PowerShell — dark blue `#0F4C81`
 
 If Search shows two HGR PowerShell results, one is normally the old manually-created shortcut and the other is the generated HGR shortcut. Keep the generated one with the HGR-branded icon and delete the old manual shortcut after confirming the generated shortcut opens at the HGR root.
+
+
+## HGR launcher branding revision r3
+
+`r` means **revision**. It is not the HGR application version. It is only the revision number for the generated launcher artwork.
+
+For example:
+
+- `r2` = second launcher-art revision
+- `r3` = third launcher-art revision
+
+HGR bumps this small revision whenever the icon artwork changes because Windows caches icons aggressively. A new filename such as `Start Halieus Game Room-r3.ico` makes Windows treat the artwork as a new asset without changing the actual Start command.
+
+The r3 design removes the previous high-contrast black-cap look. It uses one restrained dark HGR tile, a subtle raised inner surface, a thin muted action-colour border/footer, and a warm-gold H (white H for Close). The action palette is intentionally subdued:
+
+- Start — muted green `#3F7D62`
+- Restart — warm amber `#B47A35`
+- Close — muted red `#A94F55`
+- Update — steel blue `#4C6F9F`
+- HGR PowerShell — slate blue `#4A6178`
+
+The artwork revision is separate from `VERSION`; changing r3 does not mean HGR itself became 4.1.1.
