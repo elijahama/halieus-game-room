@@ -115,17 +115,17 @@ assert.match(projectTimeline,/version: "4\.1\.0"/,'Timeline must include the cur
 assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.0\.0 repository import/,'Timeline must disclose the historical-source boundary');
 
 assert.match(launcherGenerator,/assets\\branding\\Halieus Game Room\.png/,'Launcher generator must derive from the canonical Halieus PNG');
-assert.match(launcherGenerator,/\$BrandingRevision = 'r5'/,'Launcher artwork revision must be r5');
-assert.match(launcherGenerator,/Only warm\/gold body pixels are recoloured/i,'Launcher generator must preserve the canonical mark instead of redrawing it');
-assert.match(launcherShortcuts,/\$BrandingRevision = 'r5'/,'Shortcut generator must consume r5 artwork');
-assert.match(designSystemDoc,/Launcher family — r5/,'Design-system documentation must describe the current launcher family');
+assert.match(launcherGenerator,/\$BrandingRevision = 'r6'/,'Launcher artwork revision must be r6');
+assert.match(launcherGenerator,/Preserve the canonical Halieus tile/i,'Launcher generator must preserve the canonical Halieus tile');
+assert.match(launcherShortcuts,/\$BrandingRevision = 'r6'/,'Shortcut generator must consume r6 artwork');
+assert.match(designSystemDoc,/Launcher family — r6/,'Design-system documentation must describe the current launcher family');
 
 assert.match(gitignore,/server\/data\/guilds\//,'Local guild runtime data must never be committed');
 assert.match(releaseIntegrity,/server\/data\/guilds/,'Guild runtime data must be excluded from release fingerprint inputs');
 assert.match(releaseIntegrity,/persistent-guilds-4\.1\.0/,'4.1.0 Guilds must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-shared-design-tokens-4\.1\.0/,'Shared HGR design tokens must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
-assert.match(releaseIntegrity,/canonical-brand-derived-launchers-r5/,'Canonical r5 launcher family must be part of the signed release contract');
+assert.match(releaseIntegrity,/canonical-brand-action-badges-r6/,'Canonical r6 launcher family must be part of the signed release contract');
 
 assert.match(sw,/halieus-shell-v4-1-0/,'PWA shell cache must be 4.1.0');
 assert.match(intro,/app-icon-192\.png\?v=4\.1\.0/,'Intro asset cache-buster must match 4.1.0');
@@ -133,3 +133,5 @@ assert.doesNotMatch(html,/\?v=4\.0\.2/,'Static browser assets must not retain th
 assert.match(readme,/Current milestone:\*\* 4\.1\.0/,'README must advertise HGR 4.1.0');
 
 console.log('Halieus Game Room 4.1.0 Guilds regression: PASS');
+
+assert.match(launcherShortcuts,/Microsoft\\Windows\\Start Menu\\Programs/,'HGR shortcuts must be created in the user Start Menu Programs root');
