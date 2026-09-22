@@ -82,7 +82,11 @@ $projectRoot = $scriptDir
 while ($true) {
     $hasPackage = Test-Path -LiteralPath (Join-Path $projectRoot "package.json")
     $hasVersion = Test-Path -LiteralPath (Join-Path $projectRoot "VERSION")
-    if ($hasPackage -and $hasVersion) { break }
+    # Historical test snapshots under /tests also contain package.json + VERSION.
+    # The real owner workspace is identified by the root updater as well, so a
+    # tracked helper nested under /tests can never mistake a fixture for HGR root.
+    $hasRootUpdater = Test-Path -LiteralPath (Join-Path $projectRoot "Update HGR GitHub.cmd")
+    if ($hasPackage -and $hasVersion -and $hasRootUpdater) { break }
 
     $parent = Split-Path -Parent $projectRoot
     if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $projectRoot) {
@@ -187,7 +191,7 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
                 if ($relative -match '\.(key|pem|ppk|pub)$') {
                     Write-Host "Skipping local SSH credential file: $relative" -ForegroundColor DarkYellow
                 } else {
-                    $trackedRoot = $relative -match '^(\.github/|assets/branding/|client/src/|client/public/|server/src/|server/data/|shared/|deploy/|tests/dev-tools/Oracle Quick Deploy/)'
+                    $trackedRoot = $relative -match '^(\.github/|assets/branding/|client/src/|client/public/|server/src/|server/data/|shared/|deploy/|tests/)'
                     if ($trackedRoot -and $relative -ne 'shared/release.ts' -and -not $integrityFileSet.ContainsKey($relative)) {
                         Write-Host "Skipping stale/untracked release file: $relative" -ForegroundColor DarkGray
                     } else {
