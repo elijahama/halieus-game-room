@@ -5,6 +5,7 @@ import { ErrorBoundary } from "./platform/components/ErrorBoundary";
 import { GlobalGameActivity } from "./platform/components/GlobalGameActivity";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "./version";
 import "./index.css";
+import "./styles/hgr-theme.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.
