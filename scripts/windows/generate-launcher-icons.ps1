@@ -3,9 +3,6 @@ $ErrorActionPreference = 'Stop'
 
 Add-Type -AssemblyName System.Drawing
 
-# Keep the native helper deliberately tiny. All drawing/recolouring happens
-# through the already-loaded System.Drawing assembly in PowerShell so Windows
-# PowerShell does not need to compile C# against Drawing2D/Imaging namespaces.
 if (-not ('HgrNativeIcon' -as [type])) {
     Add-Type @"
 using System;
@@ -21,7 +18,7 @@ public static class HgrNativeIcon {
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
 $SourceIcon = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.png'
-$BrandingRevision = 'r5'
+$BrandingRevision = 'r6'
 
 if (-not (Test-Path -LiteralPath $SourceIcon)) {
     throw "Canonical Halieus branding source is missing: $SourceIcon"
@@ -30,48 +27,6 @@ if (-not (Test-Path -LiteralPath $SourceIcon)) {
 New-Item -ItemType Directory -Force -Path $LauncherRoot | Out-Null
 Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue |
     Remove-Item -Force -ErrorAction SilentlyContinue
-
-function Convert-HsvToColor {
-    param(
-        [Parameter(Mandatory = $true)][double]$Hue,
-        [Parameter(Mandatory = $true)][double]$Saturation,
-        [Parameter(Mandatory = $true)][double]$Value,
-        [Parameter(Mandatory = $true)][int]$Alpha
-    )
-
-    $h = (($Hue % 360.0) + 360.0) % 360.0
-    $s = [Math]::Max(0.0, [Math]::Min(1.0, $Saturation))
-    $v = [Math]::Max(0.0, [Math]::Min(1.0, $Value))
-
-    $c = $v * $s
-    $x = $c * (1.0 - [Math]::Abs((($h / 60.0) % 2.0) - 1.0))
-    $m = $v - $c
-
-    [double]$r1 = 0.0
-    [double]$g1 = 0.0
-    [double]$b1 = 0.0
-
-    if ($h -lt 60.0) {
-        $r1 = $c; $g1 = $x
-    } elseif ($h -lt 120.0) {
-        $r1 = $x; $g1 = $c
-    } elseif ($h -lt 180.0) {
-        $g1 = $c; $b1 = $x
-    } elseif ($h -lt 240.0) {
-        $g1 = $x; $b1 = $c
-    } elseif ($h -lt 300.0) {
-        $r1 = $x; $b1 = $c
-    } else {
-        $r1 = $c; $b1 = $x
-    }
-
-    return [System.Drawing.Color]::FromArgb(
-        $Alpha,
-        [int][Math]::Round(($r1 + $m) * 255.0),
-        [int][Math]::Round(($g1 + $m) * 255.0),
-        [int][Math]::Round(($b1 + $m) * 255.0)
-    )
-}
 
 function New-RoundedRectanglePath {
     param(
@@ -87,40 +42,6 @@ function New-RoundedRectanglePath {
     $path.AddArc($Rect.X, $Rect.Bottom - $diameter, $diameter, $diameter, 90, 90)
     $path.CloseFigure()
     return $path
-}
-
-function Add-TerminalBadge {
-    param([Parameter(Mandatory = $true)][System.Drawing.Bitmap]$Bitmap)
-
-    $graphics = [System.Drawing.Graphics]::FromImage($Bitmap)
-    try {
-        $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-
-        $badgeRect = [System.Drawing.RectangleF]::new(165, 171, 72, 52)
-        $badgePath = New-RoundedRectanglePath -Rect $badgeRect -Radius 12
-        $fill = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(242, 23, 32, 51))
-        $outline = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(210, 238, 244, 250), 2)
-
-        try {
-            $graphics.FillPath($fill, $badgePath)
-            $graphics.DrawPath($outline, $badgePath)
-        } finally {
-            $fill.Dispose()
-            $outline.Dispose()
-            $badgePath.Dispose()
-        }
-
-        $font = [System.Drawing.Font]::new('Consolas', 25, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-        $brush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(248, 250, 252))
-        try {
-            $graphics.DrawString('>_', $font, $brush, 171, 181)
-        } finally {
-            $font.Dispose()
-            $brush.Dispose()
-        }
-    } finally {
-        $graphics.Dispose()
-    }
 }
 
 function Save-BitmapAsIcon {
@@ -144,13 +65,103 @@ function Save-BitmapAsIcon {
     }
 }
 
+function Add-ActionBadge {
+    param(
+        [Parameter(Mandatory = $true)][System.Drawing.Bitmap]$Bitmap,
+        [Parameter(Mandatory = $true)][ValidateSet('start','restart','close','update','powershell')][string]$Action
+    )
+
+    $graphics = [System.Drawing.Graphics]::FromImage($Bitmap)
+    try {
+        $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+        $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+
+        $navy = [System.Drawing.ColorTranslator]::FromHtml('#18233C')
+        $white = [System.Drawing.Color]::FromArgb(250, 252, 255)
+        $accent = switch ($Action) {
+            'start'      { [System.Drawing.ColorTranslator]::FromHtml('#258B58') }
+            'restart'    { [System.Drawing.ColorTranslator]::FromHtml('#B97818') }
+            'close'      { [System.Drawing.ColorTranslator]::FromHtml('#BD4545') }
+            'update'     { [System.Drawing.ColorTranslator]::FromHtml('#3475C5') }
+            'powershell' { [System.Drawing.ColorTranslator]::FromHtml('#526981') }
+        }
+
+        # Preserve the canonical Halieus tile. Action colour lives only in this
+        # compact utility badge so every launcher still reads as Halieus first.
+        $shadowRect = [System.Drawing.RectangleF]::new(168, 169, 70, 58)
+        $shadowPath = New-RoundedRectanglePath -Rect $shadowRect -Radius 14
+        $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(82, 0, 0, 0))
+        try {
+            $graphics.FillPath($shadowBrush, $shadowPath)
+        } finally {
+            $shadowBrush.Dispose()
+            $shadowPath.Dispose()
+        }
+
+        $badgeRect = [System.Drawing.RectangleF]::new(163, 164, 70, 58)
+        $badgePath = New-RoundedRectanglePath -Rect $badgeRect -Radius 14
+        $badgeBrush = [System.Drawing.SolidBrush]::new($accent)
+        $badgeOutline = [System.Drawing.Pen]::new($navy, 4)
+        try {
+            $graphics.FillPath($badgeBrush, $badgePath)
+            $graphics.DrawPath($badgeOutline, $badgePath)
+        } finally {
+            $badgeBrush.Dispose()
+            $badgeOutline.Dispose()
+        }
+
+        switch ($Action) {
+            'start' {
+                $points = [System.Drawing.PointF[]]@(
+                    [System.Drawing.PointF]::new(188, 179),
+                    [System.Drawing.PointF]::new(188, 207),
+                    [System.Drawing.PointF]::new(212, 193)
+                )
+                $brush = [System.Drawing.SolidBrush]::new($white)
+                try { $graphics.FillPolygon($brush, $points) } finally { $brush.Dispose() }
+            }
+            'restart' {
+                $font = [System.Drawing.Font]::new('Segoe UI Symbol', 31, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+                $brush = [System.Drawing.SolidBrush]::new($white)
+                try { $graphics.DrawString('↻', $font, $brush, 177, 176) } finally { $font.Dispose(); $brush.Dispose() }
+            }
+            'close' {
+                $pen = [System.Drawing.Pen]::new($white, 7)
+                $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+                $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+                try {
+                    $graphics.DrawLine($pen, 184, 181, 212, 205)
+                    $graphics.DrawLine($pen, 212, 181, 184, 205)
+                } finally { $pen.Dispose() }
+            }
+            'update' {
+                $pen = [System.Drawing.Pen]::new($white, 6)
+                $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+                $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+                try {
+                    $graphics.DrawLine($pen, 198, 177, 198, 202)
+                    $graphics.DrawLine($pen, 187, 192, 198, 203)
+                    $graphics.DrawLine($pen, 209, 192, 198, 203)
+                    $graphics.DrawLine($pen, 184, 209, 212, 209)
+                } finally { $pen.Dispose() }
+            }
+            'powershell' {
+                $font = [System.Drawing.Font]::new('Consolas', 24, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+                $brush = [System.Drawing.SolidBrush]::new($white)
+                try { $graphics.DrawString('>_', $font, $brush, 173, 181) } finally { $font.Dispose(); $brush.Dispose() }
+            }
+        }
+
+        $badgePath.Dispose()
+    } finally {
+        $graphics.Dispose()
+    }
+}
+
 function New-HgrLauncherIcon {
     param(
         [Parameter(Mandatory = $true)][string]$OutputPath,
-        [Parameter(Mandatory = $true)][double]$TargetHue,
-        [Parameter(Mandatory = $true)][double]$SaturationScale,
-        [Parameter(Mandatory = $true)][double]$ValueScale,
-        [switch]$PowerShellBadge
+        [Parameter(Mandatory = $true)][ValidateSet('start','restart','close','update','powershell')][string]$Action
     )
 
     $source = [System.Drawing.Bitmap]::new($SourceIcon)
@@ -168,29 +179,7 @@ function New-HgrLauncherIcon {
         }
 
         try {
-            # The tracked Halieus app icon is the approved shape, H geometry,
-            # rim, gloss and depth. Only warm/gold body pixels are recoloured;
-            # navy identity pixels and highlights remain intact.
-            for ($y = 0; $y -lt $bitmap.Height; $y++) {
-                for ($x = 0; $x -lt $bitmap.Width; $x++) {
-                    $pixel = $bitmap.GetPixel($x, $y)
-                    if ($pixel.A -eq 0) { continue }
-
-                    $hue = [double]$pixel.GetHue()
-                    $saturation = [double]$pixel.GetSaturation()
-                    $value = [Math]::Max($pixel.R, [Math]::Max($pixel.G, $pixel.B)) / 255.0
-
-                    if ($hue -ge 18.0 -and $hue -le 60.0 -and $saturation -ge 0.15 -and $value -ge 0.10) {
-                        $recoloured = Convert-HsvToColor -Hue $TargetHue -Saturation ($saturation * $SaturationScale) -Value ($value * $ValueScale) -Alpha $pixel.A
-                        $bitmap.SetPixel($x, $y, $recoloured)
-                    }
-                }
-            }
-
-            if ($PowerShellBadge) {
-                Add-TerminalBadge -Bitmap $bitmap
-            }
-
+            Add-ActionBadge -Bitmap $bitmap -Action $Action
             Save-BitmapAsIcon -Bitmap $bitmap -Path $OutputPath
         } finally {
             $bitmap.Dispose()
@@ -200,10 +189,10 @@ function New-HgrLauncherIcon {
     }
 }
 
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") -TargetHue 145.0 -SaturationScale 0.95 -ValueScale 0.98
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") -TargetHue 36.0 -SaturationScale 0.90 -ValueScale 0.97
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") -TargetHue 356.0 -SaturationScale 0.90 -ValueScale 0.95
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") -TargetHue 213.0 -SaturationScale 0.95 -ValueScale 0.98
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") -TargetHue 205.0 -SaturationScale 0.58 -ValueScale 0.84 -PowerShellBadge
+New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") -Action start
+New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") -Action restart
+New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") -Action close
+New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") -Action update
+New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") -Action powershell
 
-Write-Host 'HGR launcher icons generated from the canonical Halieus mark.'
+Write-Host 'HGR launcher icons generated from the canonical Halieus mark with action badges.'
