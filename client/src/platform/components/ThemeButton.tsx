@@ -129,7 +129,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                   <input type="color" value={custom[key]} onChange={(event) => updateColour(key, event.target.value)} />
                   <input key={custom[key]} type="text" defaultValue={custom[key]} maxLength={7} onBlur={(event) => /^#[0-9a-f]{6}$/i.test(event.target.value) ? updateColour(key, event.target.value) : event.currentTarget.value = custom[key]} aria-label={`${label} HEX colour`} />
                   <span className="halieus-rgb-fields" aria-label={`${label} RGB channels`}>{rgbChannels(custom[key]).map((channel, channelIndex) => <span key={channelIndex}><b>{["R", "G", "B"][channelIndex]}</b><input type="number" min={0} max={255} value={channel} onChange={(event) => updateRgbChannel(key, channelIndex, Number(event.target.value))} /></span>)}</span>
-                </label>
+                </div>
               ))}
               <div className="halieus-custom-theme-preview" style={{ background: custom.page }}>
                 <span style={{ background: custom.surface }}><i style={{ background: custom.accent }} /><b style={{ background: custom.secondary }} /></span>
