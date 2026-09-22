@@ -4,8 +4,6 @@ cd /d "%~dp0"
 
 rem 3.6.3: Start is intentionally launch-only.
 rem It only launches the existing website and never changes production.
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\windows\launcher-shortcuts.ps1" >nul 2>&1
-
 set "HGR_URL=https://halieus.remotewire.net"
 set "HGR_PROFILE=%LOCALAPPDATA%\Halieus Game Room\Website"
 set "HGR_EDGE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
