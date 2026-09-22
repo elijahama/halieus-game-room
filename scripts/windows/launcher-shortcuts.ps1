@@ -82,6 +82,9 @@ foreach ($name in @(
     'Restart Halieus Game Room.lnk',
     'Close Halieus Game Room.lnk',
     'Update Halieus Website.lnk',
+    'Update Halieus Game Room.lnk',
+    'HGR GitHub Update.lnk',
+    'HGR GitHub Sync.lnk',
     'Start Mega Board.lnk',
     'Close Mega Board.lnk'
 )) {
