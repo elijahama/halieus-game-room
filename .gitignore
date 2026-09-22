@@ -102,5 +102,5 @@ docs/ACCOUNT MIGRATION - OWNER ONLY.txt
 docs/OWNER BUILD - DO NOT SHARE.txt
 
 
-# Generated Windows launcher icons (source is scripts/windows/generate-launcher-icons.ps1)
-assets/branding/launchers/*.ico
+# Generated Windows launcher artwork (source is scripts/windows/generate-launcher-icons.ps1)
+assets/branding/launchers/
