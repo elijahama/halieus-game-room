@@ -64,7 +64,20 @@ if errorlevel 1 (
 echo.
 echo [OK] Local project now includes the latest GitHub changes.
 echo.
-echo STEP 2 - HGR validation...
+echo STEP 2 - Preparing release identity BEFORE the browser build...
+echo This regenerates RELEASE.json and shared/release.ts from VERSION 4.1.0
+echo so the compiled website cannot embed an older build fingerprint.
+echo.
+call npm run prepare:release
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Release preparation failed.
+    echo Nothing has been committed or pushed by this script.
+    goto :PAUSE_EXIT
+)
+echo [OK] Release manifest/fingerprint generated and verified.
+echo.
+echo STEP 3 - HGR validation and CURRENT release build...
 echo.
 
 call npm run typecheck
@@ -92,20 +105,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [OK] Typecheck, build and regression tests passed.
-echo.
-echo STEP 3 - Finalising release identity...
-echo This keeps VERSION, RELEASE.json and shared/release.ts in sync
-echo before a validated HGR change can be committed or deployed.
-echo.
-call npm run prepare:release
-if errorlevel 1 (
-    echo.
-    echo [STOPPED] Release preparation failed.
-    echo Nothing has been committed or pushed by this script.
-    goto :PAUSE_EXIT
-)
-echo [OK] Release manifest/fingerprint generated and verified.
+echo [OK] Typecheck, current-release build and regression tests passed.
 echo.
 
 :STAGE
@@ -288,10 +288,10 @@ echo ============================================================
 echo.
 echo One-button workflow finished successfully:
 echo   1. GitHub pulled
-echo   2. Typecheck passed
-echo   3. Build passed
-echo   4. Regression tests passed
-echo   5. Release identity generated and verified
+echo   2. Release identity generated before build
+echo   3. Typecheck passed
+echo   4. Browser/server build used the current release identity
+echo   5. Regression tests passed
 echo   6. Changes committed/pushed when needed
 echo   7. Final release identity re-verified
 echo   8. Website deployment completed
