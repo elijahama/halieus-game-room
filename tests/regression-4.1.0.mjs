@@ -132,6 +132,6 @@ assert.match(intro,/app-icon-192\.png\?v=4\.1\.0/,'Intro asset cache-buster must
 assert.doesNotMatch(html,/\?v=4\.0\.2/,'Static browser assets must not retain the 4.0.2 cache identity');
 assert.match(readme,/Current milestone:\*\* 4\.1\.0/,'README must advertise HGR 4.1.0');
 
-console.log('Halieus Game Room 4.1.0 Guilds regression: PASS');
-
 assert.match(launcherShortcuts,/Microsoft\\Windows\\Start Menu\\Programs/,'HGR shortcuts must be created in the user Start Menu Programs root');
+
+console.log('Halieus Game Room 4.1.0 Guilds regression: PASS');
