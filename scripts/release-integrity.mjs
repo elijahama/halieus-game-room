@@ -43,9 +43,10 @@ const singles = [
   'client/package.json', 'client/index.html', 'client/vite.config.ts',
   'server/package.json', 'shared/package.json',
   'Start Halieus Game Room.cmd', 'Restart Halieus Game Room.cmd', 'Close Halieus Game Room.cmd',
-  // The main product icon is tracked; action-coloured launcher ICOs are generated
-  // locally from the tracked Windows branding generator.
+  // The canonical Halieus PNG is the visual source for the generated Windows
+  // launcher family. The ICO remains the Windows folder/app identity.
   'assets/branding/Halieus Game Room.ico',
+  'assets/branding/Halieus Game Room.png',
   'scripts/windows/generate-launcher-icons.ps1',
   'FIRST RUN - Refresh Halieus Launchers.cmd',
   'scripts/windows/launcher-shortcuts.ps1', 'scripts/windows/start-background.ps1', 'scripts/windows/restart-background.ps1', 'scripts/windows/stop-background.ps1', 'scripts/windows/start-production.ps1', 'scripts/windows/tailscale-funnel.ps1', 'scripts/windows/show-feedback.ps1', 'scripts/windows/HGR GitHub Sync.cmd', 'scripts/windows/Install HGR GitHub Shortcut.cmd',
@@ -241,6 +242,9 @@ const manifest = {
     'guild-persistent-chat-4.1.0',
     'guild-room-reservations-4.1.0',
     'guild-internal-leaderboard-4.1.0',
+    'hgr-shared-design-tokens-4.1.0',
+    'hgr-project-history-4.1.0',
+    'canonical-brand-derived-launchers-r5',
   ],
 };
 
