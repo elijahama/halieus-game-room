@@ -47,6 +47,15 @@ jobs:
           }
           Write-Host 'Oracle deployment helper PowerShell syntax: PASS'
 
+      - name: Install HGR workspace dependencies
+        run: npm ci
+
+      - name: Typecheck current HGR source
+        run: npm run typecheck
+
+      - name: Run HGR regression chain
+        run: npm run test:regression
+
       - name: Generate exact HGR release identity
         run: npm run prepare:release
 
