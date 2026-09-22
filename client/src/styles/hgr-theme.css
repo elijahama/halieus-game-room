@@ -376,3 +376,340 @@ button:focus-visible {
     min-height: 208px;
   }
 }
+
+
+/* Shared game-shell polish — 4.1.x -------------------------------------- */
+/*
+ * Poker remains the visual benchmark and its table geometry is intentionally
+ * untouched. This layer normalises the surrounding shell used by the newer
+ * card-game, rebuild and word-arena families so game modules stop inventing
+ * different panel/header/control framing.
+ */
+
+.card-game-header,
+.rebuild-game-header,
+.word-arena-header {
+  width: min(1500px, 100%);
+  min-width: 0;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 14px 16px !important;
+  border: 1px solid color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 22%, var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 6%, var(--hgr-surface-raised)),
+      var(--hgr-surface)
+    ) !important;
+  box-shadow: var(--hgr-shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.card-game-header,
+.word-arena-header {
+  padding-right: 16px !important;
+}
+
+.card-game-brand-lockup,
+.rebuild-game-title,
+.word-arena-brand {
+  min-width: 0;
+}
+
+.card-game-brand-lockup > div:last-child,
+.rebuild-game-title > div,
+.word-arena-brand > div {
+  min-width: 0;
+}
+
+.card-game-header h1,
+.rebuild-game-title h1,
+.word-arena-brand h1 {
+  color: var(--hgr-text);
+  overflow-wrap: anywhere;
+}
+
+.card-game-header p,
+.rebuild-game-title p,
+.word-arena-brand p,
+.card-game-control-heading > span,
+.rebuild-panel-head span {
+  color: var(--game-accent, var(--hgr-brand)) !important;
+}
+
+.card-game-meta,
+.rebuild-game-meta,
+.word-arena-meta {
+  min-width: 0;
+  gap: 7px;
+}
+
+.card-game-meta > span,
+.rebuild-game-meta > span,
+.word-arena-meta > span {
+  padding: 7px 10px !important;
+  border: 1px solid color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 20%, var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-pill) !important;
+  background: color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 6%, var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text-soft) !important;
+  font-size: 11px !important;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.card-game-meta > span.is-online,
+.rebuild-game-meta > span.is-online,
+.word-arena-meta > span.is-online {
+  border-color: color-mix(in srgb, var(--hgr-start) 38%, var(--hgr-border)) !important;
+  color: var(--hgr-start) !important;
+}
+
+.card-game-lobby-card,
+.card-game-control-panel,
+.rebuild-panel,
+.word-arena-intro,
+.word-arena-roster,
+.word-arena-scoreboard,
+.word-arena-stage,
+.word-arena-room-activity {
+  min-width: 0;
+  border-color: color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 16%, var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 4%, var(--hgr-surface-raised)),
+      var(--hgr-surface)
+    ) !important;
+  box-shadow: var(--hgr-shadow-soft);
+}
+
+.card-game-player-row,
+.rebuild-roster > div,
+.word-arena-roster article {
+  border-color: var(--hgr-border) !important;
+  background: color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 3%, var(--hgr-surface-soft)) !important;
+}
+
+.card-game-player-row strong,
+.rebuild-roster strong,
+.word-arena-roster strong {
+  color: var(--hgr-text);
+}
+
+.card-game-player-row small,
+.rebuild-roster small,
+.word-arena-roster article small,
+.word-arena-roster article > i {
+  color: var(--hgr-muted) !important;
+  opacity: 1 !important;
+}
+
+.rules-contract > div,
+.rules-contract > p,
+.poker-settings-summary > div {
+  border-color: var(--hgr-border) !important;
+  background: color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 4%, var(--hgr-surface-soft)) !important;
+}
+
+/* Inputs and setup controls should read as one platform even when each game
+ * has its own accent colour. */
+.card-game-host-actions select,
+.card-game-host-actions input,
+.rebuild-host-controls select,
+.rebuild-host-controls input,
+.word-arena-lobby select,
+.word-arena-lobby input {
+  min-height: 42px;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+
+/* Shared room/menu surfaces */
+.game-menu-modal,
+.card-game-invite-modal {
+  border-color: var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--hgr-brand) 9%, transparent), transparent 35%),
+    var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-panel) !important;
+}
+
+.game-menu-modal .icon-button,
+.card-game-invite-modal .icon-button {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+
+.menu-action {
+  border-color: var(--hgr-border) !important;
+  background: color-mix(in srgb, var(--hgr-surface-soft) 88%, transparent) !important;
+  color: var(--hgr-text) !important;
+}
+
+.menu-action > span:first-child {
+  background: color-mix(in srgb, var(--hgr-brand) 8%, var(--hgr-surface-strong)) !important;
+}
+
+.menu-action-primary {
+  border-color: color-mix(in srgb, var(--hgr-start) 30%, var(--hgr-border)) !important;
+  background: color-mix(in srgb, var(--hgr-start) 10%, var(--hgr-surface-soft)) !important;
+}
+
+.menu-action-danger {
+  border-color: color-mix(in srgb, var(--hgr-close) 34%, var(--hgr-border)) !important;
+  background: color-mix(in srgb, var(--hgr-close) 10%, var(--hgr-surface-soft)) !important;
+}
+
+.status-toast {
+  border-color: color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 24%, var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: color-mix(in srgb, var(--game-accent, var(--hgr-brand)) 6%, var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text-soft);
+  box-shadow: var(--hgr-shadow-soft);
+}
+
+/* Layout containment: shared game chrome may wrap, but it must not force a
+ * board/table wider than the real device viewport. */
+.card-game-page,
+.rebuild-game-page,
+.word-arena-page,
+.connect-four-page,
+.ludo-page,
+.hidden-dictator-page,
+.word-board-page {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.card-game-lobby,
+.rebuild-lobby-layout,
+.rebuild-live-layout,
+.word-arena-lobby,
+.word-arena-live,
+.connect-four-live,
+.ludo-live-shell,
+.word-board-live-shell,
+.hidden-dictator-live {
+  min-width: 0;
+}
+
+.card-game-lobby > *,
+.rebuild-lobby-layout > *,
+.rebuild-live-layout > *,
+.word-arena-lobby > *,
+.word-arena-live > *,
+.connect-four-live > *,
+.ludo-live-shell > *,
+.word-board-live-shell > *,
+.hidden-dictator-live > * {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .card-game-header,
+  .rebuild-game-header,
+  .word-arena-header {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .card-game-meta,
+  .rebuild-game-meta,
+  .word-arena-meta {
+    width: 100%;
+    justify-content: flex-start !important;
+  }
+
+  .card-game-lobby,
+  .rebuild-lobby-layout,
+  .rebuild-live-layout,
+  .word-arena-lobby {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .card-game-page,
+  .rebuild-game-page,
+  .word-arena-page {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .card-game-header,
+  .rebuild-game-header,
+  .word-arena-header {
+    margin-bottom: 12px !important;
+    padding: 12px !important;
+    border-radius: var(--hgr-radius-md) !important;
+  }
+
+  .card-game-meta,
+  .rebuild-game-meta,
+  .word-arena-meta {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .card-game-meta::-webkit-scrollbar,
+  .rebuild-game-meta::-webkit-scrollbar,
+  .word-arena-meta::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card-game-meta > span,
+  .rebuild-game-meta > span,
+  .word-arena-meta > span {
+    flex: 0 0 auto;
+  }
+
+  .card-game-lobby,
+  .word-arena-lobby {
+    margin-top: 16px !important;
+  }
+
+  .card-game-lobby-card,
+  .card-game-control-panel,
+  .rebuild-panel,
+  .word-arena-intro,
+  .word-arena-roster,
+  .word-arena-scoreboard,
+  .word-arena-stage,
+  .word-arena-room-activity {
+    padding: 15px !important;
+    border-radius: var(--hgr-radius-md) !important;
+  }
+
+  .card-game-host-actions,
+  .rebuild-host-controls {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .button-primary,
+  .button-outline,
+  .button-muted,
+  .button-danger,
+  .menu-action {
+    min-height: 44px;
+  }
+
+  .game-menu-modal,
+  .card-game-invite-modal {
+    width: min(100%, 520px);
+    max-height: min(86dvh, 760px);
+    overflow-y: auto;
+    border-radius: var(--hgr-radius-lg) !important;
+  }
+}
