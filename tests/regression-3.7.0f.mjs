@@ -23,6 +23,8 @@ assert.match(
 assert.match(deploy,/foreach \(\$releaseFile in @\(\$releaseManifest\.integrityFiles\)\)/,'Oracle packer must validate all release-integrity inputs before upload');
 assert.equal((deploy.match(/if \(\$PackageOnly\)/g) ?? []).length,1,'Oracle deploy helper must contain exactly one package-only gate');
 assert.equal((deploy.match(/\$target = "\$OracleUser@\$OracleHost"/g) ?? []).length,1,'Oracle deploy helper must not contain a duplicated deployment tail');
+assert.match(deploy,/\$hasRootUpdater = Test-Path -LiteralPath \(Join-Path \$projectRoot "Update HGR GitHub\.cmd"\)/,'Tracked Oracle helper must climb past historical /tests release snapshots to the real HGR root');
+assert.match(deploy,/\^\(\\\.github\/\|assets\/branding\/\|client\/src\/\|client\/public\/\|server\/src\/\|server\/data\/\|shared\/\|deploy\/\|tests\/\)/,'Oracle packer must treat all non-manifest /tests snapshot files as stale');
 
 for (const file of ['server/data/word-board/SCOWL-COPYRIGHT.txt','server/data/word-board/scowl-en-us.dic']) {
   assert.ok(existsSync(new URL(`../${file}`,import.meta.url)),`${file} must ship in the owner workspace`);
