@@ -191,7 +191,7 @@ assert.match(releaseIntegrity,/matte-launcher-family-4\.1\.0/,'Matte launcher fa
 assert.match(sw,new RegExp(`halieus-shell-v${currentVersion.replaceAll('.','-')}`),'PWA shell cache must match the current 4.1.x release');
 assert.match(intro,new RegExp(`app-icon-192\\.png\\?v=${currentVersion.replaceAll('.','\\.')}`),'Intro asset cache-buster must match the current release');
 assert.doesNotMatch(html,/\?v=4\.0\.2/,'Static browser assets must not retain the 4.0.2 cache identity');
-assert.match(readme,new RegExp(`Current milestone:\\\*\\\* ${currentVersion.replaceAll('.','\\\\.')}`),'README must advertise the current 4.1.x milestone');
+assert.ok(readme.includes(`**Current milestone:** ${currentVersion}`),'README must advertise the current 4.1.x milestone');
 
 assert.match(launcherShortcuts,/Microsoft\\Windows\\Start Menu\\Programs/,'HGR shortcuts must be created in the user Start Menu Programs root');
 
