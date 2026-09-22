@@ -184,7 +184,7 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
                 # server/data mixes shipped static dictionaries with private/runtime state.
                 # Only release-signed server/data files are allowed into the Oracle archive.
                 if ($relative -match '^server/data(/|$)' -and -not $integrityFileSet.ContainsKey($relative)) { return }
-                if ($relative -match '\.(key|pem|ppk|pub)
+                if ($relative -match '\.(key|pem|ppk|pub)$') {
                     Write-Host "Skipping local SSH credential file: $relative" -ForegroundColor DarkYellow
                 } else {
                     $trackedRoot = $relative -match '^(\.github/|assets/branding/|client/src/|client/public/|server/src/|server/data/|shared/|deploy/|tests/dev-tools/Oracle Quick Deploy/)'
