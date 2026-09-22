@@ -110,7 +110,7 @@ assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.
 
 assert.match(launcherGenerator,/assets\\branding\\Halieus Game Room\.png/,'Launcher generator must derive from the canonical Halieus PNG');
 assert.match(launcherGenerator,/\$BrandingRevision = 'r5'/,'Launcher artwork revision must be r5');
-assert.match(launcherGenerator,/recolours? only the warm\/gold body pixels/i,'Launcher generator must preserve the canonical mark instead of redrawing it');
+assert.match(launcherGenerator,/Only warm\/gold body pixels are recoloured/i,'Launcher generator must preserve the canonical mark instead of redrawing it');
 assert.match(launcherShortcuts,/\$BrandingRevision = 'r5'/,'Shortcut generator must consume r5 artwork');
 assert.match(designSystemDoc,/Launcher family — r5/,'Design-system documentation must describe the current launcher family');
 
