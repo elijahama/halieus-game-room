@@ -75,12 +75,22 @@ if (-not $UseDefaultSshAuth) {
 }
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$projectRoot = Split-Path (Split-Path $scriptDir -Parent) -Parent
+$projectRoot = $scriptDir
+while ($true) {
+    $hasPackage = Test-Path -LiteralPath (Join-Path $projectRoot "package.json")
+    $hasVersion = Test-Path -LiteralPath (Join-Path $projectRoot "VERSION")
+    if ($hasPackage -and $hasVersion) { break }
+
+    $parent = Split-Path -Parent $projectRoot
+    if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $projectRoot) {
+        throw "Could not locate the Halieus project root above $scriptDir."
+    }
+    $projectRoot = $parent
+}
+
 $installer = Join-Path $scriptDir "quick-install.sh"
 $versionFile = Join-Path $projectRoot "VERSION"
 if (-not (Test-Path -LiteralPath $installer)) { throw "quick-install.sh not found beside this script." }
-if (-not (Test-Path -LiteralPath (Join-Path $projectRoot "package.json"))) { throw "Could not identify the Halieus project root above dev-tools." }
-if (-not (Test-Path -LiteralPath $versionFile)) { throw "VERSION is missing from the Halieus project root." }
 
 $expectedVersion = (Get-Content -LiteralPath $versionFile -Raw).Trim()
 if ([string]::IsNullOrWhiteSpace($expectedVersion)) { throw "VERSION is empty." }
@@ -128,11 +138,23 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop
     $archive = [System.IO.Compression.ZipFile]::Open($tempSourceZip, [System.IO.Compression.ZipArchiveMode]::Create)
     try {
-        $includeRoots = @("client", "server", "shared", "deploy", "scripts", "desktop", "tests", "docs", "dev-tools\Oracle Quick Deploy")
-        $rootFiles = @("package.json", "package-lock.json", "VERSION", "RELEASE.json", "README.md", "ARCHITECTURE.md", "Start Halieus Game Room.cmd", "Restart Halieus Game Room.cmd", "Close Halieus Game Room.cmd", "FIRST RUN - Refresh Halieus Launchers.cmd", "launcher-shortcuts.ps1", "Start Halieus Game Room.ico", "Restart Halieus Game Room.ico", "Update Halieus Website.ico", "Close Halieus Game Room.ico", "Update Halieus Website.cmd", "update-website.ps1")
-        # The main Windows launcher icon is useful locally but is not part of the Oracle website runtime.
-        # Do not block a production website update if Explorer/AV omitted that desktop-only file.
-        $optionalRootFiles = @("Halieus Game Room.ico")
+        $includeRoots = @("client", "server", "shared", "deploy", "scripts", "desktop", "tests", "docs")
+        $rootFiles = @(
+            "package.json",
+            "package-lock.json",
+            "VERSION",
+            "RELEASE.json",
+            "README.md",
+            "ARCHITECTURE.md",
+            "Start Halieus Game Room.cmd",
+            "Restart Halieus Game Room.cmd",
+            "Close Halieus Game Room.cmd",
+            "FIRST RUN - Refresh Halieus Launchers.cmd",
+            "Update HGR GitHub.cmd"
+        )
+        # Owner-only wrappers, private SSH helpers and Windows launcher artwork are
+        # not part of the Oracle application payload.
+        $optionalRootFiles = @("Update Halieus Website.cmd")
 
         foreach ($name in $rootFiles) {
             $full = Join-Path $projectRoot $name
@@ -158,7 +180,7 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
                 if ($relative -match '\.(key|pem|ppk|pub)$') {
                     Write-Host "Skipping local SSH credential file: $relative" -ForegroundColor DarkYellow
                 } else {
-                    $trackedRoot = $relative -match '^(client/src|client/public|server/src|shared|deploy|dev-tools/Oracle Quick Deploy)/'
+                    $trackedRoot = $relative -match '^(client/src|client/public|server/src|shared|deploy|tests/dev-tools/Oracle Quick Deploy)/'
                     if ($trackedRoot -and $relative -ne 'shared/release.ts' -and -not $integrityFileSet.ContainsKey($relative)) {
                         Write-Host "Skipping stale/untracked release file: $relative" -ForegroundColor DarkGray
                     } else {
