@@ -1,0 +1,24 @@
+
+> halieus-game-room@4.1.1 test:regression
+> node tests/regression-3.6.8.mjs && node tests/regression-3.6.8a.mjs && node tests/regression-3.6.8b.mjs && node tests/regression-3.6.8c.mjs && node tests/regression-3.6.8d.mjs && node tests/regression-3.6.8e.mjs && node tests/regression-3.7.0.mjs && node tests/regression-3.7.0a.mjs && node tests/regression-3.7.0b.mjs && node tests/regression-3.7.0c.mjs && node tests/regression-3.7.0d.mjs && node tests/regression-3.7.0e.mjs && node tests/regression-3.7.0f.mjs && node tests/regression-3.7.0g.mjs && node tests/regression-3.7.0h.mjs && node tests/regression-3.7.0i.mjs && node tests/regression-3.7.0j.mjs && node tests/regression-3.7.0k.mjs && node tests/regression-3.7.0l.mjs && node tests/regression-4.0.0.mjs && node tests/regression-4.0.1.mjs && node tests/regression-4.0.2.mjs && node tests/regression-4.1.0.mjs && node tests/regression-4.1.1.mjs && node tests/regression-launcher-no-autodeploy-3.5.27.mjs
+
+Halieus Game Room 3.6.8 regression: PASS
+Halieus Game Room 3.6.8a security / leaderboard / icon regression: PASS
+node:fs:440
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open '/home/runner/work/halieus-game-room/halieus-game-room/dev-tools/Oracle Quick Deploy/quick-install.sh'
+    at readFileSync (node:fs:440:20)
+    at read (file:///home/runner/work/halieus-game-room/halieus-game-room/tests/regression-3.6.8b.mjs:4:24)
+    at file:///home/runner/work/halieus-game-room/halieus-game-room/tests/regression-3.6.8b.mjs:44:25
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/runner/work/halieus-game-room/halieus-game-room/dev-tools/Oracle Quick Deploy/quick-install.sh'
+}
+
+Node.js v22.23.2
