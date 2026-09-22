@@ -280,3 +280,26 @@ The r3 design removes the previous high-contrast black-cap look. It uses one res
 - HGR PowerShell — slate blue `#4A6178`
 
 The artwork revision is separate from `VERSION`; changing r3 does not mean HGR itself became 4.1.1.
+
+
+## HGR launcher branding revision r4
+
+The r4 artwork corrects the visual mismatch between the launcher utilities and the primary Halieus icon. The launcher family now uses the same core visual language as the yellow Halieus app icon:
+
+- rounded glossy pillow/squircle body;
+- darker action-tinted rim;
+- bright top highlight;
+- deeper lower shading for chunky app-icon depth;
+- the same dark navy H treatment across the family;
+- action colour fills the tile instead of appearing only as a thin outline;
+- HGR PowerShell keeps a small terminal badge without changing the main Halieus silhouette.
+
+r4 action colours:
+
+- Start — glossy green;
+- Restart — glossy amber/orange;
+- Close — glossy red;
+- Update — glossy blue;
+- HGR PowerShell — glossy slate blue.
+
+The artwork revision remains independent from the HGR application version.
