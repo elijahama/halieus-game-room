@@ -105,6 +105,12 @@ foreach ($name in @(
     Remove-Item -LiteralPath (Join-Path $ProjectRoot $name) -Force -ErrorAction SilentlyContinue
 }
 
+# These two icons used to live in the root. The tracked branding copies now
+# own the shortcut/folder artwork, so stale local copies can be removed safely.
+foreach ($legacyIcon in @('Halieus Game Room.ico', 'Update Halieus Website.ico')) {
+    Remove-Item -LiteralPath (Join-Path $ProjectRoot $legacyIcon) -Force -ErrorAction SilentlyContinue
+}
+
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null
     attrib -h $RestartScript 2>$null | Out-Null
