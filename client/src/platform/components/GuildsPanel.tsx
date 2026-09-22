@@ -1,8 +1,9 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 
-import type { HalieusAccountSummary } from "../../../../shared/platform/accounts";
+import type { HalieusAccountSummary, HalieusPlayerDirectoryEntry } from "../../../../shared/platform/accounts";
 import type {
   HalieusGuildDetail,
+  HalieusGuildInvitation,
   HalieusGuildRole,
   HalieusGuildRoom,
   HalieusGuildRoomPolicy,
@@ -68,6 +69,10 @@ export function GuildsPanel({
   const [settingsDescription, setSettingsDescription] = useState("");
   const [settingsPolicy, setSettingsPolicy] = useState<HalieusGuildRoomPolicy>("members");
   const [busy, setBusy] = useState(false);
+  const [directory, setDirectory] = useState<HalieusPlayerDirectoryEntry[]>([]);
+  const [incomingInvitations, setIncomingInvitations] = useState<HalieusGuildInvitation[]>([]);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [invitingAccountId, setInvitingAccountId] = useState<string | null>(null);
 
 
   const liveByGuildRoom = useMemo(() => {
@@ -78,8 +83,14 @@ export function GuildsPanel({
 
   async function loadGuilds(preferredId?: string | null) {
     try {
-      const result = await accountApi<{ ok: true; guilds: HalieusGuildSummary[] }>("/guilds");
+      const [result, people, invitations] = await Promise.all([
+        accountApi<{ ok: true; guilds: HalieusGuildSummary[] }>("/guilds"),
+        accountApi<{ ok: true; players: HalieusPlayerDirectoryEntry[] }>("/accounts/directory"),
+        accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations"),
+      ]);
       setGuilds(result.guilds);
+      setDirectory(people.players);
+      setIncomingInvitations(invitations.invitations);
       setSelectedGuildId((current) => {
         const preferred = preferredId ?? current;
         if (preferred && result.guilds.some((guild) => guild.id === preferred)) return preferred;
@@ -291,6 +302,46 @@ export function GuildsPanel({
     }
   }
 
+  async function sendGuildInvitation(player: HalieusPlayerDirectoryEntry) {
+    if (!detail) return;
+    setInvitingAccountId(player.id);
+    setNotice("");
+    try {
+      const result = await accountApi<{ ok: true; invitation: HalieusGuildInvitation; guild: HalieusGuildDetail }>(
+        `/guilds/${encodeURIComponent(detail.id)}/invitations`,
+        { method: "POST", body: JSON.stringify({ accountId: player.id }) },
+      );
+      setDetail(result.guild);
+      setInviteSearch("");
+      setNotice(`Invitation sent to ${player.displayName}.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to invite that player.");
+    } finally {
+      setInvitingAccountId(null);
+    }
+  }
+
+  async function respondGuildInvitation(invitation: HalieusGuildInvitation, action: "accept" | "decline") {
+    setBusy(true);
+    try {
+      const result = await accountApi<{ ok: true; invitation: HalieusGuildInvitation; guild: HalieusGuildDetail | null }>(
+        `/guilds/invitations/${encodeURIComponent(invitation.id)}/respond`,
+        { method: "POST", body: JSON.stringify({ action }) },
+      );
+      setIncomingInvitations((current) => current.filter((item) => item.id !== invitation.id));
+      if (result.guild) {
+        setDetail(result.guild);
+        setSelectedGuildId(result.guild.id);
+        setNotice(`Joined ${result.guild.name}.`);
+        await loadGuilds(result.guild.id);
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to respond to that guild invitation.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function changeRole(accountId: string, role: Exclude<HalieusGuildRole, "owner">) {
     if (!detail) return;
     setBusy(true);
@@ -381,6 +432,10 @@ export function GuildsPanel({
         </form>
       </div>
 
+      {incomingInvitations.length > 0 && <section className="halieus-guild-incoming" aria-label="Guild invitations">
+        <header><div><span>GUILD INVITATIONS</span><strong>You’ve been invited</strong></div><b>{incomingInvitations.length}</b></header>
+        {incomingInvitations.map((invitation) => <article key={invitation.id}><span className="halieus-guild-emblem">{invitation.guildName.slice(0, 2).toUpperCase()}</span><div><strong>{invitation.guildName}</strong><small>{invitation.senderDisplayName} invited you</small></div><button type="button" className="button-primary" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "accept")}>Accept</button><button type="button" className="button-muted" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "decline")}>Decline</button></article>)}
+      </section>}
       {error && <p className="halieus-guild-error" role="alert">{error}</p>}
       {notice && <p className="halieus-guild-notice" role="status">{notice}</p>}
 
@@ -479,6 +534,19 @@ export function GuildsPanel({
 
             {view === "members" && (
               <div className="halieus-guild-members">
+                {detail.canManage && <section className="halieus-guild-invite-players">
+                  <header><div><small>INVITE PLAYERS</small><strong>Add people to {detail.name}</strong><span>Search existing Halieus accounts. They choose whether to join.</span></div></header>
+                  <label><input value={inviteSearch} onChange={(event) => setInviteSearch(event.target.value)} placeholder="Search name or @username" /></label>
+                  {inviteSearch.trim() && <div className="halieus-guild-invite-results">{directory
+                    .filter((person) => person.id !== account.id && !detail.members.some((member) => member.accountId === person.id))
+                    .filter((person) => `${person.displayName} ${person.username}`.toLowerCase().includes(inviteSearch.trim().toLowerCase()))
+                    .slice(0, 6)
+                    .map((person) => {
+                      const pending = detail.pendingInvitations.some((invitation) => invitation.recipientAccountId === person.id);
+                      return <article key={person.id}><span className="halieus-avatar-media" style={{ background: person.playerColor }}>{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.avatar}</span><div><strong>{person.displayName}</strong><small>@{person.username}{person.online ? " · Online" : ""}</small></div><button type="button" className="button-primary" disabled={pending || invitingAccountId === person.id} onClick={() => void sendGuildInvitation(person)}>{pending ? "Invited" : invitingAccountId === person.id ? "Sending…" : "Invite"}</button></article>;
+                    })}</div>}
+                  {detail.pendingInvitations.length > 0 && <div className="halieus-guild-pending-invites"><small>PENDING</small>{detail.pendingInvitations.map((invitation) => <span key={invitation.id}><b>{invitation.recipientDisplayName}</b><em>Waiting for response</em></span>)}</div>}
+                </section>}
                 {detail.members.map((member) => {
                   const canEditRole = detail.canManage && member.role !== "owner" && member.accountId !== account.id;
                   const canRemove = member.accountId !== account.id && member.role !== "owner" && (
