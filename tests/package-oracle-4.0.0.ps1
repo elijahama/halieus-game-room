@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 function ssh { throw 'Packaging regression attempted SSH.' }
 function scp { throw 'Packaging regression attempted SCP.' }
 $project = Split-Path $PSScriptRoot -Parent
-$zip = & (Join-Path $project 'dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1') -PackageOnly
+$zip = & (Join-Path $project 'tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1') -PackageOnly
 $zip = [string](@($zip)[-1])
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $check = [System.IO.Compression.ZipFile]::OpenRead($zip)
