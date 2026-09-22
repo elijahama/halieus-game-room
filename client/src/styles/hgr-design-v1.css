@@ -483,3 +483,55 @@ html[data-theme="dark"] .modal-eyebrow {
     grid-template-columns: minmax(0, 1fr) !important;
   }
 }
+
+
+/* ---------------------------------------------------------------------- */
+/* Shared icon system                                                     */
+/* ---------------------------------------------------------------------- */
+
+.halieus-nav-icon {
+  display: inline-grid !important;
+  place-items: center;
+  width: 22px !important;
+  height: 22px;
+  flex: 0 0 22px;
+  font-size: 0 !important;
+  line-height: 0;
+}
+
+.halieus-nav-icon svg,
+.halieus-mobile-menu-button svg,
+.halieus-mobile-fullscreen svg,
+.halieus-mobile-drawer-close svg,
+.halieus-home-build-popover > button svg {
+  display: block;
+}
+
+.halieus-side-nav button .halieus-nav-icon {
+  color: var(--hgr-muted);
+}
+
+.halieus-side-nav button:hover .halieus-nav-icon,
+.halieus-side-nav button.is-active .halieus-nav-icon {
+  color: var(--hgr-yellow-strong);
+}
+
+html[data-theme="dark"] .halieus-side-nav button:hover .halieus-nav-icon,
+html[data-theme="dark"] .halieus-side-nav button.is-active .halieus-nav-icon {
+  color: var(--hgr-yellow);
+}
+
+.halieus-global-join .halieus-nav-icon {
+  color: var(--hgr-navy);
+}
+
+.halieus-mobile-menu-button::before {
+  content: none !important;
+}
+
+.halieus-mobile-menu-button,
+.halieus-mobile-fullscreen,
+.halieus-mobile-drawer-close,
+.halieus-home-build-popover > button {
+  color: var(--hgr-text) !important;
+}
