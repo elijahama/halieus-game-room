@@ -133,7 +133,17 @@ if errorlevel 1 (
 )
 
 echo.
-echo [OK] Typecheck, current-release build and regression tests passed.
+echo STEP 3B - Validating the real Oracle deployment package locally...
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\tests\package-oracle-4.0.0.ps1"
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Oracle package preflight failed.
+    echo Nothing has been committed, pushed or deployed by this run.
+    goto :PAUSE_EXIT
+)
+
+echo.
+echo [OK] Typecheck, current-release build, regressions and Oracle package preflight passed.
 echo.
 
 :STAGE
