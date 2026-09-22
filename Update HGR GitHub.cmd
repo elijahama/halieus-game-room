@@ -226,7 +226,41 @@ echo LOCAL  ^<-- git pull --  GITHUB
 echo LOCAL  -- git push --^>  GITHUB
 echo.
 echo Your local files were updated at STEP 1.
-echo Your local changes were uploaded at STEP 7.
+echo Your local changes were uploaded at STEP 7 when a commit was needed.
+echo.
+echo STEP 8 - Publishing the validated HGR release to the website...
+echo.
+
+set "WEBSITE_UPDATER=%~dp0Update Halieus Website.cmd"
+if not exist "%WEBSITE_UPDATER%" (
+    echo [STOPPED] The private website updater was not found:
+    echo   %WEBSITE_UPDATER%
+    echo.
+    echo GitHub sync is complete, but Oracle deployment was not started.
+    goto :PAUSE_EXIT
+)
+
+call "%WEBSITE_UPDATER%"
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] GitHub sync succeeded, but the website deployment failed.
+    echo Review the updater output above. Your GitHub commit remains safe.
+    goto :PAUSE_EXIT
+)
+
+echo.
+echo ============================================================
+echo              HGR UPDATE + WEBSITE DEPLOY COMPLETE
+echo ============================================================
+echo.
+echo One-button workflow finished successfully:
+echo   1. GitHub pulled
+echo   2. Typecheck passed
+echo   3. Build passed
+echo   4. Regression tests passed
+echo   5. Release identity generated and verified
+echo   6. Changes committed/pushed when needed
+echo   7. Website deployment completed
 echo.
 pause
 popd
