@@ -40,6 +40,8 @@ const readme=read('README.md');
 const gitignore=read('.gitignore');
 const releaseIntegrity=read('scripts/release-integrity.mjs');
 const hgrTheme=read('client/src/styles/hgr-theme.css');
+const hgrDesignV1=read('client/src/styles/hgr-design-v1.css');
+const hgrDesignV1Doc=read('docs/HGR_DESIGN_SYSTEM_V1.md');
 const projectTimeline=read('client/src/platform/projectTimeline.ts');
 const projectTimelineComponent=read('client/src/platform/components/ProjectTimeline.tsx');
 const launcherGenerator=read('scripts/windows/generate-launcher-icons.ps1');
@@ -101,6 +103,17 @@ assert.match(hgrTheme,/--hgr-restart:/,'Shared HGR semantic Restart token missin
 assert.match(hgrTheme,/--hgr-close:/,'Shared HGR semantic Close token missing');
 assert.match(hgrTheme,/--hgr-update:/,'Shared HGR semantic Update token missing');
 assert.match(hgrTheme,/\.hgr-project-history/,'Project timeline design-system styling missing');
+assert.match(hgrDesignV1,/--hgr-yellow:\s*#ffc200/i,'HGR Design System v1 primary yellow token missing');
+assert.match(hgrDesignV1,/--hgr-navy:\s*#081b2b/i,'HGR Design System v1 navy token missing');
+assert.match(hgrDesignV1,/html\[data-theme="dark"\][\s\S]*?--hgr-page:/s,'Design System v1 must define an intentional dark surface stack');
+assert.match(hgrDesignV1,/\.button-primary,[\s\S]*?var\(--hgr-yellow\)/s,'Shared primary actions must use HGR yellow');
+assert.match(hgrDesignV1,/\.hgr-tabs/,'Reusable HGR tabs primitive missing');
+assert.match(hgrDesignV1,/\.hgr-status--online/,'Reusable HGR status primitive missing');
+assert.match(hgrDesignV1,/@media \(max-width: 1024px\)/,'Design System v1 tablet contract missing');
+assert.match(hgrDesignV1,/@media \(max-width: 720px\)/,'Design System v1 phone contract missing');
+assert.match(main,/import "\.\/styles\/hgr-design-v1\.css";/,'HGR Design System v1 must load after the legacy theme layer');
+assert.match(hgrDesignV1Doc,/Phase 2 — Signed-out landing/,'Design System v1 must document the next implementation phase');
+
 assert.match(hgrTheme,/Shared game-shell polish — 4\.1\.x/,'Shared game-shell polish marker missing');
 assert.match(hgrTheme,/\.card-game-header,[\s\S]*?\.rebuild-game-header,[\s\S]*?\.word-arena-header/s,'Shared game header family must remain unified');
 assert.match(hgrTheme,/@media \(max-width: 980px\)[\s\S]*?\.rebuild-live-layout[\s\S]*?grid-template-columns: minmax\(0, 1fr\) !important/s,'Shared game layouts must collapse before tablet widths overflow');
@@ -126,6 +139,7 @@ assert.match(gitignore,/server\/data\/guilds\//,'Local guild runtime data must n
 assert.match(releaseIntegrity,/server\/data\/guilds/,'Guild runtime data must be excluded from release fingerprint inputs');
 assert.match(releaseIntegrity,/persistent-guilds-4\.1\.0/,'4.1.0 Guilds must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-shared-design-tokens-4\.1\.0/,'Shared HGR design tokens must be part of the signed release contract');
+assert.match(releaseIntegrity,/hgr-design-system-v1-4\.1\.0/,'HGR Design System v1 must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
 assert.match(releaseIntegrity,/matte-launcher-family-4\.1\.0/,'Matte launcher family must be part of the signed release contract');
 
