@@ -49,6 +49,7 @@ const launcherShortcuts=read('scripts/windows/launcher-shortcuts.ps1');
 const designSystemDoc=read('docs/HGR_DESIGN_SYSTEM.md');
 const hgrIcon=read('client/src/platform/components/HgrIcon.tsx');
 const updateCmd=read('Update HGR GitHub.cmd');
+const releaseWorkflow=read('.github/workflows/release-identity.yml');
 
 assert.match(contracts,/HalieusGuildRole = "owner" \| "admin" \| "moderator" \| "member"/,'Guild role contract missing');
 assert.match(contracts,/HalieusGuildRoomPolicy = "members" \| "moderators" \| "admins"/,'Guild room permission contract missing');
@@ -157,6 +158,8 @@ assert.ok(
   updateCmd.indexOf('STEP 2 - Preparing release identity BEFORE the browser build') < updateCmd.indexOf('call npm run build'),
   'Updater must generate the 4.1 release identity before compiling the browser bundle',
 );
+assert.match(releaseWorkflow,/npm run prepare:release/,'Release identity workflow must regenerate the manifest');
+assert.match(releaseWorkflow,/git add RELEASE\.json shared\/release\.ts/,'Release identity workflow must commit both generated release files');
 assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
 assert.match(releaseIntegrity,/matte-launcher-family-4\.1\.0/,'Matte launcher family must be part of the signed release contract');
 
