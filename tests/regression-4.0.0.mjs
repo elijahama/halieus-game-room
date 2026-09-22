@@ -6,7 +6,8 @@ const json=(p)=>JSON.parse(read(p));
 
 // Historical 4.0.0 regression: later 4.x releases must preserve the 4.0.0
 // arrival/portfolio contract without forcing the current patch number back to 4.0.0.
-assert.match(read('VERSION').trim(),/^4\.\d+\.\d+$/,'4.x product version expected');
+const currentVersion=read('VERSION').trim();
+assert.match(currentVersion,/^4\.\d+\.\d+$/,'4.x product version expected');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
   assert.match(json(file).version,/^4\.\d+\.\d+$/,`${file} must remain on the 4.x line`);
 }
@@ -31,7 +32,7 @@ assert.match(intro,/Your games\. Your people\. One room\./,'Intro must state the
 assert.match(intro,/AUTO_ENTER_MS = 3200/,'Intro should auto-advance instead of becoming a mandatory gate');
 assert.match(intro,/Skip intro/,'Intro must provide an immediate skip affordance');
 assert.match(intro,/Enter Game Room/,'Intro must provide a direct enter action');
-assert.match(intro,/app-icon-192\.png\?v=4\.0\.0/,'Intro must use the versioned Halieus identity asset');
+assert.ok(intro.includes(`app-icon-192.png?v=${currentVersion}`),'Intro must use the current versioned Halieus identity asset');
 assert.doesNotMatch(intro,/seven games|7 games/i,'4.0.0 intro must not carry the obsolete seven-game copy');
 
 assert.match(css,/4\.0\.0 — Halieus branded arrival/,'4.0.0 intro CSS marker missing');
@@ -46,7 +47,7 @@ assert.match(css,/\.game-menu-modal\.card-game-menu-modal\s*\{[\s\S]*?overflow-y
 assert.match(css,/\.game-menu-modal \.halieus-theme-mode-grid\s*\{[\s\S]*?repeat\(3,/s,'Mobile theme controls should remain compact in three columns');
 
 
-assert.match(readme,/Current milestone: 4\.0\.0/,'Root README must describe the 4.0.0 milestone');
+assert.match(readme,/Current milestone:\*\*\s*4\.\d+\.\d+/,'Root README must advertise the current HGR 4.x milestone');
 assert.match(readme,/Human-directed, AI-assisted engineering/,'README must transparently describe the AI-assisted development model');
 assert.match(readme,/server-authoritative real-time multiplayer architecture/i,'README must explain the authoritative architecture');
 assert.match(readme,/Welcome to Halieus Game Room/,'README must document the new arrival experience');
