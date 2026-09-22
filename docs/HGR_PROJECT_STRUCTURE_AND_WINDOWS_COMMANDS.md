@@ -303,3 +303,22 @@ r4 action colours:
 - HGR PowerShell — glossy slate blue.
 
 The artwork revision remains independent from the HGR application version.
+
+
+## Design-system reference
+
+HGR now keeps its shared product design rules in:
+
+`docs/HGR_DESIGN_SYSTEM.md`
+
+The website token layer is:
+
+`client/src/styles/hgr-theme.css`
+
+The launcher family is generated from the canonical tracked Halieus PNG instead of being redrawn independently. This keeps Windows utilities visually tied to the same product identity used by the website.
+
+Branding reference artwork belongs in:
+
+`assets/branding/reference/`
+
+When a new reference image is added locally, commit it through the normal Git workflow rather than placing copies around the root.
