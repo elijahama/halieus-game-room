@@ -115,7 +115,7 @@ assert.match(projectTimeline,/version: "4\.1\.0"/,'Timeline must include the cur
 assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.0\.0 repository import/,'Timeline must disclose the historical-source boundary');
 
 assert.match(launcherGenerator,/assets\\branding\\launchers/,'Launcher generator must write into the branding launchers folder');
-assert.match(launcherGenerator,/\\launchers\\matte/,'Launcher generator must use the clean matte launcher folder');
+assert.match(launcherGenerator,/\$MatteRoot = Join-Path \$LauncherRoot 'matte'/,'Launcher generator must use the clean matte launcher folder');
 assert.match(launcherGenerator,/No glass, glow, lens highlight or neon treatment/,'Launcher generator must preserve the matte visual contract');
 assert.match(launcherGenerator,/New-MatteHgrLauncher -Name 'Start Halieus Game Room'/,'Start launcher generation missing');
 assert.match(launcherGenerator,/New-MatteHgrLauncher -Name 'HGR PowerShell'.*-PowerShell/,'PowerShell launcher generation missing');
