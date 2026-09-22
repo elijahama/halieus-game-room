@@ -50,7 +50,7 @@ const singles = [
   'scripts/windows/generate-launcher-icons.ps1',
   'FIRST RUN - Refresh Halieus Launchers.cmd',
   'scripts/windows/launcher-shortcuts.ps1', 'scripts/windows/start-background.ps1', 'scripts/windows/restart-background.ps1', 'scripts/windows/stop-background.ps1', 'scripts/windows/start-production.ps1', 'scripts/windows/tailscale-funnel.ps1', 'scripts/windows/show-feedback.ps1', 'scripts/windows/HGR GitHub Sync.cmd', 'scripts/windows/Install HGR GitHub Shortcut.cmd',
-  'Update Halieus Website.cmd', 'update-website.ps1',
+  'Update Halieus Website.cmd', 'Update HGR GitHub.cmd',
   'scripts/release-integrity.mjs',
   'tests/regression-3.6.3.mjs', 'tests/regression-3.6.3b.mjs', 'tests/regression-3.6.4.mjs', 'tests/runtime-word-arena-3.6.4.mjs', 'tests/regression-3.6.4a.mjs', 'tests/runtime-mega-roll-timer-3.6.4a.mjs', 'tests/regression-3.6.4b.mjs', 'tests/regression-3.6.5.mjs', 'tests/runtime-word-arena-ai-3.6.5.mjs', 'tests/regression-3.6.6.mjs', 'tests/runtime-word-game-daily-3.6.6.mjs', 'tests/regression-3.6.7.mjs', 'tests/regression-3.6.8.mjs', 'tests/regression-3.6.8a.mjs', 'tests/regression-3.6.8b.mjs', 'tests/regression-3.6.8c.mjs', 'tests/regression-3.6.8d.mjs', 'tests/regression-3.6.8e.mjs', 'tests/regression-3.7.0.mjs', 'tests/regression-3.7.0a.mjs', 'tests/regression-3.7.0b.mjs', 'tests/regression-3.7.0c.mjs', 'tests/regression-3.7.0d.mjs', 'tests/regression-3.7.0e.mjs', 'tests/regression-3.7.0f.mjs', 'tests/regression-3.7.0g.mjs', 'tests/regression-3.7.0h.mjs', 'tests/regression-3.7.0i.mjs', 'tests/regression-3.7.0j.mjs', 'tests/regression-3.7.0k.mjs', 'tests/regression-3.7.0l.mjs', 'tests/regression-4.0.0.mjs', 'tests/regression-4.0.1.mjs', 'tests/regression-4.0.2.mjs', 'tests/regression-4.1.0.mjs', 'README.md', 'ARCHITECTURE.md',
   'docs/releases/RELEASE_3.6.3.md', 'docs/releases/RELEASE_3.6.3_VALIDATION.md',
@@ -245,7 +245,7 @@ const manifest = {
     'hgr-shared-design-tokens-4.1.0',
     'hgr-project-history-4.1.0',
     'hgr-shared-game-shell-polish-4.1.0',
-    'canonical-brand-derived-launchers-r5',
+    'canonical-brand-action-badges-r6',
   ],
 };
 
