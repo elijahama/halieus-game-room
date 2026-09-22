@@ -13,7 +13,9 @@ public static class HgrNativeIcon {
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
+$BrandingRevision = 'r2'
 New-Item -ItemType Directory -Force -Path $LauncherRoot | Out-Null
+Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
 
 function New-RoundedRectanglePath {
     param(
@@ -124,10 +126,10 @@ function New-HgrLauncherIcon {
     }
 }
 
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot 'Start Halieus Game Room.ico') -AccentHex '#16A34A'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot 'Restart Halieus Game Room.ico') -AccentHex '#F97316'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot 'Close Halieus Game Room.ico') -AccentHex '#DC2626' -WhiteH
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot 'Update Halieus Website.ico') -AccentHex '#2563EB'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot 'HGR PowerShell.ico') -AccentHex '#0F4C81' -PowerShellBadge
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") -AccentHex '#22C55E'
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") -AccentHex '#F59E0B'
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") -AccentHex '#DC2626' -WhiteH
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") -AccentHex '#2563EB'
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") -AccentHex '#0F4C81' -PowerShellBadge
 
 Write-Host 'HGR launcher icons generated successfully.'
