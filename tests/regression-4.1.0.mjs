@@ -50,6 +50,9 @@ const designSystemDoc=read('docs/HGR_DESIGN_SYSTEM.md');
 const hgrIcon=read('client/src/platform/components/HgrIcon.tsx');
 const updateCmd=read('Update HGR GitHub.cmd');
 const releaseWorkflow=read('.github/workflows/release-identity.yml');
+const startCmd=read('Start Halieus Game Room.cmd');
+const restartCmd=read('Restart Halieus Game Room.cmd');
+const closeCmd=read('Close Halieus Game Room.cmd');
 
 assert.match(contracts,/HalieusGuildRole = "owner" \| "admin" \| "moderator" \| "member"/,'Guild role contract missing');
 assert.match(contracts,/HalieusGuildRoomPolicy = "members" \| "moderators" \| "admins"/,'Guild room permission contract missing');
@@ -141,13 +144,16 @@ assert.match(projectTimeline,/version: "4\.0\.2"/,'Timeline must include device-
 assert.match(projectTimeline,/version: "4\.1\.0"/,'Timeline must include the current Guilds milestone');
 assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.0\.0 repository import/,'Timeline must disclose the historical-source boundary');
 
-assert.match(launcherGenerator,/assets\\branding\\launchers/,'Launcher generator must write into the branding launchers folder');
-assert.match(launcherGenerator,/\$MatteRoot = Join-Path \$LauncherRoot 'matte'/,'Launcher generator must use the clean matte launcher folder');
-assert.match(launcherGenerator,/No glass, glow, lens highlight or neon treatment/,'Launcher generator must preserve the matte visual contract');
-assert.match(launcherGenerator,/New-MatteHgrLauncher -Name 'Start Halieus Game Room'/,'Start launcher generation missing');
-assert.match(launcherGenerator,/New-MatteHgrLauncher -Name 'HGR PowerShell'.*-PowerShell/,'PowerShell launcher generation missing');
-assert.match(launcherShortcuts,/assets\\branding\\launchers\\matte/,'Shortcut generator must consume the matte launcher folder');
-assert.match(designSystemDoc,/Launcher family — matte reset/,'Design-system documentation must describe the matte launcher reset');
+assert.match(launcherGenerator,/generated-preview/,'Optional generated launcher previews must be quarantined from approved icons');
+assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?\$LauncherRoot/s,'Launcher generator must never wipe the approved launcher root');
+assert.match(launcherShortcuts,/assets\\branding\\launchers\\matte/,'Shortcut refresh must consume approved launcher assets');
+assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must never invoke icon generation');
+assert.match(launcherShortcuts,/without modifying any files/,'Missing launcher icons must fall back without regenerating artwork');
+assert.doesNotMatch(startCmd,/launcher-shortcuts\.ps1/,'Start must never refresh or regenerate launcher assets');
+assert.doesNotMatch(restartCmd,/launcher-shortcuts\.ps1/,'Restart must never refresh or regenerate launcher assets');
+assert.doesNotMatch(closeCmd,/launcher-shortcuts\.ps1/,'Close must never refresh or regenerate launcher assets');
+assert.doesNotMatch(gitignore,/^assets\/branding\/launchers\/$/m,'Approved launcher assets must be trackable in Git');
+assert.match(gitignore,/assets\/branding\/launchers\/generated-preview\//,'Only generated launcher previews should be ignored');
 
 assert.match(gitignore,/server\/data\/guilds\//,'Local guild runtime data must never be committed');
 assert.match(releaseIntegrity,/server\/data\/guilds/,'Guild runtime data must be excluded from release fingerprint inputs');
