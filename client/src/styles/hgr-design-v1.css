@@ -774,3 +774,765 @@ body, #root { transition: none !important; }
 .halieus-rgb-fields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
 .halieus-rgb-fields > span { display: grid; grid-template-columns: 18px minmax(0,1fr); align-items: center; gap: 4px; color: var(--hgr-muted); }
 .halieus-rgb-fields input { width: 100%; min-width: 0; height: 28px; padding: 3px 5px; }
+
+
+/* ==========================================================================
+   HGR Part 15 — platform coherence pass
+   Theme picker, featured carousel, player identities and in-app inbox.
+   ========================================================================== */
+
+/* Theme changes are intentionally immediate. Keep hover/micro-interactions on
+ * controls, but do not cross-fade the whole application between palettes. */
+body,
+#root,
+.halieus-shell,
+.halieus-sidebar,
+.halieus-main {
+  transition: none !important;
+}
+
+.halieus-theme-trigger {
+  width: 100% !important;
+  min-height: 52px !important;
+  box-sizing: border-box;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px !important;
+  padding: 8px 11px !important;
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: 14px !important;
+  background: color-mix(in srgb, var(--hgr-surface-raised) 94%, var(--hgr-brand) 6%) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  text-align: left;
+}
+.halieus-theme-trigger:hover {
+  border-color: color-mix(in srgb, var(--hgr-brand) 48%, var(--hgr-border-strong)) !important;
+  background: color-mix(in srgb, var(--hgr-surface-raised) 90%, var(--hgr-brand) 10%) !important;
+}
+.halieus-theme-trigger-label {
+  color: var(--hgr-muted);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.halieus-theme-trigger-value {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.halieus-theme-trigger-value i {
+  color: var(--hgr-brand);
+  font-style: normal;
+  font-size: 12px;
+}
+.halieus-theme-trigger-value b {
+  overflow: hidden;
+  color: var(--hgr-text);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-theme-trigger-chevron {
+  color: var(--hgr-muted);
+  font-size: 11px;
+}
+
+.halieus-theme-popover-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1190;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+.halieus-theme-popover {
+  position: fixed;
+  z-index: 1200;
+  box-sizing: border-box;
+  display: grid;
+  gap: 5px;
+  padding: 9px;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 16px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+  box-shadow: 0 22px 64px rgba(0,0,0,.32);
+}
+.halieus-theme-popover > header {
+  display: grid;
+  gap: 2px;
+  padding: 4px 6px 7px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-theme-popover > header span {
+  font-size: 12px;
+  font-weight: 950;
+}
+.halieus-theme-popover > header small {
+  color: var(--hgr-muted);
+  font-size: 10px;
+}
+.halieus-theme-popover > button {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 24px minmax(0,1fr) 18px;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-theme-popover > button:hover,
+.halieus-theme-popover > button.is-active {
+  border-color: color-mix(in srgb, var(--hgr-brand) 34%, var(--hgr-border));
+  background: color-mix(in srgb, var(--hgr-brand) 9%, var(--hgr-surface-soft));
+}
+.halieus-theme-popover > button > i {
+  color: var(--hgr-brand);
+  font-style: normal;
+  text-align: center;
+}
+.halieus-theme-popover > button > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+.halieus-theme-popover > button strong { font-size: 11px; }
+.halieus-theme-popover > button small { color: var(--hgr-muted); font-size: 9px; }
+.halieus-theme-popover > button > b { color: var(--hgr-brand); font-size: 12px; }
+
+.halieus-custom-theme-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1250;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 18px;
+  background: rgba(2,8,13,.7);
+  backdrop-filter: blur(12px);
+}
+.halieus-custom-theme-dialog {
+  width: min(760px, 100%);
+  max-height: min(860px, calc(100dvh - 36px));
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 22px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+  box-shadow: 0 28px 90px rgba(0,0,0,.42);
+}
+.halieus-custom-theme-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.halieus-custom-theme-dialog > header p,
+.halieus-custom-theme-dialog > header h2,
+.halieus-custom-theme-dialog > header span { margin: 0; }
+.halieus-custom-theme-dialog > header p {
+  color: var(--hgr-brand);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .14em;
+}
+.halieus-custom-theme-dialog > header h2 {
+  margin-top: 3px;
+  font-size: clamp(22px,3vw,30px);
+}
+.halieus-custom-theme-dialog > header span {
+  display: block;
+  margin-top: 5px;
+  color: var(--hgr-muted);
+  font-size: 11px;
+}
+.halieus-custom-theme-dialog > header > button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 12px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  font-size: 22px;
+  cursor: pointer;
+}
+.halieus-custom-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 10px;
+}
+.halieus-custom-colour-card {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 14px;
+  background: var(--hgr-surface-soft);
+}
+.halieus-custom-colour-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.halieus-custom-colour-card > header strong { font-size: 11px; }
+.halieus-custom-colour-card > header code { color: var(--hgr-muted); font-size: 9px; }
+.halieus-custom-colour-main {
+  display: grid;
+  grid-template-columns: 42px minmax(0,1fr);
+  gap: 8px;
+}
+.halieus-custom-colour-main input[type="color"] {
+  width: 42px;
+  height: 38px;
+  padding: 2px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 10px;
+  background: var(--hgr-surface-raised);
+}
+.halieus-custom-colour-main input[type="text"],
+.halieus-custom-colour-card .halieus-rgb-fields input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--hgr-border);
+  border-radius: 9px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+}
+.halieus-custom-colour-main input[type="text"] { height: 38px; padding: 7px 9px; }
+.halieus-custom-colour-card .halieus-rgb-fields {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 6px;
+}
+.halieus-custom-colour-card .halieus-rgb-fields label {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 18px minmax(0,1fr);
+  align-items: center;
+  gap: 4px;
+}
+.halieus-custom-colour-card .halieus-rgb-fields label b {
+  color: var(--hgr-muted);
+  font-size: 9px;
+}
+.halieus-custom-colour-card .halieus-rgb-fields input {
+  height: 30px;
+  padding: 4px 5px;
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview {
+  min-height: 74px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-top: 12px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview > span {
+  width: min(320px,72%);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 11px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.16);
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview i,
+.halieus-custom-theme-dialog .halieus-custom-theme-preview b {
+  width: 34%;
+  height: 12px;
+  border-radius: 999px;
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview small {
+  position: absolute;
+  right: 9px;
+  bottom: 7px;
+  color: rgba(255,255,255,.75);
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.halieus-custom-theme-dialog > footer {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* The sidebar player card is the visual source of truth. These reusable cards
+ * intentionally use the same horizontal identity hierarchy everywhere. */
+.halieus-player-identity {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 44px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--hgr-surface-raised) 96%, var(--hgr-brand) 4%);
+  color: var(--hgr-text);
+  text-align: left;
+}
+button.halieus-player-identity {
+  font: inherit;
+  cursor: pointer;
+}
+.halieus-player-identity.is-interactive:hover,
+.halieus-player-identity.is-selected {
+  border-color: color-mix(in srgb, var(--hgr-brand) 38%, var(--hgr-border));
+  background: color-mix(in srgb, var(--hgr-brand) 7%, var(--hgr-surface-raised));
+}
+.halieus-player-identity-avatar {
+  width: 44px !important;
+  height: 44px !important;
+  display: grid !important;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px !important;
+  color: white;
+  font-size: 12px;
+  font-weight: 950;
+}
+.halieus-player-identity-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.halieus-player-identity-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-player-identity-copy strong,
+.halieus-player-identity-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-player-identity-copy strong { font-size: 12px; }
+.halieus-player-identity-copy small { color: var(--hgr-muted); font-size: 9px; font-weight: 650; }
+.halieus-player-identity-status {
+  color: var(--hgr-muted);
+  font-size: 14px;
+  letter-spacing: .08em;
+}
+.halieus-player-identity-trailing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.halieus-player-identity.is-compact {
+  grid-template-columns: 40px minmax(0,1fr) auto;
+  min-height: 60px;
+  padding: 8px 9px;
+}
+.halieus-player-identity.is-compact .halieus-player-identity-avatar {
+  width: 40px !important;
+  height: 40px !important;
+}
+.halieus-home-player-strip > div {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  align-content: start;
+  gap: 7px !important;
+  max-height: 300px;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding-right: 2px;
+}
+.halieus-home-player-strip .halieus-player-identity {
+  min-width: 0 !important;
+  width: 100% !important;
+  flex: none !important;
+}
+
+/* Featured home carousel: one large HGR story at a time, with explicit manual
+ * controls and a visible rotation rail rather than a static dashboard hero. */
+.halieus-feature-carousel {
+  position: relative;
+  overflow: hidden;
+}
+.halieus-feature-carousel .halieus-showcase-copy > p {
+  white-space: normal;
+}
+.halieus-feature-carousel .halieus-showcase-feature {
+  position: relative;
+  min-width: 0;
+  padding-bottom: 78px !important;
+  overflow: hidden;
+}
+.halieus-feature-carousel .halieus-showcase-feature > img {
+  position: relative;
+  z-index: 2;
+}
+.halieus-feature-arrow {
+  position: absolute;
+  top: 48%;
+  z-index: 8;
+  width: 38px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--feature-accent) 32%, var(--hgr-border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--hgr-surface-raised) 84%, transparent);
+  color: var(--hgr-text);
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+.halieus-feature-arrow.is-previous { left: 12px; }
+.halieus-feature-arrow.is-next { right: 12px; }
+.halieus-feature-arrow:hover {
+  border-color: var(--feature-accent);
+  background: color-mix(in srgb, var(--feature-accent) 12%, var(--hgr-surface-raised));
+}
+.halieus-feature-rail {
+  position: absolute;
+  z-index: 9;
+  left: 14px;
+  right: 14px;
+  bottom: 12px;
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--feature-accent) 18%, var(--hgr-border));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--hgr-surface-raised) 82%, transparent);
+  backdrop-filter: blur(12px);
+  scrollbar-width: none;
+}
+.halieus-feature-rail::-webkit-scrollbar { display: none; }
+.halieus-feature-rail button {
+  flex: 1 0 42px;
+  min-width: 42px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--hgr-text);
+  cursor: pointer;
+}
+.halieus-feature-rail button.is-active {
+  border-color: color-mix(in srgb, var(--feature-accent) 70%, white 8%);
+  background: color-mix(in srgb, var(--feature-accent) 16%, var(--hgr-surface-soft));
+}
+.halieus-feature-rail img {
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.halieus-feature-rail span { display: none; }
+
+/* Discovery uses a restrained segmented control; game cards remain the visual
+ * focus instead of five oversized equal-weight pills. */
+.halieus-discovery-tabs {
+  width: fit-content !important;
+  max-width: 100%;
+  display: flex !important;
+  gap: 2px !important;
+  overflow-x: auto;
+  padding: 4px !important;
+  border: 1px solid var(--hgr-border);
+  border-radius: 13px;
+  background: var(--hgr-surface-soft);
+  scrollbar-width: none;
+}
+.halieus-discovery-tabs::-webkit-scrollbar { display: none; }
+.halieus-discovery-tabs button {
+  flex: 0 0 auto;
+  min-height: 34px !important;
+  padding: 6px 10px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--hgr-muted) !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+  white-space: nowrap;
+}
+.halieus-discovery-tabs button:hover { color: var(--hgr-text) !important; }
+.halieus-discovery-tabs button.is-active {
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08) !important;
+}
+.halieus-discovery-tabs button.is-active::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 3px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--hgr-brand);
+}
+.halieus-discovery-tabs button { position: relative; }
+
+/* In-app request inbox */
+.halieus-inbox-nav { position: relative; }
+.halieus-inbox-badge {
+  min-width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  margin-left: auto;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--hgr-brand);
+  color: var(--hgr-brand-ink);
+  font-size: 9px;
+  font-weight: 950;
+}
+.halieus-mobile-inbox {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hgr-border);
+  border-radius: 11px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+}
+.halieus-mobile-inbox > b {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  padding: 0 3px;
+  border: 2px solid var(--hgr-surface-raised);
+  border-radius: 999px;
+  background: var(--hgr-brand);
+  color: var(--hgr-brand-ink);
+  font-size: 8px;
+}
+.halieus-inbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1160;
+  display: grid;
+  justify-items: end;
+  background: rgba(2,8,13,.64);
+  backdrop-filter: blur(9px);
+}
+.halieus-inbox-panel {
+  width: min(560px, 100%);
+  height: 100dvh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 22px;
+  border-left: 1px solid var(--hgr-border-strong);
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+  box-shadow: -18px 0 70px rgba(0,0,0,.32);
+}
+.halieus-inbox-panel > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 17px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-inbox-panel > header p,
+.halieus-inbox-panel > header h2,
+.halieus-inbox-panel > header span { margin: 0; }
+.halieus-inbox-panel > header p {
+  color: var(--hgr-brand);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .14em;
+}
+.halieus-inbox-panel > header h2 {
+  margin-top: 4px;
+  font-size: 26px;
+}
+.halieus-inbox-panel > header span {
+  display: block;
+  margin-top: 5px;
+  color: var(--hgr-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.halieus-inbox-panel > header > button {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid var(--hgr-border);
+  border-radius: 12px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  font-size: 22px;
+}
+.halieus-inbox-empty {
+  display: grid;
+  gap: 5px;
+  margin-top: 18px;
+  padding: 24px;
+  border: 1px dashed var(--hgr-border-strong);
+  border-radius: 16px;
+  background: var(--hgr-surface-soft);
+  text-align: center;
+}
+.halieus-inbox-empty span { color: var(--hgr-muted); font-size: 11px; }
+.halieus-inbox-group { margin-top: 18px; }
+.halieus-inbox-group > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.halieus-inbox-group > header strong {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.halieus-inbox-group > header b {
+  min-width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-muted);
+  font-size: 9px;
+}
+.halieus-inbox-item {
+  --inbox-accent: var(--hgr-brand);
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 46px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 7px;
+  border: 1px solid color-mix(in srgb, var(--inbox-accent) 24%, var(--hgr-border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--inbox-accent) 5%, var(--hgr-surface-soft));
+}
+.halieus-inbox-item > img,
+.halieus-inbox-guild-mark {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  object-fit: contain;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--inbox-accent) 13%, var(--hgr-surface-raised));
+  color: var(--hgr-text);
+  font-size: 12px;
+  font-weight: 950;
+}
+.halieus-inbox-item > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-inbox-item small {
+  color: var(--inbox-accent);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+.halieus-inbox-item strong { font-size: 12px; }
+.halieus-inbox-item em {
+  color: var(--hgr-muted);
+  font-size: 9px;
+  font-style: normal;
+}
+.halieus-inbox-item > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+.halieus-inbox-item > div button {
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 9px;
+}
+
+@media (max-width: 760px) {
+  .halieus-custom-theme-backdrop { padding: 0; align-items: end; }
+  .halieus-custom-theme-dialog {
+    width: 100%;
+    max-height: 92dvh;
+    padding: 16px;
+    border-radius: 22px 22px 0 0;
+  }
+  .halieus-custom-theme-grid { grid-template-columns: minmax(0,1fr); }
+  .halieus-custom-theme-dialog > footer {
+    grid-template-columns: 1fr 1fr;
+  }
+  .halieus-custom-theme-dialog > footer > span { display: none; }
+  .halieus-custom-theme-dialog > footer .button-muted { order: 3; }
+  .halieus-custom-theme-dialog > footer .button-primary { order: 4; }
+  .halieus-feature-carousel .halieus-showcase-feature { padding-bottom: 70px !important; }
+  .halieus-feature-arrow { width: 34px; height: 46px; }
+  .halieus-feature-arrow.is-previous { left: 8px; }
+  .halieus-feature-arrow.is-next { right: 8px; }
+  .halieus-feature-rail { left: 9px; right: 9px; bottom: 9px; }
+  .halieus-discovery-tabs {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  .halieus-inbox-panel {
+    width: 100%;
+    padding: 16px;
+    border-left: 0;
+  }
+  .halieus-inbox-item {
+    grid-template-columns: 42px minmax(0,1fr);
+  }
+  .halieus-inbox-item > img,
+  .halieus-inbox-guild-mark { width: 42px; height: 42px; }
+  .halieus-inbox-item > div {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+  .halieus-inbox-item > div button { flex: 1; }
+}
+
+@media (max-width: 480px) {
+  .halieus-player-identity {
+    grid-template-columns: 40px minmax(0,1fr) auto;
+  }
+  .halieus-custom-theme-dialog > footer {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-custom-theme-dialog > footer .button-muted,
+  .halieus-custom-theme-dialog > footer .button-primary { order: initial; }
+}
