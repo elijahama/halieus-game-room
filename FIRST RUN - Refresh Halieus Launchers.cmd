@@ -12,7 +12,7 @@ echo  Folder: %CD%
 echo =============================================================
 echo.
 echo Creating fresh launchers for THIS extracted folder...
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\launcher-shortcuts.ps1" -UnhideScripts
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\windows\launcher-shortcuts.ps1" -UnhideScripts
 if errorlevel 1 (
   echo.
   echo Launcher refresh failed. Read the error above.
@@ -22,7 +22,7 @@ if errorlevel 1 (
 
 echo.
 echo Launchers refreshed successfully.
-echo You can now run "Update Halieus Website.cmd" or use the new shortcuts.
+echo Use the "Update Halieus Website" Start Menu shortcut for the full GitHub + validation + deploy workflow.
 echo.
 pause
 exit /b 0

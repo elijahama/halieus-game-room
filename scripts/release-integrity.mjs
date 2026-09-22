@@ -45,8 +45,9 @@ const singles = [
   'Start Halieus Game Room.cmd', 'Restart Halieus Game Room.cmd', 'Close Halieus Game Room.cmd',
   // The main root ICO is a Windows launcher convenience, not an Oracle runtime input.
   // It still ships in the downloadable ZIP but its absence must not invalidate website deployment.
-  'Start Halieus Game Room.ico', 'Restart Halieus Game Room.ico', 'Update Halieus Website.ico', 'Close Halieus Game Room.ico',
-  'FIRST RUN - Refresh Halieus Launchers.cmd', 'launcher-shortcuts.ps1',
+  'assets/branding/launchers/Start Halieus Game Room.ico', 'assets/branding/launchers/Restart Halieus Game Room.ico', 'Update Halieus Website.ico', 'assets/branding/launchers/Close Halieus Game Room.ico',
+  'FIRST RUN - Refresh Halieus Launchers.cmd',
+  'scripts/windows/launcher-shortcuts.ps1', 'scripts/windows/start-background.ps1', 'scripts/windows/restart-background.ps1', 'scripts/windows/stop-background.ps1', 'scripts/windows/start-production.ps1', 'scripts/windows/tailscale-funnel.ps1', 'scripts/windows/show-feedback.ps1', 'scripts/windows/HGR GitHub Sync.cmd', 'scripts/windows/Install HGR GitHub Shortcut.cmd',
   'Update Halieus Website.cmd', 'update-website.ps1',
   'scripts/release-integrity.mjs',
   'tests/regression-3.6.3.mjs', 'tests/regression-3.6.3b.mjs', 'tests/regression-3.6.4.mjs', 'tests/runtime-word-arena-3.6.4.mjs', 'tests/regression-3.6.4a.mjs', 'tests/runtime-mega-roll-timer-3.6.4a.mjs', 'tests/regression-3.6.4b.mjs', 'tests/regression-3.6.5.mjs', 'tests/runtime-word-arena-ai-3.6.5.mjs', 'tests/regression-3.6.6.mjs', 'tests/runtime-word-game-daily-3.6.6.mjs', 'tests/regression-3.6.7.mjs', 'tests/regression-3.6.8.mjs', 'tests/regression-3.6.8a.mjs', 'tests/regression-3.6.8b.mjs', 'tests/regression-3.6.8c.mjs', 'tests/regression-3.6.8d.mjs', 'tests/regression-3.6.8e.mjs', 'tests/regression-3.7.0.mjs', 'tests/regression-3.7.0a.mjs', 'tests/regression-3.7.0b.mjs', 'tests/regression-3.7.0c.mjs', 'tests/regression-3.7.0d.mjs', 'tests/regression-3.7.0e.mjs', 'tests/regression-3.7.0f.mjs', 'tests/regression-3.7.0g.mjs', 'tests/regression-3.7.0h.mjs', 'tests/regression-3.7.0i.mjs', 'tests/regression-3.7.0j.mjs', 'tests/regression-3.7.0k.mjs', 'tests/regression-3.7.0l.mjs', 'tests/regression-4.0.0.mjs', 'tests/regression-4.0.1.mjs', 'tests/regression-4.0.2.mjs', 'tests/regression-4.1.0.mjs', 'README.md', 'ARCHITECTURE.md',

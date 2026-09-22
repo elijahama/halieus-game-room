@@ -6,8 +6,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$ProjectRoot =
-    Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 
 $ServerRoot =
     Join-Path $ProjectRoot "server"

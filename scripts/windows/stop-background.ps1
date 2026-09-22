@@ -5,7 +5,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $RuntimeDirectory = Join-Path $ProjectRoot '.runtime'
 $PidFile = Join-Path $RuntimeDirectory 'halieus-game-room.pid'
 $LegacyPidFile = Join-Path $RuntimeDirectory 'mega-board.pid'

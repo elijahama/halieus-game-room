@@ -5,20 +5,24 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $GameRoomIconPath = Join-Path $ProjectRoot 'Halieus Game Room.ico'
-$StartIconPath = Join-Path $ProjectRoot 'Start Halieus Game Room.ico'
-$RestartIconPath = Join-Path $ProjectRoot 'Restart Halieus Game Room.ico'
+$LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
+$StartIconPath = Join-Path $LauncherIconRoot 'Start Halieus Game Room.ico'
+$RestartIconPath = Join-Path $LauncherIconRoot 'Restart Halieus Game Room.ico'
+$CloseIconPath = Join-Path $LauncherIconRoot 'Close Halieus Game Room.ico'
 $UpdateIconPath = Join-Path $ProjectRoot 'Update Halieus Website.ico'
-$CloseIconPath = Join-Path $ProjectRoot 'Close Halieus Game Room.ico'
+if (-not (Test-Path -LiteralPath $UpdateIconPath)) { $UpdateIconPath = $GameRoomIconPath }
+$ShortcutDirectory = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Halieus Game Room'
+New-Item -ItemType Directory -Force -Path $ShortcutDirectory | Out-Null
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
-$StartShortcut = Join-Path $ProjectRoot 'Start Halieus Game Room.lnk'
+$StartShortcut = Join-Path $ShortcutDirectory 'Start Halieus Game Room.lnk'
 $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
-$RestartShortcut = Join-Path $ProjectRoot 'Restart Halieus Game Room.lnk'
+$RestartShortcut = Join-Path $ShortcutDirectory 'Restart Halieus Game Room.lnk'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
-$CloseShortcut = Join-Path $ProjectRoot 'Close Halieus Game Room.lnk'
-$UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
-$UpdateShortcut = Join-Path $ProjectRoot 'Update Halieus Website.lnk'
+$CloseShortcut = Join-Path $ShortcutDirectory 'Close Halieus Game Room.lnk'
+$UpdateScript = Join-Path $ProjectRoot 'Update HGR GitHub.cmd'
+$UpdateShortcut = Join-Path $ShortcutDirectory 'Update Halieus Website.lnk'
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -68,12 +72,21 @@ New-HalieusShortcut -ShortcutPath $StartShortcut -CommandScript $StartScript -De
 New-HalieusShortcut -ShortcutPath $RestartShortcut -CommandScript $RestartScript -Description 'Restart Halieus Game Room' -IconPath $RestartIconPath
 New-HalieusShortcut -ShortcutPath $CloseShortcut -CommandScript $CloseScript -Description 'Close Halieus Game Room' -IconPath $CloseIconPath
 if (Test-Path -LiteralPath $UpdateScript) {
-    New-HalieusShortcut -ShortcutPath $UpdateShortcut -CommandScript $UpdateScript -Description 'Publish the current Halieus Game Room release to the website' -IconPath $UpdateIconPath
+    New-HalieusShortcut -ShortcutPath $UpdateShortcut -CommandScript $UpdateScript -Description 'Validate, sync and deploy Halieus Game Room' -IconPath $UpdateIconPath
 }
 
-# Remove obsolete shortcut names from pre-platform releases if they are still present after an in-place update.
-Remove-Item -LiteralPath (Join-Path $ProjectRoot 'Start Mega Board.lnk') -Force -ErrorAction SilentlyContinue
-Remove-Item -LiteralPath (Join-Path $ProjectRoot 'Close Mega Board.lnk') -Force -ErrorAction SilentlyContinue
+# Shortcuts belong in the Start Menu. Remove old generated root shortcuts so
+# the source folder stays readable and moving helpers cannot leave stale links.
+foreach ($name in @(
+    'Start Halieus Game Room.lnk',
+    'Restart Halieus Game Room.lnk',
+    'Close Halieus Game Room.lnk',
+    'Update Halieus Website.lnk',
+    'Start Mega Board.lnk',
+    'Close Mega Board.lnk'
+)) {
+    Remove-Item -LiteralPath (Join-Path $ProjectRoot $name) -Force -ErrorAction SilentlyContinue
+}
 
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null

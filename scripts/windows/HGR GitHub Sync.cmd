@@ -11,12 +11,12 @@ rem It always works from its own folder, so you can launch it
 rem from a Start Menu shortcut without manually using cd.
 rem ------------------------------------------------------------
 
-pushd "%~dp0"
+pushd "%~dp0\..\.."
 
 set "REPO=Laijee27/halieus-game-room"
 set "REMOTE=origin"
 set "BRANCH=main"
-set "ICON=%~dp0Halieus Game Room.ico"
+set "ICON=%CD%\Halieus Game Room.ico"
 set "SHORTCUT_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Halieus Game Room"
 set "SHORTCUT=%SHORTCUT_DIR%\HGR GitHub Sync.lnk"
 

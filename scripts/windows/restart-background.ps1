@@ -6,9 +6,9 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$StopScript = Join-Path $ProjectRoot 'stop-background.ps1'
-$StartScript = Join-Path $ProjectRoot 'start-background.ps1'
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$StopScript = Join-Path $PSScriptRoot 'stop-background.ps1'
+$StartScript = Join-Path $PSScriptRoot 'start-background.ps1'
 $VersionFile = Join-Path $ProjectRoot 'VERSION'
 
 $expectedVersion = if (Test-Path -LiteralPath $VersionFile) {

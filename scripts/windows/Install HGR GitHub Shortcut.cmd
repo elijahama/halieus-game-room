@@ -14,7 +14,7 @@ rem
 rem It creates a Start Menu shortcut that can be pinned to Start.
 rem ============================================================
 
-set "PROJECT=%~dp0"
+for %%I in ("%~dp0\..\..") do set "PROJECT=%%~fI\"
 set "TARGET=%PROJECT%Update HGR GitHub.cmd"
 set "ICON=%PROJECT%Halieus Game Room.ico"
 set "STARTDIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Halieus Game Room"

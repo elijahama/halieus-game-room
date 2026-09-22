@@ -13,7 +13,7 @@ function Convert-HalieusVersionToNpm([string]$Version) {
     return $match.Groups[1].Value
 }
 
-$ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $ServerRoot = Join-Path $ProjectRoot "server"
 $ServerEntry = Join-Path $ServerRoot "dist\server\src\index.js"
 $ClientRoot = Join-Path $ProjectRoot "client"

@@ -4,7 +4,7 @@ cd /d "%~dp0"
 
 rem 3.6.3: Restart is intentionally browser/session restart only.
 rem It only launches the existing website and never changes production.
-powershell -NoProfile -ExecutionPolicy Bypass -File ".\launcher-shortcuts.ps1" >nul 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\windows\launcher-shortcuts.ps1" >nul 2>&1
 
 set "HGR_VERSION=3.6.4"
 if exist "VERSION" set /p HGR_VERSION=<"VERSION"

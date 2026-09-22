@@ -1,0 +1,166 @@
+# HGR Project Structure & Windows Command Reference
+
+## Why this cleanup exists
+
+The HGR root is the project's front desk, not its storage cupboard. Files that a person regularly launches stay at the root. Implementation helpers live under `scripts/windows`, branding assets live under `assets/branding`, and runtime/generated data stays in its own folders.
+
+The main rule is: **never move a launcher or helper without updating every path that points to it.**
+
+## Canonical root layout
+
+Keep these user-facing launchers at the root:
+
+- `Start Halieus Game Room.cmd`
+- `Restart Halieus Game Room.cmd`
+- `Close Halieus Game Room.cmd`
+- `Update HGR GitHub.cmd`
+- `FIRST RUN - Refresh Halieus Launchers.cmd`
+
+Keep project identity and repository files at the root:
+
+- `VERSION`, `RELEASE.json`, `package.json`, `package-lock.json`
+- `README.md`, `ARCHITECTURE.md`, `SECURITY.md`
+- `.gitignore`, `.gitattributes`
+
+Implementation helpers belong in:
+
+- `scripts/windows/` — Windows launch, local runtime, Git and admin helpers
+- `scripts/` — cross-platform project/release scripts
+- `assets/branding/launchers/` — launcher-specific icons
+- `client/`, `server/`, `shared/` — application code
+- `desktop/`, `deploy/`, `tests/`, `docs/` — their named responsibilities
+
+Private Oracle material remains local and ignored by Git.
+
+## Safe file-moving workflow
+
+1. **Find references before moving.** Search the repository for the exact filename.
+2. **Move with Git-aware tools.** Locally, prefer `git mv old new` for tracked files.
+3. **Update path resolution.** Batch files commonly use `%~dp0`; PowerShell scripts should prefer `$PSScriptRoot` and `Join-Path`.
+4. **Keep stable entrypoints.** HGR's public root `.cmd` launchers stay in place even when their helper scripts move.
+5. **Refresh shortcuts.** Run `FIRST RUN - Refresh Halieus Launchers.cmd` after changing launcher paths.
+6. **Validate before deploying.** Run `npm run typecheck`, `npm run build`, and `npm run test:regression`.
+7. **Inspect Git.** Run `git status` and `git diff --stat` before committing.
+8. **Use the unified updater** to finalise `RELEASE.json` and deploy.
+
+## CMD / batch fundamentals
+
+A reliable HGR-style batch file usually starts with:
+
+```bat
+@echo off
+setlocal EnableExtensions
+pushd "%~dp0"
+```
+
+Useful pieces:
+
+- `%~dp0` = folder containing the current batch file.
+- `pushd` changes directory and remembers the previous one.
+- `popd` returns to the previous directory.
+- `set "NAME=value"` is the safest normal variable syntax.
+- `call "Other Script.cmd"` runs another batch file and returns afterward.
+- `if errorlevel 1 (...)` checks whether the previous command failed.
+- Always quote paths that may contain spaces.
+
+Example:
+
+```bat
+set "HELPER=%~dp0scripts\windows\example.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%HELPER%"
+if errorlevel 1 exit /b 1
+```
+
+## PowerShell fundamentals
+
+For scripts that may move into subfolders, do not assume the current working directory.
+
+```powershell
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$ServerRoot = Join-Path $ProjectRoot 'server'
+```
+
+Useful pieces:
+
+- `$PSScriptRoot` = folder containing the running PowerShell script.
+- `Join-Path` safely builds paths.
+- `Test-Path` checks whether a file/folder exists.
+- `& "path with spaces.cmd"` invokes a command whose path contains spaces.
+- `$LASTEXITCODE` is the exit code from many native programs.
+- `try { } catch { }` handles PowerShell exceptions.
+
+From PowerShell, a local command with spaces should be run like:
+
+```powershell
+& ".\FIRST RUN - Refresh Halieus Launchers.cmd"
+```
+
+Typing only `FIRST RUN - ...` makes PowerShell think `FIRST` is the command.
+
+## Git mental model
+
+- `git pull`: GitHub → local computer.
+- `git add`: choose local changes for the next commit.
+- `git commit`: create a local saved checkpoint.
+- `git push`: local commits → GitHub.
+
+Typical local change flow:
+
+```text
+edit → git status → git add → git commit → git pull --rebase → git push
+```
+
+Typical "ChatGPT changed GitHub" flow:
+
+```text
+GitHub changed → git pull → local files update
+```
+
+## HGR one-button update/deploy flow
+
+The unified updater is `Update HGR GitHub.cmd`. It:
+
+1. pulls GitHub;
+2. typechecks;
+3. builds;
+4. runs regression tests;
+5. regenerates/verifies release identity;
+6. commits/pushes any generated release changes when needed;
+7. re-verifies release identity;
+8. hands off to the private Oracle website updater.
+
+The private Oracle script and keys remain local and are not committed.
+
+## What can safely move?
+
+Usually safe after reference updates:
+
+- helper PowerShell scripts;
+- admin utilities;
+- icons/assets;
+- documentation.
+
+Treat these as stable entrypoints unless deliberately redesigning launch behaviour:
+
+- root Start/Restart/Close launchers;
+- root unified update launcher;
+- `VERSION`;
+- `package.json`;
+- canonical `client/server/shared` directories.
+
+## Troubleshooting after a move
+
+If a launcher stops working:
+
+1. run it from a terminal so the error stays visible;
+2. check the referenced path exists;
+3. print `%CD%` in CMD or `$PWD` in PowerShell;
+4. print `%~dp0` or `$PSScriptRoot`;
+5. check `git status`;
+6. run typecheck/build/regression;
+7. refresh the launch shortcuts.
+
+Avoid "fixing" it by copying duplicate scripts back into the root. Fix the path instead.
