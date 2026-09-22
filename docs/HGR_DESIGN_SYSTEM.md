@@ -150,3 +150,27 @@ Historical source-of-truth documentation:
 `docs/DEVELOPMENT_TIMELINE.md`
 
 GitHub commit history begins at the 4.0.0 source import, so earlier milestones are explicitly reconstructed from preserved release documentation rather than pretending the repository contains history it does not.
+
+
+## Shared game-shell family
+
+The second design-system pass applies shared framing to the game families that had drifted into separate visual systems.
+
+The shared layer covers:
+
+- card-game headers and metadata;
+- the isolated Blackjack / WHOT rebuild shell;
+- Word Arena headers, lobby panels and roster surfaces;
+- shared setup inputs;
+- player/roster rows;
+- status toasts;
+- Game Menu and invite modals;
+- tablet/phone containment and one-column setup behaviour.
+
+Poker remains the presentation benchmark and its table geometry is deliberately not overwritten by the shared layer. Mega Board board geometry is also outside this polish layer.
+
+The design-system rule is:
+
+> shared shell first, game identity second, game geometry untouched unless a layout-specific patch explicitly targets it.
+
+Responsive containment is mandatory. Shared chrome may wrap or scroll internally, but must never force the board/table wider than the real device viewport.
