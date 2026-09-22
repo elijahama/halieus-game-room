@@ -228,7 +228,18 @@ echo.
 echo Your local files were updated at STEP 1.
 echo Your local changes were uploaded at STEP 7 when a commit was needed.
 echo.
-echo STEP 8 - Publishing the validated HGR release to the website...
+echo STEP 8 - Final release check before website deployment...
+echo.
+call npm run validate:release
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Release identity is not valid, so Oracle deployment was not started.
+    echo Run this updater again after reviewing the release error above.
+    goto :PAUSE_EXIT
+)
+echo [OK] RELEASE.json, VERSION and the source fingerprint match.
+echo.
+echo STEP 9 - Publishing the validated HGR release to the website...
 echo.
 
 set "WEBSITE_UPDATER=%~dp0Update Halieus Website.cmd"
@@ -260,7 +271,8 @@ echo   3. Build passed
 echo   4. Regression tests passed
 echo   5. Release identity generated and verified
 echo   6. Changes committed/pushed when needed
-echo   7. Website deployment completed
+echo   7. Final release identity re-verified
+echo   8. Website deployment completed
 echo.
 pause
 popd
