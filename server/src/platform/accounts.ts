@@ -225,6 +225,11 @@ function publicAccount(account: StoredAccount): HalieusAccountSummary {
   };
 }
 
+export function getAccountSummaryById(accountId: string): HalieusAccountSummary | null {
+  const account = store.accounts.find((candidate) => candidate.id === accountId && candidate.status === "active");
+  return account ? publicAccount(account) : null;
+}
+
 function addAudit(actorAccountId: string | null, action: string, targetType: HalieusAuditEntry["targetType"], targetId: string | null, summary: string): void {
   store.audit.unshift({ id: id("audit"), at: Date.now(), actorAccountId, action, targetType, targetId, summary });
   if (store.audit.length > MAX_AUDIT) store.audit.length = MAX_AUDIT;
