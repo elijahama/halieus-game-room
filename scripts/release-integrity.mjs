@@ -58,7 +58,7 @@ const singles = [
   'tests/regression-3.7.0k.mjs', 'tests/regression-3.7.0l.mjs', 'tests/regression-4.0.0.mjs', 'tests/regression-4.0.1.mjs',
   'tests/regression-4.0.2.mjs', 'tests/regression-4.1.0.mjs', 'tests/regression-4.1.1.mjs', 'README.md', 'ARCHITECTURE.md',
   'docs/HGR_DESIGN_SYSTEM_V1.md', '.github/workflows/release-identity.yml', 'docs/releases/RELEASE_4.0.1.md', 'docs/releases/RELEASE_4.0.2.md',
-  'docs/releases/RELEASE_4.1.0.md', 'docs/project/HGR_4.0.1_IMPLEMENTATION_LOG.md', 'docs/project/HGR_4.0.2_IMPLEMENTATION_LOG.md', 'docs/project/HGR_4.1.0_IMPLEMENTATION_LOG.md', 'docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md',
+  'docs/releases/RELEASE_4.1.0.md', 'docs/releases/RELEASE_4.1.1.md', 'docs/project/HGR_4.0.1_IMPLEMENTATION_LOG.md', 'docs/project/HGR_4.0.2_IMPLEMENTATION_LOG.md', 'docs/project/HGR_4.1.0_IMPLEMENTATION_LOG.md', 'docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md', 'docs/project/HGR_4.1.1_IMPLEMENTATION_LOG.md',
 ];
 const excludedNames = new Set(['RELEASE.json', 'release.ts']);
 const excludedExtensions = new Set(['.key', '.pem', '.ppk', '.pub']);
