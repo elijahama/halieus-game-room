@@ -242,8 +242,19 @@ echo.
 echo STEP 9 - Publishing the validated HGR release to the website...
 echo.
 
+rem Refresh the local owner deploy helper from the tracked canonical copy so
+rem ignored/private dev-tools cannot silently remain on an older release.
+set "TRACKED_ORACLE_DIR=%~dp0tests\dev-tools\Oracle Quick Deploy"
+set "LOCAL_ORACLE_DIR=%~dp0dev-tools\Oracle Quick Deploy"
+if exist "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" (
+    if not exist "%LOCAL_ORACLE_DIR%" mkdir "%LOCAL_ORACLE_DIR%" >nul 2>&1
+    copy /Y "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" "%LOCAL_ORACLE_DIR%\deploy-from-windows.ps1" >nul
+    copy /Y "%TRACKED_ORACLE_DIR%\quick-install.sh" "%LOCAL_ORACLE_DIR%\quick-install.sh" >nul
+    echo [OK] Local Oracle deploy helper refreshed from the current tracked 4.1 source.
+)
+
 set "PRIVATE_UPDATE_PS1=%~dp0update-website.ps1"
-set "ORACLE_DEPLOY_PS1=%~dp0dev-tools\Oracle Quick Deploy\deploy-from-windows.ps1"
+set "ORACLE_DEPLOY_PS1=%LOCAL_ORACLE_DIR%\deploy-from-windows.ps1"
 
 if exist "%PRIVATE_UPDATE_PS1%" (
     echo Using owner website updater:
