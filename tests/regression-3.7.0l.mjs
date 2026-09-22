@@ -4,9 +4,11 @@ import { existsSync, readFileSync } from 'node:fs';
 const read=(p)=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
 const json=(p)=>JSON.parse(read(p));
 
-assert.match(read('VERSION').trim(),/^(?:3\.7\.0l|4\.0\.0)$/);
+const displayVersion=read('VERSION').trim();
+assert.match(displayVersion,/^(?:3\.7\.0l|4\.\d+\.\d+)$/);
+const npmVersion=displayVersion.replace(/^(\d+\.\d+\.\d+)([a-z])$/,'$1-$2');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.match(json(file).version,/^(?:3\.7\.0-l|4\.0\.0)$/,`${file} version mismatch`);
+  assert.equal(json(file).version,npmVersion,`${file} version mismatch`);
 }
 const rootPackage=json('package.json');
 assert.match(rootPackage.scripts['test:regression'],/regression-3\.7\.0k\.mjs.*regression-3\.7\.0l\.mjs/s,'Regression chain must preserve 3.7.0k before 3.7.0l');
