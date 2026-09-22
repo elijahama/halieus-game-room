@@ -24,7 +24,7 @@ const clientPackage = json('client/package.json');
 assert.equal(clientPackage.dependencies?.vite, '7.3.6', 'Vite floor regressed');
 assert.equal(clientPackage.dependencies?.['@vitejs/plugin-react'], '5.2.0', 'React Vite plugin floor regressed');
 
-const oracleInstaller = read('dev-tools/Oracle Quick Deploy/quick-install.sh');
+const oracleInstaller = read('tests/dev-tools/Oracle Quick Deploy/quick-install.sh');
 assert.match(oracleInstaller, /npm audit --audit-level=high/, 'Oracle deploy must block HIGH-or-higher npm audit findings');
 assert.doesNotMatch(oracleInstaller, /npm audit --audit-level=moderate/, 'moderate findings must not create a false deployment failure');
 assert.match(oracleInstaller, /npm ci/, 'npm ci must remain a hard candidate gate');
