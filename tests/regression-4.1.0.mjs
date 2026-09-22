@@ -47,6 +47,8 @@ const projectTimelineComponent=read('client/src/platform/components/ProjectTimel
 const launcherGenerator=read('scripts/windows/generate-launcher-icons.ps1');
 const launcherShortcuts=read('scripts/windows/launcher-shortcuts.ps1');
 const designSystemDoc=read('docs/HGR_DESIGN_SYSTEM.md');
+const hgrIcon=read('client/src/platform/components/HgrIcon.tsx');
+const updateCmd=read('Update HGR GitHub.cmd');
 
 assert.match(contracts,/HalieusGuildRole = "owner" \| "admin" \| "moderator" \| "member"/,'Guild role contract missing');
 assert.match(contracts,/HalieusGuildRoomPolicy = "members" \| "moderators" \| "admins"/,'Guild room permission contract missing');
@@ -86,6 +88,15 @@ assert.match(home,/import \{ GuildsPanel \} from "\.\/GuildsPanel"/,'Game Room m
 assert.match(home,/function openGuildCreate\(game: GameId, roomCode: string\)/,'Guild rooms must hand off to the existing game create flow');
 assert.match(home,/view === "players" \|\| view === "guilds"/,'Players navigation must remain active while browsing Guilds');
 assert.match(home,/import \{ ProjectTimeline \} from "\.\/ProjectTimeline"/,'Home must import the project timeline');
+assert.match(home,/import \{ HgrIcon \} from "\.\/HgrIcon"/,'Home navigation must import the shared SVG icon system');
+assert.match(home,/HgrIcon name="home"/,'Home navigation SVG icon missing');
+assert.match(home,/HgrIcon name="games"/,'Games navigation SVG icon missing');
+assert.match(home,/HgrIcon name="players"/,'Players navigation SVG icon missing');
+assert.match(home,/HgrIcon name="plus"/,'Join Game SVG icon missing');
+assert.match(home,/HgrIcon name="info"/,'Build Info SVG icon missing');
+assert.doesNotMatch(home,/<span>⌂<\/span>|<span>▦<\/span>|<span>◉<\/span>|<span>＋<\/span>|<span>ⓘ<\/span>/,'Legacy text navigation glyphs must not return');
+assert.match(hgrIcon,/export function HgrIcon/,'Shared HGR SVG icon component missing');
+
 assert.match(home,/<ProjectTimeline currentVersion=\{APP_VERSION\} \/>/,'Home must render the full project timeline');
 
 assert.match(guildPanel,/type GuildView = "rooms" \| "chat" \| "leaderboard" \| "members"/,'Guild UI must expose Rooms, Chat, Leaderboard and Members');
@@ -109,6 +120,8 @@ assert.match(hgrDesignV1,/html\[data-theme="dark"\][\s\S]*?--hgr-page:/s,'Design
 assert.match(hgrDesignV1,/\.button-primary,[\s\S]*?var\(--hgr-yellow\)/s,'Shared primary actions must use HGR yellow');
 assert.match(hgrDesignV1,/\.hgr-tabs/,'Reusable HGR tabs primitive missing');
 assert.match(hgrDesignV1,/\.hgr-status--online/,'Reusable HGR status primitive missing');
+assert.match(hgrDesignV1,/\.halieus-nav-icon/,'Shared navigation SVG icon styling missing');
+assert.match(hgrDesignV1,/\.halieus-mobile-menu-button::before[\s\S]*?content:\s*none !important/s,'Legacy mobile hamburger pseudo-glyph must be disabled');
 assert.match(hgrDesignV1,/@media \(max-width: 1024px\)/,'Design System v1 tablet contract missing');
 assert.match(hgrDesignV1,/@media \(max-width: 720px\)/,'Design System v1 phone contract missing');
 assert.match(main,/import "\.\/styles\/hgr-design-v1\.css";/,'HGR Design System v1 must load after the legacy theme layer');
@@ -140,6 +153,10 @@ assert.match(releaseIntegrity,/server\/data\/guilds/,'Guild runtime data must be
 assert.match(releaseIntegrity,/persistent-guilds-4\.1\.0/,'4.1.0 Guilds must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-shared-design-tokens-4\.1\.0/,'Shared HGR design tokens must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-design-system-v1-4\.1\.0/,'HGR Design System v1 must be part of the signed release contract');
+assert.ok(
+  updateCmd.indexOf('STEP 2 - Preparing release identity BEFORE the browser build') < updateCmd.indexOf('call npm run build'),
+  'Updater must generate the 4.1 release identity before compiling the browser bundle',
+);
 assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
 assert.match(releaseIntegrity,/matte-launcher-family-4\.1\.0/,'Matte launcher family must be part of the signed release contract');
 
