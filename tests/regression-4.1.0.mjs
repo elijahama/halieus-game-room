@@ -114,20 +114,20 @@ assert.match(projectTimeline,/version: "4\.0\.2"/,'Timeline must include device-
 assert.match(projectTimeline,/version: "4\.1\.0"/,'Timeline must include the current Guilds milestone');
 assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.0\.0 repository import/,'Timeline must disclose the historical-source boundary');
 
-assert.match(launcherGenerator,/assets\\branding\\Halieus Game Room\.png/,'Launcher generator must derive from the canonical Halieus PNG');
-assert.match(launcherGenerator,/\$BrandingRevision = 'r7'/,'Launcher artwork revision must be r7');
-assert.match(launcherGenerator,/HGR Launcher Family Reference\.png/,'Launcher generator must read the canonical HGR launcher reference');
-assert.match(launcherGenerator,/X=64;\s+Y=210; Width=214; Height=214/,'Start launcher must be extracted from the approved reference board');
-assert.match(launcherGenerator,/X=1076; Y=210; Width=229; Height=214/,'PowerShell launcher must be extracted from the approved reference board');
-assert.match(launcherShortcuts,/\$BrandingRevision = 'r7'/,'Shortcut generator must consume r7 artwork');
-assert.match(designSystemDoc,/Launcher family — r7/,'Design-system documentation must describe the current launcher family');
+assert.match(launcherGenerator,/assets\\branding\\launchers/,'Launcher generator must write into the branding launchers folder');
+assert.match(launcherGenerator,/\\launchers\\matte/,'Launcher generator must use the clean matte launcher folder');
+assert.match(launcherGenerator,/No glass, glow, lens highlight or neon treatment/,'Launcher generator must preserve the matte visual contract');
+assert.match(launcherGenerator,/New-MatteHgrLauncher -Name 'Start Halieus Game Room'/,'Start launcher generation missing');
+assert.match(launcherGenerator,/New-MatteHgrLauncher -Name 'HGR PowerShell'.*-PowerShell/,'PowerShell launcher generation missing');
+assert.match(launcherShortcuts,/assets\\branding\\launchers\\matte/,'Shortcut generator must consume the matte launcher folder');
+assert.match(designSystemDoc,/Launcher family — matte reset/,'Design-system documentation must describe the matte launcher reset');
 
 assert.match(gitignore,/server\/data\/guilds\//,'Local guild runtime data must never be committed');
 assert.match(releaseIntegrity,/server\/data\/guilds/,'Guild runtime data must be excluded from release fingerprint inputs');
 assert.match(releaseIntegrity,/persistent-guilds-4\.1\.0/,'4.1.0 Guilds must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-shared-design-tokens-4\.1\.0/,'Shared HGR design tokens must be part of the signed release contract');
 assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
-assert.match(releaseIntegrity,/approved-reference-launchers-r7/,'Approved r7 launcher family must be part of the signed release contract');
+assert.match(releaseIntegrity,/matte-launcher-family-4\.1\.0/,'Matte launcher family must be part of the signed release contract');
 
 assert.match(sw,/halieus-shell-v4-1-0/,'PWA shell cache must be 4.1.0');
 assert.match(intro,/app-icon-192\.png\?v=4\.1\.0/,'Intro asset cache-buster must match 4.1.0');
