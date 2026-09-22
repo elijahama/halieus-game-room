@@ -166,6 +166,8 @@ assert.ok(
   updateCmd.indexOf('STEP 2 - Preparing release identity BEFORE the browser build') < updateCmd.indexOf('call npm run build'),
   'Updater must generate the 4.1 release identity before compiling the browser bundle',
 );
+assert.match(updateCmd,/STEP 3B - Validating the real Oracle deployment package locally/,'Updater must package-test the real Oracle release before commit/push/deploy');
+assert.match(updateCmd,/tests\\package-oracle-4\.0\.0\.ps1/,'Updater must run the tracked Oracle package preflight automatically');
 assert.match(releaseWorkflow,/npm run prepare:release/,'Release identity workflow must regenerate the manifest');
 assert.match(releaseWorkflow,/git add RELEASE\.json shared\/release\.ts/,'Release identity workflow must commit both generated release files');
 assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
