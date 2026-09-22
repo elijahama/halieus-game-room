@@ -13,9 +13,10 @@ const json=(p)=>JSON.parse(read(p));
  * while game creation hands back to the existing HGR room setup flow.
  */
 
-assert.equal(read('VERSION').trim(),'4.1.0');
+const currentVersion=read('VERSION').trim();
+assert.match(currentVersion,/^4\.1\./,'4.1.0 regression should run against the current 4.1.x release');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.equal(json(file).version,'4.1.0',`${file} version mismatch`);
+  assert.equal(json(file).version,currentVersion,`${file} version mismatch`);
 }
 
 const rootPackage=json('package.json');
@@ -187,10 +188,10 @@ assert.match(releaseWorkflow,/git add RELEASE\.json shared\/release\.ts/,'Releas
 assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
 assert.match(releaseIntegrity,/matte-launcher-family-4\.1\.0/,'Matte launcher family must be part of the signed release contract');
 
-assert.match(sw,/halieus-shell-v4-1-0/,'PWA shell cache must be 4.1.0');
-assert.match(intro,/app-icon-192\.png\?v=4\.1\.0/,'Intro asset cache-buster must match 4.1.0');
+assert.match(sw,new RegExp(`halieus-shell-v${currentVersion.replaceAll('.','-')}`),'PWA shell cache must match the current 4.1.x release');
+assert.match(intro,new RegExp(`app-icon-192\\.png\\?v=${currentVersion.replaceAll('.','\\.')}`),'Intro asset cache-buster must match the current release');
 assert.doesNotMatch(html,/\?v=4\.0\.2/,'Static browser assets must not retain the 4.0.2 cache identity');
-assert.match(readme,/Current milestone:\*\* 4\.1\.0/,'README must advertise HGR 4.1.0');
+assert.match(readme,new RegExp(`Current milestone:\\\*\\\* ${currentVersion.replaceAll('.','\\\\.')}`),'README must advertise the current 4.1.x milestone');
 
 assert.match(launcherShortcuts,/Microsoft\\Windows\\Start Menu\\Programs/,'HGR shortcuts must be created in the user Start Menu Programs root');
 
