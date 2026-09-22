@@ -161,3 +161,16 @@ The design-system rule is:
 > shared shell first, game identity second, game geometry untouched unless a layout-specific patch explicitly targets it.
 
 Responsive containment is mandatory. Shared chrome may wrap or scroll internally, but must never force the board/table wider than the real device viewport.
+
+
+## Design System v1 implementation authority
+
+The active redesign implementation is now defined in:
+
+`docs/HGR_DESIGN_SYSTEM_V1.md`
+
+and implemented by:
+
+`client/src/styles/hgr-design-v1.css`
+
+This file remains useful historical context for the earlier 4.1.x branding and shared-shell passes. New redesign work should follow the v1 implementation map and token/component contracts rather than adding another independent visual layer.
