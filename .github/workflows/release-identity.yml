@@ -8,6 +8,7 @@ on:
       - RELEASE.json
       - shared/release.ts
       - .github/debug/typecheck-failure.txt
+      - .github/debug/regression-failure.txt
   workflow_dispatch:
 
 permissions:
@@ -71,7 +72,23 @@ jobs:
           exit 1
 
       - name: Run HGR regression chain
-        run: npm run test:regression
+        id: regression
+        continue-on-error: true
+        shell: bash
+        run: npm run test:regression 2>&1 | tee regression-failure.txt
+
+      - name: Publish regression failure for repair
+        if: steps.regression.outcome == 'failure'
+        shell: bash
+        run: |
+          mkdir -p .github/debug
+          cp regression-failure.txt .github/debug/regression-failure.txt
+          git config user.name "HGR Release Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add .github/debug/regression-failure.txt
+          git commit -m "ci: capture regression failure"
+          git push origin HEAD:main
+          exit 1
 
       - name: Generate exact HGR release identity
         run: npm run prepare:release
