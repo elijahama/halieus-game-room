@@ -14,7 +14,7 @@ if (-not (Test-Path -LiteralPath $IconGenerator)) {
 
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$BrandingRevision = 'r2'
+$BrandingRevision = 'r3'
 $StartIconPath = Join-Path $LauncherIconRoot "Start Halieus Game Room-$BrandingRevision.ico"
 $RestartIconPath = Join-Path $LauncherIconRoot "Restart Halieus Game Room-$BrandingRevision.ico"
 $CloseIconPath = Join-Path $LauncherIconRoot "Close Halieus Game Room-$BrandingRevision.ico"
