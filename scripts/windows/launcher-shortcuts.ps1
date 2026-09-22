@@ -14,11 +14,12 @@ if (-not (Test-Path -LiteralPath $IconGenerator)) {
 
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$StartIconPath = Join-Path $LauncherIconRoot 'Start Halieus Game Room.ico'
-$RestartIconPath = Join-Path $LauncherIconRoot 'Restart Halieus Game Room.ico'
-$CloseIconPath = Join-Path $LauncherIconRoot 'Close Halieus Game Room.ico'
-$UpdateIconPath = Join-Path $LauncherIconRoot 'Update Halieus Website.ico'
-$PowerShellIconPath = Join-Path $LauncherIconRoot 'HGR PowerShell.ico'
+$BrandingRevision = 'r2'
+$StartIconPath = Join-Path $LauncherIconRoot "Start Halieus Game Room-$BrandingRevision.ico"
+$RestartIconPath = Join-Path $LauncherIconRoot "Restart Halieus Game Room-$BrandingRevision.ico"
+$CloseIconPath = Join-Path $LauncherIconRoot "Close Halieus Game Room-$BrandingRevision.ico"
+$UpdateIconPath = Join-Path $LauncherIconRoot "Update Halieus Website-$BrandingRevision.ico"
+$PowerShellIconPath = Join-Path $LauncherIconRoot "HGR PowerShell-$BrandingRevision.ico"
 $ShortcutDirectory = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Halieus Game Room'
 New-Item -ItemType Directory -Force -Path $ShortcutDirectory | Out-Null
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
@@ -97,6 +98,12 @@ $terminal.Description = 'Open PowerShell at the Halieus Game Room project root'
 $terminal.IconLocation = "$PowerShellIconPath,0"
 $terminal.WindowStyle = 1
 $terminal.Save()
+
+# Nudge Windows to re-read shortcut artwork after the icon paths change.
+$IconRefresh = Join-Path $env:SystemRoot 'System32\ie4uinit.exe'
+if (Test-Path -LiteralPath $IconRefresh) {
+    try { Start-Process -FilePath $IconRefresh -ArgumentList '-show' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
+}
 
 # Shortcuts belong in the Start Menu. Remove old generated root shortcuts so
 # the source folder stays readable and moving helpers cannot leave stale links.
