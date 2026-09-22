@@ -5,8 +5,8 @@ const read=(p)=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
 const json=(p)=>JSON.parse(read(p));
 
 const currentVersion=read('VERSION').trim();
-assert.match(currentVersion,/^(?:3\.7\.0[e-l]|4\.0\.0)$/,'3.7.0e stabilization regression must remain valid through later 3.7.0 patch releases');
-const expectedNpmVersion=currentVersion==='4.0.0'?'4.0.0':`3.7.0-${currentVersion.slice(-1)}`;
+assert.match(currentVersion,/^(?:3\.7\.0[e-l]|4\.\d+\.\d+)$/,'3.7.0e stabilization regression must remain valid through later HGR 4.x releases');
+const expectedNpmVersion=currentVersion.replace(/^(\d+\.\d+\.\d+)([a-z])$/,'$1-$2');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
   assert.equal(json(file).version,expectedNpmVersion,`${file} version mismatch`);
 }
