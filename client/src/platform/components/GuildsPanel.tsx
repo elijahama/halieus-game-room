@@ -12,6 +12,7 @@ import type {
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
 import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, GAME_BY_ID, type GameId } from "../games/catalog";
+import { PlayerIdentityCard } from "./PlayerIdentityCard";
 
 type GuildView = "rooms" | "chat" | "leaderboard" | "members";
 
@@ -539,14 +540,23 @@ export function GuildsPanel({
                 {detail.canManage && <section className="halieus-guild-invite-players">
                   <header><div><small>INVITE PLAYERS</small><strong>Add people to {detail.name}</strong><span>Search existing Halieus accounts. They choose whether to join.</span></div></header>
                   <label><input value={inviteSearch} onChange={(event) => setInviteSearch(event.target.value)} placeholder="Search name or @username" /></label>
-                  {inviteSearch.trim() && <div className="halieus-guild-invite-results">{directory
+                  <div className="halieus-guild-invite-results">{directory
                     .filter((person) => person.id !== account.id && !detail.members.some((member) => member.accountId === person.id))
-                    .filter((person) => `${person.displayName} ${person.username}`.toLowerCase().includes(inviteSearch.trim().toLowerCase()))
-                    .slice(0, 6)
+                    .filter((person) => !inviteSearch.trim() || `${person.displayName} ${person.username}`.toLowerCase().includes(inviteSearch.trim().toLowerCase()))
+                    .sort((a, b) => Number(b.online) - Number(a.online) || a.displayName.localeCompare(b.displayName))
+                    .slice(0, 8)
                     .map((person) => {
                       const pending = detail.pendingInvitations.some((invitation) => invitation.recipientAccountId === person.id);
-                      return <article key={person.id}><span className="halieus-avatar-media" style={{ background: person.playerColor }}>{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.avatar}</span><div><strong>{person.displayName}</strong><small>@{person.username}{person.online ? " · Online" : ""}</small></div><button type="button" className="button-primary" disabled={pending || invitingAccountId === person.id} onClick={() => void sendGuildInvitation(person)}>{pending ? "Invited" : invitingAccountId === person.id ? "Sending…" : "Invite"}</button></article>;
-                    })}</div>}
+                      return <PlayerIdentityCard
+                        key={person.id}
+                        player={person}
+                        compact
+                        detail={person.online ? "Online" : "Halieus player"}
+                        trailing={<button type="button" className="button-primary" disabled={pending || invitingAccountId === person.id} onClick={() => void sendGuildInvitation(person)}>{pending ? "Invited" : invitingAccountId === person.id ? "Sending…" : "Add to guild"}</button>}
+                      />;
+                    })}
+                    {directory.filter((person) => person.id !== account.id && !detail.members.some((member) => member.accountId === person.id)).length === 0 && <p className="halieus-guild-invite-empty">Everyone available is already in this guild.</p>}
+                  </div>
                   {detail.pendingInvitations.length > 0 && <div className="halieus-guild-pending-invites"><small>PENDING</small>{detail.pendingInvitations.map((invitation) => <span key={invitation.id}><b>{invitation.recipientDisplayName}</b><em>Waiting for response</em></span>)}</div>}
                 </section>}
                 {detail.members.map((member) => {
@@ -554,7 +564,7 @@ export function GuildsPanel({
                   const canRemove = member.accountId !== account.id && member.role !== "owner" && (
                     detail.canManage || (detail.role === "moderator" && member.role === "member")
                   );
-                  return <article key={member.accountId}><span className="halieus-avatar-media" style={{ background: member.playerColor }}>{member.profilePicture ? <img src={member.profilePicture} alt="" /> : member.avatar}</span><div><strong>{member.displayName}</strong><small>@{member.username} · joined {new Date(member.joinedAt).toLocaleDateString()}</small></div>{canEditRole ? <select value={member.role} disabled={busy} onChange={(event) => void changeRole(member.accountId, event.target.value as Exclude<HalieusGuildRole, "owner">)}><option value="admin">Admin</option><option value="moderator">Moderator</option><option value="member">Member</option></select> : <b>{ROLE_LABELS[member.role]}</b>}{canRemove && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Remove</button>}{member.accountId === account.id && member.role !== "owner" && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Leave</button>}</article>;
+                  return <article key={member.accountId} className="halieus-guild-member-row"><span className="halieus-avatar-media" style={{ background: member.playerColor }}>{member.profilePicture ? <img src={member.profilePicture} alt="" /> : member.avatar}</span><div><strong>{member.displayName}</strong><small>@{member.username} · joined {new Date(member.joinedAt).toLocaleDateString()}</small></div>{canEditRole ? <select value={member.role} disabled={busy} onChange={(event) => void changeRole(member.accountId, event.target.value as Exclude<HalieusGuildRole, "owner">)}><option value="admin">Admin</option><option value="moderator">Moderator</option><option value="member">Member</option></select> : <b>{ROLE_LABELS[member.role]}</b>}{canRemove && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Remove</button>}{member.accountId === account.id && member.role !== "owner" && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Leave</button>}</article>;
                 })}
               </div>
             )}
