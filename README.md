@@ -572,6 +572,8 @@ Start here:
 - [4.0.0 audit](docs/AUDIT_4.0.0.md)
 - [4.0.0 validation](docs/VALIDATION_4.0.0.md)
 - [4.1.0 deployment debugging postmortem](docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md)
+- [4.1.1 release notes](docs/releases/RELEASE_4.1.1.md)
+- [4.1.1 implementation log](docs/project/HGR_4.1.1_IMPLEMENTATION_LOG.md)
 
 Older RC and patch notes remain part of the project's history but are not the current source of truth.
 
