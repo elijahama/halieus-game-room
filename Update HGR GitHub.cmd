@@ -1,6 +1,6 @@
 ﻿@echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title Halieus Game Room - GitHub Update
+title Halieus Game Room - Update + Deploy
 color 0E
 chcp 65001 >nul 2>&1
 
@@ -18,7 +18,7 @@ set "BRANCH=main"
 cls
 echo.
 echo ============================================================
-echo          HALIEUS GAME ROOM - GITHUB UPDATE
+echo        HALIEUS GAME ROOM - UPDATE + DEPLOY
 echo ============================================================
 echo.
 echo Local project:
