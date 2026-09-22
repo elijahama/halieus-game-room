@@ -39,6 +39,12 @@ const html=read('client/index.html');
 const readme=read('README.md');
 const gitignore=read('.gitignore');
 const releaseIntegrity=read('scripts/release-integrity.mjs');
+const hgrTheme=read('client/src/styles/hgr-theme.css');
+const projectTimeline=read('client/src/platform/projectTimeline.ts');
+const projectTimelineComponent=read('client/src/platform/components/ProjectTimeline.tsx');
+const launcherGenerator=read('scripts/windows/generate-launcher-icons.ps1');
+const launcherShortcuts=read('scripts/windows/launcher-shortcuts.ps1');
+const designSystemDoc=read('docs/HGR_DESIGN_SYSTEM.md');
 
 assert.match(contracts,/HalieusGuildRole = "owner" \| "admin" \| "moderator" \| "member"/,'Guild role contract missing');
 assert.match(contracts,/HalieusGuildRoomPolicy = "members" \| "moderators" \| "admins"/,'Guild room permission contract missing');
@@ -77,6 +83,8 @@ assert.match(home,/type HomeView = "home" \| "games" \| "players" \| "guilds"/,'
 assert.match(home,/import \{ GuildsPanel \} from "\.\/GuildsPanel"/,'Game Room must import the Guilds surface');
 assert.match(home,/function openGuildCreate\(game: GameId, roomCode: string\)/,'Guild rooms must hand off to the existing game create flow');
 assert.match(home,/view === "players" \|\| view === "guilds"/,'Players navigation must remain active while browsing Guilds');
+assert.match(home,/import \{ ProjectTimeline \} from "\.\/ProjectTimeline"/,'Home must import the project timeline');
+assert.match(home,/<ProjectTimeline currentVersion=\{APP_VERSION\} \/>/,'Home must render the full project timeline');
 
 assert.match(guildPanel,/type GuildView = "rooms" \| "chat" \| "leaderboard" \| "members"/,'Guild UI must expose Rooms, Chat, Leaderboard and Members');
 assert.match(guildPanel,/Guilds is deliberately REST-backed rather than tied to a game socket/,'Guild architecture comment missing');
@@ -87,9 +95,31 @@ assert.match(guildPanel,/PRIVATE INVITE CODE/,'Private guild invite UI missing')
 assert.match(css,/HGR 4\.1\.0 — Guilds & persistent groups/,'4.1.0 Guild CSS marker missing');
 assert.match(css,/@media \(max-width: 680px\)[\s\S]*?\.halieus-guilds-panel/s,'Guilds need an explicit phone layout');
 
+assert.match(hgrTheme,/--hgr-brand:/,'Shared HGR brand token missing');
+assert.match(hgrTheme,/--hgr-start:/,'Shared HGR semantic Start token missing');
+assert.match(hgrTheme,/--hgr-restart:/,'Shared HGR semantic Restart token missing');
+assert.match(hgrTheme,/--hgr-close:/,'Shared HGR semantic Close token missing');
+assert.match(hgrTheme,/--hgr-update:/,'Shared HGR semantic Update token missing');
+assert.match(hgrTheme,/\.hgr-project-history/,'Project timeline design-system styling missing');
+
+assert.match(projectTimeline,/version: "0\.22\.x"/,'Timeline must include the foundation era');
+assert.match(projectTimeline,/version: "3\.5\.0"/,'Timeline must include the Desktop + Oracle foundation');
+assert.match(projectTimeline,/version: "4\.0\.2"/,'Timeline must include device-width mobile recovery');
+assert.match(projectTimeline,/version: "4\.1\.0"/,'Timeline must include the current Guilds milestone');
+assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.0\.0 repository import/,'Timeline must disclose the historical-source boundary');
+
+assert.match(launcherGenerator,/assets\\branding\\Halieus Game Room\.png/,'Launcher generator must derive from the canonical Halieus PNG');
+assert.match(launcherGenerator,/\$BrandingRevision = 'r5'/,'Launcher artwork revision must be r5');
+assert.match(launcherGenerator,/recolours? only the warm\/gold body pixels/i,'Launcher generator must preserve the canonical mark instead of redrawing it');
+assert.match(launcherShortcuts,/\$BrandingRevision = 'r5'/,'Shortcut generator must consume r5 artwork');
+assert.match(designSystemDoc,/Launcher family — r5/,'Design-system documentation must describe the current launcher family');
+
 assert.match(gitignore,/server\/data\/guilds\//,'Local guild runtime data must never be committed');
 assert.match(releaseIntegrity,/server\/data\/guilds/,'Guild runtime data must be excluded from release fingerprint inputs');
 assert.match(releaseIntegrity,/persistent-guilds-4\.1\.0/,'4.1.0 Guilds must be part of the signed release contract');
+assert.match(releaseIntegrity,/hgr-shared-design-tokens-4\.1\.0/,'Shared HGR design tokens must be part of the signed release contract');
+assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history must be part of the signed release contract');
+assert.match(releaseIntegrity,/canonical-brand-derived-launchers-r5/,'Canonical r5 launcher family must be part of the signed release contract');
 
 assert.match(sw,/halieus-shell-v4-1-0/,'PWA shell cache must be 4.1.0');
 assert.match(intro,/app-icon-192\.png\?v=4\.1\.0/,'Intro asset cache-buster must match 4.1.0');
