@@ -21,6 +21,8 @@ assert.match(
   'Oracle packer must exclude runtime server/data while allowing manifest-tracked static release data',
 );
 assert.match(deploy,/foreach \(\$releaseFile in @\(\$releaseManifest\.integrityFiles\)\)/,'Oracle packer must validate all release-integrity inputs before upload');
+assert.equal((deploy.match(/if \(\$PackageOnly\)/g) ?? []).length,1,'Oracle deploy helper must contain exactly one package-only gate');
+assert.equal((deploy.match(/\$target = "\$OracleUser@\$OracleHost"/g) ?? []).length,1,'Oracle deploy helper must not contain a duplicated deployment tail');
 
 for (const file of ['server/data/word-board/SCOWL-COPYRIGHT.txt','server/data/word-board/scowl-en-us.dic']) {
   assert.ok(existsSync(new URL(`../${file}`,import.meta.url)),`${file} must ship in the owner workspace`);
