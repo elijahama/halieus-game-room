@@ -28,9 +28,9 @@ if (existsSync(privateUpdaterUrl)) {
   // The owner-only updater is intentionally ignored from the public/portfolio
   // repository. A clean clone must still validate the tracked deployment path.
   const tracked=read('tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1');
-  assert.match(tracked,/Using Oracle SSH key:/,'tracked deploy helper must identify only the selected key path');
-  assert.match(tracked,/private key itself was not copied/i,'tracked deploy helper must state that key contents are not copied');
-  assert.doesNotMatch(tracked,/Get-Content[^\n]*\.key/i,'tracked deploy helper must never read private-key contents');
+  assert.match(tracked,/if \(-not \$PackageOnly -and -not \$UseDefaultSshAuth\)/,'tracked deploy helper must gate SSH-key validation behind real deployment');
+  assert.match(tracked,/Test-Path -LiteralPath \$KeyPath/,'tracked deploy helper must validate the selected key path without importing it into release data');
+  assert.doesNotMatch(tracked,/Get-Content[^\n]*\$KeyPath/,'tracked deploy helper must never read private-key contents');
 }
 
 console.log('Halieus Game Room 3.7.0a Oracle SSH key-permission self-repair regression: PASS');
