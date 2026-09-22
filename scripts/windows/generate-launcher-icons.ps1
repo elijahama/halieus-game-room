@@ -13,7 +13,7 @@ public static class HgrNativeIcon {
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$BrandingRevision = 'r2'
+$BrandingRevision = 'r3'
 New-Item -ItemType Directory -Force -Path $LauncherRoot | Out-Null
 Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
 
@@ -71,35 +71,50 @@ function New-HgrLauncherIcon {
         $graphics.Clear([System.Drawing.Color]::Transparent)
 
         $accent = [System.Drawing.ColorTranslator]::FromHtml($AccentHex)
-        $dark = [System.Drawing.ColorTranslator]::FromHtml('#242424')
-        $white = [System.Drawing.Color]::White
-        $gold = [System.Drawing.ColorTranslator]::FromHtml('#F6C945')
-        $badgeGrey = [System.Drawing.ColorTranslator]::FromHtml('#A7A7A7')
+        $surface = [System.Drawing.ColorTranslator]::FromHtml('#20252D')
+        $surfaceRaised = [System.Drawing.ColorTranslator]::FromHtml('#2A303A')
+        $warmGold = [System.Drawing.ColorTranslator]::FromHtml('#E7C15B')
+        $white = [System.Drawing.Color]::FromArgb(245, 247, 250)
 
-        $outer = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(17, 17, 222, 222)) -Radius 34
-        $graphics.FillPath(([System.Drawing.SolidBrush]::new($accent)), $outer)
+        # Soft outer shadow.
+        $shadow = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(20, 24, 216, 216)) -Radius 38
+        $graphics.FillPath(([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(52, 0, 0, 0))), $shadow)
 
-        $top = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(22, 22, 212, 105)) -Radius 30
-        $graphics.FillPath(([System.Drawing.SolidBrush]::new($dark)), $top)
+        # Main dark HGR tile.
+        $outer = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(18, 18, 216, 216)) -Radius 38
+        $graphics.FillPath(([System.Drawing.SolidBrush]::new($surface)), $outer)
 
-        $bottomBar = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(28, 201, 200, 28)) -Radius 14
-        $graphics.FillPath(([System.Drawing.SolidBrush]::new($dark)), $bottomBar)
+        # Raised inner surface; deliberately no black cap or high-contrast split.
+        $inner = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(30, 30, 192, 176)) -Radius 29
+        $graphics.FillPath(([System.Drawing.SolidBrush]::new($surfaceRaised)), $inner)
+
+        # Muted action colour appears as a slim border and footer accent.
+        $pen = [System.Drawing.Pen]::new($accent, 7)
+        try {
+            $graphics.DrawPath($pen, $outer)
+        } finally {
+            $pen.Dispose()
+        }
+
+        $accentBar = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(52, 208, 152, 11)) -Radius 5
+        $graphics.FillPath(([System.Drawing.SolidBrush]::new($accent)), $accentBar)
 
         $fontFamily = [System.Drawing.FontFamily]::new('Arial')
-        $font = [System.Drawing.Font]::new($fontFamily, 92, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+        $font = [System.Drawing.Font]::new($fontFamily, 104, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
         try {
-            $hColor = if ($WhiteH) { $white } else { $gold }
-            $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(75, 0, 0, 0))
+            $hColor = if ($WhiteH) { $white } else { $warmGold }
             $hBrush = [System.Drawing.SolidBrush]::new($hColor)
+            $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(58, 0, 0, 0))
             try {
                 $format = [System.Drawing.StringFormat]::new()
                 $format.Alignment = [System.Drawing.StringAlignment]::Center
                 $format.LineAlignment = [System.Drawing.StringAlignment]::Center
-                $graphics.DrawString('H', $font, $shadowBrush, ([System.Drawing.RectangleF]::new(77, 79, 110, 118)), $format)
-                $graphics.DrawString('H', $font, $hBrush, ([System.Drawing.RectangleF]::new(73, 75, 110, 118)), $format)
+
+                $graphics.DrawString('H', $font, $shadowBrush, ([System.Drawing.RectangleF]::new(61, 59, 138, 134)), $format)
+                $graphics.DrawString('H', $font, $hBrush, ([System.Drawing.RectangleF]::new(58, 56, 138, 134)), $format)
             } finally {
-                $shadowBrush.Dispose()
                 $hBrush.Dispose()
+                $shadowBrush.Dispose()
             }
         } finally {
             $font.Dispose()
@@ -107,12 +122,20 @@ function New-HgrLauncherIcon {
         }
 
         if ($PowerShellBadge) {
-            $badge = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(168, 171, 76, 58)) -Radius 12
-            $graphics.FillPath(([System.Drawing.SolidBrush]::new($badgeGrey)), $badge)
-            $badgeFont = [System.Drawing.Font]::new('Consolas', 31, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+            $badge = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(158, 166, 70, 48)) -Radius 12
+            $graphics.FillPath(([System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(235, 45, 54, 66))), $badge)
+
+            $badgePen = [System.Drawing.Pen]::new($accent, 3)
+            try {
+                $graphics.DrawPath($badgePen, $badge)
+            } finally {
+                $badgePen.Dispose()
+            }
+
+            $badgeFont = [System.Drawing.Font]::new('Consolas', 26, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
             $badgeBrush = [System.Drawing.SolidBrush]::new($white)
             try {
-                $graphics.DrawString('>_', $badgeFont, $badgeBrush, 177, 181)
+                $graphics.DrawString('>_', $badgeFont, $badgeBrush, 166, 174)
             } finally {
                 $badgeFont.Dispose()
                 $badgeBrush.Dispose()
@@ -126,10 +149,10 @@ function New-HgrLauncherIcon {
     }
 }
 
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") -AccentHex '#22C55E'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") -AccentHex '#F59E0B'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") -AccentHex '#DC2626' -WhiteH
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") -AccentHex '#2563EB'
-New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") -AccentHex '#0F4C81' -PowerShellBadge
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") -AccentHex '#3F7D62'
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") -AccentHex '#B47A35'
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") -AccentHex '#A94F55' -WhiteH
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") -AccentHex '#4C6F9F'
+New-HgrLauncherIcon -Path (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") -AccentHex '#4A6178' -PowerShellBadge
 
 Write-Host 'HGR launcher icons generated successfully.'
