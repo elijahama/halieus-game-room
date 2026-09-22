@@ -17,5 +17,5 @@ const ayo=read('server/src/games/ayo/handlers.ts'), word=read('server/src/games/
 assert.match(ayo,/Array\(12\)\.fill\(4\)/); assert.match(ayo,/ayo:sow/); assert.match(ayo,/reconnectToken/); assert.match(ayo,/spectate/);
 assert.match(word,/makeBoard\(\)/); assert.match(word,/word-board:play/); assert.match(word,/dictionaryMode/); assert.match(word,/rack:\s*viewer\?/); assert.match(word,/word-board:exchange/);
 const nginx=read('deploy/oracle/nginx-halieus.remotewire.net.conf'); assert.match(nginx,/listen \[::\]:443 ssl http2/);
-assert.ok(existsSync(new URL('../dev-tools/Oracle Quick Deploy/diagnose-ios-network.sh',import.meta.url)));
+assert.ok(existsSync(new URL('../tests/dev-tools/Oracle Quick Deploy/diagnose-ios-network.sh',import.meta.url)));
 console.log('Halieus Game Room 3.7.0 platform + Ayo + Word Board regression: PASS');
