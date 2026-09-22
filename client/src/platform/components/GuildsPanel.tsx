@@ -544,7 +544,6 @@ export function GuildsPanel({
                     .filter((person) => person.id !== account.id && !detail.members.some((member) => member.accountId === person.id))
                     .filter((person) => !inviteSearch.trim() || `${person.displayName} ${person.username}`.toLowerCase().includes(inviteSearch.trim().toLowerCase()))
                     .sort((a, b) => Number(b.online) - Number(a.online) || a.displayName.localeCompare(b.displayName))
-                    .slice(0, 8)
                     .map((person) => {
                       const pending = detail.pendingInvitations.some((invitation) => invitation.recipientAccountId === person.id);
                       return <PlayerIdentityCard

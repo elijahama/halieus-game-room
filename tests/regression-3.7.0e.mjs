@@ -80,12 +80,14 @@ assert.match(waScreen,/The other team is playing this round/,'Opposing team must
 const accountsShared=read('shared/platform/accounts.ts');
 const accountsServer=read('server/src/platform/accounts.ts');
 const accountPanel=read('client/src/platform/accounts/AccountPanel.tsx');
+const playerIdentity=read('client/src/platform/components/PlayerIdentityCard.tsx');
 assert.match(accountsShared,/profilePicture:\s*string\s*\|\s*null/,'Account summaries must include optional profile picture');
 assert.match(accountsServer,/profilePictureRaw[^\n]*png\|jpeg\|webp/,'Server must only accept supported PNG, JPEG or WebP image data URLs');
 assert.match(accountsServer,/under 1 MB/,'Server must enforce profile-picture size limit');
 assert.match(accountPanel,/Upload profile picture/,'Account panel must support picture upload');
 assert.match(accountPanel,/Remove picture/,'Account panel must support picture removal');
-assert.match(home,/person\.profilePicture/,'Game Room player surfaces must render uploaded pictures');
+assert.match(playerIdentity,/player\.profilePicture\s*\?\s*<img/,'Shared player identity surfaces must render uploaded pictures');
+assert.match(home,/PlayerIdentityCard/,'Game Room player surfaces must use the canonical player identity component');
 
 // Ayo keeps culturally grounded rules/presentation but AI uses neutral HGR bot identities.
 const ayoServer=read('server/src/games/ayo/handlers.ts');
@@ -100,9 +102,10 @@ assert.match(roomChat,/value === "word-board"/,'Word Board room chat must resolv
 
 // Game Room/home lifecycle and recommendations.
 assert.match(home,/featuredRotationIndex/,'Home recommendations must rotate');
-assert.match(home,/RECOMMENDED NOW/,'Home must distinguish recommendations from an active seat');
+assert.match(home,/FEATURED NOW/,'Home must distinguish featured rotation from an active seat');
 assert.match(home,/Start \{featuredGame\.name\}/,'Home recommendation CTA must say Start, not Continue');
-assert.match(home,/Continue \{currentSeat\.game\}/,'Continue must be reserved for an actual saved seat');
+assert.match(home,/const featuredSeat = currentSeat\?\.id === featuredGameId \? currentSeat : null/,'Featured carousel must only expose Continue for the matching saved seat');
+assert.match(home,/Continue \{featuredSeat\.game\}/,'Continue must be reserved for an actual saved seat');
 
 // Responsive/presentation invariants.
 const css=read('client/src/index.css');
