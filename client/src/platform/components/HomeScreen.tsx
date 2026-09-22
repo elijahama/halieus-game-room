@@ -26,6 +26,7 @@ import { NotificationPermissionButton } from "./NotificationPermissionButton";
 import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
 import { ProjectTimeline } from "./ProjectTimeline";
+import { HgrIcon } from "./HgrIcon";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
 
 export type GameSelection = GameId;
@@ -476,30 +477,30 @@ export function HomeScreen(props: HomeScreenProps) {
       {mobileMenuOpen && <button type="button" className="halieus-mobile-drawer-backdrop" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" />}
 
       <aside className={`halieus-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`} aria-label="Halieus navigation">
-        <button type="button" className="halieus-mobile-drawer-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">×</button>
+        <button type="button" className="halieus-mobile-drawer-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu"><HgrIcon name="close" size={22} /></button>
         <button type="button" className="halieus-side-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }} aria-label="Halieus Game Room home"><img src="/app-icon-192.png?v=4.1.0" alt="" /><span>Halieus Game Room</span></button>
         {account && <button type="button" className="halieus-side-account halieus-side-account-top" onClick={onOpenAccount}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><div><strong>{account.displayName}</strong><small>@{account.username}</small></div><i>•••</i></button>}
         <nav className="halieus-side-nav">
-          <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span>⌂</span><b>Home</b></button>
-          <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span>▦</span><b>Games</b></button>
-          <button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span>◉</span><b>Players</b></button>
+          <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="home" /></span><b>Home</b></button>
+          <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Games</b></button>
+          <button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Players</b></button>
         </nav>
-        <button type="button" className="halieus-global-join" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }}><span>＋</span><b>Join Game</b></button>
+        <button type="button" className="halieus-global-join" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="plus" /></span><b>Join Game</b></button>
         <div className="halieus-side-spacer" />
         {betaMode && <div className="halieus-beta-badge"><strong>BETA TEST</strong><span>Stats excluded</span></div>}
         <div className="halieus-side-display-controls" aria-label="Display controls">
-          <button type="button" className="halieus-fullscreen-button" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><span>{isFullscreen ? "↙" : "⛶"}</span><b>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</b></button>
+          <button type="button" className="halieus-fullscreen-button" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><span className="halieus-nav-icon"><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} /></span><b>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</b></button>
           <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
           <InstallAppButton />
           <NotificationPermissionButton />
         </div>
-        <button type="button" className="halieus-side-build-info" onClick={() => setBuildInfoOpen(true)}><span>ⓘ</span><b>Build Info</b></button>
-        {buildInfoOpen && <div className="halieus-home-build-popover" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" onClick={() => setBuildInfoOpen(false)} aria-label="Close build information">×</button><p>HALIEUS GAME ROOM</p><h3>Build {APP_VERSION}</h3><small>Exact release</small><code>{RELEASE_FINGERPRINT}</code></div>}
+        <button type="button" className="halieus-side-build-info" onClick={() => setBuildInfoOpen(true)}><span className="halieus-nav-icon"><HgrIcon name="info" /></span><b>Build Info</b></button>
+        {buildInfoOpen && <div className="halieus-home-build-popover" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" onClick={() => setBuildInfoOpen(false)} aria-label="Close build information"><HgrIcon name="close" size={20} /></button><p>HALIEUS GAME ROOM</p><h3>Build {APP_VERSION}</h3><small>Exact release</small><code>{RELEASE_FINGERPRINT}</code></div>}
         {fullscreenNotice && <small className="halieus-fullscreen-note" role="status">{fullscreenNotice}</small>}
       </aside>
 
       <section className="halieus-main">
-        <header className="halieus-mobile-bar"><button type="button" className="halieus-mobile-menu-button" onClick={() => setMobileMenuOpen(true)} aria-label="Open Halieus menu">☰</button><button type="button" className="halieus-mobile-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }}><img src="/app-icon-192.png?v=4.1.0" alt="" /><strong>Halieus Game Room</strong></button><div className="halieus-mobile-actions"><button type="button" className="halieus-mobile-fullscreen" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}>{isFullscreen ? "↙" : "⛶"}</button>{account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}</div></header>
+        <header className="halieus-mobile-bar"><button type="button" className="halieus-mobile-menu-button" onClick={() => setMobileMenuOpen(true)} aria-label="Open Halieus menu"><HgrIcon name="menu" size={22} /></button><button type="button" className="halieus-mobile-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }}><img src="/app-icon-192.png?v=4.1.0" alt="" /><strong>Halieus Game Room</strong></button><div className="halieus-mobile-actions"><button type="button" className="halieus-mobile-fullscreen" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={20} /></button>{account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}</div></header>
 
         {view === "home" && <section className="halieus-view view-home panel-enter">
           <section className="halieus-showcase" style={{ ["--feature-accent" as string]: featuredGame.accent }}>
