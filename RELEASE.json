@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.1.1",
-  "fingerprint": "hgr-4.1.1-fca144bf7ce1fd21",
+  "fingerprint": "hgr-4.1.1-5d80d1de11942606",
   "algorithm": "sha256",
-  "sourceHash": "fca144bf7ce1fd21cbcf0e514ee5760744745141cfdd598094b75a895526c0eb",
-  "integrityFileCount": 344,
+  "sourceHash": "5d80d1de11942606ccaf07078df40750cdbcb01a169474acb0bc9d46976846b0",
+  "integrityFileCount": 345,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -149,6 +149,7 @@
     "client/src/platform/components/InviteLobbyBar.tsx",
     "client/src/platform/components/InviteLobbyPanel.tsx",
     "client/src/platform/components/NotificationPermissionButton.tsx",
+    "client/src/platform/components/PlayerIdentityCard.tsx",
     "client/src/platform/components/ProjectTimeline.tsx",
     "client/src/platform/components/RecoveryKeyPanel.tsx",
     "client/src/platform/components/RoomChatPanel.tsx",
