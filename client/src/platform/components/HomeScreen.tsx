@@ -25,13 +25,13 @@ import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
 import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
-import { ProjectTimeline } from "./ProjectTimeline";
 import { HgrIcon } from "./HgrIcon";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
 type HomeView = "home" | "games" | "players" | "guilds";
+type DiscoveryShelf = "featured" | "most-played" | "recommended" | "recent" | "friends";
 
 type PokerVariant = "texas-holdem" | "omaha" | "five-card-draw" | "seven-card-stud";
 
@@ -130,6 +130,7 @@ export function HomeScreen(props: HomeScreenProps) {
   const [classicAiCount, setClassicAiCount] = useState(1);
   const [classicAiDifficulty, setClassicAiDifficulty] = useState<ClassicAiDifficulty>("normal");
   const [featuredRotationIndex, setFeaturedRotationIndex] = useState(0);
+  const [discoveryShelf, setDiscoveryShelf] = useState<DiscoveryShelf>("featured");
 
   const selected = GAME_BY_ID[selectedGame];
   const selectedPlayer = directory.find((entry) => entry.id === selectedPlayerId) ?? null;
@@ -238,6 +239,30 @@ export function HomeScreen(props: HomeScreenProps) {
   }, [currentSeat, recommendationRotation.length, view]);
 
   const onlinePlayers = directory.filter((person) => person.online);
+  const recentPlayers = useMemo(() => directory
+    .filter((person) => person.id !== account?.id)
+    .slice()
+    .sort((a, b) => (b.lastSeenAt ?? 0) - (a.lastSeenAt ?? 0))
+    .slice(0, 8), [account?.id, directory]);
+  const discoveryGames = useMemo(() => {
+    const mostPlayed = [...personalStats.byGame]
+      .filter((row) => row.played > 0 && ACTIVE_GAME_IDS.has(row.game as GameId))
+      .sort((a, b) => b.played - a.played)
+      .map((row) => row.game as GameId);
+    const recent = [...new Set(personalStats.recent.map((item) => item.game as GameId))]
+      .filter((game) => ACTIVE_GAME_IDS.has(game));
+    const friends = [...new Set(liveRooms.map((room) => room.game))].filter((game) => ACTIVE_GAME_IDS.has(game));
+    const unplayed = GAMES.filter((game) => !personalStats.byGame.some((row) => row.game === game.id && row.played > 0)).map((game) => game.id);
+    const recommended = [...unplayed, ...quickGames].filter((game, index, values) => values.indexOf(game) === index);
+    const shelves: Record<DiscoveryShelf, GameId[]> = {
+      featured: quickGames,
+      "most-played": mostPlayed.length ? mostPlayed : quickGames,
+      recommended: recommended.length ? recommended : quickGames,
+      recent: recent.length ? recent : quickGames,
+      friends: friends.length ? friends : quickGames,
+    };
+    return shelves[discoveryShelf].slice(0, 7);
+  }, [discoveryShelf, liveRooms, personalStats.byGame, personalStats.recent, quickGames]);
   const liveRoomByPlayerName = useMemo(() => {
     const map = new Map<string, HalieusLiveRoomSummary>();
     liveRooms.forEach((room) => room.humanPlayers.forEach((name) => map.set(name.trim().toLowerCase(), room)));
@@ -483,7 +508,8 @@ export function HomeScreen(props: HomeScreenProps) {
         <nav className="halieus-side-nav">
           <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="home" /></span><b>Home</b></button>
           <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Games</b></button>
-          <button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Players</b></button>
+          <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Players</b></button>
+          {account && <button type="button" className={view === "guilds" ? "is-active" : ""} onClick={() => { setView("guilds"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Guilds</b></button>}
         </nav>
         <button type="button" className="halieus-global-join" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="plus" /></span><b>Join Game</b></button>
         <div className="halieus-side-spacer" />
@@ -548,23 +574,45 @@ export function HomeScreen(props: HomeScreenProps) {
               return <article key={invite.id} style={{ ["--game-card-accent" as string]: game.accent }}><img src={game.icon} alt="" /><span><small>{invite.senderDisplayName.toUpperCase()} INVITED YOU</small><strong>{invite.gameTitle}</strong><em>Room {invite.roomCode}</em></span><div>{room?.joinable && <button type="button" className="button-primary" onClick={() => openLiveRoom(room, "join")}>Join</button>}{room?.spectatable && <button type="button" className="button-outline" onClick={() => openLiveRoom(room, "watch")}>Spectate</button>}<button type="button" className="halieus-invite-dismiss" onClick={() => void dismissGameInvite(invite.id)}>Dismiss</button></div></article>;
             })}</div>
           </section>}
-          <section className="halieus-home-launch-grid halieus-showcase-secondary">
-            <section className="halieus-section-card halieus-home-featured" style={{ ["--feature-accent" as string]: selected.accent }}>
-              <div className="halieus-featured-copy">
-                <p>PLAY A GAME</p>
-                <h2>{quickGames.length ? "Your usual tables" : "Choose a game"}</h2>
-                <span>{quickGames.length ? "Halieus keeps your common setups close so starting another round takes one click." : "Browse the library and choose your first game."}</span>
-                <div><button type="button" className="button-primary" onClick={() => applyQuickPlay(quickGames[0] ?? "mega-board")}>Quick Play</button><button type="button" className="button-outline" onClick={() => { setView("games"); setMobileMenuOpen(false); }}>Browse games</button></div>
-              </div>
-              <img src={GAME_BY_ID[quickGames[0] ?? selectedGame].icon} alt="" />
+          <section className="halieus-home-discovery" aria-label="Game discovery">
+            <header>
+              <div><p>DISCOVER</p><h2>Pick your next table</h2><span>Jump between your favourites, recommendations, recent games and what friends are playing.</span></div>
+              <button type="button" onClick={() => { setView("games"); setMobileMenuOpen(false); }}>View all games →</button>
+            </header>
+            <nav className="halieus-discovery-tabs" aria-label="Game discovery filters">
+              {([
+                ["featured", "Featured"],
+                ["most-played", "Most Played"],
+                ["recommended", "Recommended"],
+                ["recent", "Recently Played"],
+                ["friends", "Friends Are Playing"],
+              ] as Array<[DiscoveryShelf, string]>).map(([id, label]) => <button type="button" key={id} className={discoveryShelf === id ? "is-active" : ""} onClick={() => setDiscoveryShelf(id)}>{label}</button>)}
+            </nav>
+            <div className="halieus-discovery-row">
+              {discoveryGames.map((gameId) => {
+                const game = GAME_BY_ID[gameId];
+                const stat = personalStats.byGame.find((row) => row.game === gameId);
+                const liveCount = liveRooms.filter((room) => room.game === gameId).reduce((count, room) => count + room.humanPlayers.length, 0);
+                return <button type="button" key={game.id} className={`halieus-discovery-card tone-${game.tone}`} style={{ ["--game-card-accent" as string]: game.accent }} onClick={() => applyQuickPlay(game.id)}>
+                  <span className="halieus-discovery-art"><img src={game.icon} alt="" /></span>
+                  <span><strong>{game.name}</strong><small>{game.subtitle}</small><em>{liveCount > 0 ? `${liveCount} playing now` : stat?.played ? `${stat.played} played` : "Try something new"}</em></span>
+                  <i>Quick Play →</i>
+                </button>;
+              })}
+            </div>
+          </section>
+          <section className="halieus-home-social-grid">
+            <section className="halieus-section-card halieus-home-player-strip">
+              <header><div><p>ONLINE PLAYERS</p><h2>Who’s around</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
+              <div>{onlinePlayers.slice(0, 8).map((person) => <button type="button" key={person.id} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }}><span className="halieus-avatar-media" style={{ background: person.playerColor }}>{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.avatar}<i /></span><strong>{person.displayName}</strong><small>{liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In Game" : "Online"}</small></button>)}{onlinePlayers.length === 0 && <p>No other players are online right now.</p>}</div>
             </section>
-            <section className="halieus-section-card halieus-home-online"><header><div><p>PLAYERS</p><h2>Who’s online</h2></div><button type="button" onClick={() => { setView("players"); setMobileMenuOpen(false); }}>View players →</button></header><div>{onlinePlayers.slice(0,5).map((person) => <button type="button" key={person.id} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }}><span className="halieus-avatar-media" style={{ background: person.playerColor }}>{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.avatar}<i /></span><div><strong>{person.displayName}</strong><small>@{person.username}</small></div></button>)}{onlinePlayers.length === 0 && <p>No other players are online right now.</p>}</div></section>
+            <section className="halieus-section-card halieus-home-player-strip">
+              <header><div><p>RECENT PLAYERS</p><h2>Play together again</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
+              <div>{recentPlayers.map((person) => <button type="button" key={person.id} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }}><span className="halieus-avatar-media" style={{ background: person.playerColor }}>{person.profilePicture ? <img src={person.profilePicture} alt="" /> : person.avatar}</span><strong>{person.displayName}</strong><small>{person.online ? "Online" : person.lastSeenAt ? new Date(person.lastSeenAt).toLocaleDateString() : "Offline"}</small></button>)}{recentPlayers.length === 0 && <p>Your recent players will appear here.</p>}</div>
+            </section>
           </section>
           {savedSeats.length > 1 && <section className="halieus-section-card halieus-continue-home halieus-continue-secondary"><header><div><p>OTHER ROOMS</p><h2>Ready to rejoin</h2></div><span>{savedSeats.length - 1}</span></header><div className="halieus-continue-list">{savedSeats.slice(1).map((entry) => <div key={entry.id} className="halieus-continue-row"><button type="button" onClick={() => { selectGame(entry.id); entry.resume(); }} disabled={disabled}><img src={GAME_BY_ID[entry.id].icon} alt="" /><span><strong>{entry.game}</strong><small>Room {entry.session?.code}</small></span><b>Continue →</b></button><button type="button" onClick={entry.forget} aria-label={`Forget ${entry.game} room`}>×</button></div>)}</div></section>}
           {liveRooms.length > 0 && <section className="halieus-live-games"><header><div><p>ACTIVE GAMES</p><h2>Friends are at the table</h2><span>Join an open lobby or watch a game already in progress.</span></div><b>{liveRooms.length} live</b></header><div className="halieus-live-games-strip">{liveRooms.slice(0, 8).map((room) => { const game = GAME_BY_ID[room.game]; const elapsed = room.startedAt ? Math.max(0, Date.now() - room.startedAt) : 0; const mins = Math.floor(elapsed / 60000); return <article key={`${room.game}-${room.code}`} className={`halieus-live-game-card tone-${game.tone}`} style={{ ["--game-card-accent" as string]: game.accent }}><div className="halieus-live-game-brand"><img src={game.icon} alt="" /><span><small>{room.started ? "LIVE NOW" : "OPEN LOBBY"}</small><strong>{game.name}</strong></span><i /></div><div className="halieus-live-game-people"><strong>{room.humanPlayers.length ? room.humanPlayers.join(", ") : `${room.aiCount} AI player${room.aiCount === 1 ? "" : "s"}`}</strong><small>Room {room.code} · {room.playerCount}/{room.maximumPlayers} players{room.started ? ` · ${mins}m` : ""}</small></div><div className="halieus-live-game-actions">{room.joinable && <button type="button" className="button-primary" onClick={() => openLiveRoom(room, "join")}>Join</button>}{room.spectatable && <button type="button" className="button-outline" onClick={() => openLiveRoom(room, "watch")}>Spectate</button>}</div></article>; })}</div></section>}
-          <section className="halieus-home-games halieus-home-games-primary"><header><div><p>QUICK PLAY</p><h2>Your usual tables</h2><span>Based on the game setups you actually play most.</span></div><button type="button" onClick={() => { setView("games"); setMobileMenuOpen(false); }}>Browse all games →</button></header><div className="halieus-featured-row">{quickGames.map((gameId) => { const game = GAME_BY_ID[gameId]; const preference = quickPreferenceByGame.get(gameId); const stat = personalStats.byGame.find((row) => row.game === gameId); return <button type="button" key={game.id} className={`halieus-featured-game tone-${game.tone}`} style={{ ["--game-card-accent" as string]: game.accent }} onClick={() => applyQuickPlay(game.id)}><img src={game.icon} alt="" /><span><strong>{game.name}{game.status === "beta" ? <em>Beta</em> : null}</strong><small>{quickLabel(game.id, preference)}</small><small className="halieus-quick-history">{stat?.played ? `${stat.played} played` : "Default setup"}</small></span><i>Quick Play →</i></button>; })}</div></section>
-          {personalStats.recent.length > 0 && <section className="halieus-home-recent"><header><div><p>RECENTLY PLAYED</p><h2>Back at the table</h2></div></header><div>{personalStats.recent.slice(0,4).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><img src={GAME_BY_ID[item.game as GameId].icon} alt="" /><span><strong>{item.gameTitle}</strong><small>{item.result} · {new Date(item.at).toLocaleDateString()}</small></span>{ACTIVE_GAME_IDS.has(item.game as GameId) ? <button type="button" onClick={() => applyQuickPlay(item.game as GameId)}>Play again</button> : <span className="halieus-archived-game-label">Archived</span>}</article>)}</div></section>}
-          <ProjectTimeline currentVersion={APP_VERSION} />
           {dataError && <p className="halieus-data-note">{dataError}</p>}
         </section>}
 
