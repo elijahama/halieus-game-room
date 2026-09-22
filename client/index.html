@@ -23,14 +23,25 @@
       (() => {
         try {
           const saved = localStorage.getItem("halieus-game-room-theme");
-          const theme = saved === "light" || saved === "dark"
+          const theme = saved === "light" || saved === "dark" || saved === "blue" || saved === "custom"
             ? saved
             : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          let background = theme === "light" ? "#f4f7fb" : theme === "blue" ? "#06111c" : "#0f1012";
+          let accent = "#e5a721";
+          if (theme === "custom") {
+            try {
+              const custom = JSON.parse(localStorage.getItem("halieus-game-room-custom-theme") || "{}");
+              if (/^#[0-9a-f]{6}$/i.test(custom.page || "")) background = custom.page;
+              if (/^#[0-9a-f]{6}$/i.test(custom.accent || "")) accent = custom.accent;
+            } catch {}
+          }
           document.documentElement.dataset.theme = theme;
-          document.documentElement.style.colorScheme = theme;
-          document.documentElement.style.backgroundColor = theme === "dark" ? "#101317" : "#f4efe5";
+          document.documentElement.style.colorScheme = theme === "light" ? "light" : "dark";
+          document.documentElement.style.backgroundColor = background;
+          document.documentElement.style.setProperty("--boot-bg", background);
+          document.documentElement.style.setProperty("--boot-accent", accent);
           const themeMeta = document.querySelector('meta[name="theme-color"]');
-          themeMeta?.setAttribute("content", theme === "dark" ? "#101317" : "#f4efe5");
+          themeMeta?.setAttribute("content", background);
         } catch {
           document.documentElement.dataset.theme = "dark";
           document.documentElement.style.backgroundColor = "#101317";
@@ -42,7 +53,7 @@
          document canvas on the saved Halieus palette during that gap so reloads
          never expose the browser's default white page. */
       html, body, #root { margin: 0; width: 100%; min-height: 100%; }
-      html, body, #root { background-color: #101317; }
+      html, body, #root { background-color: var(--boot-bg, #0f1012); }
       html[data-theme="light"],
       html[data-theme="light"] body,
       html[data-theme="light"] #root { background-color: #f4efe5; }
@@ -61,8 +72,8 @@
         place-items: center;
         overflow: hidden;
         background:
-          radial-gradient(circle at 50% 42%, rgba(229,167,33,.13), transparent 28%),
-          #101317;
+          radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--boot-accent, #e5a721) 13%, transparent), transparent 28%),
+          var(--boot-bg, #0f1012);
         opacity: 1;
         transition: opacity 420ms cubic-bezier(.22,.61,.36,1), visibility 420ms linear;
       }
@@ -90,7 +101,7 @@
         border: 1px solid rgba(229,167,33,.32);
         border-radius: 19px;
         background: rgba(13,16,20,.74);
-        color: #e5a721;
+        color: var(--boot-accent, #e5a721);
         box-shadow: 0 18px 55px rgba(0,0,0,.18), 0 0 34px rgba(229,167,33,.10);
         font: 950 32px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         letter-spacing: -.08em;
