@@ -244,6 +244,8 @@ const manifest = {
     'guild-internal-leaderboard-4.1.0',
     'hgr-shared-design-tokens-4.1.0',
     'hgr-design-system-v1-4.1.0',
+    'release-identity-before-build-4.1.0',
+    'svg-platform-nav-icons-4.1.0',
     'hgr-project-history-4.1.0',
     'hgr-shared-game-shell-polish-4.1.0',
     'matte-launcher-family-4.1.0',
