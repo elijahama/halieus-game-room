@@ -2,32 +2,26 @@
 
 This folder is the visual source of truth for Halieus Game Room branding work.
 
-## Reference artwork
-
-Place the approved reference artwork here. Do not rebuild the design from memory or from generic colour rules when a reference exists.
-
-Preferred canonical name:
+## Canonical launcher reference
 
 `HGR Launcher Family Reference.png`
 
-The reference can be a presentation board / composite image. Once reviewed, the approved launcher exports should be saved under:
+That board is the approved launcher family.
 
-`assets/branding/reference/launchers/`
+The Windows launcher generator reads the board directly and extracts the five approved icon tiles from it:
 
-Expected export names:
+- Start Halieus Game Room
+- Restart Halieus Game Room
+- Close Halieus Game Room
+- Update Halieus Website
+- HGR PowerShell
 
-- `Start Halieus Game Room.png` or `.ico`
-- `Restart Halieus Game Room.png` or `.ico`
-- `Close Halieus Game Room.png` or `.ico`
-- `Update Halieus Website.png` or `.ico`
-- `HGR PowerShell.png` or `.ico`
+The generator may crop, scale and remove the presentation-board background so the artwork works as a Windows icon. It must not recolour the Halieus family, substitute a different design, or regenerate the icons from generic colour rules.
+
+If the canonical reference is missing, launcher generation stops.
 
 ## Rule
 
-The Windows launcher generator does **not** invent, recolour or redraw HGR launcher artwork anymore.
+When a visual reference exists, use the reference.
 
-It only converts approved assets from this folder into cache-busted Windows ICO files.
-
-If approved exports are missing, launcher generation intentionally stops.
-
-This protects the actual design reference from being replaced by increasingly approximate procedural versions.
+Do not rebuild HGR branding from memory, from an old launcher revision, or from a procedural approximation.
