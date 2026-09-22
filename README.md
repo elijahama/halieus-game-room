@@ -571,6 +571,7 @@ Start here:
 - [AI-assisted development](docs/AI_ASSISTED_DEVELOPMENT.md)
 - [4.0.0 audit](docs/AUDIT_4.0.0.md)
 - [4.0.0 validation](docs/VALIDATION_4.0.0.md)
+- [4.1.0 deployment debugging postmortem](docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md)
 
 Older RC and patch notes remain part of the project's history but are not the current source of truth.
 
