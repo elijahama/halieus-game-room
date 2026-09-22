@@ -17,6 +17,11 @@ try {
 $extract = Join-Path ([IO.Path]::GetTempPath()) ('halieus-pack-test-' + [guid]::NewGuid().ToString('N'))
 try {
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zip, $extract)
+    $workspaceVersion = (Get-Content -LiteralPath (Join-Path $project 'VERSION') -Raw).Trim()
+    $archiveVersion = (Get-Content -LiteralPath (Join-Path $extract 'VERSION') -Raw).Trim()
+    if ($archiveVersion -ne $workspaceVersion) {
+        throw "Oracle packer selected the wrong HGR root. Workspace is $workspaceVersion but archive is $archiveVersion."
+    }
     & node (Join-Path $extract 'scripts/release-integrity.mjs') --verify
     if ($LASTEXITCODE -ne 0) { throw 'Extracted deployment archive failed release integrity.' }
     Write-Host 'PASS: real Oracle archive includes root manifest files and passes release integrity; no network calls.'
