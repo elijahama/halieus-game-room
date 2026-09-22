@@ -14,7 +14,7 @@ for(const file of ['package.json','client/package.json','server/package.json','s
 const rootPackage=json('package.json');
 assert.match(rootPackage.scripts['test:regression'],/regression-3\.7\.0e\.mjs.*regression-3\.7\.0f\.mjs/s,'Regression chain must preserve 3.7.0e before 3.7.0f');
 
-const deploy=read('dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1');
+const deploy=read('tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1');
 assert.match(
   deploy,
   /if \(\$relative -match '\^server\/data\(\/\|\$\)' -and -not \$integrityFileSet\.ContainsKey\(\$relative\)\) \{ return \}/,
