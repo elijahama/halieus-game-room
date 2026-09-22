@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
-
-type ThemeMode = "system" | "light" | "dark";
+import { readThemeMode, THEME_KEY, type HalieusThemeMode } from "../theme";
 
 interface DisplaySettingsPanelProps {
   darkMode: boolean;
@@ -11,41 +10,34 @@ interface DisplaySettingsPanelProps {
   onToggleFullscreen: () => void;
 }
 
-const THEME_KEY = "halieus-game-room-theme";
-
-function readThemeMode(): ThemeMode {
-  const value = localStorage.getItem(THEME_KEY);
-  return value === "light" || value === "dark" || value === "system" ? value : "system";
-}
-
 export function DisplaySettingsPanel({
   soundEnabled,
   onToggleSound,
   onToggleFullscreen,
 }: DisplaySettingsPanelProps) {
-  const [themeMode, setThemeMode] = useState<ThemeMode>(() => readThemeMode());
+  const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [buildInfoOpen, setBuildInfoOpen] = useState(false);
 
   useEffect(() => {
     const handle = (event: Event) => {
-      const next = (event as CustomEvent<ThemeMode>).detail;
-      if (next === "system" || next === "light" || next === "dark") setThemeMode(next);
+      const next = (event as CustomEvent<HalieusThemeMode>).detail;
+      if (next === "dark" || next === "light" || next === "blue" || next === "custom") setThemeMode(next);
     };
     window.addEventListener("halieus-theme-mode", handle);
     return () => window.removeEventListener("halieus-theme-mode", handle);
   }, []);
 
-  const changeTheme = (mode: ThemeMode) => {
+  const changeTheme = (mode: HalieusThemeMode) => {
     setThemeMode(mode);
     localStorage.setItem(THEME_KEY, mode);
-    window.dispatchEvent(new CustomEvent<ThemeMode>("halieus-theme-mode", { detail: mode }));
+    window.dispatchEvent(new CustomEvent<HalieusThemeMode>("halieus-theme-mode", { detail: mode }));
   };
 
   return (
     <section className="halieus-display-settings" aria-label="Display and sound settings">
       <p className="halieus-settings-eyebrow">Display & sound</p>
       <div className="halieus-theme-mode-grid" role="group" aria-label="Theme mode">
-        {(["system", "light", "dark"] as ThemeMode[]).map((mode) => (
+        {(["dark", "light", "blue", "custom"] as HalieusThemeMode[]).map((mode) => (
           <button
             type="button"
             key={mode}
@@ -53,8 +45,8 @@ export function DisplaySettingsPanel({
             aria-pressed={themeMode === mode}
             onClick={() => changeTheme(mode)}
           >
-            <span aria-hidden="true">{mode === "system" ? "◐" : mode === "light" ? "☀" : "☾"}</span>
-            <span><strong>{mode[0].toUpperCase() + mode.slice(1)}</strong><small>{mode === "system" ? "Follow device" : `${mode} theme`}</small></span>
+            <span aria-hidden="true">{mode === "dark" ? "●" : mode === "light" ? "○" : mode === "blue" ? "◆" : "✦"}</span>
+            <span><strong>{mode[0].toUpperCase() + mode.slice(1)}</strong><small>{mode === "custom" ? "Your saved RGB palette" : `${mode} theme`}</small></span>
           </button>
         ))}
       </div>
