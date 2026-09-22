@@ -148,6 +148,7 @@ assert.match(launcherGenerator,/generated-preview/,'Optional generated launcher 
 assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?\$LauncherRoot/s,'Launcher generator must never wipe the approved launcher root');
 assert.match(launcherShortcuts,/assets\\branding\\launchers\\matte/,'Shortcut refresh must consume approved launcher assets');
 assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must never invoke icon generation');
+assert.doesNotMatch(launcherShortcuts,/Remove-Item[\s\S]*?\.ico|Remove-Item[\s\S]*?\.png/s,'Shortcut refresh must never delete icon artwork');
 assert.match(launcherShortcuts,/without modifying any files/,'Missing launcher icons must fall back without regenerating artwork');
 assert.doesNotMatch(startCmd,/launcher-shortcuts\.ps1/,'Start must never refresh or regenerate launcher assets');
 assert.doesNotMatch(restartCmd,/launcher-shortcuts\.ps1/,'Restart must never refresh or regenerate launcher assets');
