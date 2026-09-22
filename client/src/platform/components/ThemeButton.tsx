@@ -28,6 +28,15 @@ function publishCustomTheme(theme: HalieusCustomTheme): void {
   window.dispatchEvent(new CustomEvent<HalieusCustomTheme>("halieus-custom-theme", { detail: theme }));
 }
 
+function rgbChannels(hex: string): [number, number, number] {
+  const value = hex.replace("#", "");
+  return [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16)) as [number, number, number];
+}
+
+function rgbHex(channels: [number, number, number]): string {
+  return `#${channels.map((channel) => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, "0")).join("")}`;
+}
+
 const THEME_OPTIONS: Array<{ mode: HalieusThemeMode; icon: string; label: string }> = [
   { mode: "dark", icon: "●", label: "Dark" },
   { mode: "light", icon: "○", label: "Light" },
@@ -68,6 +77,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       setMode("custom");
       applyThemeMode("custom");
     }
+  }
+
+  function updateRgbChannel(key: keyof HalieusCustomTheme, channelIndex: number, value: number) {
+    const channels = rgbChannels(custom[key]);
+    channels[channelIndex] = Number.isFinite(value) ? value : channels[channelIndex];
+    updateColour(key, rgbHex(channels));
   }
 
   function resetCustom() {
@@ -112,7 +127,8 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 <label key={key}>
                   <span>{label}</span>
                   <input type="color" value={custom[key]} onChange={(event) => updateColour(key, event.target.value)} />
-                  <input type="text" value={custom[key]} maxLength={7} onChange={(event) => /^#[0-9a-f]{6}$/i.test(event.target.value) && updateColour(key, event.target.value)} aria-label={`${label} HEX colour`} />
+                  <input key={custom[key]} type="text" defaultValue={custom[key]} maxLength={7} onBlur={(event) => /^#[0-9a-f]{6}$/i.test(event.target.value) ? updateColour(key, event.target.value) : event.currentTarget.value = custom[key]} aria-label={`${label} HEX colour`} />
+                  <span className="halieus-rgb-fields" aria-label={`${label} RGB channels`}>{rgbChannels(custom[key]).map((channel, channelIndex) => <label key={channelIndex}><b>{["R", "G", "B"][channelIndex]}</b><input type="number" min={0} max={255} value={channel} onChange={(event) => updateRgbChannel(key, channelIndex, Number(event.target.value))} /></label>)}</span>
                 </label>
               ))}
               <div className="halieus-custom-theme-preview" style={{ background: custom.page }}>
