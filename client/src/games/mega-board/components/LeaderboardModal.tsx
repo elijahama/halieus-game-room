@@ -31,6 +31,10 @@ export function LeaderboardModal({ entries, recentMatches, loading, error, theme
             <span style={{ color: theme.mutedText }}>Complete a Ranked Mega Board match and the standings will appear here.</span>
           </div>
         ) : (
+          <>
+          <div className="leaderboard-podium" aria-label="Top ranked players">
+            {entries.slice(0, 3).map((entry, index) => <article key={entry.playerKey} className={`is-rank-${index + 1}`}><span>{index === 0 ? "👑" : index === 1 ? "🥈" : "🥉"}</span><strong>{entry.playerName}</strong><b>{entry.rating}</b><small>{entry.wins} win{entry.wins === 1 ? "" : "s"} · {entry.gamesPlayed} game{entry.gamesPlayed === 1 ? "" : "s"}</small></article>)}
+          </div>
           <div className="leaderboard-table-wrap">
             <div className="leaderboard-grid leaderboard-grid-head"><span>#</span><span>Player</span><span>Rating</span><span>Games</span><span>Wins</span><span>Podiums</span><span>Avg finish</span><span>Awards</span></div>
             {entries.map((entry, index) => (
@@ -39,6 +43,7 @@ export function LeaderboardModal({ entries, recentMatches, loading, error, theme
               </div>
             ))}
           </div>
+          </>
         )}
         {recentMatches.length > 0 && (
           <section className="leaderboard-recent"><h3>Recent Ranked matches</h3>{recentMatches.slice(0, 6).map((match) => <div key={match.matchId} style={{ borderColor: theme.border }}><strong>{match.roomCode}</strong><span>{new Date(match.completedAt).toLocaleString()}</span><small style={{ color: theme.mutedText }}>{match.players.map((player) => `#${player.finishPosition} ${player.playerName} (${player.ratingDelta >= 0 ? "+" : ""}${player.ratingDelta})`).join(" · ")}</small></div>)}</section>
