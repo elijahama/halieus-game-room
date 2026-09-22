@@ -19,9 +19,11 @@ function Convert-HalieusVersionToNpm([string]$Version) {
     return $match.Groups[1].Value
 }
 
-foreach ($cmd in @("ssh", "scp")) {
-    if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) {
-        throw "Windows command '$cmd' is required. Enable the Windows OpenSSH Client first."
+if (-not $PackageOnly) {
+    foreach ($cmd in @("ssh", "scp")) {
+        if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) {
+            throw "Windows command '$cmd' is required. Enable the Windows OpenSSH Client first."
+        }
     }
 }
 
@@ -65,7 +67,7 @@ if ([string]::IsNullOrWhiteSpace($OracleHost)) {
 if ([string]::IsNullOrWhiteSpace($OracleUser)) {
     $OracleUser = if ($env:HALIEUS_ORACLE_USER) { $env:HALIEUS_ORACLE_USER } else { "ubuntu" }
 }
-if (-not $UseDefaultSshAuth) {
+if (-not $PackageOnly -and -not $UseDefaultSshAuth) {
     if ([string]::IsNullOrWhiteSpace($KeyPath)) {
         $KeyPath = $env:HALIEUS_ORACLE_KEY
     }
