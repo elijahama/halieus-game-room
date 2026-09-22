@@ -535,3 +535,229 @@ html[data-theme="dark"] .halieus-side-nav button.is-active .halieus-nav-icon {
 .halieus-home-build-popover > button {
   color: var(--hgr-text) !important;
 }
+
+
+/* ---------------------------------------------------------------------- */
+/* 4.1.x approved social/discovery/theme polish                           */
+/* ---------------------------------------------------------------------- */
+
+/* Dark is deliberately chromatic-neutral. The previous navy stack remains
+ * available as the explicit Blue theme instead of masquerading as Dark. */
+html[data-theme="dark"] {
+  --hgr-page: #0f1012;
+  --hgr-surface: #17191d;
+  --hgr-surface-raised: #1d2025;
+  --hgr-surface-soft: #24272d;
+  --hgr-surface-strong: #2d3138;
+  --hgr-text: #f7f7f8;
+  --hgr-text-soft: #d5d7db;
+  --hgr-muted: #a4a8b0;
+  --hgr-border: rgba(255,255,255,.10);
+  --hgr-border-strong: rgba(255,255,255,.18);
+  --mm-page: #0f1012;
+  --mm-surface: #17191d;
+  --mm-surface-1: #17191d;
+  --mm-surface-2: #24272d;
+  --mm-input: #121417;
+  --mm-text: #f7f7f8;
+  --mm-muted: #a4a8b0;
+  --mm-border: #3a3e46;
+}
+html[data-theme="blue"] {
+  --hgr-page: #06111c;
+  --hgr-surface: #0b1826;
+  --hgr-surface-raised: #102338;
+  --hgr-surface-soft: #142b41;
+  --hgr-surface-strong: #1c3852;
+  --hgr-text: #f8fafc;
+  --hgr-text-soft: #d6deea;
+  --hgr-muted: #9eabba;
+  --hgr-border: rgba(255,255,255,.09);
+  --hgr-border-strong: rgba(255,255,255,.16);
+  --mm-page: #06111c;
+  --mm-surface: #0b1826;
+  --mm-surface-1: #0b1826;
+  --mm-surface-2: #142b41;
+  --mm-input: #08131f;
+  --mm-text: #f8fafc;
+  --mm-muted: #9eabba;
+  --mm-border: #29445d;
+}
+html[data-theme="custom"] {
+  --mm-page: var(--hgr-page);
+  --mm-surface: var(--hgr-surface);
+  --mm-surface-1: var(--hgr-surface);
+  --mm-surface-2: var(--hgr-surface-soft);
+  --mm-input: var(--hgr-surface-raised);
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+  --mm-border: var(--hgr-border-strong);
+}
+
+/* Theme selection is instant by design. Do not reintroduce full-page colour
+ * tweening: it makes Light/Dark switching feel like a page transition. */
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition-property: none !important;
+  transition-duration: 0ms !important;
+}
+body, #root { transition: none !important; }
+
+.halieus-theme-segments.is-four-mode { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.halieus-theme-segments.is-four-mode button { min-width: 0; padding-inline: 5px; }
+.halieus-custom-theme { position: relative; grid-column: 1 / -1; }
+.halieus-custom-theme-toggle {
+  width: 100%; min-height: 30px; border: 0; border-top: 1px solid var(--hgr-border);
+  background: transparent; color: var(--hgr-muted); font-size: 10px; font-weight: 850; cursor: pointer;
+}
+.halieus-custom-theme-editor {
+  position: absolute; z-index: 400; left: 0; bottom: calc(100% + 8px); width: min(330px, 82vw);
+  display: grid; gap: 9px; padding: 13px; border: 1px solid var(--hgr-border-strong);
+  border-radius: 15px; background: var(--hgr-surface-raised); color: var(--hgr-text); box-shadow: var(--hgr-shadow-float);
+}
+.halieus-custom-theme-editor p { display: grid; gap: 2px; margin: 0; }
+.halieus-custom-theme-editor p small { color: var(--hgr-muted); font-weight: 600; }
+.halieus-custom-theme-editor label { display: grid; grid-template-columns: 82px 38px minmax(0,1fr); align-items: center; gap: 7px; font-size: 11px; font-weight: 800; }
+.halieus-custom-theme-editor input[type="color"] { width: 38px; height: 30px; padding: 2px; border-radius: 8px; }
+.halieus-custom-theme-editor input[type="text"] { min-width: 0; height: 30px; padding: 5px 8px; text-transform: uppercase; }
+.halieus-custom-theme-preview { height: 48px; display: grid; place-items: center; border-radius: 10px; border: 1px solid var(--hgr-border); }
+.halieus-custom-theme-preview > span { width: 76%; height: 28px; display: flex; align-items: center; gap: 7px; padding: 6px; border-radius: 8px; }
+.halieus-custom-theme-preview i, .halieus-custom-theme-preview b { width: 28%; height: 8px; border-radius: 999px; }
+
+/* Home discovery borrows the useful horizontal timeline behaviour without
+ * keeping project-history documentation on the player Home screen. */
+.halieus-home-discovery {
+  margin-top: 18px; padding: 20px; border: 1px solid var(--hgr-border); border-radius: var(--hgr-radius-xl);
+  background: var(--hgr-surface); box-shadow: var(--hgr-shadow-soft);
+}
+.halieus-home-discovery > header { display: flex; align-items: end; justify-content: space-between; gap: 16px; }
+.halieus-home-discovery > header p, .halieus-home-discovery > header h2, .halieus-home-discovery > header span { margin: 0; }
+.halieus-home-discovery > header p { color: var(--hgr-brand); font-size: 10px; font-weight: 950; letter-spacing: .14em; }
+.halieus-home-discovery > header h2 { margin-top: 4px; font-size: clamp(22px,2.4vw,30px); }
+.halieus-home-discovery > header span { display: block; margin-top: 4px; color: var(--hgr-muted); font-size: 12px; }
+.halieus-home-discovery > header button, .halieus-home-player-strip header button { border: 0; background: transparent; color: var(--hgr-brand); font-weight: 850; cursor: pointer; }
+.halieus-discovery-tabs { display: flex; gap: 7px; margin-top: 16px; overflow-x: auto; scrollbar-width: none; }
+.halieus-discovery-tabs button { flex: 0 0 auto; min-height: 34px; padding: 0 13px; border: 1px solid var(--hgr-border); border-radius: 999px; background: var(--hgr-surface-soft); color: var(--hgr-text-soft); font-weight: 800; cursor: pointer; }
+.halieus-discovery-tabs button.is-active { border-color: color-mix(in srgb,var(--hgr-brand) 55%,var(--hgr-border)); background: color-mix(in srgb,var(--hgr-brand) 14%,var(--hgr-surface)); color: var(--hgr-text); box-shadow: inset 0 -2px 0 var(--hgr-brand); }
+.halieus-discovery-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(180px, 1fr); gap: 11px; margin-top: 12px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: inline proximity; }
+.halieus-discovery-card {
+  position: relative; min-width: 180px; display: grid; grid-template-rows: 118px 1fr auto; gap: 10px; padding: 12px;
+  border: 1px solid color-mix(in srgb,var(--game-card-accent) 38%,var(--hgr-border)); border-radius: 17px;
+  background: linear-gradient(155deg,color-mix(in srgb,var(--game-card-accent) 13%,var(--hgr-surface-raised)),var(--hgr-surface));
+  color: var(--hgr-text); text-align: left; cursor: pointer; scroll-snap-align: start;
+  box-shadow: inset 0 1px 0 color-mix(in srgb,var(--game-card-accent) 14%,transparent);
+}
+.halieus-discovery-art { display: grid; place-items: center; border-radius: 13px; background: radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--game-card-accent) 24%,transparent),transparent 72%); }
+.halieus-discovery-art img { width: 92px; height: 92px; object-fit: contain; }
+.halieus-discovery-card > span:nth-child(2) { display: grid; gap: 2px; }
+.halieus-discovery-card small { color: var(--hgr-muted); }
+.halieus-discovery-card em, .halieus-discovery-card > i { color: var(--game-card-accent); font-size: 11px; font-style: normal; font-weight: 850; }
+.halieus-home-social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+.halieus-home-player-strip { min-width: 0; padding: 16px !important; }
+.halieus-home-player-strip > header { display: flex; justify-content: space-between; gap: 10px; align-items: end; }
+.halieus-home-player-strip > header p, .halieus-home-player-strip > header h2 { margin: 0; }
+.halieus-home-player-strip > div { display: flex; gap: 12px; margin-top: 13px; overflow-x: auto; padding-bottom: 4px; }
+.halieus-home-player-strip > div > button { flex: 0 0 68px; display: grid; justify-items: center; gap: 4px; border: 0; background: transparent; color: var(--hgr-text); cursor: pointer; text-align: center; }
+.halieus-home-player-strip .halieus-avatar-media { width: 46px; height: 46px; border-radius: 50%; overflow: hidden; border: 2px solid color-mix(in srgb,var(--hgr-brand) 35%,var(--hgr-border)); }
+.halieus-home-player-strip strong { max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.halieus-home-player-strip small { color: var(--hgr-muted); font-size: 9px; }
+
+/* Player directory fills available width instead of leaving an accidental
+ * empty half-screen when the profile drawer is closed. */
+.halieus-players-layout:not(.has-selection) .halieus-player-directory { grid-template-columns: repeat(auto-fit,minmax(280px,1fr)) !important; width: 100%; }
+.halieus-players-layout:not(.has-selection) { grid-template-columns: minmax(0,1fr) !important; }
+.halieus-player-directory button { min-height: 92px; }
+.halieus-directory-avatar { width: 54px !important; height: 54px !important; border-radius: 16px !important; overflow: hidden; }
+.halieus-avatar-media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Guild create/join is one balanced action row; member invitations are a real
+ * account flow rather than forcing owners to distribute private codes. */
+.halieus-guild-join-create { grid-template-columns: minmax(260px,.75fr) minmax(420px,1.25fr) !important; align-items: stretch; }
+.halieus-guild-join-create > form { min-height: 0 !important; align-content: start; gap: 10px !important; padding: 16px !important; }
+.halieus-guild-join-create > form:first-child > div { margin-top: auto; }
+.halieus-guild-join-create button[type="submit"] { min-height: 44px; padding-inline: 18px; border-radius: 12px; background: var(--hgr-brand); color: var(--hgr-brand-ink); font-weight: 900; }
+.halieus-guild-incoming { display: grid; gap: 8px; margin: 12px 0; padding: 14px; border: 1px solid color-mix(in srgb,var(--hgr-brand) 34%,var(--hgr-border)); border-radius: 16px; background: color-mix(in srgb,var(--hgr-brand) 6%,var(--hgr-surface)); }
+.halieus-guild-incoming header, .halieus-guild-incoming article { display: flex; align-items: center; gap: 10px; }
+.halieus-guild-incoming header { justify-content: space-between; }
+.halieus-guild-incoming header div { display: grid; }
+.halieus-guild-incoming header span { color: var(--hgr-brand); font-size: 10px; font-weight: 900; letter-spacing: .12em; }
+.halieus-guild-incoming article { padding: 9px; border-radius: 12px; background: var(--hgr-surface-raised); }
+.halieus-guild-incoming article > div { flex: 1; display: grid; }
+.halieus-guild-invite-players { display: grid; gap: 10px; margin-bottom: 14px; padding: 15px; border: 1px solid var(--hgr-border); border-radius: 16px; background: var(--hgr-surface-soft); }
+.halieus-guild-invite-players header div { display: grid; gap: 2px; }
+.halieus-guild-invite-players header small { color: var(--hgr-brand); font-weight: 900; letter-spacing: .12em; }
+.halieus-guild-invite-players header span { color: var(--hgr-muted); font-size: 11px; }
+.halieus-guild-invite-players input { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--hgr-border); border-radius: 11px; background: var(--hgr-surface-raised); color: var(--hgr-text); }
+.halieus-guild-invite-results { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.halieus-guild-invite-results article { display: grid; grid-template-columns: 42px minmax(0,1fr) auto; align-items: center; gap: 9px; padding: 9px; border: 1px solid var(--hgr-border); border-radius: 12px; background: var(--hgr-surface-raised); }
+.halieus-guild-invite-results .halieus-avatar-media { width: 42px; height: 42px; border-radius: 12px; overflow: hidden; }
+.halieus-guild-invite-results article > div { display: grid; min-width: 0; }
+.halieus-guild-invite-results small { color: var(--hgr-muted); }
+.halieus-guild-pending-invites { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.halieus-guild-pending-invites > small { color: var(--hgr-muted); font-weight: 900; }
+.halieus-guild-pending-invites > span { display: inline-flex; gap: 6px; padding: 6px 9px; border: 1px solid var(--hgr-border); border-radius: 999px; background: var(--hgr-surface); font-size: 10px; }
+.halieus-guild-pending-invites em { color: var(--hgr-muted); font-style: normal; }
+
+/* Game cards and atmosphere always derive ambient colour from the game itself. */
+.halieus-featured-game,
+.halieus-library-card,
+.halieus-live-game-card,
+.halieus-discovery-card { --ambient-accent: var(--game-card-accent); }
+.halieus-featured-game:hover, .halieus-library-card:hover {
+  border-color: color-mix(in srgb,var(--game-card-accent) 62%,var(--hgr-border)) !important;
+  box-shadow: 0 14px 34px color-mix(in srgb,var(--game-card-accent) 12%,transparent);
+}
+
+/* Ranked standings get a readable top-three moment without replacing the
+ * complete data table underneath. */
+.leaderboard-podium { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 14px 0 18px; }
+.leaderboard-podium article { display: grid; justify-items: center; gap: 3px; padding: 14px 10px; border: 1px solid var(--hgr-border); border-radius: 15px; background: var(--hgr-surface-soft); text-align: center; }
+.leaderboard-podium article.is-rank-1 { border-color: color-mix(in srgb,var(--hgr-brand) 55%,var(--hgr-border)); background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface)); transform: translateY(-4px); }
+.leaderboard-podium article > span { font-size: 24px; }
+.leaderboard-podium article > b { color: var(--hgr-brand); font-size: 20px; }
+.leaderboard-podium article > small { color: var(--hgr-muted); }
+
+/* Room creation and game menus do not trap a second scrollbar inside the box.
+ * Short screens may scroll the backdrop/document, but the modal itself remains
+ * a single coherent surface. */
+.halieus-create-backdrop.halieus-viewport-overlay,
+.modal-backdrop.game-menu-top-layer { overflow-y: auto !important; align-items: flex-start !important; }
+.halieus-create-panel.halieus-create-modal {
+  width: min(900px,100%) !important; max-height: none !important; overflow: visible !important;
+  margin-block: max(12px,3dvh) !important; padding: 18px !important;
+}
+.game-menu-modal { max-height: none !important; overflow: visible !important; margin-block: max(12px,3dvh) !important; }
+.halieus-create-modal .halieus-game-options { margin-bottom: 11px !important; }
+.halieus-create-modal .poker-variant-picker { padding: 11px !important; }
+.halieus-create-modal .poker-variant-roadmap { gap: 6px !important; }
+.halieus-create-modal .poker-home-settings { gap: 10px !important; }
+.halieus-create-modal .halieus-create-form { gap: 9px !important; }
+.halieus-create-modal .halieus-create-form label { gap: 4px !important; }
+.halieus-create-modal .halieus-create-form input,
+.halieus-create-modal .halieus-create-form select { min-height: 40px !important; padding-block: 8px !important; }
+
+/* Mega Board debt options use the same compact choice-card language as trades,
+ * so liquidation choices remain visible together instead of becoming a tall
+ * single-column list. */
+.debt-property-option-list { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 8px !important; max-height: none !important; overflow: visible !important; }
+.debt-property-option { min-width: 0; display: grid !important; grid-template-columns: minmax(0,1fr) auto !important; align-items: center !important; gap: 8px !important; padding: 9px !important; }
+.debt-property-option-actions { display: grid !important; gap: 5px !important; }
+.debt-property-option-actions button { min-height: 32px !important; padding: 5px 8px !important; font-size: 10px !important; }
+.debt-resolution-actions { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+
+@media (max-width: 900px) {
+  .halieus-home-social-grid, .halieus-guild-join-create { grid-template-columns: minmax(0,1fr) !important; }
+  .halieus-guild-invite-results, .debt-property-option-list { grid-template-columns: minmax(0,1fr) !important; }
+  .leaderboard-podium { grid-template-columns: minmax(0,1fr); }
+  .leaderboard-podium article.is-rank-1 { transform: none; }
+}
+@media (max-width: 680px) {
+  .halieus-home-discovery { padding: 14px; }
+  .halieus-home-discovery > header { align-items: start; }
+  .halieus-home-discovery > header > button { display: none; }
+  .halieus-discovery-row { grid-auto-columns: min(72vw,230px); }
+  .halieus-home-social-grid { gap: 10px; }
+  .halieus-create-panel.halieus-create-modal { margin-block: 0 !important; border-radius: 22px 22px 0 0 !important; }
+  .halieus-create-backdrop.halieus-viewport-overlay { align-items: flex-end !important; }
+}
