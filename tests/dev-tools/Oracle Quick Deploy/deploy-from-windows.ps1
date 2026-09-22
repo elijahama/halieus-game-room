@@ -141,12 +141,14 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
     Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop
     $archive = [System.IO.Compression.ZipFile]::Open($tempSourceZip, [System.IO.Compression.ZipArchiveMode]::Create)
     try {
-        $includeRoots = @("client", "server", "shared", "deploy", "scripts", "desktop", "tests", "docs")
+        $includeRoots = @(".github", "assets", "client", "server", "shared", "deploy", "scripts", "desktop", "tests", "docs")
         $rootFiles = @(
             "package.json",
             "package-lock.json",
             "VERSION",
             "RELEASE.json",
+            ".gitignore",
+            "SECURITY.md",
             "README.md",
             "ARCHITECTURE.md",
             "Start Halieus Game Room.cmd",
@@ -179,8 +181,130 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
             Get-ChildItem -LiteralPath $base -File -Recurse | ForEach-Object {
                 $relative = $_.FullName.Substring($projectRoot.Length).TrimStart('\','/').Replace('\','/')
                 if ($relative -match '(^|/)(node_modules|dist|logs|\.runtime|\.history)(/|$)') { return }
-                if ($relative -match '^server/data(/|$)') { return }
-                if ($relative -match '\.(key|pem|ppk|pub)$') {
+                # server/data mixes shipped static dictionaries with private/runtime state.
+                # Only release-signed server/data files are allowed into the Oracle archive.
+                if ($relative -match '^server/data(/|$)' -and -not $integrityFileSet.ContainsKey($relative)) { return }
+                if ($relative -match '\.(key|pem|ppk|pub)
+                    Write-Host "Skipping local SSH credential file: $relative" -ForegroundColor DarkYellow
+                } else {
+                    $trackedRoot = $relative -match '^(\.github/|assets/branding/|client/src/|client/public/|server/src/|server/data/|shared/|deploy/|tests/dev-tools/Oracle Quick Deploy/)'
+                    if ($trackedRoot -and $relative -ne 'shared/release.ts' -and -not $integrityFileSet.ContainsKey($relative)) {
+                        Write-Host "Skipping stale/untracked release file: $relative" -ForegroundColor DarkGray
+                    } else {
+                        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $_.FullName, $relative, [System.IO.Compression.CompressionLevel]::Optimal) | Out-Null
+                    }
+                }
+            }
+        }
+    }
+    finally {
+        $archive.Dispose()
+    }
+    # Release integrity is only useful if every file used to calculate the
+    # fingerprint is actually present in the deployment ZIP. Validate the ZIP
+    # locally before any SSH/SCP work so a packaging bug can never reach Oracle.
+    $packageCheck = [System.IO.Compression.ZipFile]::OpenRead($tempSourceZip)
+    try {
+        $entrySet = @{}
+        foreach ($entry in $packageCheck.Entries) {
+            if (-not [string]::IsNullOrWhiteSpace($entry.FullName)) {
+                $entrySet[$entry.FullName.Replace('\','/')] = $true
+            }
+        }
+        $missingReleaseFiles = @()
+        foreach ($releaseFile in @($releaseManifest.integrityFiles)) {
+            $normalizedReleaseFile = ([string]$releaseFile).Replace('\','/')
+            if (-not [string]::IsNullOrWhiteSpace($normalizedReleaseFile) -and -not $entrySet.ContainsKey($normalizedReleaseFile)) {
+                $missingReleaseFiles += $normalizedReleaseFile
+            }
+        }
+        foreach ($requiredBuildFile in @('RELEASE.json','shared/release.ts','client/tsconfig.json','client/tsconfig.node.json','server/tsconfig.json')) {
+            if (-not $entrySet.ContainsKey($requiredBuildFile) -and -not ($missingReleaseFiles -contains $requiredBuildFile)) {
+                $missingReleaseFiles += $requiredBuildFile
+            }
+        }
+        if ($missingReleaseFiles.Count -gt 0) {
+            throw "Deployment package is incomplete before upload. Missing release/build files: $($missingReleaseFiles -join ', ')"
+        }
+        Write-Host "Deployment package completeness verified: $($releaseManifest.integrityFiles.Count) release integrity inputs present." -ForegroundColor DarkGray
+    }
+    finally {
+        $packageCheck.Dispose()
+    }
+
+    $SourceZip = $tempSourceZip
+    $createdTempSource = $true
+} elseif (-not (Test-Path -LiteralPath $SourceZip)) {
+    throw "Source ZIP not found: $SourceZip"
+}
+
+if ($PackageOnly) {
+    $createdTempSource = $false
+    Write-Output $SourceZip
+    exit 0
+}
+
+$target = "$OracleUser@$OracleHost"
+$sshArgs = @("-p", "$SshPort", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new")
+$scpArgs = @("-P", "$SshPort", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new")
+if (-not $UseDefaultSshAuth) {
+    $sshArgs += @("-i", $KeyPath, "-o", "IdentitiesOnly=yes")
+    $scpArgs += @("-i", $KeyPath, "-o", "IdentitiesOnly=yes")
+}
+
+try {
+    Write-Host "Uploading Halieus $expectedVersion source..." -ForegroundColor Cyan
+    & scp @scpArgs $SourceZip "${target}:/tmp/halieus-game-room-source.zip"
+    if ($LASTEXITCODE -ne 0) { throw "Source upload failed." }
+
+    Write-Host "Uploading Oracle installer..." -ForegroundColor Cyan
+    & scp @scpArgs $installer "${target}:/tmp/halieus-quick-install.sh"
+    if ($LASTEXITCODE -ne 0) { throw "Installer upload failed." }
+
+    Write-Host "Installing/building Halieus $expectedVersion on Oracle..." -ForegroundColor Yellow
+    & ssh @sshArgs $target "sudo bash /tmp/halieus-quick-install.sh"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Oracle installation failed. The live production data was not replaced from the laptop. Read the output above for the rollback/build error."
+    }
+
+    # Verify the exact release directly on Oracle. Public DNS/TLS is not a
+    # release-integrity gate because the browser-facing route can be temporarily
+    # unavailable even when the new application is correctly active on Oracle.
+    Write-Host "Verifying exact release on Oracle..." -ForegroundColor Cyan
+    $healthRaw = & ssh @sshArgs $target "curl -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health"
+    if ($LASTEXITCODE -ne 0 -or -not $healthRaw) { throw "Oracle application health check failed after deployment." }
+    try { $oracleHealth = (($healthRaw -join "`n") | ConvertFrom-Json -ErrorAction Stop) } catch { throw "Oracle returned an unreadable /health response after deployment." }
+    $actualVersion = [string]$oracleHealth.version
+    $actualFingerprint = [string]$oracleHealth.releaseFingerprint
+    if ($actualVersion -ne $expectedVersion -or $actualFingerprint -ne $expectedFingerprint) {
+        throw "Oracle is serving a different release than this ZIP. Expected $expectedVersion / $expectedFingerprint; got $actualVersion / $actualFingerprint."
+    }
+
+    Write-Host "Oracle release verified: $actualVersion / $actualFingerprint" -ForegroundColor Green
+
+    # Public check is diagnostic only. It must never turn a successful Oracle
+    # application deployment into a false failure.
+    $healthBase = "$($PublicAppUrl.TrimEnd('/'))/health"
+    try {
+        $uri = "$healthBase?build=$([uri]::EscapeDataString($expectedVersion))&refresh=$([guid]::NewGuid().ToString('N'))"
+        $publicHealth = Get-HalieusPublicHealth -Uri $uri -TimeoutSeconds 8
+        if ($publicHealth -and ([string]$publicHealth.version) -eq $expectedVersion -and ([string]$publicHealth.releaseFingerprint) -eq $expectedFingerprint) {
+            Write-Host "Public route also reports this exact release." -ForegroundColor DarkGreen
+        } else {
+            $publicVersion = if ($publicHealth) { [string]$publicHealth.version } else { "unreachable" }
+            Write-Host "Public route did not yet report the exact fingerprint (reported: $publicVersion). Oracle deployment is still valid; refresh the browser after DNS/proxy catches up." -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "Public route check was unavailable. Oracle deployment is verified, so Update will not fail for this." -ForegroundColor Yellow
+    }
+
+    Write-Host "`nHalieus application update verified: $expectedVersion" -ForegroundColor Green
+    Write-Host "Production data were preserved. Routine Update did not install OS packages or reconfigure nginx/Certbot." -ForegroundColor Green
+}
+finally {
+    if ($createdTempSource) { Remove-Item $tempSourceZip -Force -ErrorAction SilentlyContinue }
+}
+) {
                     Write-Host "Skipping local SSH credential file: $relative" -ForegroundColor DarkYellow
                 } else {
                     $trackedRoot = $relative -match '^(client/src|client/public|server/src|shared|deploy|tests/dev-tools/Oracle Quick Deploy)/'
