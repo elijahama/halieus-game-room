@@ -59,6 +59,9 @@ jobs:
       - name: Generate exact HGR release identity
         run: npm run prepare:release
 
+      - name: Build current HGR release
+        run: npm run build
+
       - name: Commit generated release identity when changed
         shell: bash
         run: |
