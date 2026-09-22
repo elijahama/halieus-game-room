@@ -116,7 +116,9 @@ assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.
 
 assert.match(launcherGenerator,/assets\\branding\\Halieus Game Room\.png/,'Launcher generator must derive from the canonical Halieus PNG');
 assert.match(launcherGenerator,/\$BrandingRevision = 'r7'/,'Launcher artwork revision must be r7');
-assert.match(launcherGenerator,/does not draw, recolour or reinterpret the HGR brand/i,'Launcher generator must only consume approved reference artwork');
+assert.match(launcherGenerator,/HGR Launcher Family Reference\.png/,'Launcher generator must read the canonical HGR launcher reference');
+assert.match(launcherGenerator,/X=64;\s+Y=210; Width=214; Height=214/,'Start launcher must be extracted from the approved reference board');
+assert.match(launcherGenerator,/X=1076; Y=210; Width=229; Height=214/,'PowerShell launcher must be extracted from the approved reference board');
 assert.match(launcherShortcuts,/\$BrandingRevision = 'r7'/,'Shortcut generator must consume r7 artwork');
 assert.match(designSystemDoc,/Launcher family — r7/,'Design-system documentation must describe the current launcher family');
 
