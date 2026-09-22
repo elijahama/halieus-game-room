@@ -22,7 +22,7 @@ function New-RoundedRectanglePath {
     )
 
     $diameter = $Radius * 2
-    $path = New-Object System.Drawing.Drawing2D.GraphicsPath
+    $path = [System.Drawing.Drawing2D.GraphicsPath]::new()
     $path.AddArc($Rect.X, $Rect.Y, $diameter, $diameter, 180, 90)
     $path.AddArc($Rect.Right - $diameter, $Rect.Y, $diameter, $diameter, 270, 90)
     $path.AddArc($Rect.Right - $diameter, $Rect.Bottom - $diameter, $diameter, $diameter, 0, 90)
@@ -61,7 +61,7 @@ function New-HgrLauncherIcon {
     )
 
     $size = 256
-    $bitmap = New-Object System.Drawing.Bitmap($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $bitmap = [System.Drawing.Bitmap]::new($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
     try {
         $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
@@ -74,27 +74,27 @@ function New-HgrLauncherIcon {
         $gold = [System.Drawing.ColorTranslator]::FromHtml('#F6C945')
         $badgeGrey = [System.Drawing.ColorTranslator]::FromHtml('#A7A7A7')
 
-        $outer = New-RoundedRectanglePath -Rect (New-Object System.Drawing.RectangleF(17, 17, 222, 222)) -Radius 34
-        $graphics.FillPath((New-Object System.Drawing.SolidBrush($accent)), $outer)
+        $outer = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(17, 17, 222, 222)) -Radius 34
+        $graphics.FillPath(([System.Drawing.SolidBrush]::new($accent)), $outer)
 
-        $top = New-RoundedRectanglePath -Rect (New-Object System.Drawing.RectangleF(22, 22, 212, 105)) -Radius 30
-        $graphics.FillPath((New-Object System.Drawing.SolidBrush($dark)), $top)
+        $top = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(22, 22, 212, 105)) -Radius 30
+        $graphics.FillPath(([System.Drawing.SolidBrush]::new($dark)), $top)
 
-        $bottomBar = New-RoundedRectanglePath -Rect (New-Object System.Drawing.RectangleF(28, 201, 200, 28)) -Radius 14
-        $graphics.FillPath((New-Object System.Drawing.SolidBrush($dark)), $bottomBar)
+        $bottomBar = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(28, 201, 200, 28)) -Radius 14
+        $graphics.FillPath(([System.Drawing.SolidBrush]::new($dark)), $bottomBar)
 
-        $fontFamily = New-Object System.Drawing.FontFamily('Arial')
-        $font = New-Object System.Drawing.Font($fontFamily, 92, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+        $fontFamily = [System.Drawing.FontFamily]::new('Arial')
+        $font = [System.Drawing.Font]::new($fontFamily, 92, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
         try {
             $hColor = if ($WhiteH) { $white } else { $gold }
-            $shadowBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(75, 0, 0, 0))
-            $hBrush = New-Object System.Drawing.SolidBrush($hColor)
+            $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(75, 0, 0, 0))
+            $hBrush = [System.Drawing.SolidBrush]::new($hColor)
             try {
-                $format = New-Object System.Drawing.StringFormat
+                $format = [System.Drawing.StringFormat]::new()
                 $format.Alignment = [System.Drawing.StringAlignment]::Center
                 $format.LineAlignment = [System.Drawing.StringAlignment]::Center
-                $graphics.DrawString('H', $font, $shadowBrush, (New-Object System.Drawing.RectangleF(77, 79, 110, 118)), $format)
-                $graphics.DrawString('H', $font, $hBrush, (New-Object System.Drawing.RectangleF(73, 75, 110, 118)), $format)
+                $graphics.DrawString('H', $font, $shadowBrush, ([System.Drawing.RectangleF]::new(77, 79, 110, 118)), $format)
+                $graphics.DrawString('H', $font, $hBrush, ([System.Drawing.RectangleF]::new(73, 75, 110, 118)), $format)
             } finally {
                 $shadowBrush.Dispose()
                 $hBrush.Dispose()
@@ -105,10 +105,10 @@ function New-HgrLauncherIcon {
         }
 
         if ($PowerShellBadge) {
-            $badge = New-RoundedRectanglePath -Rect (New-Object System.Drawing.RectangleF(168, 171, 76, 58)) -Radius 12
-            $graphics.FillPath((New-Object System.Drawing.SolidBrush($badgeGrey)), $badge)
-            $badgeFont = New-Object System.Drawing.Font('Consolas', 31, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-            $badgeBrush = New-Object System.Drawing.SolidBrush($white)
+            $badge = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(168, 171, 76, 58)) -Radius 12
+            $graphics.FillPath(([System.Drawing.SolidBrush]::new($badgeGrey)), $badge)
+            $badgeFont = [System.Drawing.Font]::new('Consolas', 31, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
+            $badgeBrush = [System.Drawing.SolidBrush]::new($white)
             try {
                 $graphics.DrawString('>_', $badgeFont, $badgeBrush, 177, 181)
             } finally {
