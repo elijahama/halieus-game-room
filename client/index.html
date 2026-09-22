@@ -56,10 +56,10 @@
       html, body, #root { background-color: var(--boot-bg, #0f1012); }
       html[data-theme="light"],
       html[data-theme="light"] body,
-      html[data-theme="light"] #root { background-color: #f4efe5; }
+      html[data-theme="light"] #root { background-color: var(--boot-bg, #f4f7fb); }
       html[data-theme="dark"],
       html[data-theme="dark"] body,
-      html[data-theme="dark"] #root { background-color: #101317; }
+      html[data-theme="dark"] #root { background-color: var(--boot-bg, #0f1012); }
       #root { min-height: 100vh; }
 
       /* A real first-paint layer, not a React loading screen. It is present in
