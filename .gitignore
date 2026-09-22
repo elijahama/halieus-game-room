@@ -102,5 +102,6 @@ docs/ACCOUNT MIGRATION - OWNER ONLY.txt
 docs/OWNER BUILD - DO NOT SHARE.txt
 
 
-# Generated Windows launcher artwork (source is scripts/windows/generate-launcher-icons.ps1)
-assets/branding/launchers/
+# Optional locally generated launcher previews. Approved launcher icons under
+# assets/branding/launchers/matte are real project assets and should be tracked.
+assets/branding/launchers/generated-preview/
