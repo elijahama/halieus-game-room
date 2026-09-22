@@ -43,8 +43,8 @@ const singles = [
   'client/package.json', 'client/index.html', 'client/vite.config.ts',
   'server/package.json', 'shared/package.json',
   'Start Halieus Game Room.cmd', 'Restart Halieus Game Room.cmd', 'Close Halieus Game Room.cmd',
-  // The canonical Halieus PNG is the visual source for the generated Windows
-  // launcher family. The ICO remains the Windows folder/app identity.
+  // Primary HGR identity assets remain release inputs. Windows utility icons
+  // are generated independently by the matte launcher recipe.
   'assets/branding/Halieus Game Room.ico',
   'assets/branding/Halieus Game Room.png',
   'scripts/windows/generate-launcher-icons.ps1',
