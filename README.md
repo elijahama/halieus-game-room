@@ -32,6 +32,7 @@ Halieus Game Room (HGR) began as one large property-trading board game and grew 
 - [Repository structure](#repository-structure)
 - [Running locally](#running-locally)
 - [Documentation](#documentation)
+- [Project timeline](#project-timeline)
 - [Security and publication boundaries](#security-and-publication-boundaries)
 
 ---
@@ -572,6 +573,104 @@ Start here:
 - [4.0.0 validation](docs/VALIDATION_4.0.0.md)
 
 Older RC and patch notes remain part of the project's history but are not the current source of truth.
+
+---
+
+## Project timeline
+
+HGR has gone through several distinct engineering eras. The timeline below keeps the historical iterations visible in the repository instead of showing only the latest milestone.
+
+> **History note:** the public Git repository begins with the 4.0.0 source import. Earlier entries are reconstructed from the release notes, implementation logs, validation documents and regression contracts preserved inside this repository. See [docs/DEVELOPMENT_TIMELINE.md](docs/DEVELOPMENT_TIMELINE.md) for the canonical narrative history.
+
+### Foundation and release-candidate era
+
+| Version / era | What changed |
+| --- | --- |
+| **0.22.x** | Built the original authoritative rules foundation: turns, ownership, rent, building, mortgages, bankruptcy, cards, auctions, Mega spaces, Jail, Speed Die, trading, persistence and AI. |
+| **3.3.x–3.4.x** | Shifted from feature accumulation toward public-access hardening, synchronized presentation, responsive layouts, results quality and regression protection. |
+
+### 3.5.x — production, desktop and deployment foundation
+
+| Version | Main milestone |
+| --- | --- |
+| **3.5.0** | Introduced the compact version scheme, secure Electron/desktop direction, canonical Oracle persistence and permanent production/developer separation. |
+| **3.5.1** | Production-host cleanup, HTTPS/Dynu targeting, link-preview metadata, icon cleanup and safer deployment packaging. |
+| **3.5.2** | Reload/theme continuity, first-paint cleanup and HTTPS-only production launcher behaviour. |
+| **3.5.3** | Defined owner-facing Start / Restart / Close controls and tightened first-paint behaviour. |
+| **3.5.4** | Began the Game Room UI backlog with the Immersive Showcase, Create/Join/Watch actions and stronger game discovery. |
+| **3.5.5** | UI correction pass across intro/access behaviour, WHOT, Blackjack, Hidden Dictator and mobile shell details. |
+| **3.5.6** | Replaced the visible auth-check flash with a theme-aware first-paint curtain suitable for hosted latency. |
+| **3.5.7** | Locked the WHOT visual direction, refined Poker iconography, mobile Game Room controls and invite-code handling. |
+| **3.5.8** | Corrected invite-code history/reveal behaviour while keeping private invite data server-side. |
+| **3.5.15** | Added website self-upgrade logic and an explicit Update Halieus Website publishing workflow. |
+| **3.5.16** | Added Oracle credential discovery instead of assuming one SSH-key filename. |
+| **3.5.17** | Stopped shipping absolute-path shortcut files and introduced FIRST RUN - Refresh Halieus Launchers. |
+| **3.5.18** | Expanded owner SSH-key discovery and remembered only the proven key path, never the private key itself. |
+| **3.5.19** | Fixed Windows PowerShell 5.1 compatibility in Oracle key discovery. |
+| **3.5.20** | Fixed false-positive Mega Board “Deal in progress” announcements. |
+| **3.5.21** | Fixed Windows PowerShell ZIP/deployment compatibility while retaining the live-deal repair. |
+| **3.5.22** | Repaired Mega Board desktop viewport composition and player-rail containment. |
+| **3.5.23** | Fixed Windows public health verification/TLS behaviour after successful Oracle activation. |
+| **3.5.24** | Moved Mega Board Autopilot out of the board-sizing grid so enabling it could not shrink the board. |
+| **3.5.25** | Stabilization-first Game Room release: System/Light/Dark themes, richer Players hub and live-room/profile actions. |
+| **3.5.26** | Introduced release-integrity fingerprints and separated Start/Restart from deployment/provisioning responsibilities. |
+| **3.5.27** | Made legacy SSH credential files safe packaging exclusions instead of deployment blockers. |
+
+The current public archive does not contain a standalone release note for every number between 3.5.8 and 3.5.15, so the table deliberately avoids inventing milestones that are not preserved.
+
+### 3.6.x — protected platform shell and game expansion
+
+| Version | Main milestone |
+| --- | --- |
+| **3.6.0** | Established the protected fixed-sidebar Game Room baseline, social Home, game library, Players hub and per-game layout boundaries. |
+| **3.6.1** | Continued the 3.6 protected shell baseline and release-validation contract. |
+| **3.6.3** | Major stabilization/rebuild pass with protected Ludo/Poker/Mega geometry and stronger desktop/mobile shell rules. |
+| **3.6.3b** | Reworked the Owner area into a connected tab hub and refined Mega Board chrome. |
+| **3.6.4** | Added playable Word Game, Password and Anagrams Race modules on shared room infrastructure. |
+| **3.6.4a** | Added Mega Board's server-authoritative 45-second anti-stall roll countdown / Autopilot takeover. |
+| **3.6.4b** | Improved Mega Board action clarity with distinct Depot colouring and full-width trade decline. |
+| **3.6.5** | Expanded Password/Anagrams setup and AI playability, plus targeted UI polish. |
+| **3.6.6** | Reframed Word Game as a Daily/Practice single-player mode with shared leaderboard and personal statistics. |
+| **3.6.7** | Ground-up Blackjack and WHOT rebuilds plus new Cheat and Dominoes modules. |
+| **3.6.7b** | Deployment hotfix removing the desktop-only root icon from Oracle-critical release inputs. |
+| **3.6.8** | Room-lifecycle and layout stabilization: reconnect remapping, AI-seat replacement, fresh room codes and tighter game shells. |
+| **3.6.8a** | Security/ranked-UI hotfix: dependency floors, leaderboard layering/access and uniform icon outlining. |
+| **3.6.8b** | Upgraded the Vite/esbuild security toolchain and raised the supported Node floor. |
+| **3.6.8c** | Corrected the Oracle npm-audit gate to block HIGH/CRITICAL findings while still reporting moderate advisories. |
+| **3.6.8d** | Consolidated game-brand icons onto a single-outline construction instead of the earlier double-outline treatment. |
+| **3.6.8e** | Added server-authoritative live Bank building inventory to Mega Board with click-through inventory access. |
+
+A standalone 3.6.2 release note is not preserved in the current public archive; 3.6.7b also references an intermediate 3.6.7a baseline whose dedicated note is not present.
+
+### 3.7.0 — platform expansion and stabilization series
+
+| Version | Main milestone |
+| --- | --- |
+| **3.7.0** | Expanded the platform with PWA install support, iOS/network diagnostics, persistent game requests, admin player visibility, Ayo and Word Board. |
+| **3.7.0a** | Added automatic Windows/OpenSSH private-key ACL repair for Oracle deployment. |
+| **3.7.0b** | Repaired new-game result/report contracts and type-check issues. |
+| **3.7.0c** | Corrected new-game server type contracts and Ayo finish-state handling. |
+| **3.7.0d** | Refined Ayo presentation/rules and Word Board board/tile behaviour. |
+| **3.7.0e** | Stabilized game lifecycle, private-card redaction, SCOWL Word Board dictionary, Password team play, profile pictures and tablet layouts. |
+| **3.7.0f** | Hardened Oracle packaging for tracked static release data. |
+| **3.7.0g** | Added direct Mega Board emergency property liquidation during debt resolution. |
+| **3.7.0h** | Added shared-creditor handling for exact maximum-rent ties. |
+| **3.7.0i** | Repaired client finished-phase type narrowing without changing gameplay. |
+| **3.7.0j** | Added the 150-second Mega Board Blitz roll window. |
+| **3.7.0k** | Added live host-controlled turn-timer presets with authoritative persistence/recovery. |
+| **3.7.0l** | Consolidated consistent bundled game icons across the platform. |
+
+### 4.x — branded platform era
+
+| Version | Main milestone |
+| --- | --- |
+| **4.0.0** | Established the branded session-arrival baseline, portfolio documentation and the first source state represented directly by public Git history. |
+| **4.0.1** | Rebuilt ranked/post-match presentation, especially mobile standings and result hierarchy, without changing authoritative scoring. |
+| **4.0.2** | Removed legacy phone-as-desktop viewport emulation and restored true device-width game layouts and mobile decision sheets. |
+| **4.1.0** | Added persistent private Guilds: roles, permissions, chat, guild-organised rooms, room history and internal leaderboards. |
+| **4.1.x current development** | Shared HGR design tokens, visual-system consolidation, complete project-history presentation and launcher artwork derived from the canonical Halieus brand asset. |
+
+This timeline is intentionally version-led: it shows how HGR moved from one complex game, through production/deployment hardening, into a multi-game social platform.
 
 ---
 
