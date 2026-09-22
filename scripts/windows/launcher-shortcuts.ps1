@@ -6,12 +6,9 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$IconGenerator = Join-Path $PSScriptRoot 'generate-launcher-icons.ps1'
-if (-not (Test-Path -LiteralPath $IconGenerator)) {
-    throw "Required HGR icon generator is missing: $IconGenerator"
-}
-& $IconGenerator
 
+# IMPORTANT: shortcut refresh is non-destructive.
+# It must never generate, delete, recolour or overwrite launcher artwork.
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers\matte'
 $StartIconPath = Join-Path $LauncherIconRoot 'Start Halieus Game Room.ico'
@@ -38,11 +35,30 @@ $PowerShellShortcut = Join-Path $ShortcutDirectory 'HGR PowerShell.lnk'
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
-foreach ($requiredIcon in @($GameRoomIconPath, $StartIconPath, $RestartIconPath, $UpdateIconPath, $CloseIconPath, $PowerShellIconPath)) {
-    if (-not (Test-Path -LiteralPath $requiredIcon)) {
-        throw "Required Halieus launcher icon is missing: $requiredIcon. Re-extract the release."
-    }
+if (-not (Test-Path -LiteralPath $GameRoomIconPath)) {
+    throw "Base Halieus icon is missing: $GameRoomIconPath"
 }
+
+function Resolve-HalieusIconPath {
+    param(
+        [Parameter(Mandatory = $true)][string]$Preferred,
+        [Parameter(Mandatory = $true)][string]$Fallback,
+        [Parameter(Mandatory = $true)][string]$Label
+    )
+
+    if (Test-Path -LiteralPath $Preferred) {
+        return $Preferred
+    }
+
+    Write-Host "Custom $Label icon not found; using the base Halieus icon without modifying any files." -ForegroundColor DarkYellow
+    return $Fallback
+}
+
+$StartIconPath = Resolve-HalieusIconPath -Preferred $StartIconPath -Fallback $GameRoomIconPath -Label 'Start'
+$RestartIconPath = Resolve-HalieusIconPath -Preferred $RestartIconPath -Fallback $GameRoomIconPath -Label 'Restart'
+$CloseIconPath = Resolve-HalieusIconPath -Preferred $CloseIconPath -Fallback $GameRoomIconPath -Label 'Close'
+$UpdateIconPath = Resolve-HalieusIconPath -Preferred $UpdateIconPath -Fallback $GameRoomIconPath -Label 'Update'
+$PowerShellIconPath = Resolve-HalieusIconPath -Preferred $PowerShellIconPath -Fallback $GameRoomIconPath -Label 'PowerShell'
 
 $folderIconConfig = @"
 [.ShellClassInfo]
@@ -131,7 +147,7 @@ if (Test-Path -LiteralPath $IconRefresh) {
 }
 
 Write-Host ''
-Write-Host 'Start Menu shortcuts created:' -ForegroundColor Cyan
+Write-Host 'Start Menu shortcuts refreshed without touching launcher artwork:' -ForegroundColor Cyan
 foreach ($shortcutPath in $CreatedShortcuts) {
     Write-Host "  $shortcutPath" -ForegroundColor DarkGray
 }
