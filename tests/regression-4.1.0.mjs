@@ -101,6 +101,12 @@ assert.match(hgrTheme,/--hgr-restart:/,'Shared HGR semantic Restart token missin
 assert.match(hgrTheme,/--hgr-close:/,'Shared HGR semantic Close token missing');
 assert.match(hgrTheme,/--hgr-update:/,'Shared HGR semantic Update token missing');
 assert.match(hgrTheme,/\.hgr-project-history/,'Project timeline design-system styling missing');
+assert.match(hgrTheme,/Shared game-shell polish — 4\.1\.x/,'Shared game-shell polish marker missing');
+assert.match(hgrTheme,/\.card-game-header,[\s\S]*?\.rebuild-game-header,[\s\S]*?\.word-arena-header/s,'Shared game header family must remain unified');
+assert.match(hgrTheme,/@media \(max-width: 980px\)[\s\S]*?\.rebuild-live-layout[\s\S]*?grid-template-columns: minmax\(0, 1fr\) !important/s,'Shared game layouts must collapse before tablet widths overflow');
+assert.match(hgrTheme,/@media \(max-width: 680px\)[\s\S]*?\.card-game-host-actions,[\s\S]*?\.rebuild-host-controls[\s\S]*?grid-template-columns: minmax\(0, 1fr\) !important/s,'Shared game setup controls must collapse to one phone column');
+assert.match(hgrTheme,/\.game-menu-modal,[\s\S]*?\.card-game-invite-modal[\s\S]*?var\(--hgr-surface-raised\)/s,'Shared game menus must use HGR surfaces');
+
 
 assert.match(projectTimeline,/version: "0\.22\.x"/,'Timeline must include the foundation era');
 assert.match(projectTimeline,/version: "3\.5\.0"/,'Timeline must include the Desktop + Oracle foundation');
