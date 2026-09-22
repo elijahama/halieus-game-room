@@ -16,33 +16,11 @@ public static class HgrNativeIcon {
 }
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$ReferenceRoot = Join-Path $ProjectRoot 'assets\branding\reference'
 $LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$SourceIcon = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.png'
-$BrandingRevision = 'r6'
-
-if (-not (Test-Path -LiteralPath $SourceIcon)) {
-    throw "Canonical Halieus branding source is missing: $SourceIcon"
-}
+$BrandingRevision = 'r7'
 
 New-Item -ItemType Directory -Force -Path $LauncherRoot | Out-Null
-Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue |
-    Remove-Item -Force -ErrorAction SilentlyContinue
-
-function New-RoundedRectanglePath {
-    param(
-        [Parameter(Mandatory = $true)][System.Drawing.RectangleF]$Rect,
-        [Parameter(Mandatory = $true)][single]$Radius
-    )
-
-    $diameter = $Radius * 2.0
-    $path = [System.Drawing.Drawing2D.GraphicsPath]::new()
-    $path.AddArc($Rect.X, $Rect.Y, $diameter, $diameter, 180, 90)
-    $path.AddArc($Rect.Right - $diameter, $Rect.Y, $diameter, $diameter, 270, 90)
-    $path.AddArc($Rect.Right - $diameter, $Rect.Bottom - $diameter, $diameter, $diameter, 0, 90)
-    $path.AddArc($Rect.X, $Rect.Bottom - $diameter, $diameter, $diameter, 90, 90)
-    $path.CloseFigure()
-    return $path
-}
 
 function Save-BitmapAsIcon {
     param(
@@ -65,106 +43,24 @@ function Save-BitmapAsIcon {
     }
 }
 
-function Add-ActionBadge {
+function Convert-ApprovedLauncherAsset {
     param(
-        [Parameter(Mandatory = $true)][System.Drawing.Bitmap]$Bitmap,
-        [Parameter(Mandatory = $true)][ValidateSet('start','restart','close','update','powershell')][string]$Action
+        [Parameter(Mandatory = $true)][string]$SourcePath,
+        [Parameter(Mandatory = $true)][string]$OutputPath
     )
 
-    $graphics = [System.Drawing.Graphics]::FromImage($Bitmap)
-    try {
-        $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-        $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+    $extension = [System.IO.Path]::GetExtension($SourcePath).ToLowerInvariant()
 
-        $navy = [System.Drawing.ColorTranslator]::FromHtml('#18233C')
-        $white = [System.Drawing.Color]::FromArgb(250, 252, 255)
-        $accent = switch ($Action) {
-            'start'      { [System.Drawing.ColorTranslator]::FromHtml('#258B58') }
-            'restart'    { [System.Drawing.ColorTranslator]::FromHtml('#B97818') }
-            'close'      { [System.Drawing.ColorTranslator]::FromHtml('#BD4545') }
-            'update'     { [System.Drawing.ColorTranslator]::FromHtml('#3475C5') }
-            'powershell' { [System.Drawing.ColorTranslator]::FromHtml('#526981') }
-        }
-
-        # Preserve the canonical Halieus tile. Action colour lives only in this
-        # compact utility badge so every launcher still reads as Halieus first.
-        $shadowRect = [System.Drawing.RectangleF]::new(168, 169, 70, 58)
-        $shadowPath = New-RoundedRectanglePath -Rect $shadowRect -Radius 14
-        $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(82, 0, 0, 0))
-        try {
-            $graphics.FillPath($shadowBrush, $shadowPath)
-        } finally {
-            $shadowBrush.Dispose()
-            $shadowPath.Dispose()
-        }
-
-        $badgeRect = [System.Drawing.RectangleF]::new(163, 164, 70, 58)
-        $badgePath = New-RoundedRectanglePath -Rect $badgeRect -Radius 14
-        $badgeBrush = [System.Drawing.SolidBrush]::new($accent)
-        $badgeOutline = [System.Drawing.Pen]::new($navy, 4)
-        try {
-            $graphics.FillPath($badgeBrush, $badgePath)
-            $graphics.DrawPath($badgeOutline, $badgePath)
-        } finally {
-            $badgeBrush.Dispose()
-            $badgeOutline.Dispose()
-        }
-
-        switch ($Action) {
-            'start' {
-                $points = [System.Drawing.PointF[]]@(
-                    [System.Drawing.PointF]::new(188, 179),
-                    [System.Drawing.PointF]::new(188, 207),
-                    [System.Drawing.PointF]::new(212, 193)
-                )
-                $brush = [System.Drawing.SolidBrush]::new($white)
-                try { $graphics.FillPolygon($brush, $points) } finally { $brush.Dispose() }
-            }
-            'restart' {
-                $font = [System.Drawing.Font]::new('Segoe UI Symbol', 31, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-                $brush = [System.Drawing.SolidBrush]::new($white)
-                try { $graphics.DrawString('↻', $font, $brush, 177, 176) } finally { $font.Dispose(); $brush.Dispose() }
-            }
-            'close' {
-                $pen = [System.Drawing.Pen]::new($white, 7)
-                $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-                $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-                try {
-                    $graphics.DrawLine($pen, 184, 181, 212, 205)
-                    $graphics.DrawLine($pen, 212, 181, 184, 205)
-                } finally { $pen.Dispose() }
-            }
-            'update' {
-                $pen = [System.Drawing.Pen]::new($white, 6)
-                $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
-                $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
-                try {
-                    $graphics.DrawLine($pen, 198, 177, 198, 202)
-                    $graphics.DrawLine($pen, 187, 192, 198, 203)
-                    $graphics.DrawLine($pen, 209, 192, 198, 203)
-                    $graphics.DrawLine($pen, 184, 209, 212, 209)
-                } finally { $pen.Dispose() }
-            }
-            'powershell' {
-                $font = [System.Drawing.Font]::new('Consolas', 24, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-                $brush = [System.Drawing.SolidBrush]::new($white)
-                try { $graphics.DrawString('>_', $font, $brush, 173, 181) } finally { $font.Dispose(); $brush.Dispose() }
-            }
-        }
-
-        $badgePath.Dispose()
-    } finally {
-        $graphics.Dispose()
+    if ($extension -eq '.ico') {
+        Copy-Item -LiteralPath $SourcePath -Destination $OutputPath -Force
+        return
     }
-}
 
-function New-HgrLauncherIcon {
-    param(
-        [Parameter(Mandatory = $true)][string]$OutputPath,
-        [Parameter(Mandatory = $true)][ValidateSet('start','restart','close','update','powershell')][string]$Action
-    )
+    if ($extension -notin @('.png', '.jpg', '.jpeg', '.bmp')) {
+        throw "Unsupported approved launcher asset format: $SourcePath"
+    }
 
-    $source = [System.Drawing.Bitmap]::new($SourceIcon)
+    $source = [System.Drawing.Bitmap]::new($SourcePath)
     try {
         $bitmap = [System.Drawing.Bitmap]::new(256, 256, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
         $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
@@ -179,7 +75,6 @@ function New-HgrLauncherIcon {
         }
 
         try {
-            Add-ActionBadge -Bitmap $bitmap -Action $Action
             Save-BitmapAsIcon -Bitmap $bitmap -Path $OutputPath
         } finally {
             $bitmap.Dispose()
@@ -189,10 +84,76 @@ function New-HgrLauncherIcon {
     }
 }
 
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Start Halieus Game Room-$BrandingRevision.ico") -Action start
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Restart Halieus Game Room-$BrandingRevision.ico") -Action restart
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Close Halieus Game Room-$BrandingRevision.ico") -Action close
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "Update Halieus Website-$BrandingRevision.ico") -Action update
-New-HgrLauncherIcon -OutputPath (Join-Path $LauncherRoot "HGR PowerShell-$BrandingRevision.ico") -Action powershell
+if (-not (Test-Path -LiteralPath $ReferenceRoot)) {
+    throw "HGR branding reference folder is missing: $ReferenceRoot"
+}
 
-Write-Host 'HGR launcher icons generated from the canonical Halieus mark with action badges.'
+# Approved launcher artwork belongs in assets/branding/reference/launchers.
+# The generator intentionally DOES NOT draw, recolour or reinterpret the HGR
+# brand. It only converts approved artwork to Windows ICO files.
+$ApprovedLauncherRoot = Join-Path $ReferenceRoot 'launchers'
+
+$approvedAssets = [ordered]@{
+    'Start Halieus Game Room'   = @('Start Halieus Game Room.ico', 'Start Halieus Game Room.png')
+    'Restart Halieus Game Room' = @('Restart Halieus Game Room.ico', 'Restart Halieus Game Room.png')
+    'Close Halieus Game Room'   = @('Close Halieus Game Room.ico', 'Close Halieus Game Room.png')
+    'Update Halieus Website'    = @('Update Halieus Website.ico', 'Update Halieus Website.png')
+    'HGR PowerShell'            = @('HGR PowerShell.ico', 'HGR PowerShell.png')
+}
+
+$resolvedAssets = [ordered]@{}
+$missing = @()
+
+foreach ($label in $approvedAssets.Keys) {
+    $resolved = $null
+    foreach ($candidate in $approvedAssets[$label]) {
+        $candidatePath = Join-Path $ApprovedLauncherRoot $candidate
+        if (Test-Path -LiteralPath $candidatePath) {
+            $resolved = $candidatePath
+            break
+        }
+    }
+
+    if ($null -eq $resolved) {
+        $missing += $label
+    } else {
+        $resolvedAssets[$label] = $resolved
+    }
+}
+
+if ($missing.Count -gt 0) {
+    $referenceImages = @(
+        Get-ChildItem -LiteralPath $ReferenceRoot -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension.ToLowerInvariant() -in @('.png', '.jpg', '.jpeg', '.webp', '.bmp') } |
+            Select-Object -ExpandProperty FullName
+    )
+
+    Write-Host ''
+    Write-Host 'HGR launcher generation stopped intentionally.' -ForegroundColor Yellow
+    Write-Host 'Approved launcher artwork has not been exported from the branding reference yet.' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host 'Reference artwork currently visible to this computer:' -ForegroundColor Cyan
+    if ($referenceImages.Count -gt 0) {
+        foreach ($image in $referenceImages) { Write-Host "  $image" -ForegroundColor DarkGray }
+    } else {
+        Write-Host '  (no reference image found)' -ForegroundColor DarkGray
+    }
+    Write-Host ''
+    Write-Host 'Missing approved launcher exports:' -ForegroundColor Cyan
+    foreach ($label in $missing) { Write-Host "  $label" -ForegroundColor DarkGray }
+    Write-Host ''
+    Write-Host "Expected folder: $ApprovedLauncherRoot" -ForegroundColor DarkGray
+    Write-Host 'The script will not invent or procedurally recolour HGR artwork anymore.' -ForegroundColor Green
+
+    throw "Approved HGR launcher artwork is incomplete. Export the reference artwork first."
+}
+
+Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue |
+    Remove-Item -Force -ErrorAction SilentlyContinue
+
+foreach ($label in $resolvedAssets.Keys) {
+    $outputPath = Join-Path $LauncherRoot "$label-$BrandingRevision.ico"
+    Convert-ApprovedLauncherAsset -SourcePath $resolvedAssets[$label] -OutputPath $outputPath
+}
+
+Write-Host 'HGR launcher icons created from approved reference artwork only.' -ForegroundColor Green
