@@ -761,3 +761,11 @@ body, #root { transition: none !important; }
   .halieus-create-panel.halieus-create-modal { margin-block: 0 !important; border-radius: 22px 22px 0 0 !important; }
   .halieus-create-backdrop.halieus-viewport-overlay { align-items: flex-end !important; }
 }
+
+.halieus-theme-mode-grid { grid-template-columns: repeat(4,minmax(0,1fr)) !important; }
+.account-profile-picture-preview { width: 92px !important; height: 92px !important; border-radius: 50% !important; overflow: hidden !important; border: 2px solid color-mix(in srgb,var(--hgr-brand) 38%,var(--hgr-border)) !important; }
+.account-profile-picture-preview img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+.account-profile-picture-editor { align-items: center !important; }
+@media (max-width: 560px) {
+  .halieus-theme-mode-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+}
