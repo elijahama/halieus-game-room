@@ -41,7 +41,7 @@ for (const [name, version] of Object.entries({
 assert.ok(!Object.keys(lock.packages || {}).some((path) => path.startsWith('node_modules/vite/node_modules/esbuild')), 'Vite must not carry a private stale esbuild copy');
 assert.match(lock.packages['node_modules/vite']?.dependencies?.esbuild || '', /0\.28\.0/, 'Vite must accept the pinned esbuild 0.28 line');
 
-const oracleInstaller = read('dev-tools/Oracle Quick Deploy/quick-install.sh');
+const oracleInstaller = read('tests/dev-tools/Oracle Quick Deploy/quick-install.sh');
 // 3.6.8c supersedes 3.6.8b's moderate threshold while retaining a registry-backed audit gate.
 assert.match(oracleInstaller, /npm audit --audit-level=(?:moderate|high)/, 'Oracle deploy must retain a registry-backed audit gate');
 
