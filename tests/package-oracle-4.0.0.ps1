@@ -20,6 +20,7 @@ try {
     & node (Join-Path $extract 'scripts/release-integrity.mjs') --verify
     if ($LASTEXITCODE -ne 0) { throw 'Extracted deployment archive failed release integrity.' }
     Write-Host 'PASS: real Oracle archive includes root manifest files and passes release integrity; no network calls.'
+Write-Host 'Package-only validation must not require SSH credentials.'
 } finally {
     $tempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
     foreach ($candidate in @($zip, $extract)) {
