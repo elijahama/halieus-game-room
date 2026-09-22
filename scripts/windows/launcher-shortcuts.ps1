@@ -13,13 +13,12 @@ if (-not (Test-Path -LiteralPath $IconGenerator)) {
 & $IconGenerator
 
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
-$LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$BrandingRevision = 'r7'
-$StartIconPath = Join-Path $LauncherIconRoot "Start Halieus Game Room-$BrandingRevision.ico"
-$RestartIconPath = Join-Path $LauncherIconRoot "Restart Halieus Game Room-$BrandingRevision.ico"
-$CloseIconPath = Join-Path $LauncherIconRoot "Close Halieus Game Room-$BrandingRevision.ico"
-$UpdateIconPath = Join-Path $LauncherIconRoot "Update Halieus Website-$BrandingRevision.ico"
-$PowerShellIconPath = Join-Path $LauncherIconRoot "HGR PowerShell-$BrandingRevision.ico"
+$LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers\matte'
+$StartIconPath = Join-Path $LauncherIconRoot 'Start Halieus Game Room.ico'
+$RestartIconPath = Join-Path $LauncherIconRoot 'Restart Halieus Game Room.ico'
+$CloseIconPath = Join-Path $LauncherIconRoot 'Close Halieus Game Room.ico'
+$UpdateIconPath = Join-Path $LauncherIconRoot 'Update Halieus Website.ico'
+$PowerShellIconPath = Join-Path $LauncherIconRoot 'HGR PowerShell.ico'
 $ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
 $LegacyShortcutDirectory = Join-Path $ProgramsRoot 'Halieus Game Room'
 New-Item -ItemType Directory -Force -Path $ProgramsRoot | Out-Null
