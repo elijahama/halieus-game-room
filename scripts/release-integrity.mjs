@@ -245,7 +245,7 @@ const manifest = {
     'hgr-shared-design-tokens-4.1.0',
     'hgr-project-history-4.1.0',
     'hgr-shared-game-shell-polish-4.1.0',
-    'approved-reference-launchers-r7',
+    'matte-launcher-family-4.1.0',
   ],
 };
 
