@@ -16,11 +16,31 @@ public static class HgrNativeIcon {
 }
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$ReferenceRoot = Join-Path $ProjectRoot 'assets\branding\reference'
+$ReferenceImage = Join-Path $ProjectRoot 'assets\branding\reference\HGR Launcher Family Reference.png'
 $LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
 $BrandingRevision = 'r7'
 
+if (-not (Test-Path -LiteralPath $ReferenceImage)) {
+    throw "Canonical HGR launcher reference is missing: $ReferenceImage"
+}
+
 New-Item -ItemType Directory -Force -Path $LauncherRoot | Out-Null
+
+function New-RoundedRectanglePath {
+    param(
+        [Parameter(Mandatory = $true)][System.Drawing.RectangleF]$Rect,
+        [Parameter(Mandatory = $true)][single]$Radius
+    )
+
+    $diameter = $Radius * 2.0
+    $path = [System.Drawing.Drawing2D.GraphicsPath]::new()
+    $path.AddArc($Rect.X, $Rect.Y, $diameter, $diameter, 180, 90)
+    $path.AddArc($Rect.Right - $diameter, $Rect.Y, $diameter, $diameter, 270, 90)
+    $path.AddArc($Rect.Right - $diameter, $Rect.Bottom - $diameter, $diameter, $diameter, 0, 90)
+    $path.AddArc($Rect.X, $Rect.Bottom - $diameter, $diameter, $diameter, 90, 90)
+    $path.CloseFigure()
+    return $path
+}
 
 function Save-BitmapAsIcon {
     param(
@@ -43,117 +63,102 @@ function Save-BitmapAsIcon {
     }
 }
 
-function Convert-ApprovedLauncherAsset {
+function New-ReferenceLauncherIcon {
     param(
-        [Parameter(Mandatory = $true)][string]$SourcePath,
-        [Parameter(Mandatory = $true)][string]$OutputPath
+        [Parameter(Mandatory = $true)][System.Drawing.Bitmap]$Reference,
+        [Parameter(Mandatory = $true)][string]$OutputPath,
+        [Parameter(Mandatory = $true)][int]$X,
+        [Parameter(Mandatory = $true)][int]$Y,
+        [Parameter(Mandatory = $true)][int]$Width,
+        [Parameter(Mandatory = $true)][int]$Height,
+        [switch]$PowerShell
     )
 
-    $extension = [System.IO.Path]::GetExtension($SourcePath).ToLowerInvariant()
+    $scaleX = $Reference.Width / 1774.0
+    $scaleY = $Reference.Height / 887.0
 
-    if ($extension -eq '.ico') {
-        Copy-Item -LiteralPath $SourcePath -Destination $OutputPath -Force
-        return
-    }
+    $sourceRect = [System.Drawing.Rectangle]::new(
+        [int][Math]::Round($X * $scaleX),
+        [int][Math]::Round($Y * $scaleY),
+        [int][Math]::Round($Width * $scaleX),
+        [int][Math]::Round($Height * $scaleY)
+    )
 
-    if ($extension -notin @('.png', '.jpg', '.jpeg', '.bmp')) {
-        throw "Unsupported approved launcher asset format: $SourcePath"
-    }
+    $bitmap = [System.Drawing.Bitmap]::new(256, 256, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
 
-    $source = [System.Drawing.Bitmap]::new($SourcePath)
     try {
-        $bitmap = [System.Drawing.Bitmap]::new(256, 256, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
-        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-        try {
-            $graphics.Clear([System.Drawing.Color]::Transparent)
-            $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
-            $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
-            $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-            $graphics.DrawImage($source, [System.Drawing.Rectangle]::new(0, 0, 256, 256))
-        } finally {
-            $graphics.Dispose()
-        }
+        $graphics.Clear([System.Drawing.Color]::Transparent)
+        $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+        $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+        $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
 
-        try {
-            Save-BitmapAsIcon -Bitmap $bitmap -Path $OutputPath
-        } finally {
-            $bitmap.Dispose()
+        if (-not $PowerShell) {
+            $clipRect = [System.Drawing.RectangleF]::new(5, 5, 246, 246)
+            $clip = New-RoundedRectanglePath -Rect $clipRect -Radius 50
+            try {
+                $graphics.SetClip($clip)
+                $graphics.DrawImage(
+                    $Reference,
+                    [System.Drawing.Rectangle]::new(0, 0, 256, 256),
+                    $sourceRect,
+                    [System.Drawing.GraphicsUnit]::Pixel
+                )
+            } finally {
+                $graphics.ResetClip()
+                $clip.Dispose()
+            }
+        } else {
+            $mainClip = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(27, 5, 218, 238)) -Radius 48
+            $badgeClip = New-RoundedRectanglePath -Rect ([System.Drawing.RectangleF]::new(158, 160, 92, 72)) -Radius 17
+            $combined = [System.Drawing.Drawing2D.GraphicsPath]::new()
+            try {
+                $combined.AddPath($mainClip, $false)
+                $combined.AddPath($badgeClip, $false)
+                $graphics.SetClip($combined)
+                $graphics.DrawImage(
+                    $Reference,
+                    [System.Drawing.Rectangle]::new(0, 0, 256, 256),
+                    $sourceRect,
+                    [System.Drawing.GraphicsUnit]::Pixel
+                )
+            } finally {
+                $graphics.ResetClip()
+                $combined.Dispose()
+                $mainClip.Dispose()
+                $badgeClip.Dispose()
+            }
         }
     } finally {
-        $source.Dispose()
+        $graphics.Dispose()
+    }
+
+    try {
+        Save-BitmapAsIcon -Bitmap $bitmap -Path $OutputPath
+    } finally {
+        $bitmap.Dispose()
     }
 }
 
-if (-not (Test-Path -LiteralPath $ReferenceRoot)) {
-    throw "HGR branding reference folder is missing: $ReferenceRoot"
-}
-
-# Approved launcher artwork belongs in assets/branding/reference/launchers.
-# The generator intentionally DOES NOT draw, recolour or reinterpret the HGR
-# brand. It only converts approved artwork to Windows ICO files.
-$ApprovedLauncherRoot = Join-Path $ReferenceRoot 'launchers'
-
-$approvedAssets = [ordered]@{
-    'Start Halieus Game Room'   = @('Start Halieus Game Room.ico', 'Start Halieus Game Room.png')
-    'Restart Halieus Game Room' = @('Restart Halieus Game Room.ico', 'Restart Halieus Game Room.png')
-    'Close Halieus Game Room'   = @('Close Halieus Game Room.ico', 'Close Halieus Game Room.png')
-    'Update Halieus Website'    = @('Update Halieus Website.ico', 'Update Halieus Website.png')
-    'HGR PowerShell'            = @('HGR PowerShell.ico', 'HGR PowerShell.png')
-}
-
-$resolvedAssets = [ordered]@{}
-$missing = @()
-
-foreach ($label in $approvedAssets.Keys) {
-    $resolved = $null
-    foreach ($candidate in $approvedAssets[$label]) {
-        $candidatePath = Join-Path $ApprovedLauncherRoot $candidate
-        if (Test-Path -LiteralPath $candidatePath) {
-            $resolved = $candidatePath
-            break
-        }
-    }
-
-    if ($null -eq $resolved) {
-        $missing += $label
-    } else {
-        $resolvedAssets[$label] = $resolved
-    }
-}
-
-if ($missing.Count -gt 0) {
-    $referenceImages = @(
-        Get-ChildItem -LiteralPath $ReferenceRoot -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Extension.ToLowerInvariant() -in @('.png', '.jpg', '.jpeg', '.webp', '.bmp') } |
-            Select-Object -ExpandProperty FullName
+$reference = [System.Drawing.Bitmap]::new($ReferenceImage)
+try {
+    $icons = @(
+        @{ Name='Start Halieus Game Room';   X=64;   Y=210; Width=214; Height=214; PowerShell=$false },
+        @{ Name='Restart Halieus Game Room'; X=320;  Y=210; Width=215; Height=214; PowerShell=$false },
+        @{ Name='Close Halieus Game Room';   X=576;  Y=210; Width=215; Height=214; PowerShell=$false },
+        @{ Name='Update Halieus Website';    X=825;  Y=210; Width=215; Height=214; PowerShell=$false },
+        @{ Name='HGR PowerShell';             X=1076; Y=210; Width=229; Height=214; PowerShell=$true }
     )
 
-    Write-Host ''
-    Write-Host 'HGR launcher generation stopped intentionally.' -ForegroundColor Yellow
-    Write-Host 'Approved launcher artwork has not been exported from the branding reference yet.' -ForegroundColor Yellow
-    Write-Host ''
-    Write-Host 'Reference artwork currently visible to this computer:' -ForegroundColor Cyan
-    if ($referenceImages.Count -gt 0) {
-        foreach ($image in $referenceImages) { Write-Host "  $image" -ForegroundColor DarkGray }
-    } else {
-        Write-Host '  (no reference image found)' -ForegroundColor DarkGray
+    Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue |
+        Remove-Item -Force -ErrorAction SilentlyContinue
+
+    foreach ($spec in $icons) {
+        $outputPath = Join-Path $LauncherRoot "$($spec.Name)-$BrandingRevision.ico"
+        New-ReferenceLauncherIcon -Reference $reference -OutputPath $outputPath -X $spec.X -Y $spec.Y -Width $spec.Width -Height $spec.Height -PowerShell:$spec.PowerShell
     }
-    Write-Host ''
-    Write-Host 'Missing approved launcher exports:' -ForegroundColor Cyan
-    foreach ($label in $missing) { Write-Host "  $label" -ForegroundColor DarkGray }
-    Write-Host ''
-    Write-Host "Expected folder: $ApprovedLauncherRoot" -ForegroundColor DarkGray
-    Write-Host 'The script will not invent or procedurally recolour HGR artwork anymore.' -ForegroundColor Green
-
-    throw "Approved HGR launcher artwork is incomplete. Export the reference artwork first."
+} finally {
+    $reference.Dispose()
 }
 
-Get-ChildItem -LiteralPath $LauncherRoot -Filter '*.ico' -File -ErrorAction SilentlyContinue |
-    Remove-Item -Force -ErrorAction SilentlyContinue
-
-foreach ($label in $resolvedAssets.Keys) {
-    $outputPath = Join-Path $LauncherRoot "$label-$BrandingRevision.ico"
-    Convert-ApprovedLauncherAsset -SourcePath $resolvedAssets[$label] -OutputPath $outputPath
-}
-
-Write-Host 'HGR launcher icons created from approved reference artwork only.' -ForegroundColor Green
+Write-Host 'HGR launcher icons extracted directly from the approved branding reference.' -ForegroundColor Green
