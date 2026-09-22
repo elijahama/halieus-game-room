@@ -1,0 +1,378 @@
+/*
+ * Halieus Game Room design tokens.
+ *
+ * This layer is intentionally imported after the historical index.css so HGR
+ * can converge on one visual language without a risky one-shot rewrite of
+ * every game stylesheet. New shared UI should use --hgr-* tokens directly.
+ */
+
+:root {
+  --hgr-page: #f5f1e8;
+  --hgr-surface: #fffdf8;
+  --hgr-surface-raised: #ffffff;
+  --hgr-surface-soft: #f1ece2;
+  --hgr-surface-strong: #e9e2d5;
+  --hgr-text: #182033;
+  --hgr-text-soft: #475164;
+  --hgr-muted: #6e7684;
+  --hgr-border: rgba(24, 32, 51, 0.14);
+  --hgr-border-strong: rgba(24, 32, 51, 0.24);
+
+  --hgr-brand: #e5a721;
+  --hgr-brand-soft: #f6d77a;
+  --hgr-brand-ink: #18233c;
+  --hgr-start: #16884a;
+  --hgr-restart: #c9821f;
+  --hgr-close: #c8443d;
+  --hgr-update: #2878dc;
+  --hgr-dev: #516b85;
+
+  --hgr-radius-xs: 10px;
+  --hgr-radius-sm: 13px;
+  --hgr-radius-md: 16px;
+  --hgr-radius-lg: 20px;
+  --hgr-radius-xl: 26px;
+  --hgr-radius-pill: 999px;
+
+  --hgr-shadow-soft: 0 10px 28px rgba(30, 38, 51, 0.10);
+  --hgr-shadow-panel: 0 22px 60px rgba(30, 38, 51, 0.14);
+  --hgr-shadow-brand: 0 16px 38px rgba(229, 167, 33, 0.20);
+  --hgr-focus: 0 0 0 4px rgba(229, 167, 33, 0.18);
+
+  --hgr-space-1: 6px;
+  --hgr-space-2: 10px;
+  --hgr-space-3: 14px;
+  --hgr-space-4: 18px;
+  --hgr-space-5: 24px;
+  --hgr-space-6: 32px;
+
+  /* Bridge the oldest shared variables into the new design system. */
+  --mm-green: var(--hgr-start);
+  --mm-green-dark: #0d6436;
+  --mm-gold: var(--hgr-brand);
+  --mm-red: var(--hgr-close);
+  --mm-blue: var(--hgr-update);
+  --mm-radius: var(--hgr-radius-lg);
+  --mm-shadow: var(--hgr-shadow-panel);
+}
+
+html[data-theme="dark"] {
+  --hgr-page: #0d1117;
+  --hgr-surface: #151b23;
+  --hgr-surface-raised: #1b222c;
+  --hgr-surface-soft: #202833;
+  --hgr-surface-strong: #293240;
+  --hgr-text: #f5f7fa;
+  --hgr-text-soft: #d5dbe4;
+  --hgr-muted: #aeb7c4;
+  --hgr-border: rgba(255, 255, 255, 0.10);
+  --hgr-border-strong: rgba(255, 255, 255, 0.18);
+
+  --hgr-brand: #e6b94f;
+  --hgr-brand-soft: #f1d786;
+  --hgr-brand-ink: #101722;
+  --hgr-start: #34a36a;
+  --hgr-restart: #d89a34;
+  --hgr-close: #dd655f;
+  --hgr-update: #5b91e4;
+  --hgr-dev: #7891ab;
+
+  --hgr-shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.22);
+  --hgr-shadow-panel: 0 24px 72px rgba(0, 0, 0, 0.30);
+  --hgr-shadow-brand: 0 18px 46px rgba(230, 185, 79, 0.12);
+  --hgr-focus: 0 0 0 4px rgba(230, 185, 79, 0.20);
+}
+
+body,
+#root {
+  background: var(--hgr-page);
+  color: var(--hgr-text);
+}
+
+/* Shared product chrome --------------------------------------------------- */
+
+.halieus-sidebar,
+.halieus-mobile-bar,
+.halieus-home-build-popover {
+  border-color: var(--hgr-border) !important;
+  background: color-mix(in srgb, var(--hgr-surface) 94%, transparent) !important;
+  box-shadow: var(--hgr-shadow-soft);
+}
+
+.halieus-side-brand,
+.halieus-mobile-brand {
+  color: var(--hgr-text) !important;
+}
+
+.halieus-side-nav button,
+.halieus-side-display-controls > button,
+.halieus-side-build-info {
+  border-radius: var(--hgr-radius-sm) !important;
+}
+
+.halieus-side-nav button.is-active {
+  border-color: color-mix(in srgb, var(--hgr-brand) 38%, transparent) !important;
+  background: color-mix(in srgb, var(--hgr-brand) 12%, var(--hgr-surface)) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: inset 3px 0 0 var(--hgr-brand);
+}
+
+.halieus-global-join {
+  border-radius: var(--hgr-radius-md) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--hgr-brand) 88%, white 12%), var(--hgr-brand)) !important;
+  color: var(--hgr-brand-ink) !important;
+  box-shadow: var(--hgr-shadow-brand);
+}
+
+/* Shared panels ---------------------------------------------------------- */
+
+.halieus-showcase,
+.halieus-section-card,
+.halieus-game-inbox,
+.halieus-live-games,
+.halieus-home-games,
+.halieus-home-recent,
+.halieus-future-games,
+.halieus-player-tools,
+.halieus-games-layout > section,
+.guilds-panel,
+.guild-card {
+  border-color: var(--hgr-border) !important;
+}
+
+.halieus-section-card,
+.halieus-game-inbox,
+.halieus-home-games,
+.halieus-home-recent,
+.halieus-future-games {
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface) !important;
+  box-shadow: var(--hgr-shadow-soft);
+}
+
+.halieus-showcase {
+  border-radius: clamp(22px, 3vw, 32px) !important;
+  box-shadow: var(--hgr-shadow-panel);
+}
+
+.halieus-page-heading p,
+.halieus-showcase-copy > p,
+.halieus-section-card header p,
+.halieus-home-games header p,
+.halieus-home-recent header p,
+.halieus-live-games header p,
+.halieus-game-inbox header p,
+.modal-eyebrow {
+  color: var(--hgr-brand) !important;
+  letter-spacing: 0.13em;
+}
+
+.halieus-page-heading span,
+.halieus-section-card header span,
+.halieus-showcase-copy > span {
+  color: var(--hgr-muted);
+}
+
+/* Shared controls -------------------------------------------------------- */
+
+.button-primary,
+.button-outline,
+.button-muted,
+.button-danger,
+.button-ghost {
+  border-radius: var(--hgr-radius-sm) !important;
+  font-weight: 850;
+}
+
+.button-primary {
+  background: linear-gradient(135deg, #1b9253, #0d6d3a) !important;
+  box-shadow: 0 10px 24px rgba(22, 136, 74, 0.20) !important;
+}
+
+.button-outline {
+  border-color: color-mix(in srgb, var(--hgr-brand) 52%, var(--hgr-border)) !important;
+  background: color-mix(in srgb, var(--hgr-surface-raised) 88%, transparent) !important;
+  color: var(--hgr-text) !important;
+}
+
+.button-outline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hgr-brand) 10%, var(--hgr-surface-raised)) !important;
+}
+
+.button-danger,
+.mini-danger-button {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--hgr-close) 90%, white 10%), color-mix(in srgb, var(--hgr-close) 78%, black 22%)) !important;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline-color: var(--hgr-brand) !important;
+  box-shadow: var(--hgr-focus);
+}
+
+/* Project timeline ------------------------------------------------------- */
+
+.hgr-project-history {
+  display: grid;
+  gap: var(--hgr-space-4);
+  margin-top: var(--hgr-space-5);
+  padding: clamp(18px, 2.5vw, 28px);
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-xl);
+  background:
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--hgr-brand) 12%, transparent), transparent 34%),
+    var(--hgr-surface);
+  box-shadow: var(--hgr-shadow-soft);
+}
+
+.hgr-project-history > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.hgr-project-history > header div {
+  min-width: 0;
+}
+
+.hgr-project-history > header p,
+.hgr-project-history > header h2,
+.hgr-project-history > header span {
+  margin: 0;
+}
+
+.hgr-project-history > header p {
+  color: var(--hgr-brand);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.hgr-project-history > header h2 {
+  margin-top: 5px;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.035em;
+}
+
+.hgr-project-history > header span {
+  display: block;
+  max-width: 720px;
+  margin-top: 7px;
+  color: var(--hgr-muted);
+  line-height: 1.5;
+}
+
+.hgr-project-history > header > b {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 1px solid color-mix(in srgb, var(--hgr-brand) 38%, var(--hgr-border));
+  border-radius: var(--hgr-radius-pill);
+  background: color-mix(in srgb, var(--hgr-brand) 10%, var(--hgr-surface-raised));
+  color: var(--hgr-text);
+  font-size: 12px;
+}
+
+.hgr-project-history-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(250px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--hgr-brand) 42%, var(--hgr-border)) transparent;
+}
+
+.hgr-project-milestone {
+  position: relative;
+  display: grid;
+  align-content: start;
+  min-height: 220px;
+  padding: 18px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-lg);
+  background: color-mix(in srgb, var(--hgr-surface-raised) 94%, var(--hgr-brand) 6%);
+  scroll-snap-align: start;
+}
+
+.hgr-project-milestone::before {
+  width: 38px;
+  height: 4px;
+  margin-bottom: 15px;
+  border-radius: var(--hgr-radius-pill);
+  background: var(--hgr-brand);
+  content: "";
+}
+
+.hgr-project-milestone.is-current {
+  border-color: color-mix(in srgb, var(--hgr-brand) 52%, var(--hgr-border));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hgr-brand) 18%, transparent);
+}
+
+.hgr-project-milestone small,
+.hgr-project-milestone strong,
+.hgr-project-milestone span,
+.hgr-project-milestone p {
+  margin: 0;
+}
+
+.hgr-project-milestone small {
+  color: var(--hgr-brand);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hgr-project-milestone strong {
+  margin-top: 8px;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.hgr-project-milestone span {
+  margin-top: 4px;
+  color: var(--hgr-text-soft);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.hgr-project-milestone p {
+  margin-top: 12px;
+  color: var(--hgr-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.hgr-project-history-note {
+  margin: -2px 2px 0;
+  color: var(--hgr-muted);
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  .hgr-project-history {
+    padding: 16px;
+    border-radius: var(--hgr-radius-lg);
+  }
+
+  .hgr-project-history > header {
+    align-items: flex-start;
+  }
+
+  .hgr-project-history > header > b {
+    display: none;
+  }
+
+  .hgr-project-history-track {
+    grid-auto-columns: min(82vw, 290px);
+  }
+
+  .hgr-project-milestone {
+    min-height: 208px;
+  }
+}
