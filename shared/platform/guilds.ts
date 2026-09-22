@@ -4,6 +4,21 @@ export type HalieusGuildRole = "owner" | "admin" | "moderator" | "member";
 export type HalieusGuildRoomPolicy = "members" | "moderators" | "admins";
 export type HalieusGuildRoomStatus = "setup" | "completed" | "ended";
 
+export type HalieusGuildInvitationStatus = "pending" | "accepted" | "declined";
+
+export interface HalieusGuildInvitation {
+  id: string;
+  guildId: string;
+  guildName: string;
+  senderAccountId: string;
+  senderDisplayName: string;
+  recipientAccountId: string;
+  recipientDisplayName: string;
+  status: HalieusGuildInvitationStatus;
+  createdAt: number;
+  respondedAt: number | null;
+}
+
 export interface HalieusGuildMember {
   accountId: string;
   username: string;
@@ -73,4 +88,5 @@ export interface HalieusGuildDetail extends HalieusGuildSummary {
   rooms: HalieusGuildRoom[];
   messages: HalieusGuildMessage[];
   leaderboard: HalieusGuildLeaderboardEntry[];
+  pendingInvitations: HalieusGuildInvitation[];
 }
