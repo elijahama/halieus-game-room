@@ -55,6 +55,7 @@ import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
+import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readThemeMode, type HalieusCustomTheme, type HalieusThemeMode, THEME_KEY } from "./platform/theme";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
   DiceResponse,
@@ -107,10 +108,6 @@ const WORD_ARENA_GAMES: WordArenaGameId[] = ["word-game", "password", "anagrams-
 const WORD_ARENA_SESSION_KEYS: Record<WordArenaGameId, string> = { "word-game": "halieus-word-game-session-v1", password: "halieus-password-session-v1", "anagrams-race": "halieus-anagrams-race-session-v1" };
 const CLASSIC_GAMES: ClassicGameId[] = ["cheat", "dominoes"];
 const CLASSIC_SESSION_KEYS: Record<ClassicGameId, string> = { cheat: "halieus-cheat-session-v1", dominoes: "halieus-dominoes-session-v1" };
-const THEME_TRANSITION_MS = 820;
-type HalieusThemeMode = "system" | "light" | "dark";
-const THEME_KEY =
-  "halieus-game-room-theme";
 const SOUND_KEY =
   "mega-board-sound";
 const INTRO_SESSION_KEY = "halieus-intro-seen-v4";
@@ -551,16 +548,9 @@ export default function App() {
     setDocumentIdentity("Halieus Game Room");
   }, [ayoState, blackjackState, classicState, connectFourState, gameStarted, hiddenDictatorState, lobby, ludoState, megaBoardParked, pokerState, whotState, wordArenaState, wordBoardState]);
 
-  const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => {
-    const savedTheme = localStorage.getItem(THEME_KEY);
-    return savedTheme === "dark" || savedTheme === "light" || savedTheme === "system"
-      ? savedTheme
-      : "system";
-  });
-  const [systemPrefersDark, setSystemPrefersDark] = useState(() =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
-  const darkMode = themeMode === "system" ? systemPrefersDark : themeMode === "dark";
+  const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
+  const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
+  const darkMode = themeMode === "dark" || themeMode === "blue" || (themeMode === "custom" && isDarkColour(customTheme.page));
   const [soundEnabled, setSoundEnabled] =
     useState(
       () =>
@@ -586,33 +576,31 @@ export default function App() {
 
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const sync = (event?: MediaQueryListEvent) => setSystemPrefersDark(event ? event.matches : media.matches);
-    sync();
-    media.addEventListener?.("change", sync);
-    return () => media.removeEventListener?.("change", sync);
-  }, []);
-
-  useEffect(() => {
     const handleThemeMode = (event: Event) => {
       const requested = (event as CustomEvent<HalieusThemeMode>).detail;
-      if (requested === "system" || requested === "light" || requested === "dark") {
-        document.documentElement.classList.add("theme-transitioning");
-        window.setTimeout(() => document.documentElement.classList.remove("theme-transitioning"), THEME_TRANSITION_MS + 80);
-        setThemeMode(requested);
-      }
+      if (requested === "light" || requested === "dark" || requested === "blue" || requested === "custom") setThemeMode(requested);
     };
+    const handleCustomTheme = (event: Event) => setCustomTheme((event as CustomEvent<HalieusCustomTheme>).detail);
     window.addEventListener("halieus-theme-mode", handleThemeMode);
-    return () => window.removeEventListener("halieus-theme-mode", handleThemeMode);
+    window.addEventListener("halieus-custom-theme", handleCustomTheme);
+    return () => {
+      window.removeEventListener("halieus-theme-mode", handleThemeMode);
+      window.removeEventListener("halieus-custom-theme", handleCustomTheme);
+    };
   }, []);
 
   useEffect(() => {
+    const root = document.documentElement;
     localStorage.setItem(THEME_KEY, themeMode);
-    document.documentElement.dataset.themeMode = themeMode;
-    document.documentElement.dataset.theme = darkMode ? "dark" : "light";
-    document.documentElement.style.colorScheme = darkMode ? "dark" : "light";
-    document.documentElement.style.backgroundColor = darkMode ? "#101317" : "#f4efe5";
-  }, [darkMode, themeMode]);
+    root.dataset.themeMode = themeMode;
+    root.dataset.theme = themeMode;
+    root.style.colorScheme = darkMode ? "dark" : "light";
+    clearCustomThemeVariables(root);
+    if (themeMode === "custom") {
+      for (const [key, value] of Object.entries(customThemeVariables(customTheme))) root.style.setProperty(key, value);
+    }
+    root.style.backgroundColor = themeMode === "custom" ? customTheme.page : themeMode === "light" ? "#f4f7fb" : themeMode === "blue" ? "#06111c" : "#0f1012";
+  }, [customTheme, darkMode, themeMode]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -3148,11 +3136,7 @@ function handleLeaveSpectator() {
       : null;
 
   const theme = darkMode ? darkTheme : lightTheme;
-  const toggleDarkMode = () => {
-    document.documentElement.classList.add("theme-transitioning");
-    window.setTimeout(() => document.documentElement.classList.remove("theme-transitioning"), THEME_TRANSITION_MS + 80);
-    setThemeMode(darkMode ? "light" : "dark");
-  };
+  const toggleDarkMode = () => setThemeMode(darkMode ? "light" : "dark");
 
   const toggleSound = () =>
     setSoundEnabled((current) => !current);
