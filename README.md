@@ -668,7 +668,7 @@ A standalone 3.6.2 release note is not preserved in the current public archive; 
 | **4.0.1** | Rebuilt ranked/post-match presentation, especially mobile standings and result hierarchy, without changing authoritative scoring. |
 | **4.0.2** | Removed legacy phone-as-desktop viewport emulation and restored true device-width game layouts and mobile decision sheets. |
 | **4.1.0** | Added persistent private Guilds: roles, permissions, chat, guild-organised rooms, room history and internal leaderboards. |
-| **4.1.x current development** | Shared HGR design tokens, visual-system consolidation, complete project-history presentation and launcher artwork derived from the canonical Halieus brand asset. |
+| **4.1.x current development** | Shared HGR design tokens, visual-system consolidation, complete project-history presentation and a clean matte Windows launcher family. |
 
 This timeline is intentionally version-led: it shows how HGR moved from one complex game, through production/deployment hardening, into a multi-game social platform.
 
