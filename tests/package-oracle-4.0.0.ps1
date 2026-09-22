@@ -9,7 +9,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $check = [System.IO.Compression.ZipFile]::OpenRead($zip)
 try {
     $names = @($check.Entries | ForEach-Object { $_.FullName })
-    foreach ($required in @('.gitignore','SECURITY.md','RELEASE.json','shared/release.ts','client/tsconfig.json','server/data/word-board/scowl-en-us.dic')) {
+    foreach ($required in @('.github/workflows/release-identity.yml','.gitignore','SECURITY.md','RELEASE.json','shared/release.ts','client/tsconfig.json','assets/branding/Halieus Game Room.ico','assets/branding/Halieus Game Room.png','server/data/word-board/SCOWL-COPYRIGHT.txt','server/data/word-board/scowl-en-us.dic')) {
         if ($names -notcontains $required) { throw "Deployment archive missing $required" }
     }
     if (@($names | Where-Object { $_ -match '\.(key|pem|ppk|pub)$|(^|/)(node_modules|dist|\.runtime)/' }).Count -gt 0) { throw 'Excluded file leaked into deployment archive.' }
