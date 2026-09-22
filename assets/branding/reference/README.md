@@ -1,19 +1,33 @@
 # HGR Branding References
 
-This folder holds visual references that define the Halieus Game Room design language.
+This folder is the visual source of truth for Halieus Game Room branding work.
 
-The current launcher-family reference should live here rather than in the project root.
+## Reference artwork
+
+Place the approved reference artwork here. Do not rebuild the design from memory or from generic colour rules when a reference exists.
 
 Preferred canonical name:
 
 `HGR Launcher Family Reference.png`
 
-The reference is guidance, not a runtime dependency. Production UI and Windows launchers should implement the same principles through shared design tokens and tracked source assets rather than relying on a screenshot at runtime.
+The reference can be a presentation board / composite image. Once reviewed, the approved launcher exports should be saved under:
 
-Core rules:
+`assets/branding/reference/launchers/`
 
-- HGR surfaces are polished and restrained rather than generic utility UI.
-- Halieus gold is the primary brand identity.
-- Green / amber / red / blue / slate carry Start / Restart / Close / Update / Developer meaning.
-- Radius, depth, typography, framing and spacing are part of the brand just as much as colour.
-- New game and developer surfaces should look native to the same platform.
+Expected export names:
+
+- `Start Halieus Game Room.png` or `.ico`
+- `Restart Halieus Game Room.png` or `.ico`
+- `Close Halieus Game Room.png` or `.ico`
+- `Update Halieus Website.png` or `.ico`
+- `HGR PowerShell.png` or `.ico`
+
+## Rule
+
+The Windows launcher generator does **not** invent, recolour or redraw HGR launcher artwork anymore.
+
+It only converts approved assets from this folder into cache-busted Windows ICO files.
+
+If approved exports are missing, launcher generation intentionally stops.
+
+This protects the actual design reference from being replaced by increasingly approximate procedural versions.
