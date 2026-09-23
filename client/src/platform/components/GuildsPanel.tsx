@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 import type { HalieusAccountSummary, HalieusPlayerDirectoryEntry } from "../../../../shared/platform/accounts";
 import type {
@@ -37,6 +38,10 @@ const ROOM_POLICY_LABELS: Record<HalieusGuildRoomPolicy, string> = {
   admins: "Admins only",
 };
 
+function GuildEmblem({ name, picture, large = false }: { name: string; picture: string | null; large?: boolean }) {
+  return <span className={`halieus-guild-emblem${large ? " is-large" : ""}`}>{picture ? <img src={picture} alt="" /> : name.slice(0, 2).toUpperCase()}</span>;
+}
+
 /**
  * Guilds is deliberately REST-backed rather than tied to a game socket.
  *
@@ -69,6 +74,8 @@ export function GuildsPanel({
   const [settingsName, setSettingsName] = useState("");
   const [settingsDescription, setSettingsDescription] = useState("");
   const [settingsPolicy, setSettingsPolicy] = useState<HalieusGuildRoomPolicy>("members");
+  const [settingsPicture, setSettingsPicture] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [guildAction, setGuildAction] = useState<"join" | "create" | null>(null);
   const [directory, setDirectory] = useState<HalieusPlayerDirectoryEntry[]>([]);
@@ -117,11 +124,13 @@ export function GuildsPanel({
         setSettingsName(result.guild.name);
         setSettingsDescription(result.guild.description);
         setSettingsPolicy(result.guild.roomCreationPolicy);
+        setSettingsPicture(result.guild.picture);
       }
       setGuilds((current) => current.map((guild) => guild.id === result.guild.id ? {
         ...guild,
         name: result.guild.name,
         description: result.guild.description,
+        picture: result.guild.picture,
         updatedAt: result.guild.updatedAt,
         memberCount: result.guild.memberCount,
         roomCount: result.guild.roomCount,
@@ -267,10 +276,13 @@ export function GuildsPanel({
         body: JSON.stringify({
           name: settingsName,
           description: settingsDescription,
+          picture: settingsPicture,
           roomCreationPolicy: settingsPolicy,
         }),
       });
       setDetail(result.guild);
+      setSettingsPicture(result.guild.picture);
+      setSettingsOpen(false);
       setNotice("Guild settings saved.");
       await loadGuilds(result.guild.id);
     } catch (caught) {
@@ -306,6 +318,32 @@ export function GuildsPanel({
     } catch {
       setNotice(`Invite code: ${detail.inviteCode}`);
     }
+  }
+
+  function openGuildSettings() {
+    if (!detail) return;
+    setSettingsName(detail.name);
+    setSettingsDescription(detail.description);
+    setSettingsPolicy(detail.roomCreationPolicy);
+    setSettingsPicture(detail.picture);
+    setSettingsOpen(true);
+  }
+
+  function chooseGuildPicture(file: File | null) {
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 1_000_000) {
+      setError("Guild picture must be a PNG, JPEG or WebP under 1 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setSettingsPicture(reader.result);
+        setError("");
+      }
+    };
+    reader.onerror = () => setError("Unable to read that guild picture.");
+    reader.readAsDataURL(file);
   }
 
   async function sendGuildInvitation(player: HalieusPlayerDirectoryEntry) {
@@ -426,28 +464,9 @@ export function GuildsPanel({
         </div>
       </div>
 
-      {guildAction && <div className="halieus-guild-join-create is-open">
-        {guildAction === "join" ? <form onSubmit={joinGuild}>
-          <span>JOIN A GUILD</span>
-          <div><input autoFocus value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} placeholder="GUILD-XXXX-XXXX" /><button type="submit" disabled={busy || !joinCode.trim()}>Join</button></div>
-        </form> : <form onSubmit={createGuild}>
-          <span>CREATE A GUILD</span>
-          <input autoFocus value={newGuildName} onChange={(event) => setNewGuildName(event.target.value)} placeholder="Friday Game Night" maxLength={48} />
-          <input value={newGuildDescription} onChange={(event) => setNewGuildDescription(event.target.value)} placeholder="What is this group for?" maxLength={240} />
-          <div>
-            <select value={newGuildPolicy} onChange={(event) => setNewGuildPolicy(event.target.value as HalieusGuildRoomPolicy)}>
-              <option value="members">Any member can create rooms</option>
-              <option value="moderators">Moderators + can create rooms</option>
-              <option value="admins">Admins only can create rooms</option>
-            </select>
-            <button type="submit" disabled={busy || newGuildName.trim().length < 3}>Create</button>
-          </div>
-        </form>}
-      </div>}
-
       {incomingInvitations.length > 0 && <section className="halieus-guild-incoming" aria-label="Guild invitations">
         <header><div><span>GUILD INVITATIONS</span><strong>You’ve been invited</strong></div><b>{incomingInvitations.length}</b></header>
-        {incomingInvitations.map((invitation) => <article key={invitation.id}><span className="halieus-guild-emblem">{invitation.guildName.slice(0, 2).toUpperCase()}</span><div><strong>{invitation.guildName}</strong><small>{invitation.senderDisplayName} invited you</small></div><button type="button" className="button-primary" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "accept")}>Accept</button><button type="button" className="button-muted" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "decline")}>Decline</button></article>)}
+        {incomingInvitations.map((invitation) => <article key={invitation.id}><GuildEmblem name={invitation.guildName} picture={invitation.guildPicture} /><div><strong>{invitation.guildName}</strong><small>{invitation.senderDisplayName} invited you</small></div><button type="button" className="button-primary" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "accept")}>Accept</button><button type="button" className="button-muted" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "decline")}>Decline</button></article>)}
       </section>}
       {error && <p className="halieus-guild-error" role="alert">{error}</p>}
       {notice && <p className="halieus-guild-notice" role="status">{notice}</p>}
@@ -457,7 +476,7 @@ export function GuildsPanel({
           <header><strong>Your guilds</strong><span>{guilds.length}</span></header>
           {guilds.map((guild) => (
             <button type="button" key={guild.id} className={guild.id === selectedGuildId ? "is-selected" : ""} onClick={() => { setSelectedGuildId(guild.id); setView("rooms"); }}>
-              <span className="halieus-guild-emblem">{guild.name.slice(0, 2).toUpperCase()}</span>
+              <GuildEmblem name={guild.name} picture={guild.picture} />
               <div><strong>{guild.name}</strong><small>{guild.memberCount} members · {guild.roomCount} rooms</small></div>
               <b>{ROLE_LABELS[guild.role]}</b>
             </button>
@@ -470,9 +489,12 @@ export function GuildsPanel({
         {detail && detail.id === selectedGuildId && (
           <article className="halieus-guild-detail panel-enter">
             <header className="halieus-guild-hero">
-              <span className="halieus-guild-emblem is-large">{detail.name.slice(0, 2).toUpperCase()}</span>
+              <GuildEmblem name={detail.name} picture={detail.picture} large />
               <div><p>{ROLE_LABELS[detail.role].toUpperCase()}</p><h2>{detail.name}</h2><span>{detail.description || "A private Halieus group."}</span></div>
-              <div className="halieus-guild-hero-stats"><span><strong>{detail.memberCount}</strong>members</span><span><strong>{detail.roomCount}</strong>rooms</span></div>
+              <div className="halieus-guild-hero-actions">
+                <div className="halieus-guild-hero-stats"><span><strong>{detail.memberCount}</strong>members</span><span><strong>{detail.roomCount}</strong>rooms</span></div>
+                {detail.canManage && <button type="button" className="button-outline" onClick={openGuildSettings}>Guild settings</button>}
+              </div>
             </header>
 
             <nav className="halieus-guild-tabs" aria-label="Guild sections">
@@ -511,16 +533,6 @@ export function GuildsPanel({
                   {detail.rooms.length === 0 && <div className="halieus-guild-empty">No guild games yet. Create the first room above.</div>}
                 </section>
 
-                {detail.canManage && (
-                  <form className="halieus-guild-settings" onSubmit={saveSettings}>
-                    <header><small>GUILD SETTINGS</small><strong>Organisation</strong></header>
-                    <label><span>Name</span><input value={settingsName} onChange={(event) => setSettingsName(event.target.value)} /></label>
-                    <label><span>Description</span><input value={settingsDescription} onChange={(event) => setSettingsDescription(event.target.value)} /></label>
-                    <label><span>Who can create rooms?</span><select value={settingsPolicy} onChange={(event) => setSettingsPolicy(event.target.value as HalieusGuildRoomPolicy)}><option value="members">Any member</option><option value="moderators">Moderators +</option><option value="admins">Admins only</option></select></label>
-                    <button type="submit" className="button-outline" disabled={busy}>Save settings</button>
-                    <div className="halieus-guild-invite"><span><small>PRIVATE INVITE CODE</small><code>{detail.inviteCode ?? "Admin access required"}</code></span><button type="button" className="halieus-guild-platform-invite" onClick={() => { setInviteSearch(""); setView("members"); }}>Invite HGR players</button>{detail.inviteCode && <><button type="button" onClick={() => void copyInvite()}>Copy code</button><button type="button" onClick={() => void regenerateInvite()}>Regenerate</button></>}</div>
-                  </form>
-                )}
               </div>
             )}
 
@@ -580,6 +592,45 @@ export function GuildsPanel({
           </article>
         )}
       </div>
+
+      {guildAction && createPortal(
+        <div className="halieus-guild-modal-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setGuildAction(null)}>
+          <section className="halieus-guild-action-modal panel-enter" role="dialog" aria-modal="true" aria-label={guildAction === "join" ? "Join a guild" : "Create a guild"}>
+            <header><div><p>{guildAction === "join" ? "JOIN A GUILD" : "CREATE A GUILD"}</p><h2>{guildAction === "join" ? "Enter a private guild" : "Start a new guild"}</h2><span>{guildAction === "join" ? "Use a private guild code you received." : "Create the group first, then invite Halieus players from Members."}</span></div><button type="button" onClick={() => setGuildAction(null)} aria-label="Close guild action">×</button></header>
+            {guildAction === "join" ? <form onSubmit={joinGuild}>
+              <label>Guild code<input autoFocus value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} placeholder="GUILD-XXXX-XXXX" /></label>
+              <footer><button type="button" className="button-muted" onClick={() => setGuildAction(null)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || !joinCode.trim()}>Join guild</button></footer>
+            </form> : <form onSubmit={createGuild}>
+              <label>Guild name<input autoFocus value={newGuildName} onChange={(event) => setNewGuildName(event.target.value)} placeholder="Friday Game Night" maxLength={48} /></label>
+              <label>Description<input value={newGuildDescription} onChange={(event) => setNewGuildDescription(event.target.value)} placeholder="What is this group for?" maxLength={240} /></label>
+              <label>Who can create rooms?<select value={newGuildPolicy} onChange={(event) => setNewGuildPolicy(event.target.value as HalieusGuildRoomPolicy)}><option value="members">Any member</option><option value="moderators">Moderators +</option><option value="admins">Admins only</option></select></label>
+              <footer><button type="button" className="button-muted" onClick={() => setGuildAction(null)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || newGuildName.trim().length < 3}>Create guild</button></footer>
+            </form>}
+          </section>
+        </div>,
+        document.body,
+      )}
+
+      {settingsOpen && detail && createPortal(
+        <div className="halieus-guild-modal-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setSettingsOpen(false)}>
+          <form className="halieus-guild-settings-modal panel-enter" onSubmit={saveSettings} role="dialog" aria-modal="true" aria-label="Guild settings">
+            <header><div><p>GUILD SETTINGS</p><h2>Organisation</h2><span>Identity, room permissions and private invitations.</span></div><button type="button" onClick={() => setSettingsOpen(false)} aria-label="Close guild settings">×</button></header>
+            <section className="halieus-guild-picture-editor">
+              <GuildEmblem name={settingsName || detail.name} picture={settingsPicture} large />
+              <div><strong>Guild picture</strong><span>Optional · PNG, JPEG or WebP · up to 1 MB.</span><div><label className="button-outline">Upload picture<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => chooseGuildPicture(event.target.files?.[0] ?? null)} /></label>{settingsPicture && <button type="button" className="button-muted" onClick={() => setSettingsPicture(null)}>Remove</button>}</div></div>
+            </section>
+            <label><span>Name</span><input value={settingsName} onChange={(event) => setSettingsName(event.target.value)} maxLength={48} /></label>
+            <label><span>Description</span><input value={settingsDescription} onChange={(event) => setSettingsDescription(event.target.value)} maxLength={240} /></label>
+            <label><span>Who can create rooms?</span><select value={settingsPolicy} onChange={(event) => setSettingsPolicy(event.target.value as HalieusGuildRoomPolicy)}><option value="members">Any member</option><option value="moderators">Moderators +</option><option value="admins">Admins only</option></select></label>
+            <section className="halieus-guild-settings-invite">
+              <div><small>PRIVATE INVITE CODE</small><code>{detail.inviteCode ?? "Admin access required"}</code></div>
+              <div><button type="button" className="button-outline" onClick={() => { setSettingsOpen(false); setInviteSearch(""); setView("members"); }}>Invite HGR players</button>{detail.inviteCode && <><button type="button" className="button-muted" onClick={() => void copyInvite()}>Copy code</button><button type="button" className="button-muted" onClick={() => void regenerateInvite()}>Regenerate</button></>}</div>
+            </section>
+            <footer><button type="button" className="button-muted" onClick={() => setSettingsOpen(false)}>Cancel</button><button type="submit" className="button-primary" disabled={busy || settingsName.trim().length < 3}>Save settings</button></footer>
+          </form>
+        </div>,
+        document.body,
+      )}
     </section>
   );
 }
