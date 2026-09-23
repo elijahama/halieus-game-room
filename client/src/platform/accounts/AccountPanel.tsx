@@ -85,7 +85,7 @@ async function copyText(value: string): Promise<void> {
 export function AccountPanel({ account, onClose, onAccountChange, onLogout, betaMode, onEnterBetaMode, onExitBetaMode }: Props) {
   const isAdmin = account.role === "owner" || account.role === "admin";
   const isOwner = account.role === "owner";
-  const [adminTab, setAdminTab] = useState<AdminTab>("overview");
+  const [adminTab, setAdminTab] = useState<AdminTab>("account");
   const [snapshot, setSnapshot] = useState<HalieusAdminSnapshot | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [message, setMessage] = useState("");
@@ -269,7 +269,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
 
   const profileSettings = (
     <section className="account-self-service">
-      {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div></header>}
+      {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div><button type="button" className="button-outline account-open-owner-tools" onClick={() => setAdminTab("overview")}>Owner tools →</button></header>}
       <div className="account-profile-grid">
         <form className="account-settings-card" onSubmit={saveProfile}>
           <div><p className="modal-eyebrow">Player profile</p><h3>Your Halieus identity</h3></div>
@@ -313,11 +313,14 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
         </header>
 
         <div className="account-panel-scroll">
-          {isAdmin && (
+          {isAdmin && adminTab !== "account" && (
             <section className="account-admin-zone account-admin-zone-primary">
               <header className="account-admin-heading">
-                <div><p className="modal-eyebrow">Owner control panel</p><h3>Player management</h3><small>Invite players, approve requests and monitor exactly who has permanent Halieus access.</small></div>
-                <button type="button" className="account-refresh-button" onClick={() => void refreshAdmin()} disabled={loadingAdmin} aria-label="Refresh player management">↻ <span>{loadingAdmin ? "Refreshing…" : "Refresh"}</span></button>
+                <div><p className="modal-eyebrow">Owner tools</p><h3>Administration</h3><small>Player access, live rooms, testing and audit tools stay separate from your personal profile.</small></div>
+                <div className="account-admin-heading-actions">
+                  <button type="button" className="button-outline account-owner-back-profile" onClick={() => setAdminTab("account")}>← My profile</button>
+                  <button type="button" className="account-refresh-button" onClick={() => void refreshAdmin()} disabled={loadingAdmin} aria-label="Refresh administration">↻ <span>{loadingAdmin ? "Refreshing…" : "Refresh"}</span></button>
+                </div>
               </header>
 
               <nav className="account-owner-nav" aria-label="Owner control panel sections">
