@@ -132,7 +132,10 @@ app.use(
   }),
 );
 
-app.use(express.json());
+// Profile pictures are sent as Base64 data URLs. A raw image under the
+// 1 MB profile limit expands to roughly 1.33 MB in JSON, so Express's default
+// 100 KB parser ceiling incorrectly rejects otherwise-valid profile updates.
+app.use(express.json({ limit: "2mb" }));
 
 // Keep the private game portal reachable by direct link while instructing
 // compliant search engines not to index, cache or surface it in snippets.
