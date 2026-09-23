@@ -1,4 +1,4 @@
-export type HalieusThemeMode = "dark" | "light" | "blue" | "custom";
+export type HalieusThemeMode = "system" | "dark" | "light" | "blue" | "custom";
 
 export interface HalieusCustomTheme {
   page: string;
@@ -25,11 +25,13 @@ export function normaliseThemeColour(value: unknown, fallback: string): string {
 
 export function readThemeMode(): HalieusThemeMode {
   const value = localStorage.getItem(THEME_KEY);
-  if (value === "dark" || value === "light" || value === "blue" || value === "custom") return value;
-  // Older HGR builds used "system". Preserve the user's OS preference once,
-  // then store an explicit chromatic mode from now on.
-  if (value === "system") return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  if (value === "system" || value === "dark" || value === "light" || value === "blue" || value === "custom") return value;
+  return "system";
+}
+
+export function resolveThemeMode(mode: HalieusThemeMode, systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches): Exclude<HalieusThemeMode, "system" | "custom"> | "custom" {
+  if (mode === "system") return systemPrefersDark ? "dark" : "light";
+  return mode;
 }
 
 export function readCustomTheme(): HalieusCustomTheme {
