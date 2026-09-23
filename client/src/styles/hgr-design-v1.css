@@ -2139,3 +2139,570 @@ button.halieus-player-identity {
     grid-template-columns: minmax(0,1fr) !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.1.1 — Part 15 video notes, pass 2
+   Stable featured stage, richer custom palettes, modal guild management,
+   guild identity images and cleaner owner administration.
+   ========================================================================== */
+
+/* The featured stage never changes its outer geometry. Longer game copy is
+ * clamped inside reserved rows so rotation cannot kick the page vertically. */
+.halieus-feature-carousel {
+  min-height: 430px !important;
+  contain: layout paint;
+}
+.halieus-feature-copy-stage {
+  grid-template-rows: 20px 2.05em 3.2em auto auto !important;
+  min-height: 318px !important;
+  animation-duration: 760ms !important;
+  animation-timing-function: cubic-bezier(.18,.74,.18,1) !important;
+}
+.halieus-feature-copy-stage > h1 {
+  min-height: 2.05em !important;
+  max-height: 2.05em;
+  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.halieus-feature-copy-stage > span {
+  min-height: 3.2em !important;
+  max-height: 3.2em;
+  overflow: hidden;
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.halieus-feature-card-stage {
+  animation-duration: 760ms !important;
+  animation-timing-function: cubic-bezier(.18,.74,.18,1) !important;
+}
+@keyframes hgr-feature-content-in {
+  0% { opacity: 0; transform: translateX(12px) scale(.996); filter: blur(2px); }
+  55% { opacity: .92; }
+  100% { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+}
+
+/* Home social cards deliberately preview three players. The Players page owns
+ * the complete directory, so there is no nested scrollbar beside View all. */
+.halieus-home-player-strip > div {
+  max-height: none !important;
+  overflow: visible !important;
+  padding-right: 0 !important;
+  scrollbar-width: none !important;
+}
+.halieus-home-player-strip > div::-webkit-scrollbar { display: none !important; }
+
+/* Custom theme presets keep the FFVII-inspired idea fast to use while the
+ * detailed RGB/HEX cards remain available underneath. */
+.halieus-custom-presets {
+  display: grid;
+  gap: 9px;
+  margin: 2px 0 12px;
+  padding: 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 14px;
+  background: var(--hgr-surface-soft);
+}
+.halieus-custom-presets > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.halieus-custom-presets > header strong { font-size: 11px; }
+.halieus-custom-presets > header span { color: var(--hgr-muted); font-size: 9px; }
+.halieus-custom-presets > div {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 7px;
+}
+.halieus-custom-presets button {
+  min-width: 0;
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 11px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-custom-presets button:hover {
+  border-color: color-mix(in srgb,var(--hgr-brand) 44%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-brand) 6%,var(--hgr-surface-raised));
+}
+.halieus-custom-preset-swatch {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 9px;
+}
+.halieus-custom-preset-swatch i { display: block; }
+.halieus-custom-presets button > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-custom-presets button strong,
+.halieus-custom-presets button small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-custom-presets button strong { font-size: 10px; }
+.halieus-custom-presets button small { color: var(--hgr-muted); font-size: 8px; }
+
+.halieus-custom-theme-dialog .halieus-custom-theme-preview {
+  min-height: 132px !important;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  justify-items: stretch;
+  gap: 12px;
+  padding: 12px;
+}
+.halieus-custom-preview-window {
+  min-width: 0;
+  min-height: 92px;
+  display: grid;
+  grid-template-rows: 26px 1fr;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.22);
+}
+.halieus-custom-preview-window > header {
+  display: grid;
+  grid-template-columns: 12px minmax(0,1fr) 12px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  background: rgba(0,0,0,.14);
+}
+.halieus-custom-preview-window > header i,
+.halieus-custom-preview-window > header em {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+}
+.halieus-custom-preview-window > header b {
+  color: rgba(255,255,255,.88);
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+.halieus-custom-preview-window > div {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 10px;
+  color: #fff;
+}
+.halieus-custom-preview-window > div strong { font-size: 13px; }
+.halieus-custom-preview-window > div span {
+  padding: 6px 8px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 8px;
+  font-weight: 900;
+}
+.halieus-custom-preview-window > div small {
+  grid-column: 1 / -1;
+  font-size: 8px;
+  font-weight: 800;
+}
+.halieus-custom-preview-palette {
+  display: grid;
+  gap: 5px;
+}
+.halieus-custom-preview-palette > span {
+  display: grid;
+  grid-template-columns: 18px auto;
+  align-items: center;
+  gap: 5px;
+}
+.halieus-custom-preview-palette i {
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 6px;
+}
+.halieus-custom-preview-palette code {
+  color: rgba(255,255,255,.76);
+  font-size: 8px;
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview > small {
+  right: 10px !important;
+  bottom: 7px !important;
+}
+
+/* Guild create/join and organisation editing are explicit actions rather than
+ * permanent forms inside the workspace. */
+.halieus-guild-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 18px;
+  background: rgba(2,8,13,.72);
+  backdrop-filter: blur(12px);
+}
+.halieus-guild-action-modal,
+.halieus-guild-settings-modal {
+  width: min(560px,100%);
+  max-height: calc(100dvh - 36px);
+  box-sizing: border-box;
+  overflow-y: auto;
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 20px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+  box-shadow: 0 28px 90px rgba(0,0,0,.42);
+}
+.halieus-guild-settings-modal { width: min(680px,100%); }
+.halieus-guild-action-modal > header,
+.halieus-guild-settings-modal > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-guild-action-modal > header p,
+.halieus-guild-settings-modal > header p,
+.halieus-guild-action-modal > header h2,
+.halieus-guild-settings-modal > header h2,
+.halieus-guild-action-modal > header span,
+.halieus-guild-settings-modal > header span { margin: 0; }
+.halieus-guild-action-modal > header p,
+.halieus-guild-settings-modal > header p {
+  color: var(--hgr-brand);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .13em;
+}
+.halieus-guild-action-modal > header h2,
+.halieus-guild-settings-modal > header h2 {
+  margin-top: 3px;
+  font-size: 23px;
+  letter-spacing: -.03em;
+}
+.halieus-guild-action-modal > header span,
+.halieus-guild-settings-modal > header span {
+  display: block;
+  margin-top: 4px;
+  color: var(--hgr-muted);
+  font-size: 10px;
+}
+.halieus-guild-action-modal > header > button,
+.halieus-guild-settings-modal > header > button {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid var(--hgr-border);
+  border-radius: 11px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  font-size: 21px;
+  cursor: pointer;
+}
+.halieus-guild-action-modal form,
+.halieus-guild-settings-modal {
+  font: inherit;
+}
+.halieus-guild-action-modal form {
+  display: grid;
+  gap: 11px;
+}
+.halieus-guild-action-modal label,
+.halieus-guild-settings-modal > label {
+  display: grid;
+  gap: 5px;
+  color: var(--hgr-muted);
+  font-size: 9px;
+  font-weight: 850;
+}
+.halieus-guild-action-modal input,
+.halieus-guild-action-modal select,
+.halieus-guild-settings-modal input,
+.halieus-guild-settings-modal select {
+  min-width: 0;
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 10px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+}
+.halieus-guild-action-modal footer,
+.halieus-guild-settings-modal > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.halieus-guild-emblem {
+  overflow: hidden;
+}
+.halieus-guild-emblem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.halieus-guild-hero-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+.halieus-guild-hero-actions > .button-outline {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 9px;
+}
+.halieus-guild-picture-editor {
+  display: grid;
+  grid-template-columns: 74px minmax(0,1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 14px;
+  background: var(--hgr-surface-soft);
+}
+.halieus-guild-picture-editor > .halieus-guild-emblem {
+  width: 74px !important;
+  height: 74px !important;
+}
+.halieus-guild-picture-editor > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.halieus-guild-picture-editor > div > strong { font-size: 11px; }
+.halieus-guild-picture-editor > div > span { color: var(--hgr-muted); font-size: 9px; }
+.halieus-guild-picture-editor > div > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 5px;
+}
+.halieus-guild-picture-editor label.button-outline {
+  position: relative;
+  overflow: hidden;
+  display: inline-grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.halieus-guild-picture-editor label.button-outline input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.halieus-guild-settings-invite {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 13px;
+  background: var(--hgr-surface-soft);
+}
+.halieus-guild-settings-invite > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.halieus-guild-settings-invite small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+.halieus-guild-settings-invite code {
+  overflow: hidden;
+  color: var(--hgr-text);
+  font-size: 11px;
+  text-overflow: ellipsis;
+}
+.halieus-guild-settings-invite > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.halieus-inbox-guild-mark.is-picture {
+  object-fit: cover !important;
+}
+
+/* Owner tools read as one HGR control surface, not a stack of unrelated
+ * administrative boxes. The dangerous actions remain visually isolated. */
+.account-panel .account-admin-zone-primary {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.account-panel .account-admin-heading {
+  margin-bottom: 10px;
+  padding: 2px 2px 12px !important;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.account-panel .account-admin-heading h3 {
+  font-size: clamp(1.45rem,2.6vw,2rem) !important;
+  letter-spacing: -.035em;
+}
+.account-panel .account-owner-nav {
+  display: grid !important;
+  grid-template-columns: repeat(6,minmax(0,1fr)) !important;
+  gap: 4px !important;
+  margin-bottom: 12px !important;
+  padding: 5px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: 14px !important;
+  background: var(--hgr-surface-soft) !important;
+}
+.account-panel .account-owner-nav button {
+  min-width: 0;
+  min-height: 62px !important;
+  grid-template-columns: 28px minmax(0,1fr) !important;
+  padding: 8px !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+}
+.account-panel .account-owner-nav button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 30%,var(--hgr-border)) !important;
+  background: var(--hgr-surface-raised) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08) !important;
+}
+.account-panel .account-owner-nav button > span {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+}
+.account-panel .account-owner-nav button strong { font-size: .74rem !important; }
+.account-panel .account-owner-nav button small { font-size: .57rem !important; }
+.account-panel .account-admin-content-card {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: 15px !important;
+  background: var(--hgr-surface-soft) !important;
+  box-shadow: none !important;
+}
+.account-panel .account-player-section {
+  padding: 14px !important;
+}
+.account-panel .account-player-admin-list {
+  display: grid;
+  gap: 7px;
+}
+.account-panel .account-player-admin-row {
+  grid-template-columns: 46px minmax(0,1fr) auto !important;
+  gap: 10px !important;
+  padding: 10px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: 12px !important;
+  background: var(--hgr-surface-raised) !important;
+}
+.account-panel .account-admin-avatar {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+}
+.account-panel .account-admin-actions {
+  max-width: 250px;
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px !important;
+}
+.account-panel .account-admin-actions button {
+  min-height: 30px !important;
+  padding: 5px 7px !important;
+  border-radius: 8px !important;
+  font-size: .58rem !important;
+}
+.account-panel .account-admin-actions button.is-danger {
+  border-color: color-mix(in srgb,var(--hgr-danger) 46%,var(--hgr-border)) !important;
+  color: var(--hgr-danger) !important;
+}
+
+@media (max-width: 980px) {
+  .halieus-custom-presets > div { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .account-panel .account-owner-nav { grid-template-columns: repeat(3,minmax(0,1fr)) !important; }
+}
+@media (max-width: 760px) {
+  .halieus-feature-copy-stage {
+    grid-template-rows: auto auto auto auto auto !important;
+    min-height: 0 !important;
+  }
+  .halieus-feature-copy-stage > h1,
+  .halieus-feature-copy-stage > span {
+    min-height: 0 !important;
+    max-height: none;
+    -webkit-line-clamp: unset;
+  }
+  .halieus-custom-theme-dialog .halieus-custom-theme-preview {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-custom-preview-palette {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .halieus-guild-modal-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+  .halieus-guild-action-modal,
+  .halieus-guild-settings-modal {
+    width: 100%;
+    max-height: 92dvh;
+    padding: 16px;
+    border-radius: 20px 20px 0 0;
+  }
+  .halieus-guild-settings-invite {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-guild-settings-invite > div:last-child { justify-content: flex-start; }
+  .halieus-guild-hero-actions { justify-items: start; }
+  .account-panel .account-owner-nav { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .account-panel .account-player-admin-row {
+    grid-template-columns: 42px minmax(0,1fr) !important;
+  }
+  .account-panel .account-admin-actions {
+    grid-column: 1 / -1;
+    max-width: none;
+    justify-content: stretch;
+  }
+  .account-panel .account-admin-actions button { flex: 1 1 120px; }
+}
+@media (max-width: 480px) {
+  .halieus-custom-presets > div { grid-template-columns: minmax(0,1fr); }
+  .halieus-guild-picture-editor {
+    grid-template-columns: 58px minmax(0,1fr);
+  }
+  .halieus-guild-picture-editor > .halieus-guild-emblem {
+    width: 58px !important;
+    height: 58px !important;
+  }
+  .account-panel .account-owner-nav { grid-template-columns: minmax(0,1fr) !important; }
+}
