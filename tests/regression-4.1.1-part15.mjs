@@ -13,7 +13,7 @@ const guildPanel=read('client/src/platform/components/GuildsPanel.tsx');
 const css=read('client/src/styles/hgr-design-v1.css');
 
 assert.match(themeButton,/createPortal/,'Theme selector popover/editor must escape sidebar overflow through a portal');
-for(const mode of ['dark','light','blue','custom']) {
+for(const mode of ['system','dark','light','blue','custom']) {
   assert.ok(themeButton.includes(`mode: "${mode}"`),`Theme selector missing ${mode}`);
 }
 assert.match(themeButton,/halieus-custom-theme-dialog/,'Custom palette must use a contained dialog');
