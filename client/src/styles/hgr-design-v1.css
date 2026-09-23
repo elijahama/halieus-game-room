@@ -1946,3 +1946,196 @@ button.halieus-player-identity {
     animation: none !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.1.1 — session/profile density hotfix
+   Fixes walkthrough-noted clustering without changing platform behaviour.
+   ========================================================================== */
+
+/* Profile editing: keep picture controls compact and visually attached to the
+ * preview instead of stretching two huge actions across the card. */
+.account-profile-picture-editor {
+  display: grid !important;
+  grid-template-columns: 78px minmax(0,1fr) !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+.account-profile-picture-editor .account-profile-picture-preview {
+  width: 78px !important;
+  height: 78px !important;
+}
+.account-profile-picture-editor > div {
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: max-content max-content !important;
+  align-items: center !important;
+  justify-content: start !important;
+  gap: 6px 8px !important;
+}
+.account-profile-picture-editor > div > small {
+  grid-column: 1 / -1;
+  color: var(--hgr-muted);
+  font-size: 10px;
+}
+.account-picture-upload,
+.account-profile-picture-editor .button-muted {
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  font-size: 10px !important;
+  white-space: nowrap;
+}
+
+/* Player directory: preserve the useful record drawer while making it feel like
+ * a compact drill-down rather than half of the entire Players page. */
+@media (min-width: 1181px) {
+  .view-players .halieus-players-layout.has-selection {
+    grid-template-columns: minmax(0,1fr) minmax(360px,430px) !important;
+    gap: 16px !important;
+  }
+  .view-players .halieus-player-profile-card {
+    padding: 14px !important;
+    border-radius: 16px !important;
+  }
+  .view-players .halieus-player-profile-card > header {
+    margin-bottom: 10px !important;
+  }
+  .view-players .halieus-profile-summary {
+    gap: 6px !important;
+  }
+  .view-players .halieus-profile-summary article,
+  .view-players .halieus-profile-games article,
+  .view-players .halieus-profile-recent article {
+    padding-block: 7px !important;
+  }
+}
+
+/* Guild member rows should read like identities, not oversized full-width
+ * settings cards. */
+.halieus-guild-members > article {
+  min-height: 54px !important;
+  padding: 7px 9px !important;
+}
+.halieus-guild-members > article > .halieus-avatar-media {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+/* Availability is useful metadata, but it should not glow louder than the game
+ * card itself. */
+.halieus-library-status {
+  padding: 3px 7px !important;
+  box-shadow: none !important;
+  font-size: .46rem !important;
+  letter-spacing: .07em !important;
+}
+
+/* The GameBanana reference uses compact carousel affordances. Keep HGR's arrows
+ * square and restrained so they do not look like elongated side tabs. */
+.halieus-feature-arrow {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  font-size: 24px !important;
+}
+.halieus-feature-arrow.is-previous { left: 10px !important; }
+.halieus-feature-arrow.is-next { right: 10px !important; }
+
+/* Mega Board waiting room: all existing controls stay available, but repeated
+ * framing and vertical padding are reduced so the lobby reads in one scan. */
+.lobby-card-v2 {
+  width: min(1320px, calc(100vw - 64px)) !important;
+  padding: 18px !important;
+}
+.lobby-heading-v2 {
+  margin-bottom: 12px !important;
+}
+.lobby-overview-grid {
+  gap: 9px !important;
+  margin-bottom: 10px !important;
+}
+.lobby-overview-tile {
+  min-height: 72px !important;
+  padding: 9px 11px !important;
+  border-radius: 13px !important;
+}
+.lobby-overview-code strong {
+  font-size: 1.45rem !important;
+}
+.lobby-card-v2 .halieus-invite-bar {
+  min-height: 0 !important;
+  margin: 8px 0 0 !important;
+  padding: 9px 11px !important;
+  border-radius: 13px !important;
+}
+.lobby-card-v2 .halieus-invite-bar-button {
+  min-height: 36px !important;
+  padding: 7px 11px !important;
+}
+.lobby-main-grid {
+  grid-template-columns: minmax(0,1.9fr) minmax(260px,.7fr) !important;
+  gap: 11px !important;
+  margin-top: 11px !important;
+}
+.players-panel-v2 {
+  padding: 12px !important;
+  border-radius: 15px !important;
+}
+.lobby-players-heading-v2 {
+  margin-bottom: 8px !important;
+}
+.modern-player-list-v2 .modern-player-row {
+  min-height: 54px !important;
+  padding: 8px 9px !important;
+}
+.lobby-side-panel {
+  gap: 8px !important;
+}
+.lobby-side-card {
+  padding: 11px !important;
+  border-radius: 14px !important;
+}
+.lobby-side-card h2 {
+  margin: 2px 0 5px !important;
+  font-size: .96rem !important;
+}
+.lobby-recovery-compact {
+  padding: 8px !important;
+  border-radius: 11px !important;
+}
+.lobby-actions-v2 {
+  margin-top: 8px !important;
+}
+.lobby-actions-v2 button {
+  min-height: 38px !important;
+}
+
+@media (max-width: 760px) {
+  .account-profile-picture-editor {
+    grid-template-columns: 64px minmax(0,1fr) !important;
+  }
+  .account-profile-picture-editor .account-profile-picture-preview {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  .account-profile-picture-editor > div {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .account-profile-picture-editor > div > small {
+    grid-column: auto;
+  }
+  .halieus-feature-arrow {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 9px !important;
+    font-size: 21px !important;
+  }
+  .lobby-card-v2 {
+    width: 100% !important;
+    padding: 14px !important;
+  }
+  .lobby-main-grid {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+}

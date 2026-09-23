@@ -464,13 +464,14 @@ export default function App() {
 
   const hasRecoverableSession = Boolean(savedSession || pokerSavedSession || blackjackSavedSession || whotSavedSession || ludoSavedSession || connectFourSavedSession || ayoSavedSession || wordBoardSavedSession || hiddenDictatorSavedSession || Object.values(wordArenaSavedSessions).some(Boolean) || Object.values(classicSavedSessions).some(Boolean));
 
-  // 4.0.0: the branded arrival is a once-per-browsing-session experience.
-  // Mark it seen as soon as it is intentionally presented so refreshing during
-  // the intro cannot restart it. Direct room/recovery routes never set or use
-  // this gate because they bypass the intro entirely.
+  // The branded arrival belongs to the start of a fresh signed-in Game Room
+  // session. If this tab is continuing a recoverable game, treat the arrival as
+  // already handled so closing/forgetting that room cannot make the intro appear
+  // unexpectedly halfway through the session.
   useEffect(() => {
-    if (directGuestRoute || hasRecoverableSession || !authStatus?.authenticated || siteIntroSeen) return;
-    try { sessionStorage.setItem(INTRO_SESSION_KEY, "1"); } catch { /* Storage can be unavailable. */ }
+    if (directGuestRoute || !authStatus?.authenticated || siteIntroSeen || !hasRecoverableSession) return;
+    setSiteIntroSeen(true);
+    try { sessionStorage.setItem(INTRO_SESSION_KEY, "1"); } catch { /* In-memory completion still works. */ }
   }, [authStatus?.authenticated, directGuestRoute, hasRecoverableSession, siteIntroSeen]);
 
   function completeSiteIntro(): void {
