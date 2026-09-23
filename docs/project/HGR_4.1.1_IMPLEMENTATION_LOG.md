@@ -48,3 +48,15 @@ The walkthrough also clarified three platform behaviours:
 ### Validation extension
 
 `tests/regression-4.1.1-video-polish.mjs` protects the fixed hero stage, short Home previews, System theme, compact Guild actions and profile-first owner account behaviour. It runs after the existing Part 15 regression.
+
+
+## Session/profile hotfix
+
+The final Part 15 walkthrough exposed four cleanup issues that stay within the 4.1.1 polish milestone:
+
+- Profile-picture updates were accepted by the client at up to 1 MB, but Base64 encoding expanded the JSON request beyond Express's default 100 KB body limit. The server parser now accepts up to 2 MB while the profile route still enforces the existing 1 MB image contract.
+- The branded Halieus intro could become eligible in the middle of a browsing session after an administrator closed all recoverable rooms. Continuing/recovering a room now marks the intro handled in both React state and session storage; a fresh normal sign-in still receives the once-per-session intro.
+- Profile-picture actions, selected-player drill-down and Guild member rows were tightened so identity/settings surfaces use less empty space without removing any actions.
+- The Mega Board waiting room and Home featured-game arrows were compressed so the information hierarchy is easier to scan and the carousel controls no longer look like tall side tabs.
+
+`tests/regression-4.1.1-session-profile-hotfix.mjs` protects the request-size fix, intro lifecycle and the main density contracts.
