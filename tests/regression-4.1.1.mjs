@@ -10,7 +10,7 @@ const json=(p)=>JSON.parse(read(p));
  * This patch turns the 4.1 social foundation into the approved player-facing
  * experience: discoverable Home shelves, direct guild invitations, canonical
  * avatars, richer ranked presentation, scroll-safe setup/menu surfaces and an
- * explicit Dark/Light/Blue/Custom theme system. WHOT gameplay is deliberately
+ * explicit System/Dark/Light/Blue/Custom theme system. WHOT gameplay is deliberately
  * outside this patch.
  */
 
@@ -53,11 +53,11 @@ assert.match(guildPanel,/INVITE PLAYERS/,'Guild Members must expose player searc
 assert.match(guildPanel,/pendingInvitations/,'Guild Members must expose pending invitations');
 assert.match(guildPanel,/profilePicture \? <img/,'Guild member avatars must prefer the canonical profile picture');
 
-assert.match(theme,/HalieusThemeMode = "dark" \| "light" \| "blue" \| "custom"/,'Four-mode theme contract missing');
+assert.match(theme,/HalieusThemeMode = "system" \| "dark" \| "light" \| "blue" \| "custom"/,'Five-mode theme contract missing');
 assert.match(theme,/CUSTOM_THEME_KEY/,'Custom theme persistence missing');
 assert.match(themeButton,/type="color"/,'Custom palette colour picker missing');
 assert.match(themeButton,/halieus-rgb-fields/,'Custom palette RGB channel controls missing');
-assert.match(displaySettings,/\["dark", "light", "blue", "custom"\]/,'Game menu theme choices missing');
+assert.match(displaySettings,/\["system", "dark", "light", "blue", "custom"\]/,'Game menu theme choices missing');
 assert.doesNotMatch(app,/classList\.add\("theme-transitioning"\)/,'Theme switching must not add transition choreography');
 assert.match(css,/html\[data-theme="dark"\][\s\S]*?--hgr-page:\s*#0f1012/s,'Dark mode must remain neutral');
 assert.match(css,/html\[data-theme="blue"\]/,'Blue theme must remain explicit');
