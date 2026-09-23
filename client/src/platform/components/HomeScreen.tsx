@@ -275,7 +275,7 @@ export function HomeScreen(props: HomeScreenProps) {
       recent: recent.length ? recent : quickGames,
       friends: friends.length ? friends : quickGames,
     };
-    return shelves[discoveryShelf].slice(0, 7);
+    return shelves[discoveryShelf].slice(0, 4);
   }, [discoveryShelf, liveRooms, personalStats.byGame, personalStats.recent, quickGames]);
   const liveRoomByPlayerName = useMemo(() => {
     const map = new Map<string, HalieusLiveRoomSummary>();
@@ -615,26 +615,30 @@ export function HomeScreen(props: HomeScreenProps) {
         {view === "home" && <section className="halieus-view view-home panel-enter">
           <section className="halieus-showcase halieus-feature-carousel" style={{ ["--feature-accent" as string]: featuredGame.accent }}>
             <div className="halieus-showcase-copy" aria-live="polite">
-              <p>{betaMode ? "BETA TEST LAB" : `GAME NIGHT STARTS HERE · ${account?.displayName ? `WELCOME BACK, ${account.displayName.toUpperCase()}` : "FEATURED TABLE"}`}</p>
-              <h1>{betaMode ? "Test the room before game night." : featuredSeat ? `Continue ${featuredGame.name}.` : `${featuredGame.name} is on deck.`}</h1>
-              <span>{betaMode ? "Test rooms stay separate from your normal account record." : featuredSeat ? `Room ${featuredSeat.session?.code} is waiting for you.` : `${featuredGame.subtitle}. Start a room, join with a code, or watch a live table.`}</span>
-              <div className="halieus-showcase-actions">
-                {featuredSeat ? <button type="button" className="button-primary" onClick={() => { selectGame(featuredSeat.id); featuredSeat.resume(); }} disabled={disabled}>Continue {featuredSeat.game}</button> : <button type="button" className="button-primary" onClick={() => openCreate(featuredGameId)}>Start {featuredGame.name}</button>}
-                <button type="button" className="button-outline" onClick={() => openJoin("join")}>Join with code</button>
-                <button type="button" className="button-outline halieus-watch-button" onClick={() => openJoin("watch")}>Watch a game</button>
-              </div>
-              <div className="halieus-showcase-status" aria-label="Game Room status">
-                <button type="button" onClick={() => { setView("games"); setMobileMenuOpen(false); }}><strong>{GAMES.length}</strong><span>games ready</span></button>
-                <button type="button" onClick={() => { setView("players"); setMobileMenuOpen(false); }}><strong>{onlinePlayers.length}</strong><span>players online</span></button>
-                <button type="button" onClick={() => savedSeats[0] ? savedSeats[0].resume() : setView("games")}><strong>{savedSeats.length}</strong><span>rooms to continue</span></button>
+              <div key={featuredGameId} className="halieus-feature-copy-stage">
+                <p>{betaMode ? "BETA TEST LAB" : `GAME NIGHT STARTS HERE · ${account?.displayName ? `WELCOME BACK, ${account.displayName.toUpperCase()}` : "FEATURED TABLE"}`}</p>
+                <h1>{betaMode ? "Test the room before game night." : featuredSeat ? `Continue ${featuredGame.name}.` : `${featuredGame.name} is on deck.`}</h1>
+                <span>{betaMode ? "Test rooms stay separate from your normal account record." : featuredSeat ? `Room ${featuredSeat.session?.code} is waiting for you.` : `${featuredGame.subtitle}. Start a room, join with a code, or watch a live table.`}</span>
+                <div className="halieus-showcase-actions">
+                  {featuredSeat ? <button type="button" className="button-primary" onClick={() => { selectGame(featuredSeat.id); featuredSeat.resume(); }} disabled={disabled}>Continue {featuredSeat.game}</button> : <button type="button" className="button-primary" onClick={() => openCreate(featuredGameId)}>Start {featuredGame.name}</button>}
+                  <button type="button" className="button-outline" onClick={() => openJoin("join")}>Join with code</button>
+                  <button type="button" className="button-outline halieus-watch-button" onClick={() => openJoin("watch")}>Watch a game</button>
+                </div>
+                <div className="halieus-showcase-status" aria-label="Game Room status">
+                  <button type="button" onClick={() => { setView("games"); setMobileMenuOpen(false); }}><strong>{GAMES.length}</strong><span>games ready</span></button>
+                  <button type="button" onClick={() => { setView("players"); setMobileMenuOpen(false); }}><strong>{onlinePlayers.length}</strong><span>players online</span></button>
+                  <button type="button" onClick={() => savedSeats[0] ? savedSeats[0].resume() : setView("games")}><strong>{savedSeats.length}</strong><span>rooms to continue</span></button>
+                </div>
               </div>
             </div>
             <div className="halieus-showcase-feature" aria-label={`Featured game: ${featuredGame.name}`}>
               {featureRotation.length > 1 && <button type="button" className="halieus-feature-arrow is-previous" onClick={previousFeature} aria-label="Previous featured game">‹</button>}
-              <span className="halieus-showcase-orbit" aria-hidden="true">{featuredGame.motifs.slice(0, 4).map((motif, index) => <i key={`${motif}-${index}`}>{motif}</i>)}</span>
-              <img src={featuredGame.icon} alt="" />
-              <div><p>{featuredSeat ? "ROOM TO CONTINUE" : "FEATURED NOW"}</p><h2>{featuredGame.name}</h2><span>{featuredSeat ? `Room ${featuredSeat.session?.code}` : featuredGame.subtitle}</span></div>
-              <b>{featuredSeat ? "Continue" : featuredGame.status === "beta" ? "Beta" : "Available"}</b>
+              <div key={featuredGameId} className="halieus-feature-card-stage">
+                <span className="halieus-showcase-orbit" aria-hidden="true">{featuredGame.motifs.slice(0, 4).map((motif, index) => <i key={`${motif}-${index}`}>{motif}</i>)}</span>
+                <img src={featuredGame.icon} alt="" />
+                <div><p>{featuredSeat ? "ROOM TO CONTINUE" : "FEATURED NOW"}</p><h2>{featuredGame.name}</h2><span>{featuredSeat ? `Room ${featuredSeat.session?.code}` : featuredGame.subtitle}</span></div>
+                <b>{featuredSeat ? "Continue" : featuredGame.status === "beta" ? "Beta" : "Available"}</b>
+              </div>
               {featureRotation.length > 1 && <button type="button" className="halieus-feature-arrow is-next" onClick={nextFeature} aria-label="Next featured game">›</button>}
               <nav className="halieus-feature-rail" aria-label="Featured games">
                 {featureRotation.map((gameId, index) => {
@@ -646,7 +650,7 @@ export function HomeScreen(props: HomeScreenProps) {
           </section>
           <section className="halieus-home-discovery" aria-label="Game discovery">
             <header>
-              <div><p>DISCOVER</p><h2>Pick your next table</h2><span>Jump between your favourites, recommendations, recent games and what friends are playing.</span></div>
+              <div><p>DISCOVER</p><h2>Pick your next table</h2><span>A short shortlist for the Home screen. The full library stays under View all games.</span></div>
               <button type="button" onClick={() => { setView("games"); setMobileMenuOpen(false); }}>View all games →</button>
             </header>
             <nav className="halieus-discovery-tabs" aria-label="Game discovery filters">
@@ -674,11 +678,11 @@ export function HomeScreen(props: HomeScreenProps) {
           <section className="halieus-home-social-grid">
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>ONLINE PLAYERS</p><h2>Who’s around</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
-              <div>{onlinePlayers.slice(0, 8).map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In game" : "Online"} status="•••" onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No other players are online right now.</p>}</div>
+              <div>{onlinePlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In game" : "Online"} status="•••" onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No other players are online right now.</p>}</div>
             </section>
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>RECENT PLAYERS</p><h2>Play together again</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
-              <div>{recentPlayers.map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={person.online ? "Online" : person.lastSeenAt ? `Last seen ${new Date(person.lastSeenAt).toLocaleDateString()}` : "Offline"} status="•••" onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{recentPlayers.length === 0 && <p>Your recent players will appear here.</p>}</div>
+              <div>{recentPlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={person.online ? "Online" : person.lastSeenAt ? `Last seen ${new Date(person.lastSeenAt).toLocaleDateString()}` : "Offline"} status="•••" onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{recentPlayers.length === 0 && <p>Your recent players will appear here.</p>}</div>
             </section>
           </section>
           {savedSeats.length > 1 && <section className="halieus-section-card halieus-continue-home halieus-continue-secondary"><header><div><p>OTHER ROOMS</p><h2>Ready to rejoin</h2></div><span>{savedSeats.length - 1}</span></header><div className="halieus-continue-list">{savedSeats.slice(1).map((entry) => <div key={entry.id} className="halieus-continue-row"><button type="button" onClick={() => { selectGame(entry.id); entry.resume(); }} disabled={disabled}><img src={GAME_BY_ID[entry.id].icon} alt="" /><span><strong>{entry.game}</strong><small>Room {entry.session?.code}</small></span><b>Continue →</b></button><button type="button" onClick={entry.forget} aria-label={`Forget ${entry.game} room`}>×</button></div>)}</div></section>}
