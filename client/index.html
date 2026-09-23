@@ -23,9 +23,11 @@
       (() => {
         try {
           const saved = localStorage.getItem("halieus-game-room-theme");
-          const theme = saved === "light" || saved === "dark" || saved === "blue" || saved === "custom"
+          const mode = saved === "system" || saved === "light" || saved === "dark" || saved === "blue" || saved === "custom"
             ? saved
-            : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            : "system";
+          const systemTheme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          const theme = mode === "system" ? systemTheme : mode;
           let background = theme === "light" ? "#f4f7fb" : theme === "blue" ? "#06111c" : "#0f1012";
           let accent = "#e5a721";
           if (theme === "custom") {
@@ -35,6 +37,7 @@
               if (/^#[0-9a-f]{6}$/i.test(custom.accent || "")) accent = custom.accent;
             } catch {}
           }
+          document.documentElement.dataset.themeMode = mode;
           document.documentElement.dataset.theme = theme;
           document.documentElement.style.colorScheme = theme === "light" ? "light" : "dark";
           document.documentElement.style.backgroundColor = background;
