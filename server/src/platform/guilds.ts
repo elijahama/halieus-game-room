@@ -28,6 +28,7 @@ interface StoredGuild {
   id: string;
   name: string;
   description: string;
+  picture: string | null;
   createdAt: number;
   updatedAt: number;
   roomCreationPolicy: HalieusGuildRoomPolicy;
@@ -83,6 +84,10 @@ function normaliseDescription(value: unknown): string {
 
 function normaliseMessage(value: unknown): string {
   return typeof value === "string" ? value.trim().replace(/\s+/g, " ").slice(0, 600) : "";
+}
+
+function validGuildPicture(value: string): boolean {
+  return /^data:image\/(?:png|jpeg|webp);base64,/i.test(value) && value.length <= 1_400_000;
 }
 
 function inviteHash(value: string): string {
@@ -172,6 +177,7 @@ function summaryFor(guild: StoredGuild, accountId: string): HalieusGuildSummary 
     id: guild.id,
     name: guild.name,
     description: guild.description,
+    picture: guild.picture,
     createdAt: guild.createdAt,
     updatedAt: guild.updatedAt,
     role: member.role,
@@ -240,6 +246,7 @@ export async function loadGuildStore(): Promise<void> {
   // field from taking the entire social layer offline after a deployment.
   for (const guild of store.guilds) {
     guild.description = typeof guild.description === "string" ? guild.description : "";
+    guild.picture = typeof guild.picture === "string" && validGuildPicture(guild.picture) ? guild.picture : null;
     guild.roomCreationPolicy = guild.roomCreationPolicy === "admins" || guild.roomCreationPolicy === "moderators"
       ? guild.roomCreationPolicy
       : "members";
@@ -247,6 +254,7 @@ export async function loadGuildStore(): Promise<void> {
     guild.messages = Array.isArray(guild.messages) ? guild.messages.slice(-MAX_MESSAGES_PER_GUILD) : [];
     guild.rooms = Array.isArray(guild.rooms) ? guild.rooms.slice(-MAX_ROOMS_PER_GUILD) : [];
     guild.invitations = Array.isArray(guild.invitations) ? guild.invitations.slice(-200) : [];
+    for (const invitation of guild.invitations) invitation.guildPicture = guild.picture;
     for (const room of guild.rooms) {
       room.participants = Array.isArray(room.participants) ? room.participants : [];
       room.participantAccountIds = Array.isArray(room.participantAccountIds) ? room.participantAccountIds : [];
@@ -314,6 +322,7 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
       id: id("guild"),
       name,
       description,
+      picture: null,
       createdAt: now,
       updatedAt: now,
       roomCreationPolicy,
@@ -541,6 +550,16 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
     if (request.body?.description !== undefined) {
       membership.guild.description = normaliseDescription(request.body.description);
     }
+    if (request.body?.picture !== undefined) {
+      if (request.body.picture === null) {
+        membership.guild.picture = null;
+      } else if (typeof request.body.picture === "string" && validGuildPicture(request.body.picture.trim())) {
+        membership.guild.picture = request.body.picture.trim();
+      } else {
+        response.status(400).json({ ok: false, reason: "Guild picture must be a PNG, JPEG or WebP under 1 MB." });
+        return;
+      }
+    }
     if (request.body?.roomCreationPolicy !== undefined) {
       const policy = request.body.roomCreationPolicy;
       if (policy !== "members" && policy !== "moderators" && policy !== "admins") {
@@ -582,6 +601,7 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
       id: id("guild-invite"),
       guildId: membership.guild.id,
       guildName: membership.guild.name,
+      guildPicture: membership.guild.picture,
       senderAccountId: account.id,
       senderDisplayName: account.displayName,
       recipientAccountId: target.id,
