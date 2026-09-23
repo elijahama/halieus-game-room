@@ -330,7 +330,6 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                 <button type="button" className={adminTab === "rooms" ? "is-active" : ""} onClick={() => setAdminTab("rooms")}><span>▣</span><div><strong>Rooms</strong><small>{activeRoomCount} live</small></div></button>
                 <button type="button" className={adminTab === "audit" ? "is-active" : ""} onClick={() => setAdminTab("audit")}><span>≡</span><div><strong>Audit</strong><small>Account activity</small></div></button>
                 <button type="button" className={adminTab === "test-lab" ? "is-active" : ""} onClick={() => setAdminTab("test-lab")}><span>β</span><div><strong>Test Lab</strong><small>{betaMode ? "Active" : "Off"}</small></div></button>
-                <button type="button" className={adminTab === "account" ? "is-active" : ""} onClick={() => setAdminTab("account")}><span>⚙</span><div><strong>Account</strong><small>Profile & security</small></div></button>
               </nav>
 
               {(adminTab === "overview" || adminTab === "rooms") && <div className="account-room-oversight">
