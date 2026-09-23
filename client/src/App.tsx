@@ -55,7 +55,7 @@ import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
-import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readThemeMode, type HalieusCustomTheme, type HalieusThemeMode, THEME_KEY } from "./platform/theme";
+import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readThemeMode, resolveThemeMode, type HalieusCustomTheme, type HalieusThemeMode, THEME_KEY } from "./platform/theme";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
   DiceResponse,
@@ -550,7 +550,9 @@ export default function App() {
 
   const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
-  const darkMode = themeMode === "dark" || themeMode === "blue" || (themeMode === "custom" && isDarkColour(customTheme.page));
+  const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const resolvedThemeMode = resolveThemeMode(themeMode, systemPrefersDark);
+  const darkMode = resolvedThemeMode === "dark" || resolvedThemeMode === "blue" || (resolvedThemeMode === "custom" && isDarkColour(customTheme.page));
   const [soundEnabled, setSoundEnabled] =
     useState(
       () =>
@@ -576,9 +578,17 @@ export default function App() {
 
 
   useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const sync = () => setSystemPrefersDark(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
     const handleThemeMode = (event: Event) => {
       const requested = (event as CustomEvent<HalieusThemeMode>).detail;
-      if (requested === "light" || requested === "dark" || requested === "blue" || requested === "custom") setThemeMode(requested);
+      if (requested === "system" || requested === "light" || requested === "dark" || requested === "blue" || requested === "custom") setThemeMode(requested);
     };
     const handleCustomTheme = (event: Event) => setCustomTheme((event as CustomEvent<HalieusCustomTheme>).detail);
     window.addEventListener("halieus-theme-mode", handleThemeMode);
@@ -593,14 +603,14 @@ export default function App() {
     const root = document.documentElement;
     localStorage.setItem(THEME_KEY, themeMode);
     root.dataset.themeMode = themeMode;
-    root.dataset.theme = themeMode;
+    root.dataset.theme = resolvedThemeMode;
     root.style.colorScheme = darkMode ? "dark" : "light";
     clearCustomThemeVariables(root);
-    if (themeMode === "custom") {
+    if (resolvedThemeMode === "custom") {
       for (const [key, value] of Object.entries(customThemeVariables(customTheme))) root.style.setProperty(key, value);
     }
-    root.style.backgroundColor = themeMode === "custom" ? customTheme.page : themeMode === "light" ? "#f4f7fb" : themeMode === "blue" ? "#06111c" : "#0f1012";
-  }, [customTheme, darkMode, themeMode]);
+    root.style.backgroundColor = resolvedThemeMode === "custom" ? customTheme.page : resolvedThemeMode === "light" ? "#f4f7fb" : resolvedThemeMode === "blue" ? "#06111c" : "#0f1012";
+  }, [customTheme, darkMode, resolvedThemeMode, themeMode]);
 
   useEffect(() => {
     localStorage.setItem(
