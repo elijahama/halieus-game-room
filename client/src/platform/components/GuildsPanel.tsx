@@ -518,7 +518,7 @@ export function GuildsPanel({
                     <label><span>Description</span><input value={settingsDescription} onChange={(event) => setSettingsDescription(event.target.value)} /></label>
                     <label><span>Who can create rooms?</span><select value={settingsPolicy} onChange={(event) => setSettingsPolicy(event.target.value as HalieusGuildRoomPolicy)}><option value="members">Any member</option><option value="moderators">Moderators +</option><option value="admins">Admins only</option></select></label>
                     <button type="submit" className="button-outline" disabled={busy}>Save settings</button>
-                    <div className="halieus-guild-invite"><span><small>INVITE PEOPLE</small><code>{detail.inviteCode ?? "Admin access required"}</code></span><button type="button" className="halieus-guild-platform-invite" onClick={() => { setInviteSearch(""); setView("members"); }}>Invite HGR players</button>{detail.inviteCode && <><button type="button" onClick={() => void copyInvite()}>Copy code</button><button type="button" onClick={() => void regenerateInvite()}>Regenerate</button></>}</div>
+                    <div className="halieus-guild-invite"><span><small>PRIVATE INVITE CODE</small><code>{detail.inviteCode ?? "Admin access required"}</code></span><button type="button" className="halieus-guild-platform-invite" onClick={() => { setInviteSearch(""); setView("members"); }}>Invite HGR players</button>{detail.inviteCode && <><button type="button" onClick={() => void copyInvite()}>Copy code</button><button type="button" onClick={() => void regenerateInvite()}>Regenerate</button></>}</div>
                   </form>
                 )}
               </div>
