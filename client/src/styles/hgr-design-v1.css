@@ -1597,3 +1597,352 @@ button.halieus-player-identity {
 @media (max-width: 860px) {
   .halieus-guild-invite-results { grid-template-columns: minmax(0,1fr) !important; }
 }
+
+
+/* ==========================================================================
+   HGR 4.1.1 — video-reference polish
+   Stable GameBanana-style hero motion, purposeful Home previews, restored
+   System theme, compact Guild entry actions and profile-first owner account.
+   ========================================================================== */
+
+/* Home previews are previews. View all owns the full browsing experience. */
+.halieus-home-player-strip > div {
+  max-height: none !important;
+  overflow: visible !important;
+  padding-right: 0 !important;
+}
+.halieus-home-player-strip {
+  overflow: visible !important;
+}
+.halieus-discovery-row {
+  display: grid !important;
+  grid-auto-flow: row !important;
+  grid-auto-columns: auto !important;
+  grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+  overflow: visible !important;
+  padding: 2px !important;
+  scroll-snap-type: none !important;
+}
+.halieus-discovery-card {
+  min-width: 0 !important;
+  scroll-snap-align: none !important;
+}
+.halieus-discovery-tabs {
+  overflow: visible !important;
+  flex-wrap: wrap;
+}
+
+/* Keep the hero frame absolutely stable while only its contents transition.
+ * Short/long game titles therefore cannot resize or snap the surrounding Home. */
+.halieus-feature-carousel {
+  min-height: 430px;
+}
+.halieus-feature-carousel .halieus-showcase-copy,
+.halieus-feature-carousel .halieus-showcase-feature {
+  min-height: 430px;
+  box-sizing: border-box;
+}
+.halieus-feature-copy-stage {
+  min-width: 0;
+  min-height: 318px;
+  display: grid;
+  grid-template-rows: 20px minmax(2em, auto) minmax(3.25em, auto) auto auto;
+  align-content: center;
+  gap: 11px;
+  animation: hgr-feature-content-in 560ms cubic-bezier(.22,.72,.2,1) both;
+}
+.halieus-feature-copy-stage > p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--feature-accent);
+  font-size: .66rem;
+  font-weight: 950;
+  letter-spacing: .15em;
+  line-height: 20px;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-feature-copy-stage > h1 {
+  max-width: 720px;
+  min-height: 1.92em;
+  margin: 0;
+  display: flex;
+  align-items: flex-end;
+  font-size: clamp(2.25rem,5vw,4.75rem);
+  line-height: .96;
+  letter-spacing: -.058em;
+}
+.halieus-feature-copy-stage > span {
+  max-width: 680px;
+  min-height: 3.25em;
+  display: block;
+  color: var(--hgr-muted);
+  font-size: clamp(.8rem,1.25vw,.95rem);
+  line-height: 1.6;
+}
+.halieus-feature-carousel .halieus-showcase-feature {
+  display: grid !important;
+  grid-template-rows: minmax(0,1fr) !important;
+  align-items: stretch !important;
+  justify-items: stretch !important;
+}
+.halieus-feature-card-stage {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  min-height: 330px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: minmax(0,1fr) auto;
+  align-items: center;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 8px 20px 64px;
+  animation: hgr-feature-content-in 560ms cubic-bezier(.22,.72,.2,1) both;
+}
+.halieus-feature-card-stage > img {
+  position: relative;
+  z-index: 3;
+  width: min(72%,220px);
+  max-height: 220px;
+  object-fit: contain;
+  filter: drop-shadow(0 24px 34px rgba(0,0,0,.24));
+  animation: halieus354-showcase-float 6.4s ease-in-out infinite;
+}
+.halieus-feature-card-stage > div {
+  position: relative;
+  z-index: 3;
+  min-height: 48px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  text-align: center;
+}
+.halieus-feature-card-stage p {
+  margin: 0;
+  color: var(--feature-accent);
+  font-size: .55rem;
+  font-weight: 950;
+  letter-spacing: .14em;
+}
+.halieus-feature-card-stage h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -.035em;
+}
+.halieus-feature-card-stage span {
+  min-height: 1.45em;
+  color: var(--hgr-muted);
+  font-size: .67rem;
+}
+.halieus-feature-card-stage > b {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 5;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb,var(--feature-accent) 32%,var(--hgr-border));
+  border-radius: 999px;
+  background: color-mix(in srgb,var(--feature-accent) 8%,var(--hgr-surface-raised));
+  color: var(--feature-accent);
+  font-size: .54rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+@keyframes hgr-feature-content-in {
+  from { opacity: .18; transform: translateX(18px) scale(.992); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* System is once again a first-class theme choice rather than silently
+ * resolving to a one-off light/dark selection. */
+.halieus-theme-mode-grid {
+  grid-template-columns: repeat(5,minmax(0,1fr)) !important;
+}
+
+/* Guild entry actions stay out of the way until a player actually wants one. */
+.halieus-guild-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 15px;
+  background: var(--hgr-surface-soft);
+}
+.halieus-guild-actions > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-guild-actions > div:first-child strong {
+  color: var(--hgr-text);
+  font-size: 12px;
+}
+.halieus-guild-actions > div:first-child span {
+  color: var(--hgr-muted);
+  font-size: 10px;
+}
+.halieus-guild-actions > div:last-child {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 7px;
+}
+.halieus-guild-actions button {
+  min-height: 38px;
+  padding: 7px 12px;
+  white-space: nowrap;
+}
+.halieus-guild-join-create.is-open {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  align-items: start;
+  margin: 0 0 12px;
+}
+.halieus-guild-join-create.is-open > form {
+  width: 100%;
+  box-sizing: border-box;
+}
+.halieus-guild-platform-invite {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb,var(--hgr-brand) 42%,var(--hgr-border));
+  border-radius: 10px;
+  background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface-raised));
+  color: var(--hgr-text);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* The owner's own account opens like a player profile. Administration is an
+ * explicit secondary destination, not the identity screen. */
+.account-self-service-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.account-open-owner-tools,
+.account-owner-back-profile {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.account-admin-heading-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The new stage wrappers replace old direct-child hero selectors on mobile. */
+@media (max-width: 980px) {
+  .halieus-discovery-row {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+  .halieus-feature-copy-stage > h1 {
+    font-size: clamp(2.2rem,6vw,4rem);
+  }
+}
+@media (max-width: 760px) {
+  .halieus-feature-carousel,
+  .halieus-feature-carousel .halieus-showcase-copy {
+    min-height: 0;
+  }
+  .halieus-feature-copy-stage {
+    min-height: 0;
+    grid-template-rows: auto auto auto auto auto;
+  }
+  .halieus-feature-copy-stage > h1,
+  .halieus-feature-copy-stage > span {
+    min-height: 0;
+  }
+  .halieus-feature-carousel .halieus-showcase-feature {
+    min-height: 250px !important;
+    padding-bottom: 62px !important;
+  }
+  .halieus-feature-card-stage {
+    min-height: 220px;
+    grid-template-columns: 145px minmax(0,1fr);
+    grid-template-rows: 1fr;
+    justify-items: start;
+    gap: 10px;
+    padding: 16px 38px 56px;
+  }
+  .halieus-feature-card-stage > img {
+    width: 130px;
+    max-height: 150px;
+    justify-self: center;
+  }
+  .halieus-feature-card-stage > div {
+    min-height: 0;
+    justify-items: start;
+    text-align: left;
+  }
+  .halieus-showcase-feature .halieus-showcase-orbit {
+    inset: 10% 45% 18% 4%;
+  }
+  .halieus-theme-mode-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+  .halieus-guild-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .halieus-guild-actions > div:last-child {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .account-self-service-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .account-open-owner-tools {
+    width: 100%;
+  }
+}
+@media (max-width: 560px) {
+  .halieus-discovery-row {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .halieus-feature-copy-stage > h1 {
+    font-size: clamp(2.05rem,12vw,3.25rem);
+  }
+  .halieus-feature-card-stage {
+    min-height: 195px;
+    grid-template-columns: 105px minmax(0,1fr);
+    padding: 12px 30px 52px;
+  }
+  .halieus-feature-card-stage > img {
+    width: 96px;
+    max-height: 112px;
+  }
+  .halieus-feature-card-stage > b {
+    top: 7px;
+    right: 8px;
+  }
+  .halieus-guild-actions > div:last-child {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .account-admin-heading-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .account-admin-heading-actions button {
+    flex: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .halieus-feature-copy-stage,
+  .halieus-feature-card-stage,
+  .halieus-feature-card-stage > img {
+    animation: none !important;
+  }
+}
