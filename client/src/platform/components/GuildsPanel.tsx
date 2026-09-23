@@ -70,6 +70,7 @@ export function GuildsPanel({
   const [settingsDescription, setSettingsDescription] = useState("");
   const [settingsPolicy, setSettingsPolicy] = useState<HalieusGuildRoomPolicy>("members");
   const [busy, setBusy] = useState(false);
+  const [guildAction, setGuildAction] = useState<"join" | "create" | null>(null);
   const [directory, setDirectory] = useState<HalieusPlayerDirectoryEntry[]>([]);
   const [incomingInvitations, setIncomingInvitations] = useState<HalieusGuildInvitation[]>([]);
   const [inviteSearch, setInviteSearch] = useState("");
@@ -169,6 +170,7 @@ export function GuildsPanel({
       });
       setNewGuildName("");
       setNewGuildDescription("");
+      setGuildAction(null);
       setDetail(result.guild);
       setSelectedGuildId(result.guild.id);
       setNotice(`${result.guild.name} created.`);
@@ -190,6 +192,7 @@ export function GuildsPanel({
         body: JSON.stringify({ inviteCode: joinCode }),
       });
       setJoinCode("");
+      setGuildAction(null);
       setDetail(result.guild);
       setSelectedGuildId(result.guild.id);
       setNotice(`Joined ${result.guild.name}.`);
@@ -415,14 +418,21 @@ export function GuildsPanel({
         <button type="button" className="button-outline" onClick={onBackToPlayers}>← Players</button>
       </header>
 
-      <div className="halieus-guild-join-create">
-        <form onSubmit={joinGuild}>
+      <div className="halieus-guild-actions">
+        <div><strong>{guilds.length ? "Your guild space" : "Start with a guild"}</strong><span>{guilds.length ? "Create or join another group only when you need to." : "Join with a private code or create a new group."}</span></div>
+        <div>
+          <button type="button" className={guildAction === "join" ? "button-primary" : "button-outline"} onClick={() => setGuildAction((current) => current === "join" ? null : "join")}>Join guild</button>
+          <button type="button" className={guildAction === "create" ? "button-primary" : "button-outline"} onClick={() => setGuildAction((current) => current === "create" ? null : "create")}>Create guild</button>
+        </div>
+      </div>
+
+      {guildAction && <div className="halieus-guild-join-create is-open">
+        {guildAction === "join" ? <form onSubmit={joinGuild}>
           <span>JOIN A GUILD</span>
-          <div><input value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} placeholder="GUILD-XXXX-XXXX" /><button type="submit" disabled={busy || !joinCode.trim()}>Join</button></div>
-        </form>
-        <form onSubmit={createGuild}>
+          <div><input autoFocus value={joinCode} onChange={(event) => setJoinCode(event.target.value.toUpperCase())} placeholder="GUILD-XXXX-XXXX" /><button type="submit" disabled={busy || !joinCode.trim()}>Join</button></div>
+        </form> : <form onSubmit={createGuild}>
           <span>CREATE A GUILD</span>
-          <input value={newGuildName} onChange={(event) => setNewGuildName(event.target.value)} placeholder="Friday Game Night" maxLength={48} />
+          <input autoFocus value={newGuildName} onChange={(event) => setNewGuildName(event.target.value)} placeholder="Friday Game Night" maxLength={48} />
           <input value={newGuildDescription} onChange={(event) => setNewGuildDescription(event.target.value)} placeholder="What is this group for?" maxLength={240} />
           <div>
             <select value={newGuildPolicy} onChange={(event) => setNewGuildPolicy(event.target.value as HalieusGuildRoomPolicy)}>
@@ -432,8 +442,8 @@ export function GuildsPanel({
             </select>
             <button type="submit" disabled={busy || newGuildName.trim().length < 3}>Create</button>
           </div>
-        </form>
-      </div>
+        </form>}
+      </div>}
 
       {incomingInvitations.length > 0 && <section className="halieus-guild-incoming" aria-label="Guild invitations">
         <header><div><span>GUILD INVITATIONS</span><strong>You’ve been invited</strong></div><b>{incomingInvitations.length}</b></header>
@@ -508,7 +518,7 @@ export function GuildsPanel({
                     <label><span>Description</span><input value={settingsDescription} onChange={(event) => setSettingsDescription(event.target.value)} /></label>
                     <label><span>Who can create rooms?</span><select value={settingsPolicy} onChange={(event) => setSettingsPolicy(event.target.value as HalieusGuildRoomPolicy)}><option value="members">Any member</option><option value="moderators">Moderators +</option><option value="admins">Admins only</option></select></label>
                     <button type="submit" className="button-outline" disabled={busy}>Save settings</button>
-                    <div className="halieus-guild-invite"><span><small>PRIVATE INVITE CODE</small><code>{detail.inviteCode ?? "Admin access required"}</code></span>{detail.inviteCode && <><button type="button" onClick={() => void copyInvite()}>Copy</button><button type="button" onClick={() => void regenerateInvite()}>Regenerate</button></>}</div>
+                    <div className="halieus-guild-invite"><span><small>INVITE PEOPLE</small><code>{detail.inviteCode ?? "Admin access required"}</code></span><button type="button" className="halieus-guild-platform-invite" onClick={() => { setInviteSearch(""); setView("members"); }}>Invite HGR players</button>{detail.inviteCode && <><button type="button" onClick={() => void copyInvite()}>Copy code</button><button type="button" onClick={() => void regenerateInvite()}>Regenerate</button></>}</div>
                   </form>
                 )}
               </div>

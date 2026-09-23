@@ -2,7 +2,7 @@
 
 ## Approved scope
 
-This implementation follows the saved post-4.1.0 UI reference: Home discovery, player/social cleanup, Guild member invitations, canonical avatars, richer leaderboards, scroll-safe setup/menu surfaces, neutral Dark/Light themes, optional Blue, Custom RGB theming and per-game ambient colour.
+This implementation follows the saved post-4.1.0 UI reference and subsequent recorded walkthrough: Home discovery, player/social cleanup, Guild member invitations, canonical avatars, richer leaderboards, scroll-safe setup/menu surfaces, System/neutral Dark/Light themes, optional Blue, Custom RGB theming and per-game ambient colour.
 
 WHOT gameplay redesign was explicitly excluded.
 
@@ -21,7 +21,7 @@ Recipients receive pending invitations and explicitly accept or decline. Accepti
 Guild member rendering refreshes display identity from the account store so profile-picture changes propagate into Guilds.
 
 ### Themes
-The old System/Light/Dark selector was replaced by Dark/Light/Blue/Custom.
+Theme choices are System/Dark/Light/Blue/Custom. System follows the device colour preference live, including if the OS preference changes while HGR is open.
 
 Dark is intentionally neutral. Blue preserves the previous navy direction as an optional theme. Custom stores four palette inputs and derives readable text/border/surface tokens from them. RGB, HEX and native colour-picker controls edit the same palette.
 
@@ -32,3 +32,19 @@ Desktop room setup and game menus use the backdrop/document as the overflow esca
 
 ### Validation
 `tests/regression-4.1.1.mjs` protects the approved 4.1.1 behaviour and is chained after the historical 4.1.0 regression.
+
+
+## Recorded walkthrough polish
+
+The September walkthrough used GameBanana's featured-game presentation as a motion/layout reference. HGR keeps its own visual identity, but the Home hero now rotates content inside a fixed-height stage so different title and description lengths cannot make the entire block jump. Rotation content eases in while manual previous/next and direct game indicators remain available.
+
+Home is intentionally a preview rather than another browsing surface. Discovery now shows four games and the Online/Recent player cards show three people each. Internal Home scrollbars were removed; **View all games** and **View all** now lead to the full browsing surfaces instead of duplicating an already-scrollable list.
+
+The walkthrough also clarified three platform behaviours:
+- **System theme** is restored as a real persisted mode and follows the device preference.
+- **Guild Join/Create** controls are compact until deliberately opened, while the private-code area exposes **Invite HGR players** as a direct route into platform-native invitations.
+- **Owner accounts** open on the same personal Profile & security surface as a normal player. Administration remains available through **Owner tools** instead of permanently taking over the account modal.
+
+### Validation extension
+
+`tests/regression-4.1.1-video-polish.mjs` protects the fixed hero stage, short Home previews, System theme, compact Guild actions and profile-first owner account behaviour. It runs after the existing Part 15 regression.

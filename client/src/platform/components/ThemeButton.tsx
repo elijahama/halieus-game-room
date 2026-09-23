@@ -45,6 +45,7 @@ function rgbHex(channels: [number, number, number]): string {
 }
 
 const THEME_OPTIONS: Array<{ mode: HalieusThemeMode; icon: string; label: string; description: string }> = [
+  { mode: "system", icon: "◐", label: "System", description: "Follow this device" },
   { mode: "dark", icon: "●", label: "Dark", description: "Low-light HGR" },
   { mode: "light", icon: "○", label: "Light", description: "Bright HGR" },
   { mode: "blue", icon: "◆", label: "Blue", description: "Deep blue HGR" },
@@ -65,7 +66,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   useEffect(() => {
     const handleMode = (event: Event) => {
       const next = (event as CustomEvent<HalieusThemeMode>).detail;
-      if (next === "dark" || next === "light" || next === "blue" || next === "custom") setMode(next);
+      if (next === "system" || next === "dark" || next === "light" || next === "blue" || next === "custom") setMode(next);
     };
     const handleCustom = (event: Event) => {
       const next = (event as CustomEvent<HalieusCustomTheme>).detail;
@@ -87,7 +88,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       if (!rect) return;
       const width = Math.min(280, Math.max(220, window.innerWidth - 24));
       const left = Math.min(Math.max(12, rect.left), Math.max(12, window.innerWidth - width - 12));
-      const menuHeight = 250;
+      const menuHeight = 300;
       const above = rect.top - menuHeight - 8;
       const top = above >= 12 ? above : Math.min(window.innerHeight - menuHeight - 12, rect.bottom + 8);
       setPopoverPosition({ left, top: Math.max(12, top), width });
