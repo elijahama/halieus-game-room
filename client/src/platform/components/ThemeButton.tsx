@@ -44,6 +44,13 @@ function rgbHex(channels: [number, number, number]): string {
   return `#${channels.map((channel) => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, "0")).join("")}`;
 }
 
+const CUSTOM_PRESETS: Array<{ id: string; label: string; description: string; theme: HalieusCustomTheme }> = [
+  { id: "violet", label: "Violet Night", description: "Current custom base", theme: { ...DEFAULT_CUSTOM_THEME } },
+  { id: "classic", label: "HGR Classic", description: "Neutral + Halieus yellow", theme: { page: "#0f1012", surface: "#1b1d21", accent: "#ffc200", secondary: "#3b82f6" } },
+  { id: "ocean", label: "Ocean", description: "Deep navy + cyan", theme: { page: "#07131f", surface: "#102337", accent: "#38bdf8", secondary: "#818cf8" } },
+  { id: "emerald", label: "Emerald", description: "Dark green + mint", theme: { page: "#071713", surface: "#102820", accent: "#34d399", secondary: "#fbbf24" } },
+];
+
 const THEME_OPTIONS: Array<{ mode: HalieusThemeMode; icon: string; label: string; description: string }> = [
   { mode: "system", icon: "◐", label: "System", description: "Follow this device" },
   { mode: "dark", icon: "●", label: "Dark", description: "Low-light HGR" },
@@ -202,6 +209,20 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               <div><p>CUSTOM THEME</p><h2>Design your HGR colours</h2><span>Build a palette without changing each game’s identity colour.</span></div>
               <button type="button" onClick={cancelCustom} aria-label="Close custom theme editor">×</button>
             </header>
+            <section className="halieus-custom-presets" aria-label="Custom theme presets">
+              <header><strong>Quick palettes</strong><span>Use a starting point, then tune every channel.</span></header>
+              <div>{CUSTOM_PRESETS.map((preset) => (
+                <button type="button" key={preset.id} onClick={() => setDraft({ ...preset.theme })}>
+                  <span className="halieus-custom-preset-swatch" aria-hidden="true">
+                    <i style={{ background: preset.theme.page }} />
+                    <i style={{ background: preset.theme.surface }} />
+                    <i style={{ background: preset.theme.accent }} />
+                    <i style={{ background: preset.theme.secondary }} />
+                  </span>
+                  <span><strong>{preset.label}</strong><small>{preset.description}</small></span>
+                </button>
+              ))}</div>
+            </section>
             <div className="halieus-custom-theme-grid">
               {([
                 ["page", "Background"],
@@ -237,8 +258,14 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               ))}
             </div>
             <div className="halieus-custom-theme-preview" style={{ background: draft.page }}>
-              <span style={{ background: draft.surface }}><i style={{ background: draft.accent }} /><b style={{ background: draft.secondary }} /></span>
-              <small>Preview</small>
+              <section className="halieus-custom-preview-window" style={{ background: draft.surface }}>
+                <header><i style={{ background: draft.accent }} /><b>HALIEUS GAME ROOM</b><em style={{ background: draft.secondary }} /></header>
+                <div><strong>Game night</strong><span style={{ borderColor: draft.accent }}>Primary action</span><small style={{ color: draft.secondary }}>Secondary accent</small></div>
+              </section>
+              <div className="halieus-custom-preview-palette" aria-label="Selected palette">
+                {(["page", "surface", "accent", "secondary"] as Array<keyof HalieusCustomTheme>).map((key) => <span key={key}><i style={{ background: draft[key] }} /><code>{draft[key].toUpperCase()}</code></span>)}
+              </div>
+              <small>Live palette preview</small>
             </div>
             <footer>
               <button type="button" className="button-muted" onClick={() => setDraft({ ...DEFAULT_CUSTOM_THEME })}>Reset</button>

@@ -10,6 +10,7 @@ export interface HalieusGuildInvitation {
   id: string;
   guildId: string;
   guildName: string;
+  guildPicture: string | null;
   senderAccountId: string;
   senderDisplayName: string;
   recipientAccountId: string;
@@ -71,6 +72,7 @@ export interface HalieusGuildSummary {
   id: string;
   name: string;
   description: string;
+  picture: string | null;
   createdAt: number;
   updatedAt: number;
   role: HalieusGuildRole;
