@@ -244,7 +244,7 @@ export function HomeScreen(props: HomeScreenProps) {
   const featuredSeat = currentSeat?.id === featuredGameId ? currentSeat : null;
   useEffect(() => {
     if (featureRotation.length < 2 || view !== "home") return;
-    const timer = window.setInterval(() => setFeaturedRotationIndex((current) => (current + 1) % featureRotation.length), 9_000);
+    const timer = window.setInterval(() => setFeaturedRotationIndex((current) => (current + 1) % featureRotation.length), 11_000);
     return () => window.clearInterval(timer);
   }, [featureRotation.length, view]);
   function previousFeature() { setFeaturedRotationIndex((current) => (current - 1 + featureRotation.length) % Math.max(1, featureRotation.length)); }
@@ -560,7 +560,7 @@ export function HomeScreen(props: HomeScreenProps) {
         })}</section>}
         {guildInvites.length > 0 && <section className="halieus-inbox-group"><header><strong>Guild invitations</strong><b>{guildInvites.length}</b></header>{guildInvites.map((invitation) => (
           <article key={invitation.id} className="halieus-inbox-item is-guild" style={{ ["--inbox-accent" as string]: "#8b5cf6" }}>
-            <span className="halieus-inbox-guild-mark">{invitation.guildName.slice(0, 2).toUpperCase()}</span>
+            {invitation.guildPicture ? <img className="halieus-inbox-guild-mark is-picture" src={invitation.guildPicture} alt="" /> : <span className="halieus-inbox-guild-mark">{invitation.guildName.slice(0, 2).toUpperCase()}</span>}
             <span><small>{invitation.senderDisplayName.toUpperCase()} INVITED YOU</small><strong>{invitation.guildName}</strong><em>Guild membership request</em></span>
             <div><button type="button" className="button-primary" onClick={() => void respondGuildInvitation(invitation, "accept")}>Accept</button><button type="button" className="button-outline" onClick={() => void respondGuildInvitation(invitation, "decline")}>Decline</button></div>
           </article>
