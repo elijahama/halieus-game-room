@@ -3944,3 +3944,316 @@ html[data-theme="profile"] .account-panel {
     max-width: none;
   }
 }
+
+
+/* HGR 4.5 cosmetic skin library. Skins layer over themes; they never alter
+ * game state, hit targets, rules, odds or ranked calculations. */
+.halieus-skins-trigger {
+  width: 100%;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 28px minmax(0,1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-skins-trigger > span:first-child {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: color-mix(in srgb,var(--hgr-brand) 12%,var(--hgr-surface-raised));
+  color: var(--hgr-brand);
+  font-weight: 950;
+}
+.halieus-skins-trigger > span:last-child {
+  display: grid;
+  gap: 1px;
+}
+.halieus-skins-trigger strong { font-size: 9px; }
+.halieus-skins-trigger small { color: var(--hgr-muted); font-size: 7px; }
+
+.halieus-skins-backdrop {
+  position: fixed;
+  z-index: 14000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(3,5,8,.68);
+  backdrop-filter: blur(12px);
+}
+.halieus-skins-dialog {
+  width: min(920px, 100%);
+  max-height: min(780px, calc(100dvh - 36px));
+  overflow: auto;
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 22px;
+  background: var(--hgr-surface);
+  color: var(--hgr-text);
+  box-shadow: 0 30px 100px rgba(0,0,0,.42);
+}
+.halieus-skins-dialog > header {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: start;
+  gap: 16px;
+}
+.halieus-skins-dialog > header p,
+.halieus-skins-dialog > header h2,
+.halieus-skins-dialog > header span { margin: 0; }
+.halieus-skins-dialog > header p {
+  color: var(--hgr-brand);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .13em;
+}
+.halieus-skins-dialog > header h2 {
+  margin-top: 3px;
+  font-size: 22px;
+}
+.halieus-skins-dialog > header span {
+  display: block;
+  max-width: 720px;
+  margin-top: 5px;
+  color: var(--hgr-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.halieus-skins-dialog > header > button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 10px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  cursor: pointer;
+}
+.halieus-skins-dialog > nav {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-skins-dialog > nav button {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--hgr-text-soft);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-skins-dialog > nav button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 45%,var(--hgr-border));
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+}
+.halieus-skins-dialog > nav strong { font-size: 10px; }
+.halieus-skins-dialog > nav small { color: var(--hgr-muted); font-size: 8px; }
+
+.halieus-skins-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 9px;
+}
+.halieus-skins-grid > button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 96px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-lg);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-skins-grid > button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 65%,var(--hgr-border));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--hgr-brand) 18%,transparent);
+}
+.halieus-skins-grid > button.is-locked {
+  opacity: .58;
+  cursor: not-allowed;
+}
+.halieus-skins-grid > button > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.halieus-skins-grid em {
+  color: var(--hgr-info);
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.halieus-skins-grid strong { font-size: 11px; }
+.halieus-skins-grid small { color: var(--hgr-muted); font-size: 8px; line-height: 1.4; }
+.halieus-skin-state {
+  max-width: 86px;
+  color: var(--hgr-muted);
+  font-size: 8px;
+  font-weight: 850;
+  text-align: right;
+}
+.halieus-skins-grid > button.is-active .halieus-skin-state { color: var(--hgr-brand); }
+.halieus-skin-preview {
+  position: relative;
+  width: 96px;
+  height: 64px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 12px;
+  background: var(--hgr-page);
+}
+.halieus-skin-preview i {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 8px;
+  background: var(--hgr-surface-raised);
+}
+.halieus-skin-preview i:nth-child(2) {
+  inset: 18px 12px 8px 35px;
+  background: var(--hgr-surface-strong);
+}
+.halieus-skin-preview b {
+  position: relative;
+  z-index: 2;
+  color: var(--hgr-brand);
+  font-size: 16px;
+  font-weight: 950;
+}
+.halieus-skins-dialog > footer {
+  padding-top: 4px;
+  border-top: 1px solid var(--hgr-border);
+  color: var(--hgr-muted);
+  font-size: 8px;
+}
+
+/* Interface skins are intentionally structural, allowing the selected colour
+ * theme to remain in charge of hue. */
+html[data-skin-interface="carbon-shell"] .halieus-sidebar,
+html[data-skin-interface="carbon-shell"] .halieus-section-card,
+html[data-skin-interface="carbon-shell"] .account-panel {
+  border-color: color-mix(in srgb,var(--hgr-border-strong) 82%,#000);
+  box-shadow: inset 0 1px rgba(255,255,255,.025), 0 16px 40px rgba(0,0,0,.16);
+}
+html[data-skin-interface="carbon-shell"] {
+  --hgr-radius-md: 10px;
+  --hgr-radius-lg: 14px;
+}
+html[data-skin-interface="arcade-shell"] .halieus-section-card,
+html[data-skin-interface="arcade-shell"] .halieus-player-identity,
+html[data-skin-interface="arcade-shell"] .account-panel {
+  border-width: 2px;
+  box-shadow: 4px 4px 0 color-mix(in srgb,var(--hgr-brand) 18%,transparent);
+}
+html[data-skin-interface="arcade-shell"] {
+  --hgr-radius-md: 9px;
+  --hgr-radius-lg: 12px;
+}
+html[data-skin-interface="champion-shell"] .halieus-sidebar,
+html[data-skin-interface="champion-shell"] .halieus-section-card,
+html[data-skin-interface="champion-shell"] .account-panel {
+  border-color: color-mix(in srgb,#d8aa43 42%,var(--hgr-border));
+  box-shadow: inset 0 1px color-mix(in srgb,#f3d789 20%,transparent), 0 18px 48px rgba(0,0,0,.18);
+}
+
+/* Card skins currently target the shared Poker/Blackjack hidden-card language;
+ * visible faces remain standard for readability and rule recognition. */
+html[data-skin-cards="midnight-deck"] .poker-card-back,
+html[data-skin-cards="midnight-deck"] .rebuild-card.is-back {
+  border-color: #5087b5 !important;
+  background:
+    linear-gradient(135deg,rgba(90,170,255,.16) 25%,transparent 25%) 0 0/10px 10px,
+    linear-gradient(315deg,rgba(90,170,255,.12) 25%,#101c2c 25%) 0 0/10px 10px !important;
+  color: #9ed2ff !important;
+}
+html[data-skin-cards="casino-deck"] .poker-card-back,
+html[data-skin-cards="casino-deck"] .rebuild-card.is-back {
+  border-color: #ba8d37 !important;
+  background:
+    radial-gradient(circle at center,#c9a24b 0 2px,transparent 3px),
+    repeating-linear-gradient(45deg,#153923 0 6px,#102d1c 6px 12px) !important;
+  color: #e6c875 !important;
+}
+html[data-skin-cards="neon-deck"] .poker-card-back,
+html[data-skin-cards="neon-deck"] .rebuild-card.is-back {
+  border-color: #00dbe7 !important;
+  background: linear-gradient(145deg,#090b14,#1c0b23) !important;
+  color: #ff50d3 !important;
+  box-shadow: inset 0 0 0 1px rgba(255,80,211,.32),0 0 12px rgba(0,219,231,.16) !important;
+}
+
+/* Mega Board skins only replace the board field/frame atmosphere. Property
+ * group colours, ownership, tokens and actionable information stay untouched. */
+html[data-skin-mega-board="night-board"] .board-grid {
+  background:
+    linear-gradient(rgba(55,120,170,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(55,120,170,.07) 1px,transparent 1px),
+    #111d27 !important;
+  background-size: 28px 28px !important;
+}
+html[data-skin-mega-board="transit-board"] .board-grid {
+  background:
+    radial-gradient(circle at 20% 25%,rgba(47,155,177,.10) 0 2px,transparent 3px),
+    linear-gradient(120deg,rgba(47,155,177,.08),transparent 35%,rgba(224,155,55,.08)),
+    #18221f !important;
+}
+html[data-skin-mega-board="tycoon-board"] .board-grid {
+  background:
+    linear-gradient(135deg,rgba(211,166,73,.08) 25%,transparent 25%) 0 0/18px 18px,
+    #171510 !important;
+  box-shadow: inset 0 0 0 2px rgba(211,166,73,.24) !important;
+}
+
+/* Library previews hint at the treatment without needing game screenshots. */
+.halieus-skin-preview.skin-carbon-shell { background:#101216; }
+.halieus-skin-preview.skin-arcade-shell { box-shadow: inset 0 0 0 2px var(--hgr-brand); }
+.halieus-skin-preview.skin-champion-shell { border-color:#c99b3b; }
+.halieus-skin-preview.skin-midnight-deck { background:#101c2c; }
+.halieus-skin-preview.skin-casino-deck { background:#153923; }
+.halieus-skin-preview.skin-neon-deck { background:linear-gradient(135deg,#09111a,#1f0a25); }
+.halieus-skin-preview.skin-night-board { background:#111d27; }
+.halieus-skin-preview.skin-transit-board { background:linear-gradient(135deg,#18312f,#20251d); }
+.halieus-skin-preview.skin-tycoon-board { background:#171510; border-color:#c99b3b; }
+
+@media (max-width: 700px) {
+  .halieus-skins-dialog > nav,
+  .halieus-skins-grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-skins-grid > button {
+    grid-template-columns: 78px minmax(0,1fr);
+  }
+  .halieus-skin-preview { width:78px; }
+  .halieus-skin-state {
+    grid-column: 2;
+    max-width: none;
+    text-align: left;
+  }
+}
