@@ -199,20 +199,19 @@ The Games library is the reference implementation: category headings, count chip
 
 ## 12. Game visual identity inheritance
 
-Game artwork follows a separate but connected visual system documented in [GAME_VISUAL_IDENTITY_SYSTEM.md](GAME_VISUAL_IDENTITY_SYSTEM.md).
+Game artwork follows the connected visual process documented in [GAME_VISUAL_IDENTITY_SYSTEM.md](GAME_VISUAL_IDENTITY_SYSTEM.md).
 
-Each game has two concrete identity assets:
+The **current website artwork remains the source of truth**. A future refinement pass may derive compact transparent-background glyphs or normalise safe areas and presentation, but it must not replace working game identities simply to make a new set.
 
-- a larger website/discovery thumbnail;
-- a compact game glyph for tabs, game chrome and small identity surfaces.
+For visual/navigation purposes, use the website's current families:
 
-Those assets are governed by one of three reusable category grammars:
+- **Board & Strategy:** Mega Board, Ludo, Connect Four, Ayo, Word Board, Dominoes
+- **Cards & Casino:** Poker, WHOT, Blackjack, Cheat
+- **Social & Party:** Hidden Dictator, Word Game, Password, Anagrams Race
 
-- Board & strategy;
-- Card & table;
-- Word & party.
+These visual families are presentation guidance rather than a requirement to redraw every game into one style. Mechanical taxonomy may differ.
 
-The category grammar is established before the individual game set is expanded. Future games inherit an approved category system instead of receiving a one-off thumbnail and icon treatment.
+A new game should start from the nearest established HGR family and current website presentation rules, then earn any exception deliberately.
 
 ## 13. Asset rollout
 
