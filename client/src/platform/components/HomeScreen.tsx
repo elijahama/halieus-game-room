@@ -273,7 +273,7 @@ export function HomeScreen(props: HomeScreenProps) {
       "most-played": mostPlayed.length ? mostPlayed : quickGames,
       recommended: recommended.length ? recommended : quickGames,
       recent: recent.length ? recent : quickGames,
-      friends: friends.length ? friends : quickGames,
+      friends,
     };
     return shelves[discoveryShelf].slice(0, 4);
   }, [discoveryShelf, liveRooms, personalStats.byGame, personalStats.recent, quickGames]);
@@ -662,7 +662,7 @@ export function HomeScreen(props: HomeScreenProps) {
                 ["friends", "Friends Are Playing"],
               ] as Array<[DiscoveryShelf, string]>).map(([id, label]) => <button type="button" key={id} className={discoveryShelf === id ? "is-active" : ""} onClick={() => setDiscoveryShelf(id)}>{label}</button>)}
             </nav>
-            <div className="halieus-discovery-row">
+            <div className={`halieus-discovery-row${discoveryGames.length === 0 ? " is-empty" : ""}`}>
               {discoveryGames.map((gameId) => {
                 const game = GAME_BY_ID[gameId];
                 const stat = personalStats.byGame.find((row) => row.game === gameId);
@@ -673,6 +673,7 @@ export function HomeScreen(props: HomeScreenProps) {
                   <i>Quick Play →</i>
                 </button>;
               })}
+              {discoveryShelf === "friends" && discoveryGames.length === 0 && <div className="halieus-discovery-empty"><span aria-hidden="true">◇</span><div><strong>No friends are playing right now</strong><small>This shelf only fills when there is an active game to show.</small></div></div>}
             </div>
           </section>
           <section className="halieus-home-social-grid">

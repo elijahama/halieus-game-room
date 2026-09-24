@@ -2706,3 +2706,128 @@ button.halieus-player-identity {
   }
   .account-panel .account-owner-nav { grid-template-columns: minmax(0,1fr) !important; }
 }
+
+
+/* ==========================================================================
+   HGR 4.1.1 — theme canvas / truthful social shelf / hero hotfix
+   ========================================================================== */
+
+/* Bridge the legacy Game Room shell to the current palette variables.
+ * Previously only Light populated --halieus-page, leaving Blue/Custom sitting
+ * over the old dark #071018 canvas even while panels changed colour. */
+.halieus-shell {
+  --halieus-page: var(--hgr-page);
+  --halieus-text: var(--hgr-text);
+  background: var(--hgr-page) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-main {
+  background: transparent !important;
+}
+.halieus-game-atmosphere {
+  background-color: var(--hgr-page) !important;
+}
+.halieus-sidebar,
+.halieus-mobile-bar,
+.halieus-home-build-popover {
+  background-color: color-mix(in srgb, var(--hgr-surface) 94%, transparent) !important;
+}
+
+/* The carousel reserves real title/description height using each element's own
+ * font size. The previous grid used em units on the parent, making a 70px hero
+ * title overflow a ~33px row and collide with the room description. */
+.halieus-feature-copy-stage {
+  grid-template-rows: 20px auto auto auto auto !important;
+  align-content: center !important;
+  user-select: none;
+}
+.halieus-feature-copy-stage > h1 {
+  height: 1.92em !important;
+  min-height: 1.92em !important;
+  max-height: 1.92em !important;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  background: transparent !important;
+  line-height: .96 !important;
+  -webkit-line-clamp: 2;
+}
+.halieus-feature-copy-stage > span {
+  height: 3.2em !important;
+  min-height: 3.2em !important;
+  max-height: 3.2em !important;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  background: transparent !important;
+}
+.halieus-feature-copy-stage button {
+  user-select: auto;
+}
+
+/* Friends Are Playing is a live-data shelf, not another recommendation shelf. */
+.halieus-discovery-row.is-empty {
+  display: block !important;
+}
+.halieus-discovery-empty {
+  min-height: 180px;
+  display: grid;
+  grid-template-columns: 44px minmax(0,1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 22px;
+  border: 1px dashed var(--hgr-border-strong);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--hgr-surface-soft) 82%, transparent);
+  color: var(--hgr-text);
+}
+.halieus-discovery-empty > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 12px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-muted);
+  font-size: 20px;
+}
+.halieus-discovery-empty > div {
+  display: grid;
+  gap: 4px;
+}
+.halieus-discovery-empty strong {
+  font-size: 14px;
+}
+.halieus-discovery-empty small {
+  color: var(--hgr-muted);
+  font-size: 11px;
+}
+
+/* Custom palettes now behave like DAW/editor themes: the workspace and its
+ * surface hierarchy change together; per-game atmosphere remains an overlay. */
+html[data-theme="custom"] .halieus-home-discovery,
+html[data-theme="custom"] .halieus-section-card,
+html[data-theme="custom"] .halieus-live-games,
+html[data-theme="custom"] .halieus-player-tools,
+html[data-theme="custom"] .halieus-guilds-panel,
+html[data-theme="custom"] .account-panel {
+  background-color: var(--hgr-surface) !important;
+}
+html[data-theme="custom"] .halieus-discovery-tabs,
+html[data-theme="custom"] .halieus-theme-trigger,
+html[data-theme="custom"] .halieus-player-identity,
+html[data-theme="custom"] .halieus-guild-actions,
+html[data-theme="custom"] .account-admin-content-card {
+  background-color: var(--hgr-surface-soft) !important;
+}
+
+@media (max-width: 760px) {
+  .halieus-feature-copy-stage > h1,
+  .halieus-feature-copy-stage > span {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  .halieus-discovery-empty {
+    min-height: 130px;
+  }
+}

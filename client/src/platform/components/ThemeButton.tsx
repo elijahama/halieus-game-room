@@ -45,10 +45,10 @@ function rgbHex(channels: [number, number, number]): string {
 }
 
 const CUSTOM_PRESETS: Array<{ id: string; label: string; description: string; theme: HalieusCustomTheme }> = [
-  { id: "violet", label: "Violet Night", description: "Current custom base", theme: { ...DEFAULT_CUSTOM_THEME } },
-  { id: "classic", label: "HGR Classic", description: "Neutral + Halieus yellow", theme: { page: "#0f1012", surface: "#1b1d21", accent: "#ffc200", secondary: "#3b82f6" } },
-  { id: "ocean", label: "Ocean", description: "Deep navy + cyan", theme: { page: "#07131f", surface: "#102337", accent: "#38bdf8", secondary: "#818cf8" } },
-  { id: "emerald", label: "Emerald", description: "Dark green + mint", theme: { page: "#071713", surface: "#102820", accent: "#34d399", secondary: "#fbbf24" } },
+  { id: "graphite", label: "Graphite", description: "Neutral dark studio", theme: { page: "#111315", surface: "#1b1e22", accent: "#f0b83f", secondary: "#58a6ff" } },
+  { id: "slate", label: "Slate", description: "Cool grey workspace", theme: { page: "#171a1f", surface: "#252a31", accent: "#d9a441", secondary: "#76a7d7" } },
+  { id: "deep-blue", label: "Deep Blue", description: "Blue-black control room", theme: { page: "#09131d", surface: "#122334", accent: "#4cc2ff", secondary: "#8c9bff" } },
+  { id: "warm", label: "Warm Studio", description: "Soft charcoal + amber", theme: { page: "#171411", surface: "#26211c", accent: "#f3a847", secondary: "#d8846f" } },
 ];
 
 const THEME_OPTIONS: Array<{ mode: HalieusThemeMode; icon: string; label: string; description: string }> = [
@@ -206,11 +206,11 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         <div className="halieus-custom-theme-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && cancelCustom()}>
           <section className="halieus-custom-theme-dialog" role="dialog" aria-modal="true" aria-label="Custom HGR theme">
             <header>
-              <div><p>CUSTOM THEME</p><h2>Design your HGR colours</h2><span>Build a palette without changing each game’s identity colour.</span></div>
+              <div><p>CUSTOM THEME</p><h2>Tune the interface palette</h2><span>Treat HGR like a creative app: set the workspace, panels and UI accents while each game keeps its own identity.</span></div>
               <button type="button" onClick={cancelCustom} aria-label="Close custom theme editor">×</button>
             </header>
             <section className="halieus-custom-presets" aria-label="Custom theme presets">
-              <header><strong>Quick palettes</strong><span>Use a starting point, then tune every channel.</span></header>
+              <header><strong>Interface presets</strong><span>Start with a coordinated workspace, then fine-tune it.</span></header>
               <div>{CUSTOM_PRESETS.map((preset) => (
                 <button type="button" key={preset.id} onClick={() => setDraft({ ...preset.theme })}>
                   <span className="halieus-custom-preset-swatch" aria-hidden="true">
@@ -225,10 +225,10 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             </section>
             <div className="halieus-custom-theme-grid">
               {([
-                ["page", "Background"],
+                ["page", "Workspace"],
                 ["surface", "Panels"],
-                ["accent", "Primary"],
-                ["secondary", "Secondary"],
+                ["accent", "Primary UI"],
+                ["secondary", "Secondary UI"],
               ] as Array<[keyof HalieusCustomTheme, string]>).map(([key, label]) => (
                 <article key={key} className="halieus-custom-colour-card">
                   <header><strong>{label}</strong><code>{draft[key].toUpperCase()}</code></header>

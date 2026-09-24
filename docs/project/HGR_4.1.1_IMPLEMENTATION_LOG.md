@@ -60,3 +60,14 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - The Mega Board waiting room and Home featured-game arrows were compressed so the information hierarchy is easier to scan and the carousel controls no longer look like tall side tabs.
 
 `tests/regression-4.1.1-session-profile-hotfix.mjs` protects the request-size fix, intro lifecycle and the main density contracts.
+
+
+## Part 15 — theme canvas, Friends shelf and hero hotfix
+
+- Bridged the legacy Game Room shell to the current `--hgr-*` palette so Blue and Custom now recolour the full workspace instead of leaving the old dark canvas underneath.
+- Kept per-game background colour effects as atmosphere overlays on top of the selected theme rather than as the page colour itself.
+- Reworked Custom presets toward coordinated creative-app palettes (Graphite, Slate, Deep Blue and Warm Studio) while preserving RGB/HEX editing.
+- Fixed the featured hero title/room overlap caused by parent-relative `em` grid rows; title and description now reserve their own stable text areas.
+- Prevented accidental hero text selection from presenting as a large browser-blue block.
+- Removed the generic recommendation fallback from **Friends Are Playing** and added an explicit empty state when there is no live friend-game data.
+- Added regression coverage for the full-shell theme bridge, studio-style preset direction, truthful Friends shelf and hero geometry.

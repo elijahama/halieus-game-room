@@ -11,10 +11,10 @@ export const THEME_KEY = "halieus-game-room-theme";
 export const CUSTOM_THEME_KEY = "halieus-game-room-custom-theme";
 
 export const DEFAULT_CUSTOM_THEME: HalieusCustomTheme = {
-  page: "#151118",
-  surface: "#241c2a",
-  accent: "#c084fc",
-  secondary: "#22d3ee",
+  page: "#111315",
+  surface: "#1b1e22",
+  accent: "#f0b83f",
+  secondary: "#58a6ff",
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;

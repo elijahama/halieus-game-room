@@ -21,6 +21,7 @@ assert.match(theme,/HalieusThemeMode = "system" \| "dark" \| "light" \| "blue" \
 assert.match(theme,/function resolveThemeMode/,'System theme needs a single canonical resolver');
 assert.match(themeButton,/mode: "system"/,'Sidebar Theme menu must expose System');
 assert.match(themeButton,/CUSTOM_PRESETS/,'Custom theme editor must expose useful starting palettes');
+assert.match(themeButton,/Graphite/,'Custom theme presets must use studio-style coordinated palettes');
 assert.match(themeButton,/halieus-custom-preview-window/,'Custom theme editor must show a richer live palette preview');
 assert.match(displaySettings,/\["system", "dark", "light", "blue", "custom"\]/,'In-game settings must expose System');
 assert.match(app,/prefers-color-scheme: dark/,'Runtime System theme must observe the device colour preference');
@@ -30,10 +31,15 @@ assert.match(html,/mode === "system" \? systemTheme : mode/,'First paint must re
 assert.match(home,/halieus-feature-copy-stage/,'Hero copy must transition inside a fixed stage');
 assert.match(home,/halieus-feature-card-stage/,'Hero game art must transition inside a fixed stage');
 assert.match(css,/\.halieus-feature-carousel[\s\S]*?min-height:\s*430px/s,'Desktop hero must keep a stable frame while games rotate');
+assert.match(css,/\.halieus-shell[\s\S]*?--halieus-page:\s*var\(--hgr-page\)[\s\S]*?background:\s*var\(--hgr-page\) !important/s,'Every theme must recolour the Game Room canvas instead of leaving the legacy dark shell behind');
+assert.match(css,/\.halieus-feature-copy-stage[\s\S]*?grid-template-rows:\s*20px auto auto auto auto !important/s,'Hero rows must size from their content instead of parent em units');
+assert.match(css,/\.halieus-feature-copy-stage > h1[\s\S]*?height:\s*1\.92em !important/s,'Hero title must reserve its own fixed two-line area without overlapping room copy');
 assert.match(css,/@keyframes hgr-feature-content-in/,'Hero rotation needs a smooth content transition');
 assert.match(home,/return shelves\[discoveryShelf\]\.slice\(0, 4\)/,'Home discovery must be a four-game preview');
 assert.match(home,/onlinePlayers\.slice\(0, 3\)/,'Online players Home preview must stay short');
 assert.match(home,/recentPlayers\.slice\(0, 3\)/,'Recent players Home preview must stay short');
+assert.match(home,/friends:\s*friends,/,'Friends Are Playing must not fall back to generic recommendations');
+assert.match(home,/No friends are playing right now/,'Friends Are Playing must expose a truthful empty state');
 assert.match(css,/\.halieus-home-player-strip > div[\s\S]*?overflow:\s*visible !important/s,'Home player previews must not have an internal scrollbar');
 assert.match(css,/\.halieus-discovery-row[\s\S]*?overflow:\s*visible !important/s,'Home game preview must not have an internal scrollbar');
 
