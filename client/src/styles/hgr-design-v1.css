@@ -6038,3 +6038,46 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
 .halieus-skin-preview.skin-black-drive-table { background:linear-gradient(145deg,#111417 0 68%,#b33037 68%); }
 .halieus-skin-preview.skin-grey-disc-board,
 .halieus-skin-preview.skin-grey-disc-table { background:linear-gradient(145deg,#d7d9db 0 64%,#526f97 64%); }
+
+
+/* HGR 4.5 guild/global leaderboard scope */
+.halieus-guild-result-scope {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 4px;
+  padding: 3px 7px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 999px;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .03em;
+}
+.halieus-guild-result-scope.is-internal {
+  border-color: color-mix(in srgb, var(--hgr-success, #22c55e) 42%, var(--hgr-border));
+  background: color-mix(in srgb, var(--hgr-success, #22c55e) 9%, transparent);
+  color: var(--hgr-success, #22c55e);
+}
+.halieus-guild-result-scope.is-mixed {
+  border-color: color-mix(in srgb, var(--hgr-brand) 28%, var(--hgr-border));
+  background: color-mix(in srgb, var(--hgr-brand) 6%, transparent);
+  color: var(--hgr-muted);
+}
+.halieus-guild-leaderboard .has-global-rank,
+.halieus-guild-leaderboard .has-global-rating {
+  font-weight: 900;
+  color: var(--hgr-text);
+}
+.halieus-guild-leaderboard .no-global-rank {
+  color: var(--hgr-muted);
+}
+.halieus-guild-leaderboard-note {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-sm);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
