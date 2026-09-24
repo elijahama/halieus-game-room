@@ -5864,3 +5864,152 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     padding: 15px !important;
   }
 }
+
+
+/* HGR 4.5 board/table cosmetic themes
+ * These rules are visual only: layout, hitboxes, game state and rules remain
+ * owned by the existing game components. */
+html[data-skin-mega-board="muted-tournament-board"] .board-grid {
+  background:
+    radial-gradient(circle at 50% 44%, rgba(196,205,194,.08), transparent 48%),
+    linear-gradient(145deg,#26332d,#18241f) !important;
+  border-color:#59665f !important;
+  box-shadow: inset 0 0 70px rgba(0,0,0,.24), 0 20px 55px rgba(0,0,0,.18) !important;
+}
+html[data-skin-mega-board="muted-tournament-board"] .board-space {
+  background:#d7d6cf !important;
+  border-color:#4d5651 !important;
+  color:#18211d !important;
+}
+html[data-skin-mega-board="muted-tournament-board"] .board-space.is-corner { background:#c6cbc4 !important; }
+
+html[data-skin-mega-board="ivory-8bit-board"] .board-grid {
+  background:
+    linear-gradient(rgba(151,42,49,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(151,42,49,.045) 1px,transparent 1px),
+    #d4cbb8 !important;
+  background-size:24px 24px !important;
+  border-color:#86272e !important;
+  box-shadow: inset 0 0 0 3px rgba(134,39,46,.16) !important;
+}
+html[data-skin-mega-board="ivory-8bit-board"] .board-space {
+  background:#eee9dd !important;
+  border-color:#6e6258 !important;
+  color:#241f1c !important;
+}
+html[data-skin-mega-board="ivory-8bit-board"] .board-space.is-corner { background:#d9d0be !important; }
+
+html[data-skin-mega-board="lavender-16bit-board"] .board-grid {
+  background:
+    radial-gradient(circle at 50% 42%,rgba(117,102,168,.12),transparent 50%),
+    #b9b8bd !important;
+  border-color:#7566a8 !important;
+}
+html[data-skin-mega-board="lavender-16bit-board"] .board-space {
+  background:#e4e2e7 !important;
+  border-color:#6d6878 !important;
+  color:#272431 !important;
+}
+html[data-skin-mega-board="lavender-16bit-board"] .board-space.is-corner { background:#cbc6d5 !important; }
+
+html[data-skin-mega-board="black-drive-board"] .board-grid {
+  background:
+    linear-gradient(135deg,rgba(196,49,56,.07),transparent 35%),
+    #111417 !important;
+  border-color:#8a2b31 !important;
+  box-shadow: inset 0 0 0 2px rgba(196,49,56,.2), inset 0 0 80px rgba(0,0,0,.42) !important;
+}
+html[data-skin-mega-board="black-drive-board"] .board-space {
+  background:#2a2e33 !important;
+  border-color:#747b82 !important;
+  color:#f2f3f4 !important;
+}
+html[data-skin-mega-board="black-drive-board"] .board-space.is-corner { background:#202328 !important; }
+
+html[data-skin-mega-board="grey-disc-board"] .board-grid {
+  background:
+    radial-gradient(circle at 50% 45%,rgba(63,101,151,.12),transparent 46%),
+    #b8bdc1 !important;
+  border-color:#5a6573 !important;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.22) !important;
+}
+html[data-skin-mega-board="grey-disc-board"] .board-space {
+  background:#e1e2e3 !important;
+  border-color:#697079 !important;
+  color:#24272b !important;
+}
+html[data-skin-mega-board="grey-disc-board"] .board-space.is-corner { background:#c8cbce !important; }
+
+/* Poker gets its own table slot so table materials do not depend on card-back
+ * selection. The current layout and side-panel structure are untouched. */
+html[data-skin-poker-table="muted-poker-room"] .poker-table-wrap {
+  background:linear-gradient(145deg,rgba(40,45,49,.72),rgba(18,22,25,.74)) !important;
+  border-color:rgba(168,177,174,.24) !important;
+}
+html[data-skin-poker-table="muted-poker-room"] .poker-table {
+  border-color:#4f3238 !important;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(255,255,255,.025),transparent 50%),
+    linear-gradient(145deg,#244039,#182d28) !important;
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.025),inset 0 0 75px rgba(0,0,0,.28),0 0 0 5px #241a1d !important;
+}
+
+html[data-skin-poker-table="ivory-8bit-table"] .poker-table-wrap {
+  background:#cfc5b3 !important;
+  border-color:#8e3036 !important;
+}
+html[data-skin-poker-table="ivory-8bit-table"] .poker-table {
+  border-color:#8e3036 !important;
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
+    #405f50 !important;
+  background-size:22px 22px !important;
+  box-shadow:inset 0 0 0 4px rgba(241,232,214,.11),inset 0 0 60px rgba(0,0,0,.2),0 0 0 5px #5b2528 !important;
+}
+
+html[data-skin-poker-table="lavender-16bit-table"] .poker-table-wrap {
+  background:#b7b5bd !important;
+  border-color:#7566a8 !important;
+}
+html[data-skin-poker-table="lavender-16bit-table"] .poker-table {
+  border-color:#7566a8 !important;
+  background:radial-gradient(circle at 50% 43%,rgba(208,199,232,.12),transparent 52%),#395c50 !important;
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.06),inset 0 0 70px rgba(36,28,50,.22),0 0 0 5px #484152 !important;
+}
+
+html[data-skin-poker-table="black-drive-table"] .poker-table-wrap {
+  background:#101215 !important;
+  border-color:#5d2529 !important;
+}
+html[data-skin-poker-table="black-drive-table"] .poker-table {
+  border-color:#b33037 !important;
+  background:
+    linear-gradient(145deg,rgba(196,49,56,.05),transparent 45%),
+    #183128 !important;
+  box-shadow:inset 0 0 0 4px rgba(142,153,165,.05),inset 0 0 85px rgba(0,0,0,.42),0 0 0 5px #08090a !important;
+}
+
+html[data-skin-poker-table="grey-disc-table"] .poker-table-wrap {
+  background:#aeb3b8 !important;
+  border-color:#5e6874 !important;
+}
+html[data-skin-poker-table="grey-disc-table"] .poker-table {
+  border-color:#66717d !important;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(104,136,177,.1),transparent 52%),
+    #315447 !important;
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.09),inset 0 0 70px rgba(0,0,0,.24),0 0 0 5px #4b525a !important;
+}
+
+/* Theme Library previews. */
+.halieus-skin-preview.skin-muted-tournament-board,
+.halieus-skin-preview.skin-muted-poker-room { background:linear-gradient(145deg,#26332d,#18241f); }
+.halieus-skin-preview.skin-ivory-8bit-board,
+.halieus-skin-preview.skin-ivory-8bit-table { background:linear-gradient(145deg,#eee9dd 0 62%,#9d3036 62%); }
+.halieus-skin-preview.skin-lavender-16bit-board,
+.halieus-skin-preview.skin-lavender-16bit-table { background:linear-gradient(145deg,#dedce2 0 58%,#7566a8 58%); }
+.halieus-skin-preview.skin-black-drive-board,
+.halieus-skin-preview.skin-black-drive-table { background:linear-gradient(145deg,#111417 0 68%,#b33037 68%); }
+.halieus-skin-preview.skin-grey-disc-board,
+.halieus-skin-preview.skin-grey-disc-table { background:linear-gradient(145deg,#d7d9db 0 64%,#526f97 64%); }
