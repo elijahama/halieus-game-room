@@ -46,6 +46,8 @@ assert.match(gameChrome,/HgrIcon name="menu"/,"Persistent game chrome must use t
 assert.match(css,/HGR 4\.5 shared in-game chrome/,"4.5 must define one shared lobby\/game-menu chrome layer");
 assert.match(css,/\.game-menu-modal \.menu-action[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,"Game menu actions must use the shared inset-card surface");
 assert.match(css,/\.lobby-overview-tile,[\s\S]*?\.players-panel-v2,[\s\S]*?\.lobby-side-card[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,"Lobby overview, roster and control cards must share one HGR surface grammar");
+assert.match(css,/\.poker-header,[\s\S]*?\.rebuild-game-header,[\s\S]*?\.card-game-header-polished,[\s\S]*?\.word-arena-header,[\s\S]*?\.classic-table-header/s,"All active game families must share the 4.5 identity-strip header contract");
+assert.match(css,/\.poker-room-meta,[\s\S]*?\.rebuild-game-meta,[\s\S]*?\.card-game-meta,[\s\S]*?\.word-arena-meta,[\s\S]*?\.classic-meta/s,"All active game families must share one room\/mode\/status chip grammar");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
