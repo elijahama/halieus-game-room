@@ -8,6 +8,8 @@ const server=read("server/src/platform/feedback.ts");
 const paths=read("server/src/platform/dataPaths.ts");
 const shared=read("shared/platform/feedback.ts");
 const gameForm=read("client/src/platform/components/FeedbackForm.tsx");
+const megaMenu=read("client/src/games/mega-board/components/GameMenu.tsx");
+const poker=read("client/src/games/poker/PokerScreen.tsx");
 const account=read("client/src/platform/accounts/AccountPanel.tsx");
 const css=read("client/src/styles/hgr-design-v1.css");
 
@@ -31,6 +33,9 @@ assert.match(server,/entry\.status = "answered"/,"Replying must update feedback 
 assert.match(gameForm,/accountApi\("\/feedback"/,"In-game feedback must use the authenticated API path");
 assert.match(gameForm,/source: "game"/,"In-game feedback must be tagged as game feedback");
 assert.match(gameForm,/gameName,/,"In-game feedback must send the game name");
+assert.match(megaMenu,/accountApi\("\/feedback"/,"Mega Board feedback must use the persistent feedback service");
+assert.match(megaMenu,/gameId: "mega-board"/,"Mega Board feedback must preserve its game identity");
+assert.match(poker,/gameId="poker"/,"Poker feedback must preserve its game identity");
 assert.match(account,/Send feedback/,"Player profile must expose feedback submission");
 assert.match(account,/source: "profile"/,"Profile feedback must identify its source");
 assert.match(account,/\/feedback\/mine/,"Player profile must show feedback history");
