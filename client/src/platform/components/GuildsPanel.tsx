@@ -521,7 +521,17 @@ export function GuildsPanel({
                     return (
                       <article key={room.id}>
                         <img src={game?.icon} alt="" />
-                        <div><strong>{room.gameTitle}</strong><small>Room {room.roomCode} · {room.createdByDisplayName}</small><span>{live ? live.started ? "Live now" : "Open lobby" : room.status === "setup" ? "Setup reserved" : room.status === "completed" ? "Completed" : "Ended"}</span></div>
+                        <div>
+                          <strong>{room.gameTitle}</strong>
+                          <small>Room {room.roomCode} · {room.createdByDisplayName}</small>
+                          <span>{live ? live.started ? "Live now" : "Open lobby" : room.status === "setup" ? "Setup reserved" : room.status === "completed" ? "Completed" : "Ended"}</span>
+                          {room.status === "completed" && room.allHumanParticipantsWereGuildMembers === true && (
+                            <em className="halieus-guild-result-scope is-internal">Guild result · counts internally</em>
+                          )}
+                          {room.status === "completed" && room.allHumanParticipantsWereGuildMembers === false && (
+                            <em className="halieus-guild-result-scope is-mixed">Mixed party · global only</em>
+                          )}
+                        </div>
                         {roomActions(room)}
                       </article>
                     );
