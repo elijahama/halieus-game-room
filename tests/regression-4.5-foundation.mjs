@@ -16,6 +16,7 @@ const css=read("client/src/styles/hgr-design-v1.css");
 const gameChrome=read("client/src/platform/components/GameChrome.tsx");
 const roomChat=read("client/src/platform/components/RoomChatPanel.tsx");
 const hgrIcons=read("client/src/platform/components/HgrIcon.tsx");
+const accountPortal=read("client/src/platform/accounts/AccountPortal.tsx");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 
@@ -62,6 +63,11 @@ assert.match(css,/HGR 4\.5 shared communication \/ confirmation surfaces/,"4.5 m
 assert.match(css,/\.room-chat-panel[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Room chat must inherit the elevated HGR surface");
 assert.match(css,/\.halieus-confirm-dialog[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Confirmation dialogs must inherit the shared HGR modal surface");
 assert.match(css,/\.status-toast,[\s\S]*?\.hgr-toast,[\s\S]*?\.global-game-notice[\s\S]*?background:/s,"Toasts and global notices must share one notification frame");
+assert.match(accountPortal,/HalieusBrandMark className="account342-brand-mark"/,"Account entry must use the canonical shared Halieus mark instead of a stale raster");
+assert.match(accountPortal,/HgrIcon name=\{isFullscreen \? "minimize" : "fullscreen"\}/,"Account entry fullscreen control must use the shared HGR icon set");
+assert.match(css,/HGR 4\.5 shared account-entry \/ ranked surfaces/,"4.5 must define one account-entry and leaderboard layer");
+assert.match(css,/\.account342-card[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Account entry card must inherit the shared elevated HGR surface");
+assert.match(css,/\.leaderboard-modal[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"All ranked leaderboards must inherit the shared HGR modal surface");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
