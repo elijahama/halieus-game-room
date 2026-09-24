@@ -17,24 +17,40 @@ $CloseIconPath = Join-Path $LauncherIconRoot 'Close Halieus Game Room.ico'
 $UpdateIconPath = Join-Path $LauncherIconRoot 'Update Halieus Website.ico'
 $PowerShellIconPath = Join-Path $LauncherIconRoot 'HGR PowerShell.ico'
 $ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
-$LegacyShortcutDirectory = Join-Path $ProgramsRoot 'Halieus Game Room'
+$StartMenuLauncherDirectory = Join-Path $ProgramsRoot 'Halieus Game Room'
+$ProjectLauncherDirectory = Join-Path $ProjectRoot 'HGR Launchers'
 New-Item -ItemType Directory -Force -Path $ProgramsRoot | Out-Null
+New-Item -ItemType Directory -Force -Path $StartMenuLauncherDirectory | Out-Null
+New-Item -ItemType Directory -Force -Path $ProjectLauncherDirectory | Out-Null
 
-# Windows Search/Pin-to-Start is most reliable when these utility shortcuts sit
-# directly in the user's Programs root rather than inside an extra nested folder.
-$ShortcutDirectory = $ProgramsRoot
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
-$StartShortcut = Join-Path $ShortcutDirectory 'Start HGR App.lnk'
 $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
-$RestartShortcut = Join-Path $ShortcutDirectory 'Restart HGR App.lnk'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
-$CloseShortcut = Join-Path $ShortcutDirectory 'Close HGR App.lnk'
 $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
-$UpdateShortcut = Join-Path $ShortcutDirectory 'Update HGR Site.lnk'
-$PowerShellShortcut = Join-Path $ShortcutDirectory 'HGR PowerShell.lnk'
-$OpenShardShortcut = Join-Path $ShortcutDirectory 'HGR - OpenShard TUI.lnk'
-$OpenShardRootShortcut = Join-Path $ProjectRoot 'HGR - OpenShard TUI.lnk'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
+
+$LauncherNames = [ordered]@{
+    Start = 'HGR - Start.lnk'
+    Restart = 'HGR - Restart.lnk'
+    Close = 'HGR - Close.lnk'
+    Update = 'HGR - Update Site.lnk'
+    PowerShell = 'HGR - PowerShell.lnk'
+    OpenShard = 'HGR - OpenShard TUI.lnk'
+}
+
+$ProjectStartShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Start
+$ProjectRestartShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Restart
+$ProjectCloseShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Close
+$ProjectUpdateShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Update
+$ProjectPowerShellShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.PowerShell
+$ProjectOpenShardShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.OpenShard
+
+$StartMenuStartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Start
+$StartMenuRestartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Restart
+$StartMenuCloseShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Close
+$StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Update
+$StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
+$StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -99,36 +115,34 @@ function New-HalieusShortcut {
     $shortcut.Save()
 }
 
-New-HalieusShortcut -ShortcutPath $StartShortcut -CommandScript $StartScript -Description 'Open the Halieus Game Room desktop app window' -IconPath $StartIconPath
-New-HalieusShortcut -ShortcutPath $RestartShortcut -CommandScript $RestartScript -Description 'Close and reopen the Halieus Game Room desktop app window' -IconPath $RestartIconPath
-New-HalieusShortcut -ShortcutPath $CloseShortcut -CommandScript $CloseScript -Description 'Close the local Halieus Game Room desktop app window only' -IconPath $CloseIconPath
-if (Test-Path -LiteralPath $UpdateScript) {
-    New-HalieusShortcut -ShortcutPath $UpdateShortcut -CommandScript $UpdateScript -Description 'Validate, sync and deploy the Halieus Game Room website' -IconPath $UpdateIconPath
-}
+foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
+    New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Start) -CommandScript $StartScript -Description 'Open the Halieus Game Room desktop app window' -IconPath $StartIconPath
+    New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Restart) -CommandScript $RestartScript -Description 'Close and reopen the Halieus Game Room desktop app window' -IconPath $RestartIconPath
+    New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Close) -CommandScript $CloseScript -Description 'Close the local Halieus Game Room desktop app window only' -IconPath $CloseIconPath
+    if (Test-Path -LiteralPath $UpdateScript) {
+        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Update) -CommandScript $UpdateScript -Description 'Validate, sync and deploy the Halieus Game Room website' -IconPath $UpdateIconPath
+    }
 
-$terminal = $wsh.CreateShortcut($PowerShellShortcut)
-$WindowsTerminal = Get-Command wt.exe -ErrorAction SilentlyContinue
-if ($WindowsTerminal) {
-    $terminal.TargetPath = $WindowsTerminal.Source
-    $terminal.Arguments = "-d `"$ProjectRoot`" --title `"HGR PowerShell`""
-} else {
-    $PowerShellExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-    $terminal.TargetPath = $PowerShellExe
-    $terminal.Arguments = '-NoExit -Command "$Host.UI.RawUI.WindowTitle = ''HGR PowerShell''"'
-}
-$terminal.WorkingDirectory = $ProjectRoot
-$terminal.Description = 'Open PowerShell at the Halieus Game Room project root'
-$terminal.IconLocation = "$PowerShellIconPath,0"
-$terminal.WindowStyle = 1
-$terminal.Save()
+    $terminal = $wsh.CreateShortcut((Join-Path $ShortcutRoot $LauncherNames.PowerShell))
+    $WindowsTerminal = Get-Command wt.exe -ErrorAction SilentlyContinue
+    if ($WindowsTerminal) {
+        $terminal.TargetPath = $WindowsTerminal.Source
+        $terminal.Arguments = "-d `"$ProjectRoot`" --title `"HGR PowerShell`""
+    } else {
+        $PowerShellExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        $terminal.TargetPath = $PowerShellExe
+        $terminal.Arguments = '-NoExit -Command "$Host.UI.RawUI.WindowTitle = ''HGR PowerShell''"'
+    }
+    $terminal.WorkingDirectory = $ProjectRoot
+    $terminal.Description = 'Open PowerShell at the Halieus Game Room project root'
+    $terminal.IconLocation = "$PowerShellIconPath,0"
+    $terminal.WindowStyle = 1
+    $terminal.Save()
 
-# OpenShard is development-only tooling. Reuse the current terminal launcher
-# artwork until the HGR visual model sheet defines the final launcher family.
-if (-not (Test-Path -LiteralPath $OpenShardScript)) {
-    throw "OpenShard HGR helper is missing: $OpenShardScript"
-}
-foreach ($OpenShardLink in @($OpenShardShortcut, $OpenShardRootShortcut)) {
-    $openShard = $wsh.CreateShortcut($OpenShardLink)
+    if (-not (Test-Path -LiteralPath $OpenShardScript)) {
+        throw "OpenShard HGR helper is missing: $OpenShardScript"
+    }
+    $openShard = $wsh.CreateShortcut((Join-Path $ShortcutRoot $LauncherNames.OpenShard))
     $openShard.TargetPath = $cmd
     $openShard.Arguments = "/d /c `"`"$OpenShardScript`" tui`""
     $openShard.WorkingDirectory = $ProjectRoot
@@ -138,46 +152,9 @@ foreach ($OpenShardLink in @($OpenShardShortcut, $OpenShardRootShortcut)) {
     $openShard.Save()
 }
 
-# Remove the older nested Start Menu copies so Search does not show duplicates.
-if (Test-Path -LiteralPath $LegacyShortcutDirectory) {
-    Get-ChildItem -LiteralPath $LegacyShortcutDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
-        Remove-Item -Force -ErrorAction SilentlyContinue
-    try { Remove-Item -LiteralPath $LegacyShortcutDirectory -Force -ErrorAction Stop } catch {}
-}
-
-# Verify every Start Menu entry exists before reporting success.
-$CreatedShortcuts = @(
-    $StartShortcut,
-    $RestartShortcut,
-    $CloseShortcut,
-    $UpdateShortcut,
-    $PowerShellShortcut,
-    $OpenShardShortcut,
-    $OpenShardRootShortcut
-)
-foreach ($shortcutPath in $CreatedShortcuts) {
-    if (-not (Test-Path -LiteralPath $shortcutPath)) {
-        throw "Halieus shortcut creation failed: $shortcutPath"
-    }
-}
-
-# Nudge Windows to re-read shortcut artwork after the icon paths change.
-$IconRefresh = Join-Path $env:SystemRoot 'System32\ie4uinit.exe'
-if (Test-Path -LiteralPath $IconRefresh) {
-    try { Start-Process -FilePath $IconRefresh -ArgumentList '-show' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
-}
-
-Write-Host ''
-Write-Host 'Start Menu shortcuts refreshed without touching launcher artwork:' -ForegroundColor Cyan
-foreach ($shortcutPath in $CreatedShortcuts) {
-    Write-Host "  $shortcutPath" -ForegroundColor DarkGray
-}
-Write-Host 'Search these names in Start, then choose Pin to Start.' -ForegroundColor Green
-
-# Most shortcuts belong in the Start Menu. The dedicated OpenShard TUI shortcut
-# intentionally remains in the project root because it is developer tooling that
-# should be directly discoverable beside the HGR source.
-foreach ($name in @(
+# Remove loose/legacy shortcuts so HGR launchers only live inside the two
+# organised launcher folders.
+$LooseShortcutNames = @(
     'Start Halieus Game Room.lnk',
     'Restart Halieus Game Room.lnk',
     'Close Halieus Game Room.lnk',
@@ -191,11 +168,50 @@ foreach ($name in @(
     'HGR GitHub Sync.lnk',
     'HGR PowerShell.lnk',
     'HGR - OpenShard.lnk',
+    'HGR - OpenShard TUI.lnk',
     'Start Mega Board.lnk',
     'Close Mega Board.lnk'
-)) {
+)
+foreach ($name in $LooseShortcutNames) {
     Remove-Item -LiteralPath (Join-Path $ProjectRoot $name) -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath (Join-Path $ProgramsRoot $name) -Force -ErrorAction SilentlyContinue
 }
+
+# Verify every Start Menu entry exists before reporting success.
+$CreatedShortcuts = @(
+    $ProjectStartShortcut,
+    $ProjectRestartShortcut,
+    $ProjectCloseShortcut,
+    $ProjectPowerShellShortcut,
+    $ProjectOpenShardShortcut,
+    $StartMenuStartShortcut,
+    $StartMenuRestartShortcut,
+    $StartMenuCloseShortcut,
+    $StartMenuPowerShellShortcut,
+    $StartMenuOpenShardShortcut
+)
+if (Test-Path -LiteralPath $UpdateScript) {
+    $CreatedShortcuts += $ProjectUpdateShortcut
+    $CreatedShortcuts += $StartMenuUpdateShortcut
+}
+foreach ($shortcutPath in $CreatedShortcuts) {
+    if (-not (Test-Path -LiteralPath $shortcutPath)) {
+        throw "Halieus shortcut creation failed: $shortcutPath"
+    }
+}
+
+# Nudge Windows to re-read shortcut artwork after the icon paths change.
+$IconRefresh = Join-Path $env:SystemRoot 'System32\ie4uinit.exe'
+if (Test-Path -LiteralPath $IconRefresh) {
+    try { Start-Process -FilePath $IconRefresh -ArgumentList '-show' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
+}
+
+Write-Host ''
+Write-Host 'HGR launcher family refreshed without touching launcher artwork:' -ForegroundColor Cyan
+Write-Host "  Project:    $ProjectLauncherDirectory" -ForegroundColor DarkGray
+Write-Host "  Start Menu: $StartMenuLauncherDirectory" -ForegroundColor DarkGray
+Write-Host ''
+Write-Host 'All HGR shortcuts now use the same grouped layout and naming.' -ForegroundColor Green
 
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null
