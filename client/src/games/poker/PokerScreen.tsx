@@ -239,6 +239,22 @@ export function PokerScreen({
   }, [state.actionLog, state.hand.handNumber, state.hand.winners, state.matchMode, state.players, state.startingChips, state.smallBlind, state.bigBlind]);
   const potLayers = useMemo(() => derivePotLayers(state.players), [state.players]);
 
+  // Keep spectator/tab state valid and make the compact Autopilot popover
+  // dismissible without turning the whole control rail into a scrolling card.
+  useEffect(() => {
+    if (state.isSpectator && sideTab === "actions") setSideTab("players");
+    if (state.isSpectator || !viewer || viewer.isAi || viewer.eliminated) setAutopilotOpen(false);
+  }, [sideTab, state.isSpectator, viewer]);
+
+  useEffect(() => {
+    if (!autopilotOpen) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAutopilotOpen(false);
+    };
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, [autopilotOpen]);
+
   // Reset raise inputs to legal server boundaries whenever the betting state changes.
   useEffect(() => {
     if (!state.legalActions) return;
