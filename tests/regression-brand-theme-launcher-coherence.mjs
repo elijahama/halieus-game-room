@@ -35,12 +35,13 @@ assert.match(css,/\.halieus-avatar-media,[\s\S]*?overflow:\s*hidden !important[\
 assert.match(css,/\.halieus-avatar-media > img,[\s\S]*?object-fit:\s*cover !important[\s\S]*?object-position:\s*center !important/s,"Uploaded player pictures must use the same centred cover crop everywhere");
 assert.match(css,/\.halieus-side-account > \.halieus-avatar-media[\s\S]*?width:\s*40px !important[\s\S]*?border-radius:\s*12px !important/s,"Sidebar profile picture must stay compact and aligned with the platform identity system");
 
-for (const name of ["Start HGR App.lnk","Restart HGR App.lnk","Close HGR App.lnk","Update HGR Site.lnk","HGR - OpenShard TUI.lnk"]) {
+for (const name of ["HGR - Start.lnk","HGR - Restart.lnk","HGR - Close.lnk","HGR - Update Site.lnk","HGR - PowerShell.lnk","HGR - OpenShard TUI.lnk"]) {
   assert.ok(shortcuts.includes(name),`Launcher shortcut family must include ${name}`);
 }
 assert.match(shortcuts,/Close the local Halieus Game Room desktop app window only/,"Close shortcut must state that it only closes the local app window");
 assert.match(shortcuts,/OpenShard-HGR\.cmd/,"OpenShard shortcut must route through the HGR helper rather than calling a global tool blindly");
-assert.match(shortcuts,/OpenShardRootShortcut/,"OpenShard TUI shortcut must remain directly discoverable in the HGR project root");
+assert.match(shortcuts,/ProjectLauncherDirectory = Join-Path \$ProjectRoot 'HGR Launchers'/,"Developer shortcuts must share one HGR Launchers folder");
+assert.match(shortcuts,/StartMenuLauncherDirectory = Join-Path \$ProgramsRoot 'Halieus Game Room'/,"Start Menu shortcuts must share one Halieus Game Room folder");
 assert.match(shortcuts,/ tui`""/,"OpenShard shortcut must open the receipt dashboard/TUI");
 assert.match(packagedShortcuts,/Close HGR App\.lnk/,"Packaged launcher must use the same Close HGR App wording");
 assert.match(packagedShortcuts,/desktop app window only/,"Packaged Close shortcut must not imply cloud shutdown");
