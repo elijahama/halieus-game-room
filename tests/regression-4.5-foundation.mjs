@@ -19,6 +19,7 @@ const hgrIcons=read("client/src/platform/components/HgrIcon.tsx");
 const accountPortal=read("client/src/platform/accounts/AccountPortal.tsx");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
+const halieusMark=read("client/public/halieus-mark.svg");
 
 assert.match(playerCard,/actions\?: PlayerIdentityAction\[\]/,"Player cards must expose real contextual actions");
 assert.match(playerCard,/aria-haspopup="menu"/,"Player overflow trigger must be an accessible menu control");
@@ -36,6 +37,9 @@ assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-brid
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/matte H utility family/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
+assert.match(halieusMark,/M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(html,/id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg"/,"Initial browser identity must use the canonical Halieus mark");
+assert.match(html,/halieus-boot-mark[\s\S]*?M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z/,"First-paint mark must reuse the approved H geometry");
 assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");
 assert.match(css,/HGR 4\.5 shared website surface grammar/,"4.5 must implement a shared website surface layer");
 assert.match(css,/\.halieus-game-category \.halieus-library-art :is\(img,svg\)/,"Games-page normalisation must preserve existing artwork and only control its safe area");
