@@ -22,7 +22,11 @@ if errorlevel 1 (
 
 echo.
 echo Shortcuts refreshed successfully. Existing launcher icons were preserved.
-echo Use the "Update Halieus Website" Start Menu shortcut for the full GitHub + validation + deploy workflow.
+echo.
+echo Project launchers: "%CD%\HGR Launchers"
+echo Start Menu group:  Halieus Game Room
+echo.
+echo Use "HGR - Update Site" for the full GitHub + validation + deploy workflow.
 echo.
 pause
 exit /b 0
