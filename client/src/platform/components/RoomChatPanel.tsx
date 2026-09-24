@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import type { RoomChatGame, RoomChatJoinResponse, RoomChatMessage, RoomChatRole, RoomChatSendResponse } from "../../../../shared/platform/room-chat";
 import { socket } from "../network/sockets";
+import { HgrIcon } from "./HgrIcon";
 
 export interface RoomActivityEntry {
   id: string;
@@ -192,7 +193,7 @@ export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount
       )}
 
       <button type="button" className="room-chat-trigger" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
-        <span aria-hidden="true">💬</span>
+        <span className="room-chat-trigger-icon" aria-hidden="true"><HgrIcon name="chat" size={18} /></span>
         <strong>Room</strong>
         <span className="room-chat-preview">{latestMessage ? `${latestMessage.senderName}: ${latestMessage.text}` : "Chat · Game Log · Spectators"}</span>
         {unread > 0 && <b>{unread}</b>}
