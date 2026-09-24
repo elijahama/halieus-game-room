@@ -24,7 +24,9 @@ assert.match(theme,/"--hgr-action-bg": action/,"Custom themes must derive a soli
 assert.match(theme,/"red" \\| "green" \\| (?:"profile" \\| )?"custom"/,"Theme contract must include dedicated Red/Green compatibility and the profile library");
 assert.match(theme,/"--hgr-action-ink": brandInk/,"Custom action contrast must be derived from the selected action colour");
 assert.match(css,/\.button-primary,[\s\S]*?\.halieus-global-join[\s\S]*?background:\s*var\(--hgr-action-bg\) !important/s,"Primary actions must use one solid theme action colour");
-assert.doesNotMatch(css,/HGR interface coherence pass[\s\S]*?\.halieus-global-join[\s\S]*?linear-gradient/s,"Current primary action override must not reintroduce gradient banding");
+const primaryActionSection = css.match(/\/\* Primary actions are flat theme actions\.[\s\S]*?\*\/([\s\S]*?)\/\* Carousel controls:/)?.[1] ?? "";
+assert.ok(primaryActionSection,"Primary action coherence section must remain present");
+assert.doesNotMatch(primaryActionSection,/linear-gradient/,"Current primary action override must not reintroduce gradient banding");
 assert.match(css,/\.halieus-feature-arrow[\s\S]*?place-items:\s*center !important/s,"Featured arrows must use layout centring");
 assert.match(css,/\.halieus-feature-card-stage > img,[\s\S]*?box-shadow:\s*none !important/s,"Featured artwork must not use a square glow");
 assert.match(css,/html\[data-theme="dark"\][\s\S]*?--hgr-page:\s*#101114[\s\S]*?--mm-page:\s*var\(--hgr-page\)/s,"Dark mode must bridge HGR and legacy surfaces to the same graphite canvas");

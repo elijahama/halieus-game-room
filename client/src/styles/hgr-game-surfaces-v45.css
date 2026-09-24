@@ -1,0 +1,609 @@
+/*
+ * HGR 4.5 game-surface refinement
+ *
+ * Paint-only layer for Mega Board and Poker. The selectors below may change
+ * colour, material, border, shadow and atmosphere, but intentionally do not
+ * own geometry, hitboxes, scrolling, responsive breakpoints or game state.
+ *
+ * Skin slots remain independent from the platform theme:
+ *   data-skin-mega-board
+ *   data-skin-poker-table
+ */
+
+/* ==========================================================================
+   Mega Board material system
+   ========================================================================== */
+
+.mega-live-page {
+  --mega-frame-material:
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--hgr-brand) 8%, transparent), transparent 38%),
+    linear-gradient(145deg, var(--hgr-surface-raised), var(--hgr-surface));
+  --mega-frame-line: color-mix(in srgb, var(--hgr-brand) 18%, var(--hgr-border-strong));
+  --mega-frame-shadow: 0 24px 68px color-mix(in srgb, #000 18%, transparent), inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent);
+
+  --mega-board-material:
+    radial-gradient(circle at 50% 43%, rgba(41,112,75,.10), transparent 48%),
+    linear-gradient(145deg, #dbe8d5, #cbdcc5);
+  --mega-board-line: #69776d;
+  --mega-board-shadow: inset 0 0 62px rgba(24,55,39,.10), 0 18px 44px rgba(0,0,0,.16);
+
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.10)), #f8faf6;
+  --mega-corner-material: linear-gradient(145deg, rgba(255,255,255,.34), transparent 48%), #e7ecdf;
+  --mega-space-line: #66716a;
+  --mega-space-ink: #18211d;
+  --mega-space-muted: #56615b;
+
+  --mega-centre-material:
+    radial-gradient(circle at 50% 34%, rgba(255,255,255,.42), transparent 36%),
+    linear-gradient(145deg, #dbe8d5, #c9d9c3);
+  --mega-centre-ink: #17221c;
+  --mega-centre-muted: #526158;
+
+  --mega-deck-material: linear-gradient(145deg, rgba(255,255,255,.74), rgba(255,255,255,.34)), #d9e5d5;
+  --mega-panel-base: #d9e5d5;
+  --mega-deck-line: #718078;
+  --mega-accent: #277650;
+  --mega-focus: #d9a51e;
+}
+
+/* Classic follows the established HGR board identity but gains more tactile
+ * separation between frame, lane, spaces and centre. */
+html[data-skin-mega-board="classic-board"] .mega-live-page {
+  --mega-board-material:
+    radial-gradient(circle at 50% 43%, rgba(36,116,72,.11), transparent 47%),
+    linear-gradient(145deg, #dce9d5, #c8dac2);
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.08)), #f7faf5;
+  --mega-corner-material: linear-gradient(145deg, rgba(255,255,255,.44), transparent 52%), #e6ecdf;
+  --mega-centre-material:
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,.44), transparent 37%),
+    linear-gradient(145deg, #dce8d5, #c8d9c2);
+}
+
+/* Competitive: deliberately quiet and lower saturation. */
+html[data-skin-mega-board="muted-tournament-board"] .mega-live-page {
+  --mega-board-material:
+    radial-gradient(circle at 50% 44%, rgba(196,205,194,.08), transparent 48%),
+    linear-gradient(145deg, #26332d, #18241f);
+  --mega-board-line: #59665f;
+  --mega-board-shadow: inset 0 0 70px rgba(0,0,0,.24), 0 20px 55px rgba(0,0,0,.18);
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.18), transparent), #d7d6cf;
+  --mega-corner-material: linear-gradient(145deg, rgba(255,255,255,.12), transparent 50%), #c6cbc4;
+  --mega-space-line: #4d5651;
+  --mega-space-ink: #18211d;
+  --mega-space-muted: #59625d;
+  --mega-centre-material:
+    radial-gradient(circle at 50% 36%, rgba(255,255,255,.05), transparent 38%),
+    linear-gradient(145deg, #31413a, #202e28);
+  --mega-centre-ink: #f1f5f2;
+  --mega-centre-muted: #bcc8c1;
+  --mega-deck-material: linear-gradient(145deg, rgba(255,255,255,.06), transparent), #35453e;
+  --mega-panel-base: #35453e;
+  --mega-deck-line: #617068;
+  --mega-accent: #8da89a;
+  --mega-focus: #d6b45d;
+}
+
+/* Existing progression skins are extended from field-only backgrounds into a
+ * coherent surface family without changing property group colours. */
+html[data-skin-mega-board="night-board"] .mega-live-page {
+  --mega-board-material:
+    linear-gradient(rgba(55,120,170,.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(55,120,170,.075) 1px, transparent 1px),
+    radial-gradient(circle at 50% 46%, rgba(69,151,205,.12), transparent 48%),
+    #111d27;
+  --mega-board-line: #41617a;
+  --mega-board-shadow: inset 0 0 76px rgba(0,0,0,.40), 0 22px 60px rgba(0,0,0,.24);
+  --mega-space-material: linear-gradient(180deg, rgba(98,164,206,.08), transparent), #1d2e3a;
+  --mega-corner-material: linear-gradient(145deg, rgba(96,168,214,.11), transparent), #172734;
+  --mega-space-line: #486578;
+  --mega-space-ink: #edf7ff;
+  --mega-space-muted: #a9c1d1;
+  --mega-centre-material: radial-gradient(circle at 50% 35%, rgba(70,154,211,.12), transparent 38%), #152733;
+  --mega-centre-ink: #f3f9fd;
+  --mega-centre-muted: #abc2d1;
+  --mega-deck-material: linear-gradient(145deg, rgba(83,163,216,.10), transparent), #1b303e;
+  --mega-panel-base: #1b303e;
+  --mega-deck-line: #46667c;
+  --mega-accent: #62b7ee;
+  --mega-focus: #e0b448;
+}
+
+html[data-skin-mega-board="transit-board"] .mega-live-page {
+  --mega-board-material:
+    radial-gradient(circle at 20% 25%, rgba(47,155,177,.12) 0 2px, transparent 3px),
+    radial-gradient(circle at 76% 68%, rgba(224,155,55,.11) 0 2px, transparent 3px),
+    linear-gradient(120deg, rgba(47,155,177,.10), transparent 35%, rgba(224,155,55,.10)),
+    #18221f;
+  --mega-board-line: #48615c;
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.10), transparent), #e5e2d6;
+  --mega-corner-material: linear-gradient(145deg, rgba(47,155,177,.08), transparent), #d1d5ca;
+  --mega-space-line: #58645f;
+  --mega-space-ink: #1d2623;
+  --mega-space-muted: #596661;
+  --mega-centre-material:
+    linear-gradient(120deg, rgba(47,155,177,.08), transparent 38%, rgba(224,155,55,.08)),
+    #26342f;
+  --mega-centre-ink: #f0f5f2;
+  --mega-centre-muted: #b8c5c0;
+  --mega-deck-material: linear-gradient(145deg, rgba(47,155,177,.08), rgba(224,155,55,.05)), #31413b;
+  --mega-panel-base: #31413b;
+  --mega-deck-line: #5a7068;
+  --mega-accent: #2f9bb1;
+  --mega-focus: #e09b37;
+}
+
+html[data-skin-mega-board="tycoon-board"] .mega-live-page {
+  --mega-frame-material:
+    radial-gradient(circle at 50% 0%, rgba(211,166,73,.12), transparent 36%),
+    linear-gradient(145deg, #24221d, #12110f);
+  --mega-frame-line: #8b713d;
+  --mega-board-material:
+    linear-gradient(135deg, rgba(211,166,73,.08) 25%, transparent 25%) 0 0/18px 18px,
+    radial-gradient(circle at 50% 44%, rgba(211,166,73,.08), transparent 46%),
+    #171510;
+  --mega-board-line: #806a3c;
+  --mega-board-shadow: inset 0 0 0 2px rgba(211,166,73,.22), inset 0 0 76px rgba(0,0,0,.38), 0 24px 66px rgba(0,0,0,.26);
+  --mega-space-material: linear-gradient(180deg, rgba(214,178,100,.07), transparent), #25231e;
+  --mega-corner-material: linear-gradient(145deg, rgba(211,166,73,.11), transparent), #1e1c18;
+  --mega-space-line: #7f704f;
+  --mega-space-ink: #f4ecd9;
+  --mega-space-muted: #c1b69c;
+  --mega-centre-material: radial-gradient(circle at 50% 35%, rgba(211,166,73,.10), transparent 38%), #1b1915;
+  --mega-centre-ink: #f5ecd6;
+  --mega-centre-muted: #bdaf91;
+  --mega-deck-material: linear-gradient(145deg, rgba(211,166,73,.10), transparent), #28251e;
+  --mega-panel-base: #28251e;
+  --mega-deck-line: #806c42;
+  --mega-accent: #d3a649;
+  --mega-focus: #efc96e;
+}
+
+html[data-skin-mega-board="ivory-8bit-board"] .mega-live-page {
+  --mega-board-material:
+    linear-gradient(rgba(151,42,49,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(151,42,49,.045) 1px, transparent 1px),
+    radial-gradient(circle at 50% 44%, rgba(255,255,255,.18), transparent 48%),
+    #d4cbb8;
+  --mega-board-line: #86272e;
+  --mega-board-shadow: inset 0 0 0 3px rgba(134,39,46,.14), 0 18px 44px rgba(50,38,26,.16);
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.32), transparent), #eee9dd;
+  --mega-corner-material: linear-gradient(145deg, rgba(167,46,53,.05), transparent), #d9d0be;
+  --mega-space-line: #6e6258;
+  --mega-space-ink: #241f1c;
+  --mega-space-muted: #645950;
+  --mega-centre-material: radial-gradient(circle at 50% 36%, rgba(255,255,255,.24), transparent 38%), #d9cfbc;
+  --mega-centre-ink: #2d2520;
+  --mega-centre-muted: #6a5d53;
+  --mega-deck-material: linear-gradient(145deg, rgba(167,46,53,.08), transparent), #e4dccb;
+  --mega-panel-base: #e4dccb;
+  --mega-deck-line: #8b7566;
+  --mega-accent: #a72e35;
+  --mega-focus: #c59a45;
+}
+
+html[data-skin-mega-board="lavender-16bit-board"] .mega-live-page {
+  --mega-board-material:
+    radial-gradient(circle at 50% 42%, rgba(117,102,168,.14), transparent 50%),
+    linear-gradient(145deg, #c4c2c8, #b5b4b9);
+  --mega-board-line: #7566a8;
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.30), transparent), #e4e2e7;
+  --mega-corner-material: linear-gradient(145deg, rgba(117,102,168,.09), transparent), #cbc6d5;
+  --mega-space-line: #6d6878;
+  --mega-space-ink: #272431;
+  --mega-space-muted: #666170;
+  --mega-centre-material: radial-gradient(circle at 50% 36%, rgba(117,102,168,.10), transparent 40%), #d0cbd8;
+  --mega-centre-ink: #2c2835;
+  --mega-centre-muted: #6d657c;
+  --mega-deck-material: linear-gradient(145deg, rgba(117,102,168,.10), transparent), #d8d4df;
+  --mega-panel-base: #d8d4df;
+  --mega-deck-line: #817991;
+  --mega-accent: #7566a8;
+  --mega-focus: #9f87c3;
+}
+
+html[data-skin-mega-board="black-drive-board"] .mega-live-page {
+  --mega-frame-material: linear-gradient(145deg, #24272c, #0d0f11);
+  --mega-frame-line: #5e6268;
+  --mega-board-material:
+    linear-gradient(135deg, rgba(196,49,56,.08), transparent 35%),
+    radial-gradient(circle at 50% 45%, rgba(142,153,165,.06), transparent 50%),
+    #111417;
+  --mega-board-line: #8a2b31;
+  --mega-board-shadow: inset 0 0 0 2px rgba(196,49,56,.18), inset 0 0 82px rgba(0,0,0,.44), 0 24px 66px rgba(0,0,0,.28);
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.04), transparent), #2a2e33;
+  --mega-corner-material: linear-gradient(145deg, rgba(196,49,56,.08), transparent), #202328;
+  --mega-space-line: #747b82;
+  --mega-space-ink: #f2f3f4;
+  --mega-space-muted: #abb1b8;
+  --mega-centre-material: radial-gradient(circle at 50% 35%, rgba(196,49,56,.08), transparent 38%), #171a1e;
+  --mega-centre-ink: #f3f4f5;
+  --mega-centre-muted: #a7adb4;
+  --mega-deck-material: linear-gradient(145deg, rgba(196,49,56,.08), transparent), #262a2f;
+  --mega-panel-base: #262a2f;
+  --mega-deck-line: #6b7077;
+  --mega-accent: #c43138;
+  --mega-focus: #e15d63;
+}
+
+html[data-skin-mega-board="grey-disc-board"] .mega-live-page {
+  --mega-board-material:
+    radial-gradient(circle at 50% 45%, rgba(63,101,151,.14), transparent 46%),
+    linear-gradient(145deg, #c1c5c8, #b2b7bb);
+  --mega-board-line: #5a6573;
+  --mega-board-shadow: inset 0 0 0 2px rgba(255,255,255,.20), 0 18px 44px rgba(37,45,55,.18);
+  --mega-space-material: linear-gradient(180deg, rgba(255,255,255,.32), transparent), #e1e2e3;
+  --mega-corner-material: linear-gradient(145deg, rgba(63,101,151,.08), transparent), #c8cbce;
+  --mega-space-line: #697079;
+  --mega-space-ink: #24272b;
+  --mega-space-muted: #646b73;
+  --mega-centre-material: radial-gradient(circle at 50% 36%, rgba(63,101,151,.10), transparent 39%), #ccd0d3;
+  --mega-centre-ink: #272b30;
+  --mega-centre-muted: #67717c;
+  --mega-deck-material: linear-gradient(145deg, rgba(63,101,151,.10), transparent), #d5d8da;
+  --mega-panel-base: #d5d8da;
+  --mega-deck-line: #737c86;
+  --mega-accent: #3f6597;
+  --mega-focus: #b04d52;
+}
+
+.mega-live-page .board-frame {
+  border-color: var(--mega-frame-line) !important;
+  background: var(--mega-frame-material) !important;
+  box-shadow: var(--mega-frame-shadow) !important;
+}
+
+.mega-live-page .board-grid {
+  border-color: var(--mega-board-line) !important;
+  background: var(--mega-board-material) !important;
+  box-shadow: var(--mega-board-shadow) !important;
+}
+
+.mega-live-page .board-space {
+  border-color: var(--mega-space-line) !important;
+  background: var(--mega-space-material) !important;
+  color: var(--mega-space-ink) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.045);
+}
+
+.mega-live-page .board-space.is-corner {
+  background: var(--mega-corner-material) !important;
+}
+
+.mega-live-page .board-space.is-owned-space {
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--owner-colour) 44%, transparent),
+    inset 0 0 22px color-mix(in srgb, var(--owner-colour) 8%, transparent);
+}
+
+.mega-live-page .board-space.is-mortgaged-space {
+  filter: saturate(.62) brightness(.86);
+  box-shadow:
+    inset 0 0 0 2px rgba(180,35,24,.34),
+    inset 0 0 24px rgba(180,35,24,.10);
+}
+
+.mega-live-page .board-space-name,
+.mega-live-page .board-space-price {
+  color: var(--mega-space-ink) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.12);
+}
+
+.mega-live-page .board-space > span:first-of-type {
+  color: var(--mega-space-muted);
+}
+
+.mega-live-page .board-space-icon {
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.20));
+}
+
+@media (hover: hover) {
+  .mega-live-page .board-space:is(.is-clickable-deed, .is-clickable-free-parking, .is-clickable-info):hover {
+    border-color: var(--mega-focus) !important;
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, var(--mega-focus) 34%, transparent),
+      inset 0 0 22px color-mix(in srgb, var(--mega-focus) 8%, transparent);
+    filter: brightness(1.035);
+  }
+}
+
+.mega-live-page .board-space:focus-visible {
+  box-shadow:
+    inset 0 0 0 2px var(--mega-focus),
+    inset 0 0 24px color-mix(in srgb, var(--mega-focus) 14%, transparent) !important;
+}
+
+.mega-live-page .board-space:is(.has-movement-preview, .has-bus-choice-preview) {
+  border-color: var(--mega-accent) !important;
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--mega-accent) 48%, transparent),
+    inset 0 0 26px color-mix(in srgb, var(--mega-accent) 12%, transparent);
+}
+
+.mega-live-page .board-centre-authentic {
+  border-color: var(--mega-board-line) !important;
+  background: var(--mega-centre-material) !important;
+  color: var(--mega-centre-ink) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 52px rgba(0,0,0,.055);
+}
+
+.mega-live-page .board-room-code,
+.mega-live-page .centre-turn-status small {
+  color: var(--mega-centre-muted) !important;
+}
+
+.mega-live-page .board-centre-logo {
+  color: var(--mega-centre-ink) !important;
+  text-shadow: 0 7px 24px color-mix(in srgb, var(--mega-accent) 18%, transparent);
+}
+
+.mega-live-page .board-deck {
+  border-color: var(--mega-deck-line) !important;
+  background: var(--mega-deck-material) !important;
+  color: var(--mega-centre-ink) !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.mega-live-page .board-bank-button {
+  border-color: color-mix(in srgb, var(--mega-accent) 62%, var(--mega-deck-line)) !important;
+  box-shadow: 0 9px 22px rgba(0,0,0,.16), inset 0 0 0 1px color-mix(in srgb, var(--mega-accent) 16%, transparent);
+}
+
+.mega-live-page .board-bank-live-stock {
+  border-color: color-mix(in srgb, var(--mega-accent) 44%, var(--mega-deck-line)) !important;
+  background: color-mix(in srgb, var(--mega-accent) 13%, var(--mega-panel-base)) !important;
+  color: var(--mega-centre-ink) !important;
+}
+
+.mega-live-page .centre-turn-status {
+  border-color: color-mix(in srgb, var(--mega-accent) 30%, var(--mega-deck-line)) !important;
+  background: color-mix(in srgb, var(--mega-accent) 7%, var(--mega-panel-base)) !important;
+  color: var(--mega-centre-ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.mega-live-page .board-primary-action {
+  border-color: color-mix(in srgb, var(--mega-accent) 28%, var(--mega-deck-line)) !important;
+  background: color-mix(in srgb, var(--mega-accent) 5%, var(--mega-panel-base)) !important;
+  color: var(--mega-centre-ink) !important;
+  box-shadow: 0 8px 18px rgba(0,0,0,.13);
+}
+
+.mega-live-page .board-primary-action.is-primary {
+  border-color: color-mix(in srgb, var(--mega-accent) 74%, #111) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--mega-accent) 82%, white 18%), var(--mega-accent)) !important;
+  color: color-mix(in srgb, var(--mega-centre-ink) 92%, #000) !important;
+  box-shadow: 0 12px 25px color-mix(in srgb, var(--mega-accent) 20%, transparent), inset 0 1px 0 rgba(255,255,255,.24);
+}
+
+.mega-live-page .movement-preview-badge {
+  border-color: var(--mega-accent) !important;
+  background: var(--mega-deck-material) !important;
+  color: var(--mega-centre-ink) !important;
+  box-shadow: 0 6px 14px rgba(0,0,0,.18);
+}
+
+/* ==========================================================================
+   Poker table material system
+   ========================================================================== */
+
+.poker-page {
+  --poker-room-material: linear-gradient(145deg, #30251f, #151310);
+  --poker-room-line: rgba(214,178,106,.22);
+  --poker-rail: #4f2f25;
+  --poker-rail-line: #7a4d3c;
+  --poker-felt:
+    radial-gradient(circle at 50% 43%, rgba(255,255,255,.045), transparent 43%),
+    radial-gradient(circle at 50% 52%, transparent 46%, rgba(0,0,0,.18) 100%),
+    linear-gradient(145deg, #126044, #083d2e);
+  --poker-felt-line: #664338;
+  --poker-felt-ink: #f5fff9;
+  --poker-accent: #c9a45a;
+  --poker-seat-material: linear-gradient(145deg, rgba(255,255,255,.07), transparent 52%), rgba(18,24,22,.90);
+  --poker-seat-line: rgba(214,178,106,.25);
+  --poker-seat-ink: #f5f7f6;
+  --poker-seat-muted: #aebbb5;
+}
+
+html[data-skin-poker-table="classic-felt"] .poker-page {
+  --poker-room-material: linear-gradient(145deg, #38291f, #17120f);
+  --poker-room-line: rgba(205,168,94,.25);
+  --poker-rail: #4d2f24;
+  --poker-rail-line: #76503e;
+  --poker-felt:
+    radial-gradient(circle at 50% 43%, rgba(255,255,255,.05), transparent 42%),
+    radial-gradient(circle at 50% 52%, transparent 45%, rgba(0,0,0,.17) 100%),
+    linear-gradient(145deg, #126348, #073e2e);
+  --poker-felt-line: #6b493c;
+  --poker-accent: #d0aa5c;
+}
+
+html[data-skin-poker-table="muted-poker-room"] .poker-page {
+  --poker-room-material: linear-gradient(145deg, #282d31, #121619);
+  --poker-room-line: rgba(168,177,174,.24);
+  --poker-rail: #241a1d;
+  --poker-rail-line: #4f3238;
+  --poker-felt:
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,.025), transparent 50%),
+    linear-gradient(145deg, #244039, #182d28);
+  --poker-felt-line: #4f5e58;
+  --poker-accent: #95aaa0;
+  --poker-seat-material: linear-gradient(145deg, rgba(255,255,255,.045), transparent 52%), rgba(28,34,32,.92);
+  --poker-seat-line: rgba(168,177,174,.22);
+}
+
+html[data-skin-poker-table="ivory-8bit-table"] .poker-page {
+  --poker-room-material: linear-gradient(145deg, #d7cebc, #bcb19d);
+  --poker-room-line: #8e3036;
+  --poker-rail: #5b2528;
+  --poker-rail-line: #8e3036;
+  --poker-felt:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px),
+    radial-gradient(circle at 50% 44%, rgba(241,232,214,.08), transparent 46%),
+    #405f50;
+  --poker-felt-line: #8e3036;
+  --poker-accent: #c59a45;
+  --poker-seat-material: linear-gradient(145deg, rgba(255,255,255,.20), transparent 52%), #2c332f;
+  --poker-seat-line: #8e3036;
+}
+
+html[data-skin-poker-table="lavender-16bit-table"] .poker-page {
+  --poker-room-material: linear-gradient(145deg, #bebcc4, #9f9da5);
+  --poker-room-line: #7566a8;
+  --poker-rail: #484152;
+  --poker-rail-line: #7566a8;
+  --poker-felt:
+    radial-gradient(circle at 50% 43%, rgba(208,199,232,.13), transparent 52%),
+    linear-gradient(145deg, #3d6255, #2e4c42);
+  --poker-felt-line: #7566a8;
+  --poker-accent: #9f87c3;
+  --poker-seat-material: linear-gradient(145deg, rgba(159,135,195,.10), transparent 52%), #2b2a31;
+  --poker-seat-line: #7566a8;
+}
+
+html[data-skin-poker-table="black-drive-table"] .poker-page {
+  --poker-room-material: linear-gradient(145deg, #171a1e, #08090a);
+  --poker-room-line: #5d2529;
+  --poker-rail: #08090a;
+  --poker-rail-line: #b33037;
+  --poker-felt:
+    linear-gradient(145deg, rgba(196,49,56,.055), transparent 45%),
+    radial-gradient(circle at 50% 45%, rgba(142,153,165,.045), transparent 50%),
+    #183128;
+  --poker-felt-line: #b33037;
+  --poker-accent: #c43138;
+  --poker-seat-material: linear-gradient(145deg, rgba(196,49,56,.08), transparent 52%), #15191c;
+  --poker-seat-line: #6f3034;
+}
+
+html[data-skin-poker-table="grey-disc-table"] .poker-page {
+  --poker-room-material: linear-gradient(145deg, #bcc1c6, #9da3a9);
+  --poker-room-line: #5e6874;
+  --poker-rail: #4b525a;
+  --poker-rail-line: #66717d;
+  --poker-felt:
+    radial-gradient(circle at 50% 45%, rgba(104,136,177,.12), transparent 52%),
+    linear-gradient(145deg, #365b4e, #29493e);
+  --poker-felt-line: #66717d;
+  --poker-accent: #6689b6;
+  --poker-seat-material: linear-gradient(145deg, rgba(104,136,177,.08), transparent 52%), #252b30;
+  --poker-seat-line: #66717d;
+}
+
+.poker-page .poker-table-wrap {
+  border-color: var(--poker-room-line) !important;
+  background: var(--poker-room-material) !important;
+  box-shadow: 0 28px 68px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.poker-page .poker-table {
+  border-color: var(--poker-felt-line) !important;
+  background: var(--poker-felt) !important;
+  box-shadow:
+    inset 0 0 0 4px rgba(255,255,255,.035),
+    inset 0 0 78px rgba(0,0,0,.30),
+    0 0 0 5px var(--poker-rail),
+    0 22px 54px rgba(0,0,0,.24) !important;
+}
+
+.poker-page .poker-ambient-light-one {
+  background: radial-gradient(circle, color-mix(in srgb, var(--poker-accent) 24%, transparent), transparent 68%) !important;
+}
+
+.poker-page .poker-ambient-light-two {
+  background: radial-gradient(circle, rgba(91,196,164,.13), transparent 70%) !important;
+}
+
+.poker-page .poker-table-center {
+  color: var(--poker-felt-ink) !important;
+  text-shadow: 0 2px 9px rgba(0,0,0,.38);
+}
+
+.poker-page .poker-hand-label,
+.poker-page .poker-hand-status {
+  color: color-mix(in srgb, var(--poker-felt-ink) 78%, var(--poker-accent)) !important;
+}
+
+.poker-page .poker-pot,
+.poker-page .poker-pot-layers > span {
+  border-color: color-mix(in srgb, var(--poker-accent) 48%, rgba(255,255,255,.16)) !important;
+  background: rgba(5,20,15,.72) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.poker-page .poker-seat {
+  border-color: var(--poker-seat-line) !important;
+  background: var(--poker-seat-material) !important;
+  color: var(--poker-seat-ink) !important;
+  box-shadow: 0 12px 25px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.075);
+}
+
+.poker-page .poker-seat.is-turn {
+  border-color: var(--poker-accent) !important;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--poker-accent) 30%, transparent),
+    0 14px 30px color-mix(in srgb, var(--poker-accent) 18%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.poker-page .poker-seat.is-disconnected {
+  border-color: #c58a3c !important;
+  filter: saturate(.70);
+}
+
+.poker-page .poker-seat.is-folded,
+.poker-page .poker-seat.is-out {
+  filter: saturate(.55) brightness(.74);
+}
+
+.poker-page .poker-seat-head strong {
+  color: var(--poker-seat-ink) !important;
+}
+
+.poker-page .poker-seat-head small {
+  color: var(--poker-seat-muted) !important;
+}
+
+.poker-page .poker-position-marker,
+.poker-page .poker-seat-badges i {
+  border-color: color-mix(in srgb, var(--poker-accent) 42%, rgba(255,255,255,.10)) !important;
+  background: color-mix(in srgb, var(--poker-accent) 12%, rgba(10,14,13,.82)) !important;
+  color: #fff !important;
+}
+
+.poker-page .poker-bet-chip {
+  border-color: color-mix(in srgb, var(--poker-accent) 62%, #fff) !important;
+  background: var(--poker-accent) !important;
+  color: #111 !important;
+  box-shadow: 0 6px 14px rgba(0,0,0,.28);
+}
+
+/* The selected workspace remains the sole scroll owner. These rules only
+ * improve contrast/material continuity around the already-approved tabs. */
+.poker-page .poker-side-tabs {
+  border-color: color-mix(in srgb, var(--poker-accent) 24%, var(--hgr-border)) !important;
+  background: color-mix(in srgb, var(--poker-accent) 4%, var(--hgr-surface-soft)) !important;
+}
+
+.poker-page .poker-side-tabs button {
+  color: var(--hgr-muted) !important;
+}
+
+.poker-page .poker-side-tabs button.is-active {
+  border-color: color-mix(in srgb, var(--poker-accent) 54%, var(--hgr-border-strong)) !important;
+  background: color-mix(in srgb, var(--poker-accent) 12%, var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--poker-accent) 18%, transparent);
+}
+
+.poker-page .poker-autopilot-compact > button,
+.poker-page .poker-autopilot-popover {
+  border-color: color-mix(in srgb, var(--poker-accent) 28%, var(--hgr-border-strong)) !important;
+}
+
+.poker-page .poker-autopilot-popover {
+  background: color-mix(in srgb, var(--poker-accent) 4%, var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}

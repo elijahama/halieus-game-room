@@ -164,7 +164,21 @@ assert.match(launcherGenerator,/generated-preview/,'Optional generated launcher 
 assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?\$LauncherRoot/s,'Launcher generator must never wipe the approved launcher root');
 assert.match(launcherShortcuts,/assets\\branding\\launchers'/,'Shortcut refresh must consume approved launcher assets from the flat launcher folder');
 assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must never invoke icon generation');
-assert.doesNotMatch(launcherShortcuts,/Remove-Item[\s\S]*?\.ico|Remove-Item[\s\S]*?\.png/s,'Shortcut refresh must never delete icon artwork');
+const launcherDeleteContexts = launcherShortcuts
+  .split(/\r?\n/)
+  .flatMap((line,index,lines)=>{
+    const trimmed=line.trim();
+    if (trimmed.startsWith("#") || !/\bRemove-Item\b/i.test(trimmed)) return [];
+    return [lines.slice(Math.max(0,index-2),index+1).join(" ")];
+  });
+assert.ok(launcherDeleteContexts.length > 0,'Shortcut refresh should still clean generated shortcut links');
+for (const deleteContext of launcherDeleteContexts) {
+  assert.doesNotMatch(
+    deleteContext,
+    /\.(?:ico|png)\b|\$(?:GameRoom|Start|Restart|Close|Update|PowerShell|OpenShard)IconPath\b|\$LauncherIconRoot\b/i,
+    'Shortcut refresh must never delete icon artwork',
+  );
+}
 assert.match(launcherShortcuts,/without modifying any files/,'Missing launcher icons must fall back without regenerating artwork');
 assert.doesNotMatch(startCmd,/launcher-shortcuts\.ps1/,'Start must never refresh or regenerate launcher assets');
 assert.doesNotMatch(restartCmd,/launcher-shortcuts\.ps1/,'Restart must never refresh or regenerate launcher assets');

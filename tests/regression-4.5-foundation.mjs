@@ -19,6 +19,9 @@ const skins=read("client/src/platform/skins.ts");
 const skinButton=read("client/src/platform/components/SkinLibraryButton.tsx");
 const app=read("client/src/App.tsx");
 const css=read("client/src/styles/hgr-design-v1.css");
+const indexCss=read("client/src/index.css");
+const surfaceCss=read("client/src/styles/hgr-game-surfaces-v45.css");
+const clientEntry=read("client/src/main.tsx");
 const gameChrome=read("client/src/platform/components/GameChrome.tsx");
 const roomChat=read("client/src/platform/components/RoomChatPanel.tsx");
 const hgrIcons=read("client/src/platform/components/HgrIcon.tsx");
@@ -198,10 +201,10 @@ assert.match(pokerScreen,/className="poker-autopilot-popover"/,"Poker Autopilot 
 assert.match(pokerScreen,/sideTab === "chat"[\s\S]*?poker-room-panel-slot is-tabbed/s,"Poker room activity must live inside the Chat tab");
 assert.match(pokerScreen,/sideTab === "players"[\s\S]*?poker-side-players/s,"Poker player roster must live inside the Players tab");
 assert.match(pokerScreen,/if \(state\.isSpectator && sideTab === "actions"\) setSideTab\("players"\)/,"Spectators must never be stranded on a disabled Actions tab");
-assert.match(css,/HGR 4\.5 Poker tabbed control rail/,"Poker tabbed rail must have one authoritative 4.5 layout layer");
-assert.match(css,/\.poker-side-tab-panel \{[\s\S]*?overflow:\s*hidden/s,"Poker sidebar shell must stay contained while selected workspace owns scrolling");
-assert.match(css,/\.poker-actions-workspace,[\s\S]*?overflow-y:\s*auto/s,"Poker selected workspace must provide internal scrolling when viewport height is constrained");
-assert.match(css,/@media \(min-width: 1001px\)[\s\S]*?height:\s*calc\(100dvh - 118px\)/s,"Desktop Poker table and side rail must fit the viewport rather than requiring page-wheel access");
+assert.match(indexCss,/HGR 4\.5 Poker tabbed control rail/,"Poker tabbed rail must have one authoritative 4.5 layout layer");
+assert.match(indexCss,/\.poker-side-tab-panel \{[\s\S]*?overflow:\s*hidden/s,"Poker sidebar shell must stay contained while selected workspace owns scrolling");
+assert.match(indexCss,/\.poker-actions-workspace,[\s\S]*?overflow-y:\s*auto/s,"Poker selected workspace must provide internal scrolling when viewport height is constrained");
+assert.match(indexCss,/@media \(min-width: 1001px\)[\s\S]*?height:\s*calc\(100dvh - 118px\)/s,"Desktop Poker table and side rail must fit the viewport rather than requiring page-wheel access");
 assert.match(megaGameMenu,/turn-timer-settings-panel/,"Mega Board game menu must expose the live host turn timer selector");
 assert.match(megaGameMenu,/TURN_TIMER_PRESET_SECONDS\.map/,"Mega Board timer UI must use the shared approved preset list");
 assert.match(megaGameMenu,/isHost && onTurnTimerChange/,"Only the Mega Board room host may edit the live turn timer");
@@ -223,5 +226,44 @@ assert.match(guildServer,/globalB\.rating - globalA\.rating/,"Real global rating
 assert.match(guildPanel,/Global rank comes from HGR's live Mega Board Ranked table/,"Guild UI must explain the current global ranking source");
 assert.match(guildPanel,/Guild W\/L/,"Guild UI must keep internal win-loss record separate from global rating");
 assert.match(guildPanel,/No separate guild Elo is created/,"Guild UI must not imply a second independent Elo system");
+
+
+// 4.5 board/table refinement must remain a paint-only layer over the approved
+// Mega Board geometry and Poker tab/scroll structure.
+assert.match(clientEntry,/hgr-design-v1\.css";\s*import "\.\/styles\/hgr-game-surfaces-v45\.css"/,"Game-surface refinement must load after the shared HGR design system");
+for (const skinId of [
+  "classic-board",
+  "muted-tournament-board",
+  "night-board",
+  "transit-board",
+  "tycoon-board",
+  "ivory-8bit-board",
+  "lavender-16bit-board",
+  "black-drive-board",
+  "grey-disc-board",
+]) {
+  assert.ok(surfaceCss.includes(`data-skin-mega-board="${skinId}"`), `Mega Board surface refinement must cover ${skinId}`);
+}
+for (const skinId of [
+  "classic-felt",
+  "muted-poker-room",
+  "ivory-8bit-table",
+  "lavender-16bit-table",
+  "black-drive-table",
+  "grey-disc-table",
+]) {
+  assert.ok(surfaceCss.includes(`data-skin-poker-table="${skinId}"`), `Poker table surface refinement must cover ${skinId}`);
+}
+assert.match(surfaceCss,/\.mega-live-page \.board-frame[\s\S]*?--mega-frame-material/s,"Mega Board frame must consume the 4.5 material system");
+assert.match(surfaceCss,/\.mega-live-page \.board-centre-authentic[\s\S]*?--mega-centre-material/s,"Mega Board centre must consume the 4.5 material system");
+assert.match(surfaceCss,/\.poker-page \.poker-table-wrap[\s\S]*?--poker-room-material/s,"Poker room rail must consume the 4.5 table material system");
+assert.match(surfaceCss,/\.poker-page \.poker-seat\.is-turn[\s\S]*?--poker-accent/s,"Poker active seat must inherit the selected table cosmetic");
+assert.doesNotMatch(surfaceCss,/data-theme=/,"Game-surface cosmetics must stay independent from platform theme selection");
+assert.doesNotMatch(surfaceCss,/\.(?:poker-game-shell|poker-side-tab-panel|poker-actions-workspace|mega-live-layout-v3|game-layout|player-rail)\b/,"Surface refinement must not take ownership of approved layout or Poker scroll containers");
+assert.doesNotMatch(
+  surfaceCss,
+  /(?:^|[;{]\s*)(?:display|position|width|min-width|max-width|height|min-height|max-height|grid-template(?:-columns|-rows)?|grid-row|grid-column|padding|margin|overflow(?:-x|-y)?|top|right|bottom|left|z-index|touch-action)\s*:/m,
+  "4.5 surface refinement must remain paint-only and must not alter geometry or scroll ownership",
+);
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");

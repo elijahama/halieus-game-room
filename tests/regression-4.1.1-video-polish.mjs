@@ -25,7 +25,9 @@ assert.match(themeButton,/CUSTOM_PRESETS/,'Custom theme editor must expose usefu
 assert.match(themeButton,/Studio Graphite/,'Custom theme presets must use studio-style coordinated palettes');
 assert.ok((themeButton.match(/id: \"[a-z0-9-]+\", label:/g) ?? []).length >= 12,'Custom theme editor must expose at least twelve coordinated presets');
 assert.match(themeButton,/halieus-custom-preview-window/,'Custom theme editor must show a richer live palette preview');
-assert.match(displaySettings,/\["system", "dark", "light", "blue", "red", "green", "custom"\]/,'In-game settings must expose standard and chromatic profiles');
+assert.match(displaySettings,/\["system", "light", "dark"\]/,'In-game settings must expose the standard quick theme modes');
+assert.match(displaySettings,/Theme Library/,'In-game settings must expose the 4.5 Theme Library');
+assert.match(displaySettings,/THEME_PROFILES\.length/,'In-game chromatic profiles must come from the shared theme catalog');
 assert.match(app,/prefers-color-scheme: dark/,'Runtime System theme must observe the device colour preference');
 assert.match(app,/media\.addEventListener\("change", sync\)/,'System theme must react if the device theme changes while HGR is open');
 assert.match(html,/mode === "system" \? systemTheme : mode/,'First paint must resolve System before React loads');
