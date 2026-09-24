@@ -7,25 +7,27 @@ This model sheet defines the shared visual language for Halieus Game Room. Indiv
 
 ## 1. Halieus H
 
-The 4.1.1 block H is retired as an interim mark.
+The earlier faceted 4.5 experiment is no longer the approved direction.
 
-The 4.5 H is constructed from three pieces inside a 64 × 64 master view box:
+The current approved identity returns to the calmer **matte H utility family** established by the launcher references:
 
-- left faceted pillar;
-- right faceted pillar;
-- central angular bridge.
+- a strong serif/slab H silhouette;
+- a restrained rounded tile where a tile is needed;
+- yellow/gold as the default Halieus brand colour;
+- theme-aware variants where appropriate;
+- no crystal/shard language outside the dedicated OpenShard launcher;
+- no unnecessary sci-fi/glass treatment.
 
-The two pillars mirror one another around the vertical centre. The bridge is wider than the internal pillar gap and uses angled ends so the mark remains identifiable when reduced to launcher/PWA size.
-
-The geometry does not change by theme. Theme variants change only the tile, ink, border and contrast treatment.
+The H remains one stable silhouette across the product. Theme variants change colour/contrast treatment, not its identity.
 
 ### Approved contrast variants
 
 - **standard** — normal product chrome and app identity;
 - **high** — large intro, launch and promotional use;
-- **low** — subdued/supporting identity where the H must not compete with game content.
+- **low** — subdued/supporting identity where the H must not compete with game content;
+- **glyph only** — transparent-background H for compact/tab use where the surrounding surface already exists.
 
-The H must not be stretched, skewed, recoloured independently from the current theme tokens, or replaced by a text glyph.
+The H must not be stretched, skewed, replaced with unrelated geometry, or made to inherit OpenShard-specific visual language.
 
 ## 2. Geometry
 
@@ -138,7 +140,21 @@ Aesthetic variation may be bold, but the following remain stable:
 - keyboard access to contextual menus;
 - clear locked/unlocked/equipped cosmetic states.
 
-## 9. Game visual identity inheritance
+## 9. Visual iteration discipline
+
+HGR visual work must preserve approved progress.
+
+- Start from the last approved implementation or production screenshot.
+- Change only the element currently under review.
+- Do not redesign neighbouring assets that have already been approved.
+- Treat generated mockups as exploration until explicitly accepted.
+- If a new iteration is worse, return to the previous approved baseline instead of compounding the regression.
+- Prefer refinement over reinvention when the existing design already communicates well.
+- Validate artwork in the actual website context before adopting it as production direction.
+
+The failed game-icon exploration remains useful as design research, but its generated assets are not approved production references.
+
+## 10. Game visual identity inheritance
 
 Game artwork follows a separate but connected visual system documented in [GAME_VISUAL_IDENTITY_SYSTEM.md](GAME_VISUAL_IDENTITY_SYSTEM.md).
 
@@ -155,10 +171,10 @@ Those assets are governed by one of three reusable category grammars:
 
 The category grammar is established before the individual game set is expanded. Future games inherit an approved category system instead of receiving a one-off thumbnail and icon treatment.
 
-## 10. Asset rollout
+## 11. Asset rollout
 
 The canonical H geometry should be used as the source for future PWA, desktop and Windows launcher asset regeneration. Existing raster/ICO assets are not considered fully migrated until the launcher/icon generation pass is completed and visually reviewed.
 
-## 11. Version boundary
+## 12. Version boundary
 
 This document begins the HGR 4.5 visual milestone. The repository version and half-version source baseline must not advance to 4.5.0 until the 4.5 implementation has passed code regression, build validation and human visual acceptance.
