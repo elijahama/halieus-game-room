@@ -27,10 +27,11 @@ assert.match(home,/Spectate/,"Player menu must expose real spectate where availa
 assert.match(home,/Invite to my room/,"Player menu must expose active-room invitation where available");
 assert.match(home,/Copy username/,"Player menu must expose a useful identity action");
 
-assert.match(brand,/halieus-brand-mark-h-pillar/,"4.5 H must use the faceted pillar geometry");
-assert.match(brand,/halieus-brand-mark-h-bridge/,"4.5 H must use a distinct central bridge");
+assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved shared matte/slab silhouette");
+assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-bridge/,"Retired faceted H geometry must not return");
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
-assert.match(modelSheet,/three pieces/,"Model sheet must document the new H construction");
+assert.match(modelSheet,/matte H utility family/,"Model sheet must document the approved H construction");
+assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
