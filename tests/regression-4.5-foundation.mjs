@@ -62,6 +62,10 @@ assert.match(display,/Text & density/,"Game display settings must expose readabi
 assert.match(display,/Interface density/,"Game display settings must expose density controls");
 assert.match(app,/dataset\.textScale/,"Text size must apply from the shared app root");
 assert.match(app,/dataset\.density/,"Density must apply from the shared app root");
+assert.match(app,/const activeTabGameId: GameId \| null/,"App must resolve one active game identity for browser-tab presentation");
+assert.match(app,/document\.title = `\$\{game\.name\} · Halieus Game Room`/,"Active game must identify itself in the browser title");
+assert.match(app,/favicon\.href = game\.icon/,"Active game tab icon must reuse the current approved catalogue SVG");
+assert.match(app,/document\.title = "Halieus Game Room"/,"Leaving a game must restore the platform browser title");
 assert.match(html,/halieus-game-room-theme-profile/,"First paint must preserve the selected theme profile");
 
 assert.match(skins,/SKIN_CATALOG/,"Cosmetic skins need one shared catalog");
