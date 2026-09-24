@@ -107,6 +107,6 @@ docs/ACCOUNT MIGRATION - OWNER ONLY.txt
 docs/OWNER BUILD - DO NOT SHARE.txt
 
 
-# Optional locally generated launcher previews. Approved launcher icons under
-# assets/branding/launchers/matte are real project assets and should be tracked.
+# Optional locally generated launcher previews. Approved launcher icons live
+# directly under assets/branding/launchers and are real project assets.
 assets/branding/launchers/generated-preview/
