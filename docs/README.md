@@ -11,6 +11,7 @@ For the current project story, start with the root [README](../README.md).
 - [Game catalogue](GAME_CATALOGUE.md)
 - [Game visual identity system](GAME_VISUAL_IDENTITY_SYSTEM.md)
 - [Brand asset pipeline](BRAND_ASSET_PIPELINE.md)
+- [Cosmetic theme system](COSMETIC_THEME_SYSTEM.md)
 - [Feature matrix](FEATURE_MATRIX.md)
 - [Gameplay rules](GAMEPLAY_RULES.md)
 - [Player guide](USER_GUIDE.md)
