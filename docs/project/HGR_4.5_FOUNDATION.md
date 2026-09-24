@@ -7,7 +7,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 
 - Replaced cosmetic player-card ellipses with a shared functional overflow menu.
 - Connected real player actions: profile, join/spectate active room, game-request flow, active-room invitation and username copy.
-- Rebuilt the Halieus H into the v1 faceted three-piece model geometry.
+- Replaced the earlier faceted H experiment with the approved matte serif/slab H direction, using yellow/gold as the default Halieus identity treatment.
 - Added a compact Theme Library architecture while retaining System / Light / Dark and immediate Custom access.
 - Added twelve more expressive coordinated theme profiles.
 - Kept legacy Blue / Red / Green saved modes compatible.
@@ -19,8 +19,8 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Added session-only all-skin preview while Beta/Test Lab is active.
 - Added first applied skins for shared interface framing, Poker/Blackjack hidden cards and Mega Board field atmosphere.
 - Added shared HGR geometry tokens for radii, control sizing and spacing.
-- Formalised the game visual identity pipeline: category grammar -> website thumbnail -> compact game glyph -> theme-aware variants.
-- Locked the three current visual families: Board & strategy, Card & table, and Word & party, so future games inherit a documented category language instead of receiving one-off artwork.
+- Formalised the game visual identity process while keeping the current website artwork as the source of truth.
+- Recorded the failed multi-game mockup iterations as exploratory only and documented a rollback-first visual review discipline so approved designs are not changed while fixing unrelated assets.
 
 ## Deliberately not claimed complete yet
 
