@@ -10,6 +10,7 @@ const theme=read("client/src/platform/theme.ts");
 const css=read("client/src/styles/hgr-design-v1.css");
 const shortcuts=read("scripts/windows/launcher-shortcuts.ps1");
 const packagedShortcuts=read("server/launcher-shortcuts.ps1");
+const guilds=read("client/src/platform/components/GuildsPanel.tsx");
 
 assert.match(home,/HalieusBrandMark/,"Home chrome must use the shared Halieus mark");
 assert.match(home,/HgrIcon name="chevron-left"/,"Featured previous control must use the shared SVG chevron");
@@ -33,5 +34,10 @@ for (const name of ["Start HGR App.lnk","Restart HGR App.lnk","Close HGR App.lnk
 assert.match(shortcuts,/Close the local Halieus Game Room desktop app window only/,"Close shortcut must state that it only closes the local app window");
 assert.match(packagedShortcuts,/Close HGR App\.lnk/,"Packaged launcher must use the same Close HGR App wording");
 assert.match(packagedShortcuts,/desktop app window only/,"Packaged Close shortcut must not imply cloud shutdown");
+
+assert.match(guilds,/halieus-guild-heading-actions/,"Guild Join/Create actions must live in the page heading");
+assert.doesNotMatch(guilds,/<div className="halieus-guild-actions">/,"Guild landing must not render a second full-width setup bar");
+assert.match(guilds,/setGuildAction\("join"\)/,"Guild heading must open the Join modal");
+assert.match(guilds,/setGuildAction\("create"\)/,"Guild heading must open the Create modal");
 
 console.log("HGR brand, theme and launcher coherence regression: PASS");
