@@ -24,6 +24,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Extended the platform surface grammar into Account / Owner Tools: header, content cards, section headings, fields, focus states and notices now inherit shared HGR theme tokens instead of the older fixed blue admin palette.
 - Extended the same grammar into persistent game chrome, the shared Game Menu and the Mega Board waiting room: shared SVG menu icon, modal/action rows, timer/recovery panels, lobby overview tiles, roster and side-control cards now consume the platform HGR surface tokens without changing game logic or artwork.
 - Unified the title/room/status strip across Poker, the Blackjack/WHOT rebuild family, Ludo/Connect Four/Ayo/Word Board/Hidden Dictator, Word/Password/Anagrams, and Cheat/Dominoes. Each game keeps its own artwork/accent while title hierarchy and room/mode/status chips now follow one platform contract.
+- Unified the outer result ceremony shell across Mega Board and the shared non-Mega results system: hero hierarchy, result tabs, ranking/stat/award surfaces, footer/actions and responsive framing now inherit HGR tokens while scoring, awards and game-specific result data remain untouched.
 - Formalised the game visual identity process while keeping the current website artwork as the source of truth.
 - Recorded the failed multi-game mockup iterations as exploratory only and documented a rollback-first visual review discipline so approved designs are not changed while fixing unrelated assets.
 
