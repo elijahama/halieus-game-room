@@ -69,14 +69,23 @@ The helper does not install Openshard automatically. If the CLI is missing it pr
 
 ### HGR - OpenShard TUI shortcut
 
-HGR's Windows shortcut generator creates **HGR - OpenShard TUI** in two places:
+HGR keeps its Windows shortcuts as one launcher family instead of scattering `.lnk` files around the project.
 
-- the Windows Start Menu;
-- the HGR repository root, so the developer shortcut is immediately visible in the project folder.
+After refreshing launchers, the developer repository contains:
 
-Both launch the OpenShard TUI directly at the HGR repository root through the same local helper.
+```text
+HGR Launchers/
+├── HGR - Start.lnk
+├── HGR - Restart.lnk
+├── HGR - Close.lnk
+├── HGR - Update Site.lnk
+├── HGR - PowerShell.lnk
+└── HGR - OpenShard TUI.lnk
+```
 
-The repository also includes **Open HGR OpenShard TUI.cmd** as a one-click fallback. This is intentionally visible in the HGR root so the TUI remains accessible even before Windows shortcuts have been refreshed.
+The Windows Start Menu contains the same launcher family under **Halieus Game Room**, using the same names.
+
+The repository also includes **Open HGR OpenShard TUI.cmd** as a direct fallback if the generated links have not been refreshed yet.
 
 After pulling the shortcut integration, double-click **FIRST RUN - Refresh Halieus Launchers.cmd**, or run:
 
@@ -84,7 +93,7 @@ After pulling the shortcut integration, double-click **FIRST RUN - Refresh Halie
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\windows\launcher-shortcuts.ps1"
 ```
 
-Then either double-click **HGR - OpenShard TUI** in the HGR folder, search Windows Start for **HGR - OpenShard TUI**, or use **Open HGR OpenShard TUI.cmd**.
+Then open **HGR Launchers → HGR - OpenShard TUI** from the project folder, or **Halieus Game Room → HGR - OpenShard TUI** from Windows Start.
 
 The shortcut currently reuses the approved HGR terminal/PowerShell launcher artwork. A dedicated OpenShard-facing HGR icon is intentionally deferred to the visual model-sheet/rebrand stage so the project does not accumulate another one-off icon style.
 
