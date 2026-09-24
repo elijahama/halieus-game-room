@@ -99,7 +99,7 @@ export function DisplaySettingsPanel({
         </div>
         <div className="halieus-theme-library-select">
           <label>
-            <span><strong>Theme Library</strong><small>12 coordinated HGR profiles</small></span>
+            <span><strong>Theme Library</strong><small>{THEME_PROFILES.length} coordinated HGR profiles</small></span>
             <select value={themeMode === "profile" ? themeProfileId : ""} onChange={(event) => event.target.value && changeProfile(event.target.value as HalieusThemeProfileId)}>
               <option value="">Choose a profile…</option>
               {THEME_PROFILES.map((profile) => <option key={profile.id} value={profile.id}>{profile.label} — {profile.mood}</option>)}
