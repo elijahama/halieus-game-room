@@ -43,3 +43,8 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Additional game-specific cosmetic slots beyond the initial Interface / Cards / Mega Board foundation.
 
 Those occur only after validation and human acceptance.
+
+- Added a board/table cosmetic architecture separate from the global HGR theme: Mega Board and Poker now have independent visual-surface slots while preserving gameplay geometry.
+- Added original retro-console-inspired HGR families (8-bit Ivory, 16-bit Lavender, Black Drive and Grey Disc) as both platform profiles and matching game-surface cosmetics.
+- Added real progression metadata for starter, play-count, win, rating, achievement, guild and seasonal unlocks. Mega Board can consume its existing ranked rating; Poker deliberately remains play/win-gated until its rating model is live.
+- Added free muted competitive alternatives for Mega Board and Poker without replacing either game’s approved default layout.
