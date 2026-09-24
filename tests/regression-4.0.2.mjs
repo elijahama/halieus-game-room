@@ -86,7 +86,7 @@ assert.match(
 );
 
 assert.match(serviceWorker,/halieus-shell-v4-\d+-\d+/,'PWA cache must remain versioned on the HGR 4.x line');
-assert.match(intro,/app-icon-192\.png\?v=4\.\d+\.\d+/,'Intro asset cache-buster must remain versioned on the HGR 4.x line');
+assert.match(intro,/HalieusBrandMark/,'Intro identity must remain wired through the shared Halieus mark');
 assert.match(readme,/Current milestone:\*\* 4\.\d+\.\d+/,'README must advertise the current HGR 4.x milestone');
 
 console.log('Halieus Game Room 4.0.2 device-width mobile regression: PASS');

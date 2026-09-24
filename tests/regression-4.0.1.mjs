@@ -50,7 +50,7 @@ assert.match(css,/\.final-player-row\.halieus-final-results-grid\s*\{[\s\S]*?gri
 assert.match(css,/\.results-tabs\s*\{\s*grid-template-columns:\s*repeat\(3,/s,'Results tabs must match the three actual tabs');
 
 assert.match(serviceWorker,/halieus-shell-v4-\d+-\d+/,'PWA cache must remain versioned on the 4.0.x line');
-assert.match(intro,/app-icon-192\.png\?v=4\.\d+\.\d+/,'Intro asset cache-buster must remain versioned on the 4.0.x line');
+assert.match(intro,/HalieusBrandMark/,'Intro identity must remain wired through the shared Halieus mark');
 assert.match(readme,/Current milestone:\*\* 4\.\d+\.\d+/,'README must advertise the current 4.0.x milestone');
 
 console.log('Halieus Game Room 4.0.1 mobile + ranked results regression: PASS');
