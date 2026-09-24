@@ -16,6 +16,7 @@ import type { HiddenDictatorMatchMode } from "../../../../shared/games/hidden-di
 import type { LudoMatchMode } from "../../../../shared/games/ludo/types";
 import type { WhotAiDifficulty, WhotMatchMode } from "../../../../shared/games/whot/types";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
+import type { HalieusGameRatings } from "../skins";
 import type { HalieusGuildInvitation } from "../../../../shared/platform/guilds";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaMatchMode, WordGameMode } from "../../../../shared/games/word-arena/types";
 import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicMatchMode } from "../../../../shared/games/classic-table/types";
@@ -44,7 +45,7 @@ interface HomeScreenProps {
   recoveryCode: string; pokerRecoveryCode: string; blackjackRecoveryCode: string; whotRecoveryCode: string; ludoRecoveryCode: string; connectFourRecoveryCode: string; ayoRecoveryCode: string; wordBoardRecoveryCode: string; hiddenDictatorRecoveryCode: string;
   savedSession: SavedSessionSummary | null; pokerSavedSession: SavedSessionSummary | null; blackjackSavedSession: SavedSessionSummary | null; whotSavedSession: SavedSessionSummary | null; ludoSavedSession: SavedSessionSummary | null; connectFourSavedSession: SavedSessionSummary | null; ayoSavedSession: SavedSessionSummary | null; wordBoardSavedSession: SavedSessionSummary | null; hiddenDictatorSavedSession: SavedSessionSummary | null;
   pokerStartingChips: number; pokerSmallBlind: number; pokerBigBlind: number; pokerMatchMode: "casual" | "ranked"; pokerVariant: PokerVariant; whotMatchMode: WhotMatchMode; ludoMatchMode: LudoMatchMode; blackjackMatchMode: BlackjackMatchMode; connectFourMatchMode: ConnectFourMatchMode; connectFourBestOf: ConnectFourBestOf; hiddenDictatorMatchMode: HiddenDictatorMatchMode;
-  isCreating: boolean; isJoining: boolean; isRecovering: boolean; darkMode: boolean; account: HalieusAccountSummary | null; betaMode: boolean; onOpenAccount: () => void;
+  isCreating: boolean; isJoining: boolean; isRecovering: boolean; darkMode: boolean; account: HalieusAccountSummary | null; betaMode: boolean; skinRatings: HalieusGameRatings; onOpenAccount: () => void;
   theme: { pageBackground: string; cardBackground: string; secondaryBackground: string; inputBackground: string; text: string; mutedText: string; border: string; };
   onToggleDarkMode: () => void; onGameSelect: (game: GameSelection) => void; onPlayerNameChange: (value: string) => void; onRoomCodeChange: (value: string) => void;
   onRecoveryCodeChange: (value: string) => void; onPokerRecoveryCodeChange: (value: string) => void; onBlackjackRecoveryCodeChange: (value: string) => void; onWhotRecoveryCodeChange: (value: string) => void; onLudoRecoveryCodeChange: (value: string) => void; onConnectFourRecoveryCodeChange: (value: string) => void; onAyoRecoveryCodeChange: (value: string) => void; onWordBoardRecoveryCodeChange: (value: string) => void; onHiddenDictatorRecoveryCodeChange: (value: string) => void;
@@ -79,7 +80,7 @@ export function HomeScreen(props: HomeScreenProps) {
     recoveryCode, pokerRecoveryCode, blackjackRecoveryCode, whotRecoveryCode, ludoRecoveryCode, connectFourRecoveryCode, ayoRecoveryCode, wordBoardRecoveryCode, hiddenDictatorRecoveryCode,
     savedSession, pokerSavedSession, blackjackSavedSession, whotSavedSession, ludoSavedSession, connectFourSavedSession, ayoSavedSession, wordBoardSavedSession, hiddenDictatorSavedSession,
     pokerStartingChips, pokerSmallBlind, pokerBigBlind, pokerMatchMode, pokerVariant, whotMatchMode, ludoMatchMode, blackjackMatchMode, connectFourMatchMode, connectFourBestOf, hiddenDictatorMatchMode,
-    isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, theme, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
+    isCreating, isJoining, isRecovering, darkMode, account, betaMode, skinRatings, onOpenAccount, theme, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
     onRecoveryCodeChange, onPokerRecoveryCodeChange, onBlackjackRecoveryCodeChange, onWhotRecoveryCodeChange, onLudoRecoveryCodeChange, onConnectFourRecoveryCodeChange, onAyoRecoveryCodeChange, onWordBoardRecoveryCodeChange, onHiddenDictatorRecoveryCodeChange,
     onPokerStartingChipsChange, onPokerSmallBlindChange, onPokerBigBlindChange, onPokerMatchModeChange, onPokerVariantChange, onWhotMatchModeChange, onLudoMatchModeChange, onBlackjackMatchModeChange, onConnectFourMatchModeChange, onConnectFourBestOfChange, onHiddenDictatorMatchModeChange,
     onGenerateRoomCode, onOpenLeaderboard, onOpenPokerLeaderboard, onMatchModeChange, onFreeParkingJackpotChange,
@@ -669,7 +670,7 @@ export function HomeScreen(props: HomeScreenProps) {
         <div className="halieus-side-display-controls" aria-label="Display controls">
           <button type="button" className="halieus-fullscreen-button" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><span className="halieus-nav-icon"><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} /></span><b>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</b></button>
           <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
-          <SkinLibraryButton stats={personalStats} betaMode={betaMode} />
+          <SkinLibraryButton stats={personalStats} betaMode={betaMode} ratings={skinRatings} />
           <InstallAppButton />
           <NotificationPermissionButton />
         </div>
