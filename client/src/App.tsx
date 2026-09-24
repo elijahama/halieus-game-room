@@ -610,7 +610,7 @@ export default function App() {
     if (resolvedThemeMode === "custom") {
       for (const [key, value] of Object.entries(customThemeVariables(customTheme))) root.style.setProperty(key, value);
     }
-    root.style.backgroundColor = resolvedThemeMode === "custom" ? customTheme.page : resolvedThemeMode === "light" ? "#f4f7fb" : resolvedThemeMode === "blue" ? "#06111c" : resolvedThemeMode === "red" ? "#170d10" : resolvedThemeMode === "green" ? "#0d1712" : "#0f1012";
+    root.style.backgroundColor = resolvedThemeMode === "custom" ? customTheme.page : resolvedThemeMode === "light" ? "#f4f5f7" : resolvedThemeMode === "blue" ? "#06111c" : resolvedThemeMode === "red" ? "#170d10" : resolvedThemeMode === "green" ? "#0d1712" : "#0f1012";
   }, [customTheme, darkMode, resolvedThemeMode, themeMode]);
 
   useEffect(() => {
