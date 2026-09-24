@@ -10,7 +10,9 @@ export type HgrIconName =
   | "menu"
   | "fullscreen"
   | "minimize"
-  | "close";
+  | "close"
+  | "chevron-left"
+  | "chevron-right";
 
 interface HgrIconProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
   name: HgrIconName;
@@ -53,5 +55,9 @@ export function HgrIcon({ name, size = 20, ...props }: HgrIconProps) {
       return <svg {...common}><path d="M9 4v5H4M15 20v-5h5M20 9h-5V4M4 15h5v5" /></svg>;
     case "close":
       return <svg {...common}><path d="M6 6l12 12M18 6 6 18" /></svg>;
+    case "chevron-left":
+      return <svg {...common}><path d="m14.5 6-6 6 6 6" /></svg>;
+    case "chevron-right":
+      return <svg {...common}><path d="m9.5 6 6 6-6 6" /></svg>;
   }
 }
