@@ -38,7 +38,7 @@ assert.match(css,/@keyframes hgr-feature-content-in/,'Hero rotation needs a smoo
 assert.match(home,/return shelves\[discoveryShelf\]\.slice\(0, 4\)/,'Home discovery must be a four-game preview');
 assert.match(home,/onlinePlayers\.slice\(0, 3\)/,'Online players Home preview must stay short');
 assert.match(home,/recentPlayers\.slice\(0, 3\)/,'Recent players Home preview must stay short');
-assert.match(home,/friends:\s*friends,/,'Friends Are Playing must not fall back to generic recommendations');
+assert.match(home,/\n\s*friends,\n/,'Friends Are Playing must not fall back to generic recommendations');
 assert.match(home,/No friends are playing right now/,'Friends Are Playing must expose a truthful empty state');
 assert.match(css,/\.halieus-home-player-strip > div[\s\S]*?overflow:\s*visible !important/s,'Home player previews must not have an internal scrollbar');
 assert.match(css,/\.halieus-discovery-row[\s\S]*?overflow:\s*visible !important/s,'Home game preview must not have an internal scrollbar');
