@@ -30,9 +30,13 @@ export function getGuildDataDirectory(): string {
 }
 
 
-export function getFeedbackFilePath(): string {
+export function getFeedbackDataDirectory(): string {
   const root = configuredDataRoot();
-  return root ? resolve(root, "feedback", "feedback.ndjson") : resolve(process.cwd(), "data", "feedback.ndjson");
+  return root ? resolve(root, "feedback") : resolve(process.cwd(), "data", "feedback");
+}
+
+export function getFeedbackFilePath(): string {
+  return resolve(getFeedbackDataDirectory(), "feedback.ndjson");
 }
 
 export function getMegaBoardDataDirectory(): string {
