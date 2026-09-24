@@ -5,6 +5,7 @@ export type HgrIconName =
   | "games"
   | "players"
   | "inbox"
+  | "chat"
   | "plus"
   | "info"
   | "menu"
@@ -43,6 +44,8 @@ export function HgrIcon({ name, size = 20, ...props }: HgrIconProps) {
       return <svg {...common}><circle cx="9" cy="8" r="3.2" /><path d="M3.8 19.5c.8-3.5 2.6-5.2 5.2-5.2s4.4 1.7 5.2 5.2" /><path d="M15.7 6.2a3 3 0 0 1 0 5.8" /><path d="M16.5 14.5c2.1.5 3.3 2.1 3.7 5" /></svg>;
     case "inbox":
       return <svg {...common}><path d="M4 5.5h16v13H4z" /><path d="M4 14h4l1.7 2h4.6l1.7-2h4" /></svg>;
+    case "chat":
+      return <svg {...common}><path d="M5 5.5h14v10.5H10l-5 3v-13.5z" /><path d="M8.3 10.8h.01M12 10.8h.01M15.7 10.8h.01" /></svg>;
     case "plus":
       return <svg {...common}><path d="M12 5v14M5 12h14" /></svg>;
     case "info":
