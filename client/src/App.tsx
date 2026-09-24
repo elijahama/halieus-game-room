@@ -56,6 +56,7 @@ import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboard
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
 import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
+import { clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
   DiceResponse,
@@ -525,6 +526,7 @@ export default function App() {
 
   function exitBetaTestMode(): void {
     sessionStorage.removeItem("halieus-beta-test-mode");
+    clearBetaSkinPreview();
     setBetaMode(false);
     if (authStatus?.account) setPlayerName(authStatus.account.displayName);
     setMessage("Beta Test Lab closed. Your normal Halieus identity is restored.");
@@ -549,7 +551,8 @@ export default function App() {
     setDocumentIdentity("Halieus Game Room");
   }, [ayoState, blackjackState, classicState, connectFourState, gameStarted, hiddenDictatorState, lobby, ludoState, megaBoardParked, pokerState, whotState, wordArenaState, wordBoardState]);
 
-  const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
+  const [skinPreferences, setSkinPreferences] = useState<HalieusSkinPreferences>(() => readEffectiveSkinPreferences(false));
+    const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [themeProfileId, setThemeProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
   const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
   const [textScale, setTextScale] = useState<HalieusTextScale>(() => readTextScale());
@@ -581,6 +584,24 @@ export default function App() {
    * not rewrite the browser viewport.
    */
 
+
+  useEffect(() => {
+    const handleSkins = (event: Event) => setSkinPreferences((event as CustomEvent<HalieusSkinPreferences>).detail);
+    window.addEventListener("halieus-skins-change", handleSkins);
+    return () => window.removeEventListener("halieus-skins-change", handleSkins);
+  }, []);
+
+  useEffect(() => {
+    if (!betaMode) clearBetaSkinPreview();
+    setSkinPreferences(readEffectiveSkinPreferences(betaMode));
+  }, [betaMode]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.skinInterface = skinPreferences.interface;
+    root.dataset.skinCards = skinPreferences.cards;
+    root.dataset.skinMegaBoard = skinPreferences["mega-board"];
+  }, [skinPreferences]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
