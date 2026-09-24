@@ -27,6 +27,7 @@ import { NotificationPermissionButton } from "./NotificationPermissionButton";
 import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
+import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard } from "./PlayerIdentityCard";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
 
@@ -586,7 +587,7 @@ export function HomeScreen(props: HomeScreenProps) {
 
       <aside className={`halieus-sidebar ${mobileMenuOpen ? "is-mobile-open" : ""}`} aria-label="Halieus navigation">
         <button type="button" className="halieus-mobile-drawer-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu"><HgrIcon name="close" size={22} /></button>
-        <button type="button" className="halieus-side-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }} aria-label="Halieus Game Room home"><img src="/app-icon-192.png?v=4.1.1" alt="" /><span>Halieus Game Room</span></button>
+        <button type="button" className="halieus-side-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }} aria-label="Halieus Game Room home"><HalieusBrandMark /><span>Halieus Game Room</span></button>
         {account && <button type="button" className="halieus-side-account halieus-side-account-top" onClick={onOpenAccount}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><div><strong>{account.displayName}</strong><small>@{account.username}</small></div><i>•••</i></button>}
         <nav className="halieus-side-nav">
           <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="home" /></span><b>Home</b></button>
@@ -610,7 +611,7 @@ export function HomeScreen(props: HomeScreenProps) {
       </aside>
 
       <section className="halieus-main">
-        <header className="halieus-mobile-bar"><button type="button" className="halieus-mobile-menu-button" onClick={() => setMobileMenuOpen(true)} aria-label="Open Halieus menu"><HgrIcon name="menu" size={22} /></button><button type="button" className="halieus-mobile-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }}><img src="/app-icon-192.png?v=4.1.1" alt="" /><strong>Halieus Game Room</strong></button><div className="halieus-mobile-actions"><button type="button" className="halieus-mobile-fullscreen" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={20} /></button>{account && <button type="button" className="halieus-mobile-inbox" onClick={() => setInboxOpen(true)} aria-label={`Open inbox${inboxCount ? `, ${inboxCount} new items` : ""}`}><HgrIcon name="inbox" size={20} />{inboxCount > 0 && <b>{inboxCount > 9 ? "9+" : inboxCount}</b>}</button>}{account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}</div></header>
+        <header className="halieus-mobile-bar"><button type="button" className="halieus-mobile-menu-button" onClick={() => setMobileMenuOpen(true)} aria-label="Open Halieus menu"><HgrIcon name="menu" size={22} /></button><button type="button" className="halieus-mobile-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HalieusBrandMark /><strong>Halieus Game Room</strong></button><div className="halieus-mobile-actions"><button type="button" className="halieus-mobile-fullscreen" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={20} /></button>{account && <button type="button" className="halieus-mobile-inbox" onClick={() => setInboxOpen(true)} aria-label={`Open inbox${inboxCount ? `, ${inboxCount} new items` : ""}`}><HgrIcon name="inbox" size={20} />{inboxCount > 0 && <b>{inboxCount > 9 ? "9+" : inboxCount}</b>}</button>}{account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}</div></header>
 
         {view === "home" && <section className="halieus-view view-home panel-enter">
           <section className="halieus-showcase halieus-feature-carousel" style={{ ["--feature-accent" as string]: featuredGame.accent }}>
@@ -632,14 +633,14 @@ export function HomeScreen(props: HomeScreenProps) {
               </div>
             </div>
             <div className="halieus-showcase-feature" aria-label={`Featured game: ${featuredGame.name}`}>
-              {featureRotation.length > 1 && <button type="button" className="halieus-feature-arrow is-previous" onClick={previousFeature} aria-label="Previous featured game">‹</button>}
+              {featureRotation.length > 1 && <button type="button" className="halieus-feature-arrow is-previous" onClick={previousFeature} aria-label="Previous featured game"><HgrIcon name="chevron-left" size={24} /></button>}
               <div key={featuredGameId} className="halieus-feature-card-stage">
                 <span className="halieus-showcase-orbit" aria-hidden="true">{featuredGame.motifs.slice(0, 4).map((motif, index) => <i key={`${motif}-${index}`}>{motif}</i>)}</span>
                 <img src={featuredGame.icon} alt="" />
                 <div><p>{featuredSeat ? "ROOM TO CONTINUE" : "FEATURED NOW"}</p><h2>{featuredGame.name}</h2><span>{featuredSeat ? `Room ${featuredSeat.session?.code}` : featuredGame.subtitle}</span></div>
                 <b>{featuredSeat ? "Continue" : featuredGame.status === "beta" ? "Beta" : "Available"}</b>
               </div>
-              {featureRotation.length > 1 && <button type="button" className="halieus-feature-arrow is-next" onClick={nextFeature} aria-label="Next featured game">›</button>}
+              {featureRotation.length > 1 && <button type="button" className="halieus-feature-arrow is-next" onClick={nextFeature} aria-label="Next featured game"><HgrIcon name="chevron-right" size={24} /></button>}
               <nav className="halieus-feature-rail" aria-label="Featured games">
                 {featureRotation.map((gameId, index) => {
                   const game = GAME_BY_ID[gameId];
