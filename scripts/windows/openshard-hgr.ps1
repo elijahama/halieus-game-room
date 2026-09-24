@@ -13,10 +13,12 @@ if (-not $OpenShard) {
     Write-Host ""
     Write-Host "Openshard is not installed or is not on PATH." -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "Recommended Windows install:" -ForegroundColor Cyan
+    Write-Host "Recommended Windows bootstrap:" -ForegroundColor Cyan
+    Write-Host "  py -m ensurepip --upgrade"
+    Write-Host "  py -m pip install --upgrade pip"
     Write-Host "  py -m pip install --user pipx"
     Write-Host "  py -m pipx ensurepath"
-    Write-Host "  pipx install openshard"
+    Write-Host "  py -m pipx install openshard"
     Write-Host ""
     Write-Host "Then open a new terminal and run:"
     Write-Host "  scripts\windows\OpenShard HGR.cmd setup"
