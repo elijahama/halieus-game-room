@@ -79,10 +79,7 @@ The launcher family is governed by the approved reference images in:
 
 `assets/branding/references/`
 
-Specifically:
-
-- `ChatGPT Image Sep 22, 2026, 08_26_31 AM.png`
-- `ChatGPT Image Sep 22, 2026, 08_26_37 AM.png`
+Every approved PNG in that directory participates in the visual reference set. The count may grow as new approved references are added, so implementation work must inspect the folder rather than relying on a hard-coded filename list.
 
 These references are the visual source of truth. They are **not** a prompt for a generator to reinterpret.
 
