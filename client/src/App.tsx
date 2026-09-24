@@ -257,6 +257,11 @@ function formatDuration(milliseconds: number): string {
     .join(":");
 }
 
+function makeHalieusTabGlyph(fill: string, ink: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="${fill}" stroke="${ink}" stroke-width="0.8" paint-order="stroke fill" d="M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z"/></svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 export default function App() {
   const directGuestRoute = Boolean(
     readInviteCodeFromPath() ||
@@ -3180,36 +3185,29 @@ function handleLeaveSpectator() {
     (!megaBoardParked && (lobby || gameState || gameStarted) ? "mega-board" : null);
 
   useEffect(() => {
-    const favicons = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="icon"]'));
-    for (const favicon of favicons) {
-      if (favicon.dataset.hgrDefaultHref) continue;
-      favicon.dataset.hgrDefaultHref = favicon.getAttribute("href") ?? "/favicon.ico";
-      favicon.dataset.hgrDefaultType = favicon.getAttribute("type") ?? "";
-      favicon.dataset.hgrDefaultSizes = favicon.getAttribute("sizes") ?? "";
+    let favicon = document.getElementById("halieus-dynamic-favicon") as HTMLLinkElement | null;
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.id = "halieus-dynamic-favicon";
+      favicon.rel = "icon";
+      document.head.appendChild(favicon);
     }
+    favicon.type = "image/svg+xml";
+    favicon.sizes = "any";
 
     if (activeTabGameId) {
       const game = GAME_BY_ID[activeTabGameId];
       document.title = `${game.name} · Halieus Game Room`;
-      for (const favicon of favicons) {
-        favicon.href = game.icon;
-        favicon.type = "image/svg+xml";
-        favicon.sizes = "any";
-      }
+      favicon.href = game.icon;
       return;
     }
 
     document.title = "Halieus Game Room";
-    for (const favicon of favicons) {
-      favicon.href = favicon.dataset.hgrDefaultHref ?? "/favicon.ico";
-      const defaultType = favicon.dataset.hgrDefaultType;
-      const defaultSizes = favicon.dataset.hgrDefaultSizes;
-      if (defaultType) favicon.type = defaultType;
-      else favicon.removeAttribute("type");
-      if (defaultSizes) favicon.sizes = defaultSizes;
-      else favicon.removeAttribute("sizes");
-    }
-  }, [activeTabGameId]);
+    const rootStyle = getComputedStyle(document.documentElement);
+    const brand = rootStyle.getPropertyValue("--hgr-brand").trim() || "#daa017";
+    const brandInk = rootStyle.getPropertyValue("--hgr-brand-ink").trim() || "#111318";
+    favicon.href = makeHalieusTabGlyph(brand, brandInk);
+  }, [activeTabGameId, customTheme, systemPrefersDark, themeMode, themeProfileId]);
 
   const toggleSound = () =>
     setSoundEnabled((current) => !current);
