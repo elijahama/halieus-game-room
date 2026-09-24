@@ -18,7 +18,7 @@ const app=read('client/src/App.tsx');
 const html=read('client/index.html');
 const css=read('client/src/styles/hgr-design-v1.css');
 
-assert.match(theme,/HalieusThemeMode = "system" \| "dark" \| "light" \| "blue" \| "red" \| "green" \| "custom"/,'System and chromatic profiles must be persisted theme modes');
+assert.match(theme,/HalieusThemeMode = "system" \\| "dark" \\| "light" \\| "blue" \\| "red" \\| "green" \\| (?:"profile" \\| )?"custom"/,'System and chromatic profiles must remain persisted theme modes');
 assert.match(theme,/function resolveThemeMode/,'System theme needs a single canonical resolver');
 assert.match(themeButton,/mode: "system"/,'Sidebar Theme menu must expose System');
 assert.match(themeButton,/CUSTOM_PRESETS/,'Custom theme editor must expose useful starting palettes');
