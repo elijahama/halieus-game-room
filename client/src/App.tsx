@@ -3214,28 +3214,34 @@ function handleLeaveSpectator() {
     (!megaBoardParked && (lobby || gameState || gameStarted) ? "mega-board" : null);
 
   useEffect(() => {
-    const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"][sizes="any"]');
-    if (favicon && !favicon.dataset.hgrDefaultHref) {
+    const favicons = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="icon"]'));
+    for (const favicon of favicons) {
+      if (favicon.dataset.hgrDefaultHref) continue;
       favicon.dataset.hgrDefaultHref = favicon.getAttribute("href") ?? "/favicon.ico";
       favicon.dataset.hgrDefaultType = favicon.getAttribute("type") ?? "";
+      favicon.dataset.hgrDefaultSizes = favicon.getAttribute("sizes") ?? "";
     }
 
     if (activeTabGameId) {
       const game = GAME_BY_ID[activeTabGameId];
       document.title = `${game.name} · Halieus Game Room`;
-      if (favicon) {
+      for (const favicon of favicons) {
         favicon.href = game.icon;
         favicon.type = "image/svg+xml";
+        favicon.sizes = "any";
       }
       return;
     }
 
     document.title = "Halieus Game Room";
-    if (favicon) {
+    for (const favicon of favicons) {
       favicon.href = favicon.dataset.hgrDefaultHref ?? "/favicon.ico";
       const defaultType = favicon.dataset.hgrDefaultType;
+      const defaultSizes = favicon.dataset.hgrDefaultSizes;
       if (defaultType) favicon.type = defaultType;
       else favicon.removeAttribute("type");
+      if (defaultSizes) favicon.sizes = defaultSizes;
+      else favicon.removeAttribute("sizes");
     }
   }, [activeTabGameId]);
 
