@@ -82,7 +82,7 @@ assert.doesNotMatch(guildServer,/app\.get\("\/guilds\/search"/,'4.1.0 guilds mus
 
 assert.match(server,/registerGuildRoutes\(app, getAuthenticatedAccount, getAccountSummaryById\)/,'Server must register Guild routes with canonical account lookup');
 assert.match(server,/await loadGuildStore\(\)/,'Server must load persistent guild data at startup');
-assert.match(server,/\["\/auth", "\/accounts", "\/admin", "\/guilds"\]/,'Guild responses must use no-store cache policy');
+assert.match(server,/\["\/auth", "\/accounts", "\/admin", "\/guilds", "\/feedback"\]/,'Private account, guild and feedback responses must use no-store cache policy');
 
 assert.match(
   archive,
