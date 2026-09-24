@@ -114,7 +114,7 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {} }: SkinLibrary
             </div>
 
             <footer>
-              <span>{betaMode ? "Leaving Test Lab automatically restores your normal equipped cosmetics." : "Cosmetics are visual only. Rating gates use a game’s real ranking data; games without a live rating model use play/win unlocks instead."}</span>
+              <span>{betaMode ? "Leaving Test Lab automatically restores your normal equipped cosmetics." : "Cosmetics are visual only. Account role does not bypass player progression. Rating gates use a game’s real ranking data; games without a live rating model use play/win unlocks instead."}</span>
             </footer>
           </section>
         </div>,
