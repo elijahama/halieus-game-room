@@ -1,28 +1,30 @@
 # HGR Branding References — Source of Truth
 
-These reference images are **approved visual source material**. They are not mood boards to reinterpret.
+This folder contains **approved visual source material**. Reference images are not mood boards to reinterpret.
 
-## Approved launcher references
+## Authority rule
 
-The launcher family must follow these files directly:
+Every approved PNG stored directly in:
 
-- `ChatGPT Image Sep 22, 2026, 08_26_31 AM.png`
-- `ChatGPT Image Sep 22, 2026, 08_26_37 AM.png`
+```text
+assets/branding/references/
+```
 
-The approved Windows launcher ICOs extracted/accepted from this reference work are protected project assets under:
+is part of the visual source of truth.
+
+Do **not** assume a fixed number of reference PNGs. If another approved PNG is added to this folder, it joins the reference set automatically and must be reviewed before changing production artwork.
+
+The extensionless `web mock up` file is a website/layout reference and must not be treated as launcher-art authority unless explicitly documented for that purpose.
+
+## Approved launcher outputs
+
+Approved Windows launcher ICOs live under:
 
 ```text
 assets/branding/launchers/matte/
 ```
 
-Current protected ICOs:
-
-- `Start Halieus Game Room.ico`
-- `Restart Halieus Game Room.ico`
-- `Close Halieus Game Room.ico`
-- `HGR PowerShell.ico`
-
-These four files were committed as approved artwork in commit `4b3dc3a9dbfbf64f268bf38b51309a973b4f7e7b`.
+Those files are protected production assets. Existing accepted ICOs from the reference-led launcher work must not be redrawn, recoloured, deleted or replaced by a generator.
 
 ## Non-negotiable rule
 
@@ -37,13 +39,14 @@ Do not:
 - treat a generated mockup as approved merely because it resembles the references;
 - let shortcut/update/start/restart scripts modify approved artwork.
 
-If an approved asset needs changing, the process is:
+If an approved asset needs changing:
 
-1. start from the approved reference image;
-2. make the requested targeted visual change only;
-3. obtain human visual approval;
-4. replace the relevant approved asset deliberately;
-5. update documentation/regression fingerprints.
+1. inspect the complete current PNG reference set in this folder;
+2. start from the applicable approved reference;
+3. make only the requested targeted visual change;
+4. obtain human visual approval;
+5. replace the relevant production asset deliberately;
+6. update documentation/regression protection.
 
 ## Experimental output
 
@@ -54,7 +57,3 @@ assets/branding/launchers/generated-preview/
 ```
 
 They are never production replacements for the approved reference-based icons.
-
-## Other references
-
-`web mock up` is a website/layout reference and must not be used as authority for launcher artwork.
