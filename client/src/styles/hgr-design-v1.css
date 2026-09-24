@@ -5415,3 +5415,224 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5 shared communication / confirmation surfaces
+   ========================================================================== */
+
+/* Inbox already owns the correct drawer behavior; 4.5 aligns the details with
+ * the same count-chip, action-row and elevated-surface grammar as Games/Guilds. */
+.halieus-inbox-panel {
+  border-left-color: var(--hgr-border-strong) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-inbox-panel > header > button {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-inbox-group > header {
+  min-height: 30px;
+  padding: 0 2px 6px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-inbox-group > header b {
+  min-width: 24px !important;
+  height: 24px !important;
+  border: 1px solid var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-muted) !important;
+}
+.halieus-inbox-item {
+  border-radius: var(--hgr-radius-md) !important;
+  background: color-mix(in srgb,var(--inbox-accent) 5%,var(--hgr-surface-soft)) !important;
+}
+.halieus-inbox-item > div button {
+  border-radius: var(--hgr-radius-sm) !important;
+}
+
+/* Room chat / game log / spectator presence share one platform panel. */
+.room-chat-panel {
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+.room-chat-panel > header {
+  padding: 12px 13px !important;
+  border-bottom: 1px solid var(--hgr-border) !important;
+  background: transparent !important;
+}
+.room-chat-panel > header p {
+  color: var(--chat-accent,var(--hgr-brand)) !important;
+  font-size: 8px !important;
+  font-weight: 950 !important;
+  letter-spacing: .13em !important;
+  text-transform: uppercase;
+}
+.room-chat-panel > header strong {
+  color: var(--hgr-text) !important;
+}
+.room-chat-panel > header small,
+.room-chat-status {
+  color: var(--hgr-muted) !important;
+}
+.room-chat-close {
+  width: 32px !important;
+  height: 32px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.room-activity-tabs {
+  gap: 4px !important;
+  padding: 5px !important;
+  border-bottom: 1px solid var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+}
+.room-activity-tabs > button {
+  min-height: 34px !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: transparent !important;
+  color: var(--hgr-text-soft) !important;
+}
+.room-activity-tabs > button:hover,
+.room-activity-tabs > button.is-active {
+  border-color: color-mix(in srgb,var(--chat-accent,var(--hgr-brand)) 36%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--chat-accent,var(--hgr-brand)) 7%,var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text) !important;
+}
+.room-activity-tabs b,
+.room-chat-trigger > b {
+  border: 0 !important;
+  background: var(--chat-accent,var(--hgr-brand)) !important;
+  color: #fff !important;
+}
+.room-chat-messages,
+.room-activity-log,
+.room-spectator-panel {
+  background: var(--hgr-surface) !important;
+}
+.room-chat-message,
+.room-activity-log > article,
+.room-spectator-list > span {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.room-chat-message.is-own {
+  border-color: color-mix(in srgb,var(--chat-accent) 40%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--chat-accent) 7%,var(--hgr-surface-soft)) !important;
+}
+.room-chat-message header time,
+.room-activity-log time,
+.room-activity-log article > span {
+  color: var(--hgr-muted) !important;
+}
+.room-chat-compose {
+  gap: 6px !important;
+  padding: 9px !important;
+  border-top: 1px solid var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+}
+.room-chat-compose input {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+.room-chat-compose input:focus {
+  border-color: color-mix(in srgb,var(--chat-accent) 55%,var(--hgr-border)) !important;
+  box-shadow: var(--hgr-focus) !important;
+  outline: none !important;
+}
+.room-chat-compose button {
+  border: 1px solid color-mix(in srgb,var(--chat-accent) 55%,var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--chat-accent,var(--hgr-brand)) !important;
+  color: #fff !important;
+  font-weight: 850 !important;
+}
+.room-chat-trigger {
+  min-height: 42px !important;
+  border: 1px solid color-mix(in srgb,var(--chat-accent) 32%,var(--hgr-border)) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb,var(--hgr-surface-raised) 94%,transparent) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-panel) !important;
+  backdrop-filter: blur(14px);
+}
+.room-chat-trigger-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb,var(--chat-accent) 12%,var(--hgr-surface-soft));
+  color: var(--chat-accent,var(--hgr-brand));
+}
+.room-chat-preview {
+  color: var(--hgr-muted) !important;
+}
+.room-spectator-summary {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+
+/* Confirmations use the same modal family instead of the legacy fixed charcoal. */
+.halieus-confirm-dialog {
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+.halieus-confirm-dialog .modal-eyebrow {
+  color: var(--hgr-brand) !important;
+}
+.halieus-confirm-dialog > p:not(.modal-eyebrow) {
+  color: var(--hgr-muted) !important;
+}
+.halieus-confirm-actions {
+  padding-top: 12px;
+  border-top: 1px solid var(--hgr-border);
+}
+.halieus-confirm-actions button {
+  border-radius: var(--hgr-radius-sm) !important;
+}
+
+/* Concise global notices and local toasts use one elevated notification frame. */
+.status-toast,
+.hgr-toast,
+.global-game-notice {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: color-mix(in srgb,var(--hgr-surface-raised) 95%,transparent) !important;
+  color: var(--hgr-text-soft) !important;
+  box-shadow: var(--hgr-shadow-panel) !important;
+  backdrop-filter: blur(14px);
+}
+
+@media (max-width: 680px) {
+  .room-chat-shell.is-floating {
+    right: 10px !important;
+    bottom: 10px !important;
+  }
+  .room-chat-panel {
+    width: calc(100vw - 20px) !important;
+    height: min(70dvh,560px) !important;
+  }
+  .room-chat-preview {
+    max-width: min(48vw,220px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
