@@ -38,6 +38,9 @@ assert.match(css,/\.halieus-game-category \.halieus-library-art :is\(img,svg\)/,
 assert.match(css,/\.halieus-game-category \.halieus-library-status/,"Games-page status chips must use the shared shell grammar");
 assert.match(css,/\.halieus-guilds-heading[\s\S]*?color:\s*var\(--hgr-brand\)/s,"Guilds heading must inherit the shared platform hierarchy");
 assert.match(css,/\.halieus-guild-list,[\s\S]*?\.halieus-guild-detail[\s\S]*?background:\s*var\(--hgr-surface\) !important/s,"Guild workspace cards must inherit shared HGR surfaces");
+assert.match(css,/\.account-panel \{[\s\S]*?background:\s*var\(--hgr-surface\) !important/s,"Account modal must inherit the shared HGR surface");
+assert.match(css,/\.account-content-heading[\s\S]*?border-bottom:\s*1px solid var\(--hgr-border\)/s,"Account subsections must use the shared heading separator");
+assert.match(css,/\.account-panel input,[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Account controls must inherit shared theme surfaces");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
