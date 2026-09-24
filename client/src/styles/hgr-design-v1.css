@@ -5228,3 +5228,190 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     align-items: flex-start !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5 shared room creation / invite surfaces
+   ========================================================================== */
+
+.halieus-create-panel.halieus-create-modal,
+.halieus-join-modal,
+.invite-lobby-panel-redesigned,
+.invite-join-card {
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+
+.halieus-create-modal-head,
+.halieus-join-modal > header,
+.invite-lobby-panel-redesigned .invite-panel-heading {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+
+.halieus-create-brand p,
+.halieus-join-modal > header p,
+.invite-lobby-panel-redesigned .modal-eyebrow,
+.invite-join-intro .modal-eyebrow {
+  color: var(--game-create-accent,var(--game-accent,var(--hgr-brand))) !important;
+  font-size: 9px !important;
+  font-weight: 950 !important;
+  letter-spacing: .13em !important;
+  text-transform: uppercase;
+}
+
+.halieus-create-brand h2,
+.halieus-join-modal > header h2,
+.invite-lobby-panel-redesigned h2,
+.invite-join-card h2 {
+  color: var(--hgr-text) !important;
+  letter-spacing: -.035em;
+}
+
+.halieus-create-brand span,
+.halieus-join-modal > header span,
+.invite-lobby-panel-redesigned .invite-lobby-copy > p,
+.invite-join-intro > p,
+.invite-join-card small {
+  color: var(--hgr-muted) !important;
+}
+
+.halieus-create-close,
+.halieus-join-modal > header > button,
+.card-game-invite-modal .invite-modal-close {
+  width: 34px !important;
+  height: 34px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-create-close:hover,
+.halieus-join-modal > header > button:hover,
+.card-game-invite-modal .invite-modal-close:hover {
+  border-color: var(--hgr-border-strong) !important;
+  background: var(--hgr-surface-strong) !important;
+}
+
+.halieus-create-form label,
+.halieus-join-fields label,
+.invite-join-form label {
+  color: var(--hgr-text-soft) !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+}
+.halieus-create-form :is(input,select,textarea),
+.halieus-join-fields input,
+.halieus-join-recovery input,
+.invite-join-form input,
+.invite-origin-picker select {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-create-form :is(input,select,textarea):focus,
+.halieus-join-fields input:focus,
+.halieus-join-recovery input:focus,
+.invite-join-form input:focus,
+.invite-origin-picker select:focus {
+  border-color: color-mix(in srgb,var(--game-create-accent,var(--hgr-brand)) 58%,var(--hgr-border)) !important;
+  box-shadow: var(--hgr-focus) !important;
+  outline: none !important;
+}
+
+/* Room setup option panels stay distinct but use one inset-surface language. */
+.halieus-create-modal :is(
+  .halieus-game-options,
+  .poker-variant-picker,
+  .poker-home-settings,
+  .word-arena-create-settings
+) {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+
+/* Game selection in Join/Watch keeps current artwork and only standardises the tile. */
+.halieus-join-games {
+  gap: 7px !important;
+}
+.halieus-join-games > button {
+  min-width: 0;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text-soft) !important;
+}
+.halieus-join-games > button:hover,
+.halieus-join-games > button.is-selected {
+  border-color: color-mix(in srgb,var(--game-card-accent) 48%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--game-card-accent) 7%,var(--hgr-surface-soft)) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-join-games > button img {
+  object-fit: contain !important;
+}
+
+.halieus-recovery-toggle,
+.halieus-join-recovery,
+.halieus-invite-bar,
+.invite-url-box,
+.invite-room-code-chip,
+.invite-origin-picker,
+.invite-qr-card,
+.invite-resume-card,
+.invite-room-summary-polished {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+
+.halieus-invite-bar {
+  box-shadow: none !important;
+}
+.halieus-invite-bar-button {
+  border-color: color-mix(in srgb,var(--game-accent,var(--hgr-brand)) 35%,var(--hgr-border)) !important;
+}
+
+.invite-room-code-chip {
+  color: var(--game-accent,var(--hgr-brand)) !important;
+  font-weight: 950 !important;
+  letter-spacing: .12em;
+}
+.invite-url-box code,
+.invite-panel-footer,
+.invite-share-message,
+.invite-account-name-note,
+.invite-join-footer {
+  color: var(--hgr-muted) !important;
+}
+
+.invite-join-shell-polished {
+  background:
+    radial-gradient(circle at 50% 18%,color-mix(in srgb,var(--game-accent,var(--hgr-brand)) 7%,transparent),transparent 34%),
+    var(--hgr-page) !important;
+  color: var(--hgr-text) !important;
+}
+.invite-join-orb {
+  opacity: .07 !important;
+}
+.invite-join-button {
+  min-height: 44px !important;
+}
+
+@media (max-width: 680px) {
+  .halieus-join-modal,
+  .invite-lobby-panel-redesigned,
+  .invite-join-card {
+    border-radius: var(--hgr-radius-lg) !important;
+  }
+  .halieus-join-games {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}
