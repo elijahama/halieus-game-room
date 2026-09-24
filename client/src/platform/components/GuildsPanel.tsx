@@ -547,9 +547,33 @@ export function GuildsPanel({
 
             {view === "leaderboard" && (
               <div className="halieus-guild-leaderboard">
-                <header><div><small>INTERNAL LEADERBOARD</small><strong>{detail.name} table record</strong><span>Only completed rooms created through this guild count here.</span></div></header>
-                <div className="halieus-guild-leaderboard-head"><span>Player</span><span>Played</span><span>Wins</span><span>Win rate</span><span>Hosted</span></div>
-                {detail.leaderboard.map((entry, index) => <article key={entry.accountId}><b>{index + 1}</b><span className="halieus-guild-player-dot" style={{ background: entry.playerColor }} /><strong>{entry.displayName}</strong><span>{entry.played}</span><span>{entry.wins}</span><span>{entry.winRate}%</span><span>{entry.hosted}</span></article>)}
+                <header className="halieus-guild-leaderboard-intro">
+                  <div>
+                    <small>GUILD STANDINGS</small>
+                    <strong>{detail.name} rankings</strong>
+                    <span>Global rank comes from HGR's live Mega Board Ranked table. Guild record only counts completed rooms where every recorded human participant belonged to this guild's frozen pre-match membership snapshot.</span>
+                  </div>
+                  <span className="halieus-guild-global-source">Mega Board Ranked</span>
+                </header>
+                <div className="halieus-guild-leaderboard-head">
+                  <span>Player</span><span>Global #</span><span>Rating</span><span>Guild games</span><span>Guild W/L</span><span>Hosted</span>
+                </div>
+                {detail.leaderboard.map((entry, index) => {
+                  const global = entry.globalRanks.find((row) => row.game === "mega-board");
+                  const losses = Math.max(0, entry.played - entry.wins);
+                  return <article key={entry.accountId}>
+                    <b>{index + 1}</b>
+                    <span className="halieus-guild-player-dot" style={{ background: entry.playerColor }} />
+                    <strong>{entry.displayName}</strong>
+                    <span className={global ? "has-global-rank" : "no-global-rank"}>{global ? `#${global.rank}` : "—"}</span>
+                    <span className={global ? "has-global-rating" : "no-global-rank"}>{global ? global.rating.toLocaleString() : "—"}</span>
+                    <span>{entry.played}</span>
+                    <span>{entry.wins}–{losses}</span>
+                    <span>{entry.hosted}</span>
+                  </article>;
+                })}
+                {detail.leaderboard.length === 0 && <div className="halieus-guild-empty">Guild standings will appear when members have account or match history.</div>}
+                <footer className="halieus-guild-leaderboard-note">Guild rank is informed by real global Mega Board rating where available, then falls back to eligible internal guild results. No separate guild Elo is created.</footer>
               </div>
             )}
 
