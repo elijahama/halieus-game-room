@@ -80,7 +80,7 @@ Unless explicitly reopened by the product owner:
 
 HGR visual work follows these rules:
 
-1. **Start from the last approved state.**
+1. **Start from the last approved implementation or production screenshot.**
 2. **Change only the element under review.**
 3. **Do not alter approved neighbours while fixing one asset.**
 4. **Mockups are exploratory; approval is explicit.**
