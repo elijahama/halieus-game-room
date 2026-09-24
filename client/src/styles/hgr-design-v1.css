@@ -5053,3 +5053,178 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     flex: 0 0 auto;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5 shared results / end-screen shell
+   Mega Board remains the quality benchmark; all result screens share the same
+   platform surfaces while retaining game-specific data, accents and ceremony.
+   ========================================================================== */
+
+.winner-shell {
+  background: var(--hgr-page) !important;
+  color: var(--hgr-text) !important;
+}
+
+.winner-modal,
+.halieus-results-card {
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+
+.results-hero,
+.halieus-results-hero {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.results-hero .modal-eyebrow,
+.halieus-results-hero .modal-eyebrow {
+  color: var(--results-accent,var(--hgr-brand)) !important;
+}
+.results-hero h1,
+.halieus-results-hero h1 {
+  color: var(--hgr-text) !important;
+  letter-spacing: -.04em;
+}
+.results-hero .winner-subtitle,
+.halieus-results-hero .winner-subtitle {
+  color: var(--hgr-muted) !important;
+}
+
+.results-tabs,
+.halieus-results-tabs {
+  grid-template-columns: repeat(auto-fit,minmax(120px,1fr)) !important;
+  gap: 6px !important;
+  padding: 5px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.results-tabs button,
+.halieus-results-tabs button {
+  min-height: 38px !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: transparent !important;
+  color: var(--hgr-text-soft) !important;
+  box-shadow: none !important;
+}
+.results-tabs button:hover,
+.halieus-results-tabs button:hover {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+.results-tabs button.is-active,
+.halieus-results-tabs button.is-active {
+  border-color: color-mix(in srgb,var(--results-accent,var(--hgr-brand)) 46%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--results-accent,var(--hgr-brand)) 8%,var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: inset 0 -2px 0 var(--results-accent,var(--hgr-brand)) !important;
+}
+
+.final-results-table-wrap,
+.halieus-final-results-table-wrap,
+.results-player-stats,
+.halieus-results-player-stats,
+.results-graph-card,
+.halieus-results-graph-card,
+.results-awards-grid article,
+.halieus-awards-grid article {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+
+.final-results-heading {
+  color: var(--hgr-muted) !important;
+}
+.final-player-row {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+.final-player-row.is-winner {
+  border-color: color-mix(in srgb,var(--results-accent,var(--hgr-brand)) 58%,var(--hgr-border)) !important;
+  box-shadow: inset 4px 0 0 var(--results-accent,var(--hgr-brand)) !important;
+}
+
+.halieus-results-podium article {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-results-podium article.is-rank-1 {
+  border-color: color-mix(in srgb,var(--results-accent) 62%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--results-accent) 9%,var(--hgr-surface-soft)) !important;
+}
+.halieus-results-podium article small,
+.halieus-results-podium article p {
+  color: var(--hgr-muted) !important;
+}
+
+.results-stat-summary > span,
+.halieus-results-stat-summary > span,
+.results-mini-stats > span,
+.halieus-results-overview-stats article {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+.results-stat-summary small,
+.halieus-results-stat-summary small,
+.halieus-results-overview-stats small,
+.results-player-stats small,
+.halieus-results-player-stats small {
+  color: var(--hgr-muted) !important;
+}
+
+.results-graph-switcher button,
+.results-action-toggle,
+.results-actions-toggle {
+  border: 1px solid var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text-soft) !important;
+}
+.results-graph-switcher button.is-active,
+.results-action-toggle:hover,
+.results-actions-toggle:hover {
+  border-color: color-mix(in srgb,var(--results-accent,var(--hgr-brand)) 42%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--results-accent,var(--hgr-brand)) 7%,var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text) !important;
+}
+
+.results-footer,
+.halieus-results-footer {
+  border-top-color: var(--hgr-border) !important;
+}
+.results-footer > span,
+.halieus-results-footer > span {
+  color: var(--hgr-muted) !important;
+}
+
+.results-escape-button {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: color-mix(in srgb,var(--hgr-surface) 94%,transparent) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-soft) !important;
+}
+
+@media (max-width: 700px) {
+  .mario-results-shell {
+    padding: 10px !important;
+  }
+  .mario-results-card {
+    width: calc(100vw - 20px) !important;
+    min-height: calc(100dvh - 20px) !important;
+    padding: 14px !important;
+  }
+  .results-hero,
+  .halieus-results-hero {
+    align-items: flex-start !important;
+  }
+}
