@@ -4533,3 +4533,78 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     align-self: stretch;
   }
 }
+
+
+/* Account / Owner Tools inherit the platform shell instead of preserving the
+ * older blue admin-product styling from index.css. */
+.account-panel {
+  border-color: var(--hgr-border-strong) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text) !important;
+}
+.account-panel-header {
+  border-bottom-color: var(--hgr-border) !important;
+  background: color-mix(in srgb,var(--hgr-surface-raised) 72%,transparent);
+}
+.account-profile-identity p,
+.account-panel .modal-eyebrow {
+  color: var(--hgr-brand) !important;
+}
+.account-profile-identity small,
+.account-panel .account-admin-heading small,
+.account-panel .account-content-heading small,
+.account-panel .account-form-footnote {
+  color: var(--hgr-muted) !important;
+}
+.account-panel-scroll {
+  background: var(--hgr-surface);
+}
+.account-settings-card,
+.account-invite-create,
+.account-game-record,
+.account-panel .account-admin-content-card {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.account-content-heading {
+  min-height: 48px;
+  align-items: flex-start !important;
+  gap: 14px !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.account-content-heading h4 {
+  margin: 2px 0 0 !important;
+  color: var(--hgr-text);
+  font-size: var(--hgr-section-title-size) !important;
+  letter-spacing: -.02em;
+}
+.account-content-heading small {
+  margin-top: 4px !important;
+  font-size: var(--hgr-section-copy-size) !important;
+  line-height: 1.4;
+}
+.account-panel input,
+.account-panel select,
+.account-panel textarea {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+.account-panel input:focus,
+.account-panel select:focus,
+.account-panel textarea:focus {
+  border-color: color-mix(in srgb,var(--hgr-brand) 62%,var(--hgr-border)) !important;
+  box-shadow: var(--hgr-focus) !important;
+}
+.account-panel-message {
+  border: 1px solid color-mix(in srgb,var(--hgr-info) 28%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-info) 8%,var(--hgr-surface-soft)) !important;
+  color: var(--hgr-text);
+}
+.account-panel-footer {
+  border-top-color: var(--hgr-border) !important;
+}
