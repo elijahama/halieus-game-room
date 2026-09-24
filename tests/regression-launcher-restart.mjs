@@ -34,7 +34,11 @@ assert.match(productionClose, /Halieus Game Room\\Website/);
 assert.doesNotMatch(productionClose, /localhost/i);
 assert.doesNotMatch(productionClose, /halieus-game-room/i,'Close must not stop the Oracle/server service');
 assert.match(shortcuts, /\$CloseShortcut/);
-assert.match(shortcuts, /Close Halieus Game Room/);
-assert.doesNotMatch(shortcuts, /Remove-Item[^\n]+Close Halieus Game Room\.lnk/);
+assert.match(shortcuts, /Start HGR App\.lnk/);
+assert.match(shortcuts, /Restart HGR App\.lnk/);
+assert.match(shortcuts, /Close HGR App\.lnk/);
+assert.match(shortcuts, /Update HGR Site\.lnk/);
+assert.match(shortcuts, /Close the local Halieus Game Room desktop app window only/);
+assert.doesNotMatch(shortcuts, /Description 'Close Halieus Game Room'/);
 
 console.log('launcher website-only Start/Restart/Close regression PASS');
