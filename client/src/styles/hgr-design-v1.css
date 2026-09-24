@@ -777,7 +777,7 @@ body, #root { transition: none !important; }
 
 
 /* ==========================================================================
-   HGR Part 15 — platform coherence pass
+   HGR platform coherence pass
    Theme picker, featured carousel, player identities and in-app inbox.
    ========================================================================== */
 
@@ -2195,7 +2195,7 @@ button.halieus-player-identity {
 }
 .halieus-home-player-strip > div::-webkit-scrollbar { display: none !important; }
 
-/* Custom theme presets keep the FFVII-inspired idea fast to use while the
+/* Custom theme presets use coordinated creative-tool palettes while the
  * detailed RGB/HEX cards remain available underneath. */
 .halieus-custom-presets {
   display: grid;
@@ -3522,5 +3522,20 @@ html[data-theme="green"] {
 @media (max-width: 430px) {
   .halieus-custom-presets > div {
     grid-template-columns: minmax(0,1fr) !important;
+  }
+}
+
+
+/* Theme controls remain compact even with the expanded profile set. */
+.halieus-theme-popover {
+  max-height: min(430px, calc(100dvh - 24px));
+  overflow-y: auto;
+}
+.halieus-theme-mode-grid {
+  grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+}
+@media (max-width: 760px) {
+  .halieus-theme-mode-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }
