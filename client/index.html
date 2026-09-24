@@ -23,23 +23,47 @@
       (() => {
         try {
           const saved = localStorage.getItem("halieus-game-room-theme");
-          const mode = saved === "system" || saved === "light" || saved === "dark" || saved === "blue" || saved === "red" || saved === "green" || saved === "custom"
+          const mode = saved === "system" || saved === "light" || saved === "dark" || saved === "blue" || saved === "red" || saved === "green" || saved === "profile" || saved === "custom"
             ? saved
             : "system";
           const systemTheme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
           const theme = mode === "system" ? systemTheme : mode;
-          let background = theme === "light" ? "#f4f5f7" : theme === "blue" ? "#06111c" : theme === "red" ? "#170d10" : theme === "green" ? "#0d1712" : "#0f1012";
-          let accent = theme === "blue" ? "#267cc5" : theme === "red" ? "#c9444d" : theme === "green" ? "#428e59" : "#d6a11f";
+          const profileId = localStorage.getItem("halieus-game-room-theme-profile") || "blue-circuit";
+          const profileBoot = {
+            "blue-circuit": ["#050b14", "#258dff", "dark"],
+            "redline": ["#12080b", "#e03b46", "dark"],
+            "emerald-arcade": ["#07110c", "#3ccf78", "dark"],
+            "ultraviolet": ["#0c0814", "#9558ff", "dark"],
+            "neon-grid": ["#05090b", "#00c9d8", "dark"],
+            "brass-coal": ["#11100e", "#c98a2f", "dark"],
+            "terminal": ["#050705", "#4de06f", "dark"],
+            "solar-dusk": ["#140b12", "#f07b32", "dark"],
+            "icebox": ["#0a1117", "#74bfff", "dark"],
+            "cream-soda": ["#eee7d8", "#a75d28", "light"],
+            "midnight-rose": ["#10090d", "#c84d78", "dark"],
+            "deep-ocean": ["#041013", "#159f9d", "dark"],
+          };
+          const profile = profileBoot[profileId] || profileBoot["blue-circuit"];
+          let background = theme === "light" ? "#f4f5f7" : theme === "blue" ? "#06111c" : theme === "red" ? "#170d10" : theme === "green" ? "#0d1712" : theme === "profile" ? profile[0] : "#0f1012";
+          let accent = theme === "blue" ? "#267cc5" : theme === "red" ? "#c9444d" : theme === "green" ? "#428e59" : theme === "profile" ? profile[1] : "#d6a11f";
+          let scheme = theme === "light" ? "light" : theme === "profile" ? profile[2] : "dark";
           if (theme === "custom") {
             try {
               const custom = JSON.parse(localStorage.getItem("halieus-game-room-custom-theme") || "{}");
               if (/^#[0-9a-f]{6}$/i.test(custom.page || "")) background = custom.page;
               if (/^#[0-9a-f]{6}$/i.test(custom.accent || "")) accent = custom.accent;
+              if (background) {
+                const rgb = background.slice(1).match(/.{2}/g)?.map((part) => parseInt(part, 16)) || [0,0,0];
+                scheme = (rgb[0] * .299 + rgb[1] * .587 + rgb[2] * .114) > 165 ? "light" : "dark";
+              }
             } catch {}
           }
           document.documentElement.dataset.themeMode = mode;
           document.documentElement.dataset.theme = theme;
-          document.documentElement.style.colorScheme = theme === "light" ? "light" : "dark";
+          document.documentElement.dataset.themeProfile = profileId;
+          document.documentElement.dataset.textScale = localStorage.getItem("halieus-game-room-text-scale") || "standard";
+          document.documentElement.dataset.density = localStorage.getItem("halieus-game-room-density") || "standard";
+          document.documentElement.style.colorScheme = scheme;
           document.documentElement.style.backgroundColor = background;
           document.documentElement.style.setProperty("--boot-bg", background);
           document.documentElement.style.setProperty("--boot-accent", accent);
