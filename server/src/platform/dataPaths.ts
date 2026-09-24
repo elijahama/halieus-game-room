@@ -30,6 +30,11 @@ export function getGuildDataDirectory(): string {
 }
 
 
+export function getFeedbackDataDirectory(): string {
+  const root = configuredDataRoot();
+  return root ? resolve(root, "feedback") : resolve(process.cwd(), "data", "feedback");
+}
+
 export function getFeedbackFilePath(): string {
   const root = configuredDataRoot();
   return root ? resolve(root, "feedback", "feedback.ndjson") : resolve(process.cwd(), "data", "feedback.ndjson");

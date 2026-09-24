@@ -5,6 +5,7 @@ import {
 } from "react";
 
 import { DisplaySettingsPanel } from "../../../platform/components/DisplaySettingsPanel";
+import { accountApi } from "../../../platform/accounts/api";
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 
 interface GameMenuProps {
@@ -166,39 +167,24 @@ export function GameMenu({
     );
 
     try {
-      const response = await fetch(
-        "/feedback",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            category:
-              feedbackCategory,
-            details,
-            roomCode,
-            playerName:
-              playerName.trim() ||
-              "Unknown player",
-            pageUrl:
-              window.location.href,
-            userAgent:
-              navigator.userAgent,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          "Feedback request failed.",
-        );
-      }
+      await accountApi("/feedback", {
+        method: "POST",
+        body: JSON.stringify({
+          source: "game",
+          category: feedbackCategory,
+          details,
+          gameId: "mega-board",
+          gameName: "Mega Board",
+          roomCode,
+          playerName: playerName.trim() || "Unknown player",
+          pageUrl: window.location.href,
+          userAgent: navigator.userAgent,
+        }),
+      });
 
       setFeedbackDetails("");
       setFeedbackStatus(
-        "Feedback saved. Thank you.",
+        "Feedback saved. You can follow replies from your profile.",
       );
     } catch {
       setFeedbackStatus(
