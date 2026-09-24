@@ -266,7 +266,10 @@ export function HomeScreen(props: HomeScreenProps) {
       .map((row) => row.game as GameId);
     const recent = [...new Set(personalStats.recent.map((item) => item.game as GameId))]
       .filter((game) => ACTIVE_GAME_IDS.has(game));
-    const friends = [...new Set(liveRooms.map((room) => room.game))].filter((game) => ACTIVE_GAME_IDS.has(game));
+    // Friend relationships are not yet a canonical platform data source.
+    // Do not infer "friends" from every live room: an empty shelf is more truthful
+    // than recommending unrelated active games under a Friends label.
+    const friends: GameId[] = [];
     const unplayed = GAMES.filter((game) => !personalStats.byGame.some((row) => row.game === game.id && row.played > 0)).map((game) => game.id);
     const recommended = [...unplayed, ...quickGames].filter((game, index, values) => values.indexOf(game) === index);
     const shelves: Record<DiscoveryShelf, GameId[]> = {
@@ -674,7 +677,7 @@ export function HomeScreen(props: HomeScreenProps) {
                   <i>Quick Play →</i>
                 </button>;
               })}
-              {discoveryShelf === "friends" && discoveryGames.length === 0 && <div className="halieus-discovery-empty"><span aria-hidden="true">◇</span><div><strong>No friends are playing right now</strong><small>This shelf only fills when there is an active game to show.</small></div></div>}
+              {discoveryShelf === "friends" && discoveryGames.length === 0 && <div className="halieus-discovery-empty"><span aria-hidden="true">◇</span><div><strong>No friend activity to show</strong><small>This shelf stays empty until HGR has a real friend relationship to match against live rooms.</small></div></div>}
             </div>
           </section>
           <section className="halieus-home-social-grid">
@@ -688,7 +691,7 @@ export function HomeScreen(props: HomeScreenProps) {
             </section>
           </section>
           {savedSeats.length > 1 && <section className="halieus-section-card halieus-continue-home halieus-continue-secondary"><header><div><p>OTHER ROOMS</p><h2>Ready to rejoin</h2></div><span>{savedSeats.length - 1}</span></header><div className="halieus-continue-list">{savedSeats.slice(1).map((entry) => <div key={entry.id} className="halieus-continue-row"><button type="button" onClick={() => { selectGame(entry.id); entry.resume(); }} disabled={disabled}><img src={GAME_BY_ID[entry.id].icon} alt="" /><span><strong>{entry.game}</strong><small>Room {entry.session?.code}</small></span><b>Continue →</b></button><button type="button" onClick={entry.forget} aria-label={`Forget ${entry.game} room`}>×</button></div>)}</div></section>}
-          {liveRooms.length > 0 && <section className="halieus-live-games"><header><div><p>ACTIVE GAMES</p><h2>Friends are at the table</h2><span>Join an open lobby or watch a game already in progress.</span></div><b>{liveRooms.length} live</b></header><div className="halieus-live-games-strip">{liveRooms.slice(0, 8).map((room) => { const game = GAME_BY_ID[room.game]; const elapsed = room.startedAt ? Math.max(0, Date.now() - room.startedAt) : 0; const mins = Math.floor(elapsed / 60000); return <article key={`${room.game}-${room.code}`} className={`halieus-live-game-card tone-${game.tone}`} style={{ ["--game-card-accent" as string]: game.accent }}><div className="halieus-live-game-brand"><img src={game.icon} alt="" /><span><small>{room.started ? "LIVE NOW" : "OPEN LOBBY"}</small><strong>{game.name}</strong></span><i /></div><div className="halieus-live-game-people"><strong>{room.humanPlayers.length ? room.humanPlayers.join(", ") : `${room.aiCount} AI player${room.aiCount === 1 ? "" : "s"}`}</strong><small>Room {room.code} · {room.playerCount}/{room.maximumPlayers} players{room.started ? ` · ${mins}m` : ""}</small></div><div className="halieus-live-game-actions">{room.joinable && <button type="button" className="button-primary" onClick={() => openLiveRoom(room, "join")}>Join</button>}{room.spectatable && <button type="button" className="button-outline" onClick={() => openLiveRoom(room, "watch")}>Spectate</button>}</div></article>; })}</div></section>}
+          {liveRooms.length > 0 && <section className="halieus-live-games"><header><div><p>ACTIVE GAMES</p><h2>Players are at the table</h2><span>Join an open lobby or watch a game already in progress.</span></div><b>{liveRooms.length} live</b></header><div className="halieus-live-games-strip">{liveRooms.slice(0, 8).map((room) => { const game = GAME_BY_ID[room.game]; const elapsed = room.startedAt ? Math.max(0, Date.now() - room.startedAt) : 0; const mins = Math.floor(elapsed / 60000); return <article key={`${room.game}-${room.code}`} className={`halieus-live-game-card tone-${game.tone}`} style={{ ["--game-card-accent" as string]: game.accent }}><div className="halieus-live-game-brand"><img src={game.icon} alt="" /><span><small>{room.started ? "LIVE NOW" : "OPEN LOBBY"}</small><strong>{game.name}</strong></span><i /></div><div className="halieus-live-game-people"><strong>{room.humanPlayers.length ? room.humanPlayers.join(", ") : `${room.aiCount} AI player${room.aiCount === 1 ? "" : "s"}`}</strong><small>Room {room.code} · {room.playerCount}/{room.maximumPlayers} players{room.started ? ` · ${mins}m` : ""}</small></div><div className="halieus-live-game-actions">{room.joinable && <button type="button" className="button-primary" onClick={() => openLiveRoom(room, "join")}>Join</button>}{room.spectatable && <button type="button" className="button-outline" onClick={() => openLiveRoom(room, "watch")}>Spectate</button>}</div></article>; })}</div></section>}
           {dataError && <p className="halieus-data-note">{dataError}</p>}
         </section>}
 
