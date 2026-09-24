@@ -9,6 +9,7 @@ For the current project story, start with the root [README](../README.md).
 ### Product and platform
 - [Project overview](PROJECT_OVERVIEW.md)
 - [Game catalogue](GAME_CATALOGUE.md)
+- [Game visual identity system](GAME_VISUAL_IDENTITY_SYSTEM.md)
 - [Feature matrix](FEATURE_MATRIX.md)
 - [Gameplay rules](GAMEPLAY_RULES.md)
 - [Player guide](USER_GUIDE.md)
