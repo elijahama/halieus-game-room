@@ -162,7 +162,7 @@ assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.
 
 assert.match(launcherGenerator,/generated-preview/,'Optional generated launcher previews must be quarantined from approved icons');
 assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?\$LauncherRoot/s,'Launcher generator must never wipe the approved launcher root');
-assert.match(launcherShortcuts,/assets\\branding\\launchers\\matte/,'Shortcut refresh must consume approved launcher assets');
+assert.match(launcherShortcuts,/assets\\branding\\launchers'/,'Shortcut refresh must consume approved launcher assets from the flat launcher folder');
 assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must never invoke icon generation');
 assert.doesNotMatch(launcherShortcuts,/Remove-Item[\s\S]*?\.ico|Remove-Item[\s\S]*?\.png/s,'Shortcut refresh must never delete icon artwork');
 assert.match(launcherShortcuts,/without modifying any files/,'Missing launcher icons must fall back without regenerating artwork');
