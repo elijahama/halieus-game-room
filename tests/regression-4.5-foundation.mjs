@@ -183,6 +183,8 @@ assert.match(pokerScreen,/className="poker-autopilot-popover"/,"Poker Autopilot 
 assert.match(indexCss,/\.poker-game-shell \{[\s\S]*?height: calc\(100dvh - 118px\)/s,"Desktop Poker must fit its game shell to the viewport");
 assert.match(indexCss,/\.poker-side-tab-panel[\s\S]*?overflow: hidden/s,"Poker outer side panel must not become one giant scrolling rail");
 assert.match(indexCss,/\.poker-actions-workspace,[\s\S]*?overflow-y: auto/s,"Only the selected Poker tab workspace may scroll when vertical space is constrained");
+assert.match(indexCss,/@media \(max-width: 1000px\)[\s\S]*?\.poker-game-shell \{[\s\S]*?min-width: 0 !important/s,"Poker mobile layout must explicitly cancel the old 980px minimum width");
+assert.match(indexCss,/\.poker-actions-workspace,[\s\S]*?touch-action: pan-y/s,"Poker selected tab must support touch scrolling without a mouse wheel");
 
 assert.match(guildServer,/membershipSnapshotFor\(membership\.guild\)/,"Guild rooms must freeze membership at room creation so later membership changes cannot rewrite history");
 assert.match(guildServer,/allHumanParticipantsWereGuildMembers/,"Guild result ingestion must distinguish full-guild parties from mixed parties");
