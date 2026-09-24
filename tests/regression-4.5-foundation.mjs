@@ -51,6 +51,9 @@ assert.match(css,/\.poker-room-meta,[\s\S]*?\.rebuild-game-meta,[\s\S]*?\.card-g
 assert.match(css,/HGR 4\.5 shared results \/ end-screen shell/,"4.5 must define one shared results surface layer");
 assert.match(css,/\.winner-modal,[\s\S]*?\.halieus-results-card[\s\S]*?background:\s*var\(--hgr-surface\) !important/s,"Mega Board and shared non-Mega result cards must consume the same HGR surface");
 assert.match(css,/\.results-tabs,[\s\S]*?\.halieus-results-tabs[\s\S]*?background:\s*var\(--hgr-surface-soft\)/s,"Result tabs must inherit the shared platform tab grammar");
+assert.match(css,/HGR 4\.5 shared room creation \/ invite surfaces/,"4.5 must define a shared create\/join\/invite layer");
+assert.match(css,/\.halieus-create-panel\.halieus-create-modal,[\s\S]*?\.halieus-join-modal,[\s\S]*?\.invite-lobby-panel-redesigned,[\s\S]*?\.invite-join-card[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Create, Join and Invite surfaces must share the same elevated HGR surface");
+assert.match(css,/\.halieus-join-games > button[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,"Join game choices must preserve existing artwork inside the shared tile grammar");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
