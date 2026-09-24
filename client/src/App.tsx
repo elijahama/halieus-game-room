@@ -552,7 +552,7 @@ export default function App() {
   }, [ayoState, blackjackState, classicState, connectFourState, gameStarted, hiddenDictatorState, lobby, ludoState, megaBoardParked, pokerState, whotState, wordArenaState, wordBoardState]);
 
   const [skinPreferences, setSkinPreferences] = useState<HalieusSkinPreferences>(() => readEffectiveSkinPreferences(false));
-    const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
+  const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [themeProfileId, setThemeProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
   const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
   const [textScale, setTextScale] = useState<HalieusTextScale>(() => readTextScale());
