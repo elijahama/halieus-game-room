@@ -21,7 +21,7 @@ Reference artwork outranks generated interpretations. A launcher asset must not 
 Approved launcher icons live in:
 
 ```text
-assets/branding/launchers/matte/
+assets/branding/launchers/
 ```
 
 Those tracked `.ico` files are design assets. Scripts must not overwrite, recolour, delete or regenerate them.
@@ -52,13 +52,13 @@ Any experimental/generated launcher artwork belongs only in:
 assets/branding/launchers/generated-preview/
 ```
 
-That directory is intentionally separate from the approved `matte` assets and is ignored by Git.
+That directory is intentionally separate from the approved launcher assets and is ignored by Git.
 
 The legacy preview generator `scripts/windows/generate-launcher-icons.ps1` is allowed to write only to `generated-preview`.
 
 ## Browser and PWA identity
 
-Browser/PWA assets under `client/public` are separate from the approved Windows launcher family. Updating them must not modify `assets/branding/launchers/matte`.
+Browser/PWA assets under `client/public` are separate from the approved Windows launcher family. Updating them must not modify `assets/branding/launchers`.
 
 ## Rule
 
