@@ -95,6 +95,7 @@ async function writeSources() {
   const master = iconSvg({ colour: colours.brand, title: "Halieus Game Room" });
   await writeFile(path.join(BRAND_ROOT, "Halieus Game Room.svg"), master);
   await writeFile(path.join(PUBLIC_ROOT, "halieus-mark.svg"), glyphSvg(colours.brand));
+  await writeFile(path.join(PUBLIC_ROOT, "halieus-app-icon.svg"), master);
 
   for (const launcher of launchers) {
     await writeFile(
