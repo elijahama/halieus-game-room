@@ -1,4 +1,5 @@
 import { BackToGameRoomButton } from "./BackToGameRoomButton";
+import { HgrIcon } from "./HgrIcon";
 
 interface GameChromeProps {
   accent: string;
@@ -33,7 +34,7 @@ export function GameChrome({
         onClick={onOpenMenu}
         title="Open game menu"
       >
-        <span aria-hidden="true">☰</span>
+        <span className="halieus-game-menu-icon" aria-hidden="true"><HgrIcon name="menu" size={18} /></span>
         <span>Menu</span>
       </button>
     </nav>
