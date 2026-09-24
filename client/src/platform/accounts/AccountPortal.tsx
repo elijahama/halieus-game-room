@@ -2,6 +2,8 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import type { HalieusAccountSummary, HalieusAuthStatus } from "../../../../shared/platform/accounts";
 import { accountApi } from "./api";
 import { ThemeButton } from "../components/ThemeButton";
+import { HalieusBrandMark } from "../components/HalieusBrandMark";
+import { HgrIcon } from "../components/HgrIcon";
 
 interface Props {
   authStatus: HalieusAuthStatus;
@@ -146,16 +148,16 @@ export function AccountPortal({ authStatus, darkMode, onAuthenticated, onToggleD
   return (
     <main className={`account-portal account-entry-342 ${darkMode ? "is-dark" : ""}`}>
       <header className="account342-topbar">
-        <a className="account342-brand" href="/" aria-label="Halieus Game Room home"><img src="/app-icon-192.png?v=4.0.0" alt="" /><span><strong>Halieus Game Room</strong><small>Private multiplayer</small></span></a>
+        <a className="account342-brand" href="/" aria-label="Halieus Game Room home"><HalieusBrandMark className="account342-brand-mark" /><span><strong>Halieus Game Room</strong><small>Private multiplayer</small></span></a>
         <div className="account-entry-display-controls">
-          <button type="button" className="account-fullscreen-toggle" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}><span aria-hidden="true">{isFullscreen ? "↙" : "⛶"}</span><b>{isFullscreen ? "Exit Full Screen" : "Full Screen"}</b></button>
+          <button type="button" className="account-fullscreen-toggle" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}><span aria-hidden="true"><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={18} /></span><b>{isFullscreen ? "Exit Full Screen" : "Full Screen"}</b></button>
           <ThemeButton darkMode={darkMode} background="transparent" colour="inherit" borderColour="currentColor" onToggle={onToggleDarkMode} />
         </div>
       </header>
 
       <section className="account342-stage">
         <div className="account342-intro">
-          <img className="account342-hero-icon" src="/app-icon-192.png?v=4.0.0" alt="" />
+          <HalieusBrandMark className="account342-hero-mark" variant="high" />
           <p>HALIEUS GAME ROOM</p>
           <h1>{owner ? "Set up Halieus." : "Welcome to Halieus."}</h1>
           <span>{owner ? "Create the owner account, then control permanent player access from Player Management." : "Sign in to your account, or use an owner-issued invite to create one."}</span>
