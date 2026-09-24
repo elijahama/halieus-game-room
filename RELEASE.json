@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.1.1",
-  "fingerprint": "hgr-4.1.1-5dff1c4390627739",
+  "fingerprint": "hgr-4.1.1-be456ce7eabf8b6e",
   "algorithm": "sha256",
-  "sourceHash": "5dff1c43906277398a1e32a6aaa3a83b45625d0443d5976313c0aa4c495c0848",
-  "integrityFileCount": 345,
+  "sourceHash": "be456ce7eabf8b6ea601a46d6477807df3da7bade1d90a498bbe84ced32b5358",
+  "integrityFileCount": 346,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -142,6 +142,7 @@
     "client/src/platform/components/GameResultsScreen.tsx",
     "client/src/platform/components/GlobalGameActivity.tsx",
     "client/src/platform/components/GuildsPanel.tsx",
+    "client/src/platform/components/HalieusBrandMark.tsx",
     "client/src/platform/components/HalieusIntro.tsx",
     "client/src/platform/components/HgrIcon.tsx",
     "client/src/platform/components/HomeScreen.tsx",
