@@ -4254,3 +4254,195 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     text-align: left;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5 shared website surface grammar
+   Refines the existing product instead of replacing its identity. Game artwork
+   remains source-of-truth; these rules only normalise spacing, hierarchy and
+   card presentation around it.
+   ========================================================================== */
+
+:root {
+  --hgr-section-gap: 18px;
+  --hgr-section-title-size: 1.15rem;
+  --hgr-section-copy-size: .72rem;
+  --hgr-library-card-min-height: 118px;
+  --hgr-library-art-size: 76px;
+}
+
+/* Page-level headings keep one hierarchy across Games / Players / Guilds. */
+.halieus-page-heading {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin-bottom: 20px !important;
+}
+.halieus-page-heading > div {
+  min-width: 0;
+}
+.halieus-page-heading p {
+  margin: 0 0 4px !important;
+  font-size: 10px !important;
+  font-weight: 950 !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase;
+}
+.halieus-page-heading h1 {
+  margin: 0 !important;
+  letter-spacing: -.035em !important;
+}
+.halieus-page-heading span {
+  display: block;
+  max-width: 720px;
+  margin-top: 5px;
+  color: var(--hgr-muted) !important;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Game-library category headers use a repeatable section pattern. */
+.halieus-game-library.is-categorized {
+  gap: var(--hgr-section-gap) !important;
+}
+.halieus-game-category {
+  gap: 10px !important;
+}
+.halieus-game-category > header {
+  min-height: 48px;
+  align-items: flex-start !important;
+  padding: 0 2px 8px !important;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-game-category > header > div {
+  min-width: 0;
+}
+.halieus-game-category > header h2 {
+  margin: 0 !important;
+  color: var(--hgr-text);
+  font-size: var(--hgr-section-title-size) !important;
+  font-weight: 900;
+  letter-spacing: -.02em;
+}
+.halieus-game-category > header span {
+  display: block;
+  margin-top: 4px;
+  color: var(--hgr-muted) !important;
+  font-size: var(--hgr-section-copy-size) !important;
+  line-height: 1.35;
+}
+.halieus-game-category > header > b {
+  min-width: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: 999px !important;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text-soft) !important;
+  font-size: 10px !important;
+  font-weight: 850;
+}
+
+/* Existing game art is preserved; only its surrounding card geometry is unified. */
+.halieus-game-category .halieus-library-card {
+  min-height: var(--hgr-library-card-min-height) !important;
+  display: grid !important;
+  grid-template-columns: 88px minmax(0,1fr) !important;
+  grid-template-rows: minmax(0,1fr) auto !important;
+  align-items: center !important;
+  gap: 0 13px !important;
+  padding: 13px !important;
+  overflow: hidden !important;
+  border: 1px solid color-mix(in srgb,var(--game-card-accent) 20%,var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--game-card-accent) 5%,var(--hgr-surface-raised)),var(--hgr-surface)) !important;
+  box-shadow: inset 0 1px 0 color-mix(in srgb,var(--game-card-accent) 8%,transparent);
+}
+.halieus-game-category .halieus-library-card:hover,
+.halieus-game-category .halieus-library-card.is-selected {
+  transform: translateY(-1px) !important;
+  border-color: color-mix(in srgb,var(--game-card-accent) 58%,var(--hgr-border)) !important;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb,var(--game-card-accent) 12%,transparent),
+    0 12px 28px color-mix(in srgb,var(--game-card-accent) 9%,transparent) !important;
+}
+.halieus-game-category .halieus-library-art {
+  width: 78px !important;
+  height: 78px !important;
+  grid-row: 1 / 3 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+.halieus-game-category .halieus-library-art :is(img,svg) {
+  width: var(--hgr-library-art-size) !important;
+  height: var(--hgr-library-art-size) !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain !important;
+  transform: none !important;
+}
+.halieus-game-category .halieus-library-card > span:not(.halieus-library-art):not(.halieus-library-status) {
+  min-width: 0;
+  align-self: end !important;
+  padding: 0 54px 0 0 !important;
+}
+.halieus-game-category .halieus-library-card strong {
+  color: var(--hgr-text);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.halieus-game-category .halieus-library-card small {
+  display: block;
+  margin-top: 4px !important;
+  color: var(--hgr-muted);
+  font-size: .75rem;
+  line-height: 1.35;
+}
+.halieus-game-category .halieus-library-card > i {
+  grid-column: 2 !important;
+  align-self: start !important;
+  padding: 5px 0 0 !important;
+  color: var(--game-card-accent) !important;
+  font-size: .72rem !important;
+  font-style: normal !important;
+  font-weight: 850 !important;
+}
+.halieus-game-category .halieus-library-status {
+  top: 10px !important;
+  right: 10px !important;
+  min-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 7px !important;
+  border-color: color-mix(in srgb,var(--game-card-accent) 38%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--game-card-accent) 8%,var(--hgr-surface-raised)) !important;
+  color: var(--game-card-accent) !important;
+  font-size: 8px !important;
+  font-weight: 950 !important;
+  line-height: 1;
+}
+
+@media (max-width: 700px) {
+  .halieus-page-heading {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+  .halieus-game-category > div {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .halieus-game-category .halieus-library-card {
+    grid-template-columns: 74px minmax(0,1fr) !important;
+    min-height: 104px !important;
+    padding: 11px !important;
+  }
+  .halieus-game-category .halieus-library-art,
+  .halieus-game-category .halieus-library-art :is(img,svg) {
+    width: 64px !important;
+    height: 64px !important;
+  }
+}
