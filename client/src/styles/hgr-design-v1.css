@@ -4608,3 +4608,250 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
 .account-panel-footer {
   border-top-color: var(--hgr-border) !important;
 }
+
+
+/* ==========================================================================
+   HGR 4.5 shared in-game chrome
+   Platform shell first: menus/lobbies inherit HGR surfaces while board/table
+   artwork and game rules remain untouched.
+   ========================================================================== */
+
+.halieus-game-chrome {
+  gap: 5px !important;
+  padding: 5px !important;
+  border: 1px solid color-mix(in srgb,var(--game-accent) 24%,var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: color-mix(in srgb,var(--hgr-surface) 94%,transparent) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-panel) !important;
+  backdrop-filter: blur(18px) !important;
+}
+.halieus-game-chrome .game-room-back-button,
+.halieus-game-menu-trigger {
+  min-height: 36px !important;
+  padding: 7px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: transparent !important;
+  color: var(--hgr-text-soft) !important;
+  font-weight: 850 !important;
+}
+.halieus-game-chrome .game-room-back-button:hover,
+.halieus-game-menu-trigger:hover {
+  border-color: color-mix(in srgb,var(--game-accent) 30%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--game-accent) 8%,var(--hgr-surface-soft)) !important;
+  color: var(--hgr-text) !important;
+}
+.halieus-game-menu-trigger {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+.halieus-game-menu-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--game-accent);
+}
+.halieus-game-menu-icon svg {
+  display: block;
+}
+
+/* Game menu: same modal grammar as Account/Guilds rather than a separate
+ * hardcoded charcoal product. */
+.game-menu-modal {
+  width: min(100%, 500px) !important;
+  padding: 20px !important;
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+.game-menu-modal .modal-handle {
+  background: var(--hgr-border-strong) !important;
+}
+.game-menu-modal .modal-heading-row {
+  min-height: 50px;
+  align-items: flex-start !important;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.game-menu-modal .modal-heading-row h2 {
+  margin: 2px 0 0 !important;
+  color: var(--hgr-text);
+  font-size: 1.45rem !important;
+  letter-spacing: -.035em;
+}
+.game-menu-modal .modal-eyebrow {
+  margin: 0 !important;
+  color: var(--game-accent,var(--hgr-brand)) !important;
+  font-size: 9px !important;
+  font-weight: 950 !important;
+  letter-spacing: .13em !important;
+  text-transform: uppercase;
+}
+.game-menu-modal .icon-button {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.game-menu-modal .icon-button:hover {
+  border-color: var(--hgr-border-strong) !important;
+  background: var(--hgr-surface-strong) !important;
+}
+
+/* Action rows use one structure. Meaning is carried by accent/tone, not by
+ * inventing separate card shapes for every action. */
+.game-menu-modal .menu-action {
+  min-height: 62px;
+  margin-top: 8px !important;
+  padding: 10px !important;
+  gap: 10px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: none !important;
+}
+.game-menu-modal .menu-action:hover {
+  border-color: color-mix(in srgb,var(--game-accent,var(--hgr-brand)) 38%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--game-accent,var(--hgr-brand)) 6%,var(--hgr-surface-soft)) !important;
+}
+.game-menu-modal .menu-action > span:first-child {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--game-accent,var(--hgr-brand)) !important;
+}
+.game-menu-modal .menu-action strong {
+  color: var(--hgr-text);
+  font-size: 11px;
+}
+.game-menu-modal .menu-action small {
+  color: var(--hgr-muted);
+  opacity: 1 !important;
+  font-size: 9px;
+  line-height: 1.35;
+}
+.game-menu-modal .menu-action-primary {
+  border-color: color-mix(in srgb,var(--hgr-success) 34%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-success) 8%,var(--hgr-surface-soft)) !important;
+}
+.game-menu-modal .menu-action-primary > span:first-child {
+  color: var(--hgr-success) !important;
+}
+.game-menu-modal .menu-action-feedback {
+  border-color: color-mix(in srgb,var(--hgr-info) 26%,var(--hgr-border)) !important;
+}
+.game-menu-modal .menu-action-feedback > span:first-child {
+  color: var(--hgr-info) !important;
+}
+.game-menu-modal .menu-action-danger {
+  border-color: color-mix(in srgb,var(--hgr-danger) 30%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-danger) 6%,var(--hgr-surface-soft)) !important;
+}
+.game-menu-modal .menu-action-danger > span:first-child {
+  color: var(--hgr-danger) !important;
+}
+
+/* Settings / recovery / timer panels use the same inset-card grammar. */
+.game-menu-modal .halieus-display-settings,
+.game-menu-modal .turn-timer-settings-panel,
+.game-menu-modal .recovery-key-panel {
+  margin-top: 8px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: none !important;
+}
+.game-menu-modal .turn-timer-settings-panel,
+.game-menu-modal .recovery-key-panel {
+  padding: 11px !important;
+}
+.game-menu-modal .turn-timer-settings-panel small,
+.game-menu-modal .recovery-key-panel span {
+  color: var(--hgr-muted) !important;
+}
+.game-menu-modal .turn-timer-settings-panel select,
+.game-menu-modal .feedback-form select,
+.game-menu-modal .feedback-form textarea {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+
+/* Shared lobby structure. The Mega Board lobby is the first reference consumer;
+ * future lobbies should reuse this geometry rather than duplicate it. */
+.lobby-card-v2 {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-panel) !important;
+}
+.lobby-heading-v2 {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.lobby-heading-v2 .modal-eyebrow,
+.lobby-card-v2 .modal-eyebrow {
+  color: var(--game-accent,var(--hgr-brand)) !important;
+}
+.lobby-overview-tile,
+.players-panel-v2,
+.lobby-side-card {
+  border: 1px solid var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: none !important;
+}
+.lobby-overview-tile {
+  border-radius: var(--hgr-radius-md) !important;
+}
+.lobby-overview-tile > span,
+.lobby-overview-tile > small,
+.lobby-side-card > small,
+.lobby-side-muted {
+  color: var(--hgr-muted) !important;
+}
+.players-panel-v2,
+.lobby-side-card {
+  border-radius: var(--hgr-radius-lg) !important;
+}
+.modern-player-list-v2 .modern-player-row {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+}
+.modern-player-list-v2 .modern-player-row.is-you {
+  border-color: color-mix(in srgb,var(--game-accent) 42%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--game-accent) 6%,var(--hgr-surface-raised)) !important;
+}
+.lobby-recovery-compact {
+  border: 1px solid var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+}
+.lobby-card-v2 select {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+}
+
+@media (max-width: 700px) {
+  .halieus-game-chrome {
+    top: 10px !important;
+    right: 10px !important;
+  }
+  .halieus-game-chrome .game-room-back-button,
+  .halieus-game-menu-trigger {
+    min-height: 38px !important;
+  }
+  .game-menu-modal {
+    width: min(100%, calc(100vw - 20px)) !important;
+    padding: 16px !important;
+  }
+}
