@@ -23,6 +23,7 @@ const gameChrome=read("client/src/platform/components/GameChrome.tsx");
 const roomChat=read("client/src/platform/components/RoomChatPanel.tsx");
 const hgrIcons=read("client/src/platform/components/HgrIcon.tsx");
 const accountPortal=read("client/src/platform/accounts/AccountPortal.tsx");
+const pokerScreen=read("client/src/games/poker/PokerScreen.tsx");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
@@ -161,5 +162,15 @@ assert.match(css,/data-skin-mega-board="muted-tournament-board"[\s\S]*?\.board-s
 assert.match(css,/data-skin-mega-board="ivory-8bit-board"[\s\S]*?data-skin-mega-board="grey-disc-board"/s,"Mega Board must expose the full retro surface family");
 assert.match(css,/data-skin-poker-table="muted-poker-room"[\s\S]*?\.poker-table/s,"Poker must expose an independent muted table treatment");
 assert.match(css,/data-skin-poker-table="ivory-8bit-table"[\s\S]*?data-skin-poker-table="grey-disc-table"/s,"Poker must expose the full retro table family");
+assert.match(pokerScreen,/type PokerSideTab = "actions" \| "players" \| "chat"/,"Poker must expose Actions/Players/Chat as one side-tab workspace");
+assert.match(pokerScreen,/className="poker-autopilot-compact"/,"Poker Autopilot must be compact instead of consuming a permanent sidebar card");
+assert.match(pokerScreen,/className="poker-autopilot-popover"/,"Poker Autopilot options must open on demand");
+assert.match(pokerScreen,/sideTab === "chat"[\s\S]*?poker-room-panel-slot is-tabbed/s,"Poker room activity must live inside the Chat tab");
+assert.match(pokerScreen,/sideTab === "players"[\s\S]*?poker-side-players/s,"Poker player roster must live inside the Players tab");
+assert.match(pokerScreen,/if \(state\.isSpectator && sideTab === "actions"\) setSideTab\("players"\)/,"Spectators must never be stranded on a disabled Actions tab");
+assert.match(css,/HGR 4\.5 Poker tabbed control rail/,"Poker tabbed rail must have one authoritative 4.5 layout layer");
+assert.match(css,/\.poker-side-tab-panel \{[\s\S]*?overflow:\s*hidden/s,"Poker sidebar shell must stay contained while selected workspace owns scrolling");
+assert.match(css,/\.poker-actions-workspace,[\s\S]*?overflow-y:\s*auto/s,"Poker selected workspace must provide internal scrolling when viewport height is constrained");
+assert.match(css,/@media \(min-width: 1001px\)[\s\S]*?height:\s*calc\(100dvh - 118px\)/s,"Desktop Poker table and side rail must fit the viewport rather than requiring page-wheel access");
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
