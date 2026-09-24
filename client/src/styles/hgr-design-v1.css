@@ -4446,3 +4446,90 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     height: 64px !important;
   }
 }
+
+
+/* Guilds inherits the same page/card hierarchy as Games and Players. */
+.halieus-guilds-heading {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin-bottom: 20px !important;
+}
+.halieus-guilds-heading > div:first-child {
+  min-width: 0;
+}
+.halieus-guilds-heading p {
+  margin: 0 0 4px !important;
+  color: var(--hgr-brand) !important;
+  font-size: 10px !important;
+  font-weight: 950 !important;
+  letter-spacing: .14em !important;
+}
+.halieus-guilds-heading h1 {
+  margin: 0 !important;
+  letter-spacing: -.035em !important;
+}
+.halieus-guilds-heading > div:first-child > span {
+  display: block;
+  max-width: 720px;
+  margin-top: 5px !important;
+  color: var(--hgr-muted) !important;
+  font-size: 12px !important;
+  line-height: 1.45;
+}
+.halieus-guild-heading-actions {
+  align-self: flex-end;
+}
+.halieus-guild-list,
+.halieus-guild-detail {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text);
+  box-shadow: var(--hgr-shadow-soft);
+}
+.halieus-guild-list > header {
+  min-height: 40px !important;
+  padding: 5px 5px 8px !important;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-guild-list > header > strong {
+  font-size: 11px;
+  font-weight: 900;
+}
+.halieus-guild-list > header > span {
+  min-width: 28px !important;
+  height: 28px !important;
+  border: 1px solid var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-muted) !important;
+}
+.halieus-guild-list > button {
+  min-height: 62px !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-soft) !important;
+}
+.halieus-guild-list > button:hover,
+.halieus-guild-list > button.is-selected {
+  border-color: color-mix(in srgb,var(--hgr-brand) 40%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 7%,var(--hgr-surface-soft)) !important;
+}
+.halieus-guild-hero {
+  border-bottom-color: var(--hgr-border) !important;
+}
+.halieus-guild-tabs {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+}
+
+@media (max-width: 760px) {
+  .halieus-guilds-heading {
+    align-items: flex-start !important;
+    flex-direction: column;
+  }
+  .halieus-guild-heading-actions {
+    align-self: stretch;
+  }
+}
