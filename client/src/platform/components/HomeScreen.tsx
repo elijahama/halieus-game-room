@@ -22,6 +22,7 @@ import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicM
 import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, ACTIVE_GAME_IDS, FUTURE_GAME_QUEUE, GAME_BY_ID, type GameId } from "../games/catalog";
 import { ThemeButton } from "./ThemeButton";
+import { SkinLibraryButton } from "./SkinLibraryButton";
 import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
 import { GameBrandIcon } from "./GameBrandIcon";
@@ -668,6 +669,7 @@ export function HomeScreen(props: HomeScreenProps) {
         <div className="halieus-side-display-controls" aria-label="Display controls">
           <button type="button" className="halieus-fullscreen-button" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><span className="halieus-nav-icon"><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} /></span><b>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</b></button>
           <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
+          <SkinLibraryButton stats={personalStats} betaMode={betaMode} />
           <InstallAppButton />
           <NotificationPermissionButton />
         </div>
