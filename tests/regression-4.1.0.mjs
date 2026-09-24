@@ -189,7 +189,7 @@ assert.match(releaseIntegrity,/hgr-project-history-4\.1\.0/,'Project history mus
 assert.match(releaseIntegrity,/matte-launcher-family-4\.1\.0/,'Matte launcher family must be part of the signed release contract');
 
 assert.match(sw,new RegExp(`halieus-shell-v${currentVersion.replaceAll('.','-')}`),'PWA shell cache must match the current 4.1.x release');
-assert.match(intro,new RegExp(`app-icon-192\\.png\\?v=${currentVersion.replaceAll('.','\\.')}`),'Intro asset cache-buster must match the current release');
+assert.match(intro,/HalieusBrandMark/,'Intro identity must use the shared Halieus mark');
 assert.doesNotMatch(html,/\?v=4\.0\.2/,'Static browser assets must not retain the 4.0.2 cache identity');
 assert.ok(readme.includes(`**Current milestone:** ${currentVersion}`),'README must advertise the current 4.1.x milestone');
 
