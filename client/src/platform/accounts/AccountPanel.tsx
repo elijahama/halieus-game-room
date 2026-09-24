@@ -368,6 +368,18 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
           <button type="submit" className="button-outline">Change password</button>
         </form>
       </div>
+      {personalStats && <section className="account-game-record">
+        <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
+        <div className="account-stat-overview">
+          <article><small>Games played</small><strong>{personalStats.played}</strong></article>
+          <article><small>Wins</small><strong>{personalStats.wins}</strong></article>
+          <article><small>Win rate</small><strong>{Math.round(personalStats.winRate)}%</strong></article>
+          <article><small>Most played</small><strong>{personalFavourite?.gameTitle ?? "—"}</strong></article>
+          <article><small>Current streak</small><strong>{currentWinStreak}</strong></article>
+        </div>
+        <div className="account-game-record-grid">{personalStats.byGame.map((row) => <article key={row.game}><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.played ? Math.round((row.wins / row.played) * 100) : 0}%</small></article>)}</div>
+        {personalStats.recent.length > 0 && <div className="account-game-record-recent"><h4>Recent results</h4>{personalStats.recent.slice(0, 6).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><span><strong>{item.gameTitle}</strong><small>{new Date(item.at).toLocaleDateString()} · Room {item.roomCode}</small></span><b className={item.won ? "is-win" : ""}>{item.result}</b></article>)}</div>}
+      </section>}
       <section className="account-feedback-card">
         <header><div><p className="modal-eyebrow">Feedback</p><h3>Send feedback</h3><small>Send a game issue, UI note or suggestion directly to the HGR owner. Replies stay attached to your account here.</small></div></header>
         <form className="account-feedback-form" onSubmit={submitProfileFeedback}>
@@ -386,18 +398,6 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
           </article>)}
         </div>
       </section>
-      {personalStats && <section className="account-game-record">
-        <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
-        <div className="account-stat-overview">
-          <article><small>Games played</small><strong>{personalStats.played}</strong></article>
-          <article><small>Wins</small><strong>{personalStats.wins}</strong></article>
-          <article><small>Win rate</small><strong>{Math.round(personalStats.winRate)}%</strong></article>
-          <article><small>Most played</small><strong>{personalFavourite?.gameTitle ?? "—"}</strong></article>
-          <article><small>Current streak</small><strong>{currentWinStreak}</strong></article>
-        </div>
-        <div className="account-game-record-grid">{personalStats.byGame.map((row) => <article key={row.game}><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.played ? Math.round((row.wins / row.played) * 100) : 0}%</small></article>)}</div>
-        {personalStats.recent.length > 0 && <div className="account-game-record-recent"><h4>Recent results</h4>{personalStats.recent.slice(0, 6).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><span><strong>{item.gameTitle}</strong><small>{new Date(item.at).toLocaleDateString()} · Room {item.roomCode}</small></span><b className={item.won ? "is-win" : ""}>{item.result}</b></article>)}</div>}
-      </section>}
     </section>
   );
 
