@@ -257,19 +257,20 @@ function formatDuration(milliseconds: number): string {
     .join(":");
 }
 
-// Browser identity follows the active Halieus context so tabs visually distinguish the portal and each game module.
-function setDocumentIdentity(title: string, _iconHref?: string): void {
+// Browser identity follows the active Halieus context so tabs distinguish the
+// platform from the game the player is actually inside. Game favicons reuse the
+// existing catalogue artwork; the portal returns to the canonical Halieus H.
+function setDocumentIdentity(title: string, iconHref = "/halieus-mark.svg"): void {
   document.title = title;
-  const halieusIcon = "/favicon.ico?v=4.0.0";
-  const icons = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="icon"]'));
-  if (icons.length === 0) {
-    const icon = document.createElement("link");
+  let icon = document.getElementById("halieus-dynamic-favicon") as HTMLLinkElement | null;
+  if (!icon) {
+    icon = document.createElement("link");
+    icon.id = "halieus-dynamic-favicon";
     icon.rel = "icon";
-    icon.href = halieusIcon;
+    icon.type = "image/svg+xml";
     document.head.appendChild(icon);
-    return;
   }
-  icons.forEach((icon) => { icon.href = halieusIcon; });
+  icon.href = iconHref;
 }
 
 export default function App() {
@@ -533,23 +534,23 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (wordArenaState) { setDocumentIdentity(`${wordArenaState.gameTitle} · ${wordArenaState.code} · Halieus Game Room`); return; }
-    if (classicState) { setDocumentIdentity(`${classicState.gameTitle} · ${classicState.code} · Halieus Game Room`); return; }
-    if (ayoState) { setDocumentIdentity(`Ayo · ${ayoState.code} · Halieus Game Room`); return; }
-    if (wordBoardState) { setDocumentIdentity(`Word Board · ${wordBoardState.code} · Halieus Game Room`); return; }
-  if (connectFourState) { setDocumentIdentity(`Connect Four · ${connectFourState.code} · Halieus Game Room`); return; }
-    if (hiddenDictatorState) { setDocumentIdentity(`Hidden Dictator · ${hiddenDictatorState.code} · Halieus Game Room`); return; }
-    if (blackjackState) { setDocumentIdentity(`Blackjack · ${blackjackState.code} · Halieus Game Room`); return; }
-    if (ludoState) { setDocumentIdentity(`Ludo · ${ludoState.code} · Halieus Game Room`); return; }
-    if (whotState) { setDocumentIdentity(`WHOT · ${whotState.code} · Halieus Game Room`); return; }
-    if (pokerState) { setDocumentIdentity(`Poker · ${pokerState.code} · Halieus Game Room`); return; }
+    if (wordArenaState) { setDocumentIdentity(`${wordArenaState.gameTitle} · ${wordArenaState.code} · Halieus Game Room`, GAME_BY_ID[selectedGame].icon); return; }
+    if (classicState) { setDocumentIdentity(`${classicState.gameTitle} · ${classicState.code} · Halieus Game Room`, GAME_BY_ID[selectedGame].icon); return; }
+    if (ayoState) { setDocumentIdentity(`Ayo · ${ayoState.code} · Halieus Game Room`, GAME_BY_ID["ayo"].icon); return; }
+    if (wordBoardState) { setDocumentIdentity(`Word Board · ${wordBoardState.code} · Halieus Game Room`, GAME_BY_ID["word-board"].icon); return; }
+    if (connectFourState) { setDocumentIdentity(`Connect Four · ${connectFourState.code} · Halieus Game Room`, GAME_BY_ID["connect-four"].icon); return; }
+    if (hiddenDictatorState) { setDocumentIdentity(`Hidden Dictator · ${hiddenDictatorState.code} · Halieus Game Room`, GAME_BY_ID["hidden-dictator"].icon); return; }
+    if (blackjackState) { setDocumentIdentity(`Blackjack · ${blackjackState.code} · Halieus Game Room`, GAME_BY_ID["blackjack"].icon); return; }
+    if (ludoState) { setDocumentIdentity(`Ludo · ${ludoState.code} · Halieus Game Room`, GAME_BY_ID["ludo"].icon); return; }
+    if (whotState) { setDocumentIdentity(`WHOT · ${whotState.code} · Halieus Game Room`, GAME_BY_ID["whot"].icon); return; }
+    if (pokerState) { setDocumentIdentity(`Poker · ${pokerState.code} · Halieus Game Room`, GAME_BY_ID["poker"].icon); return; }
     if (!megaBoardParked && (lobby || gameStarted || readGameCodeFromPath())) {
       const code = lobby?.code ?? readGameCodeFromPath();
-      setDocumentIdentity(code ? `Mega Board · ${code} · Halieus Game Room` : "Mega Board · Halieus Game Room");
+      setDocumentIdentity(code ? `Mega Board · ${code} · Halieus Game Room` : "Mega Board · Halieus Game Room", GAME_BY_ID["mega-board"].icon);
       return;
     }
     setDocumentIdentity("Halieus Game Room");
-  }, [ayoState, blackjackState, classicState, connectFourState, gameStarted, hiddenDictatorState, lobby, ludoState, megaBoardParked, pokerState, whotState, wordArenaState, wordBoardState]);
+  }, [ayoState, blackjackState, classicState, connectFourState, gameStarted, hiddenDictatorState, lobby, ludoState, megaBoardParked, pokerState, selectedGame, whotState, wordArenaState, wordBoardState]);
 
   const [skinPreferences, setSkinPreferences] = useState<HalieusSkinPreferences>(() => readEffectiveSkinPreferences(false));
   const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
