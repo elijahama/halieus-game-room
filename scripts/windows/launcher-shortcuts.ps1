@@ -16,6 +16,7 @@ $RestartIconPath = Join-Path $LauncherIconRoot 'Restart Halieus Game Room.ico'
 $CloseIconPath = Join-Path $LauncherIconRoot 'Close Halieus Game Room.ico'
 $UpdateIconPath = Join-Path $LauncherIconRoot 'Update Halieus Website.ico'
 $PowerShellIconPath = Join-Path $LauncherIconRoot 'HGR PowerShell.ico'
+$OpenShardIconPath = Join-Path $LauncherIconRoot 'HGR OpenShard TUI.ico'
 $ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
 $StartMenuLauncherDirectory = Join-Path $ProgramsRoot 'Halieus Game Room'
 $ProjectLauncherDirectory = Join-Path $ProjectRoot 'HGR Launchers'
@@ -85,6 +86,7 @@ $RestartIconPath = Resolve-HalieusIconPath -Preferred $RestartIconPath -Fallback
 $CloseIconPath = Resolve-HalieusIconPath -Preferred $CloseIconPath -Fallback $GameRoomIconPath -Label 'Close'
 $UpdateIconPath = Resolve-HalieusIconPath -Preferred $UpdateIconPath -Fallback $GameRoomIconPath -Label 'Update'
 $PowerShellIconPath = Resolve-HalieusIconPath -Preferred $PowerShellIconPath -Fallback $GameRoomIconPath -Label 'PowerShell'
+$OpenShardIconPath = Resolve-HalieusIconPath -Preferred $OpenShardIconPath -Fallback $PowerShellIconPath -Label 'OpenShard TUI'
 
 $folderIconConfig = @"
 [.ShellClassInfo]
@@ -154,7 +156,7 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
     $openShard.Arguments = "/d /c `"`"$OpenShardScript`" tui`""
     $openShard.WorkingDirectory = $ProjectRoot
     $openShard.Description = 'Open the Halieus Game Room OpenShard TUI and receipt dashboard'
-    $openShard.IconLocation = "$PowerShellIconPath,0"
+    $openShard.IconLocation = "$OpenShardIconPath,0"
     $openShard.WindowStyle = 1
     $openShard.Save()
 }
