@@ -78,6 +78,8 @@ export function customThemeVariables(theme: HalieusCustomTheme): Record<string, 
   const raised = mix(theme.surface, dark ? "#ffffff" : "#000000", dark ? 0.05 : 0.025);
   const soft = mix(theme.surface, dark ? "#ffffff" : "#000000", dark ? 0.09 : 0.06);
   const strong = mix(theme.surface, dark ? "#ffffff" : "#000000", dark ? 0.15 : 0.11);
+  const accentNeedsDepth = !isDarkColour(theme.accent);
+  const action = accentNeedsDepth ? mix(theme.accent, "#000000", 0.28) : theme.accent;
   return {
     "--hgr-page": theme.page,
     "--hgr-surface": theme.surface,
@@ -93,6 +95,11 @@ export function customThemeVariables(theme: HalieusCustomTheme): Record<string, 
     "--hgr-yellow-strong": theme.accent,
     "--hgr-brand": theme.accent,
     "--hgr-brand-soft": mix(theme.accent, dark ? "#ffffff" : "#000000", dark ? 0.28 : 0.16),
+    "--hgr-brand-ink": "#ffffff",
+    "--hgr-action-bg": action,
+    "--hgr-action-ink": "#ffffff",
+    "--hgr-logo-bg": action,
+    "--hgr-logo-ink": "#ffffff",
     "--hgr-info": theme.secondary,
     "--hgr-update": theme.secondary,
     "--hgr-focus": `0 0 0 3px ${mix(theme.accent, theme.page, 0.55)}`,
