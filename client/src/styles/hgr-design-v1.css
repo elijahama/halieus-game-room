@@ -3026,3 +3026,57 @@ html[data-theme="dark"] .account-admin-content-card {
     flex-basis: 42px;
   }
 }
+
+
+/* Guilds landing/menu correction: Join/Create are page actions, not a second
+ * full-width setup panel. The actual guild workspace starts immediately. */
+.halieus-guilds-heading {
+  align-items: flex-start !important;
+}
+.halieus-guild-heading-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.halieus-guild-heading-actions button {
+  min-height: 38px !important;
+  padding: 7px 11px !important;
+  white-space: nowrap;
+}
+.halieus-guild-workspace {
+  margin-top: 14px !important;
+}
+.halieus-guild-list {
+  align-self: start;
+}
+.halieus-guild-list > header {
+  min-height: 38px;
+}
+.halieus-guild-list > button {
+  min-height: 62px;
+}
+@media (max-width: 760px) {
+  .halieus-guilds-heading {
+    gap: 12px !important;
+  }
+  .halieus-guild-heading-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+  }
+  .halieus-guild-heading-actions button {
+    min-width: 0;
+    width: 100%;
+  }
+}
+@media (max-width: 520px) {
+  .halieus-guild-heading-actions {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .halieus-guild-heading-actions .button-muted {
+    grid-column: 1 / -1;
+  }
+}
