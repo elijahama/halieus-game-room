@@ -71,3 +71,12 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - Prevented accidental hero text selection from presenting as a large browser-blue block.
 - Removed the generic recommendation fallback from **Friends Are Playing** and added an explicit empty state when there is no live friend-game data.
 - Added regression coverage for the full-shell theme bridge, studio-style preset direction, truthful Friends shelf and hero geometry.
+
+## Source baseline archive policy
+
+- Canonical source snapshots now advance in half-version intervals: `.0`, `.5`, next major `.0`, next `.5`, and so on.
+- The current 4.1.x line therefore uses **4.0** as its canonical source baseline.
+- The exact 4.0 snapshot is preserved at `source-baseline-4.0`, pointing to commit `ec0d2193d8b6133452d57f312d86e2ea90f23e74` (`Import Halieus Game Room 4.0.0 source`).
+- `source-baseline` is the moving branch used for the current source-material ZIP.
+- A new source-baseline workflow will freeze and archive exact milestone commits when `VERSION` reaches values such as `4.5.0`, `5.0.0`, `5.5.0`, `6.0.0`, and `6.5.0`.
+- Intermediate and patch releases do not move the source snapshot.
