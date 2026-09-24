@@ -32,6 +32,8 @@ $CloseShortcut = Join-Path $ShortcutDirectory 'Close HGR App.lnk'
 $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $UpdateShortcut = Join-Path $ShortcutDirectory 'Update HGR Site.lnk'
 $PowerShellShortcut = Join-Path $ShortcutDirectory 'HGR PowerShell.lnk'
+$OpenShardShortcut = Join-Path $ShortcutDirectory 'HGR - OpenShard.lnk'
+$OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -119,6 +121,20 @@ $terminal.IconLocation = "$PowerShellIconPath,0"
 $terminal.WindowStyle = 1
 $terminal.Save()
 
+# OpenShard is development-only tooling. Reuse the current terminal launcher
+# artwork until the HGR visual model sheet defines the final launcher family.
+if (-not (Test-Path -LiteralPath $OpenShardScript)) {
+    throw "OpenShard HGR helper is missing: $OpenShardScript"
+}
+$openShard = $wsh.CreateShortcut($OpenShardShortcut)
+$openShard.TargetPath = $cmd
+$openShard.Arguments = "/d /c `"`"$OpenShardScript`" tui`""
+$openShard.WorkingDirectory = $ProjectRoot
+$openShard.Description = 'Open the Halieus Game Room OpenShard receipt dashboard'
+$openShard.IconLocation = "$PowerShellIconPath,0"
+$openShard.WindowStyle = 1
+$openShard.Save()
+
 # Remove the older nested Start Menu copies so Search does not show duplicates.
 if (Test-Path -LiteralPath $LegacyShortcutDirectory) {
     Get-ChildItem -LiteralPath $LegacyShortcutDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
@@ -132,7 +148,8 @@ $CreatedShortcuts = @(
     $RestartShortcut,
     $CloseShortcut,
     $UpdateShortcut,
-    $PowerShellShortcut
+    $PowerShellShortcut,
+    $OpenShardShortcut
 )
 foreach ($shortcutPath in $CreatedShortcuts) {
     if (-not (Test-Path -LiteralPath $shortcutPath)) {
@@ -168,6 +185,7 @@ foreach ($name in @(
     'HGR GitHub Update.lnk',
     'HGR GitHub Sync.lnk',
     'HGR PowerShell.lnk',
+    'HGR - OpenShard.lnk',
     'Start Mega Board.lnk',
     'Close Mega Board.lnk'
 )) {

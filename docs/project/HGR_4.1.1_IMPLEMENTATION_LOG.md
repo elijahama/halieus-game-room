@@ -144,3 +144,12 @@ The final 4.1.1 walkthrough exposed four cleanup issues that stay within the pol
 - Documented why receipt state remains outside Git, production data and half-version source baselines.
 - Added portfolio/interview language that accurately describes human ownership, substantial AI implementation assistance and receipt-backed provenance where the integration supports it.
 - Recorded the limitation that not every AI interaction is automatically capturable; HGR documentation therefore says **receipts where supported** rather than claiming universal capture.
+
+
+### HGR OpenShard launcher shortcut
+
+- Added a generated **HGR - OpenShard** Start Menu shortcut alongside the existing HGR PowerShell launcher family.
+- The shortcut opens the OpenShard TUI at the HGR repository root through `scripts/windows/OpenShard-HGR.cmd tui`.
+- It remains development-only and is deliberately absent from the Oracle/player runtime launcher set.
+- It currently reuses the approved HGR terminal launcher artwork; a dedicated icon remains deferred to the visual model-sheet/rebrand stage.
+- Added regression coverage so the shortcut name, helper route and TUI action cannot silently drift.

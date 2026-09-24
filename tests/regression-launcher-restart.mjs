@@ -38,6 +38,9 @@ assert.match(shortcuts, /Start HGR App\.lnk/);
 assert.match(shortcuts, /Restart HGR App\.lnk/);
 assert.match(shortcuts, /Close HGR App\.lnk/);
 assert.match(shortcuts, /Update HGR Site\.lnk/);
+assert.match(shortcuts, /HGR - OpenShard\.lnk/);
+assert.match(shortcuts, /OpenShard-HGR\.cmd/);
+assert.match(shortcuts, /Open the Halieus Game Room OpenShard receipt dashboard/);
 assert.match(shortcuts, /Close the local Halieus Game Room desktop app window only/);
 assert.doesNotMatch(shortcuts, /Description 'Close Halieus Game Room'/);
 
