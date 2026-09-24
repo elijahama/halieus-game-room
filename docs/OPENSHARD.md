@@ -67,6 +67,20 @@ The no-space wrapper name is deliberate so it can be invoked directly from Power
 
 The helper does not install Openshard automatically. If the CLI is missing it prints the installation command and exits instead of modifying Python on its own.
 
+### HGR - OpenShard shortcut
+
+HGR's Windows shortcut generator also creates **HGR - OpenShard** in the Start Menu. It opens the OpenShard TUI directly at the HGR repository root, using the same local helper as the commands above.
+
+After pulling the shortcut integration, refresh the HGR shortcuts with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\scripts\windows\launcher-shortcuts.ps1"
+```
+
+Then search Windows Start for **HGR - OpenShard** and optionally pin it to Start.
+
+The shortcut currently reuses the approved HGR terminal/PowerShell launcher artwork. A dedicated OpenShard-facing HGR icon is intentionally deferred to the visual model-sheet/rebrand stage so the project does not accumulate another one-off icon style.
+
 ## Normal workflow
 
 Use your coding agent normally. After the work:
