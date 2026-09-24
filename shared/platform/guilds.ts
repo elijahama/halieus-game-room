@@ -40,6 +40,11 @@ export interface HalieusGuildMessage {
   createdAt: number;
 }
 
+export interface HalieusGuildMembershipSnapshotEntry {
+  accountId: string;
+  aliases: string[];
+}
+
 export interface HalieusGuildRoom {
   id: string;
   guildId: string;
@@ -56,6 +61,18 @@ export interface HalieusGuildRoom {
   winnerAccountId: string | null;
   participants: string[];
   participantAccountIds: string[];
+  /** Frozen before the match begins so later membership changes cannot rewrite history. */
+  membershipSnapshot?: HalieusGuildMembershipSnapshotEntry[];
+  /** True only when every recorded human participant matched the frozen guild snapshot. */
+  allHumanParticipantsWereGuildMembers?: boolean | null;
+}
+
+export interface HalieusGuildGlobalRank {
+  game: HalieusGameStatLine["game"];
+  rank: number;
+  rating: number;
+  played: number;
+  wins: number;
 }
 
 export interface HalieusGuildLeaderboardEntry {
@@ -66,6 +83,8 @@ export interface HalieusGuildLeaderboardEntry {
   wins: number;
   winRate: number;
   hosted: number;
+  /** Real global ranked standings filtered to this guild member. */
+  globalRanks: HalieusGuildGlobalRank[];
 }
 
 export interface HalieusGuildSummary {
