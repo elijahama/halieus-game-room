@@ -20,6 +20,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Added first applied skins for shared interface framing, Poker/Blackjack hidden cards and Mega Board field atmosphere.
 - Added shared HGR geometry tokens for radii, control sizing and spacing.
 - Added the first shared website surface grammar on the Games page: consistent category headings, count chips, card geometry, artwork safe areas, status chips and responsive spacing without replacing existing game artwork.
+- Extended the same surface grammar into Guilds: page heading hierarchy, grouped actions, list/detail surfaces, count chips and selected-row treatment now use shared HGR tokens rather than a separate visual language.
 - Formalised the game visual identity process while keeping the current website artwork as the source of truth.
 - Recorded the failed multi-game mockup iterations as exploratory only and documented a rollback-first visual review discipline so approved designs are not changed while fixing unrelated assets.
 
