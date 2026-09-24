@@ -266,4 +266,12 @@ assert.doesNotMatch(
   "4.5 surface refinement must remain paint-only and must not alter geometry or scroll ownership",
 );
 
+assert.match(surfaceCss,/HGR 4\.5 tactile object refinement/,"4.5 must include the tactile object refinement layer");
+assert.match(surfaceCss,/\.mega-live-page \.property-colour-strip[\s\S]*?filter:\s*saturate\(1\.05\)/s,"Mega Board property groups must gain material depth without recolouring their gameplay identity");
+assert.match(surfaceCss,/\.mega-live-page \.development-piece\.is-hotel,[\s\S]*?--mega-accent/s,"Mega Board developed properties must retain readable depth across board skins");
+assert.match(surfaceCss,/\.poker-page \.poker-card-face[\s\S]*?linear-gradient/s,"Poker card faces must remain neutral and legible against all table skins");
+assert.match(surfaceCss,/\.poker-page \.poker-card-back[\s\S]*?--poker-accent/s,"Poker card backs must gain separation without replacing the independent card-back cosmetic");
+assert.match(surfaceCss,/\.poker-page \.poker-table-wrap[\s\S]*?--hgr-brand/s,"Poker neutral room chrome must inherit the active HGR theme profile");
+assert.match(surfaceCss,/\.mega-live-page \.board-frame[\s\S]*?--hgr-brand/s,"Mega Board neutral frame chrome must inherit the active HGR theme profile");
+
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
