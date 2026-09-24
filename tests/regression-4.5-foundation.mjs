@@ -14,6 +14,8 @@ const skinButton=read("client/src/platform/components/SkinLibraryButton.tsx");
 const app=read("client/src/App.tsx");
 const css=read("client/src/styles/hgr-design-v1.css");
 const gameChrome=read("client/src/platform/components/GameChrome.tsx");
+const roomChat=read("client/src/platform/components/RoomChatPanel.tsx");
+const hgrIcons=read("client/src/platform/components/HgrIcon.tsx");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 
@@ -54,6 +56,12 @@ assert.match(css,/\.results-tabs,[\s\S]*?\.halieus-results-tabs[\s\S]*?backgroun
 assert.match(css,/HGR 4\.5 shared room creation \/ invite surfaces/,"4.5 must define a shared create\/join\/invite layer");
 assert.match(css,/\.halieus-create-panel\.halieus-create-modal,[\s\S]*?\.halieus-join-modal,[\s\S]*?\.invite-lobby-panel-redesigned,[\s\S]*?\.invite-join-card[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Create, Join and Invite surfaces must share the same elevated HGR surface");
 assert.match(css,/\.halieus-join-games > button[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,"Join game choices must preserve existing artwork inside the shared tile grammar");
+assert.match(hgrIcons,/\| "chat"/,"Shared HGR icon set must include a room-chat glyph");
+assert.match(roomChat,/HgrIcon name="chat"/,"Room activity trigger must use the shared HGR chat glyph");
+assert.match(css,/HGR 4\.5 shared communication \/ confirmation surfaces/,"4.5 must define one shared communication-surface layer");
+assert.match(css,/\.room-chat-panel[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Room chat must inherit the elevated HGR surface");
+assert.match(css,/\.halieus-confirm-dialog[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Confirmation dialogs must inherit the shared HGR modal surface");
+assert.match(css,/\.status-toast,[\s\S]*?\.hgr-toast,[\s\S]*?\.global-game-notice[\s\S]*?background:/s,"Toasts and global notices must share one notification frame");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
