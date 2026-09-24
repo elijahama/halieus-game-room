@@ -24,6 +24,9 @@ const roomChat=read("client/src/platform/components/RoomChatPanel.tsx");
 const hgrIcons=read("client/src/platform/components/HgrIcon.tsx");
 const accountPortal=read("client/src/platform/accounts/AccountPortal.tsx");
 const pokerScreen=read("client/src/games/poker/PokerScreen.tsx");
+const megaGameMenu=read("client/src/games/mega-board/components/GameMenu.tsx");
+const megaGameRules=read("shared/games/mega-board/game-rules.ts");
+const megaTurnHandlers=read("server/src/games/mega-board/handlers/turnHandlers.ts");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
@@ -172,5 +175,14 @@ assert.match(css,/HGR 4\.5 Poker tabbed control rail/,"Poker tabbed rail must ha
 assert.match(css,/\.poker-side-tab-panel \{[\s\S]*?overflow:\s*hidden/s,"Poker sidebar shell must stay contained while selected workspace owns scrolling");
 assert.match(css,/\.poker-actions-workspace,[\s\S]*?overflow-y:\s*auto/s,"Poker selected workspace must provide internal scrolling when viewport height is constrained");
 assert.match(css,/@media \(min-width: 1001px\)[\s\S]*?height:\s*calc\(100dvh - 118px\)/s,"Desktop Poker table and side rail must fit the viewport rather than requiring page-wheel access");
+assert.match(megaGameMenu,/turn-timer-settings-panel/,"Mega Board game menu must expose the live host turn timer selector");
+assert.match(megaGameMenu,/TURN_TIMER_PRESET_SECONDS\.map/,"Mega Board timer UI must use the shared approved preset list");
+assert.match(megaGameMenu,/isHost && onTurnTimerChange/,"Only the Mega Board room host may edit the live turn timer");
+assert.match(megaGameRules,/TURN_TIMER_PRESET_SECONDS = \[30, 45, 60, 90, 120, 150, 180, 300\]/,"Mega Board turn timer presets must remain explicit and predictable");
+assert.match(megaTurnHandlers,/socket\.on\(\s*"game:set-turn-timer"/s,"Mega Board server must own turn-timer changes");
+assert.match(megaTurnHandlers,/room\.hostId !== socket\.id/,"Mega Board server must reject non-host timer changes");
+assert.match(megaTurnHandlers,/gameState\.turnTimerSeconds = seconds/,"Mega Board timer changes must update authoritative match state");
+assert.match(megaTurnHandlers,/turnRollDeadline = Date\.now\(\) \+ seconds \* 1000/,"Changing the timer must restart the current eligible human roll window at the new duration");
+assert.match(megaTurnHandlers,/Turn Timer Updated/,"Mega Board timer changes must be announced to the room");
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
