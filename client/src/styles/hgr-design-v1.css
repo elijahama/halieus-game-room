@@ -4855,3 +4855,201 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     padding: 16px !important;
   }
 }
+
+
+/* Game-page identity strip: every game keeps its own accent/artwork, but the
+ * title + room/mode/status header follows one platform hierarchy. */
+:is(
+  .poker-header,
+  .rebuild-game-header,
+  .card-game-header-polished,
+  .word-arena-header,
+  .classic-table-header
+) {
+  min-height: 62px !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 12px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--hgr-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+:is(
+  .poker-brand-lockup,
+  .rebuild-game-title,
+  .card-game-brand-lockup,
+  .word-arena-brand,
+  .classic-brand
+) {
+  min-width: 0;
+  gap: 11px !important;
+}
+
+:is(
+  .poker-brand-lockup,
+  .rebuild-game-title,
+  .card-game-brand-lockup,
+  .word-arena-brand,
+  .classic-brand
+) > :is(img,svg,.halieus-game-brand-icon,span):first-child {
+  flex: 0 0 auto;
+}
+
+:is(
+  .poker-brand-lockup,
+  .rebuild-game-title,
+  .card-game-brand-lockup,
+  .word-arena-brand,
+  .classic-brand
+) p {
+  margin: 0 0 2px !important;
+  color: var(--game-accent) !important;
+  font-size: 9px !important;
+  font-weight: 950 !important;
+  letter-spacing: .13em !important;
+  text-transform: uppercase;
+}
+
+:is(
+  .poker-brand-lockup,
+  .rebuild-game-title,
+  .card-game-brand-lockup,
+  .word-arena-brand,
+  .classic-brand
+) h1 {
+  margin: 0 !important;
+  color: var(--hgr-text) !important;
+  font-size: clamp(1.45rem,2.4vw,1.85rem) !important;
+  line-height: 1 !important;
+  letter-spacing: -.035em !important;
+}
+
+:is(
+  .poker-brand-lockup,
+  .rebuild-game-title,
+  .card-game-brand-lockup,
+  .word-arena-brand,
+  .classic-brand
+) small {
+  display: block;
+  margin-top: 4px !important;
+  color: var(--hgr-muted) !important;
+  font-size: 10px !important;
+  line-height: 1.35;
+}
+
+:is(
+  .poker-room-meta,
+  .rebuild-game-meta,
+  .card-game-meta,
+  .word-arena-meta,
+  .classic-meta
+) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  border: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+:is(
+  .poker-room-meta,
+  .rebuild-game-meta,
+  .card-game-meta,
+  .word-arena-meta,
+  .classic-meta
+) > span {
+  min-width: 0 !important;
+  min-height: 32px;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 9px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: 999px !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text-soft) !important;
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  line-height: 1.1;
+}
+
+:is(
+  .poker-room-meta,
+  .rebuild-game-meta,
+  .card-game-meta,
+  .word-arena-meta,
+  .classic-meta
+) > span:first-child {
+  border-color: color-mix(in srgb,var(--game-accent) 34%,var(--hgr-border)) !important;
+}
+
+:is(
+  .poker-room-meta,
+  .rebuild-game-meta,
+  .card-game-meta,
+  .word-arena-meta,
+  .classic-meta
+) > span.is-online {
+  border-color: color-mix(in srgb,var(--hgr-success) 42%,var(--hgr-border)) !important;
+  color: var(--hgr-success) !important;
+}
+
+.classic-meta > span {
+  flex-direction: row !important;
+}
+.classic-meta > span > small {
+  margin: 0 !important;
+  color: var(--hgr-muted) !important;
+  font-size: 8px !important;
+}
+.classic-meta > span > strong {
+  color: inherit;
+  font-size: 9px !important;
+}
+
+@media (max-width: 760px) {
+  :is(
+    .poker-header,
+    .rebuild-game-header,
+    .card-game-header-polished,
+    .word-arena-header,
+    .classic-table-header
+  ) {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    padding-bottom: 10px !important;
+  }
+
+  :is(
+    .poker-room-meta,
+    .rebuild-game-meta,
+    .card-game-meta,
+    .word-arena-meta,
+    .classic-meta
+  ) {
+    width: 100%;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 2px;
+  }
+
+  :is(
+    .poker-room-meta,
+    .rebuild-game-meta,
+    .card-game-meta,
+    .word-arena-meta,
+    .classic-meta
+  ) > span {
+    flex: 0 0 auto;
+  }
+}
