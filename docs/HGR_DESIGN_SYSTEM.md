@@ -85,7 +85,7 @@ These references are the visual source of truth. They are **not** a prompt for a
 
 Approved Windows icon assets live under:
 
-`assets/branding/launchers/matte/`
+`assets/branding/launchers/`
 
 The approved family uses the visual treatment present in the reference artwork. Do not invent replacement geometry, colours, materials or symbols from prose descriptions when the reference files already exist.
 
@@ -93,7 +93,7 @@ The historical `scripts/windows/generate-launcher-icons.ps1` tool is for quarant
 
 `assets/branding/launchers/generated-preview/`
 
-It must never delete, overwrite, recolour or regenerate the approved `matte` icons.
+It must never delete, overwrite, recolour or regenerate the approved launcher icons.
 
 Shortcut refresh, Start, Restart, Close and Update workflows consume approved artwork; they do not create artwork.
 
