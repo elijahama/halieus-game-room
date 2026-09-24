@@ -13,7 +13,11 @@ export type HalieusThemeProfileId =
   | "icebox"
   | "cream-soda"
   | "midnight-rose"
-  | "deep-ocean";
+  | "deep-ocean"
+  | "ivory-8bit"
+  | "lavender-16bit"
+  | "black-drive"
+  | "grey-disc";
 
 export interface HalieusCustomTheme {
   page: string;
@@ -56,6 +60,10 @@ export const THEME_PROFILES: readonly HalieusThemeProfile[] = [
   { id: "cream-soda", label: "Cream Soda", description: "Warm ivory surfaces with cola-brown and citrus accents.", mood: "Soft", theme: { page: "#eee7d8", surface: "#fffaf0", accent: "#a75d28", secondary: "#d69c32" } },
   { id: "midnight-rose", label: "Midnight Rose", description: "Black cherry panels with rose-metal highlights.", mood: "Luxe", theme: { page: "#10090d", surface: "#21131a", accent: "#c84d78", secondary: "#efa0bd" } },
   { id: "deep-ocean", label: "Deep Ocean", description: "Abyssal navy with teal-biological glow.", mood: "Atmospheric", theme: { page: "#041013", surface: "#0a2024", accent: "#159f9d", secondary: "#62e4d5" } },
+  { id: "ivory-8bit", label: "8-bit Ivory", description: "Warm ivory, restrained red and charcoal inspired by early home-console hardware.", mood: "Retro 8-bit", theme: { page: "#d8d2c3", surface: "#f0ece2", accent: "#a72e35", secondary: "#c59a45" } },
+  { id: "lavender-16bit", label: "16-bit Lavender", description: "Soft hardware grey with lavender and violet accents.", mood: "Retro 16-bit", theme: { page: "#c7c6c9", surface: "#e2e1e3", accent: "#7566a8", secondary: "#9f87c3" } },
+  { id: "black-drive", label: "Black Drive", description: "Graphite black, metallic grey and restrained red for a sharper console-era room.", mood: "Retro Drive", theme: { page: "#08090b", surface: "#17191d", accent: "#c43138", secondary: "#8e99a5" } },
+  { id: "grey-disc", label: "Grey Disc", description: "Cool hardware grey with muted blue and small primary-colour accents.", mood: "Retro Disc", theme: { page: "#bfc1c3", surface: "#dedfe0", accent: "#3f6597", secondary: "#b04d52" } },
 ] as const;
 
 const HEX = /^#[0-9a-f]{6}$/i;
