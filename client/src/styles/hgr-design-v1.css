@@ -3539,3 +3539,408 @@ html[data-theme="green"] {
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5 foundation — platform-first identity and appearance model.
+   Shared surfaces establish the pattern; game-specific chrome inherits it.
+   ========================================================================== */
+
+:root {
+  --hgr-radius-xs: 8px;
+  --hgr-radius-sm: 10px;
+  --hgr-radius-md: 14px;
+  --hgr-radius-lg: 18px;
+  --hgr-control-height: 40px;
+  --hgr-space-1: 4px;
+  --hgr-space-2: 8px;
+  --hgr-space-3: 12px;
+  --hgr-space-4: 16px;
+  --hgr-space-5: 24px;
+}
+
+/* Model-sheet H: two faceted pillars and a central bridge use one fill token.
+ * The geometry stays identical across themes; only the tile/ink treatment moves. */
+.halieus-brand-mark-h-pillar,
+.halieus-brand-mark-h-bridge {
+  fill: var(--hgr-logo-ink);
+}
+.halieus-brand-mark-h-bridge {
+  opacity: .96;
+}
+.halieus-brand-mark.is-low .halieus-brand-mark-h-bridge {
+  opacity: .76;
+}
+.halieus-brand-mark.is-high .halieus-brand-mark-tile {
+  stroke-width: 1.5;
+}
+
+/* Player overflow controls are actions, not decorative ellipses. */
+.halieus-player-identity {
+  position: relative;
+}
+.halieus-player-identity.is-interactive {
+  cursor: pointer;
+}
+.halieus-player-action-shell {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+}
+.halieus-player-action-trigger {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--hgr-radius-sm);
+  background: transparent;
+  color: var(--hgr-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: .08em;
+  cursor: pointer;
+}
+.halieus-player-action-trigger:hover,
+.halieus-player-action-trigger[aria-expanded="true"] {
+  border-color: var(--hgr-border-strong);
+  background: var(--hgr-surface-strong);
+  color: var(--hgr-text);
+}
+.halieus-player-action-menu {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(260px, calc(100vw - 32px));
+  display: grid;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: var(--hgr-radius-md);
+  background: color-mix(in srgb,var(--hgr-surface-raised) 96%,transparent);
+  box-shadow: 0 18px 48px rgba(0,0,0,.28);
+  backdrop-filter: blur(18px);
+  cursor: default;
+}
+.halieus-player-action-menu > strong {
+  padding: 6px 8px 5px;
+  color: var(--hgr-muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.halieus-player-action-menu > button {
+  min-height: 42px;
+  display: grid;
+  gap: 2px;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: var(--hgr-radius-sm);
+  background: transparent;
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-player-action-menu > button:hover {
+  border-color: color-mix(in srgb,var(--hgr-brand) 34%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-brand) 9%,var(--hgr-surface-soft));
+}
+.halieus-player-action-menu > button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.halieus-player-action-menu > button > span {
+  font-size: 10px;
+  font-weight: 850;
+}
+.halieus-player-action-menu > button > small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+}
+.halieus-player-action-menu > button.is-danger {
+  color: var(--hgr-danger);
+}
+
+/* Compact theme entry: quick defaults stay short; richer profiles are a library. */
+.halieus-theme-popover {
+  gap: 8px !important;
+  max-height: min(560px, calc(100dvh - 24px)) !important;
+  overflow-y: auto !important;
+}
+.halieus-theme-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 6px;
+}
+.halieus-theme-quick-grid > button,
+.halieus-theme-library-launch,
+.halieus-theme-custom-launch {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-theme-quick-grid > button > span,
+.halieus-theme-library-launch > span:not(.halieus-theme-library-art),
+.halieus-theme-custom-launch > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+.halieus-theme-quick-grid strong,
+.halieus-theme-library-launch strong,
+.halieus-theme-custom-launch strong {
+  font-size: 10px;
+}
+.halieus-theme-quick-grid small,
+.halieus-theme-library-launch small,
+.halieus-theme-custom-launch small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+}
+.halieus-theme-quick-grid > button.is-active,
+.halieus-theme-library-launch.is-active,
+.halieus-theme-custom-launch.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface-soft));
+}
+.halieus-theme-library-art,
+.halieus-theme-profile-swatch {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  border: 1px solid var(--hgr-border);
+  border-radius: 9px;
+}
+.halieus-theme-library-art {
+  width: 34px;
+  height: 34px;
+}
+.halieus-theme-library-art i,
+.halieus-theme-profile-swatch i {
+  display: block;
+}
+.halieus-theme-library-art i:nth-child(1) { background:#05090b; }
+.halieus-theme-library-art i:nth-child(2) { background:#9558ff; }
+.halieus-theme-library-art i:nth-child(3) { background:#00c9d8; }
+.halieus-theme-library-art i:nth-child(4) { background:#f07b32; }
+.halieus-theme-library-back {
+  justify-self: start;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--hgr-muted) !important;
+  cursor: pointer;
+}
+.halieus-theme-library-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px;
+}
+.halieus-theme-library-grid > button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 52px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-theme-library-grid > button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 64%,var(--hgr-border));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--hgr-brand) 20%,transparent);
+}
+.halieus-theme-profile-swatch {
+  width: 52px;
+  height: 42px;
+}
+.halieus-theme-library-grid > button > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-theme-library-grid em {
+  color: var(--hgr-info);
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.halieus-theme-library-grid strong { font-size: 10px; }
+.halieus-theme-library-grid small {
+  overflow: hidden;
+  color: var(--hgr-muted);
+  font-size: 8px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+/* In-game display settings use the same hierarchy instead of exposing every
+ * theme as a permanent top-level tile. */
+.halieus-display-group {
+  display: grid;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-display-group > header {
+  display: grid;
+  gap: 2px;
+}
+.halieus-display-group > header > strong { font-size: 10px; }
+.halieus-display-group > header > small { color: var(--hgr-muted); font-size: 8px; }
+.halieus-theme-mode-grid.is-quick {
+  grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+}
+.halieus-theme-library-select {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(150px,.55fr);
+  gap: 7px;
+}
+.halieus-theme-library-select > label,
+.halieus-theme-library-select > button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-sm);
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+}
+.halieus-theme-library-select > label > span,
+.halieus-theme-library-select > button > span:last-of-type {
+  display: grid;
+  gap: 1px;
+}
+.halieus-theme-library-select strong { font-size: 9px; }
+.halieus-theme-library-select small { color: var(--hgr-muted); font-size: 7px; }
+.halieus-theme-library-select select {
+  min-width: 150px;
+  max-width: 240px;
+  border: 1px solid var(--hgr-border-strong);
+  border-radius: 8px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  padding: 6px 7px;
+}
+.halieus-theme-library-select > button {
+  cursor: pointer;
+}
+.halieus-theme-library-select > button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 56%,var(--hgr-border));
+}
+.halieus-preference-row {
+  display: grid;
+  grid-template-columns: minmax(120px,.8fr) minmax(0,1.2fr);
+  align-items: center;
+  gap: 10px;
+}
+.halieus-preference-row > span {
+  display: grid;
+  gap: 2px;
+}
+.halieus-preference-row > span strong { font-size: 9px; }
+.halieus-preference-row > span small { color: var(--hgr-muted); font-size: 7px; }
+.halieus-preference-row > div {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 4px;
+}
+.halieus-preference-row button {
+  min-height: 32px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 8px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text-soft);
+  font-size: 8px;
+  cursor: pointer;
+}
+.halieus-preference-row button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 54%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface-raised));
+  color: var(--hgr-text);
+}
+
+/* Text and density options deliberately adjust the shared UI rather than
+ * allowing arbitrary fonts that would fragment the HGR identity. */
+html[data-text-scale="small"] {
+  --hgr-text-adjust: -1px;
+}
+html[data-text-scale="standard"] {
+  --hgr-text-adjust: 0px;
+}
+html[data-text-scale="large"] {
+  --hgr-text-adjust: 1px;
+}
+html[data-text-scale="small"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code),
+html[data-text-scale="large"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code) {
+  font-size: calc(1em + var(--hgr-text-adjust));
+}
+html[data-density="compact"] .halieus-player-identity,
+html[data-density="compact"] .halieus-display-group,
+html[data-density="compact"] .halieus-section-card {
+  padding: 8px !important;
+}
+html[data-density="comfortable"] .halieus-player-identity,
+html[data-density="comfortable"] .halieus-display-group {
+  padding: 13px !important;
+}
+html[data-density="comfortable"] .halieus-section-card {
+  padding: 18px !important;
+}
+
+/* Profile themes are generated from shared tokens at runtime. This bridge keeps
+ * the legacy Game Room layer on the same canvas instead of leaving old navy
+ * surfaces behind. */
+html[data-theme="profile"] .halieus-shell,
+html[data-theme="profile"] .halieus-main,
+html[data-theme="profile"] .halieus-sidebar,
+html[data-theme="profile"] .halieus-mobile-bar,
+html[data-theme="profile"] body,
+html[data-theme="profile"] #root {
+  background-color: var(--hgr-page) !important;
+}
+html[data-theme="profile"] .halieus-section-card,
+html[data-theme="profile"] .halieus-player-identity,
+html[data-theme="profile"] .halieus-guilds-panel,
+html[data-theme="profile"] .account-panel {
+  border-color: var(--hgr-border) !important;
+  color: var(--hgr-text) !important;
+}
+
+@media (max-width: 760px) {
+  .halieus-theme-library-grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-theme-library-select,
+  .halieus-preference-row {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-theme-library-select select {
+    width: 100%;
+    max-width: none;
+  }
+}
