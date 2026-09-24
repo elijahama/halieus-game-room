@@ -28,6 +28,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Added active-game browser-tab identity without redesigning icons: the tab title and favicon now switch to each game's existing catalogue SVG while inside that game and restore the Halieus identity on return to the platform.
 - Unified Create Room, Join/Watch, invitation panels and direct invite-join screens under the same HGR modal/field/inset-card grammar while preserving each game's current artwork and room behavior.
 - Unified Inbox, room chat/game-log/spectator activity, confirmations and toast/global-notice framing under the same HGR communication surface language. The room-chat trigger now uses a shared SVG glyph, and the last decorative sidebar profile ellipsis was replaced with a truthful navigation chevron.
+- Unified the pre-sign-in Account Portal and Ranked leaderboards with the signed-in HGR shell. Account entry now uses the canonical shared Halieus mark and SVG fullscreen control; Mega Board, Poker and generic ranked modals share one HGR surface/table/podium hierarchy without changing auth or rating logic.
 - Formalised the game visual identity process while keeping the current website artwork as the source of truth.
 - Recorded the failed multi-game mockup iterations as exploratory only and documented a rollback-first visual review discipline so approved designs are not changed while fixing unrelated assets.
 
