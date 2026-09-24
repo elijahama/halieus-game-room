@@ -21,7 +21,7 @@ The extensionless `web mock up` file is a website/layout reference and must not 
 Approved Windows launcher ICOs live under:
 
 ```text
-assets/branding/launchers/matte/
+assets/branding/launchers/
 ```
 
 Those files are protected production assets. Existing accepted ICOs from the reference-led launcher work must not be redrawn, recoloured, deleted or replaced by a generator.
