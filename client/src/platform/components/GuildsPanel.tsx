@@ -453,16 +453,12 @@ export function GuildsPanel({
           <h1>Guilds</h1>
           <span>Persistent groups for chat, game rooms, members and your own internal table record.</span>
         </div>
-        <button type="button" className="button-outline" onClick={onBackToPlayers}>← Players</button>
-      </header>
-
-      <div className="halieus-guild-actions">
-        <div><strong>{guilds.length ? "Your guild space" : "Start with a guild"}</strong><span>{guilds.length ? "Create or join another group only when you need to." : "Join with a private code or create a new group."}</span></div>
-        <div>
-          <button type="button" className={guildAction === "join" ? "button-primary" : "button-outline"} onClick={() => setGuildAction((current) => current === "join" ? null : "join")}>Join guild</button>
-          <button type="button" className={guildAction === "create" ? "button-primary" : "button-outline"} onClick={() => setGuildAction((current) => current === "create" ? null : "create")}>Create guild</button>
+        <div className="halieus-guild-heading-actions">
+          <button type="button" className="button-outline" onClick={() => setGuildAction("join")}>Join guild</button>
+          <button type="button" className="button-primary" onClick={() => setGuildAction("create")}>Create guild</button>
+          <button type="button" className="button-muted" onClick={onBackToPlayers}>← Players</button>
         </div>
-      </div>
+      </header>
 
       {incomingInvitations.length > 0 && <section className="halieus-guild-incoming" aria-label="Guild invitations">
         <header><div><span>GUILD INVITATIONS</span><strong>You’ve been invited</strong></div><b>{incomingInvitations.length}</b></header>
