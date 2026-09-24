@@ -19,7 +19,9 @@
     "desktop:package:win": "npm --prefix desktop run package:win",
     "desktop:package:portable": "npm --prefix desktop run package:portable",
     "prepare:release": "node scripts/release-integrity.mjs --write && node scripts/release-integrity.mjs --verify",
-    "test:browser": "node tests/browser-4.0.0-handoff.mjs"
+    "test:browser": "node tests/browser-4.0.0-handoff.mjs",
+    "assets:brand": "node scripts/brand/generate-hgr-assets.mjs",
+    "assets:brand:source": "node scripts/brand/generate-hgr-assets.mjs --source-only"
   },
   "engines": {
     "node": ">=20.19.0"
