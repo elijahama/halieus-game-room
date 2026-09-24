@@ -5,13 +5,9 @@ import express, {
   type Response,
 } from "express";
 import { existsSync } from "node:fs";
-import {
-  appendFile,
-  mkdir,
-} from "node:fs/promises";
 import { createServer } from "node:http";
 import { networkInterfaces } from "node:os";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 import {
   Server,
   type Socket,
@@ -46,10 +42,10 @@ import { closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWh
 import { getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
-import { getFeedbackFilePath } from "./platform/dataPaths.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
+import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
 import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHandlers.js";
@@ -159,137 +155,13 @@ app.use(
 
 // Account responses contain private profile/session information and must never
 // be stored by a browser or shared cache. Apply headers before route handlers.
-app.use(["/auth", "/accounts", "/admin", "/guilds"], (_request, response, next) => {
+app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, response, next) => {
   response.setHeader("Cache-Control", "no-store");
   next();
 });
 registerAccountRoutes(app);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
-
-const feedbackFilePath = getFeedbackFilePath();
-const feedbackDataDirectory = dirname(feedbackFilePath);
-
-app.post(
-  "/feedback",
-  async (
-    request: Request,
-    response: Response,
-  ) => {
-    const category =
-      typeof request.body?.category ===
-      "string"
-        ? request.body.category
-            .trim()
-            .slice(0, 80)
-        : "Other";
-
-    const details =
-      typeof request.body?.details ===
-      "string"
-        ? request.body.details
-            .trim()
-            .slice(0, 4000)
-        : "";
-
-    const roomCode =
-      typeof request.body?.roomCode ===
-      "string"
-        ? request.body.roomCode
-            .trim()
-            .toUpperCase()
-            .slice(0, 12)
-        : "";
-
-    const playerName =
-      typeof request.body?.playerName ===
-      "string"
-        ? request.body.playerName
-            .trim()
-            .slice(0, 80)
-        : "Unknown player";
-
-    const pageUrl =
-      typeof request.body?.pageUrl ===
-      "string"
-        ? request.body.pageUrl
-            .trim()
-            .slice(0, 500)
-        : "";
-
-    const userAgent =
-      typeof request.body?.userAgent ===
-      "string"
-        ? request.body.userAgent
-            .trim()
-            .slice(0, 500)
-        : "";
-
-    if (details.length < 4) {
-      response.status(400).json({
-        ok: false,
-        reason:
-          "Feedback details are required.",
-      });
-      return;
-    }
-
-    const entry = {
-      id:
-        `feedback-${Date.now()}-` +
-        Math.random()
-          .toString(36)
-          .slice(2, 8),
-      submittedAt:
-        new Date().toISOString(),
-      category,
-      details,
-      roomCode,
-      playerName,
-      pageUrl,
-      userAgent,
-      appVersion: APP_VERSION,
-    };
-
-    try {
-      await mkdir(
-        feedbackDataDirectory,
-        { recursive: true },
-      );
-
-      await appendFile(
-        feedbackFilePath,
-        JSON.stringify(entry) +
-          "\n",
-        "utf8",
-      );
-
-      console.log(
-        `Feedback received: ${category}` +
-          (
-            roomCode
-              ? ` [room ${roomCode}]`
-              : ""
-          ),
-      );
-
-      response.status(201).json({
-        ok: true,
-        feedbackId: entry.id,
-      });
-    } catch (error) {
-      console.error(
-        "Unable to save feedback:",
-        error,
-      );
-
-      response.status(500).json({
-        ok: false,
-        reason:
-          "Feedback could not be saved.",
-      });
-    }
-  },
-);
+registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);
 
 app.get(
   "/health",
@@ -649,6 +521,7 @@ io.on(
 
 await loadAccountStore();
 await loadGuildStore();
+await loadFeedbackStore();
 
 const recoveredRoomCount =
   await loadRoomsFromDisk();
