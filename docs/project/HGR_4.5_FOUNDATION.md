@@ -19,6 +19,8 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Added session-only all-skin preview while Beta/Test Lab is active.
 - Added first applied skins for shared interface framing, Poker/Blackjack hidden cards and Mega Board field atmosphere.
 - Added shared HGR geometry tokens for radii, control sizing and spacing.
+- Formalised the game visual identity pipeline: category grammar -> website thumbnail -> compact game glyph -> theme-aware variants.
+- Locked the three current visual families: Board & strategy, Card & table, and Word & party, so future games inherit a documented category language instead of receiving one-off artwork.
 
 ## Deliberately not claimed complete yet
 
