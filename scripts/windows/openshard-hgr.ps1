@@ -21,7 +21,7 @@ if (-not $OpenShard) {
     Write-Host "  py -m pipx install openshard"
     Write-Host ""
     Write-Host "Then open a new terminal and run:"
-    Write-Host "  scripts\windows\OpenShard HGR.cmd setup"
+    Write-Host "  scripts\windows\OpenShard-HGR.cmd setup"
     exit 1
 }
 
