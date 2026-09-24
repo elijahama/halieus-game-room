@@ -9,8 +9,8 @@ $ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $GameRoomIconPath = Join-Path $ProjectRoot 'Halieus Game Room.ico'
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
 $StopScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
-$StartShortcut = Join-Path $ProjectRoot 'Start Halieus Game Room.lnk'
-$StopShortcut = Join-Path $ProjectRoot 'Close Halieus Game Room.lnk'
+$StartShortcut = Join-Path $ProjectRoot 'Start HGR App.lnk'
+$StopShortcut = Join-Path $ProjectRoot 'Close HGR App.lnk'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
 if (-not (Test-Path -LiteralPath $GameRoomIconPath)) {
@@ -52,12 +52,14 @@ function New-HalieusShortcut {
     $shortcut.Save()
 }
 
-New-HalieusShortcut -ShortcutPath $StartShortcut -CommandScript $StartScript -Description 'Start Halieus Game Room'
-New-HalieusShortcut -ShortcutPath $StopShortcut -CommandScript $StopScript -Description 'Close Halieus Game Room'
+New-HalieusShortcut -ShortcutPath $StartShortcut -CommandScript $StartScript -Description 'Open the Halieus Game Room desktop app window'
+New-HalieusShortcut -ShortcutPath $StopShortcut -CommandScript $StopScript -Description 'Close the local Halieus Game Room desktop app window only'
 
 # Remove obsolete shortcut names from pre-platform releases if they are still present after an in-place update.
 Remove-Item -LiteralPath (Join-Path $ProjectRoot 'Start Mega Board.lnk') -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath (Join-Path $ProjectRoot 'Close Mega Board.lnk') -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath (Join-Path $ProjectRoot 'Start Halieus Game Room.lnk') -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath (Join-Path $ProjectRoot 'Close Halieus Game Room.lnk') -Force -ErrorAction SilentlyContinue
 
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null

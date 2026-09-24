@@ -2831,3 +2831,252 @@ html[data-theme="custom"] .account-admin-content-card {
     min-height: 130px;
   }
 }
+
+
+/* ==========================================================================
+   HGR interface coherence pass
+   This is deliberately corrective, not the final brand redesign. The broader
+   visual identity will be defined from an approved model sheet before rollout.
+   ========================================================================== */
+
+:root {
+  --hgr-action-bg: var(--hgr-brand);
+  --hgr-action-ink: var(--hgr-brand-ink);
+  --hgr-logo-bg: #f0b83f;
+  --hgr-logo-ink: #132033;
+  --hgr-logo-border: color-mix(in srgb, var(--hgr-logo-bg) 70%, #7a5600);
+}
+
+/* Dark mode is one neutral graphite surface system. Blue remains the explicit
+ * chromatic dark option instead of leaking navy into standard Dark. */
+html[data-theme="dark"] {
+  --hgr-page: #101114;
+  --hgr-surface: #17191d;
+  --hgr-surface-raised: #1d2025;
+  --hgr-surface-soft: #24272d;
+  --hgr-surface-strong: #2d3138;
+  --hgr-text: #f7f7f8;
+  --hgr-text-soft: #d7d9dd;
+  --hgr-muted: #a4a8b0;
+  --hgr-border: rgba(255,255,255,.10);
+  --hgr-border-strong: rgba(255,255,255,.18);
+  --hgr-action-bg: #d6aa45;
+  --hgr-action-ink: #17191d;
+  --hgr-logo-bg: #d6aa45;
+  --hgr-logo-ink: #17191d;
+  --hgr-logo-border: #8c6d28;
+
+  --mm-page: var(--hgr-page);
+  --mm-surface: var(--hgr-surface);
+  --mm-surface-1: var(--hgr-surface);
+  --mm-surface-2: var(--hgr-surface-soft);
+  --mm-input: #131519;
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+  --mm-border: #3a3e46;
+}
+
+html[data-theme="blue"] {
+  --hgr-action-bg: #267cc5;
+  --hgr-action-ink: #ffffff;
+  --hgr-logo-bg: #267cc5;
+  --hgr-logo-ink: #ffffff;
+  --hgr-logo-border: #174e7e;
+}
+
+html[data-theme="light"] {
+  --hgr-action-bg: #1f6fb2;
+  --hgr-action-ink: #ffffff;
+  --hgr-logo-bg: #f0b83f;
+  --hgr-logo-ink: #18233c;
+}
+
+.halieus-shell,
+.halieus-main,
+.halieus-sidebar,
+.halieus-mobile-bar,
+.halieus-home-discovery,
+.halieus-home-player-strip,
+.halieus-player-tools,
+.halieus-guilds-panel,
+.account-panel {
+  color: var(--hgr-text);
+}
+
+/* Shared H mark: one geometry across the product, while theme tokens control
+ * contrast. The full redesign is intentionally deferred to the model sheet. */
+.halieus-brand-mark {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: inline-grid;
+  place-items: center;
+}
+.halieus-brand-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.halieus-brand-mark-tile {
+  fill: var(--hgr-logo-bg);
+  stroke: var(--hgr-logo-border);
+  stroke-width: 2;
+}
+.halieus-brand-mark-h {
+  fill: var(--hgr-logo-ink);
+}
+.halieus-brand-mark.is-high {
+  width: 112px;
+  height: 112px;
+}
+.halieus-brand-mark.is-low {
+  opacity: .78;
+}
+.halieus-side-brand .halieus-brand-mark {
+  width: 48px;
+  height: 48px;
+}
+.halieus-mobile-brand .halieus-brand-mark {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+}
+.halieus-intro-v4-logo .halieus-brand-mark {
+  width: 100%;
+  height: 100%;
+}
+
+/* Primary actions are flat theme actions. No FF-style banding/gradient. */
+.button-primary,
+.hgr-button--primary,
+.halieus-global-join {
+  border-color: color-mix(in srgb, var(--hgr-action-bg) 72%, #000 28%) !important;
+  background: var(--hgr-action-bg) !important;
+  color: var(--hgr-action-ink) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--hgr-action-bg) 22%, transparent) !important;
+  text-shadow: none !important;
+}
+.button-primary:hover,
+.hgr-button--primary:hover,
+.halieus-global-join:hover {
+  background: color-mix(in srgb, var(--hgr-action-bg) 90%, white 10%) !important;
+}
+.halieus-global-join::before,
+.halieus-global-join::after {
+  content: none !important;
+}
+
+/* Carousel controls: SVG chevrons sit on a true centre instead of relying on
+ * font glyph metrics, which caused the left/right arrows to look offset. */
+.halieus-feature-arrow {
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  line-height: 0 !important;
+}
+.halieus-feature-arrow svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  transform: none !important;
+}
+
+/* Featured artwork should read as artwork, not as a square neon tile. */
+.halieus-feature-card-stage > img,
+.halieus-showcase-feature > img {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+.halieus-feature-card-stage::before,
+.halieus-feature-card-stage::after {
+  box-shadow: none !important;
+}
+
+/* Standard dark surfaces override the older navy generations so the Home
+ * screen, account UI and shared platform chrome read as one system. */
+html[data-theme="dark"] .halieus-sidebar,
+html[data-theme="dark"] .halieus-mobile-bar,
+html[data-theme="dark"] .halieus-home-build-popover {
+  background: color-mix(in srgb, var(--hgr-surface) 96%, transparent) !important;
+}
+html[data-theme="dark"] .halieus-home-discovery,
+html[data-theme="dark"] .halieus-home-player-strip,
+html[data-theme="dark"] .halieus-player-tools,
+html[data-theme="dark"] .halieus-guilds-panel,
+html[data-theme="dark"] .account-panel,
+html[data-theme="dark"] .halieus-section-card {
+  background: var(--hgr-surface) !important;
+  border-color: var(--hgr-border) !important;
+}
+html[data-theme="dark"] .halieus-player-identity,
+html[data-theme="dark"] .halieus-discovery-tabs,
+html[data-theme="dark"] .halieus-theme-trigger,
+html[data-theme="dark"] .halieus-guild-actions,
+html[data-theme="dark"] .account-admin-content-card {
+  background: var(--hgr-surface-soft) !important;
+  border-color: var(--hgr-border) !important;
+}
+
+@media (max-width: 760px) {
+  .halieus-side-brand .halieus-brand-mark {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+}
+
+
+/* Guilds landing/menu correction: Join/Create are page actions, not a second
+ * full-width setup panel. The actual guild workspace starts immediately. */
+.halieus-guilds-heading {
+  align-items: flex-start !important;
+}
+.halieus-guild-heading-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.halieus-guild-heading-actions button {
+  min-height: 38px !important;
+  padding: 7px 11px !important;
+  white-space: nowrap;
+}
+.halieus-guild-workspace {
+  margin-top: 14px !important;
+}
+.halieus-guild-list {
+  align-self: start;
+}
+.halieus-guild-list > header {
+  min-height: 38px;
+}
+.halieus-guild-list > button {
+  min-height: 62px;
+}
+@media (max-width: 760px) {
+  .halieus-guilds-heading {
+    gap: 12px !important;
+  }
+  .halieus-guild-heading-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+  }
+  .halieus-guild-heading-actions button {
+    min-width: 0;
+    width: 100%;
+  }
+}
+@media (max-width: 520px) {
+  .halieus-guild-heading-actions {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .halieus-guild-heading-actions .button-muted {
+    grid-column: 1 / -1;
+  }
+}

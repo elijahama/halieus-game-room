@@ -24,13 +24,13 @@ New-Item -ItemType Directory -Force -Path $ProgramsRoot | Out-Null
 # directly in the user's Programs root rather than inside an extra nested folder.
 $ShortcutDirectory = $ProgramsRoot
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
-$StartShortcut = Join-Path $ShortcutDirectory 'Start Halieus Game Room.lnk'
+$StartShortcut = Join-Path $ShortcutDirectory 'Start HGR App.lnk'
 $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
-$RestartShortcut = Join-Path $ShortcutDirectory 'Restart Halieus Game Room.lnk'
+$RestartShortcut = Join-Path $ShortcutDirectory 'Restart HGR App.lnk'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
-$CloseShortcut = Join-Path $ShortcutDirectory 'Close Halieus Game Room.lnk'
+$CloseShortcut = Join-Path $ShortcutDirectory 'Close HGR App.lnk'
 $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
-$UpdateShortcut = Join-Path $ShortcutDirectory 'Update Halieus Website.lnk'
+$UpdateShortcut = Join-Path $ShortcutDirectory 'Update HGR Site.lnk'
 $PowerShellShortcut = Join-Path $ShortcutDirectory 'HGR PowerShell.lnk'
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
@@ -96,11 +96,11 @@ function New-HalieusShortcut {
     $shortcut.Save()
 }
 
-New-HalieusShortcut -ShortcutPath $StartShortcut -CommandScript $StartScript -Description 'Start Halieus Game Room' -IconPath $StartIconPath
-New-HalieusShortcut -ShortcutPath $RestartShortcut -CommandScript $RestartScript -Description 'Restart Halieus Game Room' -IconPath $RestartIconPath
-New-HalieusShortcut -ShortcutPath $CloseShortcut -CommandScript $CloseScript -Description 'Close Halieus Game Room' -IconPath $CloseIconPath
+New-HalieusShortcut -ShortcutPath $StartShortcut -CommandScript $StartScript -Description 'Open the Halieus Game Room desktop app window' -IconPath $StartIconPath
+New-HalieusShortcut -ShortcutPath $RestartShortcut -CommandScript $RestartScript -Description 'Close and reopen the Halieus Game Room desktop app window' -IconPath $RestartIconPath
+New-HalieusShortcut -ShortcutPath $CloseShortcut -CommandScript $CloseScript -Description 'Close the local Halieus Game Room desktop app window only' -IconPath $CloseIconPath
 if (Test-Path -LiteralPath $UpdateScript) {
-    New-HalieusShortcut -ShortcutPath $UpdateShortcut -CommandScript $UpdateScript -Description 'Validate, sync and deploy Halieus Game Room' -IconPath $UpdateIconPath
+    New-HalieusShortcut -ShortcutPath $UpdateShortcut -CommandScript $UpdateScript -Description 'Validate, sync and deploy the Halieus Game Room website' -IconPath $UpdateIconPath
 }
 
 $terminal = $wsh.CreateShortcut($PowerShellShortcut)
@@ -160,6 +160,10 @@ foreach ($name in @(
     'Restart Halieus Game Room.lnk',
     'Close Halieus Game Room.lnk',
     'Update Halieus Website.lnk',
+    'Start HGR App.lnk',
+    'Restart HGR App.lnk',
+    'Close HGR App.lnk',
+    'Update HGR Site.lnk',
     'Update Halieus Game Room.lnk',
     'HGR GitHub Update.lnk',
     'HGR GitHub Sync.lnk',
