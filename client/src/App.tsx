@@ -55,7 +55,7 @@ import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
-import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readThemeMode, resolveThemeMode, type HalieusCustomTheme, type HalieusThemeMode, THEME_KEY } from "./platform/theme";
+import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
   DiceResponse,
@@ -550,10 +550,14 @@ export default function App() {
   }, [ayoState, blackjackState, classicState, connectFourState, gameStarted, hiddenDictatorState, lobby, ludoState, megaBoardParked, pokerState, whotState, wordArenaState, wordBoardState]);
 
   const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
+  const [themeProfileId, setThemeProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
   const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
+  const [textScale, setTextScale] = useState<HalieusTextScale>(() => readTextScale());
+  const [density, setDensity] = useState<HalieusDensity>(() => readDensity());
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
   const resolvedThemeMode = resolveThemeMode(themeMode, systemPrefersDark);
-  const darkMode = resolvedThemeMode === "dark" || resolvedThemeMode === "blue" || resolvedThemeMode === "red" || resolvedThemeMode === "green" || (resolvedThemeMode === "custom" && isDarkColour(customTheme.page));
+  const activeThemeProfile = THEME_PROFILES.find((profile) => profile.id === themeProfileId) ?? THEME_PROFILES[0];
+  const darkMode = resolvedThemeMode === "dark" || resolvedThemeMode === "blue" || resolvedThemeMode === "red" || resolvedThemeMode === "green" || (resolvedThemeMode === "profile" && isDarkColour(activeThemeProfile.theme.page)) || (resolvedThemeMode === "custom" && isDarkColour(customTheme.page));
   const [soundEnabled, setSoundEnabled] =
     useState(
       () =>
@@ -589,14 +593,23 @@ export default function App() {
   useEffect(() => {
     const handleThemeMode = (event: Event) => {
       const requested = (event as CustomEvent<HalieusThemeMode>).detail;
-      if (requested === "system" || requested === "light" || requested === "dark" || requested === "blue" || requested === "red" || requested === "green" || requested === "custom") setThemeMode(requested);
+      if (requested === "system" || requested === "light" || requested === "dark" || requested === "blue" || requested === "red" || requested === "green" || requested === "profile" || requested === "custom") setThemeMode(requested);
     };
+    const handleThemeProfile = (event: Event) => setThemeProfileId((event as CustomEvent<HalieusThemeProfileId>).detail);
     const handleCustomTheme = (event: Event) => setCustomTheme((event as CustomEvent<HalieusCustomTheme>).detail);
+    const handleTextScale = (event: Event) => setTextScale((event as CustomEvent<HalieusTextScale>).detail);
+    const handleDensity = (event: Event) => setDensity((event as CustomEvent<HalieusDensity>).detail);
     window.addEventListener("halieus-theme-mode", handleThemeMode);
+    window.addEventListener("halieus-theme-profile", handleThemeProfile);
     window.addEventListener("halieus-custom-theme", handleCustomTheme);
+    window.addEventListener("halieus-text-scale", handleTextScale);
+    window.addEventListener("halieus-density", handleDensity);
     return () => {
       window.removeEventListener("halieus-theme-mode", handleThemeMode);
+      window.removeEventListener("halieus-theme-profile", handleThemeProfile);
       window.removeEventListener("halieus-custom-theme", handleCustomTheme);
+      window.removeEventListener("halieus-text-scale", handleTextScale);
+      window.removeEventListener("halieus-density", handleDensity);
     };
   }, []);
 
@@ -605,13 +618,30 @@ export default function App() {
     localStorage.setItem(THEME_KEY, themeMode);
     root.dataset.themeMode = themeMode;
     root.dataset.theme = resolvedThemeMode;
+    root.dataset.themeProfile = themeProfileId;
+    root.dataset.textScale = textScale;
+    root.dataset.density = density;
     root.style.colorScheme = darkMode ? "dark" : "light";
     clearCustomThemeVariables(root);
     if (resolvedThemeMode === "custom") {
       for (const [key, value] of Object.entries(customThemeVariables(customTheme))) root.style.setProperty(key, value);
+    } else if (resolvedThemeMode === "profile") {
+      for (const [key, value] of Object.entries(themeProfileVariables(activeThemeProfile))) root.style.setProperty(key, value);
     }
-    root.style.backgroundColor = resolvedThemeMode === "custom" ? customTheme.page : resolvedThemeMode === "light" ? "#f4f5f7" : resolvedThemeMode === "blue" ? "#06111c" : resolvedThemeMode === "red" ? "#170d10" : resolvedThemeMode === "green" ? "#0d1712" : "#0f1012";
-  }, [customTheme, darkMode, resolvedThemeMode, themeMode]);
+    root.style.backgroundColor = resolvedThemeMode === "custom"
+      ? customTheme.page
+      : resolvedThemeMode === "profile"
+        ? activeThemeProfile.theme.page
+        : resolvedThemeMode === "light"
+          ? "#f4f5f7"
+          : resolvedThemeMode === "blue"
+            ? "#06111c"
+            : resolvedThemeMode === "red"
+              ? "#170d10"
+              : resolvedThemeMode === "green"
+                ? "#0d1712"
+                : "#0f1012";
+  }, [activeThemeProfile, customTheme, darkMode, density, resolvedThemeMode, textScale, themeMode, themeProfileId]);
 
   useEffect(() => {
     localStorage.setItem(
