@@ -21,9 +21,9 @@ Recipients receive pending invitations and explicitly accept or decline. Accepti
 Guild member rendering refreshes display identity from the account store so profile-picture changes propagate into Guilds.
 
 ### Themes
-Theme choices are System/Dark/Light/Blue/Custom. System follows the device colour preference live, including if the OS preference changes while HGR is open.
+Theme choices are System/Dark/Light/Blue/Red/Green/Custom. System follows the device colour preference live, including if the OS preference changes while HGR is open.
 
-Dark is intentionally neutral. Blue preserves the previous navy direction as an optional theme. Custom stores four palette inputs and derives readable text/border/surface tokens from them. RGB, HEX and native colour-picker controls edit the same palette.
+Light and Dark are the standard HGR identity and retain yellow primary actions. Blue, Red and Green are explicit coordinated colour profiles. Custom stores four palette inputs and derives readable text/border/surface tokens from them. RGB, HEX and native colour-picker controls edit the same palette, with twelve coordinated starting profiles.
 
 The old `theme-transitioning` choreography is no longer triggered. Theme switching is immediate.
 
@@ -66,7 +66,7 @@ The final 4.1.1 walkthrough exposed four cleanup issues that stay within the pol
 
 - Bridged the legacy Game Room shell to the current `--hgr-*` palette so Blue and Custom now recolour the full workspace instead of leaving the old dark canvas underneath.
 - Kept per-game background colour effects as atmosphere overlays on top of the selected theme rather than as the page colour itself.
-- Reworked Custom presets toward coordinated creative-app palettes (Graphite, Slate, Deep Blue and Warm Studio) while preserving RGB/HEX editing.
+- Reworked Custom presets toward coordinated creative-app palettes and expanded the library to twelve distinct starting profiles while preserving RGB/HEX editing.
 - Fixed the featured hero title/room overlap caused by parent-relative `em` grid rows; title and description now reserve their own stable text areas.
 - Prevented accidental hero text selection from presenting as a large browser-blue block.
 - Removed the generic recommendation fallback from **Friends Are Playing** and added an explicit empty state when there is no live friend-game data.
@@ -153,3 +153,17 @@ The final 4.1.1 walkthrough exposed four cleanup issues that stay within the pol
 - It remains development-only and is deliberately absent from the Oracle/player runtime launcher set.
 - It currently reuses the approved HGR terminal launcher artwork; a dedicated icon remains deferred to the visual model-sheet/rebrand stage.
 - Added regression coverage so the shortcut name, helper route and TUI action cannot silently drift.
+
+
+## Standard identity and account/lobby polish
+
+- Corrected Light so it is the bright version of the standard HGR identity rather than an accidental blue profile. Primary actions such as **Join Game** and **Continue** remain yellow in standard Light and Dark.
+- Added first-class **Red** and **Green** profiles beside the existing Blue profile. Each profile recolours the complete workspace/surface hierarchy rather than changing only one accent.
+- Expanded Custom to twelve coordinated creative-tool-style presets. RGB/HEX editing remains available after a preset is selected.
+- Updated the first-paint boot path and in-game Display settings so Red/Green survive reloads and are available consistently outside the Home screen.
+- Reordered the player account hierarchy to **profile/security -> personal game record -> feedback**, keeping Owner Tools as a separate administration destination.
+- Normalised Owner Tools, invite history, player administration, feedback, rooms, audit and test-lab surfaces onto active HGR theme tokens rather than a lingering blue admin palette.
+- Bounded the Mega Board lobby roster to a six-row preview height; seventh/eighth seats scroll inside the roster instead of extending the waiting-room layout below its control column.
+- Kept the live Mega Board countdown in the top match metadata row beside Room / Match / Players / Duration / Status. The game-menu timer control remains a host setting, not the live timer display.
+- Stopped treating every live room as a friend room. Until HGR has a canonical friend relationship graph, **Friends Are Playing** intentionally stays empty rather than presenting unrelated games as friend activity; the general live-room section is labelled as player activity instead.
+- Added regression coverage for standard yellow Light actions, Red/Green profiles, twelve presets, owner-theme inheritance, account ordering and bounded Mega Board roster behaviour.
