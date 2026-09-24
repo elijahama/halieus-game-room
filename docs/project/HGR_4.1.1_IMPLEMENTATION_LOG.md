@@ -98,3 +98,10 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - A broader HGR rebrand is intentionally deferred until a visual model sheet is designed and approved.
 - The model sheet should define the core H mark, standard/high-contrast/low-contrast treatments, theme-linked variants, launcher icon family, spacing, radii, typography and positional rules before those changes are rolled across the product.
 - A 4.5 milestone is a candidate for that larger visual refresh, but no version bump is implied by this note.
+
+### Guilds menu correction
+
+- Removed the redundant full-width Guild action strip that still made Join/Create look like permanent setup content.
+- Moved **Join guild**, **Create guild**, and **Players** into the Guilds page heading as compact page actions.
+- Join/Create continue to open their existing top-layer modals; the guild workspace now begins immediately beneath the heading.
+- Added responsive heading-action layouts for tablet/mobile and regression coverage preventing the old setup bar from returning.
