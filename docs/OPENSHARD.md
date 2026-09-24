@@ -25,15 +25,21 @@ A receipt is evidence about the development run. It is **not proof that the code
 
 Openshard requires Python 3.11+.
 
-The upstream project recommends `pipx` so the CLI stays isolated from HGR's Node.js dependencies:
+The upstream project recommends `pipx` so the CLI stays isolated from HGR's Node.js dependencies.
+
+On Windows, first make sure the selected Python installation actually has `pip`. Some Python installations exist without it:
 
 ```powershell
+py -m ensurepip --upgrade
+py -m pip install --upgrade pip
 py -m pip install --user pipx
 py -m pipx ensurepath
-pipx install openshard
+py -m pipx install openshard
 ```
 
-Open a new terminal after `ensurepath` if Windows has not refreshed PATH yet.
+Using `py -m pipx install openshard` avoids depending on the new `pipx.exe` PATH entry during the same terminal session.
+
+Open a new terminal after `ensurepath` so Windows refreshes PATH. If `py -m ensurepip --upgrade` itself fails, repair/modify the Python installation and enable its bundled pip component before continuing.
 
 Then from the HGR repository root:
 
