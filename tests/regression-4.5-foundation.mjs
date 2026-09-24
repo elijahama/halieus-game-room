@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),"utf8");
+const readBytes=(path)=>readFileSync(new URL(`../${path}`,import.meta.url));
+const gitBlobSha=(path)=>{
+  const bytes=readBytes(path);
+  return createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+};
 
 const playerCard=read("client/src/platform/components/PlayerIdentityCard.tsx");
 const home=read("client/src/platform/components/HomeScreen.tsx");
@@ -22,14 +28,9 @@ const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
 const halieusAppIcon=read("client/public/halieus-app-icon.svg");
 const manifest=read("client/public/site.webmanifest");
-const brandGenerator=read("scripts/brand/generate-hgr-assets.mjs");
 const launcherShortcuts=read("scripts/windows/launcher-shortcuts.ps1");
-const launcherStart=read("assets/branding/launchers/matte/Start Halieus Game Room.svg");
-const launcherRestart=read("assets/branding/launchers/matte/Restart Halieus Game Room.svg");
-const launcherClose=read("assets/branding/launchers/matte/Close Halieus Game Room.svg");
-const launcherUpdate=read("assets/branding/launchers/matte/Update Halieus Website.svg");
-const launcherPowerShell=read("assets/branding/launchers/matte/HGR PowerShell.svg");
-const launcherOpenShard=read("assets/branding/launchers/matte/HGR OpenShard TUI.svg");
+const previewGenerator=read("scripts/windows/generate-launcher-icons.ps1");
+const launcherReferenceDoc=read("assets/branding/references/README.md");
 
 assert.match(playerCard,/actions\?: PlayerIdentityAction\[\]/,"Player cards must expose real contextual actions");
 assert.match(playerCard,/aria-haspopup="menu"/,"Player overflow trigger must be an accessible menu control");
@@ -55,18 +56,33 @@ assert.match(app,/getPropertyValue\("--hgr-brand"\)/,"Platform tab H must derive
 assert.match(app,/getPropertyValue\("--hgr-brand-ink"\)/,"Platform tab H must derive its outline contrast from the saved theme");
 assert.match(halieusAppIcon,/#daa017/i,"Installable app icon must preserve the approved default yellow brand");
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
-assert.match(brandGenerator,/halieus-app-icon\.svg/,"Brand generator must own the installable SVG source");
-assert.match(brandGenerator,/const H_PATH = "M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z"/,"Brand generator must own the canonical H geometry");
-assert.match(brandGenerator,/const sourceOnly = process\.argv\.includes\("--source-only"\)/,"Brand generator must expose an explicit source-only path");
-assert.match(brandGenerator,/if \(sourceOnly\) \{[\s\S]*?await writeSources\(\);[\s\S]*?\} else \{[\s\S]*?await renderOutputs\(\);/s,"Normal brand generation must not rewrite committed SVG sources");
-assert.match(launcherStart,/#4e7f5d/i,"Start launcher must use the approved green family colour");
-assert.match(launcherRestart,/#e67e22/i,"Restart launcher must use the approved orange family colour");
-assert.match(launcherClose,/#b44b4b/i,"Close launcher must use the approved red family colour");
-assert.match(launcherUpdate,/#4b78bb/i,"Update launcher must use the approved blue family colour");
-assert.match(launcherPowerShell,/#64748b/i,"PowerShell launcher must use the approved slate family colour");
-assert.match(launcherOpenShard,/#8b5bd6/i,"OpenShard launcher must use the approved purple family colour");
-for (const launcherName of ["Start Halieus Game Room.ico","Restart Halieus Game Room.ico","Close Halieus Game Room.ico","Update Halieus Website.ico","HGR PowerShell.ico","HGR OpenShard TUI.ico"]) {
-  assert.ok(launcherShortcuts.includes(launcherName), "Shortcut generator must consume " + launcherName);
+assert.match(launcherReferenceDoc,/Reference artwork beats generated interpretation/,"Launcher reference README must make approved artwork authoritative");
+assert.match(launcherReferenceDoc,/4b3dc3a9dbfbf64f268bf38b51309a973b4f7e7b/,"Launcher reference README must record the accepted artwork commit");
+
+const approvedReferenceBlobs = {
+  "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_31 AM.png": "5f1a96cd93fd0d111ec1d22db3bed5aefe8d9283",
+  "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_37 AM.png": "bc60ec3b771b37afe29ac14287862fc43852092a",
+};
+for (const [asset, expected] of Object.entries(approvedReferenceBlobs)) {
+  assert.equal(gitBlobSha(asset), expected, `Approved launcher reference changed unexpectedly: ${asset}`);
+}
+
+const approvedLauncherBlobs = {
+  "assets/branding/Halieus Game Room.ico": "931715f70ef873c9becbc8809b4c06a1d72d3607",
+  "assets/branding/launchers/matte/Start Halieus Game Room.ico": "baccee77f8607afa1f09deab7b620c34741b79a6",
+  "assets/branding/launchers/matte/Restart Halieus Game Room.ico": "f38f0b7e715c39bea7efb2e5f6e0934ac38a4a61",
+  "assets/branding/launchers/matte/Close Halieus Game Room.ico": "de74effa6decc942c41b2db3bef9b2e0dc8c732d",
+  "assets/branding/launchers/matte/HGR PowerShell.ico": "01e56e9ab2d5d4d39b30ff7c0aa69e08468b3dcb",
+};
+for (const [asset, expected] of Object.entries(approvedLauncherBlobs)) {
+  assert.equal(gitBlobSha(asset), expected, `Approved reference-based launcher icon changed unexpectedly: ${asset}`);
+}
+
+assert.match(previewGenerator,/generated-preview/,"Generated launcher experiments must stay quarantined from approved assets");
+assert.doesNotMatch(previewGenerator,/Remove-Item[\s\S]*?launchers\\matte/s,"Preview generation must never delete approved matte icons");
+assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must never invoke artwork generation");
+for (const launcherName of ["Start Halieus Game Room.ico","Restart Halieus Game Room.ico","Close Halieus Game Room.ico","HGR PowerShell.ico"]) {
+  assert.ok(launcherShortcuts.includes(launcherName), "Shortcut generator must consume approved reference-based icon " + launcherName);
 }
 assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");
 assert.match(css,/HGR 4\.5 shared website surface grammar/,"4.5 must implement a shared website surface layer");
