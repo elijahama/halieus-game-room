@@ -105,3 +105,9 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - Moved **Join guild**, **Create guild**, and **Players** into the Guilds page heading as compact page actions.
 - Join/Create continue to open their existing top-layer modals; the guild workspace now begins immediately beneath the heading.
 - Added responsive heading-action layouts for tablet/mobile and regression coverage preventing the old setup bar from returning.
+
+### Profile-picture consistency correction
+
+- Added one canonical uploaded-image crop rule across sidebar identity, mobile profile access, player cards, guild members, guild invites and account/admin surfaces.
+- Profile pictures now remain clipped to their intended square tile with centred `object-fit: cover` behavior instead of escaping or stretching the identity frame.
+- Updated the 4.1.1 intro regression to recognise the shared Halieus brand component rather than the retired versioned PNG reference.

@@ -73,6 +73,6 @@ assert.match(css,/\.debt-property-option-list[\s\S]*?grid-template-columns:\s*re
 assert.match(css,/--ambient-accent:\s*var\(--game-card-accent\)/,'Game-card ambient colour must derive from game identity');
 
 assert.match(sw,/halieus-shell-v4-1-1/,'PWA cache must advance for 4.1.1');
-assert.match(intro,/app-icon-192\.png\?v=4\.1\.1/,'Intro asset cache-buster must advance for 4.1.1');
+assert.match(intro,/HalieusBrandMark/,'Intro must use the shared current Halieus identity component');
 
 console.log('Halieus Game Room 4.1.1 social + theme polish regression: PASS');
