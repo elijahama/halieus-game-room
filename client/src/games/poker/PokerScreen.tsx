@@ -361,6 +361,7 @@ export function PokerScreen({
             ) : (
               <FeedbackForm
                 gameName="Poker"
+                gameId="poker"
                 roomCode={state.code}
                 playerName={viewer?.name ?? (state.isSpectator ? "Spectator" : "Unknown player")}
                 onBack={() => setMenuView("menu")}
