@@ -29,7 +29,31 @@ The H remains one stable silhouette across the product. Theme variants change co
 
 The H must not be stretched, skewed, replaced with unrelated geometry, or made to inherit OpenShard-specific visual language.
 
-## 2. Geometry
+## 2. Launcher utility family
+
+The Windows/developer launcher family uses the approved matte utility treatment: restrained rounded-square tiles, the canonical H as the family anchor, and one clear task-specific symbol.
+
+Canonical action colours:
+
+- **Halieus / default:** gold `#D6A11F`
+- **Start:** green `#4E7F5D`
+- **Restart:** orange `#E67E22` — deliberately distinct from the Halieus gold
+- **Close:** red `#B44B4B`
+- **Update:** blue `#4B78B8`
+- **PowerShell:** slate `#64748B`
+- **OpenShard TUI:** violet `#8B5BD6`
+
+The family rules are:
+
+- matte rather than glass/crystal;
+- one HGR construction and consistent corner treatment;
+- one action symbol per launcher;
+- no duplicated action colours where a clearer distinction is available;
+- OpenShard may use a receipt/shard motif, but that motif must not spread into the main Halieus identity;
+- the PWA/application identity uses the standard Halieus gold rather than adopting a utility-action colour;
+- in-product theme variants may recolour the H where appropriate, but installed launcher/PWA assets remain stable identifiers.
+
+## 3. Geometry
 
 Canonical shared values:
 
@@ -73,7 +97,7 @@ The 4.5 starting library contains:
 
 Legacy Blue/Red/Green saved modes remain readable for compatibility, but new selection flows through Theme Library.
 
-## 4. Text and density
+## 5. Text and density
 
 HGR keeps one canonical typography identity. Players do not select arbitrary font families.
 
@@ -84,7 +108,7 @@ Player-adjustable presentation is limited to:
 
 These settings improve readability and personal comfort without allowing individual screens to become visually unrelated products.
 
-## 5. Player overflow menus
+## 6. Player overflow menus
 
 Three-dot controls must never be decorative.
 
@@ -101,7 +125,7 @@ Report/block/admin actions are not shown until their corresponding platform capa
 
 Context decides which actions appear. HGR must not show disabled fantasy functionality purely for visual completeness.
 
-## 6. Cosmetic skins
+## 7. Cosmetic skins
 
 Skins are cosmetic only. They must not change game rules, odds, hit targets, hidden information, ranked calculations, rewards or competitive visibility.
 
@@ -115,7 +139,7 @@ Normal player unlocks are derived from canonical game history. Owner/Admin role 
 
 **Beta/Test Lab is different:** Owner/Admin accounts may preview every cosmetic while Test Lab is active. Beta selections are stored in session-only preview state and are discarded when Test Lab closes, restoring the player's genuine equipped unlocks.
 
-## 7. Inheritance order
+## 8. Inheritance order
 
 New design work should follow this order:
 
@@ -128,7 +152,7 @@ New design work should follow this order:
 
 A new game should inherit the shared pattern rather than inventing a new platform language.
 
-## 8. Accessibility and state clarity
+## 9. Accessibility and state clarity
 
 Aesthetic variation may be bold, but the following remain stable:
 
@@ -140,7 +164,7 @@ Aesthetic variation may be bold, but the following remain stable:
 - keyboard access to contextual menus;
 - clear locked/unlocked/equipped cosmetic states.
 
-## 9. Visual iteration discipline
+## 10. Visual iteration discipline
 
 HGR visual work must preserve approved progress.
 
@@ -154,7 +178,7 @@ HGR visual work must preserve approved progress.
 
 The failed game-icon exploration remains useful as design research, but its generated assets are not approved production references.
 
-## 10. Shared website surface grammar
+## 11. Shared website surface grammar
 
 The main HGR website establishes the reusable pattern that submenus and game chrome inherit.
 
@@ -173,7 +197,7 @@ Game-specific artwork is not normalised by redrawing it. The shell normalises th
 
 The Games library is the reference implementation: category headings, count chips, game cards, status chips and Create Room links use one repeatable composition while each game's current artwork remains intact.
 
-## 11. Game visual identity inheritance
+## 12. Game visual identity inheritance
 
 Game artwork follows a separate but connected visual system documented in [GAME_VISUAL_IDENTITY_SYSTEM.md](GAME_VISUAL_IDENTITY_SYSTEM.md).
 
@@ -190,10 +214,10 @@ Those assets are governed by one of three reusable category grammars:
 
 The category grammar is established before the individual game set is expanded. Future games inherit an approved category system instead of receiving a one-off thumbnail and icon treatment.
 
-## 12. Asset rollout
+## 13. Asset rollout
 
 The canonical H geometry should be used as the source for future PWA, desktop and Windows launcher asset regeneration. Existing raster/ICO assets are not considered fully migrated until the launcher/icon generation pass is completed and visually reviewed.
 
-## 13. Version boundary
+## 14. Version boundary
 
 This document begins the HGR 4.5 visual milestone. The repository version and half-version source baseline must not advance to 4.5.0 until the 4.5 implementation has passed code regression, build validation and human visual acceptance.
