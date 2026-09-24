@@ -176,6 +176,20 @@ assert.match(css,/data-skin-mega-board="muted-tournament-board"[\s\S]*?\.board-s
 assert.match(css,/data-skin-mega-board="ivory-8bit-board"[\s\S]*?data-skin-mega-board="grey-disc-board"/s,"Mega Board must expose the full retro surface family");
 assert.match(css,/data-skin-poker-table="muted-poker-room"[\s\S]*?\.poker-table/s,"Poker must expose an independent muted table treatment");
 assert.match(css,/data-skin-poker-table="ivory-8bit-table"[\s\S]*?data-skin-poker-table="grey-disc-table"/s,"Poker must expose the full retro table family");
+
+assert.match(pokerScreen,/type PokerSideTab = "actions" \| "players" \| "chat"/,"Poker control rail must use tabbed Actions/Players/Chat workspaces");
+assert.match(pokerScreen,/className="poker-autopilot-compact"/,"Poker Autopilot must be a compact optional control rather than a permanent large panel");
+assert.match(pokerScreen,/className="poker-autopilot-popover"/,"Poker Autopilot detail must open in a compact popover");
+assert.match(indexCss,/\.poker-game-shell \{[\s\S]*?height: calc\(100dvh - 118px\)/s,"Desktop Poker must fit its game shell to the viewport");
+assert.match(indexCss,/\.poker-side-tab-panel[\s\S]*?overflow: hidden/s,"Poker outer side panel must not become one giant scrolling rail");
+assert.match(indexCss,/\.poker-actions-workspace,[\s\S]*?overflow-y: auto/s,"Only the selected Poker tab workspace may scroll when vertical space is constrained");
+
+assert.match(guildServer,/membershipSnapshotFor\(membership\.guild\)/,"Guild rooms must freeze membership at room creation so later membership changes cannot rewrite history");
+assert.match(guildServer,/allHumanParticipantsWereGuildMembers/,"Guild result ingestion must distinguish full-guild parties from mixed parties");
+assert.match(guildServer,/globalA\.rating !== globalB\.rating[\s\S]*?globalB\.rating - globalA\.rating/s,"Guild standings must be informed by the real global rating when available");
+assert.match(guildPanel,/Global rank comes from HGR's live Mega Board Ranked table/,"Guild leaderboard UI must explain its global source of truth");
+assert.match(guildPanel,/Guild result · counts internally/,"Guild room history must mark fully eligible internal results");
+assert.match(guildPanel,/Mixed party · global only/,"Guild room history must mark mixed-party results as global-only");
 assert.match(pokerScreen,/type PokerSideTab = "actions" \| "players" \| "chat"/,"Poker must expose Actions/Players/Chat as one side-tab workspace");
 assert.match(pokerScreen,/className="poker-autopilot-compact"/,"Poker Autopilot must be compact instead of consuming a permanent sidebar card");
 assert.match(pokerScreen,/className="poker-autopilot-popover"/,"Poker Autopilot options must open on demand");
