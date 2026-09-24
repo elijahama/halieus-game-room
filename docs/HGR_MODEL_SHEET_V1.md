@@ -138,10 +138,27 @@ Aesthetic variation may be bold, but the following remain stable:
 - keyboard access to contextual menus;
 - clear locked/unlocked/equipped cosmetic states.
 
-## 9. Asset rollout
+## 9. Game visual identity inheritance
+
+Game artwork follows a separate but connected visual system documented in [GAME_VISUAL_IDENTITY_SYSTEM.md](GAME_VISUAL_IDENTITY_SYSTEM.md).
+
+Each game has two concrete identity assets:
+
+- a larger website/discovery thumbnail;
+- a compact game glyph for tabs, game chrome and small identity surfaces.
+
+Those assets are governed by one of three reusable category grammars:
+
+- Board & strategy;
+- Card & table;
+- Word & party.
+
+The category grammar is established before the individual game set is expanded. Future games inherit an approved category system instead of receiving a one-off thumbnail and icon treatment.
+
+## 10. Asset rollout
 
 The canonical H geometry should be used as the source for future PWA, desktop and Windows launcher asset regeneration. Existing raster/ICO assets are not considered fully migrated until the launcher/icon generation pass is completed and visually reviewed.
 
-## 10. Version boundary
+## 11. Version boundary
 
 This document begins the HGR 4.5 visual milestone. The repository version and half-version source baseline must not advance to 4.5.0 until the 4.5 implementation has passed code regression, build validation and human visual acceptance.
