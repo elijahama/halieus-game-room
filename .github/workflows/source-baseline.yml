@@ -1,0 +1,86 @@
+name: HGR source baseline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - VERSION
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hgr-source-baseline
+  cancel-in-progress: false
+
+jobs:
+  refresh-source-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve source baseline
+        id: baseline
+        shell: bash
+        run: node scripts/source-baseline.mjs --github-output "$GITHUB_OUTPUT"
+
+      - name: Report non-milestone version
+        if: steps.baseline.outputs.milestone != 'true'
+        run: |
+          echo "HGR ${{ steps.baseline.outputs.version }} keeps source baseline ${{ steps.baseline.outputs.baseline }}."
+          echo "No source-baseline branch or ZIP refresh is required."
+
+      - name: Freeze milestone source and move current baseline
+        if: steps.baseline.outputs.milestone == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASELINE="${{ steps.baseline.outputs.baseline }}"
+          FROZEN="source-baseline-$BASELINE"
+
+          git config user.name "HGR Source Baseline Bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "refs/heads/$FROZEN" >/dev/null 2>&1; then
+            EXISTING="$(git ls-remote --heads origin "refs/heads/$FROZEN" | awk '{print $1}')"
+            CURRENT="$(git rev-parse HEAD)"
+            if [ "$EXISTING" != "$CURRENT" ]; then
+              echo "::error::Frozen source baseline $FROZEN already exists at $EXISTING and will not be rewritten."
+              exit 1
+            fi
+            echo "$FROZEN already points to this exact source."
+          else
+            git push origin "HEAD:refs/heads/$FROZEN"
+          fi
+
+          git push --force origin "HEAD:refs/heads/source-baseline"
+
+      - name: Build milestone source ZIP
+        if: steps.baseline.outputs.milestone == 'true'
+        shell: bash
+        run: |
+          BASELINE="${{ steps.baseline.outputs.baseline }}"
+          git archive \
+            --format=zip \
+            --prefix="Halieus Game Room $BASELINE/" \
+            --output="Halieus-Game-Room-source-$BASELINE.zip" \
+            HEAD
+
+      - name: Upload milestone source ZIP
+        if: steps.baseline.outputs.milestone == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: HGR-source-${{ steps.baseline.outputs.baseline }}
+          path: Halieus-Game-Room-source-${{ steps.baseline.outputs.baseline }}.zip
+          if-no-files-found: error
