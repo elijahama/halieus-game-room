@@ -26,7 +26,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Unified the title/room/status strip across Poker, the Blackjack/WHOT rebuild family, Ludo/Connect Four/Ayo/Word Board/Hidden Dictator, Word/Password/Anagrams, and Cheat/Dominoes. Each game keeps its own artwork/accent while title hierarchy and room/mode/status chips now follow one platform contract.
 - Unified the outer result ceremony shell across Mega Board and the shared non-Mega results system: hero hierarchy, result tabs, ranking/stat/award surfaces, footer/actions and responsive framing now inherit HGR tokens while scoring, awards and game-specific result data remain untouched.
 - Added active-game browser-tab identity without redesigning icons: the tab title and favicon now switch to each game's existing catalogue SVG while inside that game and restore the Halieus identity on return to the platform.
-- Added a deterministic matte launcher asset pipeline with committed SVG sources for the yellow Halieus master identity plus green Start, orange Restart, red Close, blue Update, slate PowerShell and purple OpenShard; PNG/ICO/PWA outputs are generated explicitly rather than by the shortcut refresher.
+- Restored launcher artwork to a reference-led protected asset model: approved launcher files live directly under `assets/branding/launchers/`, reference PNGs under `assets/branding/references/` are authoritative, and shortcut/preview scripts may not redraw or overwrite production icons.
 - Unified the pre-React first-paint H and default SVG favicon with the same canonical Halieus H geometry used by the shared React brand mark.
 - Unified Create Room, Join/Watch, invitation panels and direct invite-join screens under the same HGR modal/field/inset-card grammar while preserving each game's current artwork and room behavior.
 - Unified Inbox, room chat/game-log/spectator activity, confirmations and toast/global-notice framing under the same HGR communication surface language. The room-chat trigger now uses a shared SVG glyph, and the last decorative sidebar profile ellipsis was replaced with a truthful navigation chevron.
@@ -36,7 +36,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 
 ## Deliberately not claimed complete yet
 
-- Final launcher/PWA raster and ICO regeneration from the approved matte H. The launcher generator is already wired for a dedicated `HGR OpenShard TUI.ico`; until that binary is generated it deliberately falls back to the PowerShell icon rather than inventing artwork at runtime.
+- Final human visual verification of the complete launcher/browser/PWA identity set against the approved reference folder. Launcher artwork is not regenerated automatically.
 - Full visual review on every game and breakpoint.
 - 4.5.0 release/version bump.
 - 4.5 source-baseline freeze.
@@ -48,3 +48,8 @@ Those occur only after validation and human acceptance.
 - Added original retro-console-inspired HGR families (8-bit Ivory, 16-bit Lavender, Black Drive and Grey Disc) as both platform profiles and matching game-surface cosmetics.
 - Added real progression metadata for starter, play-count, win, rating, achievement, guild and seasonal unlocks. Mega Board can consume its existing ranked rating; Poker deliberately remains play/win-gated until its rating model is live.
 - Added free muted competitive alternatives for Mega Board and Poker without replacing either game’s approved default layout.
+
+- Added global ranking context inside Guilds without creating a second Elo system: current guild members inherit their real Mega Board global rank/rating where available, while guild-only W/L remains a separate record.
+- Guild-only records now require the full recorded human party to match a frozen pre-match guild-membership snapshot. Later joins/leaves therefore do not rewrite whether a completed room qualified as an all-guild match.
+- Poker's live side rail now uses a pinned hand plus Actions / Players / Chat workspaces; Autopilot opens on demand and only the selected workspace scrolls on constrained viewports.
+- Confirmed and regression-locked the existing Mega Board host turn-timer selector and server-authoritative timer update flow without redesigning the approved Mega Board layout.
