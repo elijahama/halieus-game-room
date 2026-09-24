@@ -213,9 +213,15 @@ These visual families are presentation guidance rather than a requirement to red
 
 A new game should start from the nearest established HGR family and current website presentation rules, then earn any exception deliberately.
 
-## 13. Asset rollout
+## 13. Asset authority
 
-The canonical H geometry should be used as the source for future PWA, desktop and Windows launcher asset regeneration. Existing raster/ICO assets are not considered fully migrated until the launcher/icon generation pass is completed and visually reviewed.
+Windows launcher artwork is reference-led, not generator-led.
+
+The approved launcher reference images under `assets/branding/references/` are the source of truth for Windows launcher visuals. Existing approved ICOs under `assets/branding/launchers/matte/` must remain untouched unless a targeted replacement is visually approved against those references.
+
+The shared H geometry may guide in-product browser/PWA identity where documented, but it must not be used to automatically redraw or replace the approved Windows launcher family.
+
+When documentation and an exploratory generator disagree, the approved reference artwork and protected production assets win.
 
 ## 14. Version boundary
 
