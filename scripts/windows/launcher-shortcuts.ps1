@@ -23,6 +23,13 @@ New-Item -ItemType Directory -Force -Path $ProgramsRoot | Out-Null
 New-Item -ItemType Directory -Force -Path $StartMenuLauncherDirectory | Out-Null
 New-Item -ItemType Directory -Force -Path $ProjectLauncherDirectory | Out-Null
 
+# These folders are generated launcher collections. Clear prior .lnk files first
+# so renames cannot leave stale duplicates behind.
+foreach ($LauncherDirectory in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
+    Get-ChildItem -LiteralPath $LauncherDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
+        Remove-Item -Force -ErrorAction SilentlyContinue
+}
+
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
 $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
