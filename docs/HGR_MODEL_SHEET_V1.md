@@ -9,7 +9,7 @@ This model sheet defines the shared visual language for Halieus Game Room. Indiv
 
 The earlier faceted 4.5 experiment is no longer the approved direction.
 
-The current approved identity returns to the calmer **matte H utility family** established by the launcher references:
+The current approved identity returns to the calmer **approved H utility family** established by the launcher references:
 
 - a strong serif/slab H silhouette;
 - a restrained rounded tile where a tile is needed;
@@ -31,7 +31,7 @@ The H must not be stretched, skewed, replaced with unrelated geometry, or made t
 
 ## 2. Launcher utility family
 
-The Windows/developer launcher family uses the approved matte utility treatment: restrained rounded-square tiles, the canonical H as the family anchor, and one clear task-specific symbol.
+The Windows/developer launcher family uses the approved launcher utility treatment: restrained rounded-square tiles, the canonical H as the family anchor, and one clear task-specific symbol.
 
 Canonical action colours:
 
@@ -45,7 +45,7 @@ Canonical action colours:
 
 The family rules are:
 
-- matte rather than glass/crystal;
+- restrained rather than glass/crystal;
 - one HGR construction and consistent corner treatment;
 - one action symbol per launcher;
 - no duplicated action colours where a clearer distinction is available;
@@ -217,7 +217,7 @@ A new game should start from the nearest established HGR family and current webs
 
 Windows launcher artwork is reference-led, not generator-led.
 
-The approved launcher reference images under `assets/branding/references/` are the source of truth for Windows launcher visuals. Existing approved ICOs under `assets/branding/launchers/matte/` must remain untouched unless a targeted replacement is visually approved against those references.
+The approved launcher reference images under `assets/branding/references/` are the source of truth for Windows launcher visuals. Existing approved ICOs under `assets/branding/launchers/` must remain untouched unless a targeted replacement is visually approved against those references.
 
 The shared H geometry may guide in-product browser/PWA identity where documented, but it must not be used to automatically redraw or replace the approved Windows launcher family.
 
