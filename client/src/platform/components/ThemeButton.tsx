@@ -105,7 +105,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       if (!rect) return;
       const width = Math.min(280, Math.max(220, window.innerWidth - 24));
       const left = Math.min(Math.max(12, rect.left), Math.max(12, window.innerWidth - width - 12));
-      const menuHeight = 300;
+      const menuHeight = 410;
       const above = rect.top - menuHeight - 8;
       const top = above >= 12 ? above : Math.min(window.innerHeight - menuHeight - 12, rect.bottom + 8);
       setPopoverPosition({ left, top: Math.max(12, top), width });
