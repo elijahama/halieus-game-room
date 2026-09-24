@@ -3080,3 +3080,48 @@ html[data-theme="dark"] .account-admin-content-card {
     grid-column: 1 / -1;
   }
 }
+
+
+/* Canonical player-picture frame. Uploaded images must never escape their
+ * identity tile or use a different crop depending on the surface. */
+.halieus-avatar-media,
+.account-profile-picture-preview,
+.account-admin-avatar {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  flex: 0 0 auto;
+  aspect-ratio: 1 / 1;
+}
+.halieus-avatar-media > img,
+.account-profile-picture-preview > img,
+.account-admin-avatar > img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: inherit;
+}
+.halieus-side-account > .halieus-avatar-media {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+}
+.halieus-mobile-account > .halieus-avatar-media {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+}
+.halieus-player-identity-avatar,
+.halieus-guild-member-row > .halieus-avatar-media,
+.halieus-guild-invite-results .halieus-avatar-media {
+  border-radius: 12px !important;
+}
+.account-profile-picture-preview {
+  border-radius: 14px !important;
+}
+.account-panel-header .account-profile-picture-preview {
+  width: 54px !important;
+  height: 54px !important;
+}
