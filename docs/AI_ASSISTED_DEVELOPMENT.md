@@ -49,6 +49,8 @@ Receipts are local-first under `.openshard/`, which is ignored by HGR source con
 
 For the project-specific setup and commands, see [OPENSHARD.md](OPENSHARD.md).
 
+For the architectural role of receipts, evidence boundaries and how provenance differs from validation, see [project/HGR_AI_PROVENANCE_ARCHITECTURE.md](project/HGR_AI_PROVENANCE_ARCHITECTURE.md).
+
 ### Attribution
 
 Openshard is a separate open-source project by Michael Obasa / the Openshard project and is licensed under Apache-2.0. HGR uses it as external developer tooling rather than vendoring its source into the game.
