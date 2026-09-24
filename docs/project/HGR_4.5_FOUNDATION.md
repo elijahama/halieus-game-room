@@ -30,7 +30,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 
 ## Deliberately not claimed complete yet
 
-- Final launcher/PWA raster and ICO regeneration from the new H.
+- Final launcher/PWA raster and ICO regeneration from the approved matte H. The launcher generator is already wired for a dedicated `HGR OpenShard TUI.ico`; until that binary is generated it deliberately falls back to the PowerShell icon rather than inventing artwork at runtime.
 - Full visual review on every game and breakpoint.
 - 4.5.0 release/version bump.
 - 4.5 source-baseline freeze.
