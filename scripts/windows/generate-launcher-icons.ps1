@@ -17,11 +17,11 @@ public static class HgrNativeIcon {
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$MatteRoot = Join-Path $LauncherRoot 'generated-preview'
+$PreviewRoot = Join-Path $LauncherRoot 'generated-preview'
 
 # Generated artwork is quarantined from approved launcher assets.
-# This script must never delete or overwrite assets\branding\launchers\matte.
-New-Item -ItemType Directory -Force -Path $MatteRoot | Out-Null
+# This script must never delete or overwrite approved files directly under assets\branding\launchers\.
+New-Item -ItemType Directory -Force -Path $PreviewRoot | Out-Null
 
 function Get-HgrColour {
     param([Parameter(Mandatory = $true)][string]$Hex)
@@ -200,8 +200,8 @@ function New-MatteHgrLauncher {
             }
         }
 
-        $pngPath = Join-Path $MatteRoot "$Name.png"
-        $icoPath = Join-Path $MatteRoot "$Name.ico"
+        $pngPath = Join-Path $PreviewRoot "$Name.png"
+        $icoPath = Join-Path $PreviewRoot "$Name.ico"
         $bitmap.Save($pngPath, [System.Drawing.Imaging.ImageFormat]::Png)
         Save-BitmapAsIcon -Bitmap $bitmap -Path $icoPath
 
@@ -219,5 +219,5 @@ New-MatteHgrLauncher -Name 'Update Halieus Website' -BaseHex '#3475C5'
 New-MatteHgrLauncher -Name 'HGR PowerShell' -BaseHex '#526981' -PowerShell
 
 Write-Host 'HGR placeholder launcher previews generated.' -ForegroundColor Green
-Write-Host 'Approved icons in assets\branding\launchers\matte were not touched.' -ForegroundColor Green
-Write-Host "Preview folder: $MatteRoot" -ForegroundColor DarkGray
+Write-Host 'Approved icons directly under assets\branding\launchers were not touched.' -ForegroundColor Green
+Write-Host "Preview folder: $PreviewRoot" -ForegroundColor DarkGray
