@@ -19,6 +19,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Added session-only all-skin preview while Beta/Test Lab is active.
 - Added first applied skins for shared interface framing, Poker/Blackjack hidden cards and Mega Board field atmosphere.
 - Added shared HGR geometry tokens for radii, control sizing and spacing.
+- Added the first shared website surface grammar on the Games page: consistent category headings, count chips, card geometry, artwork safe areas, status chips and responsive spacing without replacing existing game artwork.
 - Formalised the game visual identity process while keeping the current website artwork as the source of truth.
 - Recorded the failed multi-game mockup iterations as exploratory only and documented a rollback-first visual review discipline so approved designs are not changed while fixing unrelated assets.
 
