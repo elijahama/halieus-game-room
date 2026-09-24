@@ -27,6 +27,9 @@ const pokerScreen=read("client/src/games/poker/PokerScreen.tsx");
 const megaGameMenu=read("client/src/games/mega-board/components/GameMenu.tsx");
 const megaGameRules=read("shared/games/mega-board/game-rules.ts");
 const megaTurnHandlers=read("server/src/games/mega-board/handlers/turnHandlers.ts");
+const guildContracts=read("shared/platform/guilds.ts");
+const guildServer=read("server/src/platform/guilds.ts");
+const guildPanel=read("client/src/platform/components/GuildsPanel.tsx");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
@@ -184,5 +187,17 @@ assert.match(megaTurnHandlers,/room\.hostId !== socket\.id/,"Mega Board server m
 assert.match(megaTurnHandlers,/gameState\.turnTimerSeconds = seconds/,"Mega Board timer changes must update authoritative match state");
 assert.match(megaTurnHandlers,/turnRollDeadline = Date\.now\(\) \+ seconds \* 1000/,"Changing the timer must restart the current eligible human roll window at the new duration");
 assert.match(megaTurnHandlers,/Turn Timer Updated/,"Mega Board timer changes must be announced to the room");
+assert.match(guildContracts,/HalieusGuildMembershipSnapshotEntry/,"Guild rooms must support a frozen membership snapshot for historical classification");
+assert.match(guildContracts,/allHumanParticipantsWereGuildMembers/,"Guild room history must record whether the complete human party belonged to the guild");
+assert.match(guildContracts,/globalRanks: HalieusGuildGlobalRank\[\]/,"Guild leaderboard entries must carry real global ranking context separately from internal results");
+assert.match(guildServer,/getRankedLeaderboard\(\)/,"Guild standings must consume the real Mega Board global leaderboard");
+assert.match(guildServer,/normaliseRankedPlayerKey/,"Guild/global ranking matching must use the same canonical Mega Board ranked identity");
+assert.match(guildServer,/membershipSnapshot: membershipSnapshotFor\(membership\.guild\)/,"Guild membership context must be frozen before a guild room result can be classified");
+assert.match(guildServer,/allHumanParticipantsWereGuildMembers = participants\.length > 0[\s\S]*?matchedParticipantIds\.length === participants\.length/s,"Mixed-party rooms must not count as all-guild internal matches");
+assert.match(guildServer,/if \(!allGuild\) return false/,"Guild-only statistics must exclude mixed-party matches");
+assert.match(guildServer,/globalB\.rating - globalA\.rating/,"Real global rating must inform guild standings when available");
+assert.match(guildPanel,/Global rank comes from HGR's live Mega Board Ranked table/,"Guild UI must explain the current global ranking source");
+assert.match(guildPanel,/Guild W\/L/,"Guild UI must keep internal win-loss record separate from global rating");
+assert.match(guildPanel,/No separate guild Elo is created/,"Guild UI must not imply a second independent Elo system");
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
