@@ -17,13 +17,14 @@ const app=read('client/src/App.tsx');
 const html=read('client/index.html');
 const css=read('client/src/styles/hgr-design-v1.css');
 
-assert.match(theme,/HalieusThemeMode = "system" \| "dark" \| "light" \| "blue" \| "custom"/,'System must be a persisted theme mode');
+assert.match(theme,/HalieusThemeMode = "system" \| "dark" \| "light" \| "blue" \| "red" \| "green" \| "custom"/,'System and chromatic profiles must be persisted theme modes');
 assert.match(theme,/function resolveThemeMode/,'System theme needs a single canonical resolver');
 assert.match(themeButton,/mode: "system"/,'Sidebar Theme menu must expose System');
 assert.match(themeButton,/CUSTOM_PRESETS/,'Custom theme editor must expose useful starting palettes');
-assert.match(themeButton,/Graphite/,'Custom theme presets must use studio-style coordinated palettes');
+assert.match(themeButton,/Studio Graphite/,'Custom theme presets must use studio-style coordinated palettes');
+assert.ok((themeButton.match(/id: \"[a-z0-9-]+\", label:/g) ?? []).length >= 12,'Custom theme editor must expose at least twelve coordinated presets');
 assert.match(themeButton,/halieus-custom-preview-window/,'Custom theme editor must show a richer live palette preview');
-assert.match(displaySettings,/\["system", "dark", "light", "blue", "custom"\]/,'In-game settings must expose System');
+assert.match(displaySettings,/\["system", "dark", "light", "blue", "red", "green", "custom"\]/,'In-game settings must expose standard and chromatic profiles');
 assert.match(app,/prefers-color-scheme: dark/,'Runtime System theme must observe the device colour preference');
 assert.match(app,/media\.addEventListener\("change", sync\)/,'System theme must react if the device theme changes while HGR is open');
 assert.match(html,/mode === "system" \? systemTheme : mode/,'First paint must resolve System before React loads');
@@ -39,7 +40,7 @@ assert.match(home,/return shelves\[discoveryShelf\]\.slice\(0, 4\)/,'Home discov
 assert.match(home,/onlinePlayers\.slice\(0, 3\)/,'Online players Home preview must stay short');
 assert.match(home,/recentPlayers\.slice\(0, 3\)/,'Recent players Home preview must stay short');
 assert.match(home,/\n\s*friends,\n/,'Friends Are Playing must not fall back to generic recommendations');
-assert.match(home,/No friends are playing right now/,'Friends Are Playing must expose a truthful empty state');
+assert.match(home,/No friend activity to show/,'Friends Are Playing must expose a truthful empty state');
 assert.match(css,/\.halieus-home-player-strip > div[\s\S]*?overflow:\s*visible !important/s,'Home player previews must not have an internal scrollbar');
 assert.match(css,/\.halieus-discovery-row[\s\S]*?overflow:\s*visible !important/s,'Home game preview must not have an internal scrollbar');
 
@@ -62,5 +63,11 @@ assert.match(account,/adminTab !== "account"/,'Administration must not permanent
 assert.match(account,/← My profile/,'Owner tools must provide a clear route back to personal profile');
 assert.match(css,/\.account-panel \.account-owner-nav[\s\S]*?grid-template-columns:\s*repeat\(6,minmax\(0,1fr\)\)/s,'Owner tools must use the compact HGR segmented navigation');
 assert.match(css,/\.account-panel \.account-player-admin-row[\s\S]*?border-radius:\s*12px/s,'Player management rows must use the compact HGR identity-card presentation');
+assert.match(css,/html\[data-theme="light"\][\s\S]*?--hgr-action-bg:\s*#d6a11f/s,'Light mode must retain the standard yellow HGR primary action');
+assert.match(css,/html\[data-theme="red"\][\s\S]*?--hgr-action-bg:\s*#c9444d/s,'Red must be a first-class coordinated colour profile');
+assert.match(css,/html\[data-theme="green"\][\s\S]*?--hgr-action-bg:\s*#428e59/s,'Green must be a first-class coordinated colour profile');
+assert.match(css,/\.modern-player-list-v2[\s\S]*?max-height:\s*348px !important;[\s\S]*?overflow-y:\s*auto !important/s,'Mega Board lobby roster must scroll internally instead of growing past room controls');
+assert.ok(account.indexOf('account-game-record') < account.indexOf('account-feedback-card'),'Personal game record must appear before feedback in the account hierarchy');
+assert.match(css,/\.account-owner-nav[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,'Owner navigation must inherit the active HGR theme rather than a fixed blue admin palette');
 
 console.log('Halieus Game Room 4.1.1 video-reference polish regression: PASS');
