@@ -140,7 +140,7 @@ assert.match(hgrDesignV1,/\.halieus-mobile-menu-button::before[\s\S]*?content:\s
 assert.match(themeButton,/mode: "custom"/,'Theme selector must expose Custom');
 assert.match(themeButton,/type="color"/,'Custom theme must expose RGB colour controls');
 assert.match(themeModel,/CUSTOM_THEME_KEY/,'Custom theme palette must persist separately');
-assert.match(displaySettings,/\["system", "dark", "light", "blue", "custom"\]/,'Game menus must expose System, Dark, Light, Blue and Custom');
+assert.match(displaySettings,/\["system", "dark", "light", "blue", "red", "green", "custom"\]/,'Game menus must preserve System, Dark, Light, Blue and Custom while allowing coordinated colour profiles');
 assert.doesNotMatch(read('client/src/App.tsx'),/classList\.add\("theme-transitioning"\)/,'Theme changes must apply immediately without transition choreography');
 assert.match(hgrDesignV1,/@media \(max-width: 1024px\)/,'Design System v1 tablet contract missing');
 assert.match(hgrDesignV1,/@media \(max-width: 720px\)/,'Design System v1 phone contract missing');
