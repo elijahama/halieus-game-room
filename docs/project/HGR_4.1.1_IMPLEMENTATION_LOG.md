@@ -80,3 +80,21 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - `source-baseline` is the moving branch used for the current source-material ZIP.
 - A new source-baseline workflow will freeze and archive exact milestone commits when `VERSION` reaches values such as `4.5.0`, `5.0.0`, `5.5.0`, `6.0.0`, and `6.5.0`.
 - Intermediate and patch releases do not move the source snapshot.
+
+## Brand, theme and launcher coherence pass
+
+- Replaced font-glyph carousel arrows with shared SVG chevrons and centred them with layout rather than glyph metrics.
+- Removed the square glow/border treatment around featured game artwork so the artwork itself defines its silhouette.
+- Added a shared adaptive Halieus H mark for the website chrome and intro. This is an interim consistency component, not the final rebrand.
+- Changed primary actions, including Join Game, to one solid theme action colour instead of the multi-band gradient treatment.
+- Custom themes now derive a readable solid action colour and white action text when required by contrast.
+- Standard Dark now uses one neutral graphite workspace/surface hierarchy and bridges legacy `--mm-*` surfaces to the same palette. Blue remains the intentionally chromatic dark theme.
+- Renamed generated Windows Start Menu shortcuts to `Start HGR App`, `Restart HGR App`, `Close HGR App`, and `Update HGR Site` so local app-window controls are not confused with Oracle/cloud service controls.
+- The underlying `.cmd` filenames remain unchanged for compatibility.
+- Added regression coverage for shared branding, arrow alignment, theme-primary actions, dark-surface consistency and launcher semantics.
+
+## Deferred visual identity work
+
+- A broader HGR rebrand is intentionally deferred until a visual model sheet is designed and approved.
+- The model sheet should define the core H mark, standard/high-contrast/low-contrast treatments, theme-linked variants, launcher icon family, spacing, radii, typography and positional rules before those changes are rolled across the product.
+- A 4.5 milestone is a candidate for that larger visual refresh, but no version bump is implied by this note.
