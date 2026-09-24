@@ -25142,18 +25142,34 @@ html[data-theme="light"] .halieus-intro-v4-card {
 }
 
 @media (max-width: 1000px) {
+  .poker-page {
+    overflow-x: hidden !important;
+  }
   .poker-game-shell {
+    min-width: 0 !important;
+    width: 100% !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     height: auto !important;
     max-height: none !important;
     overflow: visible !important;
   }
+  .poker-table-wrap {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
   .poker-control-panel {
     width: min(100%, 760px);
     height: auto !important;
-    max-height: min(760px, calc(100dvh - 24px)) !important;
+    max-height: min(720px, calc(100dvh - 88px)) !important;
     margin: 0 auto;
   }
-  .poker-side-tab-panel { min-height: 260px; }
+  .poker-side-tab-panel { min-height: 240px; }
+  .poker-actions-workspace,
+  .poker-side-players,
+  .poker-room-panel-slot.is-tabbed {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
 }
 
 @media (max-width: 620px) {
