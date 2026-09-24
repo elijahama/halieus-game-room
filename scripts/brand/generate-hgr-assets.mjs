@@ -178,11 +178,14 @@ async function renderOutputs() {
   }
 }
 
+const sourceOnly = process.argv.includes("--source-only");
+
 await ensureDirs();
-await writeSources();
 
-if (!process.argv.includes("--source-only")) {
+if (sourceOnly) {
+  await writeSources();
+  console.log("HGR brand SVG sources refreshed from the canonical matte utility family.");
+} else {
   await renderOutputs();
+  console.log("HGR brand PNG/ICO outputs generated from committed SVG sources.");
 }
-
-console.log("HGR brand assets generated from the canonical matte utility family.");
