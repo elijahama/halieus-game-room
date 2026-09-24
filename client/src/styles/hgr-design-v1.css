@@ -2903,8 +2903,9 @@ html[data-theme="light"] {
   color: var(--hgr-text);
 }
 
-/* Shared H mark: one geometry across the product, while theme tokens control
- * contrast. The full redesign is intentionally deferred to the model sheet. */
+/* Shared Halieus H: restrained matte/slab geometry across the product.
+ * Yellow/gold is the standard identity; explicit themes may recolour the same
+ * silhouette without changing its construction. */
 .halieus-brand-mark {
   width: 48px;
   height: 48px;
@@ -3559,17 +3560,13 @@ html[data-theme="green"] {
   --hgr-space-5: 24px;
 }
 
-/* Model-sheet H: two faceted pillars and a central bridge use one fill token.
- * The geometry stays identical across themes; only the tile/ink treatment moves. */
-.halieus-brand-mark-h-pillar,
-.halieus-brand-mark-h-bridge {
+/* Model-sheet H: one stable slab-serif silhouette. Keep the treatment matte:
+ * no crystal facets, shard language or decorative internal geometry. */
+.halieus-brand-mark-h-shape {
   fill: var(--hgr-logo-ink);
 }
-.halieus-brand-mark-h-bridge {
-  opacity: .96;
-}
-.halieus-brand-mark.is-low .halieus-brand-mark-h-bridge {
-  opacity: .76;
+.halieus-brand-mark.is-low .halieus-brand-mark-h-shape {
+  opacity: .78;
 }
 .halieus-brand-mark.is-high .halieus-brand-mark-tile {
   stroke-width: 1.5;
