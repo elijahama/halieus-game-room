@@ -607,3 +607,133 @@ html[data-skin-poker-table="grey-disc-table"] .poker-page {
   color: var(--hgr-text) !important;
   box-shadow: var(--hgr-shadow-float) !important;
 }
+
+/* ==========================================================================
+   HGR 4.5 tactile object refinement
+   Keeps approved geometry intact while giving game pieces, cards and semantic
+   board details the same material depth as the surrounding surfaces.
+   ========================================================================== */
+
+/* Theme bridge: game cosmetics keep their own slot identity, while neutral
+ * chrome picks up the active HGR profile automatically through shared tokens. */
+.mega-live-page .board-frame {
+  box-shadow:
+    0 24px 68px color-mix(in srgb, #000 18%, transparent),
+    0 0 34px color-mix(in srgb, var(--hgr-brand) 5%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent) !important;
+}
+
+.poker-page .poker-table-wrap {
+  box-shadow:
+    0 28px 68px rgba(0,0,0,.24),
+    0 0 34px color-mix(in srgb, var(--hgr-brand) 5%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+/* Mega Board objects: preserve gameplay colours; only add edge separation and
+ * depth so ownership, development and movement remain readable on every skin. */
+.mega-live-page .property-colour-strip {
+  box-shadow:
+    inset 0 -1px 0 rgba(0,0,0,.20),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 2px 5px rgba(0,0,0,.10) !important;
+  filter: saturate(1.05) contrast(1.025);
+}
+
+.mega-live-page .station-strip,
+.mega-live-page .utility-strip {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(0,0,0,.22) !important;
+}
+
+.mega-live-page .development-piece {
+  filter:
+    saturate(1.06)
+    drop-shadow(0 1px 1px rgba(0,0,0,.42))
+    drop-shadow(0 0 2px rgba(255,255,255,.12));
+}
+
+.mega-live-page .development-piece.is-hotel,
+.mega-live-page .development-piece.is-skyscraper,
+.mega-live-page .depot-marker {
+  filter:
+    saturate(1.10)
+    contrast(1.04)
+    drop-shadow(0 2px 2px rgba(0,0,0,.48))
+    drop-shadow(0 0 3px color-mix(in srgb, var(--mega-accent) 20%, transparent));
+}
+
+.mega-live-page .board-player-token {
+  border-color: color-mix(in srgb, var(--mega-accent) 18%, rgba(255,255,255,.38)) !important;
+  box-shadow:
+    0 4px 9px rgba(0,0,0,.30),
+    0 0 0 1px rgba(255,255,255,.10),
+    inset 0 1px 0 rgba(255,255,255,.22) !important;
+  filter: saturate(1.06);
+}
+
+.mega-live-page .board-token-glyph {
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.36));
+}
+
+.mega-live-page .board-space.is-jail-corner {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--mega-focus) 16%, transparent),
+    inset 0 0 24px rgba(0,0,0,.055);
+}
+
+/* Poker objects: keep card faces neutral and card-back cosmetics authoritative,
+ * while strengthening separation against light and dark felt variants. */
+.poker-page .poker-card {
+  border-color: color-mix(in srgb, var(--poker-accent) 14%, rgba(0,0,0,.28)) !important;
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.72) !important;
+}
+
+.poker-page .poker-card-face {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.98), rgba(244,246,248,.98)) !important;
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.25),
+    inset 0 0 0 1px rgba(255,255,255,.58) !important;
+}
+
+.poker-page .poker-card-back {
+  border-color: color-mix(in srgb, var(--poker-accent) 24%, rgba(255,255,255,.22)) !important;
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.28),
+    inset 0 0 0 1px rgba(255,255,255,.08) !important;
+}
+
+.poker-page .poker-board-cards .poker-card,
+.poker-page .poker-private-hand .poker-card {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.12));
+}
+
+.poker-page .poker-seat-head .poker-avatar {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--poker-accent) 30%, rgba(255,255,255,.12)),
+    0 5px 12px rgba(0,0,0,.22) !important;
+}
+
+.poker-page .poker-bet-chip {
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -1px 0 rgba(0,0,0,.18) !important;
+}
+
+.poker-page .poker-pot,
+.poker-page .poker-pot-layers > span {
+  text-shadow: 0 1px 2px rgba(0,0,0,.28);
+}
+
+.poker-page .poker-seat.is-folded,
+.poker-page .poker-seat.is-out {
+  box-shadow:
+    0 8px 18px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+
