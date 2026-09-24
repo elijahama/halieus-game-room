@@ -52,6 +52,7 @@ interface PokerScreenProps {
 
 type AutoMode = "off" | "check" | "check-fold" | "call";
 type PokerMenuView = "menu" | "feedback";
+type PokerSideTab = "actions" | "players" | "chat";
 // AutopilotControl compatibility: Poker now renders explicit Semi/Full Auto controls for the same-seat delegation contract.
 
 // Card labels stay local to Poker so shared Halieus UI never needs to understand card-game rules.
@@ -148,6 +149,8 @@ export function PokerScreen({
   const [confirmAction, setConfirmAction] = useState<"forfeit" | "end" | null>(null);
   const [menuView, setMenuView] = useState<PokerMenuView>("menu");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [sideTab, setSideTab] = useState<PokerSideTab>(() => state.isSpectator ? "players" : "actions");
+  const [autopilotOpen, setAutopilotOpen] = useState(false);
   const autoActionSignatureRef = useRef("");
 
   // Player-derived presentation values are recalculated from each authoritative server state.
@@ -572,102 +575,147 @@ export function PokerScreen({
               </div>
             )}
 
-            {/* Poker exposes the two automation levels explicitly instead of hiding Full Auto behind one toggle. */}
-            {!state.isSpectator && viewer && !viewer.isAi && !viewer.eliminated && (
-              <section className="poker-autopilot-panel" aria-label="Poker Autopilot modes">
-                <div className="poker-autopilot-heading">
-                  <div><span>🤖</span><span><strong>Autopilot</strong><small>{autopilotMode === "full" ? "Full Auto continues across hands" : autopilotMode === "semi" ? "Semi Auto stops after this hand" : "Let Poker AI temporarily play your seat"}</small></span></div>
-                  {autopilotActive && <button type="button" disabled={isUpdatingAutopilot} onClick={() => onAutopilotChange("off")}>Take Control</button>}
+            <div className="poker-side-toolbar">
+              <nav className="poker-side-tabs" aria-label="Poker side panel">
+                <button type="button" className={sideTab === "actions" ? "is-active" : ""} onClick={() => setSideTab("actions")} disabled={state.isSpectator}>Actions</button>
+                <button type="button" className={sideTab === "players" ? "is-active" : ""} onClick={() => setSideTab("players")}>Players <span>{state.players.length}</span></button>
+                <button type="button" className={sideTab === "chat" ? "is-active" : ""} onClick={() => setSideTab("chat")}>Chat</button>
+              </nav>
+
+              {!state.isSpectator && viewer && !viewer.isAi && !viewer.eliminated && (
+                <div className="poker-autopilot-compact">
+                  <button
+                    type="button"
+                    className={autopilotActive ? "is-active" : ""}
+                    aria-haspopup="dialog"
+                    aria-expanded={autopilotOpen}
+                    onClick={() => setAutopilotOpen((open) => !open)}
+                  >
+                    <span aria-hidden="true">🤖</span>
+                    <span><strong>{autopilotActive ? (autopilotMode === "full" ? "Full Auto" : "Semi Auto") : "Autopilot"}</strong><small>{autopilotActive ? "Poker AI has your seat" : "Optional AI seat control"}</small></span>
+                  </button>
+                  {autopilotOpen && (
+                    <section className="poker-autopilot-popover" role="dialog" aria-label="Poker Autopilot">
+                      <header><div><strong>Autopilot</strong><small>Temporary AI control for your seat</small></div><button type="button" onClick={() => setAutopilotOpen(false)} aria-label="Close Autopilot">×</button></header>
+                      {autopilotActive ? (
+                        <>
+                          <p>{autopilotMode === "full" ? "Full Auto continues across hands until you take control." : "Semi Auto finishes this hand, then returns your seat."}</p>
+                          <button type="button" className="poker-take-control" disabled={isUpdatingAutopilot} onClick={() => { onAutopilotChange("off"); setAutopilotOpen(false); }}>Take Control</button>
+                        </>
+                      ) : (
+                        <div className="poker-autopilot-popover-actions">
+                          <button type="button" disabled={isUpdatingAutopilot} onClick={() => { onAutopilotChange("semi"); setAutopilotOpen(false); }}><strong>Semi Auto</strong><small>Play this hand, then stop</small></button>
+                          <button type="button" disabled={isUpdatingAutopilot} onClick={() => { onAutopilotChange("full"); setAutopilotOpen(false); }}><strong>Full Auto</strong><small>Continue across hands until Take Control</small></button>
+                        </div>
+                      )}
+                    </section>
+                  )}
                 </div>
-                {!autopilotActive && (
-                  <div className="poker-autopilot-mode-grid">
-                    <button type="button" disabled={isUpdatingAutopilot} onClick={() => onAutopilotChange("semi")}><strong>Semi Auto</strong><small>Play this hand, then stop</small></button>
-                    <button type="button" disabled={isUpdatingAutopilot} onClick={() => onAutopilotChange("full")}><strong>Full Auto</strong><small>Continue across hands until Take Control</small></button>
-                  </div>
-                )}
-              </section>
-            )}
+              )}
+            </div>
 
-            {state.hand.winners.length > 0 && (
-              <div className="poker-winner-panel">
-                {state.hand.winners.map((winner) => (
-                  <p key={winner.playerId}><strong>{winner.name}</strong> +{winner.amount.toLocaleString()} · {winner.handName}</p>
-                ))}
-              </div>
-            )}
+            <div className="poker-side-tab-panel" data-tab={sideTab}>
+              {sideTab === "actions" && !state.isSpectator && (
+                <div className="poker-actions-workspace">
+                  {state.hand.winners.length > 0 && (
+                    <div className="poker-winner-panel">
+                      {state.hand.winners.map((winner) => (
+                        <p key={winner.playerId}><strong>{winner.name}</strong> +{winner.amount.toLocaleString()} · {winner.handName}</p>
+                      ))}
+                    </div>
+                  )}
 
-            {/* Manual betting is grouped by decision first, amount second, then commit action to reduce visual noise. */}
-            {state.legalActions && (
-              <div className="poker-actions">
-                <div className="poker-action-row">
-                  <button type="button" className="poker-action danger" disabled={!state.legalActions.canFold} onClick={() => onAction("fold")}>Fold</button>
-                  <button type="button" className="poker-action" disabled={!state.legalActions.canCheck} onClick={() => onAction("check")}>Check</button>
-                  <button type="button" className="poker-action" disabled={!state.legalActions.canCall} onClick={() => onAction("call")}>Call {state.legalActions.callAmount || ""}</button>
+                  {autopilotActive && (
+                    <p className="poker-autopilot-status">{autopilotMode === "full" ? "Full Auto is playing this seat across hands." : "Semi Auto is playing this seat for the current hand."} Use Autopilot above to take control.</p>
+                  )}
+
+                  {state.legalActions && (
+                    <div className="poker-actions">
+                      <div className="poker-action-row">
+                        <button type="button" className="poker-action danger" disabled={!state.legalActions.canFold} onClick={() => onAction("fold")}>Fold</button>
+                        <button type="button" className="poker-action" disabled={!state.legalActions.canCheck} onClick={() => onAction("check")}>Check</button>
+                        <button type="button" className="poker-action" disabled={!state.legalActions.canCall} onClick={() => onAction("call")}>Call {state.legalActions.callAmount || ""}</button>
+                      </div>
+
+                      <section className="poker-bet-editor" aria-label="Raise amount">
+                        <div className="poker-bet-editor-heading">
+                          <span>Raise to</span>
+                          <strong>{raiseTo.toLocaleString()}</strong>
+                        </div>
+                        <div className="poker-raise-step-row" aria-label="Quick raise adjustment">
+                          <button type="button" onClick={() => setRaiseWithinBounds(raiseTo - 10)}>−10</button>
+                          <button type="button" onClick={() => setRaiseWithinBounds(raiseTo - 5)}>−5</button>
+                          <input
+                            aria-label="Raise amount"
+                            type="number"
+                            value={raiseTo}
+                            min={state.legalActions.minimumRaiseTo}
+                            max={state.legalActions.maximumRaiseTo}
+                            step={1}
+                            onChange={(event) => setRaiseWithinBounds(Number(event.target.value))}
+                          />
+                          <button type="button" onClick={() => setRaiseWithinBounds(raiseTo + 5)}>+5</button>
+                          <button type="button" onClick={() => setRaiseWithinBounds(raiseTo + 10)}>+10</button>
+                        </div>
+                        <div className="poker-pot-shortcuts">
+                          <button type="button" onClick={() => setPotFraction(0.5)}>½ pot</button>
+                          <button type="button" onClick={() => setPotFraction(0.75)}>¾ pot</button>
+                          <button type="button" onClick={() => setPotFraction(1)}>Pot</button>
+                        </div>
+                        <div className="poker-bet-commit-row">
+                          <button type="button" className="poker-raise-submit" disabled={!state.legalActions.canRaise} onClick={() => onAction("raise", raiseTo)}>Raise to {raiseTo.toLocaleString()}</button>
+                          <button type="button" className="poker-all-in" disabled={!state.legalActions.canAllIn} onClick={() => onAction("all-in")}>All-in</button>
+                        </div>
+                      </section>
+                    </div>
+                  )}
+
+                  {!state.isSpectator && viewer && !autopilotActive && (
+                    <section className="poker-auto-panel" aria-label="Poker auto actions">
+                      <div className="poker-auto-heading">
+                        <div><span>Auto</span><small>One-shot action when your turn arrives</small></div>
+                        {autoMode !== "off" && <button type="button" onClick={() => setAutoMode("off")}>Cancel</button>}
+                      </div>
+                      <div className="poker-auto-grid">
+                        <button type="button" className={autoMode === "check" ? "active" : ""} onClick={() => setAutoMode(autoMode === "check" ? "off" : "check")}>Auto Check</button>
+                        <button type="button" className={autoMode === "check-fold" ? "active" : ""} onClick={() => setAutoMode(autoMode === "check-fold" ? "off" : "check-fold")}>Check / Fold</button>
+                        <button type="button" className={autoMode === "call" ? "active" : ""} onClick={() => setAutoMode(autoMode === "call" ? "off" : "call")}>Auto Call</button>
+                      </div>
+                      <label className="poker-auto-call-cap">
+                        Auto-call maximum
+                        <input type="number" min={0} step={5} value={autoCallMax} onChange={(event) => setAutoCallMax(Math.max(0, Math.floor(Number(event.target.value) || 0)))} />
+                      </label>
+                    </section>
+                  )}
+
+                  {canDealNext && (
+                    <button type="button" className="button-primary full-button" onClick={onNextHand}>
+                      {state.hand.phase === "finished" ? "Start another table" : "Deal next hand"}
+                    </button>
+                  )}
                 </div>
+              )}
 
-                <section className="poker-bet-editor" aria-label="Raise amount">
-                  <div className="poker-bet-editor-heading">
-                    <span>Raise to</span>
-                    <strong>{raiseTo.toLocaleString()}</strong>
-                  </div>
-                  <div className="poker-raise-step-row" aria-label="Quick raise adjustment">
-                    <button type="button" onClick={() => setRaiseWithinBounds(raiseTo - 10)}>−10</button>
-                    <button type="button" onClick={() => setRaiseWithinBounds(raiseTo - 5)}>−5</button>
-                    <input
-                      aria-label="Raise amount"
-                      type="number"
-                      value={raiseTo}
-                      min={state.legalActions.minimumRaiseTo}
-                      max={state.legalActions.maximumRaiseTo}
-                      step={1}
-                      onChange={(event) => setRaiseWithinBounds(Number(event.target.value))}
-                    />
-                    <button type="button" onClick={() => setRaiseWithinBounds(raiseTo + 5)}>+5</button>
-                    <button type="button" onClick={() => setRaiseWithinBounds(raiseTo + 10)}>+10</button>
-                  </div>
-                  <div className="poker-pot-shortcuts">
-                    <button type="button" onClick={() => setPotFraction(0.5)}>½ pot</button>
-                    <button type="button" onClick={() => setPotFraction(0.75)}>¾ pot</button>
-                    <button type="button" onClick={() => setPotFraction(1)}>Pot</button>
-                  </div>
-                  <div className="poker-bet-commit-row">
-                    <button type="button" className="poker-raise-submit" disabled={!state.legalActions.canRaise} onClick={() => onAction("raise", raiseTo)}>Raise to {raiseTo.toLocaleString()}</button>
-                    <button type="button" className="poker-all-in" disabled={!state.legalActions.canAllIn} onClick={() => onAction("all-in")}>All-in</button>
+              {sideTab === "players" && (
+                <section className="poker-side-players" aria-label="Poker players">
+                  <header><strong>Table players</strong><small>{state.players.length}/8 seats · {state.spectatorCount} spectator{state.spectatorCount === 1 ? "" : "s"}</small></header>
+                  <div>
+                    {state.players.slice().sort((a, b) => a.seat - b.seat).map((player) => (
+                      <article key={player.id} className={state.hand.currentTurnPlayerId === player.id ? "is-turn" : ""}>
+                        <span className="poker-avatar">{player.name.slice(0, 1).toUpperCase()}</span>
+                        <div><strong>{player.name}</strong><small>{player.chips.toLocaleString()} chips · Seat {player.seat + 1}</small></div>
+                        <span className="poker-side-player-state">{player.eliminated ? "Out" : !player.isConnected && !player.isAi ? "Reconnect" : player.allIn ? "All-in" : state.hand.currentTurnPlayerId === player.id ? "Turn" : player.isAi ? "AI" : "Ready"}</span>
+                      </article>
+                    ))}
                   </div>
                 </section>
-              </div>
-            )}
+              )}
 
-            {autopilotActive && (
-              <p className="poker-autopilot-status">{autopilotMode === "full" ? "Full Auto is playing this seat and will continue across hands." : "Semi Auto is playing this seat for the current hand."} Use Take Control above to resume manual play.</p>
-            )}
+              {sideTab === "chat" && (
+                <div className="poker-room-panel-slot is-tabbed">{roomActivity}</div>
+              )}
+            </div>
 
-            {/* Auto is a one-shot convenience layer: it waits for a legal state, acts once, then switches itself off. */}
-            {!state.isSpectator && viewer && !autopilotActive && (
-              <section className="poker-auto-panel" aria-label="Poker auto actions">
-                <div className="poker-auto-heading">
-                  <div><span>Auto</span><small>One-shot action when your turn arrives</small></div>
-                  {autoMode !== "off" && <button type="button" onClick={() => setAutoMode("off")}>Cancel</button>}
-                </div>
-                <div className="poker-auto-grid">
-                  <button type="button" className={autoMode === "check" ? "active" : ""} onClick={() => setAutoMode(autoMode === "check" ? "off" : "check")}>Auto Check</button>
-                  <button type="button" className={autoMode === "check-fold" ? "active" : ""} onClick={() => setAutoMode(autoMode === "check-fold" ? "off" : "check-fold")}>Check / Fold</button>
-                  <button type="button" className={autoMode === "call" ? "active" : ""} onClick={() => setAutoMode(autoMode === "call" ? "off" : "call")}>Auto Call</button>
-                </div>
-                <label className="poker-auto-call-cap">
-                  Auto-call maximum
-                  <input type="number" min={0} step={5} value={autoCallMax} onChange={(event) => setAutoCallMax(Math.max(0, Math.floor(Number(event.target.value) || 0)))} />
-                </label>
-              </section>
-            )}
-
-            {canDealNext && (
-              <button type="button" className="button-primary full-button" onClick={onNextHand}>
-                {state.hand.phase === "finished" ? "Start another table" : "Deal next hand"}
-              </button>
-            )}
-
-            <div className="poker-room-panel-slot">{roomActivity}</div>
             {message && <p className="status-toast poker-status-toast">{message}</p>}
           </aside>
         </section>
