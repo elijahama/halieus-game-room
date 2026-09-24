@@ -24418,11 +24418,56 @@ html[data-theme="light"] .halieus-intro-v4-card {
   overflow-x: auto;
 }
 
+.halieus-guild-leaderboard-intro {
+  min-width: 760px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 2px 12px;
+}
+
+.halieus-guild-leaderboard-intro > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.halieus-guild-leaderboard-intro small {
+  color: var(--hgr-brand, var(--mm-gold));
+  font-size: .58rem;
+  font-weight: 950;
+  letter-spacing: .11em;
+}
+
+.halieus-guild-leaderboard-intro strong {
+  font-size: 1rem;
+}
+
+.halieus-guild-leaderboard-intro > div > span {
+  max-width: 760px;
+  color: var(--mm-muted);
+  font-size: .65rem;
+  line-height: 1.45;
+}
+
+.halieus-guild-global-source {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--hgr-brand, var(--mm-gold)) 30%, var(--mm-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hgr-brand, var(--mm-gold)) 7%, var(--mm-surface-2));
+  color: var(--mm-text);
+  font-size: .58rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .halieus-guild-leaderboard-head,
 .halieus-guild-leaderboard > article {
-  min-width: 620px;
+  min-width: 760px;
   display: grid;
-  grid-template-columns: minmax(190px, 1fr) repeat(4, minmax(74px, .45fr));
+  grid-template-columns: minmax(190px, 1fr) repeat(5, minmax(82px, .46fr));
   align-items: center;
   gap: 8px;
 }
@@ -24457,6 +24502,24 @@ html[data-theme="light"] .halieus-intro-v4-card {
   width: 8px;
   height: 8px;
   border-radius: 999px;
+}
+
+.halieus-guild-leaderboard .has-global-rank,
+.halieus-guild-leaderboard .has-global-rating {
+  color: var(--hgr-brand, var(--mm-gold));
+  font-weight: 900;
+}
+
+.halieus-guild-leaderboard .no-global-rank {
+  color: var(--mm-muted);
+}
+
+.halieus-guild-leaderboard-note {
+  min-width: 760px;
+  padding: 9px 4px 0;
+  color: var(--mm-muted);
+  font-size: .6rem;
+  line-height: 1.45;
 }
 
 .halieus-guild-members {
@@ -24610,6 +24673,11 @@ html[data-theme="light"] .halieus-intro-v4-card {
   .halieus-guild-members {
     gap: 9px;
     padding: 9px;
+  }
+
+  .halieus-guild-leaderboard-intro {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .halieus-guild-create-room {
