@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from "react";
+import { accountApi } from "../accounts/api";
 
 const FEEDBACK_CATEGORIES = [
   "Bug",
@@ -11,12 +12,13 @@ const FEEDBACK_CATEGORIES = [
 
 interface FeedbackFormProps {
   gameName: string;
+  gameId?: string;
   roomCode: string;
   playerName: string;
   onBack: () => void;
 }
 
-export function FeedbackForm({ gameName, roomCode, playerName, onBack }: FeedbackFormProps) {
+export function FeedbackForm({ gameName, gameId, roomCode, playerName, onBack }: FeedbackFormProps) {
   const [category, setCategory] = useState<(typeof FEEDBACK_CATEGORIES)[number]>(FEEDBACK_CATEGORIES[0]);
   const [details, setDetails] = useState("");
   const [status, setStatus] = useState("");
@@ -33,21 +35,22 @@ export function FeedbackForm({ gameName, roomCode, playerName, onBack }: Feedbac
     setSending(true);
     setStatus("Sending feedback…");
     try {
-      const response = await fetch("/feedback", {
+      await accountApi("/feedback", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          category: `${gameName} / ${category}`,
+          source: "game",
+          category,
           details: trimmed,
+          gameId: gameId ?? null,
+          gameName,
           roomCode,
           playerName: playerName.trim() || "Unknown player",
           pageUrl: window.location.href,
           userAgent: navigator.userAgent,
         }),
       });
-      if (!response.ok) throw new Error("Feedback request failed.");
       setDetails("");
-      setStatus("Feedback saved. Thank you.");
+      setStatus("Feedback saved. You can follow replies from your profile.");
     } catch {
       setStatus("Could not save feedback. Try again.");
     } finally {
