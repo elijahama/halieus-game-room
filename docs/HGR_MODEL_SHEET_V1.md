@@ -154,7 +154,26 @@ HGR visual work must preserve approved progress.
 
 The failed game-icon exploration remains useful as design research, but its generated assets are not approved production references.
 
-## 10. Game visual identity inheritance
+## 10. Shared website surface grammar
+
+The main HGR website establishes the reusable pattern that submenus and game chrome inherit.
+
+The shared shell standardises:
+
+- page-heading hierarchy;
+- section-heading hierarchy;
+- card padding and radii;
+- status-chip placement;
+- action-link placement;
+- artwork safe areas;
+- spacing between sections;
+- responsive collapse rules.
+
+Game-specific artwork is not normalised by redrawing it. The shell normalises the **space around it**.
+
+The Games library is the reference implementation: category headings, count chips, game cards, status chips and Create Room links use one repeatable composition while each game's current artwork remains intact.
+
+## 11. Game visual identity inheritance
 
 Game artwork follows a separate but connected visual system documented in [GAME_VISUAL_IDENTITY_SYSTEM.md](GAME_VISUAL_IDENTITY_SYSTEM.md).
 
@@ -171,10 +190,10 @@ Those assets are governed by one of three reusable category grammars:
 
 The category grammar is established before the individual game set is expanded. Future games inherit an approved category system instead of receiving a one-off thumbnail and icon treatment.
 
-## 11. Asset rollout
+## 12. Asset rollout
 
 The canonical H geometry should be used as the source for future PWA, desktop and Windows launcher asset regeneration. Existing raster/ICO assets are not considered fully migrated until the launcher/icon generation pass is completed and visually reviewed.
 
-## 12. Version boundary
+## 13. Version boundary
 
 This document begins the HGR 4.5 visual milestone. The repository version and half-version source baseline must not advance to 4.5.0 until the 4.5 implementation has passed code regression, build validation and human visual acceptance.
