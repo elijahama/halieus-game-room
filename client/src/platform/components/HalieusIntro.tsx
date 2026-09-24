@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { HalieusBrandMark } from "./HalieusBrandMark";
+
 interface HalieusIntroProps {
   displayName?: string | null;
   onEnter: () => void;
@@ -55,7 +57,7 @@ export function HalieusIntro({ displayName, onEnter }: HalieusIntroProps) {
 
       <section className="halieus-intro-v4-card">
         <span className="halieus-intro-v4-logo" aria-hidden="true">
-          <img src="/app-icon-192.png?v=4.1.1" alt="" />
+          <HalieusBrandMark variant="high" />
         </span>
 
         <p className="halieus-intro-v4-kicker">
