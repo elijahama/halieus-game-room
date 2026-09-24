@@ -7,6 +7,8 @@ import type {
   HalieusInviteSummary,
   HalieusPersonalStats,
 } from "../../../../shared/platform/accounts";
+import type { HalieusFeedbackStatus, HalieusFeedbackSummary } from "../../../../shared/platform/feedback";
+import { GAME_CATALOG } from "../games/catalog";
 import { accountApi } from "./api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 
@@ -20,9 +22,11 @@ interface Props {
   onExitBetaMode: () => void;
 }
 
-type AdminTab = "overview" | "players" | "invites" | "codes" | "requests" | "rooms" | "audit" | "test-lab" | "account";
+type AdminTab = "overview" | "players" | "invites" | "codes" | "requests" | "rooms" | "feedback" | "audit" | "test-lab" | "account";
 type FreshCodeKind = "invite" | "reset";
 type InviteFilter = "all" | "active" | "used" | "revoked" | "expired";
+
+const PROFILE_FEEDBACK_CATEGORIES = ["Bug", "UI / layout", "Gameplay / rules", "Account / profile", "Suggestion", "Other"] as const;
 
 function when(value: number | null): string {
   if (!value) return "Never";
@@ -106,18 +110,27 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [activeRoomCount, setActiveRoomCount] = useState(0);
   const [closingRooms, setClosingRooms] = useState(false);
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats | null>(null);
+  const [myFeedback, setMyFeedback] = useState<HalieusFeedbackSummary[]>([]);
+  const [adminFeedback, setAdminFeedback] = useState<HalieusFeedbackSummary[]>([]);
+  const [feedbackSubject, setFeedbackSubject] = useState("general");
+  const [feedbackCategory, setFeedbackCategory] = useState<(typeof PROFILE_FEEDBACK_CATEGORIES)[number]>("Suggestion");
+  const [feedbackDetails, setFeedbackDetails] = useState("");
+  const [feedbackSending, setFeedbackSending] = useState(false);
+  const [feedbackReplyDrafts, setFeedbackReplyDrafts] = useState<Record<string, string>>({});
   const [confirmRequest, setConfirmRequest] = useState<{ title: string; message: string; label: string; action: () => void } | null>(null);
 
   async function refreshAdmin() {
     if (!isAdmin) return;
     setLoadingAdmin(true);
     try {
-      const [result, roomResult] = await Promise.all([
+      const [result, roomResult, feedbackResult] = await Promise.all([
         accountApi<{ ok: true } & HalieusAdminSnapshot>("/admin/snapshot"),
         accountApi<{ ok: true; activeRooms: number }>("/admin/rooms/status").catch(() => ({ ok: true as const, activeRooms: 0 })),
+        accountApi<{ ok: true; feedback: HalieusFeedbackSummary[] }>("/admin/feedback").catch(() => ({ ok: true as const, feedback: [] })),
       ]);
       setSnapshot({ accounts: result.accounts, onlineAccountIds: result.onlineAccountIds, invites: result.invites, accessRequests: result.accessRequests, audit: result.audit });
       setActiveRoomCount(roomResult.activeRooms);
+      setAdminFeedback(feedbackResult.feedback);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to load player management.");
     } finally { setLoadingAdmin(false); }
@@ -157,6 +170,14 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
       .catch(() => { if (!cancelled) setPersonalStats(null); });
     return () => { cancelled = true; };
   }, [account.id, account.displayName]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void accountApi<{ ok: true; feedback: HalieusFeedbackSummary[] }>("/feedback/mine")
+      .then((result) => { if (!cancelled) setMyFeedback(result.feedback); })
+      .catch(() => { if (!cancelled) setMyFeedback([]); });
+    return () => { cancelled = true; };
+  }, [account.id]);
 
   function chooseProfilePicture(file: File | null) {
     if (!file) return;
@@ -231,6 +252,66 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
       action: () => { void adminAction(`/admin/accounts/${player.id}/status`, { status: "deleted" }); },
     });
   }
+  async function submitProfileFeedback(event: FormEvent) {
+    event.preventDefault();
+    const details = feedbackDetails.trim();
+    if (details.length < 4 || feedbackSending) return;
+    setFeedbackSending(true);
+    setMessage("");
+    try {
+      const game = feedbackSubject === "general" ? null : GAME_CATALOG.find((candidate) => candidate.id === feedbackSubject) ?? null;
+      const result = await accountApi<{ ok: true; feedback: HalieusFeedbackSummary }>("/feedback", {
+        method: "POST",
+        body: JSON.stringify({
+          source: "profile",
+          category: feedbackCategory,
+          details,
+          gameId: game?.id ?? null,
+          gameName: game?.name ?? null,
+          pageUrl: window.location.href,
+          userAgent: navigator.userAgent,
+        }),
+      });
+      setMyFeedback((current) => [result.feedback, ...current.filter((entry) => entry.id !== result.feedback.id)]);
+      setFeedbackDetails("");
+      setMessage("Feedback sent. Any reply will appear here.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to send feedback.");
+    } finally {
+      setFeedbackSending(false);
+    }
+  }
+
+  async function replyToFeedback(feedbackId: string) {
+    const reply = feedbackReplyDrafts[feedbackId]?.trim() ?? "";
+    if (reply.length < 2) return;
+    setMessage("");
+    try {
+      const result = await accountApi<{ ok: true; feedback: HalieusFeedbackSummary }>(`/admin/feedback/${feedbackId}/reply`, {
+        method: "POST",
+        body: JSON.stringify({ message: reply }),
+      });
+      setAdminFeedback((current) => current.map((entry) => entry.id === feedbackId ? result.feedback : entry));
+      setFeedbackReplyDrafts((current) => ({ ...current, [feedbackId]: "" }));
+      setMessage("Feedback reply sent.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to reply to feedback.");
+    }
+  }
+
+  async function updateFeedbackStatus(feedbackId: string, status: HalieusFeedbackStatus) {
+    setMessage("");
+    try {
+      const result = await accountApi<{ ok: true; feedback: HalieusFeedbackSummary }>(`/admin/feedback/${feedbackId}/status`, {
+        method: "POST",
+        body: JSON.stringify({ status }),
+      });
+      setAdminFeedback((current) => current.map((entry) => entry.id === feedbackId ? result.feedback : entry));
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to update feedback.");
+    }
+  }
+
   async function closeAllRooms() {
     if (closingRooms) return;
     setClosingRooms(true); setMessage("");
@@ -254,6 +335,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
 
   const pendingCount = useMemo(() => snapshot?.accessRequests.filter((request) => request.status === "pending").length ?? 0, [snapshot]);
   const activeInviteCount = useMemo(() => snapshot?.invites.filter((invite) => inviteStatus(invite) === "active").length ?? 0, [snapshot]);
+  const openFeedbackCount = useMemo(() => adminFeedback.filter((entry) => entry.status !== "closed").length, [adminFeedback]);
   const freshInviteUrl = freshCode && freshCodeKind === "invite" ? `${window.location.origin}/?account-invite=${encodeURIComponent(freshCode)}` : null;
   const filteredInvites = useMemo(() => (snapshot?.invites ?? []).filter((invite) => inviteFilter === "all" || inviteStatus(invite) === inviteFilter), [snapshot, inviteFilter]);
   const personalFavourite = useMemo(() => personalStats?.byGame.slice().sort((a, b) => b.played - a.played || b.wins - a.wins)[0] ?? null, [personalStats]);
@@ -286,6 +368,24 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
           <button type="submit" className="button-outline">Change password</button>
         </form>
       </div>
+      <section className="account-feedback-card">
+        <header><div><p className="modal-eyebrow">Feedback</p><h3>Send feedback</h3><small>Send a game issue, UI note or suggestion directly to the HGR owner. Replies stay attached to your account here.</small></div></header>
+        <form className="account-feedback-form" onSubmit={submitProfileFeedback}>
+          <label>About<select value={feedbackSubject} onChange={(event) => setFeedbackSubject(event.target.value)}><option value="general">Halieus Game Room / general</option>{GAME_CATALOG.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}</select></label>
+          <label>Category<select value={feedbackCategory} onChange={(event) => setFeedbackCategory(event.target.value as typeof feedbackCategory)}>{PROFILE_FEEDBACK_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</select></label>
+          <label className="account-feedback-details">What should I know?<textarea value={feedbackDetails} onChange={(event) => setFeedbackDetails(event.target.value)} rows={5} maxLength={4000} placeholder="Describe what happened, what you expected, or what you would like changed." /></label>
+          <button type="submit" className="button-primary" disabled={feedbackSending || feedbackDetails.trim().length < 4}>{feedbackSending ? "Sending…" : "Send feedback"}</button>
+        </form>
+        <div className="account-feedback-history">
+          <div className="account-feedback-history-heading"><strong>Your feedback</strong><span>{myFeedback.length}</span></div>
+          {myFeedback.length === 0 && <div className="account-empty-state"><strong>No feedback sent yet</strong><small>Your game and profile feedback will appear here once submitted.</small></div>}
+          {myFeedback.slice(0, 20).map((entry) => <article key={entry.id} className={`feedback-status-${entry.status}`}>
+            <header><div><strong>{entry.gameName ?? "Halieus Game Room"}</strong><small>{entry.category} · {when(entry.submittedAt)}{entry.roomCode ? ` · Room ${entry.roomCode}` : ""}</small></div><span className={`account-status-badge status-${entry.status}`}>{entry.status}</span></header>
+            <p>{entry.details}</p>
+            {entry.ownerReply && <div className="account-feedback-reply"><small>Reply from {entry.ownerReply.responderDisplayName}</small><p>{entry.ownerReply.message}</p><time>{when(entry.ownerReply.at)}</time></div>}
+          </article>)}
+        </div>
+      </section>
       {personalStats && <section className="account-game-record">
         <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
         <div className="account-stat-overview">
@@ -328,6 +428,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                 <button type="button" className={adminTab === "players" ? "is-active" : ""} onClick={() => setAdminTab("players")}><span>♟</span><div><strong>Players</strong><small>{snapshot?.accounts.length ?? 0} permanent</small></div></button>
                 <button type="button" className={["invites","codes","requests"].includes(adminTab) ? "is-active" : ""} onClick={() => setAdminTab("invites")}><span>＋</span><div><strong>Invites</strong><small>{activeInviteCount} active · {pendingCount} requests</small></div></button>
                 <button type="button" className={adminTab === "rooms" ? "is-active" : ""} onClick={() => setAdminTab("rooms")}><span>▣</span><div><strong>Rooms</strong><small>{activeRoomCount} live</small></div></button>
+                <button type="button" className={adminTab === "feedback" ? "is-active" : ""} onClick={() => setAdminTab("feedback")}><span>✎</span><div><strong>Feedback</strong><small>{openFeedbackCount} active</small></div></button>
                 <button type="button" className={adminTab === "audit" ? "is-active" : ""} onClick={() => setAdminTab("audit")}><span>≡</span><div><strong>Audit</strong><small>Account activity</small></div></button>
                 <button type="button" className={adminTab === "test-lab" ? "is-active" : ""} onClick={() => setAdminTab("test-lab")}><span>β</span><div><strong>Test Lab</strong><small>{betaMode ? "Active" : "Off"}</small></div></button>
               </nav>
@@ -444,6 +545,20 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                 <div className="account-request-list">
                   {(snapshot?.accessRequests ?? []).length === 0 && <div className="account-empty-state"><strong>No access requests</strong><small>Nothing needs your approval right now.</small></div>}
                   {(snapshot?.accessRequests ?? []).map((request: HalieusAccessRequestSummary) => <article key={request.id} className={`request-${request.status}`}><div><div className="account-request-title"><strong>{request.displayName}</strong><span className={`account-status-badge status-${request.status}`}>{request.status}</span></div><small>{request.preferredUsername ? `Preferred @${request.preferredUsername}` : "No username requested"} · Requested {when(request.createdAt)}</small>{request.note && <p>{request.note}</p>}</div>{request.status === "pending" && <div><button type="button" className="button-primary compact-button" onClick={() => void adminAction(`/admin/access-requests/${request.id}/approve`, undefined, `Approved invite · ${request.displayName}`, "invite")}>Approve & create invite</button><button type="button" className="button-outline compact-button" onClick={() => void adminAction(`/admin/access-requests/${request.id}/decline`)}>Decline</button></div>}</article>)}
+                </div>
+              </section>}
+
+              {adminTab === "feedback" && <section className="account-admin-content-card account-feedback-admin">
+                <header className="account-content-heading"><div><p className="modal-eyebrow">Player feedback</p><h4>Feedback inbox</h4><small>Game feedback and profile feedback arrive here with player, room and build context. Reply from HGR and the player sees it in their profile.</small></div><span>{openFeedbackCount} active</span></header>
+                <div className="account-feedback-admin-list">
+                  {adminFeedback.length === 0 && <div className="account-empty-state"><strong>No feedback yet</strong><small>Submitted game and profile feedback will appear here.</small></div>}
+                  {adminFeedback.map((entry) => <article key={entry.id} className={`feedback-status-${entry.status}`}>
+                    <header><div><strong>{entry.gameName ?? "Halieus Game Room"}</strong><small>{entry.source === "game" ? "In-game feedback" : "Profile feedback"} · {entry.category}</small></div><select value={entry.status} onChange={(event) => void updateFeedbackStatus(entry.id, event.target.value as HalieusFeedbackStatus)}><option value="open">Open</option><option value="reviewing">Reviewing</option><option value="answered">Answered</option><option value="closed">Closed</option></select></header>
+                    <div className="account-feedback-admin-meta"><span><b>{entry.submitterDisplayName}</b>{entry.submitterUsername ? ` @${entry.submitterUsername}` : ""}</span><span>{when(entry.submittedAt)}</span>{entry.roomCode && <span>Room {entry.roomCode}</span>}<span>Build {entry.appVersion}</span></div>
+                    <p>{entry.details}</p>
+                    {entry.ownerReply && <div className="account-feedback-reply"><small>Current reply · {entry.ownerReply.responderDisplayName}</small><p>{entry.ownerReply.message}</p><time>{when(entry.ownerReply.at)}</time></div>}
+                    <div className="account-feedback-admin-reply"><textarea rows={3} maxLength={4000} value={feedbackReplyDrafts[entry.id] ?? ""} onChange={(event) => setFeedbackReplyDrafts((current) => ({ ...current, [entry.id]: event.target.value }))} placeholder={entry.ownerReply ? "Send an updated reply…" : "Reply to this player…"} /><button type="button" className="button-primary compact-button" onClick={() => void replyToFeedback(entry.id)} disabled={(feedbackReplyDrafts[entry.id]?.trim().length ?? 0) < 2}>Send reply</button></div>
+                  </article>)}
                 </div>
               </section>}
 
