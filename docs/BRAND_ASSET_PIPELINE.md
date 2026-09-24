@@ -1,101 +1,61 @@
-# HGR Brand Asset Pipeline
+# HGR Brand Asset Policy
 
 Status: HGR 4.5 foundation
 
-Halieus Game Room keeps **design source** and **generated launcher/runtime assets** separate.
+The approved Windows launcher artwork is **not generated during normal HGR development or shortcut refresh**.
 
-## Canonical identity
+## Protected approved assets
 
-The approved HGR utility family uses one shared Halieus H geometry.
-
-Default brand colour:
-
-- Halieus: `#DAA017`
-
-Launcher action colours:
-
-- Start: `#4E7F5D`
-- Restart: `#E67E22`
-- Close: `#B44B4B`
-- Update Site: `#4B78BB`
-- PowerShell: `#64748B`
-- OpenShard TUI: `#8B5BD6`
-
-The launcher family stays matte, restrained and functional. OpenShard is a specialised member of the family, not a redesign of the Halieus platform identity.
-
-## Source assets
-
-Editable SVG sources live at:
+Approved launcher icons live in:
 
 ```text
-assets/branding/Halieus Game Room.svg
 assets/branding/launchers/matte/
-├── Start Halieus Game Room.svg
-├── Restart Halieus Game Room.svg
-├── Close Halieus Game Room.svg
-├── Update Halieus Website.svg
-├── HGR PowerShell.svg
-└── HGR OpenShard TUI.svg
 ```
 
-The website also carries the canonical browser fallback at:
+Those tracked `.ico` files are design assets. Scripts must not overwrite, recolour, delete or regenerate them.
+
+The base HGR Windows icon lives at:
 
 ```text
-client/public/halieus-mark.svg
+assets/branding/Halieus Game Room.ico
 ```
 
-## Generator
+## Shortcut refresh
 
-Run:
+`scripts/windows/launcher-shortcuts.ps1` only creates or refreshes Windows shortcuts.
 
-```bash
-npm run assets:brand
-```
+It may:
 
-The normal generator treats the committed SVG family as **read-only source input**. It uses Playwright to rasterise those files and writes only generated outputs:
+- point a shortcut at an existing approved icon;
+- fall back to the base HGR icon when an optional icon is unavailable;
+- refresh Windows' shortcut/icon cache.
 
-- Windows launcher `.ico` files;
-- launcher preview `.png` files;
-- the base HGR `.ico`;
-- favicon PNG/ICO outputs;
-- PWA 180 / 192 / 512 px icon outputs.
+It must never generate artwork.
 
-Running `npm run assets:brand` repeatedly must not rewrite or reformat the committed SVG source files.
+## Generated previews
 
-To explicitly refresh the editable SVG source family itself, use the separate command:
-
-```bash
-npm run assets:brand:source
-```
-
-That source-refresh command is intentionally separate from the normal production-output workflow.
-
-## Important separation
-
-`FIRST RUN - Refresh Halieus Launchers.cmd` and `scripts/windows/launcher-shortcuts.ps1` **do not generate or recolour artwork**.
-
-The launcher refresh process only creates Windows shortcuts and points them at existing approved icon files.
-
-This separation is deliberate:
+Any experimental/generated launcher artwork belongs only in:
 
 ```text
-approved design rules
-        ↓
-brand asset generator
-        ↓
-SVG / PNG / ICO assets
-        ↓
-launcher shortcut refresher
-        ↓
-Windows shortcuts
+assets/branding/launchers/generated-preview/
 ```
 
-If a custom icon is missing, the shortcut layer falls back safely. It must never invent a replacement at runtime.
+That directory is intentionally separate from the approved `matte` assets and is ignored by Git.
 
-## Browser identity
+The legacy preview generator `scripts/windows/generate-launcher-icons.ps1` is allowed to write only to `generated-preview`.
 
-The HGR portal starts with the canonical Halieus mark.
+## Browser and PWA identity
 
-When a player enters a game, the browser tab reuses that game's current approved catalogue SVG. Leaving the game restores the Halieus identity.
+Browser/PWA assets under `client/public` are separate from the approved Windows launcher family. Updating them must not modify `assets/branding/launchers/matte`.
 
-This follows the 4.5 rule: **refine and reuse existing approved artwork rather than creating a parallel icon system.**
+## Rule
+
+```text
+approved launcher artwork
+        ↓
+tracked immutable project asset
+        ↓
+shortcut refresher references it
+```
+
+There is no automatic path from theme generation, website assets or launcher refresh into the approved Windows icon files.
