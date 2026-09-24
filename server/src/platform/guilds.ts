@@ -6,11 +6,14 @@ import { resolve } from "node:path";
 import type { Express, Request, Response } from "express";
 
 import type { HalieusAccountSummary, HalieusGameStatLine } from "../../../shared/platform/accounts.js";
+import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranked.js";
+import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
 import type {
   HalieusGuildDetail,
   HalieusGuildInvitation,
   HalieusGuildLeaderboardEntry,
   HalieusGuildMember,
+  HalieusGuildMembershipSnapshotEntry,
   HalieusGuildMessage,
   HalieusGuildRole,
   HalieusGuildRoom,
@@ -125,6 +128,22 @@ function memberFor(guild: StoredGuild, accountId: string): HalieusGuildMember | 
   return guild.members.find((member) => member.accountId === accountId) ?? null;
 }
 
+function membershipSnapshotFor(guild: StoredGuild): HalieusGuildMembershipSnapshotEntry[] {
+  return guild.members.map((member) => ({
+    accountId: member.accountId,
+    aliases: [...new Set([member.displayName, member.username]
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean))],
+  }));
+}
+
+function accountIdFromSnapshot(room: HalieusGuildRoom, guild: StoredGuild, playerName: string): string | null {
+  const key = playerName.trim().toLowerCase();
+  if (!key) return null;
+  const snapshot = room.membershipSnapshot?.length ? room.membershipSnapshot : membershipSnapshotFor(guild);
+  return snapshot.find((entry) => entry.aliases.some((alias) => alias === key))?.accountId ?? null;
+}
+
 function canManage(role: HalieusGuildRole): boolean {
   return role === "owner" || role === "admin";
 }
@@ -141,32 +160,61 @@ function canCreateRoom(role: HalieusGuildRole, policy: HalieusGuildRoomPolicy): 
 }
 
 function leaderboardFor(guild: StoredGuild): HalieusGuildLeaderboardEntry[] {
+  const megaBoardGlobal = getRankedLeaderboard();
+  const globalByKey = new Map(
+    megaBoardGlobal.map((entry, index) => [entry.playerKey, { entry, rank: index + 1 }]),
+  );
+
   return guild.members
     .map((member) => {
       const aliases = new Set([member.displayName, member.username].map((value) => value.trim().toLowerCase()));
-      const completed = guild.rooms.filter((room) =>
-        room.status === "completed" &&
-        (
-          room.participantAccountIds?.includes(member.accountId) ||
-          room.participants.some((name) => aliases.has(name.trim().toLowerCase()))
-        ),
-      );
-      const wins = completed.filter((room) =>
+      const eligibleCompleted = guild.rooms.filter((room) => {
+        if (room.status !== "completed") return false;
+        const allGuild = room.allHumanParticipantsWereGuildMembers
+          ?? (room.participants.length > 0 && room.participantAccountIds.length === room.participants.length);
+        if (!allGuild) return false;
+        return room.participantAccountIds.includes(member.accountId)
+          || room.participants.some((name) => aliases.has(name.trim().toLowerCase()));
+      });
+      const wins = eligibleCompleted.filter((room) =>
         room.winnerAccountId === member.accountId ||
         Boolean(room.winner && aliases.has(room.winner.trim().toLowerCase())),
       ).length;
       const hosted = guild.rooms.filter((room) => room.createdByAccountId === member.accountId).length;
+
+      const globalMatch = [member.displayName, member.username]
+        .map((value) => globalByKey.get(normaliseRankedPlayerKey(value)))
+        .find((value) => Boolean(value));
+      const globalRanks = globalMatch ? [{
+        game: "mega-board" as const,
+        rank: globalMatch.rank,
+        rating: globalMatch.entry.rating,
+        played: globalMatch.entry.gamesPlayed,
+        wins: globalMatch.entry.wins,
+      }] : [];
+
       return {
         accountId: member.accountId,
         displayName: member.displayName,
         playerColor: member.playerColor,
-        played: completed.length,
+        played: eligibleCompleted.length,
         wins,
-        winRate: completed.length ? Math.round((wins / completed.length) * 100) : 0,
+        winRate: eligibleCompleted.length ? Math.round((wins / eligibleCompleted.length) * 100) : 0,
         hosted,
+        globalRanks,
       };
     })
-    .sort((a, b) => b.wins - a.wins || b.played - a.played || b.hosted - a.hosted || a.displayName.localeCompare(b.displayName));
+    .sort((a, b) => {
+      const globalA = a.globalRanks.find((row) => row.game === "mega-board");
+      const globalB = b.globalRanks.find((row) => row.game === "mega-board");
+      if (globalA || globalB) {
+        if (!globalA) return 1;
+        if (!globalB) return -1;
+        if (globalA.rating !== globalB.rating) return globalB.rating - globalA.rating;
+        if (globalA.rank !== globalB.rank) return globalA.rank - globalB.rank;
+      }
+      return b.wins - a.wins || b.played - a.played || b.hosted - a.hosted || a.displayName.localeCompare(b.displayName);
+    });
 }
 
 function summaryFor(guild: StoredGuild, accountId: string): HalieusGuildSummary | null {
@@ -512,6 +560,8 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
       winnerAccountId: null,
       participants: [],
       participantAccountIds: [],
+      membershipSnapshot: membershipSnapshotFor(membership.guild),
+      allHumanParticipantsWereGuildMembers: null,
     };
     membership.guild.rooms.push(room);
     membership.guild.rooms = membership.guild.rooms.slice(-MAX_ROOMS_PER_GUILD);
@@ -738,22 +788,23 @@ export async function recordGuildSessionResult(
   const now = Date.now();
 
   for (const { guild, room } of matches) {
-    const participantKeys = new Set(participants.map((name) => name.trim().toLowerCase()));
-    const matchedParticipantIds = guild.members
-      .filter((member) => participantKeys.has(member.displayName.trim().toLowerCase()) || participantKeys.has(member.username.trim().toLowerCase()))
-      .map((member) => member.accountId);
-    const winnerKey = winner?.trim().toLowerCase() ?? null;
-    const winnerMember = winnerKey
-      ? guild.members.find((member) => member.displayName.trim().toLowerCase() === winnerKey || member.username.trim().toLowerCase() === winnerKey)
-      : null;
+    const matchedParticipantIds = [...new Set(
+      participants
+        .map((name) => accountIdFromSnapshot(room, guild, name))
+        .filter((accountId): accountId is string => Boolean(accountId)),
+    )];
+    const winnerAccountId = winner ? accountIdFromSnapshot(room, guild, winner) : null;
+    const allHumanParticipantsWereGuildMembers = participants.length > 0
+      && matchedParticipantIds.length === participants.length;
 
     room.status = completed ? "completed" : "ended";
     room.updatedAt = now;
     room.completedAt = now;
     room.winner = winner;
-    room.winnerAccountId = winnerMember?.accountId ?? null;
+    room.winnerAccountId = winnerAccountId;
     room.participants = participants;
     room.participantAccountIds = matchedParticipantIds;
+    room.allHumanParticipantsWereGuildMembers = allHumanParticipantsWereGuildMembers;
     guild.updatedAt = now;
     guild.messages.push({
       id: id("guild-message"),
