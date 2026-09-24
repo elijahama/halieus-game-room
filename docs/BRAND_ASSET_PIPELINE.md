@@ -6,12 +6,15 @@ The approved Windows launcher artwork is **not generated during normal HGR devel
 
 ## Visual source of truth
 
-The approved launcher references are:
+All approved PNG files stored directly under:
 
-- `assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_31 AM.png`
-- `assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_37 AM.png`
+`assets/branding/references/`
 
-Those images outrank generated interpretations. A launcher asset must not be redrawn from a written palette/geometry description when the approved reference is available.
+form the current visual reference set.
+
+The reference set is intentionally directory-led rather than hard-coded to a fixed filename count. Before changing launcher artwork, inspect the complete current contents of that folder.
+
+Reference artwork outranks generated interpretations. A launcher asset must not be redrawn from a written palette/geometry description when an approved visual reference is available.
 
 ## Protected approved assets
 
