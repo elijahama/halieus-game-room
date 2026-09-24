@@ -143,6 +143,16 @@ export function readEffectiveSkinPreferences(betaMode: boolean): HalieusSkinPref
   return betaMode ? readBetaSkinPreferences() : readSkinPreferences();
 }
 
+function unlockContextIsKnown(skin: HalieusSkinDefinition, context: HalieusSkinUnlockContext): boolean {
+  const unlock = skin.unlock;
+  if (unlock.kind === "starter" || unlock.kind === "played" || unlock.kind === "wins") return true;
+  if (unlock.kind === "rating") return Boolean(unlock.game && context.ratings?.[unlock.game] !== undefined);
+  if (unlock.kind === "achievement") return context.achievements !== undefined;
+  if (unlock.kind === "guild") return context.guildMilestones !== undefined;
+  if (unlock.kind === "seasonal") return context.seasonalFlags !== undefined;
+  return false;
+}
+
 export function sanitiseSkinPreferences(
   preferences: HalieusSkinPreferences,
   context: HalieusSkinUnlockContext,
@@ -151,7 +161,13 @@ export function sanitiseSkinPreferences(
   const next = { ...preferences };
   for (const slot of ["interface", "cards", "mega-board", "poker-table"] as HalieusSkinSlot[]) {
     const selected = SKIN_CATALOG.find((skin) => skin.slot === slot && skin.id === preferences[slot]);
-    if (!selected || !isSkinUnlocked(selected, context, betaMode)) next[slot] = DEFAULT_SKIN_PREFERENCES[slot];
+    if (!selected) {
+      next[slot] = DEFAULT_SKIN_PREFERENCES[slot];
+      continue;
+    }
+    if (!betaMode && unlockContextIsKnown(selected, context) && !isSkinUnlocked(selected, context, false)) {
+      next[slot] = DEFAULT_SKIN_PREFERENCES[slot];
+    }
   }
   return next;
 }
