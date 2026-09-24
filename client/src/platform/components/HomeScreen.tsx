@@ -28,7 +28,7 @@ import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
-import { PlayerIdentityCard } from "./PlayerIdentityCard";
+import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
 
 export type GameSelection = GameId;
@@ -399,6 +399,69 @@ export function HomeScreen(props: HomeScreenProps) {
     finally { setRequestingPlayerId(null); }
   }
 
+  function playerCardActions(person: HalieusPlayerDirectoryEntry): PlayerIdentityAction[] {
+    const actions: PlayerIdentityAction[] = [];
+    const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase()) ?? null;
+
+    actions.push({
+      id: "view-profile",
+      label: "View profile",
+      detail: "Stats, recent games and player actions",
+      onSelect: () => { setSelectedPlayerId(person.id); setView("players"); },
+    });
+
+    if (liveRoom?.joinable) {
+      actions.push({
+        id: "join-live-room",
+        label: "Join their game",
+        detail: `${liveRoom.gameTitle} · ${liveRoom.code}`,
+        onSelect: () => openLiveRoom(liveRoom, "join"),
+      });
+    }
+    if (liveRoom?.spectatable) {
+      actions.push({
+        id: "spectate-live-room",
+        label: "Spectate",
+        detail: `${liveRoom.gameTitle} · ${liveRoom.code}`,
+        onSelect: () => openLiveRoom(liveRoom, "watch"),
+      });
+    }
+    if (person.id !== account?.id) {
+      actions.push({
+        id: "request-game",
+        label: "Request a game…",
+        detail: "Choose the game from their profile",
+        onSelect: () => { setSelectedPlayerId(person.id); setView("players"); setInviteNotice(""); },
+      });
+      if (ownLiveRoom) {
+        actions.push({
+          id: "invite-active-room",
+          label: "Invite to my room",
+          detail: `${ownLiveRoom.gameTitle} · ${ownLiveRoom.code}`,
+          disabled: invitingPlayerId === person.id,
+          onSelect: () => void invitePlayerToOwnRoom(person),
+        });
+      }
+    }
+
+    actions.push({
+      id: "copy-username",
+      label: "Copy username",
+      detail: `@${person.username}`,
+      onSelect: () => {
+        const value = `@${person.username}`;
+        if (navigator.clipboard?.writeText) {
+          void navigator.clipboard.writeText(value)
+            .then(() => setInviteNotice(`${value} copied.`))
+            .catch(() => setInviteNotice(`Username: ${value}`));
+        } else {
+          setInviteNotice(`Username: ${value}`);
+        }
+      },
+    });
+    return actions;
+  }
+
   async function respondGameRequest(requestId: string, action: "accept" | "decline") {
     try {
       const result = await accountApi<{ ok: true; request: HalieusGameRequestSummary }>(`/accounts/game-requests/${encodeURIComponent(requestId)}/respond`, { method: "POST", body: JSON.stringify({ action }) });
@@ -683,11 +746,11 @@ export function HomeScreen(props: HomeScreenProps) {
           <section className="halieus-home-social-grid">
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>ONLINE PLAYERS</p><h2>Who’s around</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
-              <div>{onlinePlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In game" : "Online"} status="•••" onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No other players are online right now.</p>}</div>
+              <div>{onlinePlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In game" : "Online"} actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No other players are online right now.</p>}</div>
             </section>
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>RECENT PLAYERS</p><h2>Play together again</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
-              <div>{recentPlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={person.online ? "Online" : person.lastSeenAt ? `Last seen ${new Date(person.lastSeenAt).toLocaleDateString()}` : "Offline"} status="•••" onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{recentPlayers.length === 0 && <p>Your recent players will appear here.</p>}</div>
+              <div>{recentPlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact detail={person.online ? "Online" : person.lastSeenAt ? `Last seen ${new Date(person.lastSeenAt).toLocaleDateString()}` : "Offline"} actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{recentPlayers.length === 0 && <p>Your recent players will appear here.</p>}</div>
             </section>
           </section>
           {savedSeats.length > 1 && <section className="halieus-section-card halieus-continue-home halieus-continue-secondary"><header><div><p>OTHER ROOMS</p><h2>Ready to rejoin</h2></div><span>{savedSeats.length - 1}</span></header><div className="halieus-continue-list">{savedSeats.slice(1).map((entry) => <div key={entry.id} className="halieus-continue-row"><button type="button" onClick={() => { selectGame(entry.id); entry.resume(); }} disabled={disabled}><img src={GAME_BY_ID[entry.id].icon} alt="" /><span><strong>{entry.game}</strong><small>Room {entry.session?.code}</small></span><b>Continue →</b></button><button type="button" onClick={entry.forget} aria-label={`Forget ${entry.game} room`}>×</button></div>)}</div></section>}
@@ -722,7 +785,7 @@ export function HomeScreen(props: HomeScreenProps) {
                   selected={selectedPlayerId === person.id}
                   className={`${person.online ? "is-online" : "is-offline"} ${liveRoom ? "is-in-game" : ""}`}
                   detail={liveRoom && liveGame ? `Playing ${liveGame.name} · ${liveRoom.code}` : person.online ? "Online" : "Offline"}
-                  status="•••"
+                  actions={playerCardActions(person)}
                   onClick={() => setSelectedPlayerId(person.id)}
                 />;
               })}
