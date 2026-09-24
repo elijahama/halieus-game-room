@@ -5636,3 +5636,231 @@ html[data-skin-mega-board="tycoon-board"] .board-grid {
     white-space: nowrap;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5 shared account-entry / ranked surfaces
+   ========================================================================== */
+
+/* Entry/auth retains its established composition but consumes the same HGR
+ * identity and theme tokens as the signed-in product. */
+.account-portal.account-entry-342 {
+  background:
+    radial-gradient(circle at 18% 16%,color-mix(in srgb,var(--hgr-brand) 7%,transparent),transparent 28%),
+    radial-gradient(circle at 82% 82%,color-mix(in srgb,var(--hgr-info) 5%,transparent),transparent 30%),
+    var(--hgr-page) !important;
+  color: var(--hgr-text) !important;
+}
+.account342-topbar {
+  color: var(--hgr-text) !important;
+}
+.account342-brand {
+  color: var(--hgr-text) !important;
+  text-decoration: none;
+}
+.account342-brand-mark {
+  width: 42px !important;
+  height: 42px !important;
+  flex: 0 0 auto;
+}
+.account342-brand span {
+  min-width: 0;
+}
+.account342-brand small,
+.account342-footer,
+.account342-intro > span,
+.account342-card-head > span,
+.account342-form label > small {
+  color: var(--hgr-muted) !important;
+}
+.account-entry-display-controls > button,
+.account-fullscreen-toggle {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.account-fullscreen-toggle > span {
+  display: inline-grid;
+  place-items: center;
+}
+.account342-intro > p,
+.account342-card-head > p {
+  color: var(--hgr-brand) !important;
+}
+.account342-intro h1,
+.account342-card-head h2 {
+  color: var(--hgr-text) !important;
+}
+.account342-hero-mark {
+  width: 92px !important;
+  height: 92px !important;
+  margin-bottom: 18px;
+}
+.account342-card {
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+.account342-return-banner,
+.account342-note {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text-soft) !important;
+}
+.account342-tabs {
+  gap: 4px !important;
+  padding: 5px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+}
+.account342-tabs button {
+  min-height: 36px !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: transparent !important;
+  color: var(--hgr-text-soft) !important;
+}
+.account342-tabs button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 44%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 8%,var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text) !important;
+}
+.account342-card-head {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.account342-form label {
+  color: var(--hgr-text-soft) !important;
+}
+.account342-form input {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text) !important;
+}
+.account342-form input:focus {
+  border-color: color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-border)) !important;
+  box-shadow: var(--hgr-focus) !important;
+  outline: none !important;
+}
+.account-auth-primary {
+  border-color: var(--hgr-action-bg) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-action-bg) !important;
+  color: var(--hgr-action-ink) !important;
+}
+.account-auth-message {
+  border: 1px solid color-mix(in srgb,var(--hgr-danger) 30%,var(--hgr-border)) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: color-mix(in srgb,var(--hgr-danger) 7%,var(--hgr-surface-soft)) !important;
+  color: var(--hgr-text) !important;
+}
+.account342-secondary > button,
+.account-auth-back {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.account342-secondary > button:hover,
+.account-auth-back:hover {
+  border-color: color-mix(in srgb,var(--hgr-brand) 34%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 6%,var(--hgr-surface-soft)) !important;
+}
+
+/* One leaderboard grammar across Mega Board, Poker and generic ranked games. */
+.leaderboard-backdrop {
+  background: rgba(2,6,10,.68) !important;
+  backdrop-filter: blur(12px) !important;
+}
+.leaderboard-modal {
+  border: 1px solid var(--hgr-border-strong) !important;
+  border-radius: var(--hgr-radius-xl) !important;
+  background: var(--hgr-surface-raised) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-float) !important;
+}
+.leaderboard-header {
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.leaderboard-header .modal-eyebrow {
+  color: var(--game-icon-accent,var(--hgr-brand)) !important;
+}
+.leaderboard-header h2 {
+  color: var(--hgr-text) !important;
+  letter-spacing: -.035em;
+}
+.leaderboard-header small {
+  color: var(--hgr-muted) !important;
+}
+.leaderboard-header-actions button,
+.leaderboard-close {
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-sm) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.leaderboard-empty-state,
+.leaderboard-calibration-note {
+  border-color: var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-md) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.leaderboard-empty-state span,
+.leaderboard-calibration-note p {
+  color: var(--hgr-muted) !important;
+}
+.leaderboard-grid {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.leaderboard-grid-head {
+  background: transparent !important;
+  color: var(--hgr-muted) !important;
+}
+.leaderboard-recent {
+  padding-top: 12px;
+  border-top: 1px solid var(--hgr-border);
+}
+.leaderboard-recent > div {
+  border-color: var(--hgr-border) !important;
+}
+.leaderboard-podium article {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.leaderboard-podium article.is-rank-1 {
+  border-color: color-mix(in srgb,var(--game-icon-accent,var(--hgr-brand)) 55%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--game-icon-accent,var(--hgr-brand)) 8%,var(--hgr-surface-soft)) !important;
+}
+.halieus-ranked-modal-title img {
+  object-fit: contain !important;
+}
+
+@media (max-width: 760px) {
+  .account342-stage {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 24px !important;
+  }
+  .account342-intro {
+    text-align: center;
+    justify-items: center;
+  }
+  .leaderboard-backdrop {
+    padding: 10px !important;
+  }
+  .leaderboard-modal {
+    width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 15px !important;
+  }
+}
