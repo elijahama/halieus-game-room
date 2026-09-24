@@ -21,8 +21,8 @@ assert.match(brand,/halieus-brand-mark-tile/,"Shared Halieus mark must expose a 
 assert.match(brand,/halieus-brand-mark-h/,"Shared Halieus mark must expose a themeable H");
 
 assert.match(theme,/"--hgr-action-bg": action/,"Custom themes must derive a solid action colour");
-assert.match(theme,/"red" \| "green" \| "custom"/,"Theme contract must include dedicated Red and Green profiles");
-assert.match(theme,/"--hgr-action-ink": "#ffffff"/,"Custom action contrast must remain legible");
+assert.match(theme,/"red" \\| "green" \\| (?:"profile" \\| )?"custom"/,"Theme contract must include dedicated Red/Green compatibility and the profile library");
+assert.match(theme,/"--hgr-action-ink": brandInk/,"Custom action contrast must be derived from the selected action colour");
 assert.match(css,/\.button-primary,[\s\S]*?\.halieus-global-join[\s\S]*?background:\s*var\(--hgr-action-bg\) !important/s,"Primary actions must use one solid theme action colour");
 assert.doesNotMatch(css,/HGR interface coherence pass[\s\S]*?\.halieus-global-join[\s\S]*?linear-gradient/s,"Current primary action override must not reintroduce gradient banding");
 assert.match(css,/\.halieus-feature-arrow[\s\S]*?place-items:\s*center !important/s,"Featured arrows must use layout centring");
