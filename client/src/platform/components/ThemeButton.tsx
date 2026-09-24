@@ -45,18 +45,28 @@ function rgbHex(channels: [number, number, number]): string {
 }
 
 const CUSTOM_PRESETS: Array<{ id: string; label: string; description: string; theme: HalieusCustomTheme }> = [
-  { id: "graphite", label: "Graphite", description: "Neutral dark studio", theme: { page: "#111315", surface: "#1b1e22", accent: "#f0b83f", secondary: "#58a6ff" } },
-  { id: "slate", label: "Slate", description: "Cool grey workspace", theme: { page: "#171a1f", surface: "#252a31", accent: "#d9a441", secondary: "#76a7d7" } },
-  { id: "deep-blue", label: "Deep Blue", description: "Blue-black control room", theme: { page: "#09131d", surface: "#122334", accent: "#4cc2ff", secondary: "#8c9bff" } },
-  { id: "warm", label: "Warm Studio", description: "Soft charcoal + amber", theme: { page: "#171411", surface: "#26211c", accent: "#f3a847", secondary: "#d8846f" } },
+  { id: "studio-graphite", label: "Studio Graphite", description: "Neutral dark workspace", theme: { page: "#111315", surface: "#1b1e22", accent: "#e3ad35", secondary: "#6f9fd8" } },
+  { id: "soft-light", label: "Soft Light", description: "Warm bright workspace", theme: { page: "#f3f0e8", surface: "#fffdf8", accent: "#d79a19", secondary: "#4c78a8" } },
+  { id: "deep-blue", label: "Deep Blue", description: "Blue-black control room", theme: { page: "#07111c", surface: "#102033", accent: "#3a8fd8", secondary: "#78bdf2" } },
+  { id: "forest", label: "Forest", description: "Deep green studio", theme: { page: "#0d1713", surface: "#16251e", accent: "#4ca86a", secondary: "#8ac6a1" } },
+  { id: "crimson", label: "Crimson", description: "Charcoal with red focus", theme: { page: "#171012", surface: "#27191d", accent: "#cc4b52", secondary: "#e18a8f" } },
+  { id: "aubergine", label: "Aubergine", description: "Purple creative suite", theme: { page: "#15101a", surface: "#241a2c", accent: "#9a68c7", secondary: "#d09be9" } },
+  { id: "cyan", label: "Cyan Studio", description: "Cool dark production UI", theme: { page: "#0c1517", surface: "#162428", accent: "#38a9b8", secondary: "#78d4df" } },
+  { id: "warm-amber", label: "Warm Amber", description: "Soft charcoal and amber", theme: { page: "#171411", surface: "#26211c", accent: "#e09a31", secondary: "#d37c65" } },
+  { id: "slate-mint", label: "Slate Mint", description: "Cool grey with mint", theme: { page: "#15191d", surface: "#242a30", accent: "#63b79c", secondary: "#8da9c4" } },
+  { id: "midnight-violet", label: "Midnight Violet", description: "Near-black violet studio", theme: { page: "#0f0d16", surface: "#1d1828", accent: "#7657c9", secondary: "#b08be4" } },
+  { id: "sand", label: "Sand", description: "Muted light neutral", theme: { page: "#ece7dc", surface: "#f8f5ed", accent: "#b67a20", secondary: "#657c91" } },
+  { id: "high-contrast", label: "High Contrast", description: "Maximum separation", theme: { page: "#070707", surface: "#171717", accent: "#f0c33c", secondary: "#58a8ff" } },
 ];
 
 const THEME_OPTIONS: Array<{ mode: HalieusThemeMode; icon: string; label: string; description: string }> = [
   { mode: "system", icon: "◐", label: "System", description: "Follow this device" },
-  { mode: "dark", icon: "●", label: "Dark", description: "Low-light HGR" },
-  { mode: "light", icon: "○", label: "Light", description: "Bright HGR" },
-  { mode: "blue", icon: "◆", label: "Blue", description: "Deep blue HGR" },
-  { mode: "custom", icon: "✦", label: "Custom", description: "Your RGB / HEX palette" },
+  { mode: "dark", icon: "●", label: "Dark", description: "Neutral dark HGR" },
+  { mode: "light", icon: "○", label: "Light", description: "Bright HGR, standard yellow" },
+  { mode: "blue", icon: "◆", label: "Blue", description: "Blue HGR profile" },
+  { mode: "red", icon: "◆", label: "Red", description: "Red HGR profile" },
+  { mode: "green", icon: "◆", label: "Green", description: "Green HGR profile" },
+  { mode: "custom", icon: "✦", label: "Custom", description: "12 presets + RGB / HEX" },
 ];
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
@@ -73,7 +83,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   useEffect(() => {
     const handleMode = (event: Event) => {
       const next = (event as CustomEvent<HalieusThemeMode>).detail;
-      if (next === "system" || next === "dark" || next === "light" || next === "blue" || next === "custom") setMode(next);
+      if (next === "system" || next === "dark" || next === "light" || next === "blue" || next === "red" || next === "green" || next === "custom") setMode(next);
     };
     const handleCustom = (event: Event) => {
       const next = (event as CustomEvent<HalieusCustomTheme>).detail;
@@ -206,11 +216,11 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         <div className="halieus-custom-theme-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && cancelCustom()}>
           <section className="halieus-custom-theme-dialog" role="dialog" aria-modal="true" aria-label="Custom HGR theme">
             <header>
-              <div><p>CUSTOM THEME</p><h2>Tune the interface palette</h2><span>Treat HGR like a creative app: set the workspace, panels and UI accents while each game keeps its own identity.</span></div>
+              <div><p>CUSTOM THEME</p><h2>Tune the interface palette</h2><span>Build a coordinated workspace profile: surfaces, text and accents move together while each game keeps its own identity.</span></div>
               <button type="button" onClick={cancelCustom} aria-label="Close custom theme editor">×</button>
             </header>
             <section className="halieus-custom-presets" aria-label="Custom theme presets">
-              <header><strong>Interface presets</strong><span>Start with a coordinated workspace, then fine-tune it.</span></header>
+              <header><strong>Interface presets</strong><span>Choose from 12 coordinated profiles, then fine-tune with RGB or HEX.</span></header>
               <div>{CUSTOM_PRESETS.map((preset) => (
                 <button type="button" key={preset.id} onClick={() => setDraft({ ...preset.theme })}>
                   <span className="halieus-custom-preset-swatch" aria-hidden="true">
