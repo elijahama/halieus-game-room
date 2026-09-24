@@ -25,6 +25,7 @@ For the current project story, start with the root [README](../README.md).
 - [Development process](DEVELOPMENT_PROCESS.md)
 - [AI-assisted development](AI_ASSISTED_DEVELOPMENT.md)
 - [Openshard development receipts](OPENSHARD.md)
+- [AI provenance architecture](project/HGR_AI_PROVENANCE_ARCHITECTURE.md)
 - [GitHub workflow](GITHUB_WORKFLOW.md)
 
 ### Quality and release
