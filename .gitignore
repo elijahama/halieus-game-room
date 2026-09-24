@@ -47,6 +47,7 @@ dev-tools/Oracle Quick Deploy/
 update-website.ps1
 Update Halieus Website.cmd
 Update Halieus Website.ico
+!assets/branding/launchers/Update Halieus Website.ico
 docs/OWNER BUILD - DO NOT SHARE.txt
 
 # Internal/stale documentation retained locally but not published
