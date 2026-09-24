@@ -25,6 +25,7 @@ export interface HalieusSkinPreferences {
 }
 
 export const SKIN_PREFERENCES_KEY = "halieus-game-room-skins";
+export const BETA_SKIN_PREVIEW_KEY = "halieus-beta-skin-preview";
 
 export const SKIN_CATALOG: readonly HalieusSkinDefinition[] = [
   { id: "standard-shell", slot: "interface", label: "Standard Shell", description: "The canonical HGR frame.", mood: "Core", unlock: { kind: "starter", label: "Starter" } },
@@ -80,10 +81,33 @@ export function readSkinPreferences(): HalieusSkinPreferences {
   }
 }
 
-export function saveSkinPreference(slot: HalieusSkinSlot, id: string): HalieusSkinPreferences {
-  const current = readSkinPreferences();
+export function readBetaSkinPreferences(): HalieusSkinPreferences {
+  try {
+    const base = readSkinPreferences();
+    const parsed = JSON.parse(sessionStorage.getItem(BETA_SKIN_PREVIEW_KEY) ?? "{}") as Partial<HalieusSkinPreferences>;
+    return {
+      interface: typeof parsed.interface === "string" ? parsed.interface : base.interface,
+      cards: typeof parsed.cards === "string" ? parsed.cards : base.cards,
+      "mega-board": typeof parsed["mega-board"] === "string" ? parsed["mega-board"] : base["mega-board"],
+    };
+  } catch {
+    return readSkinPreferences();
+  }
+}
+
+export function readEffectiveSkinPreferences(betaMode: boolean): HalieusSkinPreferences {
+  return betaMode ? readBetaSkinPreferences() : readSkinPreferences();
+}
+
+export function saveSkinPreference(slot: HalieusSkinSlot, id: string, betaMode = false): HalieusSkinPreferences {
+  const current = readEffectiveSkinPreferences(betaMode);
   const next = { ...current, [slot]: id };
-  localStorage.setItem(SKIN_PREFERENCES_KEY, JSON.stringify(next));
+  if (betaMode) sessionStorage.setItem(BETA_SKIN_PREVIEW_KEY, JSON.stringify(next));
+  else localStorage.setItem(SKIN_PREFERENCES_KEY, JSON.stringify(next));
   window.dispatchEvent(new CustomEvent<HalieusSkinPreferences>("halieus-skins-change", { detail: next }));
   return next;
+}
+
+export function clearBetaSkinPreview(): void {
+  sessionStorage.removeItem(BETA_SKIN_PREVIEW_KEY);
 }
