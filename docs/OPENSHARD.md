@@ -55,13 +55,15 @@ openshard doctor
 From the repository root you can also use:
 
 ```text
-scripts\windows\OpenShard HGR.cmd setup
-scripts\windows\OpenShard HGR.cmd doctor
-scripts\windows\OpenShard HGR.cmd last
-scripts\windows\OpenShard HGR.cmd history
-scripts\windows\OpenShard HGR.cmd stats
-scripts\windows\OpenShard HGR.cmd tui
+scripts\windows\OpenShard-HGR.cmd setup
+scripts\windows\OpenShard-HGR.cmd doctor
+scripts\windows\OpenShard-HGR.cmd last
+scripts\windows\OpenShard-HGR.cmd history
+scripts\windows\OpenShard-HGR.cmd stats
+scripts\windows\OpenShard-HGR.cmd tui
 ```
+
+The no-space wrapper name is deliberate so it can be invoked directly from PowerShell without quoting. The older `OpenShard HGR.cmd` wrapper remains for compatibility; if you use it from PowerShell, call it with `& ".\\scripts\\windows\\OpenShard HGR.cmd" <action>`.
 
 The helper does not install Openshard automatically. If the CLI is missing it prints the installation command and exits instead of modifying Python on its own.
 
