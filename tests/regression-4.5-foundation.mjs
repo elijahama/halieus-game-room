@@ -64,11 +64,12 @@ assert.match(app,/getPropertyValue\("--hgr-brand-ink"\)/,"Platform tab H must de
 assert.match(halieusAppIcon,/#daa017/i,"Installable app icon must preserve the approved default yellow brand");
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
 assert.match(launcherReferenceDoc,/Reference artwork beats generated interpretation/,"Launcher reference README must make approved artwork authoritative");
-assert.match(launcherReferenceDoc,/4b3dc3a9dbfbf64f268bf38b51309a973b4f7e7b/,"Launcher reference README must record the accepted artwork commit");
+assert.match(launcherReferenceDoc,/Every approved PNG stored directly in:/,"Launcher reference README must treat the current reference directory as authoritative rather than hard-coding an old reference count");
 
 const approvedReferenceBlobs = {
   "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_31 AM.png": "5f1a96cd93fd0d111ec1d22db3bed5aefe8d9283",
   "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_37 AM.png": "bc60ec3b771b37afe29ac14287862fc43852092a",
+  "assets/branding/references/ChatGPT Image 24 Sept 2026, 21_54_08.png": "4420d3bb3b20810d1cc70087c02c6bef7503fcf8",
 };
 for (const [asset, expected] of Object.entries(approvedReferenceBlobs)) {
   assert.equal(gitBlobSha(asset), expected, `Approved launcher reference changed unexpectedly: ${asset}`);
@@ -80,6 +81,13 @@ const approvedLauncherBlobs = {
   "assets/branding/launchers/Restart Halieus Game Room.ico": "f38f0b7e715c39bea7efb2e5f6e0934ac38a4a61",
   "assets/branding/launchers/Close Halieus Game Room.ico": "de74effa6decc942c41b2db3bef9b2e0dc8c732d",
   "assets/branding/launchers/HGR PowerShell.ico": "01e56e9ab2d5d4d39b30ff7c0aa69e08468b3dcb",
+  "assets/branding/launchers/Update Halieus Website.ico": "a1d356a5eab7a9331e09e54620c11b6b83a415b8",
+  "assets/branding/launchers/Start Halieus Game Room.svg": "a9c64ad6b389cfdde7812f6d92d844897790e714",
+  "assets/branding/launchers/Restart Halieus Game Room.svg": "10ffaae53a8aae13c0c6da14610f9b692964a1a1",
+  "assets/branding/launchers/Close Halieus Game Room.svg": "e3fdd2bc4b388273cf2d03e6111a99fed48b0144",
+  "assets/branding/launchers/HGR PowerShell.svg": "d1765b8ceaf8893cfbed5d29f51b814348f7ab33",
+  "assets/branding/launchers/HGR OpenShard TUI.svg": "d8e600e2004bff0450a495a3c6abc971d9b3c398",
+  "assets/branding/launchers/Update Halieus Website.svg": "99e82375a762dbdf3981a1ca05593c7df6821197",
 };
 for (const [asset, expected] of Object.entries(approvedLauncherBlobs)) {
   assert.equal(gitBlobSha(asset), expected, `Approved reference-based launcher icon changed unexpectedly: ${asset}`);
@@ -88,7 +96,7 @@ for (const [asset, expected] of Object.entries(approvedLauncherBlobs)) {
 assert.match(previewGenerator,/generated-preview/,"Generated launcher experiments must stay quarantined from approved assets");
 assert.doesNotMatch(previewGenerator,/Remove-Item[\s\S]*?assets\\branding\\launchers(?!\\generated-preview)/s,"Preview generation must never delete approved launcher icons");
 assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must never invoke artwork generation");
-assert.doesNotMatch(launcherShortcuts,/launchers\\\\matte/,"Retired matte launcher folder must not return");
+assert.doesNotMatch(launcherShortcuts,/launchers\\\\matte/,"Retired nested launcher folder must not return");
 for (const launcherName of ["Start Halieus Game Room.ico","Restart Halieus Game Room.ico","Close Halieus Game Room.ico","HGR PowerShell.ico"]) {
   assert.ok(launcherShortcuts.includes(launcherName), "Shortcut generator must consume approved reference-based icon " + launcherName);
 }
