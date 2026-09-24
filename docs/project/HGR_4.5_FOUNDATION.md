@@ -27,6 +27,7 @@ Repository version remains **4.1.1** until 4.5 receives validation and visual ac
 - Unified the outer result ceremony shell across Mega Board and the shared non-Mega results system: hero hierarchy, result tabs, ranking/stat/award surfaces, footer/actions and responsive framing now inherit HGR tokens while scoring, awards and game-specific result data remain untouched.
 - Added active-game browser-tab identity without redesigning icons: the tab title and favicon now switch to each game's existing catalogue SVG while inside that game and restore the Halieus identity on return to the platform.
 - Unified Create Room, Join/Watch, invitation panels and direct invite-join screens under the same HGR modal/field/inset-card grammar while preserving each game's current artwork and room behavior.
+- Unified Inbox, room chat/game-log/spectator activity, confirmations and toast/global-notice framing under the same HGR communication surface language. The room-chat trigger now uses a shared SVG glyph, and the last decorative sidebar profile ellipsis was replaced with a truthful navigation chevron.
 - Formalised the game visual identity process while keeping the current website artwork as the source of truth.
 - Recorded the failed multi-game mockup iterations as exploratory only and documented a rollback-first visual review discipline so approved designs are not changed while fixing unrelated assets.
 
