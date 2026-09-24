@@ -13,6 +13,7 @@ const skins=read("client/src/platform/skins.ts");
 const skinButton=read("client/src/platform/components/SkinLibraryButton.tsx");
 const app=read("client/src/App.tsx");
 const css=read("client/src/styles/hgr-design-v1.css");
+const gameChrome=read("client/src/platform/components/GameChrome.tsx");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 
@@ -41,6 +42,10 @@ assert.match(css,/\.halieus-guild-list,[\s\S]*?\.halieus-guild-detail[\s\S]*?bac
 assert.match(css,/\.account-panel \{[\s\S]*?background:\s*var\(--hgr-surface\) !important/s,"Account modal must inherit the shared HGR surface");
 assert.match(css,/\.account-content-heading[\s\S]*?border-bottom:\s*1px solid var\(--hgr-border\)/s,"Account subsections must use the shared heading separator");
 assert.match(css,/\.account-panel input,[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Account controls must inherit shared theme surfaces");
+assert.match(gameChrome,/HgrIcon name="menu"/,"Persistent game chrome must use the shared HGR menu glyph instead of a text hamburger");
+assert.match(css,/HGR 4\.5 shared in-game chrome/,"4.5 must define one shared lobby\/game-menu chrome layer");
+assert.match(css,/\.game-menu-modal \.menu-action[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,"Game menu actions must use the shared inset-card surface");
+assert.match(css,/\.lobby-overview-tile,[\s\S]*?\.players-panel-v2,[\s\S]*?\.lobby-side-card[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,"Lobby overview, roster and control cards must share one HGR surface grammar");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
