@@ -111,3 +111,15 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - Added one canonical uploaded-image crop rule across sidebar identity, mobile profile access, player cards, guild members, guild invites and account/admin surfaces.
 - Profile pictures now remain clipped to their intended square tile with centred `object-fit: cover` behavior instead of escaping or stretching the identity frame.
 - Updated the 4.1.1 intro regression to recognise the shared Halieus brand component rather than the retired versioned PNG reference.
+
+## Functional feedback conversations
+
+- Replaced the old write-only feedback path with a persistent feedback conversation store at the durable Halieus feedback data directory.
+- Existing `feedback.ndjson` submissions are migrated into the new store instead of being discarded.
+- Game feedback now keeps structured source, game, room, player, build and page context.
+- Mega Board and Poker in-game feedback now use the same account-aware feedback service; profile feedback can target any current game from one selector.
+- Every signed-in player can submit feedback from their own profile and see their previous submissions, workflow status and owner reply.
+- Owner/Admin tools now include a Feedback inbox with Open / Reviewing / Answered / Closed states and an in-site reply composer.
+- Owner replies are stored with the feedback item and become visible to the submitting player in their profile.
+- The PowerShell feedback viewer now reads the conversation store and falls back to the legacy NDJSON file when needed.
+- Added release regression coverage for persistence, legacy migration, game context, profile history, owner inbox and reply visibility.
