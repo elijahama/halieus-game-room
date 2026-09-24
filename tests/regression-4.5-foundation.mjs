@@ -6,7 +6,14 @@ const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),"utf8");
 const readBytes=(path)=>readFileSync(new URL(`../${path}`,import.meta.url));
 const gitBlobSha=(path)=>{
   const bytes=readBytes(path);
-  return createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+  // Git stores text assets canonically, while Windows may check text files out
+  // with CRLF without considering the working tree dirty. Normalise launcher
+  // SVG line endings before hashing so this regression protects artwork/content
+  // rather than failing on a platform-specific checkout representation.
+  const canonicalBytes = path.toLowerCase().endsWith(".svg")
+    ? Buffer.from(bytes.toString("utf8").replace(/\r\n/g,"\n"), "utf8")
+    : bytes;
+  return createHash("sha1").update(`blob ${canonicalBytes.length}\0`).update(canonicalBytes).digest("hex");
 };
 
 const playerCard=read("client/src/platform/components/PlayerIdentityCard.tsx");
