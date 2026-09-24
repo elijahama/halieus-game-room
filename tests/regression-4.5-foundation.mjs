@@ -101,7 +101,9 @@ assert.match(css,/\.leaderboard-modal[\s\S]*?background:\s*var\(--hgr-surface-ra
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
-assert.ok((theme.match(/mood: "/g) ?? []).length >= 12,"Theme library must include at least twelve coordinated profiles");
+assert.ok((theme.match(/mood: "/g) ?? []).length >= 16,"Theme library must include the coordinated core and retro profile sets");
+assert.match(theme,/ivory-8bit[\s\S]*lavender-16bit[\s\S]*black-drive[\s\S]*grey-disc/s,"Theme library must include the four retro console-inspired HGR profiles");
+assert.match(html,/ivory-8bit[\s\S]*lavender-16bit[\s\S]*black-drive[\s\S]*grey-disc/s,"First paint must recognise the four retro HGR profiles");
 assert.match(themeButton,/Theme Library/,"Primary theme menu must group expressive profiles into a library");
 assert.match(themeButton,/QUICK_OPTIONS/,"Primary theme menu must retain a compact quick-choice layer");
 assert.match(themeButton,/halieus-theme-custom-launch/,"Custom RGB\/HEX access must remain immediate");
@@ -124,8 +126,21 @@ assert.match(skinButton,/Test Lab preview/,"Beta/Test Lab must explain full prev
 assert.match(app,/clearBetaSkinPreview\(\)/,"Leaving Beta must restore the normal cosmetic loadout");
 assert.match(app,/dataset\.skinCards/,"Card skins must apply from the app root");
 assert.match(app,/dataset\.skinMegaBoard/,"Mega Board skins must apply from the app root");
+assert.match(app,/dataset\.skinPokerTable/,"Poker table skins must apply independently from card backs");
+assert.match(app,/normaliseRankedPlayerKey/,"Cosmetic rating unlocks must resolve against the existing Mega Board ranked identity");
+assert.match(home,/ratings=\{skinRatings\}/,"Skin Library must receive real game rating context from the app");
+assert.match(skins,/kind: "rating"/,"Cosmetic model must support real rating-gated unlocks");
+assert.match(skins,/rating: 1200/,"At least one Mega Board cosmetic must demonstrate a real rating gate");
+assert.match(skins,/"poker-table"/,"Poker table aesthetics must have their own cosmetic slot");
+assert.match(skins,/unlockContextIsKnown/,"Unknown asynchronous unlock data must not incorrectly unequip a saved cosmetic");
+assert.match(skinButton,/Account role does not bypass player progression/,"Normal admin play must not bypass cosmetic unlocks");
+assert.match(skinButton,/games without a live rating model use play\/win unlocks/,"Cosmetic UI must not pretend a game has Elo before its rating model is live");
 assert.match(css,/data-skin-cards="midnight-deck"[\s\S]*?\.poker-card-back/s,"Card skins must visibly affect Poker");
 assert.match(css,/data-skin-cards="midnight-deck"[\s\S]*?\.rebuild-card\.is-back/s,"Card skins must visibly affect Blackjack");
 assert.match(css,/data-skin-mega-board="night-board"[\s\S]*?\.board-grid/s,"Mega Board skins must visibly affect the board field");
+assert.match(css,/data-skin-mega-board="muted-tournament-board"[\s\S]*?\.board-space/s,"Muted Tournament must restyle Mega Board materials without changing geometry");
+assert.match(css,/data-skin-mega-board="ivory-8bit-board"[\s\S]*?data-skin-mega-board="grey-disc-board"/s,"Mega Board must expose the full retro surface family");
+assert.match(css,/data-skin-poker-table="muted-poker-room"[\s\S]*?\.poker-table/s,"Poker must expose an independent muted table treatment");
+assert.match(css,/data-skin-poker-table="ivory-8bit-table"[\s\S]*?data-skin-poker-table="grey-disc-table"/s,"Poker must expose the full retro table family");
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
