@@ -57,6 +57,8 @@ assert.match(halieusAppIcon,/#daa017/i,"Installable app icon must preserve the a
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
 assert.match(brandGenerator,/halieus-app-icon\.svg/,"Brand generator must own the installable SVG source");
 assert.match(brandGenerator,/const H_PATH = "M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z"/,"Brand generator must own the canonical H geometry");
+assert.match(brandGenerator,/const sourceOnly = process\.argv\.includes\("--source-only"\)/,"Brand generator must expose an explicit source-only path");
+assert.match(brandGenerator,/if \(sourceOnly\) \{[\s\S]*?await writeSources\(\);[\s\S]*?\} else \{[\s\S]*?await renderOutputs\(\);/s,"Normal brand generation must not rewrite committed SVG sources");
 assert.match(launcherStart,/#4e7f5d/i,"Start launcher must use the approved green family colour");
 assert.match(launcherRestart,/#e67e22/i,"Restart launcher must use the approved orange family colour");
 assert.match(launcherClose,/#b44b4b/i,"Close launcher must use the approved red family colour");
