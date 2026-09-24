@@ -47,12 +47,12 @@ The walkthrough also clarified three platform behaviours:
 
 ### Validation extension
 
-`tests/regression-4.1.1-video-polish.mjs` protects the fixed hero stage, short Home previews, System theme, compact Guild actions and profile-first owner account behaviour. It runs after the existing Part 15 regression.
+`tests/regression-4.1.1-video-polish.mjs` protects the fixed hero stage, short Home previews, System theme, compact Guild actions and profile-first owner account behaviour. It runs after the existing platform-coherence regression.
 
 
 ## Session/profile hotfix
 
-The final Part 15 walkthrough exposed four cleanup issues that stay within the 4.1.1 polish milestone:
+The final 4.1.1 walkthrough exposed four cleanup issues that stay within the polish milestone:
 
 - Profile-picture updates were accepted by the client at up to 1 MB, but Base64 encoding expanded the JSON request beyond Express's default 100 KB body limit. The server parser now accepts up to 2 MB while the profile route still enforces the existing 1 MB image contract.
 - The branded Halieus intro could become eligible in the middle of a browsing session after an administrator closed all recoverable rooms. Continuing/recovering a room now marks the intro handled in both React state and session storage; a fresh normal sign-in still receives the once-per-session intro.
@@ -62,7 +62,7 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 `tests/regression-4.1.1-session-profile-hotfix.mjs` protects the request-size fix, intro lifecycle and the main density contracts.
 
 
-## Part 15 — theme canvas, Friends shelf and hero hotfix
+## Theme canvas, Friends shelf and hero hotfix
 
 - Bridged the legacy Game Room shell to the current `--hgr-*` palette so Blue and Custom now recolour the full workspace instead of leaving the old dark canvas underneath.
 - Kept per-game background colour effects as atmosphere overlays on top of the selected theme rather than as the page colour itself.
@@ -133,3 +133,14 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - Added Windows helpers for `setup`, `doctor`, `last`, `history`, `stats`, `tui` and optional telemetry disablement.
 - Added `/.openshard/` to repository ignores so local receipt history cannot become source, production data or a source-baseline input.
 - HGR credits the upstream Openshard project and its Apache-2.0 licence rather than vendoring or presenting the tool as HGR code.
+
+
+## AI provenance architecture milestone
+
+- Promoted Openshard from a setup/tooling note into a documented HGR engineering architecture decision.
+- Defined the evidence chain from human requirement -> AI-assisted implementation -> Openshard receipt -> Git diff -> HGR validation gate -> human acceptance -> GitHub history.
+- Explicitly separated **provenance** from **correctness**: a receipt can describe an AI-assisted run, but it does not replace type checking, regression tests, production builds, release-integrity validation or human playtest/visual acceptance.
+- Documented the runtime boundary: Openshard remains development-only and HGR must build, deploy and play normally without it.
+- Documented why receipt state remains outside Git, production data and half-version source baselines.
+- Added portfolio/interview language that accurately describes human ownership, substantial AI implementation assistance and receipt-backed provenance where the integration supports it.
+- Recorded the limitation that not every AI interaction is automatically capturable; HGR documentation therefore says **receipts where supported** rather than claiming universal capture.

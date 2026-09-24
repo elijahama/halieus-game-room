@@ -470,6 +470,8 @@ The product owner defines the product, rules, requirements, testing and acceptan
 
 HGR also supports **Openshard development receipts** as an optional local provenance layer around supported AI coding-agent sessions. Those receipts complement Git history by recording the evidence available from an AI-assisted run without making receipt data part of the player-facing application or production runtime.
 
+The project treats provenance and validation as separate concerns: Openshard records available agent-session evidence, Git records the source history, HGR's release gate validates project contracts, and human QA decides whether the result is accepted.
+
 See [docs/AI_ASSISTED_DEVELOPMENT.md](docs/AI_ASSISTED_DEVELOPMENT.md) and [docs/OPENSHARD.md](docs/OPENSHARD.md).
 
 ---
@@ -572,6 +574,7 @@ Start here:
 - [Development process](docs/DEVELOPMENT_PROCESS.md)
 - [AI-assisted development](docs/AI_ASSISTED_DEVELOPMENT.md)
 - [Openshard development receipts](docs/OPENSHARD.md)
+- [AI provenance architecture](docs/project/HGR_AI_PROVENANCE_ARCHITECTURE.md)
 - [4.0.0 audit](docs/AUDIT_4.0.0.md)
 - [4.0.0 validation](docs/VALIDATION_4.0.0.md)
 - [4.1.0 deployment debugging postmortem](docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md)
