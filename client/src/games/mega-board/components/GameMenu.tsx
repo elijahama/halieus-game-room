@@ -264,7 +264,7 @@ export function GameMenu({
             {gameStarted && turnTimerSeconds != null && (
               <div className="turn-timer-settings-panel">
                 <div>
-                  <strong>⏱ Turn timer</strong>
+                  <strong>⏱ Turn timer settings</strong>
                   <small>{isHost ? "Change how long a human has to start their move before Autopilot takes over." : "Move timer controlled by the room host."}</small>
                 </div>
                 {isHost && onTurnTimerChange ? (

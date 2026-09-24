@@ -777,7 +777,7 @@ body, #root { transition: none !important; }
 
 
 /* ==========================================================================
-   HGR Part 15 — platform coherence pass
+   HGR platform coherence pass
    Theme picker, featured carousel, player identities and in-app inbox.
    ========================================================================== */
 
@@ -2195,7 +2195,7 @@ button.halieus-player-identity {
 }
 .halieus-home-player-strip > div::-webkit-scrollbar { display: none !important; }
 
-/* Custom theme presets keep the FFVII-inspired idea fast to use while the
+/* Custom theme presets use coordinated creative-tool palettes while the
  * detailed RGB/HEX cards remain available underneath. */
 .halieus-custom-presets {
   display: grid;
@@ -3314,5 +3314,228 @@ html[data-theme="dark"] .account-admin-content-card {
   }
   .account-feedback-admin-reply button {
     width: 100%;
+  }
+}
+
+
+/* ==========================================================================
+   4.1.1 coherence correction — standard identity, colour profiles and account
+   administration surfaces. This remains a polish pass, not the 4.5 rebrand.
+   ========================================================================== */
+
+/* Light is the standard HGR identity on a bright canvas. It must not silently
+ * become the Blue profile: primary actions remain HGR yellow in both Light and
+ * Dark, while Blue/Red/Green are explicit chromatic profiles. */
+html[data-theme="light"] {
+  --hgr-page: #f4f5f7;
+  --hgr-surface: #ffffff;
+  --hgr-surface-raised: #ffffff;
+  --hgr-surface-soft: #eef0f3;
+  --hgr-surface-strong: #e2e5e9;
+  --hgr-text: #181b20;
+  --hgr-text-soft: #3e4650;
+  --hgr-muted: #68717c;
+  --hgr-border: rgba(20,24,30,.12);
+  --hgr-border-strong: rgba(20,24,30,.20);
+  --hgr-brand: #d6a11f;
+  --hgr-brand-soft: #f1d37b;
+  --hgr-brand-ink: #181b20;
+  --hgr-action-bg: #d6a11f;
+  --hgr-action-ink: #181b20;
+  --hgr-logo-bg: #d6a11f;
+  --hgr-logo-ink: #181b20;
+  --hgr-logo-border: #9a7215;
+  --hgr-info: #3979b8;
+  --hgr-update: #3979b8;
+  --mm-page: var(--hgr-page);
+  --mm-surface: var(--hgr-surface);
+  --mm-surface-1: var(--hgr-surface);
+  --mm-surface-2: var(--hgr-surface-soft);
+  --mm-input: #ffffff;
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+  --mm-border: #cfd4da;
+}
+
+html[data-theme="red"] {
+  --hgr-page: #170d10;
+  --hgr-surface: #211216;
+  --hgr-surface-raised: #2a171c;
+  --hgr-surface-soft: #321c22;
+  --hgr-surface-strong: #40242b;
+  --hgr-text: #fff8f8;
+  --hgr-text-soft: #eadadd;
+  --hgr-muted: #bba6aa;
+  --hgr-border: rgba(255,255,255,.10);
+  --hgr-border-strong: rgba(255,255,255,.18);
+  --hgr-brand: #d35159;
+  --hgr-brand-soft: #eb8c92;
+  --hgr-brand-ink: #ffffff;
+  --hgr-action-bg: #c9444d;
+  --hgr-action-ink: #ffffff;
+  --hgr-logo-bg: #c9444d;
+  --hgr-logo-ink: #ffffff;
+  --hgr-logo-border: #7f2830;
+  --hgr-info: #e78b91;
+  --hgr-update: #e78b91;
+  --mm-page: var(--hgr-page);
+  --mm-surface: var(--hgr-surface);
+  --mm-surface-1: var(--hgr-surface);
+  --mm-surface-2: var(--hgr-surface-soft);
+  --mm-input: #1b0f12;
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+  --mm-border: #573039;
+}
+
+html[data-theme="green"] {
+  --hgr-page: #0d1712;
+  --hgr-surface: #13221a;
+  --hgr-surface-raised: #192b21;
+  --hgr-surface-soft: #203429;
+  --hgr-surface-strong: #294235;
+  --hgr-text: #f7fff9;
+  --hgr-text-soft: #d7eadc;
+  --hgr-muted: #a1b8a8;
+  --hgr-border: rgba(255,255,255,.10);
+  --hgr-border-strong: rgba(255,255,255,.18);
+  --hgr-brand: #55a76c;
+  --hgr-brand-soft: #8bc49b;
+  --hgr-brand-ink: #ffffff;
+  --hgr-action-bg: #428e59;
+  --hgr-action-ink: #ffffff;
+  --hgr-logo-bg: #428e59;
+  --hgr-logo-ink: #ffffff;
+  --hgr-logo-border: #285a37;
+  --hgr-info: #84c397;
+  --hgr-update: #84c397;
+  --mm-page: var(--hgr-page);
+  --mm-surface: var(--hgr-surface);
+  --mm-surface-1: var(--hgr-surface);
+  --mm-surface-2: var(--hgr-surface-soft);
+  --mm-input: #101c16;
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+  --mm-border: #355a43;
+}
+
+/* Twelve custom profiles are intended to behave like creative-tool colour
+ * profiles rather than one-off accent swaps. Three columns keep names readable. */
+.halieus-custom-presets > div {
+  grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+}
+
+/* Owner/admin surfaces inherit the same tokens as the player-facing product.
+ * Admin capability remains distinct; its palette does not. */
+.account-admin-zone,
+.account-admin-content-card,
+.account-owner-overview,
+.account-invite-history,
+.account-invite-main,
+.account-invite-subnav,
+.account-invite-codes-panel,
+.account-player-section,
+.account-room-oversight,
+.account-rooms-panel,
+.account-feedback-admin,
+.account-test-lab {
+  background: var(--hgr-surface) !important;
+  border-color: var(--hgr-border) !important;
+  color: var(--hgr-text) !important;
+}
+.account-owner-nav,
+.account-owner-metrics > *,
+.account-player-admin-list > *,
+.account-request-list > *,
+.account-invite-list > *,
+.account-invite-codes-list > *,
+.account-feedback-admin-list > *,
+.account-audit-list > *,
+.account-room-summary-card,
+.account-test-lab-grid > * {
+  background: var(--hgr-surface-soft) !important;
+  border-color: var(--hgr-border) !important;
+  color: var(--hgr-text) !important;
+}
+.account-owner-nav button {
+  color: var(--hgr-text-soft) !important;
+}
+.account-owner-nav button:hover,
+.account-owner-nav button.is-active {
+  border-color: color-mix(in srgb,var(--hgr-brand) 52%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 12%,var(--hgr-surface-raised)) !important;
+  color: var(--hgr-text) !important;
+}
+.account-admin-zone input,
+.account-admin-zone select,
+.account-admin-zone textarea,
+.account-invite-history input,
+.account-invite-history select {
+  background: var(--hgr-surface-raised) !important;
+  border-color: var(--hgr-border-strong) !important;
+  color: var(--hgr-text) !important;
+}
+.account-admin-zone small,
+.account-owner-metrics small,
+.account-feedback-admin-meta,
+.account-invite-history small,
+.account-audit-list small {
+  color: var(--hgr-muted) !important;
+}
+
+/* Mega Board lobbies preview six player rows without growing past the side
+ * controls. Extra seats scroll inside the list instead of extending the room. */
+.modern-player-list-v2 {
+  max-height: 348px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+.modern-player-list-v2::-webkit-scrollbar {
+  width: 8px;
+}
+.modern-player-list-v2::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb,var(--hgr-muted) 42%,transparent);
+  border-radius: 999px;
+}
+
+/* Account hierarchy: identity/security first, game history second, feedback
+ * last. The JSX order carries the semantics; spacing reinforces the groups. */
+.account-game-record {
+  margin-top: 14px !important;
+}
+.account-feedback-card {
+  margin-top: 14px !important;
+}
+
+@media (max-width: 760px) {
+  .halieus-custom-presets > div {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+  .modern-player-list-v2 {
+    max-height: 320px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .halieus-custom-presets > div {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+}
+
+
+/* Theme controls remain compact even with the expanded profile set. */
+.halieus-theme-popover {
+  max-height: min(430px, calc(100dvh - 24px));
+  overflow-y: auto;
+}
+.halieus-theme-mode-grid {
+  grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+}
+@media (max-width: 760px) {
+  .halieus-theme-mode-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }

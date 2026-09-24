@@ -1,4 +1,4 @@
-export type HalieusThemeMode = "system" | "dark" | "light" | "blue" | "custom";
+export type HalieusThemeMode = "system" | "dark" | "light" | "blue" | "red" | "green" | "custom";
 
 export interface HalieusCustomTheme {
   page: string;
@@ -25,7 +25,7 @@ export function normaliseThemeColour(value: unknown, fallback: string): string {
 
 export function readThemeMode(): HalieusThemeMode {
   const value = localStorage.getItem(THEME_KEY);
-  if (value === "system" || value === "dark" || value === "light" || value === "blue" || value === "custom") return value;
+  if (value === "system" || value === "dark" || value === "light" || value === "blue" || value === "red" || value === "green" || value === "custom") return value;
   return "system";
 }
 

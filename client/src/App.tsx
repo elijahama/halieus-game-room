@@ -553,7 +553,7 @@ export default function App() {
   const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
   const resolvedThemeMode = resolveThemeMode(themeMode, systemPrefersDark);
-  const darkMode = resolvedThemeMode === "dark" || resolvedThemeMode === "blue" || (resolvedThemeMode === "custom" && isDarkColour(customTheme.page));
+  const darkMode = resolvedThemeMode === "dark" || resolvedThemeMode === "blue" || resolvedThemeMode === "red" || resolvedThemeMode === "green" || (resolvedThemeMode === "custom" && isDarkColour(customTheme.page));
   const [soundEnabled, setSoundEnabled] =
     useState(
       () =>
@@ -589,7 +589,7 @@ export default function App() {
   useEffect(() => {
     const handleThemeMode = (event: Event) => {
       const requested = (event as CustomEvent<HalieusThemeMode>).detail;
-      if (requested === "system" || requested === "light" || requested === "dark" || requested === "blue" || requested === "custom") setThemeMode(requested);
+      if (requested === "system" || requested === "light" || requested === "dark" || requested === "blue" || requested === "red" || requested === "green" || requested === "custom") setThemeMode(requested);
     };
     const handleCustomTheme = (event: Event) => setCustomTheme((event as CustomEvent<HalieusCustomTheme>).detail);
     window.addEventListener("halieus-theme-mode", handleThemeMode);
@@ -610,7 +610,7 @@ export default function App() {
     if (resolvedThemeMode === "custom") {
       for (const [key, value] of Object.entries(customThemeVariables(customTheme))) root.style.setProperty(key, value);
     }
-    root.style.backgroundColor = resolvedThemeMode === "custom" ? customTheme.page : resolvedThemeMode === "light" ? "#f4f7fb" : resolvedThemeMode === "blue" ? "#06111c" : "#0f1012";
+    root.style.backgroundColor = resolvedThemeMode === "custom" ? customTheme.page : resolvedThemeMode === "light" ? "#f4f5f7" : resolvedThemeMode === "blue" ? "#06111c" : resolvedThemeMode === "red" ? "#170d10" : resolvedThemeMode === "green" ? "#0d1712" : "#0f1012";
   }, [customTheme, darkMode, resolvedThemeMode, themeMode]);
 
   useEffect(() => {

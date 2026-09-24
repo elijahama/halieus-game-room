@@ -21,7 +21,7 @@ export function DisplaySettingsPanel({
   useEffect(() => {
     const handle = (event: Event) => {
       const next = (event as CustomEvent<HalieusThemeMode>).detail;
-      if (next === "system" || next === "dark" || next === "light" || next === "blue" || next === "custom") setThemeMode(next);
+      if (next === "system" || next === "dark" || next === "light" || next === "blue" || next === "red" || next === "green" || next === "custom") setThemeMode(next);
     };
     window.addEventListener("halieus-theme-mode", handle);
     return () => window.removeEventListener("halieus-theme-mode", handle);
@@ -37,7 +37,7 @@ export function DisplaySettingsPanel({
     <section className="halieus-display-settings" aria-label="Display and sound settings">
       <p className="halieus-settings-eyebrow">Display & sound</p>
       <div className="halieus-theme-mode-grid" role="group" aria-label="Theme mode">
-        {(["system", "dark", "light", "blue", "custom"] as HalieusThemeMode[]).map((mode) => (
+        {(["system", "dark", "light", "blue", "red", "green", "custom"] as HalieusThemeMode[]).map((mode) => (
           <button
             type="button"
             key={mode}
@@ -45,7 +45,7 @@ export function DisplaySettingsPanel({
             aria-pressed={themeMode === mode}
             onClick={() => changeTheme(mode)}
           >
-            <span aria-hidden="true">{mode === "system" ? "◐" : mode === "dark" ? "●" : mode === "light" ? "○" : mode === "blue" ? "◆" : "✦"}</span>
+            <span aria-hidden="true">{mode === "system" ? "◐" : mode === "dark" ? "●" : mode === "light" ? "○" : mode === "custom" ? "✦" : "◆"}</span>
             <span><strong>{mode[0].toUpperCase() + mode.slice(1)}</strong><small>{mode === "system" ? "Follow this device" : mode === "custom" ? "Your saved RGB palette" : `${mode} theme`}</small></span>
           </button>
         ))}
