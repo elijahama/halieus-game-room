@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -74,6 +74,13 @@ const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; la
   { mode: "light", icon: "○", label: "Light", description: "Standard bright HGR" },
   { mode: "dark", icon: "●", label: "Dark", description: "Standard graphite HGR" },
 ];
+
+const RETRO_PROFILE_IDS = new Set<HalieusThemeProfileId>(["ivory-8bit", "lavender-16bit", "black-drive", "grey-disc"]);
+const THEME_PROFILE_GROUPS = [
+  { id: "hgr", label: "HGR Profiles", description: "Coordinated Halieus palettes", profiles: THEME_PROFILES.filter((profile) => !RETRO_PROFILE_IDS.has(profile.id)) },
+  { id: "retro", label: "Retro Consoles", description: "Original console-era inspired palettes", profiles: THEME_PROFILES.filter((profile) => RETRO_PROFILE_IDS.has(profile.id)) },
+] as const;
+
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -243,7 +250,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </div>
               <button type="button" className={`halieus-theme-library-launch ${mode === "profile" || mode === "blue" || mode === "red" || mode === "green" ? "is-active" : ""}`} onClick={() => setLibraryOpen(true)}>
                 <span className="halieus-theme-library-art" aria-hidden="true"><i /><i /><i /><i /></span>
-                <span><strong>Theme Library</strong><small>12 bolder coordinated profiles</small></span>
+                <span><strong>Theme Library</strong><small>{THEME_PROFILES.length} coordinated profiles</small></span>
                 <b aria-hidden="true">→</b>
               </button>
               <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
@@ -254,17 +261,25 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
               <div className="halieus-theme-library-grid">
-                {THEME_PROFILES.map((profile) => (
-                  <button type="button" key={profile.id} className={mode === "profile" && profileId === profile.id ? "is-active" : ""} onClick={() => selectProfile(profile.id)}>
-                    <span className="halieus-theme-profile-swatch" aria-hidden="true">
-                      <i style={{ background: profile.theme.page }} />
-                      <i style={{ background: profile.theme.surface }} />
-                      <i style={{ background: profile.theme.accent }} />
-                      <i style={{ background: profile.theme.secondary }} />
-                    </span>
-                    <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small></span>
-                    {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
-                  </button>
+                {THEME_PROFILE_GROUPS.map((group) => (
+                  <Fragment key={group.id}>
+                    <div className="halieus-theme-library-group">
+                      <strong>{group.label}</strong>
+                      <small>{group.description}</small>
+                    </div>
+                    {group.profiles.map((profile) => (
+                      <button type="button" key={profile.id} className={mode === "profile" && profileId === profile.id ? "is-active" : ""} onClick={() => selectProfile(profile.id)}>
+                        <span className="halieus-theme-profile-swatch" aria-hidden="true">
+                          <i style={{ background: profile.theme.page }} />
+                          <i style={{ background: profile.theme.surface }} />
+                          <i style={{ background: profile.theme.accent }} />
+                          <i style={{ background: profile.theme.secondary }} />
+                        </span>
+                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small></span>
+                        {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
+                      </button>
+                    ))}
+                  </Fragment>
                 ))}
               </div>
             </>}
