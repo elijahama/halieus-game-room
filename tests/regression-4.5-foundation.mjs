@@ -19,6 +19,7 @@ const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 assert.match(playerCard,/actions\?: PlayerIdentityAction\[\]/,"Player cards must expose real contextual actions");
 assert.match(playerCard,/aria-haspopup="menu"/,"Player overflow trigger must be an accessible menu control");
 assert.match(playerCard,/role="menuitem"/,"Player overflow options must expose menu-item semantics");
+assert.match(playerCard,/event\.target !== event\.currentTarget/,"Player menu keyboard events must not bubble into the whole player card");
 assert.doesNotMatch(home,/status="•••"/,"Player ellipses must not remain decorative status text");
 assert.match(home,/actions=\{playerCardActions\(person\)\}/,"Home/player directory cards must use the shared action menu");
 assert.match(home,/Join their game/,"Player menu must expose real live-room join where available");
