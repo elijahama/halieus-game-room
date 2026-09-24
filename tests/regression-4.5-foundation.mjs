@@ -69,18 +69,19 @@ for (const [asset, expected] of Object.entries(approvedReferenceBlobs)) {
 
 const approvedLauncherBlobs = {
   "assets/branding/Halieus Game Room.ico": "931715f70ef873c9becbc8809b4c06a1d72d3607",
-  "assets/branding/launchers/matte/Start Halieus Game Room.ico": "baccee77f8607afa1f09deab7b620c34741b79a6",
-  "assets/branding/launchers/matte/Restart Halieus Game Room.ico": "f38f0b7e715c39bea7efb2e5f6e0934ac38a4a61",
-  "assets/branding/launchers/matte/Close Halieus Game Room.ico": "de74effa6decc942c41b2db3bef9b2e0dc8c732d",
-  "assets/branding/launchers/matte/HGR PowerShell.ico": "01e56e9ab2d5d4d39b30ff7c0aa69e08468b3dcb",
+  "assets/branding/launchers/Start Halieus Game Room.ico": "baccee77f8607afa1f09deab7b620c34741b79a6",
+  "assets/branding/launchers/Restart Halieus Game Room.ico": "f38f0b7e715c39bea7efb2e5f6e0934ac38a4a61",
+  "assets/branding/launchers/Close Halieus Game Room.ico": "de74effa6decc942c41b2db3bef9b2e0dc8c732d",
+  "assets/branding/launchers/HGR PowerShell.ico": "01e56e9ab2d5d4d39b30ff7c0aa69e08468b3dcb",
 };
 for (const [asset, expected] of Object.entries(approvedLauncherBlobs)) {
   assert.equal(gitBlobSha(asset), expected, `Approved reference-based launcher icon changed unexpectedly: ${asset}`);
 }
 
 assert.match(previewGenerator,/generated-preview/,"Generated launcher experiments must stay quarantined from approved assets");
-assert.doesNotMatch(previewGenerator,/Remove-Item[\s\S]*?launchers\\matte/s,"Preview generation must never delete approved matte icons");
+assert.doesNotMatch(previewGenerator,/Remove-Item[\s\S]*?assets\\branding\\launchers(?!\\generated-preview)/s,"Preview generation must never delete approved launcher icons");
 assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must never invoke artwork generation");
+assert.doesNotMatch(launcherShortcuts,/launchers\\\\matte/,"Retired matte launcher folder must not return");
 for (const launcherName of ["Start Halieus Game Room.ico","Restart Halieus Game Room.ico","Close Halieus Game Room.ico","HGR PowerShell.ico"]) {
   assert.ok(launcherShortcuts.includes(launcherName), "Shortcut generator must consume approved reference-based icon " + launcherName);
 }
