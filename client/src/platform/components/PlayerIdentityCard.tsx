@@ -80,6 +80,7 @@ export function PlayerIdentityCard({
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick ? activateCard : undefined}
       onKeyDown={onClick ? (event) => {
+        if (event.target !== event.currentTarget) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           activateCard();
