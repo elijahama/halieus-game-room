@@ -27,6 +27,9 @@ assert.doesNotMatch(css,/HGR interface coherence pass[\s\S]*?\.halieus-global-jo
 assert.match(css,/\.halieus-feature-arrow[\s\S]*?place-items:\s*center !important/s,"Featured arrows must use layout centring");
 assert.match(css,/\.halieus-feature-card-stage > img,[\s\S]*?box-shadow:\s*none !important/s,"Featured artwork must not use a square glow");
 assert.match(css,/html\[data-theme="dark"\][\s\S]*?--hgr-page:\s*#101114[\s\S]*?--mm-page:\s*var\(--hgr-page\)/s,"Dark mode must bridge HGR and legacy surfaces to the same graphite canvas");
+assert.match(css,/\.halieus-avatar-media,[\s\S]*?overflow:\s*hidden !important[\s\S]*?aspect-ratio:\s*1 \/ 1/s,"Player pictures must use one clipped square frame");
+assert.match(css,/\.halieus-avatar-media > img,[\s\S]*?object-fit:\s*cover !important[\s\S]*?object-position:\s*center !important/s,"Uploaded player pictures must use the same centred cover crop everywhere");
+assert.match(css,/\.halieus-side-account > \.halieus-avatar-media[\s\S]*?width:\s*40px !important[\s\S]*?border-radius:\s*12px !important/s,"Sidebar profile picture must stay compact and aligned with the platform identity system");
 
 for (const name of ["Start HGR App.lnk","Restart HGR App.lnk","Close HGR App.lnk","Update HGR Site.lnk"]) {
   assert.ok(shortcuts.includes(name),`Launcher shortcut family must include ${name}`);
