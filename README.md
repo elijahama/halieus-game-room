@@ -468,7 +468,9 @@ The project is best described as:
 
 The product owner defines the product, rules, requirements, testing and acceptance decisions. AI tools assist heavily with implementation and iteration.
 
-See [docs/AI_ASSISTED_DEVELOPMENT.md](docs/AI_ASSISTED_DEVELOPMENT.md).
+HGR also supports **Openshard development receipts** as an optional local provenance layer around supported AI coding-agent sessions. Those receipts complement Git history by recording the evidence available from an AI-assisted run without making receipt data part of the player-facing application or production runtime.
+
+See [docs/AI_ASSISTED_DEVELOPMENT.md](docs/AI_ASSISTED_DEVELOPMENT.md) and [docs/OPENSHARD.md](docs/OPENSHARD.md).
 
 ---
 
@@ -569,6 +571,7 @@ Start here:
 - [Deployment](docs/DEPLOYMENT.md)
 - [Development process](docs/DEVELOPMENT_PROCESS.md)
 - [AI-assisted development](docs/AI_ASSISTED_DEVELOPMENT.md)
+- [Openshard development receipts](docs/OPENSHARD.md)
 - [4.0.0 audit](docs/AUDIT_4.0.0.md)
 - [4.0.0 validation](docs/VALIDATION_4.0.0.md)
 - [4.1.0 deployment debugging postmortem](docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md)
