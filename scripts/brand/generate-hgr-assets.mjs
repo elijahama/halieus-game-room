@@ -53,6 +53,12 @@ function badgeGlyph(kind) {
   }
 }
 
+function glyphSvg(colour, title = "Halieus Game Room") {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="${escapeXml(title)}">
+  <path fill="${colour}" stroke="#111318" stroke-width="0.8" paint-order="stroke fill" d="${H_PATH}"/>
+</svg>`;
+}
+
 function iconSvg({ colour, glyph = null, title = "Halieus Game Room" }) {
   const badge = glyph
     ? `<g class="badge" color="#111318">${badgeGlyph(glyph)}</g>`
@@ -88,7 +94,7 @@ async function ensureDirs() {
 async function writeSources() {
   const master = iconSvg({ colour: colours.brand, title: "Halieus Game Room" });
   await writeFile(path.join(BRAND_ROOT, "Halieus Game Room.svg"), master);
-  await writeFile(path.join(PUBLIC_ROOT, "halieus-mark.svg"), master);
+  await writeFile(path.join(PUBLIC_ROOT, "halieus-mark.svg"), glyphSvg(colours.brand));
 
   for (const launcher of launchers) {
     await writeFile(
