@@ -66,7 +66,7 @@ Canonical shared values:
 
 Game artwork may use different geometry where the game itself requires it. Shared UI wrapped around that artwork uses the HGR geometry.
 
-## 3. Theme architecture
+## 4. Theme architecture
 
 The top-level appearance choice remains intentionally short:
 
