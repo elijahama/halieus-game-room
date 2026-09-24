@@ -52,7 +52,7 @@ Run:
 npm run assets:brand
 ```
 
-The generator uses Playwright to rasterise the committed SVG source family and writes:
+The normal generator treats the committed SVG family as **read-only source input**. It uses Playwright to rasterise those files and writes only generated outputs:
 
 - Windows launcher `.ico` files;
 - launcher preview `.png` files;
@@ -60,11 +60,15 @@ The generator uses Playwright to rasterise the committed SVG source family and w
 - favicon PNG/ICO outputs;
 - PWA 180 / 192 / 512 px icon outputs.
 
-To refresh only the editable SVG sources:
+Running `npm run assets:brand` repeatedly must not rewrite or reformat the committed SVG source files.
+
+To explicitly refresh the editable SVG source family itself, use the separate command:
 
 ```bash
 npm run assets:brand:source
 ```
+
+That source-refresh command is intentionally separate from the normal production-output workflow.
 
 ## Important separation
 
