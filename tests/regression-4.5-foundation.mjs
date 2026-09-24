@@ -32,6 +32,10 @@ assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-brid
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/matte H utility family/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
+assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");
+assert.match(css,/HGR 4\.5 shared website surface grammar/,"4.5 must implement a shared website surface layer");
+assert.match(css,/\.halieus-game-category \.halieus-library-art :is\(img,svg\)/,"Games-page normalisation must preserve existing artwork and only control its safe area");
+assert.match(css,/\.halieus-game-category \.halieus-library-status/,"Games-page status chips must use the shared shell grammar");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
