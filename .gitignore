@@ -86,6 +86,11 @@ desktop.ini
 *.pid
 *.pid.lock
 
+# Local AI-agent receipt/provenance state (Openshard)
+# Receipt history is intentionally local and must not become HGR source,
+# production data or a release input.
+/.openshard/
+
 # Duplicate/stale generated server-side client copy (canonical client lives at /client)
 server/client/
 

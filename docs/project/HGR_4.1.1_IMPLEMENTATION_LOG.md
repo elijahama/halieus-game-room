@@ -123,3 +123,13 @@ The final Part 15 walkthrough exposed four cleanup issues that stay within the 4
 - Owner replies are stored with the feedback item and become visible to the submitting player in their profile.
 - The PowerShell feedback viewer now reads the conversation store and falls back to the legacy NDJSON file when needed.
 - Added release regression coverage for persistence, legacy migration, game context, profile history, owner inbox and reply visibility.
+
+
+## Openshard development provenance
+
+- Added Openshard as optional **development-only provenance tooling** for HGR's human-directed, AI-assisted engineering workflow.
+- Openshard is not a gameplay/runtime dependency and is not required by players or the Oracle production service.
+- Added a dedicated HGR setup/usage guide covering local receipts, supported-agent capture, privacy boundaries, telemetry and the distinction between receipts and verification.
+- Added Windows helpers for `setup`, `doctor`, `last`, `history`, `stats`, `tui` and optional telemetry disablement.
+- Added `/.openshard/` to repository ignores so local receipt history cannot become source, production data or a source-baseline input.
+- HGR credits the upstream Openshard project and its Apache-2.0 licence rather than vendoring or presenting the tool as HGR code.
