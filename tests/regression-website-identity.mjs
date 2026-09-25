@@ -33,7 +33,9 @@ for(const name of ['brand-default','mono-light','mono-dark','light-mode','start'
  const svg=read(`client/public/brand/${folder}/${name}.svg`);
  assert.ok(svg.includes(path),`${name} must reuse canonical geometry`);
  assert.match(svg,/fill-rule="evenodd"/);
- assert.match(svg,/viewBox="0 0 1024 1024"/);
+ // Flat website profiles use the 1024 canvas; approved launcher vectors keep
+ // their native 64-unit reference canvas and are separately hash-pinned.
+ assert.match(svg,folder==='flat'?/viewBox="0 0 1024 1024"/:/viewBox="0 0 64 64"/);
 }
 assert.match(read('client/public/brand/glyphs/H.svg'),/fill="currentColor"/);
 assert.match(read('client/public/brand/flat/mono-dark.svg'),/--logo-glyph,#000000/);
