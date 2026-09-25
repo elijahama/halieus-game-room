@@ -3777,6 +3777,7 @@ function handleLeaveSpectator() {
           onRemoveAi={handleRemoveAi}
           onTurnTimerChange={handleTurnTimerChange}
           isUpdatingTurnTimer={isUpdatingTurnTimer}
+          betaMode={betaMode}
         />
         <RoomChatPanel game="mega-board" code={lobby.code} accent="#16a34a" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
       </>
