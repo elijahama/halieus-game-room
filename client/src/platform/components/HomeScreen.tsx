@@ -30,7 +30,6 @@ import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
-import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version";
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
@@ -98,7 +97,6 @@ export function HomeScreen(props: HomeScreenProps) {
 
   const [view, setView] = useState<HomeView>("home");
   const [joinOpen, setJoinOpen] = useState(false);
-  const [buildInfoOpen, setBuildInfoOpen] = useState(false);
   const [rankedLeaderboardGame, setRankedLeaderboardGame] = useState<GameId | null>(null);
   const [joinIntent, setJoinIntent] = useState<"join" | "watch">("join");
   const [createOpen, setCreateOpen] = useState(false);
@@ -658,21 +656,18 @@ export function HomeScreen(props: HomeScreenProps) {
           <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="home" /></span><b>Home</b></button>
           <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Games</b></button>
           <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Players</b></button>
-          {account && <button type="button" className={view === "guilds" ? "is-active" : ""} onClick={() => { setView("guilds"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Guilds</b></button>}
+          {account && <button type="button" className={view === "guilds" ? "is-active" : ""} onClick={() => { setView("guilds"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="guilds" /></span><b>Guilds</b></button>}
           {account && <button type="button" className={inboxOpen ? "is-active halieus-inbox-nav" : "halieus-inbox-nav"} onClick={() => { setInboxOpen(true); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="inbox" /></span><b>Inbox</b>{inboxCount > 0 && <span className="halieus-inbox-badge">{inboxCount > 99 ? "99+" : inboxCount}</span>}</button>}
         </nav>
         <button type="button" className="halieus-global-join" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="plus" /></span><b>Join Game</b></button>
         <div className="halieus-side-spacer" />
         {betaMode && <div className="halieus-beta-badge"><strong>BETA TEST</strong><span>Stats excluded</span></div>}
         <div className="halieus-side-display-controls" aria-label="Display controls">
-          <button type="button" className="halieus-fullscreen-button" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><span className="halieus-nav-icon"><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} /></span><b>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</b></button>
           <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
-
           <InstallAppButton />
           <NotificationPermissionButton />
         </div>
-        <button type="button" className="halieus-side-build-info" onClick={() => setBuildInfoOpen(true)}><span className="halieus-nav-icon"><HgrIcon name="info" /></span><b>Build Info</b></button>
-        {buildInfoOpen && <div className="halieus-home-build-popover" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" onClick={() => setBuildInfoOpen(false)} aria-label="Close build information"><HgrIcon name="close" size={20} /></button><p>HALIEUS GAME ROOM</p><h3>Build {APP_RELEASE_LABEL}</h3><small>Exact release</small><code>{RELEASE_FINGERPRINT}</code></div>}
+        <button type="button" className="halieus-side-fullscreen-primary" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><span className="halieus-nav-icon"><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} /></span><b>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</b></button>
         {fullscreenNotice && <small className="halieus-fullscreen-note" role="status">{fullscreenNotice}</small>}
       </aside>
 
@@ -767,14 +762,38 @@ export function HomeScreen(props: HomeScreenProps) {
         </section>}
 
         {view === "players" && <section className="halieus-view view-players panel-enter">
-          <header className="halieus-page-heading"><div><p>HALIEUS SOCIAL</p><h1>Players</h1><span>Find friends, see who is in a room, and open a useful game record instead of a plain contact list.</span></div><button type="button" className="button-outline halieus-open-guilds" onClick={() => { setView("guilds"); setSelectedPlayerId(null); }}>Guilds →</button></header>
-          <div className="halieus-player-tools">
-            <label><span>Search players</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
-            <div className="halieus-player-filters" role="group" aria-label="Player status filter">
-              {(["all", "online", "in-game", "offline"] as const).map((filter) => <button type="button" key={filter} className={playerFilter === filter ? "is-active" : ""} onClick={() => setPlayerFilter(filter)}>{filter === "in-game" ? "In Game" : filter[0].toUpperCase() + filter.slice(1)}</button>)}
+          {selectedPlayer ? <div className="halieus-player-profile-page-shell">
+            <button type="button" className="halieus-profile-page-back" onClick={() => { setSelectedPlayerId(null); setInviteNotice(""); }}><HgrIcon name="chevron-left" size={17} /> Back to players</button>
+            <article className="halieus-player-profile-page panel-enter" style={{ ["--profile-accent" as string]: selectedPlayer.playerColor }}>
+              <header className="halieus-player-profile-hero">
+                <span className="halieus-profile-avatar halieus-avatar-media" style={{ background: selectedPlayer.playerColor }}>{selectedPlayer.profilePicture ? <img src={selectedPlayer.profilePicture} alt="" /> : selectedPlayer.avatar}</span>
+                <div className="halieus-profile-hero-copy"><p>{selectedPlayerRoom ? "IN A GAME" : selectedPlayer.online ? "ONLINE NOW" : "PLAYER PROFILE"}</p><h1>{selectedPlayer.displayName}</h1><small>@{selectedPlayer.username}</small></div>
+                <span className={`halieus-profile-presence ${selectedPlayer.online ? "is-online" : "is-offline"}`}><i />{selectedPlayer.online ? "Online" : "Offline"}</span>
+              </header>
+
+              {selectedPlayerRoom && <section className="halieus-profile-live-room"><div><small>PLAYING NOW</small><strong>{GAME_BY_ID[selectedPlayerRoom.game].name}</strong><span>Room {selectedPlayerRoom.code} · {selectedPlayerRoom.playerCount}/{selectedPlayerRoom.maximumPlayers} players</span></div><div>{selectedPlayerRoom.joinable && <button type="button" className="button-primary" onClick={() => openLiveRoom(selectedPlayerRoom, "join")}>Join</button>}{selectedPlayerRoom.spectatable && <button type="button" className="button-outline" onClick={() => openLiveRoom(selectedPlayerRoom, "watch")}>Spectate</button>}</div></section>}
+
+              {selectedPlayer.id !== account?.id && <section className="halieus-profile-invite-row halieus-profile-request-row"><div><small>REQUEST A GAME</small><strong>{selectedPlayer.online ? "Invite them now" : "They can accept when they return"}</strong><select value={requestGameId} onChange={(event) => setRequestGameId(event.target.value as GameId)}>{GAMES.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}</select></div><button type="button" className="button-primary" disabled={requestingPlayerId === selectedPlayer.id} onClick={() => void requestGame(selectedPlayer)}>{requestingPlayerId === selectedPlayer.id ? "Sending…" : "Request game"}</button></section>}
+              {ownLiveRoom && selectedPlayer.id !== account?.id && <section className="halieus-profile-invite-row"><div><small>YOUR ACTIVE ROOM</small><strong>Invite to {ownLiveRoom.gameTitle}</strong><span>Room {ownLiveRoom.code}</span></div><button type="button" className="button-primary" disabled={invitingPlayerId === selectedPlayer.id} onClick={() => void invitePlayerToOwnRoom(selectedPlayer)}>{invitingPlayerId === selectedPlayer.id ? "Sending…" : "Invite to game"}</button></section>}
+              {inviteNotice && <p className="halieus-profile-invite-notice" role="status">{inviteNotice}</p>}
+
+              {playerStatsLoading ? <div className="halieus-profile-loading">Loading game record…</div> : <>
+                <div className="halieus-profile-summary"><article><span>Games played</span><strong>{selectedPlayerStats.played}</strong></article><article><span>Wins</span><strong>{selectedPlayerStats.wins}</strong></article><article><span>Overall win rate</span><strong>{selectedPlayerStats.winRate}%</strong></article><article><span>Favourite</span><strong>{selectedPlayerFavourite?.gameTitle ?? "—"}</strong></article><article><span>Win streak</span><strong>{selectedPlayerStreak}</strong></article></div>
+                {selectedPlayerStats.breakdown && <section className="halieus-profile-stat-breakdown"><header><strong>Competitive split</strong><small>AI-involved games are shown separately from human competition.</small></header><div><article><span>Human only</span><strong>{selectedPlayerStats.breakdown.humanOnly.winRate}%</strong><small>{selectedPlayerStats.breakdown.humanOnly.played} played</small></article><article><span>Ranked</span><strong>{selectedPlayerStats.breakdown.ranked.winRate}%</strong><small>{selectedPlayerStats.breakdown.ranked.played} played</small></article><article><span>Casual</span><strong>{selectedPlayerStats.breakdown.casual.winRate}%</strong><small>{selectedPlayerStats.breakdown.casual.played} played</small></article><article><span>AI involved</span><strong>{selectedPlayerStats.breakdown.aiInvolved.winRate}%</strong><small>{selectedPlayerStats.breakdown.aiInvolved.played} played</small></article></div></section>}
+                <div className="halieus-profile-detail-grid">
+                  <section className="halieus-profile-games"><h3>Game record</h3>{selectedPlayerStats.byGame.map((row) => { const game = GAME_BY_ID[row.game as GameId]; return <article key={row.game}><img src={game?.icon} alt="" /><div><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.winRate}% overall</small></div></article>; })}</section>
+                  <section className="halieus-profile-recent"><h3>Recent games</h3>{selectedPlayerStats.recent.length ? selectedPlayerStats.recent.slice(0, 8).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><span><strong>{item.gameTitle}</strong><small>{new Date(item.at).toLocaleDateString()} · {item.matchMode ? item.matchMode[0].toUpperCase() + item.matchMode.slice(1) : "Casual"} · {item.opponentType === "human-only" ? "Human" : item.opponentType === "ai-involved" ? "AI involved" : item.opponentType === "solo" ? "Solo" : "Unclassified"}</small></span><b className={item.won ? "is-win" : ""}>{item.result}</b></article>) : <div className="halieus-profile-empty">No completed games matched this account yet.</div>}</section>
+                </div>
+              </>}
+            </article>
+          </div> : <>
+            <header className="halieus-page-heading"><div><p>HALIEUS SOCIAL</p><h1>Players</h1><span>Find friends, see who is in a room, and open a full player profile.</span></div><button type="button" className="button-outline halieus-open-guilds" onClick={() => { setView("guilds"); setSelectedPlayerId(null); }}>Guilds →</button></header>
+            <div className="halieus-player-tools">
+              <label><span>Search players</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
+              <div className="halieus-player-filters" role="group" aria-label="Player status filter">
+                {(["all", "online", "in-game", "offline"] as const).map((filter) => <button type="button" key={filter} className={playerFilter === filter ? "is-active" : ""} onClick={() => setPlayerFilter(filter)}>{filter === "in-game" ? "In Game" : filter[0].toUpperCase() + filter.slice(1)}</button>)}
+              </div>
             </div>
-          </div>
-          <div className={`halieus-players-layout ${selectedPlayer ? "has-selection" : ""}`}>
             <div className="halieus-player-directory">
               {filteredDirectory.map((person) => {
                 const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase()) ?? null;
@@ -782,7 +801,6 @@ export function HomeScreen(props: HomeScreenProps) {
                 return <PlayerIdentityCard
                   key={person.id}
                   player={person}
-                  selected={selectedPlayerId === person.id}
                   className={`${person.online ? "is-online" : "is-offline"} ${liveRoom ? "is-in-game" : ""}`}
                   detail={liveRoom && liveGame ? `Playing ${liveGame.name} · ${liveRoom.code}` : person.online ? "Online" : "Offline"}
                   actions={playerCardActions(person)}
@@ -791,19 +809,7 @@ export function HomeScreen(props: HomeScreenProps) {
               })}
               {filteredDirectory.length === 0 && <div className="halieus-player-empty">No players match this filter.</div>}
             </div>
-            {selectedPlayer && <aside className="halieus-player-profile-card panel-enter" style={{ ["--profile-accent" as string]: selectedPlayer.playerColor }}>
-              <header><span className="halieus-profile-avatar halieus-avatar-media" style={{ background: selectedPlayer.playerColor }}>{selectedPlayer.profilePicture ? <img src={selectedPlayer.profilePicture} alt="" /> : selectedPlayer.avatar}</span><div><p>{selectedPlayerRoom ? "IN A GAME" : selectedPlayer.online ? "ONLINE NOW" : "PLAYER PROFILE"}</p><h2>{selectedPlayer.displayName}</h2><small>@{selectedPlayer.username}</small></div><button type="button" onClick={() => setSelectedPlayerId(null)} aria-label="Close player profile">×</button></header>
-              {selectedPlayerRoom && <section className="halieus-profile-live-room"><div><small>PLAYING NOW</small><strong>{GAME_BY_ID[selectedPlayerRoom.game].name}</strong><span>Room {selectedPlayerRoom.code} · {selectedPlayerRoom.playerCount}/{selectedPlayerRoom.maximumPlayers} players</span></div><div>{selectedPlayerRoom.joinable && <button type="button" className="button-primary" onClick={() => openLiveRoom(selectedPlayerRoom, "join")}>Join</button>}{selectedPlayerRoom.spectatable && <button type="button" className="button-outline" onClick={() => openLiveRoom(selectedPlayerRoom, "watch")}>Spectate</button>}</div></section>}
-              {selectedPlayer.id !== account?.id && <section className="halieus-profile-invite-row halieus-profile-request-row"><div><small>REQUEST A GAME</small><strong>{selectedPlayer.online ? "Invite them now" : "They can accept when they return"}</strong><select value={requestGameId} onChange={(event) => setRequestGameId(event.target.value as GameId)}>{GAMES.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}</select></div><button type="button" className="button-primary" disabled={requestingPlayerId === selectedPlayer.id} onClick={() => void requestGame(selectedPlayer)}>{requestingPlayerId === selectedPlayer.id ? "Sending…" : "Request game"}</button></section>}
-              {ownLiveRoom && selectedPlayer.id !== account?.id && <section className="halieus-profile-invite-row"><div><small>YOUR ACTIVE ROOM</small><strong>Invite to {ownLiveRoom.gameTitle}</strong><span>Room {ownLiveRoom.code}</span></div><button type="button" className="button-primary" disabled={invitingPlayerId === selectedPlayer.id} onClick={() => void invitePlayerToOwnRoom(selectedPlayer)}>{invitingPlayerId === selectedPlayer.id ? "Sending…" : "Invite to game"}</button></section>}
-              {inviteNotice && <p className="halieus-profile-invite-notice" role="status">{inviteNotice}</p>}
-              {playerStatsLoading ? <div className="halieus-profile-loading">Loading game record…</div> : <>
-                <div className="halieus-profile-summary"><article><span>Games played</span><strong>{selectedPlayerStats.played}</strong></article><article><span>Wins</span><strong>{selectedPlayerStats.wins}</strong></article><article><span>Win rate</span><strong>{selectedPlayerStats.winRate}%</strong></article><article><span>Favourite</span><strong>{selectedPlayerFavourite?.gameTitle ?? "—"}</strong></article><article><span>Win streak</span><strong>{selectedPlayerStreak}</strong></article></div>
-                <section className="halieus-profile-games"><h3>Game record</h3>{selectedPlayerStats.byGame.map((row) => { const game = GAME_BY_ID[row.game as GameId]; return <article key={row.game}><img src={game?.icon} alt="" /><div><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.winRate}%</small></div></article>; })}</section>
-                <section className="halieus-profile-recent"><h3>Recent games</h3>{selectedPlayerStats.recent.length ? selectedPlayerStats.recent.slice(0, 6).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><span><strong>{item.gameTitle}</strong><small>{new Date(item.at).toLocaleDateString()} · Room {item.roomCode}</small></span><b className={item.won ? "is-win" : ""}>{item.result}</b></article>) : <div className="halieus-profile-empty">No completed games matched this account yet.</div>}</section>
-              </>}
-            </aside>}
-          </div>
+          </>}
         </section>}
 
         {view === "guilds" && account && (
@@ -819,7 +825,7 @@ export function HomeScreen(props: HomeScreenProps) {
         )}
       </section>
 
-      <nav className="halieus-mobile-nav" aria-label="Mobile navigation"><button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}>⌂<span>Home</span></button><button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}>▦<span>Games</span></button><button type="button" onClick={() => openJoin("join")}>＋<span>Join</span></button><button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}>◉<span>Players</span></button></nav>
+      <nav className="halieus-mobile-nav" aria-label="Mobile navigation"><button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HgrIcon name="home" size={20} /><span>Home</span></button><button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><HgrIcon name="games" size={20} /><span>Games</span></button><button type="button" onClick={() => openJoin("join")}><HgrIcon name="plus" size={20} /><span>Join</span></button><button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><HgrIcon name="players" size={20} /><span>Players</span></button></nav>
 
       {inboxOverlay}
       {createOverlay}
