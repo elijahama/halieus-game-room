@@ -15,6 +15,7 @@ interface DiceRollOverlayProps {
   roll: DiceRoll;
   onSettled?: () => void;
   settleMs?: number;
+  doublesStage?: 0 | 1 | 2 | 3;
 }
 
 function randomWhite(): number {
@@ -36,6 +37,7 @@ export function DiceRollOverlay({
   roll,
   onSettled,
   settleMs = 1350,
+  doublesStage = 0,
 }: DiceRollOverlayProps) {
   const [rolling, setRolling] = useState(true);
   const [white1, setWhite1] = useState(randomWhite());
@@ -101,7 +103,7 @@ export function DiceRollOverlay({
 
   return (
     <div
-      className={`dice-roll-overlay ${rolling ? "is-rolling" : "is-settled"}`}
+      className={`dice-roll-overlay ${rolling ? "is-rolling" : "is-settled"} ${!rolling && doubles ? `is-doubles-stage-${Math.max(1, doublesStage)}` : ""}`}
       aria-live="assertive"
       aria-label={rolling ? "Dice rolling" : `Dice result ${roll.white1}, ${roll.white2}`}
     >
@@ -135,7 +137,11 @@ export function DiceRollOverlay({
             : triples
               ? "Triples!"
               : doubles
-                ? "Doubles!"
+                ? doublesStage >= 3
+                  ? "Third double · Jail"
+                  : doublesStage === 2
+                    ? "Doubles! One more sends you to Jail"
+                    : "Doubles! Roll again"
                 : `Move ${roll.movementTotal}`}
         </strong>
       </div>
