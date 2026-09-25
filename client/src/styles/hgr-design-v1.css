@@ -6459,3 +6459,176 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
   }
   .hgr-pre-game-shell[data-game="connect-four"] .connect-four-series-picker>p{grid-column:1/-1}
 }
+
+
+/* Part 17 — contextual board/table/card cosmetics with real miniature previews. */
+.hgr-create-cosmetics-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hgr-contextual-cosmetics-trigger{
+  min-width:0;
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-height:68px;
+  padding:8px 10px;
+  border:1px solid var(--hgr-border);
+  border-radius:12px;
+  background:var(--hgr-surface-soft);
+  color:var(--hgr-text);
+  text-align:left;
+  cursor:pointer;
+}
+.hgr-contextual-cosmetics-trigger:hover{border-color:color-mix(in srgb,var(--hgr-brand) 46%,var(--hgr-border));background:color-mix(in srgb,var(--hgr-brand) 5%,var(--hgr-surface-soft))}
+.hgr-contextual-cosmetics-trigger>span:nth-child(2){min-width:0;display:grid;gap:2px}
+.hgr-contextual-cosmetics-trigger>span:nth-child(2) strong{font-size:.72rem}
+.hgr-contextual-cosmetics-trigger>span:nth-child(2) small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--hgr-muted);font-size:.61rem}
+.hgr-contextual-cosmetics-trigger>b{color:var(--hgr-brand);font-size:.62rem;white-space:nowrap}
+.hgr-contextual-cosmetics-trigger.is-compact{min-height:58px}
+.hgr-contextual-cosmetics-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:130000;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  overflow-y:auto;
+  background:rgba(2,8,13,.68);
+  backdrop-filter:blur(10px);
+}
+.hgr-contextual-cosmetics-dialog{
+  width:min(820px,100%);
+  max-height:calc(100dvh - 36px);
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  overflow:hidden;
+  border:1px solid var(--hgr-border-strong);
+  border-radius:22px;
+  background:var(--hgr-surface-raised);
+  color:var(--hgr-text);
+  box-shadow:var(--hgr-shadow-float);
+}
+.hgr-contextual-cosmetics-dialog>header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding:16px 18px 13px;
+  border-bottom:1px solid var(--hgr-border);
+}
+.hgr-contextual-cosmetics-dialog>header p,
+.hgr-contextual-cosmetics-dialog>header h2,
+.hgr-contextual-cosmetics-dialog>header span{margin:0}
+.hgr-contextual-cosmetics-dialog>header p{color:var(--hgr-brand);font-size:9px;font-weight:950;letter-spacing:.13em}
+.hgr-contextual-cosmetics-dialog>header h2{margin-top:3px;font-size:1.35rem}
+.hgr-contextual-cosmetics-dialog>header span{display:block;margin-top:4px;color:var(--hgr-muted);font-size:.68rem}
+.hgr-contextual-cosmetics-dialog>header>button{
+  width:38px;height:38px;flex:0 0 auto;border:1px solid var(--hgr-border);border-radius:11px;background:var(--hgr-surface-soft);color:var(--hgr-text);font-size:21px;cursor:pointer
+}
+.hgr-contextual-cosmetics-grid{
+  min-height:0;
+  overflow-y:auto;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  padding:14px;
+}
+.hgr-contextual-cosmetics-grid>button{
+  min-width:0;
+  display:grid;
+  grid-template-columns:110px minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  padding:9px;
+  border:1px solid var(--hgr-border);
+  border-radius:13px;
+  background:var(--hgr-surface-soft);
+  color:var(--hgr-text);
+  text-align:left;
+  cursor:pointer;
+}
+.hgr-contextual-cosmetics-grid>button:hover:not(:disabled),
+.hgr-contextual-cosmetics-grid>button.is-active{border-color:color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-border));background:color-mix(in srgb,var(--hgr-brand) 7%,var(--hgr-surface-soft))}
+.hgr-contextual-cosmetics-grid>button:disabled{opacity:.52;cursor:not-allowed}
+.hgr-contextual-cosmetics-grid>button>span:nth-child(2){min-width:0;display:grid;gap:2px}
+.hgr-contextual-cosmetics-grid em{color:var(--hgr-brand);font-size:8px;font-style:normal;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.hgr-contextual-cosmetics-grid strong{font-size:.78rem}
+.hgr-contextual-cosmetics-grid small{color:var(--hgr-muted);font-size:.61rem;line-height:1.35}
+.hgr-contextual-cosmetics-grid>button>b{max-width:94px;color:var(--hgr-muted);font-size:8px;text-align:right}
+.hgr-contextual-cosmetics-grid>button.is-active>b{color:var(--hgr-brand)}
+.hgr-contextual-cosmetics-dialog>footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:12px 14px;
+  border-top:1px solid var(--hgr-border);
+  background:var(--hgr-surface-soft);
+}
+.hgr-contextual-cosmetics-dialog>footer>span{color:var(--hgr-muted);font-size:.62rem;line-height:1.35}
+.hgr-contextual-cosmetics-dialog>footer>div{display:flex;gap:8px}
+
+/* Actual miniature board/table/deck previews. */
+.hgr-contextual-cosmetic-preview{
+  --preview-bg:#1d252b;
+  --preview-field:#d6c9a8;
+  --preview-edge:#52616d;
+  --preview-accent:var(--hgr-brand);
+  position:relative;
+  width:100%;
+  height:54px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--preview-edge) 75%,var(--hgr-border));
+  border-radius:10px;
+  background:var(--preview-bg);
+}
+.hgr-contextual-cosmetic-preview.is-board .preview-board-frame{
+  position:relative;width:45px;height:45px;display:grid;place-items:center;border:5px solid var(--preview-edge);background:var(--preview-field);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--preview-edge) 55%,transparent)
+}
+.hgr-contextual-cosmetic-preview.is-board .preview-board-frame>b{position:absolute;background:var(--preview-accent)}
+.hgr-contextual-cosmetic-preview.is-board .preview-board-frame>b:nth-child(1){left:2px;right:2px;top:2px;height:4px}
+.hgr-contextual-cosmetic-preview.is-board .preview-board-frame>b:nth-child(2){left:2px;right:2px;bottom:2px;height:4px}
+.hgr-contextual-cosmetic-preview.is-board .preview-board-frame>b:nth-child(3){top:8px;bottom:8px;left:2px;width:4px}
+.hgr-contextual-cosmetic-preview.is-board .preview-board-frame>b:nth-child(4){top:8px;bottom:8px;right:2px;width:4px}
+.hgr-contextual-cosmetic-preview.is-board .preview-board-frame>em{width:18px;height:18px;border-radius:3px;background:color-mix(in srgb,var(--preview-accent) 24%,var(--preview-field));border:1px solid color-mix(in srgb,var(--preview-accent) 50%,var(--preview-edge))}
+.hgr-contextual-cosmetic-preview.is-poker .preview-poker-table{
+  position:relative;width:78px;height:37px;border:7px solid var(--preview-edge);border-radius:50%;background:var(--preview-field);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--preview-edge) 38%,transparent)
+}
+.hgr-contextual-cosmetic-preview.is-poker .preview-poker-table>b{position:absolute;width:9px;height:5px;border-radius:2px;background:#f7f3e8;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.hgr-contextual-cosmetic-preview.is-poker .preview-poker-table>b:nth-child(1){left:28px;top:13px}.hgr-contextual-cosmetic-preview.is-poker .preview-poker-table>b:nth-child(2){left:39px;top:13px}.hgr-contextual-cosmetic-preview.is-poker .preview-poker-table>b:nth-child(3){left:50px;top:13px}
+.hgr-contextual-cosmetic-preview.is-poker .preview-poker-table>em{position:absolute;left:8px;top:13px;width:7px;height:7px;border-radius:50%;background:var(--preview-accent)}
+.hgr-contextual-cosmetic-preview.is-cards{display:block}
+.hgr-contextual-cosmetic-preview.is-cards .preview-card-back{
+  position:absolute;width:31px;height:42px;left:30px;top:6px;border:3px solid #f4eee2;border-radius:5px;background:repeating-linear-gradient(45deg,var(--preview-accent) 0 3px,var(--preview-field) 3px 6px);box-shadow:0 3px 8px rgba(0,0,0,.24);transform:rotate(-9deg)
+}
+.hgr-contextual-cosmetic-preview.is-cards .preview-card-back.is-front{left:49px;transform:rotate(7deg);filter:brightness(1.05)}
+
+/* Preview palettes track each material family instead of showing a generic H. */
+.hgr-contextual-cosmetic-preview.skin-classic-board{--preview-bg:#19372a;--preview-field:#d7d0b8;--preview-edge:#0d5139;--preview-accent:#c7443f}
+.hgr-contextual-cosmetic-preview.skin-muted-tournament-board{--preview-bg:#202629;--preview-field:#b4b0a5;--preview-edge:#555e62;--preview-accent:#7a8d83}
+.hgr-contextual-cosmetic-preview.skin-night-board{--preview-bg:#071019;--preview-field:#1a2933;--preview-edge:#274a5d;--preview-accent:#5ed5ff}
+.hgr-contextual-cosmetic-preview.skin-transit-board{--preview-bg:#102d33;--preview-field:#d9e0d6;--preview-edge:#275c64;--preview-accent:#e2664f}
+.hgr-contextual-cosmetic-preview.skin-tycoon-board{--preview-bg:#0d0d0e;--preview-field:#2a2823;--preview-edge:#9a7735;--preview-accent:#d5ac58}
+.hgr-contextual-cosmetic-preview.skin-ivory-8bit-board{--preview-bg:#d8d2c3;--preview-field:#f0ece2;--preview-edge:#4a4640;--preview-accent:#a72e35}
+.hgr-contextual-cosmetic-preview.skin-lavender-16bit-board{--preview-bg:#b9b7bd;--preview-field:#e2e1e3;--preview-edge:#7566a8;--preview-accent:#9f87c3}
+.hgr-contextual-cosmetic-preview.skin-black-drive-board{--preview-bg:#090a0b;--preview-field:#1b1d20;--preview-edge:#5d6168;--preview-accent:#bd3036}
+.hgr-contextual-cosmetic-preview.skin-grey-disc-board{--preview-bg:#aeb2b6;--preview-field:#dfe1e2;--preview-edge:#656c73;--preview-accent:#3f6597}
+.hgr-contextual-cosmetic-preview.skin-classic-felt{--preview-bg:#171a18;--preview-field:#245b43;--preview-edge:#5a3828;--preview-accent:#d3ab53}
+.hgr-contextual-cosmetic-preview.skin-muted-poker-room{--preview-bg:#202426;--preview-field:#384641;--preview-edge:#58524b;--preview-accent:#a28e6c}
+.hgr-contextual-cosmetic-preview.skin-ivory-8bit-table{--preview-bg:#d8d2c3;--preview-field:#ece6d8;--preview-edge:#574d45;--preview-accent:#a72e35}
+.hgr-contextual-cosmetic-preview.skin-lavender-16bit-table{--preview-bg:#bdbcc2;--preview-field:#cbc8d8;--preview-edge:#6d6385;--preview-accent:#856ab0}
+.hgr-contextual-cosmetic-preview.skin-black-drive-table{--preview-bg:#08090a;--preview-field:#202428;--preview-edge:#5e6065;--preview-accent:#c2353b}
+.hgr-contextual-cosmetic-preview.skin-grey-disc-table{--preview-bg:#aeb1b4;--preview-field:#bfc9d1;--preview-edge:#626a72;--preview-accent:#466b99}
+.hgr-contextual-cosmetic-preview.skin-classic-deck{--preview-bg:#182127;--preview-field:#e8e1cf;--preview-edge:#66727b;--preview-accent:#9c3135}
+.hgr-contextual-cosmetic-preview.skin-midnight-deck{--preview-bg:#070b10;--preview-field:#182332;--preview-edge:#34465c;--preview-accent:#4ca2ff}
+.hgr-contextual-cosmetic-preview.skin-casino-deck{--preview-bg:#0d2218;--preview-field:#163a29;--preview-edge:#785e32;--preview-accent:#d1aa55}
+.hgr-contextual-cosmetic-preview.skin-neon-deck{--preview-bg:#05090b;--preview-field:#15242c;--preview-edge:#00c9d8;--preview-accent:#ff45c8}
+@media(max-width:720px){
+  .hgr-create-cosmetics-row,.hgr-contextual-cosmetics-grid{grid-template-columns:1fr}
+  .hgr-contextual-cosmetics-dialog{max-height:calc(100dvh - 20px)}
+  .hgr-contextual-cosmetics-grid>button{grid-template-columns:92px minmax(0,1fr) auto}
+  .hgr-contextual-cosmetics-dialog>footer{align-items:stretch;flex-direction:column}
+  .hgr-contextual-cosmetics-dialog>footer>div{justify-content:flex-end}
+}
