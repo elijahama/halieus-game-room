@@ -6398,20 +6398,21 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
   align-items: center;
   gap: 8px;
 }
-.account-build-info-button {
-  min-height: 36px !important;
-  display: inline-flex !important;
+.account-build-info-label {
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 10px !important;
-  white-space: nowrap;
-}
-.account-build-info-button svg {
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 7px;
   color: var(--hgr-muted);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  user-select: text;
 }
-.account-build-info-modal {
-  width: min(460px,calc(100dvw - 32px)) !important;
-  margin: auto !important;
+.account-build-info-label svg {
+  color: var(--hgr-muted);
 }
 .account-stat-breakdown,
 .halieus-profile-stat-breakdown {
@@ -6646,13 +6647,10 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
     max-width: none;
     text-align: left;
   }
-  .account-panel-header-actions .account-build-info-button span {
-    display: none;
-  }
-  .account-build-info-button {
-    width: 38px;
-    padding: 0 !important;
-    justify-content: center;
+  .account-build-info-label {
+    gap: 4px;
+    padding-inline: 2px;
+    font-size: 7px;
   }
   .halieus-player-profile-hero {
     grid-template-columns: 64px minmax(0,1fr);
