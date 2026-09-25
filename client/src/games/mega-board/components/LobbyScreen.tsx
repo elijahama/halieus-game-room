@@ -228,7 +228,7 @@ export function LobbyScreen({
               <p className="modal-eyebrow">Board appearance</p>
               <h2>Table cosmetics</h2>
               <small>The host chooses the shared board before play. Your HGR theme and accessibility remain personal.</small>
-              <SkinLibraryButton stats={personalStats} betaMode={false} slots={["mega-board"]} roomStyle={lobby.boardStyle ?? "classic-board"} onRoomStyleChange={onBoardStyleChange} readOnly={!isHost} />
+              <SkinLibraryButton stats={personalStats} betaMode={betaMode} slots={["mega-board"]} roomStyle={lobby.boardStyle ?? "classic-board"} onRoomStyleChange={onBoardStyleChange} readOnly={!isHost} />
             </section>
             <section className="lobby-side-card">
               <p className="modal-eyebrow">Room access</p>
