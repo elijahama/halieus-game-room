@@ -235,6 +235,17 @@ export function getAccountSummaryById(accountId: string): HalieusAccountSummary 
   return account ? publicAccount(account) : null;
 }
 
+export function getAccountSummaryByDisplayName(displayName: string): HalieusAccountSummary | null {
+  const key = displayName.trim().toLocaleLowerCase("en-GB");
+  if (!key) return null;
+  const account = store.accounts.find((candidate) =>
+    candidate.status === "active" &&
+    [candidate.displayName, ...(candidate.displayNameAliases ?? [])]
+      .some((value) => value.trim().toLocaleLowerCase("en-GB") === key),
+  );
+  return account ? publicAccount(account) : null;
+}
+
 function addAudit(actorAccountId: string | null, action: string, targetType: HalieusAuditEntry["targetType"], targetId: string | null, summary: string): void {
   store.audit.unshift({ id: id("audit"), at: Date.now(), actorAccountId, action, targetType, targetId, summary });
   if (store.audit.length > MAX_AUDIT) store.audit.length = MAX_AUDIT;
