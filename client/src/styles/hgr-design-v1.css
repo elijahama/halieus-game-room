@@ -6300,3 +6300,32 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
   .lobby-turn-timer-setting{grid-template-columns:1fr}
   .lobby-turn-timer-setting select,.lobby-turn-timer-value{width:100%}
 }
+
+
+/* Part 17 — compact account identity editing. */
+.account-username-setting{display:grid;gap:6px;min-width:0}
+.account-setting-label{color:var(--hgr-text-soft);font-size:11px;font-weight:850}
+.account-username-identity{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:48px;
+  padding:8px 10px 8px 12px;
+  border:1px solid var(--hgr-border);
+  border-radius:12px;
+  background:var(--hgr-surface-soft);
+}
+.account-username-identity>span{min-width:0;display:grid;gap:1px}
+.account-username-identity small{color:var(--hgr-muted);font-size:9px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+.account-username-identity strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem}
+.account-username-identity button{flex:0 0 auto;min-height:34px!important;padding:6px 10px!important}
+.account-username-edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.account-username-edit-row .account-username-input{min-height:42px;background:var(--hgr-surface)!important;border-color:var(--hgr-border)!important}
+.account-username-edit-row .account-username-input>span{color:var(--hgr-muted)}
+.account-username-edit-row>.button-muted{min-height:42px!important;padding-inline:11px!important}
+@media(max-width:560px){
+  .account-username-edit-row{grid-template-columns:1fr}
+  .account-username-edit-row>.button-muted{width:100%}
+}
