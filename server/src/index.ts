@@ -456,8 +456,9 @@ io.on(
   "connection",
   (socket: Socket) => {
   let progressionBeta = socket.handshake.auth?.betaMode === true;
+  socket.data.betaMode = progressionBeta;
   const clearProgressionIdentity = registerProgressionIdentity(socket.id, () => { const account = getAuthenticatedAccount(socket.request as Request); return account ? { accountId: account.id, beta: progressionBeta } : null; });
-  socket.on("platform:progression-mode", (value: { beta?: boolean }) => { progressionBeta = value?.beta === true; });
+  socket.on("platform:progression-mode", (value: { beta?: boolean }) => { progressionBeta = value?.beta === true; socket.data.betaMode = progressionBeta; });
   socket.once("disconnect", clearProgressionIdentity);
   console.log(
     `Player connected: ${socket.id}`,
