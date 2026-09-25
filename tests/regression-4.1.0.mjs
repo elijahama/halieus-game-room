@@ -99,7 +99,8 @@ assert.match(
 assert.match(home,/type HomeView = "home" \| "games" \| "players" \| "rankings" \| "guilds"/,'Rankings and Guilds must live in the Game Room social navigation');
 assert.match(home,/import \{ GuildsPanel \} from "\.\/GuildsPanel"/,'Game Room must import the Guilds surface');
 assert.match(home,/function openGuildCreate\(game: GameId, roomCode: string\)/,'Guild rooms must hand off to the existing game create flow');
-assert.match(home,/view === "players" \|\| view === "rankings" \|\| view === "guilds"/,'Players mobile navigation must remain active while browsing Rankings or Guilds');
+assert.match(home,/className=\{view === "rankings" \? "is-active" : ""\}/,'Rankings must own its active navigation state');
+assert.match(home,/className=\{view === "guilds" \? "is-active" : ""\}/,'Guilds must own its active navigation state');
 assert.doesNotMatch(home,/import \{ ProjectTimeline \} from "\.\/ProjectTimeline"/,'Project history should no longer occupy the player Home screen');
 assert.match(home,/import \{ HgrIcon \} from "\.\/HgrIcon"/,'Home navigation must import the shared SVG icon system');
 assert.match(home,/HgrIcon name="home"/,'Home navigation SVG icon missing');
