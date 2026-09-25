@@ -29,6 +29,7 @@ import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
+import { PreGameShell } from "./PreGameShell";
 import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version";
 
 export type GameSelection = GameId;
@@ -549,8 +550,15 @@ export function HomeScreen(props: HomeScreenProps) {
 
   const createOverlay = createOpen && overlayHost ? createPortal(
     <div className="halieus-create-backdrop halieus-viewport-overlay" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setCreateOpen(false)}>
-      <section className="halieus-create-panel halieus-create-modal panel-enter" style={{ borderColor: `color-mix(in srgb, ${gameAccent} 42%, ${theme.border})`, ["--game-create-accent" as string]: gameAccent }} role="dialog" aria-modal="true" aria-label={`Create ${selected.name} room`}>
-        <header className="halieus-create-modal-head"><div className="halieus-create-brand"><GameBrandIcon game={selectedGame} /><div><p>{selected.name.toUpperCase()}</p><h2>Create {pokerSelected || blackjackSelected ? "a table" : "a room"}</h2><span>{selected.subtitle}</span></div></div><button type="button" className="halieus-create-close" onClick={() => setCreateOpen(false)} aria-label="Close room setup">×</button></header>
+      <PreGameShell
+        game={selectedGame}
+        eyebrow={selected.name.toUpperCase()}
+        title={`Create ${pokerSelected || blackjackSelected ? "a table" : "a room"}`}
+        subtitle={selected.subtitle}
+        accent={gameAccent}
+        borderColor={theme.border}
+        onClose={() => setCreateOpen(false)}
+      >
         <div className="halieus-game-options">
           {megaSelected && <><div className="match-tabs is-three-mode mega-match-tabs" role="group" aria-label="Mega Board match type"><button type="button" className={!ranked && !blitz ? "active" : ""} onClick={() => onMatchModeChange("casual")}>Casual</button><button type="button" className={ranked ? "active" : ""} onClick={() => onMatchModeChange("ranked")}>🏆 Ranked</button><button type="button" className={blitz ? "active" : ""} onClick={() => onMatchModeChange("blitz")}>⚡ Blitz</button></div>{rankedLeaderboardAction("mega-board", ranked)}{!ranked && <label className="free-parking-toggle"><input type="checkbox" checked={freeParkingJackpotEnabled} onChange={(event) => onFreeParkingJackpotChange(event.target.checked)} /><span><strong>Free Parking jackpot</strong><small>Taxes and eligible Bank fines build the pot.</small></span></label>}</>}
           {pokerSelected && <><div className="match-tabs is-two-mode" role="group" aria-label="Poker match type"><button type="button" className={pokerMatchMode === "casual" ? "active" : ""} onClick={() => onPokerMatchModeChange("casual")}>Casual</button><button type="button" className={pokerMatchMode === "ranked" ? "active" : ""} onClick={() => onPokerMatchModeChange("ranked")}>🏆 Ranked</button></div>{rankedLeaderboardAction("poker", pokerMatchMode === "ranked")}<div className="poker-variant-picker"><p>POKER VARIANT</p><button type="button" className="poker-variant-live" aria-pressed={pokerVariant === "texas-holdem"} onClick={() => onPokerVariantChange("texas-holdem")}><span>♠</span><div><strong>Texas Hold’em</strong><small>Live now</small></div><b>Play</b></button><div className="poker-variant-roadmap"><span>Omaha <i>Coming soon</i></span><span>Five-Card Draw <i>Planned</i></span><span>Seven-Card Stud <i>Planned</i></span></div></div><div className="poker-home-settings"><label>Starting stack<select value={pokerStartingChips} onChange={(event) => onPokerStartingChipsChange(Number(event.target.value))}><option value={2500}>Quick · 2,500</option><option value={5000}>Standard · 5,000</option><option value={10000}>Deep · 10,000</option></select></label><label>Blinds<select value={`${pokerSmallBlind}/${pokerBigBlind}`} onChange={(event) => { const [small, big] = event.target.value.split("/").map(Number); onPokerSmallBlindChange(small); onPokerBigBlindChange(big); }}><option value="10/20">10 / 20</option><option value="25/50">25 / 50</option><option value="50/100">50 / 100</option></select></label></div></>}
@@ -577,7 +585,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <label>New room code<div className="input-action-row"><input value={roomCode} onChange={(event) => onRoomCodeChange(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} maxLength={6} /><button type="button" className="button-muted compact-button" onClick={onGenerateRoomCode}>Generate</button></div></label>
           <button type="submit" disabled={disabled} className="button-primary full-button">{isCreating ? "Creating…" : pokerSelected || blackjackSelected ? `Create ${selected.name} table` : `Create ${selected.name} room`}</button>
         </form>
-      </section>
+      </PreGameShell>
     </div>,
     overlayHost,
   ) : null;
