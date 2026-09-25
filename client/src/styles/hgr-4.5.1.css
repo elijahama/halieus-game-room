@@ -918,6 +918,22 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 .halieus-theme-library-grid > button.is-beta-unlocked { opacity:1 !important; filter:none !important; }
 .halieus-theme-library-grid > button.is-beta-unlocked .theme-unlock-condition { color:var(--hgr-muted) !important; }
 .theme-unlock-condition { color:var(--hgr-muted) !important; font-weight:600; }
+
+/* Locked cosmetics stay visibly unavailable without hiding the reason. */
+.halieus-skins-grid > button.is-locked {
+  opacity:.56 !important;
+  filter:saturate(.45) !important;
+  cursor:not-allowed !important;
+}
+.halieus-skins-grid > button.is-locked .halieus-skin-state {
+  opacity:1 !important;
+  color:var(--hgr-text) !important;
+  font-weight:750 !important;
+}
+.halieus-skins-grid > button.is-unlocked {
+  opacity:1;
+  filter:none;
+}
 @media(max-width:540px) { .achievement-bar-recent { display:none; } .achievement-bar { gap:10px; } }
 /* Swap contrast-critical logo layers together; never interpolate the H through grey. */
 .halieus-brand-mark :is(rect,path,g) { transition:none !important; }
