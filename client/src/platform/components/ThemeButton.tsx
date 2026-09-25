@@ -154,10 +154,15 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       if (!rect) return;
       const desiredWidth = libraryOpen ? 610 : 310;
       const width = Math.min(desiredWidth, Math.max(240, window.innerWidth - 24));
-      const left = Math.min(Math.max(12, rect.left), Math.max(12, window.innerWidth - width - 12));
+      const canOpenBesideTrigger = rect.right + 8 + width <= window.innerWidth - 12;
+      const besideLeft = rect.right + 8;
+      const fallbackLeft = Math.min(Math.max(12, rect.left), Math.max(12, window.innerWidth - width - 12));
+      const left = canOpenBesideTrigger ? besideLeft : fallbackLeft;
       const menuHeight = libraryOpen ? 560 : 390;
+      const maxTop = Math.max(12, window.innerHeight - menuHeight - 12);
+      const alignedTop = Math.min(Math.max(12, rect.top), maxTop);
       const above = rect.top - menuHeight - 8;
-      const top = above >= 12 ? above : Math.min(window.innerHeight - menuHeight - 12, rect.bottom + 8);
+      const top = canOpenBesideTrigger ? alignedTop : above >= 12 ? above : Math.min(maxTop, rect.bottom + 8);
       setPopoverPosition({ left, top: Math.max(12, top), width });
     };
     positionMenu();
