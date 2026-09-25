@@ -16,11 +16,12 @@ walk('assets/branding/launchers');
 assert.deepEqual(actualPaths.sort(), expected.map(a => a.path).sort(), 'Protected reference/launcher inventory changed; review the entire set');
 for (const asset of expected) {
   const bytes = readFileSync(resolve(root, asset.path));
-  // Exact byte check for this Windows snapshot. On other checkout platforms,
-  // only CRLF/LF conversion of text is permitted; binary artwork is always exact.
-  const hash = createHash('sha256').update(bytes).digest('hex');
-  if (hash !== asset.sha256 && /\.(svg|md)$/.test(asset.path)) {
-    assert.equal(createHash('sha256').update(bytes.toString('utf8').replace(/\r?\n/g, '\r\n')).digest('hex'), asset.sha256, asset.path);
-  } else assert.equal(hash, asset.sha256, asset.path);
+  // Binary artwork remains byte-exact. Text references/SVGs are canonicalised to
+  // LF before hashing so Git's Windows CRLF checkout cannot create a false failure.
+  const canonicalBytes = /\.(svg|md)$/.test(asset.path)
+    ? Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8')
+    : bytes;
+  const hash = createHash('sha256').update(canonicalBytes).digest('hex');
+  assert.equal(hash, asset.sha256, asset.path);
 }
 console.log(`PASS protected branding: ${expected.length} independent reference/launcher files`);
