@@ -95,6 +95,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState(account.username);
+  const [usernameEditing, setUsernameEditing] = useState(false);
   const [displayName, setDisplayName] = useState(account.displayName);
   const [avatar, setAvatar] = useState(account.avatar);
   const [profilePicture, setProfilePicture] = useState<string | null>(account.profilePicture);
@@ -194,7 +195,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
     event.preventDefault(); setMessage("");
     try {
       const result = await accountApi<{ ok: true; account: HalieusAccountSummary }>("/auth/profile", { method: "POST", body: JSON.stringify({ username, displayName, avatar, profilePicture, playerColor }) });
-      onAccountChange(result.account); setMessage("Player profile updated.");
+      onAccountChange(result.account); setUsername(result.account.username); setUsernameEditing(false); setMessage("Player profile updated.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to update profile."); }
   }
 
@@ -357,7 +358,21 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
         <form className="account-settings-card" onSubmit={saveProfile}>
           <div><p className="modal-eyebrow">Player profile</p><h3>Your Halieus identity</h3></div>
           <label>Display name<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} maxLength={40} /><small className="account-field-help">Shown to other players in Halieus and in games.</small></label>
-          <label>Sign-in username<div className="account-username-input"><span>@</span><input value={username} onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))} minLength={3} maxLength={32} autoComplete="username" required /></div><small className="account-field-help">This is your account login — it does not need to be an email address. You can change it without losing your account or game history.</small></label>
+          <div className="account-username-setting">
+            <span className="account-setting-label">Sign-in username</span>
+            {usernameEditing ? (
+              <div className="account-username-edit-row">
+                <div className="account-username-input"><span>@</span><input value={username} onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))} minLength={3} maxLength={32} autoComplete="username" required aria-label="Sign-in username" /></div>
+                <button type="button" className="button-muted" onClick={() => { setUsername(account.username); setUsernameEditing(false); }}>Cancel</button>
+              </div>
+            ) : (
+              <div className="account-username-identity">
+                <span><small>Account ID</small><strong>@{username}</strong></span>
+                <button type="button" className="button-outline" onClick={() => setUsernameEditing(true)}>Edit</button>
+              </div>
+            )}
+            <small className="account-field-help">Your account login can change without affecting game history.</small>
+          </div>
           <div className="account-profile-picture-editor"><span className="account-profile-picture-preview" style={{ background: playerColor }}>{profilePicture ? <img src={profilePicture} alt="Profile preview" /> : avatar}</span><div><label className="button-outline account-picture-upload">Upload profile picture<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => chooseProfilePicture(event.target.files?.[0] ?? null)} /></label>{profilePicture && <button type="button" className="button-muted" onClick={() => setProfilePicture(null)}>Remove picture</button>}<small>Optional · PNG, JPEG or WebP · up to 1 MB.</small></div></div>
           <div className="account-profile-row"><label>Initials fallback<input value={avatar} onChange={(event) => setAvatar(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} maxLength={3} /></label><label>Player colour<input type="color" value={playerColor} onChange={(event) => setPlayerColor(event.target.value)} /></label></div>
           <button type="submit" className="button-primary">Save profile</button>
