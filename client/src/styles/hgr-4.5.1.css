@@ -377,6 +377,15 @@ html[data-theme="light"] .lobby-shell-v2 .player-copy > span {
 /* Mega Board in-game                                                         */
 /* -------------------------------------------------------------------------- */
 
+.mega-live-page .player-rail-order {
+  background: #168a42 !important;
+  color: #ffffff !important;
+}
+.mega-live-page .player-rail-card.is-current .player-rail-order {
+  background: #16a34a !important;
+  box-shadow: 0 0 0 3px rgba(22,163,74,.14);
+}
+
 .mega-live-page .centre-turn-status {
   background: linear-gradient(145deg,#0d2418,#152f21) !important;
   border-color: rgba(74,222,128,.38) !important;
