@@ -913,7 +913,10 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 .halieus-theme-library-grid { grid-auto-rows:auto; }
 .halieus-theme-library-group { min-height:0; align-self:end; }
 .halieus-theme-library-grid > button { height:176px; min-height:176px !important; }
-.halieus-theme-library-grid > button:disabled { opacity:1 !important; cursor:not-allowed; color:var(--hgr-text); }
+.halieus-theme-library-grid > button:disabled { opacity:.62 !important; filter:saturate(.48); cursor:not-allowed; color:var(--hgr-text); }
+.halieus-theme-library-grid > button:disabled .theme-unlock-condition { color:var(--hgr-text) !important; font-weight:750; }
+.halieus-theme-library-grid > button.is-beta-unlocked { opacity:1 !important; filter:none !important; }
+.halieus-theme-library-grid > button.is-beta-unlocked .theme-unlock-condition { color:var(--hgr-muted) !important; }
 .theme-unlock-condition { color:var(--hgr-muted) !important; font-weight:600; }
 @media(max-width:540px) { .achievement-bar-recent { display:none; } .achievement-bar { gap:10px; } }
 /* Swap contrast-critical logo layers together; never interpolate the H through grey. */
