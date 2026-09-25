@@ -1653,3 +1653,36 @@ html[data-theme="custom"] .halieus-game-atmosphere span {
 .halieus-skin-preview.halieus-skin-palette > i:nth-child(4) {
   border-bottom-right-radius: 11px !important;
 }
+
+
+/* ==========================================================================
+   HGR 4.5.2 touch performance
+   Keep game atmosphere visible while reducing fixed-layer GPU work on tablets.
+   ========================================================================== */
+@media (hover: none) and (pointer: coarse) {
+  .halieus-game-atmosphere {
+    contain: strict;
+  }
+  .halieus-game-atmosphere span {
+    will-change: auto !important;
+    filter: none !important;
+    text-shadow: none !important;
+    animation-duration: 30s !important;
+  }
+
+  /* Fixed translucent blurs are particularly expensive while iPad/Android
+   browsers are scrolling or showing native text/select controls. Opaque
+   theme-derived surfaces preserve hierarchy without forcing live blur passes. */
+  .halieus-mobile-bar,
+  .halieus-mobile-nav {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: color-mix(in srgb,var(--hgr-surface) 97%,transparent) !important;
+  }
+  .halieus-join-backdrop,
+  .halieus-skins-backdrop,
+  .achievement-backdrop {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
