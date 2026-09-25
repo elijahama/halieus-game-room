@@ -42,6 +42,7 @@ const megaBoard=read("client/src/games/mega-board/components/GameBoard.tsx");
 const megaLeaderboard=read("client/src/games/mega-board/components/LeaderboardModal.tsx");
 const accountPanel=read("client/src/platform/accounts/AccountPanel.tsx");
 const megaGameRules=read("shared/games/mega-board/game-rules.ts");
+const megaLobbyHandlers=read("server/src/games/mega-board/handlers/lobbyHandlers.ts");
 const megaTurnHandlers=read("server/src/games/mega-board/handlers/turnHandlers.ts");
 const guildContracts=read("shared/platform/guilds.ts");
 const guildServer=read("server/src/platform/guilds.ts");
@@ -232,6 +233,9 @@ assert.match(indexCss,/\.poker-side-tab-panel \{[\s\S]*?overflow:\s*hidden/s,"Po
 assert.match(indexCss,/\.poker-actions-workspace,[\s\S]*?overflow-y:\s*auto/s,"Poker selected workspace must provide internal scrolling when viewport height is constrained");
 assert.match(indexCss,/@media \(min-width: 1001px\)[\s\S]*?height:\s*calc\(100dvh - 118px\)/s,"Desktop Poker table and side rail must fit the viewport rather than requiring page-wheel access");
 assert.match(megaGameMenu,/Locked for this match/,"Live Mega timer must be read-only");
+assert.match(app,/socket\.emit\("game:start",[\s\S]*?setGameState\(response\.state\)[\s\S]*?setGameStarted\(true\)/,"Mega Board host must enter play from the authoritative start acknowledgement");
+assert.match(megaLobbyHandlers,/Cosmetics must never block gameplay/,"Mega Board room creation must fall back safely when cosmetic state cannot be read");
+assert.match(megaLobbyHandlers,/socket\.join\(code\);[\s\S]*?const publicRoom = toPublicGameRoom\(room\)/,"Mega Board start must self-heal host Socket.IO room membership before broadcasts");
 assert.match(read("client/src/games/mega-board/components/LobbyScreen.tsx"),/TURN_TIMER_PRESET_SECONDS.map/,"Pregame timer uses approved presets");
 assert.match(megaTurnHandlers,/room.hostId !== socket.id/,"Only host may configure pregame timer");
 assert.match(megaTurnHandlers,/room.started \|\| room.gameState/,"Server locks settings after start");
