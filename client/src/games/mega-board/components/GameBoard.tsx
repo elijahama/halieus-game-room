@@ -450,7 +450,9 @@ export function GameBoard({
   const [selectedDeedSpaceId, setSelectedDeedSpaceId] =
     useState<number | null>(null);
   const [freeParkingInfoOpen, setFreeParkingInfoOpen] = useState(false);
+  const [busTicketInfoOpen, setBusTicketInfoOpen] = useState(false);
   const [selectedInfoSpaceId, setSelectedInfoSpaceId] = useState<number | null>(null);
+  const expiringBusTicketsRemaining = (gameState.busTicketDeck ?? []).filter((id) => id.startsWith("bus-expire-")).length;
 
   // Presentation state is deliberately separate from authoritative game state.
   // The server may resolve an action immediately, but players see the dice,
@@ -1438,10 +1440,15 @@ export function GameBoard({
                 <b className={gameState.bankInventory.depots === 0 ? "is-empty" : undefined} title="Depots available">🚉 {gameState.bankInventory.depots}</b>
               </div>
             </button>
-            <div className="board-deck board-deck-bus">
+            <button
+              type="button"
+              className="board-deck board-deck-bus board-bus-ticket-button"
+              onClick={() => setBusTicketInfoOpen(true)}
+              aria-label={`Bus Ticket deck. ${gameState.busTicketsRemaining} tickets remain, including ${expiringBusTicketsRemaining} expiry tickets.`}
+            >
               <span>🚌</span>
               <small>{gameState.busTicketsRemaining} tickets</small>
-            </div>
+            </button>
           </div>
 
           <div className="board-centre-core">
@@ -1814,6 +1821,28 @@ export function GameBoard({
             <h2>{selectedInfo.title}</h2>
             <p>{selectedInfo.description}</p>
             {selectedInfo.detail && <small>{selectedInfo.detail}</small>}
+          </section>
+        </div>
+      )}
+      {busTicketInfoOpen && (
+        <div className="bus-ticket-info-layer" onMouseDown={() => setBusTicketInfoOpen(false)}>
+          <section
+            className="bus-ticket-info-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Bus Ticket deck information"
+            onMouseDown={(event) => event.stopPropagation()}
+            style={{ background: theme.cardBackground, borderColor: theme.border, color: theme.text }}
+          >
+            <button type="button" className="modal-close-button" onClick={() => setBusTicketInfoOpen(false)}>×</button>
+            <span className="bus-ticket-info-icon">🚌</span>
+            <p className="modal-eyebrow">Bus Ticket deck</p>
+            <h2>{gameState.busTicketsRemaining} remaining</h2>
+            <div className="bus-ticket-info-stats">
+              <span><small>Expiry tickets left</small><strong>{expiringBusTicketsRemaining}</strong></span>
+              <span><small>Your held tickets</small><strong>{currentGamePlayer?.busTickets ?? 0}</strong></span>
+            </div>
+            <p style={{ color: theme.mutedText }}>There are three expiry tickets in a fresh deck. Drawing one keeps the newly drawn ticket but expires all Bus Tickets already being held.</p>
           </section>
         </div>
       )}
