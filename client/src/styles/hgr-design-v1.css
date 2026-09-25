@@ -6986,3 +6986,28 @@ html[data-theme="dark"] .mega-create-cosmetics p {
 .account-stat-breakdown article {
   min-height: 76px;
 }
+
+
+/* Retro profiles carry subtle hardware/controller colour language without
+ * copying controller symbols or console UI chrome. */
+.halieus-theme-profile-visual {
+  width: 52px;
+  display: grid;
+  gap: 4px;
+}
+.halieus-theme-profile-visual .halieus-theme-profile-swatch {
+  width: 52px;
+  height: 38px;
+}
+.halieus-theme-profile-motif {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 3px;
+  padding-inline: 3px;
+}
+.halieus-theme-profile-motif > i {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(127,127,127,.16);
+}
