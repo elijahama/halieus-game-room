@@ -1770,6 +1770,12 @@ export function GameBoard({
         animatedRoll && (
           <DiceRollOverlay
             roll={animatedRoll}
+            doublesStage={(
+              animatedRoll.white1 === animatedRoll.white2 &&
+              gameState.players.find((player) => player.id === rollingPlayerId)?.inJail
+                ? 3
+                : Math.min(2, Math.max(0, gameState.consecutiveDoubles))
+            ) as 0 | 1 | 2 | 3}
             settleMs={
               gameState.players.find((player) => player.id === rollingPlayerId)?.isAi ||
               gameState.players.find((player) => player.id === rollingPlayerId)?.autopilotEnabled
