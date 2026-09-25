@@ -75,8 +75,8 @@ assert.match(halieusMark,/M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31
 assert.match(html,/id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg"/,"Initial browser identity must use the canonical Halieus mark");
 assert.match(html,/halieus-boot-mark[\s\S]*?M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"First-paint mark must reuse the approved H geometry");
 assert.match(app,/function makeHalieusTabGlyph/,"Platform tab identity must use the compact Halieus H glyph");
-assert.match(app,/getPropertyValue\("--hgr-brand"\)/,"Platform tab H must derive its colour from the saved theme");
-assert.match(app,/getPropertyValue\("--hgr-brand-ink"\)/,"Platform tab H must derive its outline contrast from the saved theme");
+assert.match(app,/getPropertyValue\("--hgr-logo-bg"\)/,"Platform tab H must derive its colour from the saved theme");
+assert.match(app,/readableInk\(\[brand\]\)/,"Platform tab H must select black/white contrast against its own background");
 assert.match(halieusAppIcon,/#daa017/i,"Installable app icon must preserve the approved default yellow brand");
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
 assert.match(launcherReferenceDoc,/Reference artwork beats generated interpretation/,"Launcher reference README must make approved artwork authoritative");
@@ -113,7 +113,7 @@ assert.match(previewGenerator,/generated-preview/,"Generated launcher experiment
 assert.doesNotMatch(previewGenerator,/Remove-Item[\s\S]*?assets\\branding\\launchers(?!\\generated-preview)/s,"Preview generation must never delete approved launcher icons");
 assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must never invoke artwork generation");
 assert.doesNotMatch(launcherShortcuts,/launchers\\\\matte/,"Retired nested launcher folder must not return");
-for (const launcherName of ["Start Halieus Game Room.ico","Restart Halieus Game Room.ico","Close Halieus Game Room.ico","HGR PowerShell.ico"]) {
+for (const launcherName of ["start.ico","restart.ico","close.ico","update.ico","powershell.ico","openshard.ico"]) {
   assert.ok(launcherShortcuts.includes(launcherName), "Shortcut generator must consume approved reference-based icon " + launcherName);
 }
 assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");

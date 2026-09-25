@@ -1,3 +1,5 @@
+import { CORE_THEME_IDS, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
+import { accountApi } from "../accounts/api";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -53,34 +55,16 @@ const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; la
   { mode: "dark", icon: "●", label: "Dark", description: "Standard graphite HGR" },
 ];
 
-const RETRO_PROFILE_IDS = new Set<HalieusThemeProfileId>([
-  "ivory-8bit",
-  "lavender-16bit",
-  "black-drive",
-  "grey-disc",
-  "xbox-core",
-  "ps2-midnight",
-  "ps3-xmb",
-  "psp-silver",
-  "psp-go-pearl",
-  "vita-graphite",
-  "ps4-wave",
-  "dreamcast-white",
-  "cube-indigo",
-  "n64-fog",
-  "snes-colour",
-  "atari-woodgrain",
-  "c64-breadbox",
-  "arcade-cabinet",
-  "neo-arcade",
-]);
 const THEME_PROFILE_GROUPS = [
-  { id: "hgr", label: "HGR Profiles", description: "Coordinated Halieus palettes", profiles: THEME_PROFILES.filter((profile) => !RETRO_PROFILE_IDS.has(profile.id)) },
-  { id: "retro", label: "Retro Collection", description: "Hardware-era colour palettes", profiles: THEME_PROFILES.filter((profile) => RETRO_PROFILE_IDS.has(profile.id)) },
-] as const;
+  { id: "core", label: "Core", description: "Always available · custom themes and accessibility stay free", profiles: THEME_PROFILES.filter(p=>CORE_THEME_IDS.includes(p.id)) },
+  { id: "unlockable", label: "Unlockable", description: "Earned through verified play and achievements", profiles: THEME_PROFILES.filter(p=>!CORE_THEME_IDS.includes(p.id)) },
+];
 
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
+  const [entitlements, setEntitlements] = useState<string[]>(CORE_THEME_IDS);
+  const [themeError, setThemeError] = useState("");
+  const [applying, setApplying] = useState(false);
   const pending = useRef<ThemeSelection | null>(null);
   const [mode, setMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [profileId, setProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
@@ -90,6 +74,13 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    let live = true;
+    setThemeError("");
+    void accountApi<{entitlements:string[]}>("/accounts/me/themes").then(r=>{if(live)setEntitlements([...CORE_THEME_IDS, ...r.entitlements]);}).catch(()=>{if(live)setEntitlements(CORE_THEME_IDS);});
+    return ()=>{live=false;};
+  }, [menuOpen]);
   const menuRef = useRef<HTMLDivElement>(null), editorRef = useRef<HTMLElement>(null);
   useModalLifecycle(menuOpen, menuRef, () => { setMenuOpen(false); setLibraryOpen(false); });
   useModalLifecycle(editorOpen, editorRef, () => setEditorOpen(false));
@@ -139,7 +130,20 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
 
   function preview(next: ThemeSelection) { pending.current = next; previewTheme(next); }
   function cancelPreview() { pending.current = null; previewTheme(committedTheme()); }
-  function applyPreview() { if (pending.current) commitTheme(pending.current); pending.current = null; setMenuOpen(false); setEditorOpen(false); }
+  async function applyPreview() {
+    const next = pending.current;
+    setApplying(true); setThemeError("");
+    try {
+      if (next?.mode === "profile" && !CORE_THEME_IDS.includes(next.profile)) {
+        await accountApi("/accounts/me/themes", {method:"POST",body:JSON.stringify({id:next.profile})});
+      }
+      // Closing/cancelling while a request is in flight must not commit a stale preview.
+      if (pending.current !== next) return;
+      if (next) commitTheme(next);
+      pending.current = null; setMenuOpen(false); setEditorOpen(false);
+    } catch(e) { setThemeError(e instanceof Error ? e.message : "Unable to apply theme."); }
+    finally { setApplying(false); }
+  }
   useEffect(() => { if (!menuOpen && !editorOpen && pending.current) cancelPreview(); }, [menuOpen, editorOpen]);
   useEffect(() => () => { if (pending.current) previewTheme(committedTheme()); }, []);
   useEffect(() => { if (editorOpen) preview({ ...committedTheme(), mode: "custom", custom: draft }); }, [draft, editorOpen]);
@@ -147,6 +151,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     preview({ ...committedTheme(), mode: next });
   }
   function selectProfile(id: HalieusThemeProfileId) {
+    if (!entitlements.includes(id)) return;
     preview({ ...committedTheme(), mode: "profile", profile: id });
   }
 
@@ -204,7 +209,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             aria-label={libraryOpen ? "Theme Library" : "Appearance"}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <header><span>{libraryOpen ? "Theme Library" : "Appearance"}</span><small>{libraryOpen ? "Go further than a colour swap" : "Fast defaults, library or your own palette"}</small></header>
+            <header><span>{libraryOpen ? "Theme Library" : "Appearance"}</span><small>{libraryOpen ? "Go further than a colour swap" : "Fast defaults, library or your own palette"}</small><button type="button" className="appearance-close" aria-label="Close appearance" onClick={() => { cancelPreview(); setMenuOpen(false); }}>×</button></header>
 
             {!libraryOpen ? <>
               <div className="halieus-theme-quick-grid">
@@ -234,6 +239,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </button>
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
+              <button type="button" className="theme-custom-always" onClick={openCustom}>Create custom theme · always available</button>
               <div className="halieus-theme-library-grid">
                 {THEME_PROFILE_GROUPS.map((group) => (
                   <Fragment key={group.id}>
@@ -242,7 +248,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                       <small>{group.description}</small>
                     </div>
                     {group.profiles.map((profile) => (
-                      <button type="button" key={profile.id} className={mode === "profile" && profileId === profile.id ? "is-active" : ""} onClick={() => selectProfile(profile.id)}>
+                      <button type="button" key={profile.id} disabled={!entitlements.includes(profile.id)} aria-label={`${profile.label} · ${themeUnlockLabel(profile.id)}`} className={mode === "profile" && profileId === profile.id ? "is-active" : ""} onClick={() => selectProfile(profile.id)}>
                         <span className="halieus-theme-profile-visual" aria-hidden="true">
                           <span className="halieus-theme-profile-swatch">
                             <i style={{ background: profile.theme.page }} />
@@ -252,7 +258,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                           </span>
                           {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
                         </span>
-                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small></span>
+                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{entitlements.includes(profile.id) ? (CORE_THEME_IDS.includes(profile.id) ? "Core" : "Unlocked") : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
                         {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
                       </button>
                     ))}
@@ -260,7 +266,8 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 ))}
               </div>
             </>}
-            <footer className="theme-preview-actions"><small>Preview only until you apply.</small><button type="button" className="button-outline" onClick={() => { cancelPreview(); setMenuOpen(false); }}>Cancel</button><button type="button" className="button-primary" onClick={applyPreview}>Apply theme</button></footer>
+            {themeError && <p role="status">{themeError}</p>}
+            <footer className="theme-preview-actions"><small>Preview only until you apply.</small><button type="button" className="button-outline" onClick={() => { cancelPreview(); setMenuOpen(false); }}>Cancel</button><button type="button" className="button-primary" disabled={applying} onClick={() => void applyPreview()}>{applying ? "Applying…" : "Apply theme"}</button></footer>
           </div>
         </div>,
         document.fullscreenElement ?? document.body,

@@ -1,3 +1,5 @@
+import { CORE_THEME_IDS } from "../../shared/platform/themeProgression";
+import { committedTheme, commitTheme } from "./platform/themePreview";
 import { HGR_H_PATH } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -57,7 +59,7 @@ import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
-import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
+import { clearCustomThemeVariables, customThemeVariables, readableInk, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
 import { saveSkinPreferences, clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
@@ -260,7 +262,7 @@ function formatDuration(milliseconds: number): string {
 }
 
 function makeHalieusTabGlyph(fill: string, ink: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill-rule="evenodd" fill="${fill}" stroke="${ink}" stroke-width="0.8" paint-order="stroke fill" d="${HGR_H_PATH}"/></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="3" width="58" height="58" rx="15" fill="${fill}"/><path fill-rule="evenodd" fill="${ink}" d="${HGR_H_PATH}"/></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
@@ -576,6 +578,16 @@ export default function App() {
   }, [betaMode]);
 
   useEffect(() => {
+    let live = true;
+    const validate = (ids: string[]) => {
+      const current = committedTheme();
+      if (live && current.mode === "profile" && !ids.includes(current.profile)) commitTheme({ ...current, profile:"blue-circuit" });
+    };
+    void accountApi<{entitlements:string[]}>("/accounts/me/themes").then(r=>validate(r.entitlements)).catch(()=>validate(CORE_THEME_IDS));
+    return ()=>{live=false;};
+  }, [authStatus?.account?.id]);
+
+  useEffect(() => {
     if (!authStatus?.account?.id || betaMode) return;
     let active = true;
     void accountApi<{ preferences: HalieusSkinPreferences }>("/accounts/me/cosmetics")
@@ -639,6 +651,9 @@ export default function App() {
     } else if (resolvedThemeMode === "profile") {
       for (const [key, value] of Object.entries(themeProfileVariables(activeThemeProfile))) root.style.setProperty(key, value);
     }
+    const logoTokens = getComputedStyle(root);
+    root.style.setProperty("--hgr-logo-ink", readableInk([logoTokens.getPropertyValue("--hgr-logo-bg").trim() || "#daa017"]));
+    root.style.setProperty("--hgr-logo-light-ink", readableInk([logoTokens.getPropertyValue("--hgr-surface").trim() || "#ffffff"]));
     root.style.backgroundColor = resolvedThemeMode === "custom"
       ? customTheme.page
       : resolvedThemeMode === "profile"
@@ -3242,8 +3257,8 @@ function handleLeaveSpectator() {
 
     document.title = "Halieus Game Room";
     const rootStyle = getComputedStyle(document.documentElement);
-    const brand = rootStyle.getPropertyValue("--hgr-brand").trim() || "#daa017";
-    const brandInk = rootStyle.getPropertyValue("--hgr-brand-ink").trim() || "#111318";
+    const brand = rootStyle.getPropertyValue("--hgr-logo-bg").trim() || "#daa017";
+    const brandInk = readableInk([brand]);
     favicon.href = makeHalieusTabGlyph(brand, brandInk);
   }, [activeTabGameId, customTheme, systemPrefersDark, themeMode, themeProfileId]);
 

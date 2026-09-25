@@ -166,7 +166,7 @@ assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.
 
 assert.match(launcherGenerator,/generated-preview/,'Optional generated launcher previews must be quarantined from approved icons');
 assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?\$LauncherRoot/s,'Launcher generator must never wipe the approved launcher root');
-assert.match(launcherShortcuts,/assets\\branding\\launchers'/,'Shortcut refresh must consume approved launcher assets from the flat launcher folder');
+assert.match(launcherShortcuts,/client\\public\\brand\\launcher'/,'Shortcut refresh must consume approved launcher assets from the flat launcher folder');
 assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must never invoke icon generation');
 const launcherDeleteContexts = launcherShortcuts
   .split(/\r?\n/)

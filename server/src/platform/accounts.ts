@@ -1,6 +1,7 @@
 import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
 import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranked.js";
 import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSkinPreferences, type HalieusSkinSlot } from "../../../shared/platform/skins.js";
+import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/themeProgression.js";
 import { readPlayerProgression } from "./progression.js";
 import type { Express, Request, Response } from "express";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
@@ -55,6 +56,7 @@ interface StoredAccount {
   passwordHash: string;
   createdViaInviteId: string | null;
   skins?: HalieusSkinPreferences;
+  themeProfile?: string;
   displayNameAliases?: string[];
   visibility?: HalieusPlayerVisibility;
 }
@@ -968,6 +970,20 @@ export function registerAccountRoutes(app: Express): void {
     await saveStore(); response.json({ ok: true, request: item });
   });
 
+  app.get("/accounts/me/themes", async (request, response) => {
+    const auth = currentSession(request);
+    const entitlements = auth ? themeEntitlements(await readPlayerProgression(auth.account.id)) : CORE_THEME_IDS;
+    response.json({ ok: true, entitlements, selected: auth?.account.themeProfile && entitlements.includes(auth.account.themeProfile) ? auth.account.themeProfile : "blue-circuit" });
+  });
+  app.post("/accounts/me/themes", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ ok:false, reason:"Sign in to save an earned theme." }); return; }
+    const entitlements = themeEntitlements(await readPlayerProgression(auth.account.id));
+    const id = request.body?.id;
+    if (typeof id !== "string" || !entitlements.includes(id)) { response.status(403).json({ ok:false, reason:"This theme has not been earned yet." }); return; }
+    auth.account.themeProfile = id; await saveStore();
+    response.json({ ok:true, selected:id, entitlements });
+  });
   app.get("/accounts/me/cosmetics", async (request, response) => {
     const auth = currentSession(request); if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     response.json({ ok: true, ...await cosmeticState(auth.account) });

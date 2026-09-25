@@ -1,12 +1,23 @@
+import { CORE_THEME_IDS, THEME_REQUIREMENTS, themeEntitlements } from "../shared/platform/themeProgression.ts";
 import assert from "node:assert/strict";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { customThemeVariables, THEME_PROFILES, colourLuminance } from "../client/src/platform/theme.ts";
+assert.deepEqual(Object.keys(THEME_REQUIREMENTS).sort(),THEME_PROFILES.map(p=>p.id).sort());
+const emptyProgress={gamerScore:0,activePlayMs:0,played:0,wins:0,awards:[],byGame:{}};
+assert.deepEqual(themeEntitlements(emptyProgress),CORE_THEME_IDS);
+assert.ok(!themeEntitlements({...emptyProgress,wins:1000,rating:9999}).includes('cube-indigo'),'Elo/wins are not a theme achievement');
+assert.ok(themeEntitlements({...emptyProgress,gamerScore:40}).includes('lavender-16bit'));
+assert.ok(themeEntitlements({...emptyProgress,played:5}).includes('grey-disc'));
+assert.ok(themeEntitlements({...emptyProgress,awards:[{id:'five-games'}]}).includes('cube-indigo'));
 const contrast=(a,b)=>{a=colourLuminance(a);b=colourLuminance(b);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);};
 for(const theme of [...THEME_PROFILES.map(p=>p.theme),...Array.from({length:256},(_,n)=>({page:'#ffffff',surface:'#'+n.toString(16).padStart(2,'0').repeat(3),accent:'#888888',secondary:'#000000'}))]) {
  const v=customThemeVariables(theme);
  for(const ink of ['--hgr-text','--hgr-text-soft','--hgr-muted'])for(const bg of ['--hgr-surface','--hgr-surface-raised','--hgr-surface-soft','--hgr-surface-strong'])assert.ok(contrast(v[ink],v[bg])>=4.5,`${theme.surface}: ${ink} on ${bg}`);
+ assert.ok(['#000000','#ffffff'].includes(v['--hgr-logo-ink']));
+ assert.ok(contrast(v['--hgr-logo-ink'],v['--hgr-logo-bg'])>=4.5);
+ assert.ok(['#000000','#ffffff'].includes(v['--hgr-logo-light-ink']));
  assert.ok(contrast(v['--hgr-page-text'],v['--hgr-page'])>=4.5);
  assert.ok(contrast(v['--hgr-action-ink'],v['--hgr-action-bg'])>=4.5);
 }

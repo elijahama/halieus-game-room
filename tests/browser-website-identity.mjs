@@ -34,6 +34,7 @@ try {
       await page.goto(base, { waitUntil: 'commit' });
       await page.locator('.halieus-boot-mark path').waitFor();
       assert.equal(await page.locator('.halieus-boot-mark path').getAttribute('d'), shape);
+      assert.ok(['rgb(0, 0, 0)','rgb(255, 255, 255)'].includes(await page.locator('.halieus-boot-mark path').evaluate(e=>getComputedStyle(e).fill)));
       if (process.env.HGR_SCREENSHOTS) await page.screenshot({ path: resolve(process.env.HGR_SCREENSHOTS, `${device}-${theme}-boot.png`) });
       await page.locator('.account342-card').waitFor();
       await page.locator('.account-portal .halieus-brand-mark:visible').first().waitFor();
@@ -46,6 +47,20 @@ try {
       assert.ok(decodeURIComponent(await page.locator('#halieus-dynamic-favicon').getAttribute('href')).includes(shape));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${device} home overflow`);
       if (process.env.HGR_SCREENSHOTS) await page.screenshot({ path: resolve(process.env.HGR_SCREENSHOTS, `${device}-${theme}-home.png`) });
+
+      const previousFavicon=await page.locator('#halieus-dynamic-favicon').getAttribute('href');
+      for(const accent of ['#ffff00','#000033','#777777']) {
+        await page.evaluate(accent=>{window.dispatchEvent(new CustomEvent('halieus-custom-theme',{detail:{page:'#ffffff',surface:'#888888',accent,secondary:'#123456'}}));window.dispatchEvent(new CustomEvent('halieus-theme-mode',{detail:'custom'}));},accent);
+        await page.waitForFunction(()=>document.documentElement.dataset.theme==='custom');
+        await page.waitForFunction(accent=>document.documentElement.style.getPropertyValue('--hgr-brand')===accent,accent);
+        const actual=await page.locator('.halieus-brand-mark-h-shape').first().evaluate(e=>getComputedStyle(e).fill);
+        assert.ok(['rgb(0, 0, 0)','rgb(255, 255, 255)'].includes(actual));
+        const favicon=decodeURIComponent(await page.locator('#halieus-dynamic-favicon').getAttribute('href'));
+        assert.notEqual(favicon,previousFavicon);
+        const ink=await page.evaluate(favicon=>new DOMParser().parseFromString(favicon.slice(favicon.indexOf(',')+1),'image/svg+xml').querySelector('path').getAttribute('fill'),favicon);
+        assert.equal(actual,ink==='#000000'?'rgb(0, 0, 0)':'rgb(255, 255, 255)',`Logo/favicon foreground mismatch for ${accent}`);
+      }
+      await page.evaluate(theme=>window.dispatchEvent(new CustomEvent('halieus-theme-mode',{detail:theme})),theme);
       for (const [route, title, icon] of [['poker', 'Poker', 'poker.svg'], ['game', 'Mega Board', 'mega-board.svg']]) {
         // Context identity follows an actual room, not an unjoined invite form.
         const host = io(base, { transports: ['websocket'] });

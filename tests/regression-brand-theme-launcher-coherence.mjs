@@ -42,7 +42,7 @@ for (const name of ["HGR - Start.lnk","HGR - Restart.lnk","HGR - Close.lnk","HGR
 }
 assert.match(shortcuts,/Close the local Halieus Game Room desktop app window only/,"Close shortcut must state that it only closes the local app window");
 assert.match(shortcuts,/OpenShard-HGR\.cmd/,"OpenShard shortcut must route through the HGR helper rather than calling a global tool blindly");
-assert.match(shortcuts,/HGR OpenShard TUI\.ico/,"OpenShard must have its own dedicated launcher-art path");
+assert.match(shortcuts,/openshard\.ico/,"OpenShard must have its own dedicated launcher-art path");
 assert.match(shortcuts,/OpenShardIconPath = Resolve-HalieusIconPath[\s\S]*?-Fallback \$PowerShellIconPath/,"OpenShard may fall back safely until its dedicated ICO is generated");
 assert.match(shortcuts,/\$openShard\.IconLocation = "\$OpenShardIconPath,0"/,"OpenShard shortcut must use its dedicated resolved icon variable");
 assert.match(shortcuts,/ProjectLauncherDirectory = Join-Path \$ProjectRoot 'HGR Launchers'/,"Developer shortcuts must share one HGR Launchers folder");

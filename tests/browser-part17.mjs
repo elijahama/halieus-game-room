@@ -16,9 +16,19 @@ try{
  const setup=await fetch(base+"/auth/setup-owner",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({bootstrapCode:bootstrap,username:"validation",displayName:"Verified Player",password:"Only-local-test-450!"})}); assert.equal(setup.status,201); const cookie=setup.headers.get("set-cookie").split(";")[0];
  const connect=async(auth=false)=>{const s=io(base,{transports:["websocket"],reconnection:false,extraHeaders:auth?{Cookie:cookie}:{}});sockets.push(s);await new Promise((ok,fail)=>{s.once("connect",ok);s.once("connect_error",fail);});return s;};
  const realHost=await connect(true),realGuest=await connect();
+ const selectTheme=async(id,extra={})=>fetch(base+'/accounts/me/themes',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify({id,...extra})});
+ assert.equal((await selectTheme('lavender-16bit',{gamerScore:999999,awards:[{id:'five-games'}]})).status,403);
+ assert.equal((await selectTheme('invented-theme')).status,403);
+ assert.equal((await selectTheme('redline')).status,200);
+ const beforeThemes=await (await fetch(base+'/accounts/me/themes',{headers:{Cookie:cookie}})).json();assert.ok(!beforeThemes.entitlements.includes('lavender-16bit'));
+
  await ack(realHost,"connect-four:create",{code:"AWARD1",playerName:"Verified Player",bestOf:1});await ack(realGuest,"connect-four:join",{code:"AWARD1",playerName:"Other Player"});const startedAward=await ack(realHost,"connect-four:start",{code:"AWARD1"});assert.ok(!JSON.stringify(startedAward).includes("progressionIdentity"),"Private account attribution leaked to client");
  for(const[player,column]of[[realHost,0],[realGuest,1],[realHost,0],[realGuest,1],[realHost,0],[realGuest,1],[realHost,0]])await ack(player,"connect-four:drop",{code:"AWARD1",column});
  let progress;for(let i=0;i<30;i++){const result=await(await fetch(base+"/accounts/me/stats",{headers:{Cookie:cookie}})).json();progress=result.stats?.progression;if(progress?.played===1)break;await new Promise(r=>setTimeout(r,100));}
+ assert.equal((await selectTheme('lavender-16bit')).status,200);
+ assert.equal((await selectTheme('cube-indigo')).status,403);
+ const afterThemes=await (await fetch(base+'/accounts/me/themes',{headers:{Cookie:cookie}})).json();assert.ok(afterThemes.entitlements.includes('lavender-16bit'));assert.equal(afterThemes.selected,'lavender-16bit');
+ console.log('PASS real theme unlocks: zero-score rejection, spoof rejection, core access, verified achievement/score unlock');
  assert.equal(progress.played,1);assert.equal(progress.wins,1);assert.equal(progress.gamerScore,40);
  const equip=async(id)=>fetch(base+"/accounts/me/cosmetics",{method:"POST",headers:{Cookie:cookie,"Content-Type":"application/json"},body:JSON.stringify({slot:"mega-board",id})});assert.equal((await equip("tycoon-board")).status,403);assert.equal((await equip("classic-board")).status,200);
  await ack(realHost,"connect-four:create",{code:"CLOSE1",playerName:"Verified Player"});await ack(realGuest,"connect-four:join",{code:"CLOSE1",playerName:"Other Player"});await ack(realHost,"connect-four:start",{code:"CLOSE1"});await ack(realHost,"connect-four:end-game",{code:"CLOSE1"});await new Promise(r=>setTimeout(r,200));assert.equal((await(await fetch(base+"/accounts/me/stats",{headers:{Cookie:cookie}})).json()).stats.progression.played,1);
@@ -36,6 +46,32 @@ try{
  realHost.disconnect();realGuest.disconnect();console.log("PASS authenticated real match: account-bound award, earned score, locked cosmetic rejection, permitted cosmetic save, host-close exclusion");
  browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE});
  if(process.env.HGR_SCREENSHOTS)await mkdir(process.env.HGR_SCREENSHOTS,{recursive:true});
+
+ for(const [width,height] of [[1440,900],[390,844]]) {
+  const context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});
+  const equal=cookie.indexOf('=');await context.addCookies([{name:cookie.slice(0,equal),value:cookie.slice(equal+1),url:base}]);
+  await context.addInitScript(()=>sessionStorage.setItem('halieus-intro-seen-v4','1'));
+  const page=await context.newPage();await page.goto(base);await page.locator('.achievement-bar').waitFor();
+  assert.match(await page.locator('.achievement-bar').innerText(),/40/);
+  await page.locator('.achievement-bar').click();await page.getByRole('dialog',{name:'Achievements',exact:true}).waitFor();await page.keyboard.press('Escape');
+  await page.locator(width>700?'.halieus-side-account':'.halieus-mobile-account').click();
+  const account=page.getByRole('dialog',{name:'Halieus account',exact:true});await account.waitFor();
+  await account.getByRole('button',{name:'Open Achievements'}).click();const achievements=page.getByRole('dialog',{name:'Achievements',exact:true});await achievements.waitFor();
+  assert.equal(await achievements.evaluate(e=>{const r=e.getBoundingClientRect();return e.contains(document.elementFromPoint(r.x+r.width/2,r.y+20));}),true);
+  assert.ok(await achievements.evaluate(e=>e.scrollWidth<=e.clientWidth+1));
+  await page.keyboard.press('Escape');assert.equal(await account.isVisible(),true);
+  await account.locator('.halieus-theme-trigger').click();await page.locator('.halieus-theme-library-launch').click();
+  assert.equal(await page.getByRole('button',{name:/16-bit Lavender/}).isDisabled(),false);
+  assert.equal(await page.getByRole('button',{name:/Dolphin Indigo/}).isDisabled(),true);
+  await page.getByRole('button',{name:/Create custom theme/}).click();
+  await page.locator('input[aria-label="Primary UI colour picker"]').fill('#142536');
+  await page.getByRole('button',{name:'Apply custom theme',exact:true}).click();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('halieus-game-room-theme')),'custom');
+  await account.locator('.halieus-theme-trigger').click();await page.locator('.halieus-theme-library-launch').click();
+  assert.equal(await page.getByRole('button',{name:/Dolphin Indigo/}).isDisabled(),true,'Custom creation must not unlock presets');
+  await page.keyboard.press('Escape');assert.equal(await account.isVisible(),true);
+  await context.close();console.log(`PASS ${width}: real Home/profile Achievement Bar, verified score, full view, parent restore`);
+ }
  for(const[device,width,height]of[["desktop",1440,900],["short-desktop",1280,600],["phone",390,844],["short-phone",360,640],["tablet",820,1180]]){
   const context=await browser.newContext({viewport:{width,height},reducedMotion:"reduce"});
   await context.addInitScript(()=>{localStorage.setItem("halieus-game-room-theme","light");sessionStorage.setItem("halieus-intro-seen-v4","1");});

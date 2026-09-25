@@ -23,6 +23,7 @@ import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicM
 import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, ACTIVE_GAME_IDS, FUTURE_GAME_QUEUE, GAME_BY_ID, type GameId } from "../games/catalog";
 import { ThemeButton } from "./ThemeButton";
+import { AchievementBar } from "./AchievementBar";
 import { SkinLibraryButton } from "./SkinLibraryButton";
 import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
@@ -732,6 +733,7 @@ export function HomeScreen(props: HomeScreenProps) {
               </nav>
             </div>
           </section>
+          <AchievementBar progression={personalStats.progression} compact />
           <section className="halieus-home-discovery" aria-label="Game discovery">
             <header>
               <div><p>DISCOVER</p><h2>Pick your next table</h2><span>A short shortlist for the Home screen. The full library stays under View all games.</span></div>
@@ -800,7 +802,7 @@ export function HomeScreen(props: HomeScreenProps) {
               {inviteNotice && <p className="halieus-profile-invite-notice" role="status">{inviteNotice}</p>}
 
               {playerStatsLoading ? <div className="halieus-profile-loading">Loading game record…</div> : <>
-                <div className="halieus-profile-summary"><article><span>Gamer Score</span><strong>{selectedPlayerStats.progression?.gamerScore ?? 0}</strong></article><article><span>Achievements</span><strong>{selectedPlayerStats.progression?.awards.length ?? 0}</strong></article><article><span>Verified games</span><strong>{selectedPlayerStats.played}</strong></article><article><span>Favourite</span><strong>{selectedPlayerFavourite?.gameTitle ?? "—"}</strong></article><article><span>Win streak</span><strong>{selectedPlayerStreak}</strong></article></div>
+                <AchievementBar progression={selectedPlayerStats.progression} compact /><div className="halieus-profile-summary"><article><span>Gamer Score</span><strong>{selectedPlayerStats.progression?.gamerScore ?? 0}</strong></article><article><span>Achievements</span><strong>{selectedPlayerStats.progression?.awards.length ?? 0}</strong></article><article><span>Verified games</span><strong>{selectedPlayerStats.played}</strong></article><article><span>Favourite</span><strong>{selectedPlayerFavourite?.gameTitle ?? "—"}</strong></article><article><span>Win streak</span><strong>{selectedPlayerStreak}</strong></article></div>
                 {selectedPlayerStats.breakdown && <section className="halieus-profile-stat-breakdown"><header><strong>Competitive split</strong><small>AI-involved games are shown separately from human competition.</small></header><div><article><span>Human only</span><strong>{selectedPlayerStats.breakdown.humanOnly.winRate}%</strong><small>{selectedPlayerStats.breakdown.humanOnly.played} played</small></article><article><span>Ranked</span><strong>{selectedPlayerStats.breakdown.ranked.winRate}%</strong><small>{selectedPlayerStats.breakdown.ranked.played} played</small></article><article><span>Casual</span><strong>{selectedPlayerStats.breakdown.casual.winRate}%</strong><small>{selectedPlayerStats.breakdown.casual.played} played</small></article><article><span>AI involved</span><strong>{selectedPlayerStats.breakdown.aiInvolved.winRate}%</strong><small>{selectedPlayerStats.breakdown.aiInvolved.played} played</small></article></div></section>}
                 <div className="halieus-profile-detail-grid">
                   <section className="halieus-profile-games"><h3>Game record</h3>{selectedPlayerStats.byGame.map((row) => { const game = GAME_BY_ID[row.game as GameId]; return <article key={row.game}><img src={game?.icon} alt="" /><div><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.winRate}% overall</small></div></article>; })}</section>

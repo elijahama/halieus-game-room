@@ -16,6 +16,7 @@ const bundle=await build({stdin:{contents:`
  import {DiceRollOverlay} from './client/src/games/mega-board/components/DiceRollOverlay';
  import {lightTheme,darkTheme} from './client/src/games/mega-board/styles/gameStyles';
  import {createInitialGameState} from './shared/games/mega-board/game-state';
+ import {AchievementBar} from './client/src/platform/components/AchievementBar';
  import {HalieusBrandMark} from './client/src/platform/components/HalieusBrandMark';
  import {SkinLibraryButton} from './client/src/platform/components/SkinLibraryButton';
  import {ModalPortal} from './client/src/platform/components/ModalPortal';
@@ -39,6 +40,7 @@ const bundle=await build({stdin:{contents:`
  {screen==='podium'&&<LeaderboardModal {...shared} entries={players.slice(0,count).map((p,i)=>({playerKey:p.id,playerName:p.name,rating:1500-i*100,wins:3,gamesPlayed:7,podiums:4,averageFinish:2,awardsWon:1,profilePicture:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="green"/></svg>'}))} recentMatches={[]} loading={false} error="" onRefresh={noop} onClose={noop}/>}
  {screen==='dice'&&<DiceRollOverlay roll={{white1:2,white2:2,speed:null,movementTotal:4}} doublesStage={stage} settleMs={1}/>}
  {screen==='nested'&&<ModalPortal onClose={noop}><div className="halieus-create-backdrop halieus-viewport-overlay"><section className="halieus-create-panel halieus-create-modal pre-game-shell"><h2>Create room</h2><SkinLibraryButton stats={{}} betaMode={false} slots={['mega-board']}/><ThemeButton {...shared} background={theme.cardBackground} colour={theme.text} borderColour={theme.border} onToggle={noop}/></section></div></ModalPortal>}
+ {screen==='achievement'&&<AchievementBar progression={{gamerScore:40,activePlayMs:120000,played:1,wins:1,byGame:{'connect-four':{played:1,wins:1}},awards:[{id:'first-match',title:'First completed match',points:10,earnedAt:1,sessionId:'fixture'}]}}/>}
  {screen==='logos'&&<div style={{display:'flex',background:'#999'}}>{['brand','mono-light','mono-dark','light'].map(preset=><HalieusBrandMark preset={preset}/>)}</div>}
  {screen==='theme'&&<ThemeButton {...shared} background={theme.cardBackground} colour={theme.text} borderColour={theme.border} onToggle={noop}/>}
  </React.Fragment>);
@@ -98,15 +100,25 @@ for(const [device,width,height] of [['desktop',1440,900],['short',1280,600],['ta
   assert.equal(await dialog.evaluate(e=>{const b=e.getBoundingClientRect();return e.contains(document.elementFromPoint(b.x+b.width/2,b.y+20));}),true,'Nested overlay above Create Room');
   if(overlay==='Theme'){
    await page.getByRole('button',{name:/Theme Library/}).click();await contained('.halieus-theme-popover');
+   const customBox=await page.locator('.theme-custom-always').boundingBox();assert.ok(customBox.height<=80,'Custom launcher must not squash its label');
    const text=await page.locator('.halieus-theme-library-grid').innerText();assert.doesNotMatch(text,/Xbox|PlayStation|PS2|PS3|PS4|PSP|Vita|Dreamcast|GameCube|N64|SNES|Atari|C64|SNK/);
    const footer=await page.locator('.theme-preview-actions').boundingBox();assert.ok(footer.y+footer.height<=height,'Theme footer remains visible');
    await page.locator('.halieus-theme-library-grid').evaluate(e=>e.scrollTop=e.scrollHeight);
-   const card=page.getByRole('button',{name:/Arcade Crimson/});await card.click();
+   const card=page.getByRole('button',{name:/Arcade Crimson/});assert.equal(await card.isDisabled(),true);assert.match(await card.innerText(),/Earn 500 Gamer Score/);
    assert.ok((await page.locator('.theme-preview-actions').boundingBox()).y+footer.height<=height);
    if(shots)await page.screenshot({path:resolve(shots,device+'-theme-library.png')});
+   await page.getByRole('button',{name:/Create custom theme/}).click();await page.getByRole('dialog',{name:'Custom HGR theme'}).waitFor();
+   await page.getByRole('button',{name:'Cancel',exact:true}).click();
+   await page.getByRole('button',{name:/Theme/}).first().click();
+
   }
   await page.keyboard.press('Escape');await page.getByRole('heading',{name:'Create room'}).waitFor();assert.equal(await page.getByRole('dialog').count(),0);
  }
+ await show('achievement');await page.getByRole('button',{name:'Open Achievements'}).click();
+ await page.getByRole('dialog',{name:'Achievements',exact:true}).waitFor();await contained('.achievement-dialog');
+ if(shots)await page.screenshot({path:resolve(shots,device+'-achievements.png')});
+ assert.match(await page.locator('.achievement-dialog').innerText(),/40 Gamer Score/);
+ assert.equal(await page.getByRole('button',{name:'Close achievements'}).count(),1);await page.keyboard.press('Escape');
  assert.deepEqual(errors,[]);console.log(`PASS ${device}: light/dark lobby, cosmetics locks, all-skin mortgage red/reset/geometry, board geometry containment, Bus Ticket, results/dock, podium 1–3, doubles 0–3`);await page.close();
 }
 }finally{await browser.close();}
