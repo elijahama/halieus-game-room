@@ -28,6 +28,7 @@ const app=read("client/src/App.tsx");
 const css=read("client/src/styles/hgr-design-v1.css");
 const indexCss=read("client/src/index.css");
 const surfaceCss=read("client/src/styles/hgr-game-surfaces-v45.css");
+const release451Css=read("client/src/styles/hgr-4.5.1.css");
 const clientEntry=read("client/src/main.tsx");
 const gameChrome=read("client/src/platform/components/GameChrome.tsx");
 const roomChat=read("client/src/platform/components/RoomChatPanel.tsx");
@@ -240,6 +241,7 @@ assert.match(guildPanel,/No separate guild Elo is created/,"Guild UI must not im
 // 4.5 board/table refinement must remain a paint-only layer over the approved
 // Mega Board geometry and Poker tab/scroll structure.
 assert.match(clientEntry,/hgr-design-v1\.css";\s*import "\.\/styles\/hgr-game-surfaces-v45\.css"/,"Game-surface refinement must load after the shared HGR design system");
+assert.match(clientEntry,/hgr-part17\.css";\s*import "\.\/styles\/hgr-4\.5\.1\.css"/,"4.5.1 release overrides must load after legacy Part 17 cascade layers");
 for (const skinId of [
   "classic-board",
   "muted-tournament-board",
@@ -297,9 +299,9 @@ assert.match(megaBoard,/expiringBusTicketsRemaining[\s\S]*?Bus Ticket deck/s,"Bu
 assert.match(megaLeaderboard,/\[entries\[1\], entries\[0\], entries\[2\]\]/,"Mega Board leaderboard must render a true 2nd/1st/3rd podium order");
 assert.match(megaLeaderboard,/profilePicture[\s\S]*?leaderboard-podium-avatar/s,"Ranked podium must use player profile pictures with identity fallback");
 assert.match(accountPanel,/Gamer Score[\s\S]*?Achievements[\s\S]*?Verified games/s,"Player profile headline must be accomplishment-first rather than win-rate-first");
-assert.match(indexCss,/HGR 4\.5\.1 — Mega Board focused polish/,"Mega Board 4.5.1 shared polish layer must remain explicit");
-assert.match(indexCss,/is-doubles-stage-1[\s\S]*?is-doubles-stage-2[\s\S]*?is-doubles-stage-3/s,"Doubles escalation must retain three visible warning stages");
-assert.match(indexCss,/board-deck-chance[\s\S]*?board-deck-community[\s\S]*?board-deck-bus/s,"Chance, Community and Bus Ticket must keep distinct board identity");
-assert.match(indexCss,/body:has\(\.room-chat-shell\.is-floating\)/,"Floating Room activity must reserve shared layout clearance instead of colliding with game content");
+assert.match(release451Css,/HGR 4\.5\.1/,"Mega Board 4.5.1 final cascade contract must remain explicit");
+assert.match(release451Css,/is-doubles-stage-1[\s\S]*?is-doubles-stage-2[\s\S]*?is-doubles-stage-3/s,"Doubles escalation must retain three visible warning stages");
+assert.match(release451Css,/board-deck-chance[\s\S]*?board-deck-community[\s\S]*?board-deck-bus/s,"Chance, Community and Bus Ticket must keep distinct board identity");
+assert.match(release451Css,/body:has\(\.room-chat-shell\.is-floating\)/,"Floating Room activity must reserve shared layout clearance instead of colliding with game content");
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
