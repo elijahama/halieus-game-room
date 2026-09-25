@@ -25,6 +25,7 @@ import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, ACTIVE_GAME_IDS, FUTURE_GAME_QUEUE, GAME_BY_ID, type GameId } from "../games/catalog";
 import { ThemeButton } from "./ThemeButton";
 import { AchievementBar } from "./AchievementBar";
+import { fullscreenUnavailableMessage, stableFullscreenAvailable } from "../fullscreen";
 import { SkinLibraryButton } from "./SkinLibraryButton";
 import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
@@ -129,7 +130,7 @@ export function HomeScreen(props: HomeScreenProps) {
   const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   const [fullscreenNotice, setFullscreenNotice] = useState("");
-  const fullscreenSupported = typeof document.documentElement.requestFullscreen === "function";
+  const fullscreenSupported = stableFullscreenAvailable();
   const [liveRooms, setLiveRooms] = useState<HalieusLiveRoomSummary[]>([]);
   const [gameInvites, setGameInvites] = useState<HalieusGameInviteSummary[]>([]);
   const [gameRequests, setGameRequests] = useState<HalieusGameRequestSummary[]>([]);
@@ -543,13 +544,16 @@ export function HomeScreen(props: HomeScreenProps) {
   }
   async function toggleFullscreen() {
     setFullscreenNotice("");
-    if (!fullscreenSupported) {
-      setFullscreenNotice("Full screen is not available in this browser or installed window.");
-      return;
-    }
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await document.documentElement.requestFullscreen();
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+      if (!fullscreenSupported) {
+        setFullscreenNotice(fullscreenUnavailableMessage());
+        return;
+      }
+      await document.documentElement.requestFullscreen();
     } catch {
       setFullscreenNotice("Full screen was blocked by this browser or installed window.");
     }
