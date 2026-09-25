@@ -8,7 +8,7 @@ const root = resolve(import.meta.dirname, '..');
 const read = (p) => readFileSync(resolve(root, p), 'utf8');
 // Intent, not a generated consumer: changing the milestone requires a deliberate
 // test update. A self-consistent rollback to 4.1.1 must fail this gate.
-assert.equal(read('VERSION').trim(), '4.5.0', 'Approved Part 17 release intent');
+assert.equal(read('VERSION').trim(), '4.5.1', 'Approved HGR 4.5.1 Mega Board release intent');
 const version = read('VERSION').trim();
 const manifest = JSON.parse(read('RELEASE.json'));
 const run = (cwd, mode) => spawnSync(process.execPath, ['scripts/release-integrity.mjs', mode], { cwd, encoding: 'utf8' });
