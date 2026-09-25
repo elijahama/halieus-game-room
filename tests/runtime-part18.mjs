@@ -1,4 +1,4 @@
-import { CORE_THEME_IDS, THEME_REQUIREMENTS, themeEntitlements } from "../shared/platform/themeProgression.ts";
+import { CORE_THEME_IDS, THEME_REQUIREMENTS, themeEntitlements, themeIsAvailable } from "../shared/platform/themeProgression.ts";
 import assert from "node:assert/strict";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -7,6 +7,9 @@ import { customThemeVariables, THEME_PROFILES, colourLuminance } from "../client
 assert.deepEqual(Object.keys(THEME_REQUIREMENTS).sort(),THEME_PROFILES.map(p=>p.id).sort());
 const emptyProgress={gamerScore:0,activePlayMs:0,played:0,wins:0,awards:[],byGame:{}};
 assert.deepEqual(themeEntitlements(emptyProgress),CORE_THEME_IDS);
+assert.ok(CORE_THEME_IDS.includes("minimal-mono"),"Mono Minimal is an optional core website theme");
+assert.equal(themeIsAvailable("cube-indigo",CORE_THEME_IDS,false),false,"normal mode keeps earned themes locked");
+assert.equal(themeIsAvailable("cube-indigo",CORE_THEME_IDS,true),true,"beta mode exposes progression-gated themes without changing entitlements");
 assert.ok(!themeEntitlements({...emptyProgress,wins:1000,rating:9999}).includes('cube-indigo'),'Elo/wins are not a theme achievement');
 assert.ok(themeEntitlements({...emptyProgress,gamerScore:40}).includes('lavender-16bit'));
 assert.ok(themeEntitlements({...emptyProgress,played:5}).includes('grey-disc'));
