@@ -98,12 +98,12 @@ const approvedLauncherBlobs = {
   "assets/branding/launchers/Close Halieus Game Room.ico": "de74effa6decc942c41b2db3bef9b2e0dc8c732d",
   "assets/branding/launchers/HGR PowerShell.ico": "01e56e9ab2d5d4d39b30ff7c0aa69e08468b3dcb",
   "assets/branding/launchers/Update Halieus Website.ico": "a1d356a5eab7a9331e09e54620c11b6b83a415b8",
-  "assets/branding/launchers/Start Halieus Game Room.svg": "a9c64ad6b389cfdde7812f6d92d844897790e714",
-  "assets/branding/launchers/Restart Halieus Game Room.svg": "10ffaae53a8aae13c0c6da14610f9b692964a1a1",
-  "assets/branding/launchers/Close Halieus Game Room.svg": "e3fdd2bc4b388273cf2d03e6111a99fed48b0144",
-  "assets/branding/launchers/HGR PowerShell.svg": "d1765b8ceaf8893cfbed5d29f51b814348f7ab33",
-  "assets/branding/launchers/HGR OpenShard TUI.svg": "d8e600e2004bff0450a495a3c6abc971d9b3c398",
-  "assets/branding/launchers/Update Halieus Website.svg": "99e82375a762dbdf3981a1ca05593c7df6821197",
+  "assets/branding/launchers/Start Halieus Game Room.svg": "d7b6183d9ba2f1f3daf1d1123084df3621856dda",
+  "assets/branding/launchers/Restart Halieus Game Room.svg": "2c992549bea3db500afd7c35daadf48ae1fe79d2",
+  "assets/branding/launchers/Close Halieus Game Room.svg": "4f9b877a596d1dd3b3aceb061afc54b1f9d60411",
+  "assets/branding/launchers/HGR PowerShell.svg": "cc04e7d7eaed192085b6e5e184391ff91c44053d",
+  "assets/branding/launchers/HGR OpenShard TUI.svg": "2a27eeb76f3d99271ab8593ec1b61fcb7aa866c3",
+  "assets/branding/launchers/Update Halieus Website.svg": "30f3f2db624ab448e3fd015783e5b402d86a785d",
 };
 for (const [asset, expected] of Object.entries(approvedLauncherBlobs)) {
   assert.equal(gitBlobSha(asset), expected, `Approved reference-based launcher icon changed unexpectedly: ${asset}`);
