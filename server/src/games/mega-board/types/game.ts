@@ -30,6 +30,7 @@ export interface GameRoom {
   updatedAt: number;
   hostDisconnectDeadline: number | null;
   freeParkingJackpotEnabled: boolean;
+  turnTimerSeconds: number;
 }
 
 export interface PublicGameRoom {
@@ -41,6 +42,7 @@ export interface PublicGameRoom {
   started: boolean;
   hostDisconnectDeadline: number | null;
   freeParkingJackpotEnabled: boolean;
+  turnTimerSeconds: number;
 }
 
 export interface CreateGamePayload {
