@@ -6257,3 +6257,412 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
 .poker-page .room-time-meta-clock strong {
   letter-spacing: .035em;
 }
+
+
+/* ==========================================================================
+   HGR Part 18 shared UI composition
+   Centered appearance, compact account settings, profile pages and semantic
+   status colours. These rules replace the old sidebar-popover composition.
+   ========================================================================== */
+
+.halieus-theme-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1190;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px,2.5vw,28px);
+  overflow: hidden;
+  background: rgba(3,7,12,.58);
+  backdrop-filter: blur(8px);
+}
+.halieus-theme-popover {
+  position: relative !important;
+  inset: auto !important;
+  width: min(560px, calc(100dvw - 32px)) !important;
+  max-width: 100%;
+  max-height: min(680px, calc(100dvh - 32px)) !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  gap: 12px !important;
+  overflow: hidden !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  box-shadow: 0 28px 90px rgba(0,0,0,.44) !important;
+}
+.halieus-theme-popover.is-library-open {
+  width: min(980px, calc(100dvw - 32px)) !important;
+  max-height: min(760px, calc(100dvh - 32px)) !important;
+  grid-template-rows: auto auto minmax(0,1fr) auto;
+}
+.halieus-theme-popover.is-library-open .halieus-theme-library-grid {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+.halieus-theme-popover > header {
+  padding: 0 2px 11px !important;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-theme-popover > header > span {
+  font-size: 15px !important;
+}
+.halieus-theme-popover > header > small {
+  font-size: 9px !important;
+}
+.halieus-theme-library-grid {
+  gap: 10px !important;
+}
+.halieus-theme-library-grid > button {
+  min-height: 84px;
+  padding: 11px 12px !important;
+}
+.halieus-theme-library-group {
+  padding-top: 10px !important;
+}
+.theme-preview-actions {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) auto auto !important;
+  align-items: center;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 12px 0 0 !important;
+  border-top: 1px solid var(--hgr-border);
+  background: var(--hgr-surface-raised) !important;
+}
+.theme-preview-actions > small {
+  color: var(--hgr-muted) !important;
+  font-size: 8px !important;
+}
+
+.account-appearance-card {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 16px !important;
+  padding: 14px 16px !important;
+  border: 1px solid var(--hgr-border) !important;
+  border-radius: var(--hgr-radius-lg) !important;
+  background: color-mix(in srgb,var(--hgr-surface-raised) 76%,var(--hgr-surface)) !important;
+}
+.account-appearance-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.account-appearance-heading > div {
+  display: grid;
+  gap: 2px;
+}
+.account-appearance-heading h3 {
+  margin: 0;
+}
+.account-appearance-heading > small {
+  max-width: 360px;
+  color: var(--hgr-muted);
+  font-size: 8px;
+  text-align: right;
+}
+.account-appearance-card .halieus-display-settings {
+  display: grid !important;
+  grid-template-columns: minmax(240px,.72fr) minmax(420px,1.28fr);
+  align-items: stretch;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+.account-appearance-card .halieus-display-group {
+  min-width: 0;
+  padding: 12px !important;
+  background: var(--hgr-surface-soft) !important;
+}
+.halieus-display-group > header {
+  display: flex !important;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.halieus-display-group > header > div {
+  display: grid;
+  gap: 2px;
+}
+.halieus-display-group > header > span {
+  color: var(--hgr-brand);
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.account-panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.account-build-info-button {
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px !important;
+  white-space: nowrap;
+}
+.account-build-info-button svg {
+  color: var(--hgr-muted);
+}
+.account-build-info-modal {
+  width: min(460px,calc(100dvw - 32px)) !important;
+  margin: auto !important;
+}
+.account-stat-breakdown,
+.halieus-profile-stat-breakdown {
+  display: grid;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.account-stat-breakdown > header,
+.halieus-profile-stat-breakdown > header {
+  display: grid;
+  gap: 2px;
+}
+.account-stat-breakdown > header small,
+.halieus-profile-stat-breakdown > header small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+}
+.account-stat-breakdown > div,
+.halieus-profile-stat-breakdown > div {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 7px;
+}
+.account-stat-breakdown article,
+.halieus-profile-stat-breakdown article {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-sm);
+  background: var(--hgr-surface-raised);
+}
+.account-stat-breakdown article span,
+.halieus-profile-stat-breakdown article span {
+  color: var(--hgr-muted);
+  font-size: 7px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+.account-stat-breakdown article strong,
+.halieus-profile-stat-breakdown article strong {
+  font-size: 15px;
+}
+.account-stat-breakdown article small,
+.halieus-profile-stat-breakdown article small {
+  color: var(--hgr-muted);
+  font-size: 7px;
+}
+
+.halieus-side-fullscreen-primary {
+  width: 100%;
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: 28px minmax(0,1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-side-fullscreen-primary:hover {
+  border-color: color-mix(in srgb,var(--hgr-brand) 42%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-brand) 7%,var(--hgr-surface-soft));
+}
+.halieus-side-fullscreen-primary b {
+  font-size: 10px;
+}
+.halieus-side-display-controls .halieus-fullscreen-button {
+  display: none !important;
+}
+
+.halieus-player-profile-page-shell {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 1380px;
+  margin: 0 auto;
+}
+.halieus-profile-page-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-sm);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  cursor: pointer;
+}
+.halieus-player-profile-page {
+  display: grid;
+  gap: 12px;
+  padding: clamp(16px,2vw,24px);
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-lg);
+  background: var(--hgr-surface-raised);
+  box-shadow: var(--hgr-shadow-1);
+}
+.halieus-player-profile-hero {
+  display: grid;
+  grid-template-columns: 88px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--hgr-border);
+}
+.halieus-player-profile-hero .halieus-profile-avatar {
+  width: 88px !important;
+  height: 88px !important;
+}
+.halieus-profile-hero-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-profile-hero-copy p {
+  margin: 0;
+  color: var(--hgr-muted);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+.halieus-profile-hero-copy h1 {
+  margin: 0;
+  font-size: clamp(24px,3vw,38px);
+}
+.halieus-profile-hero-copy small {
+  color: var(--hgr-muted);
+}
+.halieus-profile-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 999px;
+  color: var(--hgr-muted);
+  font-size: 8px;
+  font-weight: 900;
+}
+.halieus-profile-presence i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.halieus-profile-presence.is-online,
+.account-presence-badge.is-online,
+.halieus-player-identity.is-online .halieus-player-identity-status {
+  color: var(--hgr-success,#22c55e) !important;
+}
+.halieus-profile-presence.is-online,
+.account-presence-badge.is-online {
+  border-color: color-mix(in srgb,var(--hgr-success,#22c55e) 38%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-success,#22c55e) 8%,transparent) !important;
+}
+.account-presence-badge.is-online i {
+  background: var(--hgr-success,#22c55e) !important;
+}
+.halieus-profile-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 12px;
+}
+.halieus-player-profile-page .halieus-profile-games,
+.halieus-player-profile-page .halieus-profile-recent {
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-player-profile-page .halieus-profile-summary {
+  grid-template-columns: repeat(5,minmax(0,1fr)) !important;
+}
+.halieus-player-profile-page .halieus-profile-stat-breakdown > div {
+  grid-template-columns: repeat(4,minmax(0,1fr));
+}
+
+@media (max-width: 900px) {
+  .account-appearance-card .halieus-display-settings {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .account-stat-breakdown > div,
+  .halieus-profile-stat-breakdown > div {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .halieus-profile-detail-grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-player-profile-page .halieus-profile-summary {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 680px) {
+  .halieus-theme-modal-backdrop {
+    padding: 8px;
+    align-items: stretch;
+  }
+  .halieus-theme-popover,
+  .halieus-theme-popover.is-library-open {
+    width: 100% !important;
+    max-height: calc(100dvh - 16px) !important;
+    align-self: center;
+    padding: 12px !important;
+  }
+  .halieus-theme-library-grid {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .theme-preview-actions {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .theme-preview-actions > small {
+    grid-column: 1 / -1;
+  }
+  .account-appearance-heading {
+    display: grid;
+  }
+  .account-appearance-heading > small {
+    max-width: none;
+    text-align: left;
+  }
+  .account-panel-header-actions .account-build-info-button span {
+    display: none;
+  }
+  .account-build-info-button {
+    width: 38px;
+    padding: 0 !important;
+    justify-content: center;
+  }
+  .halieus-player-profile-hero {
+    grid-template-columns: 64px minmax(0,1fr);
+  }
+  .halieus-player-profile-hero .halieus-profile-avatar {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  .halieus-profile-presence {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
