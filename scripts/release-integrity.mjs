@@ -62,6 +62,8 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
+  'tests/runtime-classic-lifecycle.mjs', 'tests/fixtures/classic-lifecycle-server.mjs',
+  'docs/project/PART17_STAGE2A_CLASSIC_LIFECYCLE.md',
   'desktop/package.json', 'tests/regression-release-identity.mjs', 'tests/browser-release-identity.mjs',
   'docs/project/PART17_STAGE1_RELEASE_IDENTITY.md',
   'tests/regression-4.1.1-part15.mjs', 'tests/regression-4.1.1-video-polish.mjs',

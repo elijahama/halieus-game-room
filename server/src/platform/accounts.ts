@@ -488,7 +488,17 @@ async function readFinalisedSessionFiles(): Promise<any[]> {
         const path = resolve(root, file);
         if (seen.has(path)) continue;
         seen.add(path);
-        try { results.push(JSON.parse(await readFile(path, "utf8"))); } catch { /* malformed archive is ignored */ }
+        try {
+          const record = JSON.parse(await readFile(path, "utf8"));
+          // A classic-table closure is an operational archive, not played/won
+          // history. Keep this narrow: other games retain their existing policy.
+          if ((record.game === "dominoes" || record.game === "cheat") && (
+            record.state?.startedAt == null
+            || !["completed", "forfeit-completed"].includes(record.status)
+            || record.state?.outcome?.countsAsCompletedPlay === false
+          )) continue;
+          results.push(record);
+        } catch { /* malformed archive is ignored */ }
       }
     } catch { /* archive root may not exist on a fresh install */ }
   }

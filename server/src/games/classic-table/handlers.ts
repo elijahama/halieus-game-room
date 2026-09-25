@@ -10,6 +10,8 @@ import type {
   ClassicActionLogEntry,
   ClassicAiDifficulty,
   ClassicCreateOptions,
+  ClassicCompletionReason,
+  ClassicOutcome,
   ClassicGameId,
   ClassicMatchMode,
   ClassicPlayerPublic,
@@ -40,6 +42,9 @@ interface BaseRoom<P extends BasePlayer> {
   code: string;
   createdAt: number;
   startedAt: number | null;
+  matchId: string | null;
+  outcome: ClassicOutcome | null;
+  forfeitedPlayers: BasePlayer[];
   updatedAt: number;
   phase: "lobby" | "playing" | "finished";
   matchMode: ClassicMatchMode;
@@ -96,7 +101,13 @@ function ordered<P extends BasePlayer>(room: BaseRoom<P>): P[] { return room.pla
 function orderedAny(room: AnyRoom): BasePlayer[] { return (room.players as BasePlayer[]).slice().sort((a,b) => a.seat - b.seat); }
 function nextPlayer<P extends BasePlayer>(room: BaseRoom<P>, playerId: string): P | null { const list = ordered(room); if (!list.length) return null; const index = list.findIndex((player) => player.id === playerId); return list[(index + 1 + list.length) % list.length] ?? null; }
 function addLog(room: AnyRoom, detail: string): void { room.actionSequence += 1; room.actionLog.push({ sequence: room.actionSequence, at: Date.now(), detail }); if (room.actionLog.length > 80) room.actionLog.splice(0, room.actionLog.length - 80); room.status = detail; }
-function archivePayload(room: AnyRoom): unknown { return { ...room, spectators: [...room.spectators.entries()] }; }
+function archivePayload(room: AnyRoom): unknown {
+  // Finalization awaits disk setup. Snapshot now so an immediate rematch or
+  // reconnect cannot rewrite the previous match's result while it is saving.
+  return structuredClone({ ...room, players: [...room.players, ...room.forfeitedPlayers], spectators: [...room.spectators.entries()] });
+}
+function archiveTime(room: AnyRoom): number { return room.startedAt ?? room.createdAt; }
+function staleMatch(room: AnyRoom, payload: any): boolean { return (payload?.matchId ?? null) !== room.matchId; }
 
 function createCheatDeck(): CheatCard[] {
   const cards: CheatCard[] = [];
@@ -104,7 +115,6 @@ function createCheatDeck(): CheatCard[] {
   return shuffle(cards);
 }
 function createDominoSet(): DominoTile[] { const tiles: DominoTile[] = []; for (let a = 0; a <= 6; a += 1) for (let b = a; b <= 6; b += 1) tiles.push({ id: `domino-${a}-${b}`, a, b }); return shuffle(tiles); }
-function pipTotal(tiles: DominoTile[]): number { return tiles.reduce((total, tile) => total + tile.a + tile.b, 0); }
 
 function publicPlayer(room: AnyRoom, player: BasePlayer, viewerId: string | null): ClassicPlayerPublic {
   if (room.game === "cheat") {
@@ -122,14 +132,17 @@ function publicState(room: AnyRoom, viewerId: string | null, isSpectator: boolea
     gameTitle: room.game === "cheat" ? "Cheat" as const : "Dominoes" as const,
     code: room.code,
     phase: room.phase,
-    started: room.phase !== "lobby",
+    started: room.startedAt !== null,
     createdAt: room.createdAt,
     startedAt: room.startedAt,
+    matchId: room.matchId,
+    outcome: room.outcome,
     updatedAt: room.updatedAt,
     matchMode: room.matchMode,
     players: publicPlayers,
     currentTurnPlayerId: room.currentTurnPlayerId,
     viewerPlayerId: viewerId,
+    viewerReconnectToken: viewerId && !isSpectator ? room.players.find((player) => player.id === viewerId)?.reconnectToken ?? null : null,
     isSpectator,
     spectatorCount: room.spectators.size,
     status: room.status,
@@ -173,7 +186,7 @@ function publicState(room: AnyRoom, viewerId: string | null, isSpectator: boolea
 
 function emitRoom(io: Server, room: AnyRoom): void {
   room.updatedAt = Date.now();
-  recordWorkingSession(room.game, room.code, room.createdAt, archivePayload(room));
+  recordWorkingSession(room.game, room.code, archiveTime(room), archivePayload(room));
   for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit(`${room.game}:state`, publicState(room, player.id, false));
   for (const spectatorId of room.spectators.keys()) io.to(spectatorId).emit(`${room.game}:state`, publicState(room, null, true));
   scheduleAi(io, room);
@@ -189,11 +202,49 @@ function addAi(room: AnyRoom, difficulty: ClassicAiDifficulty): string | null {
   return null;
 }
 
-function finishRoom(room: AnyRoom, winner: BasePlayer | null, reason: string): void {
+function archiveOutcome(room: AnyRoom): void {
+  const outcome = room.outcome;
+  if (!outcome) return;
+  const winner = room.players.find((player) => player.id === outcome.winnerPlayerId);
+  const status = outcome.kind === "cancelled" ? "host-ended" : outcome.kind === "forfeited" ? "forfeit-completed" : "completed";
+  void finalizeSession(room.game, room.code, archiveTime(room), status, archivePayload(room), {
+    matchId: room.matchId, outcome: outcome.kind, reason: outcome.reason,
+    countsAsCompletedPlay: outcome.countsAsCompletedPlay,
+    winner: winner?.name ?? null, players: room.players.length + room.forfeitedPlayers.length,
+    mode: room.matchMode, durationMs: room.startedAt === null ? 0 : Math.max(0, outcome.endedAt - room.startedAt),
+  }).catch((error) => console.error("Classic-table archive finalization failed:", error));
+}
+
+function finishRoom(room: AnyRoom, winner: BasePlayer | null, reason: string, terminal: ClassicCompletionReason): void {
+  if (room.phase !== "playing" || !room.matchId || room.startedAt === null || room.outcome || !winner) return;
+  // Only rule-backed transitions may enter the completed-result path.
+  const valid = terminal === "last-player-remaining"
+    ? room.players.length === 1 && room.players[0].id === winner.id && room.forfeitedPlayers.length > 0
+    : room.game === "dominoes"
+      ? terminal === "dominoes-empty-hand"
+        ? room.chain.length > 0 && (winner as DominoPlayer).hand.length === 0
+        : terminal === "dominoes-blocked" && room.chain.length > 0 && room.boneyard.length === 0
+          && room.consecutivePasses >= room.players.length
+          && room.players.every((player) => !player.hand.some((tile) => isDominoPlayable(room, tile)))
+      : terminal === "cheat-final-claim-accepted" && (winner as CheatPlayer).hand.length === 0
+        && room.pendingWinnerId === winner.id && room.pendingClaim?.playerId === winner.id;
+  if (!valid) return;
   room.phase = "finished"; room.currentTurnPlayerId = null; room.winnerPlayerId = winner?.id ?? null;
-  if (winner) winner.result = "Winner";
+  winner.result = "Winner";
+  room.outcome = { kind: terminal === "last-player-remaining" ? "forfeited" : "completed", reason: terminal, endedAt: Date.now(), countsAsCompletedPlay: true, winnerPlayerId: winner.id };
+  if (room.game === "cheat") { room.pendingClaim = null; room.pendingWinnerId = null; }
   addLog(room, reason);
-  void finalizeSession(room.game, room.code, room.createdAt, "completed", archivePayload(room), { winner: winner?.name ?? null, players: room.players.length, mode: room.matchMode, durationMs: Date.now() - room.createdAt });
+  archiveOutcome(room);
+}
+
+function cancelRoom(room: AnyRoom, host: BasePlayer): void {
+  if (room.outcome) return;
+  room.phase = "finished"; room.currentTurnPlayerId = null; room.winnerPlayerId = null;
+  if (room.game === "cheat") { room.pendingClaim = null; room.pendingWinnerId = null; }
+  for (const player of room.players) player.result = null;
+  room.outcome = { kind: "cancelled", reason: "host-closed", endedAt: Date.now(), countsAsCompletedPlay: false, winnerPlayerId: null };
+  addLog(room, `${host.name} closed the room. No match result was awarded.`);
+  archiveOutcome(room);
 }
 
 function startCheat(room: CheatRoom): string | null {
@@ -201,7 +252,7 @@ function startCheat(room: CheatRoom): string | null {
   room.deck = createCheatDeck(); room.pile = []; room.pendingClaim = null; room.pendingWinnerId = null; room.requiredRankIndex = 0; room.winnerPlayerId = null;
   for (const player of room.players) { player.hand = []; player.result = null; }
   let index = 0; while (room.deck.length) { room.players[index % room.players.length].hand.push(room.deck.pop()!); index += 1; }
-  room.phase = "playing"; room.startedAt ??= Date.now(); room.currentTurnPlayerId = ordered(room)[0]?.id ?? null;
+  room.phase = "playing"; room.currentTurnPlayerId = ordered(room)[0]?.id ?? null;
   addLog(room, `${ordered(room)[0]?.name ?? "Player"} starts. Claim ${CHEAT_RANKS[room.requiredRankIndex]}s.`);
   return null;
 }
@@ -209,12 +260,13 @@ function startCheat(room: CheatRoom): string | null {
 function acceptCheatClaim(room: CheatRoom, player: CheatPlayer): string | null {
   if (room.phase !== "playing" || room.currentTurnPlayerId !== player.id || !room.pendingClaim) return "There is no claim for you to accept.";
   const previous = room.pendingClaim;
-  room.pendingClaim = null;
   if (room.pendingWinnerId === previous.playerId) {
     const winner = room.players.find((candidate) => candidate.id === previous.playerId) ?? null;
-    finishRoom(room, winner, `${winner?.name ?? "Player"}'s final claim stands. ${winner?.name ?? "Player"} wins Cheat.`);
+    finishRoom(room, winner, `${winner?.name ?? "Player"}'s final claim stands. ${winner?.name ?? "Player"} wins Cheat.`, "cheat-final-claim-accepted");
+    room.pendingClaim = null;
     return null;
   }
+  room.pendingClaim = null;
   room.pendingWinnerId = null;
   addLog(room, `${player.name} accepts ${previous.playerName}'s claim. ${player.name} must claim ${CHEAT_RANKS[room.requiredRankIndex]}s.`);
   return null;
@@ -252,11 +304,16 @@ function isDominoPlayable(room: DominoRoom, tile: DominoTile): boolean {
   return tile.a === room.leftEnd || tile.b === room.leftEnd || tile.a === room.rightEnd || tile.b === room.rightEnd;
 }
 
-function dominoPips(player: DominoPlayer): number { return player.hand.reduce((sum, tile) => sum + tile.a + tile.b, 0); }
+function dominoPips(player: { hand: DominoTile[] }): number { return player.hand.reduce((sum, tile) => sum + tile.a + tile.b, 0); }
+
+export function selectBlockedDominoWinner<T extends { seat: number; hand: DominoTile[] }>(players: T[]): T | null {
+  // Preserve HGR's existing lowest-pip, then seat-order tie break.
+  return players.slice().sort((a,b) => dominoPips(a) - dominoPips(b) || a.seat - b.seat)[0] ?? null;
+}
 
 function finishBlockedDominoes(room: DominoRoom): void {
-  const winner = room.players.slice().sort((a,b) => dominoPips(a) - dominoPips(b) || a.seat - b.seat)[0] ?? null;
-  finishRoom(room, winner, `The table is blocked. ${winner?.name ?? "Nobody"} wins with ${winner ? dominoPips(winner) : 0} pips remaining.`);
+  const winner = selectBlockedDominoWinner(room.players);
+  finishRoom(room, winner, `The table is blocked. ${winner?.name ?? "Nobody"} wins with ${winner ? dominoPips(winner) : 0} pips remaining.`, "dominoes-blocked");
 }
 
 function playDomino(room: DominoRoom, player: DominoPlayer, tileId: string, side: "left" | "right"): string | null {
@@ -282,7 +339,7 @@ function playDomino(room: DominoRoom, player: DominoPlayer, tileId: string, side
   if (side === "left") room.chain.unshift(placement); else room.chain.push(placement);
   room.consecutivePasses = 0;
   addLog(room, `${player.name} plays ${tile.a}|${tile.b}.`);
-  if (player.hand.length === 0) { finishRoom(room, player, `${player.name} empties their hand and wins Dominoes.`); return null; }
+  if (player.hand.length === 0) { finishRoom(room, player, `${player.name} empties their hand and wins Dominoes.`, "dominoes-empty-hand"); return null; }
   room.currentTurnPlayerId = nextPlayer(room, player.id)?.id ?? null;
   return null;
 }
@@ -292,7 +349,7 @@ function startDominoes(room: DominoRoom): string | null {
   const set = createDominoSet(); room.chain = []; room.leftEnd = null; room.rightEnd = null; room.consecutivePasses = 0; room.winnerPlayerId = null;
   const handSize = room.players.length === 2 ? 7 : 5;
   for (const player of room.players) { player.hand = []; player.result = null; for (let draw = 0; draw < handSize; draw += 1) player.hand.push(set.pop()!); }
-  room.boneyard = set; room.phase = "playing"; room.startedAt ??= Date.now();
+  room.boneyard = set; room.phase = "playing";
   const starter = room.players.slice().sort((a,b) => {
     const bestA = Math.max(...a.hand.map((tile) => tile.a === tile.b ? tile.a * 20 : tile.a + tile.b));
     const bestB = Math.max(...b.hand.map((tile) => tile.a === tile.b ? tile.a * 20 : tile.a + tile.b));
@@ -303,12 +360,21 @@ function startDominoes(room: DominoRoom): string | null {
   return null;
 }
 
-function startRoom(room: AnyRoom): string | null { return room.game === "cheat" ? startCheat(room) : startDominoes(room); }
+function startRoom(room: AnyRoom): string | null {
+  if (room.phase !== "lobby" && !(room.phase === "finished" && room.outcome?.countsAsCompletedPlay)) return "Only a lobby or a completed match can start. Create a new room after cancellation.";
+  if (room.players.length < 2) return "At least two players are required.";
+  // The existing archive key accepts a timestamp. A strictly fresh timestamp
+  // gives every match/rematch its own key without changing other games' archives.
+  room.startedAt = Math.max(Date.now(), (room.startedAt ?? room.createdAt) + 1);
+  room.matchId = `${room.game}-${room.code}-${room.startedAt}`;
+  room.outcome = null; room.forfeitedPlayers = []; room.actionLog = [];
+  return room.game === "cheat" ? startCheat(room) : startDominoes(room);
+}
 
 function createRoom(game: ClassicGameId, code: string, name: string, socketId: string, options: ClassicCreateOptions): AnyRoom {
   const createdAt = Date.now(); const base: BasePlayer = { id: socketId, reconnectToken: token(), name, isHost: true, isAi: false, aiDifficulty: null, isConnected: true, seat: 0, result: null };
-  if (game === "cheat") return { game, code, createdAt, startedAt: null, updatedAt: createdAt, phase: "lobby", matchMode: normaliseMode(options.matchMode), players: [{ ...base, hand: [] }], spectators: new Map(), currentTurnPlayerId: null, winnerPlayerId: null, status: "Waiting for players.", actionSequence: 0, actionLog: [], deck: [], pile: [], requiredRankIndex: 0, pendingClaim: null, pendingWinnerId: null };
-  return { game, code, createdAt, startedAt: null, updatedAt: createdAt, phase: "lobby", matchMode: normaliseMode(options.matchMode), players: [{ ...base, hand: [] }], spectators: new Map(), currentTurnPlayerId: null, winnerPlayerId: null, status: "Waiting for players.", actionSequence: 0, actionLog: [], boneyard: [], chain: [], leftEnd: null, rightEnd: null, consecutivePasses: 0 };
+  if (game === "cheat") return { game, code, createdAt, startedAt: null, matchId: null, outcome: null, forfeitedPlayers: [], updatedAt: createdAt, phase: "lobby", matchMode: normaliseMode(options.matchMode), players: [{ ...base, hand: [] }], spectators: new Map(), currentTurnPlayerId: null, winnerPlayerId: null, status: "Waiting for players.", actionSequence: 0, actionLog: [], deck: [], pile: [], requiredRankIndex: 0, pendingClaim: null, pendingWinnerId: null };
+  return { game, code, createdAt, startedAt: null, matchId: null, outcome: null, forfeitedPlayers: [], updatedAt: createdAt, phase: "lobby", matchMode: normaliseMode(options.matchMode), players: [{ ...base, hand: [] }], spectators: new Map(), currentTurnPlayerId: null, winnerPlayerId: null, status: "Waiting for players.", actionSequence: 0, actionLog: [], boneyard: [], chain: [], leftEnd: null, rightEnd: null, consecutivePasses: 0 };
 }
 
 function aiCheat(io: Server, room: CheatRoom, ai: CheatPlayer): void {
@@ -373,6 +439,19 @@ export function getClassicLiveRoomSummaries(): HalieusLiveRoomSummary[] {
 export function closeAllClassicRooms(): number { const count = rooms.size; for (const timer of aiTimers.values()) clearTimeout(timer); aiTimers.clear(); rooms.clear(); return count; }
 
 export function registerClassicTableHandlers(io: Server, socket: Socket): void {
+  socket.use(([event, payload, ack], next) => {
+    if (/^(cheat|dominoes):(start|end-game|forfeit|play|draw|pass|accept|call)$/.test(event)) {
+      const room = rooms.get(normaliseCode(payload?.code));
+      if (room && event.startsWith(`${room.game}:`)) {
+        const player = room.players.find((candidate) => candidate.id === socket.id);
+        if (staleMatch(room, payload) || (player && !player.isConnected)) {
+          if (typeof ack === "function") ack({ ok: false, reason: "This match or seat has changed. Recover the current room before acting." });
+          return;
+        }
+      }
+    }
+    next();
+  });
   for (const game of ["cheat", "dominoes"] as const) {
     socket.on(`${game}:create`, (payload: any, ack: (response: any) => void) => {
       const code = normaliseCode(payload?.code); const name = normaliseName(payload?.playerName); if (!code || !name) return ack({ ok: false, reason: "Name and room code are required." });
@@ -408,6 +487,7 @@ export function registerClassicTableHandlers(io: Server, socket: Socket): void {
       player.id = socket.id; player.isConnected = true; if (normaliseName(payload?.playerName)) player.name = normaliseName(payload.playerName);
       if (room.currentTurnPlayerId === previousId) room.currentTurnPlayerId = player.id;
       if (room.winnerPlayerId === previousId) room.winnerPlayerId = player.id;
+      if (room.outcome?.winnerPlayerId === previousId) room.outcome.winnerPlayerId = player.id;
       if (room.game === "cheat") {
         if (room.pendingClaim?.playerId === previousId) room.pendingClaim.playerId = player.id;
         if (room.pendingWinnerId === previousId) room.pendingWinnerId = player.id;
@@ -438,18 +518,17 @@ export function registerClassicTableHandlers(io: Server, socket: Socket): void {
     socket.on(`${game}:end-game`, (payload: any, ack: (response: any) => void) => {
       const room = rooms.get(normaliseCode(payload?.code)); const host = room?.players.find((player) => player.id === socket.id && player.isHost);
       if (!room || room.game !== game || !host) return ack({ ok: false, reason: "Only the host can end this game." });
-      const leader = room.players.slice().sort((a,b) => {
-        if (room.game === "cheat") return ((a as CheatPlayer).hand.length - (b as CheatPlayer).hand.length);
-        return pipTotal((a as DominoPlayer).hand) - pipTotal((b as DominoPlayer).hand);
-      })[0] ?? null;
-      finishRoom(room, leader, `${host.name} ended the game. ${leader ? `${leader.name} finishes in front.` : "Room closed."}`);
+      if (room.outcome) return ack({ ok: true, state: publicState(room, host.id, false) });
+      cancelRoom(room, host);
       emitRoom(io, room); ack({ ok: true, state: publicState(room, host.id, false) });
     });
 
     socket.on(`${game}:forfeit`, (payload: any, ack: (response: any) => void) => {
       const room = rooms.get(normaliseCode(payload?.code)); const player = room?.players.find((candidate) => candidate.id === socket.id && !candidate.isAi); if (!room || room.game !== game || !player) return ack({ ok: false, reason: "Seat not found." });
+      if (room.phase !== "playing") return ack({ ok: false, reason: "Only an active match can be forfeited." });
+      room.forfeitedPlayers.push({ ...player, result: "Forfeited" });
       const wasCurrent = room.currentTurnPlayerId === player.id; const wasHost = player.isHost; room.players = room.players.filter((candidate) => candidate.id !== player.id) as any; room.players.forEach((candidate, index) => { candidate.seat = index; }); if (wasHost && room.players.length) room.players[0].isHost = true;
-      if (room.players.length < 2 && room.phase === "playing") finishRoom(room, room.players[0] ?? null, `${player.name} forfeited. ${room.players[0]?.name ?? "Table"} wins.`); else if (wasCurrent) room.currentTurnPlayerId = room.players[0]?.id ?? null;
+      if (room.players.length < 2 && room.phase === "playing") finishRoom(room, room.players[0] ?? null, `${player.name} forfeited. ${room.players[0]?.name ?? "Table"} wins.`, "last-player-remaining"); else if (wasCurrent) room.currentTurnPlayerId = room.players[0]?.id ?? null;
       emitRoom(io, room); ack({ ok: true });
     });
 
@@ -489,7 +568,7 @@ export function registerClassicTableHandlers(io: Server, socket: Socket): void {
   socket.on("disconnect", () => {
     for (const room of rooms.values()) {
       const player = room.players.find((candidate) => candidate.id === socket.id); if (player) player.isConnected = false;
-      room.spectators.delete(socket.id); if (player) emitRoom(io, room);
+      const wasSpectator = room.spectators.delete(socket.id); if (player || wasSpectator) emitRoom(io, room);
     }
   });
 }

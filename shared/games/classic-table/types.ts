@@ -2,6 +2,21 @@ export type ClassicGameId = "cheat" | "dominoes";
 export type ClassicAiDifficulty = "easy" | "normal" | "hard";
 export type ClassicMatchMode = "casual" | "ranked";
 
+export type ClassicCompletionReason = "dominoes-empty-hand" | "dominoes-blocked" | "cheat-final-claim-accepted" | "last-player-remaining";
+export type ClassicOutcome = {
+  kind: "cancelled";
+  reason: "host-closed";
+  endedAt: number;
+  countsAsCompletedPlay: false;
+  winnerPlayerId: null;
+} | {
+  kind: "completed" | "forfeited";
+  reason: ClassicCompletionReason;
+  endedAt: number;
+  countsAsCompletedPlay: true;
+  winnerPlayerId: string;
+};
+
 export interface ClassicPlayerPublic {
   id: string;
   name: string;
@@ -65,11 +80,14 @@ interface ClassicStateBase {
   started: boolean;
   createdAt: number;
   startedAt: number | null;
+  matchId: string | null;
+  outcome: ClassicOutcome | null;
   updatedAt: number;
   matchMode: ClassicMatchMode;
   players: ClassicPlayerPublic[];
   currentTurnPlayerId: string | null;
   viewerPlayerId: string | null;
+  viewerReconnectToken: string | null;
   isSpectator: boolean;
   spectatorCount: number;
   status: string;
