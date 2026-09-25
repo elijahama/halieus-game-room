@@ -155,8 +155,13 @@ echo [OK] Typecheck, current-release build, regressions and Oracle package prefl
 echo.
 
 :STAGE
-echo STEP 4 - Reviewing local changes...
+echo STEP 4 - Reviewing local SOURCE changes...
 echo.
+
+rem RELEASE.json and shared/release.ts are generated outputs, not source edits.
+rem STEP 2 already validated them; never turn them into a user-authored Git commit.
+git restore --staged --worktree -- RELEASE.json shared/release.ts >nul 2>&1
+
 git status --short
 echo.
 
@@ -179,6 +184,17 @@ if errorlevel 1 (
     echo.
     echo [STOPPED] Could not stage the changes.
     goto :PAUSE_EXIT
+)
+
+rem Generated release identity is owned by prepare:release / the release bot.
+rem Keep it out of the human source commit so final rebases cannot conflict on it.
+git reset -- RELEASE.json shared/release.ts >nul 2>&1
+
+git diff --cached --quiet
+if not errorlevel 1 (
+    echo.
+    echo [OK] Only generated release identity changed; no source commit is required.
+    goto :DONE
 )
 
 rem Safety check for private/sensitive-looking files.
@@ -279,9 +295,19 @@ echo LOCAL  ^<-- git pull --  GITHUB
 echo LOCAL  -- git push --^>  GITHUB
 echo.
 echo Your local files were updated at STEP 1.
-echo Your local changes were uploaded at STEP 7 when a commit was needed.
+echo Your local source changes were uploaded at STEP 7 when a commit was needed.
 echo.
-echo STEP 8 - Final release check before website deployment...
+echo STEP 8 - Regenerating final release identity after sync...
+echo.
+call npm run prepare:release
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Final release preparation failed, so Oracle deployment was not started.
+    goto :PAUSE_EXIT
+)
+echo [OK] Final release identity regenerated from the synced source tree.
+echo.
+echo STEP 8B - Final release check before website deployment...
 echo.
 call npm run validate:release
 if errorlevel 1 (
@@ -356,8 +382,8 @@ echo   2. Release identity generated before build
 echo   3. Typecheck passed
 echo   4. Browser/server build used the current release identity
 echo   5. Regression tests passed
-echo   6. Changes committed/pushed when needed
-echo   7. Final release identity re-verified
+echo   6. Source changes committed/pushed when needed
+echo   7. Final release identity regenerated and re-verified
 echo   8. Website deployment completed
 echo.
 popd
