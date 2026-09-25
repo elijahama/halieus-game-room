@@ -35,6 +35,7 @@ const bundle=await build({stdin:{contents:`
  const dock=<RoomChatPanel game="mega-board" code="VIS451" accent="#168a42" spectatorCount={2} spectatorNames={['Spectator one','Spectator two']}/>;
  root.render(<React.Fragment key={screen+mode+stage+count}>
  {screen==='lobby'&&<><LobbyScreen {...shared} lobby={{code:'VIS451',playerId:'p0',players}} connectionStatus="Connected" recoveryKey="RECOVERY-451" message="" betaMode={false} onStartGame={noop} onLeaveLobby={noop} onBackToGameRoom={noop} onAddAi={noop} onRemoveAi={noop} onTurnTimerChange={noop}/>{dock}</>}
+ {screen==='lobby-beta'&&<><LobbyScreen {...shared} lobby={{code:'VIS451',playerId:'p0',players}} connectionStatus="Connected" recoveryKey="RECOVERY-451" message="" betaMode={true} onStartGame={noop} onLeaveLobby={noop} onBackToGameRoom={noop} onAddAi={noop} onRemoveAi={noop} onTurnTimerChange={noop}/>{dock}</>}
  {screen==='board'&&<main className="game-page mega-live-page"><GameBoard {...board}/>{dock}</main>}
  {screen==='results'&&<><WinnerScreen {...shared} gameState={{...state,phase:'finished'}} isHost={true} onExit={noop}/>{dock}</>}
  {screen==='podium'&&<LeaderboardModal {...shared} entries={players.slice(0,count).map((p,i)=>({playerKey:p.id,playerName:p.name,rating:1500-i*100,wins:3,gamesPlayed:7,podiums:4,averageFinish:2,awardsWon:1,profilePicture:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="green"/></svg>'}))} recentMatches={[]} loading={false} error="" onRefresh={noop} onClose={noop}/>}
@@ -59,7 +60,17 @@ for(const [device,width,height] of [['desktop',1440,900],['short',1280,600],['ta
  for(const mode of ['light','dark']){
   await show('lobby',mode);await page.locator('.lobby-card-v2').waitFor();await contained('.lobby-card-v2');
   if(width>920){const a=await page.locator('.players-panel-v2').boundingBox(),b=await page.locator('.lobby-side-panel').boundingBox();assert.ok(Math.abs(a.y+a.height-b.y-b.height)<3,`${device} roster/control bottoms ${JSON.stringify({a,b})}`);}
-  await page.getByRole('button',{name:/Board styles/}).click();await page.getByRole('dialog',{name:'HGR skins'}).waitFor();assert.ok(await page.locator('.halieus-skins-grid button:disabled').count()>0,'Locked boards show requirements');await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:/Board styles/}).click();await page.getByRole('dialog',{name:'HGR skins'}).waitFor();
+  assert.ok(await page.locator('.halieus-skins-grid button:disabled').count()>0,'Locked boards show requirements');
+  const lockedSkin=page.locator('.halieus-skins-grid button.is-locked').first();
+  const lockedVisual=await lockedSkin.evaluate(e=>({opacity:Number.parseFloat(getComputedStyle(e).opacity),filter:getComputedStyle(e).filter,state:getComputedStyle(e.querySelector('.halieus-skin-state')).color}));
+  assert.ok(lockedVisual.opacity<.8&&lockedVisual.filter!=='none','Locked cosmetics are visibly dimmed without hiding their requirement');
+  await page.keyboard.press('Escape');
+  await show('lobby-beta',mode);await page.locator('.lobby-card-v2').waitFor();
+  await page.getByRole('button',{name:/Board styles/}).click();await page.getByRole('dialog',{name:'HGR skins'}).waitFor();
+  assert.equal(await page.locator('.halieus-skins-grid button:disabled').count(),0,'Beta lobby exposes every board style');
+  assert.ok(await page.locator('.halieus-skin-state').filter({hasText:'Beta preview'}).count()>0,'Beta keeps normal unlock metadata while making gated boards selectable');
+  await page.keyboard.press('Escape');
   if(shots)await page.screenshot({path:resolve(shots,`${device}-${mode}-lobby.png`),fullPage:true});
   await show('board',mode);await page.locator('.board-bus-ticket-button').waitFor();await contained('.board-frame');
   const normalGeometry=await page.locator('.board-space').evaluateAll(es=>es.map(e=>({w:e.offsetWidth,h:e.offsetHeight})));
