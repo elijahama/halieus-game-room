@@ -14,7 +14,7 @@ const json=(p)=>JSON.parse(read(p));
  */
 
 const currentVersion=read('VERSION').trim();
-assert.match(currentVersion,/^4\.1\./,'4.1.0 regression should run against the current 4.1.x release');
+// Release intent is asserted by regression-release-identity.mjs.
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
   assert.equal(json(file).version,currentVersion,`${file} version mismatch`);
 }

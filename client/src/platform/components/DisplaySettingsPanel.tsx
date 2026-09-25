@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
+import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version";
 import {
   readDensity,
   readTextScale,
@@ -141,7 +141,7 @@ export function DisplaySettingsPanel({
           <span><strong>Build info</strong><small>Version and release fingerprint</small></span>
         </button>
       </div>
-      {buildInfoOpen && <div className="halieus-build-info-popover" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" aria-label="Close build information" onClick={() => setBuildInfoOpen(false)}>×</button><p>HALIEUS GAME ROOM</p><h3>Build {APP_VERSION}</h3><span>Exact release</span><code>{RELEASE_FINGERPRINT}</code></div>}
+      {buildInfoOpen && <div className="halieus-build-info-popover" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" aria-label="Close build information" onClick={() => setBuildInfoOpen(false)}>×</button><p>HALIEUS GAME ROOM</p><h3>Build {APP_RELEASE_LABEL}</h3><span>Exact release</span><code>{RELEASE_FINGERPRINT}</code></div>}
     </section>
   );
 }

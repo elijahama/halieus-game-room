@@ -14,9 +14,9 @@ const json=(p)=>JSON.parse(read(p));
  * outside this patch.
  */
 
-assert.equal(read('VERSION').trim(),'4.1.1');
+const currentVersion = read('VERSION').trim();
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.equal(json(file).version,'4.1.1',`${file} version mismatch`);
+  assert.equal(json(file).version,currentVersion,`${file} version mismatch`);
 }
 
 const rootPackage=json('package.json');
@@ -76,7 +76,7 @@ assert.match(debt,/debt-property-option-list/,'Mega Board debt flow must expose 
 assert.match(css,/\.debt-property-option-list[\s\S]*?grid-template-columns:\s*repeat\(2/s,'Debt property choices must use a compact multi-column layout on desktop');
 assert.match(css,/--ambient-accent:\s*var\(--game-card-accent\)/,'Game-card ambient colour must derive from game identity');
 
-assert.match(sw,/halieus-shell-v4-1-1/,'PWA cache must advance for 4.1.1');
+assert.ok(sw.includes(`halieus-shell-v${currentVersion.replaceAll('.', '-')}`), 'PWA cache must follow VERSION');
 assert.match(intro,/HalieusBrandMark/,'Intro must use the shared current Halieus identity component');
 
 console.log('Halieus Game Room 4.1.1 social + theme polish regression: PASS');

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 const read=(p)=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
 
 const currentVersion=read('VERSION').trim();
-assert.equal(currentVersion,'4.1.1','Part 15 is a 4.1.1 platform/UI continuation');
+// Current release intent is checked by regression-release-identity.mjs.
 
 const home=read('client/src/platform/components/HomeScreen.tsx');
 const themeButton=read('client/src/platform/components/ThemeButton.tsx');

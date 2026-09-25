@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const read=(p)=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
 
-assert.equal(read('VERSION').trim(),'4.1.1','Video-reference polish remains inside the 4.1.1 milestone');
+// Current release intent is checked by regression-release-identity.mjs.
 
 const home=read('client/src/platform/components/HomeScreen.tsx');
 const guilds=read('client/src/platform/components/GuildsPanel.tsx');

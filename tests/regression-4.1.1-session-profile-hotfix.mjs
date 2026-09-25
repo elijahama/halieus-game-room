@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const read=(path)=>readFileSync(new URL(`../${path}`, import.meta.url),'utf8');
 
-assert.equal(read('VERSION').trim(),'4.1.1','Session/profile hotfix remains inside 4.1.1');
+// Current release intent is checked by regression-release-identity.mjs.
 
 const server=read('server/src/index.ts');
 const accounts=read('server/src/platform/accounts.ts');

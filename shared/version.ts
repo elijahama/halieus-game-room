@@ -1,3 +1,4 @@
-// Public Halieus product version shared by browser and server diagnostics.
-// Keep detailed commit/build hashes internal so the user-facing version remains compact.
-export const APP_VERSION = "4.1.1";
+// Generated from VERSION by scripts/release-integrity.mjs. Do not edit.
+export const APP_VERSION = "4.5.0";
+// Hide a zero patch only; corrective patch releases retain their full identity.
+export const APP_RELEASE_LABEL = APP_VERSION.replace(/\.0$/, "");

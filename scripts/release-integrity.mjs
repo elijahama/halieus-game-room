@@ -15,6 +15,31 @@ if (!versionMatch) throw new Error(`Invalid VERSION: ${version}`);
 const npmVersion = versionMatch[2] ? `${versionMatch[1]}-${versionMatch[2]}` : version;
 
 const packages = ['package.json', 'client/package.json', 'server/package.json', 'shared/package.json', 'desktop/package.json'];
+// VERSION is the sole production authority. Generate before hashing; verification
+// is read-only and rejects stale generated consumers, including deployment ZIPs.
+function artifact(file, expected) {
+  if (mode === 'write') writeFileSync(resolve(root, file), expected);
+  else if (readText(file) !== expected) throw new Error(`Stale release artifact: ${file}. Run npm run prepare:release.`);
+}
+for (const file of packages) {
+  const metadata = JSON.parse(readText(file));
+  metadata.version = npmVersion;
+  artifact(file, `${JSON.stringify(metadata, null, 2)}\n`);
+}
+const generatedLock = JSON.parse(readText('package-lock.json'));
+generatedLock.version = npmVersion;
+for (const workspace of ['', 'client', 'server', 'shared']) generatedLock.packages[workspace].version = npmVersion;
+artifact('package-lock.json', `${JSON.stringify(generatedLock, null, 2)}\n`);
+artifact('shared/version.ts', `// Generated from VERSION by scripts/release-integrity.mjs. Do not edit.\nexport const APP_VERSION = ${JSON.stringify(version)};\n// Hide a zero patch only; corrective patch releases retain their full identity.\nexport const APP_RELEASE_LABEL = APP_VERSION.replace(/\\.0$/, "");\n`);
+const cachePrefix = `halieus-shell-v${version.replaceAll('.', '-')}`;
+artifact('client/public/sw.js', readText('client/public/sw.js').replace(
+  /^const CACHE = .*;\r?$/m,
+  `const CACHE = '${cachePrefix}-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');`,
+));
+artifact('client/index.html', readText('client/index.html').replace(
+  /(href="\/favicon[^"?]*\?v=)[^"&]+/g, `$1${version}`,
+));
+artifact('README.md', readText('README.md').replace(/(\*\*Current milestone:\*\* )\S+/, `$1${version}`));
 for (const file of packages) {
   const actual = JSON.parse(readText(file)).version;
   if (actual !== npmVersion) throw new Error(`Mixed release: VERSION=${version} (npm ${npmVersion}), ${file}=${actual}`);
@@ -37,6 +62,10 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
+  'desktop/package.json', 'tests/regression-release-identity.mjs', 'tests/browser-release-identity.mjs',
+  'docs/project/PART17_STAGE1_RELEASE_IDENTITY.md',
+  'tests/regression-4.1.1-part15.mjs', 'tests/regression-4.1.1-video-polish.mjs',
+  'tests/regression-4.1.1-session-profile-hotfix.mjs',
   // Only tracked repository files belong in the release identity. Historical
   // docs that were removed from main must not block current release generation.
   'tests/package-oracle-4.0.0.ps1', 'docs/DEPLOYMENT_FIX_4.0.0.md', '.gitignore', 'SECURITY.md',
@@ -258,6 +287,7 @@ if (mode === 'write') {
     throw new Error(`Release source changed after manifest generation. Expected ${existing.fingerprint}; current ${fingerprint}. Regenerate before packaging.`);
   }
   const releaseTs = readText('shared/release.ts');
-  if (!releaseTs.includes(`RELEASE_FINGERPRINT = ${JSON.stringify(fingerprint)}`)) throw new Error('shared/release.ts fingerprint mismatch');
+  if (releaseTs !== generatedTs) throw new Error('shared/release.ts identity mismatch');
+  if (JSON.stringify(existing) !== JSON.stringify(manifest)) throw new Error('RELEASE.json metadata mismatch');
   console.log(`Release integrity verified: ${fingerprint} (${uniqueFiles.length} files)`);
 }

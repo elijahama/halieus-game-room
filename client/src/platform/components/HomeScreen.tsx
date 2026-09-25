@@ -31,7 +31,7 @@ import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
-import { APP_VERSION, RELEASE_FINGERPRINT } from "../../version";
+import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version";
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
@@ -675,7 +675,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <NotificationPermissionButton />
         </div>
         <button type="button" className="halieus-side-build-info" onClick={() => setBuildInfoOpen(true)}><span className="halieus-nav-icon"><HgrIcon name="info" /></span><b>Build Info</b></button>
-        {buildInfoOpen && <div className="halieus-home-build-popover" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" onClick={() => setBuildInfoOpen(false)} aria-label="Close build information"><HgrIcon name="close" size={20} /></button><p>HALIEUS GAME ROOM</p><h3>Build {APP_VERSION}</h3><small>Exact release</small><code>{RELEASE_FINGERPRINT}</code></div>}
+        {buildInfoOpen && <div className="halieus-home-build-popover" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" onClick={() => setBuildInfoOpen(false)} aria-label="Close build information"><HgrIcon name="close" size={20} /></button><p>HALIEUS GAME ROOM</p><h3>Build {APP_RELEASE_LABEL}</h3><small>Exact release</small><code>{RELEASE_FINGERPRINT}</code></div>}
         {fullscreenNotice && <small className="halieus-fullscreen-note" role="status">{fullscreenNotice}</small>}
       </aside>
 
