@@ -8,6 +8,10 @@ export const MAX_PERFORMANCE_RATING_BONUS = 12;
 export interface RankedLeaderboardEntry {
   playerKey: string;
   playerName: string;
+  /** Optional account identity metadata attached when the leaderboard is served. */
+  profilePicture?: string | null;
+  avatar?: string;
+  playerColor?: string;
   rating: number;
   gamesPlayed: number;
   wins: number;
