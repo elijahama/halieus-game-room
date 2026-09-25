@@ -49,6 +49,12 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
     return () => document.removeEventListener("keydown", close);
   }, [open]);
 
+  const contextualSlot = slots.length === 1 ? slots[0] : null;
+  const triggerLabel = contextualSlot === "mega-board" ? "Board styles" : contextualSlot === "poker-table" ? "Table styles" : contextualSlot === "cards" ? "Card styles" : "Cosmetics";
+  const triggerDescription = contextualSlot === "mega-board"
+    ? (betaMode ? "Preview every Mega Board surface" : "Unlocked boards & requirements")
+    : betaMode ? "Beta preview access" : "Visual rewards & unlocks";
+
   const [entitlements, setEntitlements] = useState<string[]>([]);
   const [error, setError] = useState("");
   useEffect(() => { if (betaMode) return; let live = true; void accountApi<{ preferences: HalieusSkinPreferences; entitlements: string[] }>("/accounts/me/cosmetics").then(result => { if (live) { setEntitlements(result.entitlements); setPreferences(result.preferences); saveSkinPreferences(result.preferences); } }).catch(() => { if (live) setError("Sign in to save earned cosmetics."); }); return () => { live = false; }; }, [betaMode, open]);
@@ -64,7 +70,7 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
     <>
       <button type="button" className="halieus-skins-trigger" onClick={() => setOpen(true)}>
         <span aria-hidden="true">◇</span>
-        <span><strong>Skins</strong><small>{betaMode ? "Beta preview access" : "Boards, tables & cosmetics"}</small></span>
+        <span><strong>{triggerLabel}</strong><small>{triggerDescription}</small></span>
       </button>
 
       {open && (<ModalPortal onClose={() => setOpen(false)}>
