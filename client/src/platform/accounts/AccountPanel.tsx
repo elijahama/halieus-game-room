@@ -357,10 +357,6 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
 
   const profileSettings = (
     <section className="account-self-service">
-      <section className="account-appearance-card">
-        <header className="account-appearance-heading"><div><p className="modal-eyebrow">Player settings</p><h3>Appearance</h3></div><small>Theme, text size and density follow you across HGR.</small></header>
-        <DisplaySettingsPanel darkMode={false} onToggleDarkMode={() => {}} showFullscreen={false} onToggleFullscreen={() => {}} />
-      </section>
       {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div><button type="button" className="button-outline account-open-owner-tools" onClick={() => setAdminTab("overview")}>Owner tools →</button></header>}
       <div className="account-profile-grid">
         <form className="account-settings-card" onSubmit={saveProfile}>
@@ -380,6 +376,10 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
           <button type="submit" className="button-outline">Change password</button>
         </form>
       </div>
+      <section className="account-appearance-card">
+        <header className="account-appearance-heading"><div><p className="modal-eyebrow">Player settings</p><h3>Appearance</h3></div><small>Theme, text size and density follow you across HGR.</small></header>
+        <DisplaySettingsPanel darkMode={false} onToggleDarkMode={() => {}} showFullscreen={false} onToggleFullscreen={() => {}} />
+      </section>
       {personalStats?.progression && <section className="account-settings-card"><p className="modal-eyebrow">Achievements</p><h3>{personalStats.progression.gamerScore} GamerScore</h3><small>Earned from verified completed games. Separate from rankings and cosmetic currency.</small><div className="achievement-list">{personalStats.progression.awards.length ? personalStats.progression.awards.map(award => <article key={award.id}><strong>{award.title}</strong><span>+{award.points}</span><small>{new Date(award.earnedAt).toLocaleDateString()}</small></article>) : <p>Complete a game to earn your first achievement.</p>}</div></section>}
       {personalStats && <section className="account-game-record">
         <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
