@@ -871,6 +871,9 @@ export function HomeScreen(props: HomeScreenProps) {
               </button>)}
             </div> : <div className="halieus-gamer-score-empty">No Gamer Score has been earned yet. Completed non-Beta achievements will appear here.</div>}
           </section>
+          <header className="halieus-elo-section-heading">
+            <div><small>COMPETITIVE RANKING</small><h2>Per-game Elo ladders</h2><span>Open the standings for a specific game. Ratings never combine unrelated games or Gamer Score.</span></div>
+          </header>
           <div className="halieus-rankings-grid">
             {RANKED_HUB_GAMES.map((gameId) => {
               const game = GAME_BY_ID[gameId];
