@@ -37,6 +37,7 @@ export function PreGameShell({
         borderColor: `color-mix(in srgb, ${accent} 42%, ${borderColor})`,
         ["--game-create-accent" as string]: accent,
       }}
+      data-game={game}
       role="dialog"
       aria-modal="true"
       aria-label={title}
