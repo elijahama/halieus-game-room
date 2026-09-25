@@ -46,6 +46,8 @@ const megaTurnHandlers=read("server/src/games/mega-board/handlers/turnHandlers.t
 const guildContracts=read("shared/platform/guilds.ts");
 const guildServer=read("server/src/platform/guilds.ts");
 const guildPanel=read("client/src/platform/components/GuildsPanel.tsx");
+const accountContracts=read("shared/platform/accounts.ts");
+const accountServer=read("server/src/platform/accounts.ts");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
@@ -148,6 +150,16 @@ assert.match(accountPortal,/HgrIcon name=\{isFullscreen \? "minimize" : "fullscr
 assert.match(css,/HGR 4\.5 shared account-entry \/ ranked surfaces/,"4.5 must define one account-entry and leaderboard layer");
 assert.match(css,/\.account342-card[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Account entry card must inherit the shared elevated HGR surface");
 assert.match(css,/\.leaderboard-modal[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"All ranked leaderboards must inherit the shared HGR modal surface");
+
+assert.match(accountContracts,/HalieusGamerScoreLeaderboardEntry/,"Gamer Score leaderboard must have a shared typed contract");
+assert.match(accountServer,/async function gamerScoreLeaderboard\(viewer: StoredAccount\)/,"Gamer Score ordering must be server-authoritative");
+assert.match(accountServer,/account\.visibility !== "hidden" \|\| account\.id === viewer\.id/,"Gamer Score must inherit player-directory visibility rules");
+assert.match(accountServer,/\/accounts\/gamer-score\/leaderboard/,"Accounts API must expose Gamer Score independently from game Elo");
+assert.match(home,/Gamer Score leaderboard/,"Rankings must show account progression alongside per-game ladders");
+assert.match(home,/\/accounts\/gamer-score\/leaderboard/,"Rankings UI must load the authoritative Gamer Score board");
+assert.match(home,/style=\{\{ background: entry\.playerColor \}\}/,"Player colour may remain on the Gamer Score avatar as identity");
+assert.match(release451Css,/\.halieus-gamer-score-list > button[\s\S]*?var\(--hgr-border\)/,"Gamer Score row chrome must inherit the active HGR theme");
+assert.doesNotMatch(release451Css,/halieus-gamer-score[^{}]*\{[^}]*var\(--profile-accent\)/,"Gamer Score chrome must not inherit profile colour");
 
 assert.match(theme,/\| "profile" \| "custom"/,"Theme contract must include a scalable profile-library mode");
 assert.match(theme,/THEME_PROFILES/,"Theme model must expose a named profile library");
