@@ -14,7 +14,7 @@ import { accountApi } from "./api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DisplaySettingsPanel } from "../components/DisplaySettingsPanel";
 import { HgrIcon } from "../components/HgrIcon";
-import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version";
+import { APP_RELEASE_LABEL } from "../../version";
 
 interface Props {
   account: HalieusAccountSummary;
@@ -123,7 +123,6 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackReplyDrafts, setFeedbackReplyDrafts] = useState<Record<string, string>>({});
   const [confirmRequest, setConfirmRequest] = useState<{ title: string; message: string; label: string; action: () => void } | null>(null);
-  const [buildInfoOpen, setBuildInfoOpen] = useState(false);
 
   async function refreshAdmin() {
     if (!isAdmin) return;
@@ -433,7 +432,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
             <div><p>{account.role === "owner" ? "Halieus owner" : account.role === "admin" ? "Administrator" : "Approved player"}</p><h2>{account.displayName}</h2><small>@{account.username}</small></div>
           </div>
           <div className="account-panel-header-actions">
-            <button type="button" className="button-outline account-build-info-button" onClick={() => setBuildInfoOpen(true)}><HgrIcon name="info" size={17} /><span>Build {APP_RELEASE_LABEL}</span></button>
+            <span className="account-build-info-label" aria-label={`Halieus Game Room build ${APP_RELEASE_LABEL}`}><HgrIcon name="info" size={16} /><span>Build {APP_RELEASE_LABEL}</span></span>
             <button type="button" className="icon-button" onClick={onClose} aria-label="Close account panel">×</button>
           </div>
         </header>
@@ -619,7 +618,6 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
         </div>
       </section>
       <ConfirmDialog open={confirmRequest !== null} title={confirmRequest?.title ?? "Confirm action"} message={confirmRequest?.message ?? ""} confirmLabel={confirmRequest?.label ?? "Confirm"} destructive onCancel={() => setConfirmRequest(null)} onConfirm={() => { const request = confirmRequest; setConfirmRequest(null); request?.action(); }} />
-      {buildInfoOpen && <ModalPortal onClose={() => setBuildInfoOpen(false)}><div className="modal-backdrop halieus-confirm-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setBuildInfoOpen(false)}><section className="halieus-build-info-popover account-build-info-modal" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" aria-label="Close build information" onClick={() => setBuildInfoOpen(false)}><HgrIcon name="close" size={18} /></button><p>HALIEUS GAME ROOM</p><h3>Build {APP_RELEASE_LABEL}</h3><span>Exact release</span><code>{RELEASE_FINGERPRINT}</code></section></div></ModalPortal>}
     </div></ModalPortal>
   );
 }
