@@ -1,16 +1,20 @@
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { AiDifficulty } from "../../../../../shared/games/mega-board/game-state";
 import type { LobbyState } from "../types/lobby";
+import type { HalieusPersonalStats } from "../../../../../shared/platform/accounts";
 
 import { BackToGameRoomButton } from "../../../platform/components/BackToGameRoomButton";
 import { GameBrandIcon } from "../../../platform/components/GameBrandIcon";
 import { GAME_BY_ID } from "../../../platform/games/catalog";
 import { InviteLobbyPanel } from "../../../platform/components/InviteLobbyPanel";
 import { InviteLobbyBar } from "../../../platform/components/InviteLobbyBar";
+import { SkinLibraryButton } from "../../../platform/components/SkinLibraryButton";
+import { accountApi } from "../../../platform/accounts/api";
 
 const MEGA_ACCENT = GAME_BY_ID["mega-board"].accent;
+const EMPTY_STATS: HalieusPersonalStats = { played: 0, wins: 0, winRate: 0, byGame: [], recent: [] };
 
 interface LobbyScreenProps {
   lobby: LobbyState;
@@ -36,6 +40,7 @@ interface LobbyScreenProps {
   onRemoveAi: (playerId: string) => void;
   onTurnTimerChange: (seconds: number) => void;
   isUpdatingTurnTimer: boolean;
+  betaMode?: boolean;
 }
 
 export function LobbyScreen({
@@ -55,10 +60,20 @@ export function LobbyScreen({
   onRemoveAi,
   onTurnTimerChange,
   isUpdatingTurnTimer,
+  betaMode = false,
 }: LobbyScreenProps) {
   const [difficulty, setDifficulty] = useState<AiDifficulty>("normal");
   const [copied, setCopied] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [personalStats, setPersonalStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
+
+  useEffect(() => {
+    let live = true;
+    void accountApi<{ stats: HalieusPersonalStats }>("/accounts/me/stats")
+      .then((result) => { if (live) setPersonalStats(result.stats ?? EMPTY_STATS); })
+      .catch(() => undefined);
+    return () => { live = false; };
+  }, []);
 
   const currentPlayer = lobby.players.find((player) => player.id === lobby.playerId);
   const isHost = currentPlayer?.isHost ?? false;
@@ -206,6 +221,12 @@ export function LobbyScreen({
           </section>
 
           <aside className="lobby-side-panel">
+            <section className="lobby-side-card lobby-board-appearance-card">
+              <p className="modal-eyebrow">Board appearance</p>
+              <h2>Table cosmetics</h2>
+              <small>Choose an unlocked Mega Board surface before the match starts. Locked boards show their unlock condition.</small>
+              <SkinLibraryButton stats={personalStats} betaMode={betaMode} slots={["mega-board"]} />
+            </section>
             <section className="lobby-side-card">
               <p className="modal-eyebrow">Room access</p>
               <h2>Recovery & status</h2>
