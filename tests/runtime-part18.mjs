@@ -55,8 +55,8 @@ try {
  const {registerLobbyHandlers}=await import('../server/src/games/mega-board/handlers/lobbyHandlers.ts');
  const {toPublicGameRoom}=await import('../server/src/games/mega-board/utils/room-view.ts');
  const events=[];const io={to:()=>({emit:(event,value)=>events.push([event,value])})};
- const handlersFor=id=>{const handlers={};registerLobbyHandlers(io,{id,request:{headers:{}},connected:true,join:()=>{},on:(name,fn)=>handlers[name]=fn});return handlers;};
- const host=handlersFor('host'),guest=handlersFor('guest');
+ const handlersFor=(id,betaMode=false)=>{const handlers={};registerLobbyHandlers(io,{id,data:{betaMode},request:{headers:{}},connected:true,join:()=>{},on:(name,fn)=>handlers[name]=fn});return handlers;};
+ const host=handlersFor('host'),guest=handlersFor('guest'),betaHost=handlersFor('beta-host',true);
  let reply;const ack=r=>reply=r;
  try {
   await host['game:create']({code:'STYLE1',playerName:'Host',ranked:false},ack);assert.equal(reply.ok,true,reply.reason);
@@ -64,6 +64,9 @@ try {
   await guest['game:set-board-style']({code:'STYLE1',style:'classic-board'},ack);assert.equal(reply.ok,false);
   await host['game:set-board-style']({code:'STYLE1',style:'tycoon-board'},ack);assert.equal(reply.ok,false,'unearned style rejected');
   await host['game:set-board-style']({code:'STYLE1',style:'arbitrary-css'},ack);assert.equal(reply.ok,false);
+  await betaHost['game:create']({code:'STYLEB',playerName:'[BETA] Host',ranked:false},ack);assert.equal(reply.ok,true,reply.reason);
+  await betaHost['game:set-board-style']({code:'STYLEB',style:'tycoon-board'},ack);assert.equal(reply.ok,true,'Test Lab must allow a catalogued progression-gated board without granting ownership');
+  assert.equal(rooms.get('STYLEB').boardStyle,'tycoon-board');
   await host['game:set-board-style']({code:'STYLE1',style:'muted-tournament-board'},ack);assert.equal(reply.ok,true);assert.equal(events.at(-1)[1].boardStyle,'muted-tournament-board');
   guest['game:join']({code:'STYLE1',playerName:'Guest'},ack);assert.equal(reply.room.boardStyle,'muted-tournament-board');
   host['game:start']({code:'STYLE1'},ack);assert.equal(reply.ok,true,reply.reason);assert.equal(room.gameState.boardStyle,'muted-tournament-board');
@@ -71,6 +74,6 @@ try {
   assert.equal(toPublicGameRoom(room).boardStyle,room.gameState.boardStyle);
   const {flushRoomSave,loadRoomsFromDisk}=await import('../server/src/games/mega-board/utils/persistence.ts');
   await flushRoomSave();rooms.clear();await loadRoomsFromDisk();assert.equal(rooms.get('STYLE1').gameState.boardStyle,'muted-tournament-board');
-  console.log('PASS shared room style: host-only, catalog/entitlement validation, broadcast, join, start lock, disk recovery');
+  console.log('PASS shared room style: host-only, normal entitlement gates, Beta override, broadcast, join, start lock, disk recovery');
  }finally{rooms.clear();const {flushRoomSave}=await import('../server/src/games/mega-board/utils/persistence.ts');await flushRoomSave();await rm(data,{recursive:true,force:true});}
 }
