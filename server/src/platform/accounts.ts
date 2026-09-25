@@ -593,7 +593,10 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
     const humanCount = players.filter((player: any) => !player?.isAi).length;
     const opponentType: "human-only" | "ai-involved" | "solo" = aiCount > 0 ? "ai-involved" : humanCount <= 1 ? "solo" : "human-only";
 
-    countResult(breakdown[matchMode], won);
+    // Ranked stats are human-competition stats. Historical or malformed
+    // archives that combine Ranked with AI remain visible in AI-involved
+    // totals but never inflate the Ranked bucket.
+    if (matchMode !== "ranked" || opponentType === "human-only") countResult(breakdown[matchMode], won);
     countResult(opponentType === "human-only" ? breakdown.humanOnly : opponentType === "ai-involved" ? breakdown.aiInvolved : breakdown.solo, won);
 
     recent.push({
