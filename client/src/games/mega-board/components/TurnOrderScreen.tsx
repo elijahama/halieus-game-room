@@ -6,6 +6,8 @@ import { BackToGameRoomButton } from "../../../platform/components/BackToGameRoo
 
 import { MegaTokenGlyph } from "./MegaTokenGlyph";
 
+const MEGA_ACCENT = "#16a34a";
+
 interface TurnOrderScreenProps {
   lobby: LobbyState;
   gameState: GameState;
@@ -224,7 +226,7 @@ export function TurnOrderScreen({
           borderColor: theme.border,
         }}
       >
-        <p style={styles.eyebrow}>Mega Board setup</p>
+        <p style={{ ...styles.eyebrow, color: MEGA_ACCENT }}>Mega Board setup</p>
         <h1 style={styles.title}>Determine Turn Order</h1>
         <p style={{ ...styles.orderingIntro, color: theme.mutedText }}>
           Everyone rolls two dice. The highest result goes first. Tied players
@@ -269,7 +271,7 @@ export function TurnOrderScreen({
                 style={{
                   ...styles.orderingPlayerRow,
                   background: theme.secondaryBackground,
-                  borderColor: isActiveRoller ? "#e6b94f" : theme.border,
+                  borderColor: isActiveRoller ? MEGA_ACCENT : theme.border,
                 }}
               >
                 <div style={styles.playerIdentity}>
@@ -309,9 +311,9 @@ export function TurnOrderScreen({
                     background: completed
                       ? "#147d3f"
                       : isActiveRoller
-                        ? "#e6b94f"
+                        ? MEGA_ACCENT
                         : theme.border,
-                    color: completed || !isActiveRoller ? "#ffffff" : "#221900",
+                    color: "#ffffff",
                   }}
                 >
                   {completed
@@ -333,6 +335,8 @@ export function TurnOrderScreen({
           disabled={!isEligible || hasRolled || localRollAnimating}
           style={{
             ...styles.primaryButton,
+            background: MEGA_ACCENT,
+            color: "#ffffff",
             width: "100%",
             marginTop: "20px",
             opacity: !isEligible || hasRolled || localRollAnimating ? 0.55 : 1,
