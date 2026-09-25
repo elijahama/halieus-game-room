@@ -4,7 +4,7 @@ import type {
   GameState,
   LiveTradePreview,
 } from "../../shared/games/mega-board/game-state";
-import { normaliseRankedPlayerKey, type RankedLeaderboardEntry, type RankedMatchSummary } from "../../shared/games/mega-board/ranked";
+import { type RankedLeaderboardEntry, type RankedMatchSummary } from "../../shared/games/mega-board/ranked";
 import { socket } from "./platform/network/sockets";
 import { HomeScreen } from "./platform/components/HomeScreen";
 import { AccountPortal } from "./platform/accounts/AccountPortal";
@@ -55,8 +55,8 @@ import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
-import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
-import { clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusGameRatings, type HalieusSkinPreferences } from "./platform/skins";
+import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId } from "./platform/theme";
+import { clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
   DiceResponse,
@@ -523,7 +523,6 @@ export default function App() {
   }
 
   const [skinPreferences, setSkinPreferences] = useState<HalieusSkinPreferences>(() => readEffectiveSkinPreferences(false));
-  const [skinRatings, setSkinRatings] = useState<HalieusGameRatings>({});
   const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [themeProfileId, setThemeProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
   const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
@@ -577,22 +576,6 @@ export default function App() {
   }, [skinPreferences]);
 
   useEffect(() => {
-    const account = authStatus?.account;
-    if (!account) {
-      setSkinRatings({});
-      return;
-    }
-    socket.emit("ranked:get", {}, (response: { ok?: boolean; leaderboard?: RankedLeaderboardEntry[] }) => {
-      if (!response?.ok) return;
-      const key = normaliseRankedPlayerKey(account.displayName);
-      const entry = (response.leaderboard ?? []).find((row) =>
-        row.playerKey === key || normaliseRankedPlayerKey(row.playerName) === key
-      );
-      setSkinRatings((current) => ({ ...current, "mega-board": entry?.rating ?? 0 }));
-    });
-  }, [authStatus?.account?.id, authStatus?.account?.displayName]);
-
-  useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const sync = () => setSystemPrefersDark(media.matches);
     sync();
@@ -625,7 +608,6 @@ export default function App() {
 
   useEffect(() => {
     const root = document.documentElement;
-    localStorage.setItem(THEME_KEY, themeMode);
     root.dataset.themeMode = themeMode;
     root.dataset.theme = resolvedThemeMode;
     root.dataset.themeProfile = themeProfileId;
@@ -3875,7 +3857,6 @@ function handleLeaveSpectator() {
       darkMode={darkMode}
       account={authStatus?.account ?? null}
       betaMode={betaMode}
-      skinRatings={skinRatings}
       onOpenAccount={() => setAccountPanelOpen(true)}
       theme={theme}
       onToggleDarkMode={toggleDarkMode}
