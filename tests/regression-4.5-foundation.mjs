@@ -35,6 +35,11 @@ const hgrIcons=read("client/src/platform/components/HgrIcon.tsx");
 const accountPortal=read("client/src/platform/accounts/AccountPortal.tsx");
 const pokerScreen=read("client/src/games/poker/PokerScreen.tsx");
 const megaGameMenu=read("client/src/games/mega-board/components/GameMenu.tsx");
+const megaLobby=read("client/src/games/mega-board/components/LobbyScreen.tsx");
+const megaDice=read("client/src/games/mega-board/components/DiceRollOverlay.tsx");
+const megaBoard=read("client/src/games/mega-board/components/GameBoard.tsx");
+const megaLeaderboard=read("client/src/games/mega-board/components/LeaderboardModal.tsx");
+const accountPanel=read("client/src/platform/accounts/AccountPanel.tsx");
 const megaGameRules=read("shared/games/mega-board/game-rules.ts");
 const megaTurnHandlers=read("server/src/games/mega-board/handlers/turnHandlers.ts");
 const guildContracts=read("shared/platform/guilds.ts");
@@ -277,5 +282,24 @@ assert.match(surfaceCss,/\.poker-page \.poker-card-face[\s\S]*?linear-gradient/s
 assert.match(surfaceCss,/\.poker-page \.poker-card-back[\s\S]*?--poker-accent/s,"Poker card backs must gain separation without replacing the independent card-back cosmetic");
 assert.match(surfaceCss,/\.poker-page \.poker-table-wrap[\s\S]*?--hgr-brand/s,"Poker neutral room chrome must inherit the active HGR theme profile");
 assert.match(surfaceCss,/\.mega-live-page \.board-frame[\s\S]*?--hgr-brand/s,"Mega Board neutral frame chrome must inherit the active HGR theme profile");
+
+// 4.5.1 Mega Board polish and platform profile/rankings continuation.
+assert.match(home,/type HomeView = "home" \| "games" \| "players" \| "rankings" \| "guilds"/,"Global Rankings must be a first-class platform destination");
+assert.match(home,/HgrIcon name="leaderboard"/,"Rankings navigation must use the shared HGR icon family");
+assert.match(theme,/xbox-core[\s\S]*?ps2-midnight[\s\S]*?snes-colour[\s\S]*?neo-arcade/s,"Retro profile expansion must include console, SNES colour and arcade-inspired palettes");
+assert.match(html,/xbox-core[\s\S]*?snes-colour[\s\S]*?neo-arcade/s,"Expanded retro profiles must be recognised on first paint");
+assert.match(theme,/surfaceDark[\s\S]*?"--hgr-text": text/s,"Custom theme foregrounds must derive from surface luminance");
+assert.match(themeButton,/halieus-theme-profile-motif/,"Theme Library must expose subtle hardware colour motifs without relying on controller symbols");
+assert.match(megaLobby,/Board appearance[\s\S]*?SkinLibraryButton[\s\S]*?slots=\{\["mega-board"\]\}/s,"Mega Board lobby must own contextual board cosmetics");
+assert.match(home,/BOARD APPEARANCE[\s\S]*?SkinLibraryButton[\s\S]*?slots=\{\["mega-board"\]\}/s,"Mega Board create-room flow must expose board appearance before play");
+assert.match(megaDice,/doublesStage[\s\S]*?Third double · Jail/s,"Mega Board dice overlay must communicate escalating doubles risk");
+assert.match(megaBoard,/expiringBusTicketsRemaining[\s\S]*?Bus Ticket deck/s,"Bus Ticket deck must expose remaining expiry-ticket inventory without revealing order");
+assert.match(megaLeaderboard,/\[entries\[1\], entries\[0\], entries\[2\]\]/,"Mega Board leaderboard must render a true 2nd/1st/3rd podium order");
+assert.match(megaLeaderboard,/profilePicture[\s\S]*?leaderboard-podium-avatar/s,"Ranked podium must use player profile pictures with identity fallback");
+assert.match(accountPanel,/Gamer Score[\s\S]*?Achievements[\s\S]*?Verified games/s,"Player profile headline must be accomplishment-first rather than win-rate-first");
+assert.match(indexCss,/HGR 4\.5\.1 — Mega Board focused polish/,"Mega Board 4.5.1 shared polish layer must remain explicit");
+assert.match(indexCss,/is-doubles-stage-1[\s\S]*?is-doubles-stage-2[\s\S]*?is-doubles-stage-3/s,"Doubles escalation must retain three visible warning stages");
+assert.match(indexCss,/board-deck-chance[\s\S]*?board-deck-community[\s\S]*?board-deck-bus/s,"Chance, Community and Bus Ticket must keep distinct board identity");
+assert.match(indexCss,/body:has\(\.room-chat-shell\.is-floating\)/,"Floating Room activity must reserve shared layout clearance instead of colliding with game content");
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
