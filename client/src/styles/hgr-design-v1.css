@@ -3906,20 +3906,49 @@ html[data-theme="green"] {
   color: var(--hgr-text);
 }
 
-/* Text and density options deliberately adjust the shared UI rather than
- * allowing arbitrary fonts that would fragment the HGR identity. */
+/* Text scale is a root typography ramp, not inherited arithmetic.
+ * Changing the root rem size keeps nested labels/buttons monotonic instead of
+ * repeatedly adding/subtracting from a parent's already-adjusted size. */
 html[data-text-scale="small"] {
-  --hgr-text-adjust: -1px;
+  font-size: 15px;
+  --hgr-type-caption: 11px;
+  --hgr-type-small: 13px;
+  --hgr-type-body: 15px;
 }
 html[data-text-scale="standard"] {
-  --hgr-text-adjust: 0px;
+  font-size: 16px;
+  --hgr-type-caption: 12px;
+  --hgr-type-small: 14px;
+  --hgr-type-body: 16px;
 }
 html[data-text-scale="large"] {
-  --hgr-text-adjust: 1px;
+  font-size: 17px;
+  --hgr-type-caption: 13px;
+  --hgr-type-small: 15px;
+  --hgr-type-body: 17px;
 }
-html[data-text-scale="small"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code),
-html[data-text-scale="large"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code) {
-  font-size: calc(1rem + var(--hgr-text-adjust));
+/* Legacy pixel-sized shared controls opt into the same predictable ramp
+ * without touching board-space labels whose geometry is intentionally fixed. */
+html[data-text-scale="small"] {
+  --hgr-ui-caption: 9px;
+  --hgr-ui-small: 10px;
+  --hgr-ui-control: 11px;
+}
+html[data-text-scale="standard"] {
+  --hgr-ui-caption: 10px;
+  --hgr-ui-small: 11px;
+  --hgr-ui-control: 12px;
+}
+html[data-text-scale="large"] {
+  --hgr-ui-caption: 11px;
+  --hgr-ui-small: 12px;
+  --hgr-ui-control: 13px;
+}
+:where(.halieus-display-settings,.game-menu-modal,.account-panel,.halieus-create-modal,.room-chat-panel) :where(button,input,select,textarea) {
+  font-size: var(--hgr-ui-control);
+}
+:where(.halieus-display-settings,.game-menu-modal,.account-panel,.halieus-create-modal,.room-chat-panel) small {
+  font-size: var(--hgr-ui-caption);
 }
 html[data-density="compact"] .halieus-player-identity,
 html[data-density="compact"] .halieus-display-group,
