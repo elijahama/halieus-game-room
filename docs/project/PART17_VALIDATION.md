@@ -2,7 +2,7 @@
 
 25 September 2026. Internal version 4.5.0; visible Build 4.5.
 
-Implementation commits: fe7437c (full implementation) and 2b29c59 (final Poker spacing). Both are integrated by fast-forward into the normal local main checkout, preserving the reviewed Stage 1 / Stage 2A / website-H history. Production deployment and a GitHub push were not performed.
+Implementation commits: fe7437c (full implementation) and 2b29c59 (final Poker spacing). Both are integrated by fast-forward into the normal local main checkout, preserving the reviewed Stage 1 / Stage 2A / website-H history. Production deployment has not been performed. The later integration checkpoint below supersedes the original local-only delivery status.
 
 Exact release: hgr-4.5.0-790a1b1cfb14109c (386 integrity inputs).
 
@@ -40,3 +40,11 @@ The new tests are available as `npm run test:part17` (also included in `test:reg
 Responsive tests use Chromium emulation, not physical Android/iOS touch hardware. Hidden Dictator's deeper voting/policy redesign remains outside the original requested scope. The existing large-client-chunk build warning remains a performance follow-up. Legacy name-only records do not retrospectively award verified achievements. Archive-derived progression currently scans finalized history; retain private account/session backups. The package excludes credentials, runtime data, dependencies, generated builds and stale nested source copies; install dependencies and build normally before running it.
 
 The normal project folder contains these changes. The production website will change only when its separate deployment workflow runs. Historical stage-only documents do not describe the current implementation status.
+
+## Authorized GitHub integration checkpoint
+
+Resolved the interrupted rebase onto aac9d9e, preserving all 13 upstream commits and integrating the three local Part 17 commits. The saved pre-resolution files/index and patches are retained outside the repository.
+
+Preserved upstream updater auto-close/error handling, platform-theme ownership, sidebar Appearance positioning, clock classes and newer game-material choices. Consolidated duplicate theme-preview implementations into the tested shared transaction and kept one canonical Appearance panel. Both regression suites remain enabled; source assertions now follow the shared implementation. Progression, recovery, pregame timer locking and all completed local functionality remain present.
+
+Combined exact release: hgr-4.5.0-61973d316e6f3234, still VERSION 4.5.0 / Build 4.5. Typecheck, production build and full regression chain passed after reconciliation. Browser and package checks are required before pushing. Push uses normal fast-forward semantics; no history overwrite or deployment command is part of this operation.
