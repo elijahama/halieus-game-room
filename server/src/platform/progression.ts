@@ -1,7 +1,7 @@
 import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { getAccountDataDirectory, getSessionDataDirectory } from "./dataPaths.js";
-import type { PlayerProgression } from "../../../shared/platform/progression.js";
+import { ACHIEVEMENT_CATALOG, MAX_GAMER_SCORE, achievementDefinition, type AchievementDefinition, type PlayerProgression } from "../../../shared/platform/progression.js";
 type Identity = { accountId: string; beta: boolean };
 const identities = new Map<string, () => Identity | null>();
 export function registerProgressionIdentity(socketId: string, identity: () => Identity | null): () => void { identities.set(socketId, identity); return () => { identities.delete(socketId); }; }
@@ -37,49 +37,157 @@ export function readPlayerProgression(accountId: string): Promise<PlayerProgress
   const task = chain.then(() => rebuild(accountId)); chain = task.then(() => {}, () => {}); return task;
 }
 async function rebuild(accountId: string): Promise<PlayerProgression> {
-  const result: PlayerProgression = { gamerScore: 0, activePlayMs: 0, played: 0, wins: 0, awards: [], byGame: {} };
+  const result: PlayerProgression = {
+    gamerScore: 0,
+    maxGamerScore: MAX_GAMER_SCORE,
+    activePlayMs: 0,
+    played: 0,
+    wins: 0,
+    awards: [],
+    achievements: [],
+    byGame: {},
+  };
   const directory = resolve(getSessionDataDirectory(), "finalized");
-  let files: string[] = []; try { files = await readdir(directory); } catch (error: any) { if (error.code !== "ENOENT") throw error; }
+  let files: string[] = [];
+  try { files = await readdir(directory); }
+  catch (error: any) { if (error.code !== "ENOENT") throw error; }
+
   const records: any[] = [];
-  for (const file of files.filter(file => file.endsWith(".json"))) { try { records.push(JSON.parse(await readFile(resolve(directory, file), "utf8"))); } catch { /* An incomplete archive is not evidence for an award. */ } }
+  for (const file of files.filter(file => file.endsWith(".json"))) {
+    try { records.push(JSON.parse(await readFile(resolve(directory, file), "utf8"))); }
+    catch { /* An incomplete archive is not evidence for an award. */ }
+  }
   records.sort((a,b) => a.finalisedAt - b.finalisedAt || String(a.sessionId).localeCompare(String(b.sessionId)));
-  const sessions = new Set<string>(), awarded = new Set<string>();
-  let kassTotal = 0, completedTrades = 0;
-  const award = (id: string, title: string, points: number, record: any) => { if (awarded.has(id)) return; awarded.add(id); result.awards.push({ id, title, points, earnedAt: record.finalisedAt, sessionId: record.sessionId }); };
+
+  const sessions = new Set<string>();
+  const awarded = new Set<string>();
+  const specialEarned = new Set<string>();
+  let kassTotal = 0;
+  let completedTrades = 0;
+
+  const award = (id: string, record: any) => {
+    if (awarded.has(id)) return;
+    const definition = achievementDefinition(id);
+    if (!definition) return;
+    awarded.add(id);
+    result.awards.push({
+      id,
+      title: definition.title,
+      points: definition.points,
+      earnedAt: record.finalisedAt,
+      sessionId: record.sessionId,
+    });
+  };
+
+  const currentValue = (achievement: AchievementDefinition): number => {
+    switch (achievement.counter) {
+      case "played": return result.played;
+      case "wins": return result.wins;
+      case "distinct-games": return Object.values(result.byGame).filter((line) => line.played > 0).length;
+      case "active-minutes": return Math.floor(result.activePlayMs / 60000);
+      case "game-played": return achievement.game ? (result.byGame[achievement.game]?.played ?? 0) : 0;
+      case "game-wins": return achievement.game ? (result.byGame[achievement.game]?.wins ?? 0) : 0;
+      case "kass-maneuvers": return kassTotal;
+      case "completed-trades": return completedTrades;
+      case "special": return specialEarned.has(achievement.id) ? 1 : 0;
+      default: return 0;
+    }
+  };
+
+  const awardReachedCounters = (record: any) => {
+    for (const achievement of ACHIEVEMENT_CATALOG) {
+      if (achievement.counter === "special") continue;
+      if (currentValue(achievement) >= achievement.target) award(achievement.id, record);
+    }
+  };
+
   for (const record of records) {
     if (!record.sessionId || sessions.has(record.sessionId) || !["completed", "forfeit-completed"].includes(record.status)) continue;
     sessions.add(record.sessionId);
+
     const state = record.state?.gameState ?? record.state;
     const players = state?.players ?? [];
     if (!Array.isArray(players) || players.some((p: any) => p.progressionIdentity?.beta || /^\[BETA\]/i.test(String(p.name))) || state.outcome?.countsAsCompletedPlay === false) continue;
+
     const player = players.find((p: any) => !p.isAi && p.progressionIdentity?.accountId === accountId);
     if (!player || !(state.startedAt || state.gameStartedAt || state.started || record.state?.room?.started)) continue;
-    const game = String(record.game), line = result.byGame[game] ??= { played: 0, wins: 0 };
-    const winnerId = state.winnerPlayerId ?? state.outcome?.winnerPlayerId ?? (game === "mega-board" ? players.filter((p: any) => !p.isBankrupt).length === 1 ? players.find((p: any) => !p.isBankrupt)?.id : null : ((game === "poker" && state.hand?.phase === "finished") || (game === "blackjack" && state.phase === "finished")) ? [...players].sort((a: any,b: any) => b.chips-a.chips)[0]?.id : null);
+
+    const game = String(record.game);
+    const line = result.byGame[game] ??= { played: 0, wins: 0 };
+    const winnerId =
+      state.winnerPlayerId ??
+      state.outcome?.winnerPlayerId ??
+      (game === "mega-board"
+        ? players.filter((p: any) => !p.isBankrupt).length === 1
+          ? players.find((p: any) => !p.isBankrupt)?.id
+          : null
+        : ((game === "poker" && state.hand?.phase === "finished") || (game === "blackjack" && state.phase === "finished"))
+          ? [...players].sort((a: any,b: any) => b.chips-a.chips)[0]?.id
+          : null);
     const won = winnerId === player.id || ["Winner", "Winning team"].includes(player.result);
-    result.played++; line.played++; if (won) { result.wins++; line.wins++; }
+
+    result.played++;
+    line.played++;
+    if (won) {
+      result.wins++;
+      line.wins++;
+    }
     result.activePlayMs += Math.max(0, Number(player.progressionIdentity.activePlayMs) || 0);
-    award("first-match", "First completed match", 10, record);
-    award(`${game}:first-match`, `${game}: first completed match`, 10, record);
-    if (won) award(`${game}:first-win`, `${game}: first win`, 20, record);
-    if (line.played >= 10) award(`${game}:ten-matches`, `${game}: ten completed matches`, 30, record);
-    if (line.wins >= 5) award(`${game}:five-wins`, `${game}: five wins`, 50, record);
-    if (Object.keys(result.byGame).length >= 5) award("five-games", "Five different games", 50, record);
-    if (result.activePlayMs >= 3600000) award("active-hour", "One hour of active play", 50, record);
-    if (game === "mega-board") { kassTotal += state.playerStats?.[player.id]?.kassManeuvers ?? 0; completedTrades += state.playerStats?.[player.id]?.completedTrades ?? 0; }
-    if (kassTotal >= 5) award("mega:kass-five", "Five Kass Maneuvers", 75, record);
-    if (completedTrades >= 5) award("mega:five-trades", "Complete five trades", 50, record);
-    if (game === "mega-board" && (state.playerStats?.[player.id]?.initiatedThreeWayDeals ?? 0) > 0) award("mega:three-way", "Initiate a completed three-way deal", 40, record);
-    if (game === "connect-four" && won && state.bestOf > 1 && players.filter((p: any) => p.id !== player.id).every((p: any) => p.seriesWins === 0)) award("connect-four:clean-sweep", "Connect Four clean sweep", 40, record);
-    if (game === "ludo" && won && Array.isArray(player.pieces) && player.pieces.filter((piece: any) => piece.steps === 57).length === 4) award("ludo:home-four", "Bring all four Ludo pieces home", 40, record);
-    if (game === "poker" && player.progressionFeats?.royalFlush) award("poker:royal-flush", "Win with a royal flush", 100, record);
-    if (game === "poker" && player.progressionFeats?.straightFlush) award("poker:straight-flush", "Win with a straight flush", 75, record);
+
+    if (game === "mega-board") {
+      kassTotal += Number(state.playerStats?.[player.id]?.kassManeuvers) || 0;
+      completedTrades += Number(state.playerStats?.[player.id]?.completedTrades) || 0;
+      if ((state.playerStats?.[player.id]?.initiatedThreeWayDeals ?? 0) > 0) specialEarned.add("mega:three-way");
+    }
+    if (
+      game === "connect-four" &&
+      won &&
+      state.bestOf > 1 &&
+      players.filter((p: any) => p.id !== player.id).every((p: any) => p.seriesWins === 0)
+    ) specialEarned.add("connect-four:clean-sweep");
+    if (
+      game === "ludo" &&
+      won &&
+      Array.isArray(player.pieces) &&
+      player.pieces.filter((piece: any) => piece.steps === 57).length === 4
+    ) specialEarned.add("ludo:home-four");
+    if (game === "poker" && player.progressionFeats?.straightFlush) specialEarned.add("poker:straight-flush");
+    if (game === "poker" && player.progressionFeats?.royalFlush) specialEarned.add("poker:royal-flush");
+
+    awardReachedCounters(record);
+    for (const achievement of ACHIEVEMENT_CATALOG) {
+      if (achievement.counter === "special" && specialEarned.has(achievement.id)) award(achievement.id, record);
+    }
   }
+
+  const awardsById = new Map(result.awards.map((award) => [award.id, award]));
+  result.achievements = ACHIEVEMENT_CATALOG.map((achievement) => {
+    const earnedAward = awardsById.get(achievement.id);
+    const current = Math.max(0, Math.min(currentValue(achievement), achievement.target));
+    return {
+      id: achievement.id,
+      title: achievement.title,
+      description: achievement.description,
+      requirement: achievement.requirement,
+      points: achievement.points,
+      tier: achievement.tier,
+      category: achievement.category,
+      game: achievement.game,
+      current,
+      target: achievement.target,
+      earned: Boolean(earnedAward),
+      earnedAt: earnedAward?.earnedAt ?? null,
+    };
+  });
+
   result.gamerScore = result.awards.reduce((sum, award) => sum + award.points, 0);
+
   // The archive is the durable outbox. Rebuilding makes crash/retry/restart idempotent.
-  const target = resolve(getAccountDataDirectory(), "progression"); await mkdir(target, { recursive: true });
+  const target = resolve(getAccountDataDirectory(), "progression");
+  await mkdir(target, { recursive: true });
   const path = resolve(target, `${Buffer.from(accountId).toString("hex")}.json`);
-  await writeFile(`${path}.tmp`, JSON.stringify(result, null, 2), "utf8"); await rename(`${path}.tmp`, path);
+  await writeFile(`${path}.tmp`, JSON.stringify(result, null, 2), "utf8");
+  await rename(`${path}.tmp`, path);
   return result;
 }
 
