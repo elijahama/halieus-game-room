@@ -33,7 +33,7 @@ import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityC
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
-type HomeView = "home" | "games" | "players" | "guilds";
+type HomeView = "home" | "games" | "players" | "rankings" | "guilds";
 type DiscoveryShelf = "featured" | "most-played" | "recommended" | "recent" | "friends";
 
 type PokerVariant = "texas-holdem" | "omaha" | "five-card-draw" | "seven-card-stud";
@@ -70,6 +70,20 @@ const GAME_GROUPS = [
   { id: "social", label: "Social & Party", description: "Conversation-led games built around the room." },
   { id: "cards", label: "Cards & Casino", description: "Hands, tables and quick repeat rounds." },
 ] as const;
+const RANKED_HUB_GAMES: GameId[] = [
+  "mega-board",
+  "poker",
+  "blackjack",
+  "whot",
+  "ludo",
+  "connect-four",
+  "hidden-dictator",
+  "cheat",
+  "dominoes",
+  "word-game",
+  "password",
+  "anagrams-race",
+];
 const EMPTY_STATS: HalieusPersonalStats = { played: 0, wins: 0, winRate: 0, byGame: GAMES.map((game) => ({ game: game.id, gameTitle: game.name, played: 0, wins: 0, winRate: 0 })), recent: [] };
 
 export function HomeScreen(props: HomeScreenProps) {
@@ -656,6 +670,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="home" /></span><b>Home</b></button>
           <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Games</b></button>
           <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Players</b></button>
+          <button type="button" className={view === "rankings" ? "is-active" : ""} onClick={() => { setView("rankings"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="leaderboard" /></span><b>Rankings</b></button>
           {account && <button type="button" className={view === "guilds" ? "is-active" : ""} onClick={() => { setView("guilds"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="guilds" /></span><b>Guilds</b></button>}
           {account && <button type="button" className={inboxOpen ? "is-active halieus-inbox-nav" : "halieus-inbox-nav"} onClick={() => { setInboxOpen(true); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="inbox" /></span><b>Inbox</b>{inboxCount > 0 && <span className="halieus-inbox-badge">{inboxCount > 99 ? "99+" : inboxCount}</span>}</button>}
         </nav>
@@ -813,6 +828,26 @@ export function HomeScreen(props: HomeScreenProps) {
           </>}
         </section>}
 
+        {view === "rankings" && <section className="halieus-view view-rankings panel-enter">
+          <header className="halieus-page-heading"><div><p>GLOBAL RANKINGS</p><h1>Ranked ladders</h1><span>Competitive rating stays game-specific. Elo measures skill inside each ranked game; Gamer Score and Achievements stay separate.</span></div></header>
+          <section className="halieus-rankings-overview">
+            <article><small>RATING MODEL</small><strong>Per-game Elo</strong><span>No single combined Elo across unrelated games.</span></article>
+            <article><small>ACCOUNT PROGRESSION</small><strong>Gamer Score</strong><span>Accomplishments and achievements live on your profile, not in ranked Elo.</span></article>
+            <article><small>RANKED PLAY</small><strong>Human competition</strong><span>AI-involved matches never inflate competitive ladders.</span></article>
+          </section>
+          <div className="halieus-rankings-grid">
+            {RANKED_HUB_GAMES.map((gameId) => {
+              const game = GAME_BY_ID[gameId];
+              const stat = personalStats.byGame.find((row) => row.game === gameId);
+              return <button type="button" key={gameId} className={`halieus-ranking-card tone-${game.tone}`} style={{ ["--game-card-accent" as string]: game.accent }} onClick={() => openRankedLeaderboard(gameId)}>
+                <span className="halieus-ranking-game-icon"><img src={game.icon} alt="" /></span>
+                <span><small>RANKED LADDER</small><strong>{game.name}</strong><em>{stat?.played ? `${stat.played} total games on your account` : "Open standings"}</em></span>
+                <b>View leaderboard →</b>
+              </button>;
+            })}
+          </div>
+        </section>}
+
         {view === "guilds" && account && (
           <section className="halieus-view view-guilds panel-enter">
             <GuildsPanel
@@ -826,7 +861,7 @@ export function HomeScreen(props: HomeScreenProps) {
         )}
       </section>
 
-      <nav className="halieus-mobile-nav" aria-label="Mobile navigation"><button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HgrIcon name="home" size={20} /><span>Home</span></button><button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><HgrIcon name="games" size={20} /><span>Games</span></button><button type="button" onClick={() => openJoin("join")}><HgrIcon name="plus" size={20} /><span>Join</span></button><button type="button" className={view === "players" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><HgrIcon name="players" size={20} /><span>Players</span></button></nav>
+      <nav className="halieus-mobile-nav" aria-label="Mobile navigation"><button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HgrIcon name="home" size={20} /><span>Home</span></button><button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><HgrIcon name="games" size={20} /><span>Games</span></button><button type="button" onClick={() => openJoin("join")}><HgrIcon name="plus" size={20} /><span>Join</span></button><button type="button" className={view === "players" || view === "rankings" || view === "guilds" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><HgrIcon name="players" size={20} /><span>Players</span></button></nav>
 
       {inboxOverlay}
       {createOverlay}
