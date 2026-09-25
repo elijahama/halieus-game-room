@@ -1,24 +1,23 @@
+import { ModalPortal } from "./ModalPortal";
+import { accountApi } from "../accounts/api";
 import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 
 import type { HalieusPersonalStats } from "../../../../shared/platform/accounts";
 import {
-  isSkinUnlocked,
   readEffectiveSkinPreferences,
-  sanitiseSkinPreferences,
   saveSkinPreference,
   saveSkinPreferences,
   skinsForSlot,
   type HalieusGameRatings,
   type HalieusSkinPreferences,
   type HalieusSkinSlot,
-  type HalieusSkinUnlockContext,
 } from "../skins";
 
 interface SkinLibraryButtonProps {
   stats: HalieusPersonalStats;
   betaMode: boolean;
   ratings?: HalieusGameRatings;
+  slots?: HalieusSkinSlot[];
 }
 
 const SLOT_COPY: Record<HalieusSkinSlot, { label: string; description: string }> = {
@@ -36,23 +35,10 @@ const COLLECTION_LABELS = {
   event: "Event",
 } as const;
 
-export function SkinLibraryButton({ stats, betaMode, ratings = {} }: SkinLibraryButtonProps) {
+export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["interface"] }: SkinLibraryButtonProps) {
   const [open, setOpen] = useState(false);
-  const [slot, setSlot] = useState<HalieusSkinSlot>("interface");
+  const [slot, setSlot] = useState<HalieusSkinSlot>(slots[0]);
   const [preferences, setPreferences] = useState<HalieusSkinPreferences>(() => readEffectiveSkinPreferences(betaMode));
-
-  const unlockContext = useMemo<HalieusSkinUnlockContext>(() => ({
-    stats,
-    ratings,
-  }), [ratings, stats]);
-
-  useEffect(() => {
-    const current = readEffectiveSkinPreferences(betaMode);
-    const safe = sanitiseSkinPreferences(current, unlockContext, betaMode);
-    const changed = (Object.keys(safe) as HalieusSkinSlot[]).some((key) => safe[key] !== current[key]);
-    if (changed) saveSkinPreferences(safe, betaMode);
-    setPreferences(safe);
-  }, [betaMode, unlockContext]);
 
   useEffect(() => {
     if (!open) return;
@@ -63,11 +49,15 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {} }: SkinLibrary
     return () => document.removeEventListener("keydown", close);
   }, [open]);
 
+  const [entitlements, setEntitlements] = useState<string[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => { if (betaMode) return; let live = true; void accountApi<{ preferences: HalieusSkinPreferences; entitlements: string[] }>("/accounts/me/cosmetics").then(result => { if (live) { setEntitlements(result.entitlements); setPreferences(result.preferences); saveSkinPreferences(result.preferences); } }).catch(() => { if (live) setError("Sign in to save earned cosmetics."); }); return () => { live = false; }; }, [betaMode, open]);
   const skins = useMemo(() => skinsForSlot(slot), [slot]);
 
-  const choose = (skinId: string, unlocked: boolean) => {
+  const choose = async (skinId: string, unlocked: boolean) => {
     if (!unlocked) return;
-    setPreferences(saveSkinPreference(slot, skinId, betaMode));
+    if (betaMode) { setPreferences(saveSkinPreference(slot, skinId, true)); return; }
+    try { const result = await accountApi<{ preferences: HalieusSkinPreferences }>("/accounts/me/cosmetics", { method: "POST", body: JSON.stringify({ slot, id: skinId }) }); setPreferences(result.preferences); saveSkinPreferences(result.preferences); setError(""); } catch { setError("Unable to equip this cosmetic. Your saved selection is unchanged."); }
   };
 
   return (
@@ -77,16 +67,16 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {} }: SkinLibrary
         <span><strong>Skins</strong><small>{betaMode ? "Beta preview access" : "Boards, tables & cosmetics"}</small></span>
       </button>
 
-      {open && createPortal(
+      {open && (<ModalPortal onClose={() => setOpen(false)}>
         <div className="halieus-skins-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setOpen(false)}>
           <section className="halieus-skins-dialog" role="dialog" aria-modal="true" aria-label="HGR skins">
             <header>
-              <div><p>COSMETICS</p><h2>HGR Theme & Skin Library</h2><span>{betaMode ? "Test Lab preview: every cosmetic is available for this beta session only. Your normal player unlocks stay untouched." : "Change how HGR boards, tables and shared surfaces look without changing game rules or layout."}</span></div>
+              <div><p>COSMETICS</p><h2>Game appearance</h2><span>{betaMode ? "Test Lab preview: every cosmetic is available for this beta session only. Your normal player unlocks stay untouched." : "Change how HGR boards, tables and shared surfaces look without changing game rules or layout."}</span></div>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close skin library">×</button>
             </header>
 
             <nav aria-label="Skin category">
-              {(["interface", "mega-board", "poker-table", "cards"] as HalieusSkinSlot[]).map((item) => (
+              {slots.map((item) => (
                 <button type="button" key={item} className={slot === item ? "is-active" : ""} onClick={() => setSlot(item)}>
                   <strong>{SLOT_COPY[item].label}</strong>
                   <small>{SLOT_COPY[item].description}</small>
@@ -96,7 +86,7 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {} }: SkinLibrary
 
             <div className="halieus-skins-grid">
               {skins.map((skin) => {
-                const unlocked = isSkinUnlocked(skin, unlockContext, betaMode);
+                const unlocked = betaMode || entitlements.includes(skin.id);
                 const active = preferences[slot] === skin.id;
                 const state = active
                   ? "Equipped"
@@ -105,20 +95,20 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {} }: SkinLibrary
                     : unlocked
                       ? "Unlocked"
                       : "🔒 " + skin.unlock.label;
-                return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked")} disabled={!unlocked} onClick={() => choose(skin.id, unlocked)}>
-                  <span className={"halieus-skin-preview skin-" + skin.id} aria-hidden="true"><i /><i /><b>H</b></span>
+                return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked")} disabled={!unlocked} onClick={() => void choose(skin.id, unlocked)}>
+                  <span className={"halieus-skin-preview skin-" + skin.id} aria-hidden="true"><i /><i /><b>{slot === "cards" ? "♠" : slot === "poker-table" ? "♠ ♥ ♣ ♦" : slot === "mega-board" ? "GO ▧ ▧ ▧" : "Aa"}</b></span>
                   <span><em>{COLLECTION_LABELS[skin.collection]} · {skin.mood}</em><strong>{skin.label}</strong><small>{skin.description}</small></span>
                   <span className="halieus-skin-state">{state}</span>
                 </button>;
               })}
             </div>
 
+            {error && <p role="status">{error}</p>}
             <footer>
               <span>{betaMode ? "Leaving Test Lab automatically restores your normal equipped cosmetics." : "Cosmetics are visual only. Account role does not bypass player progression. Rating gates use a game’s real ranking data; games without a live rating model use play/win unlocks instead."}</span>
             </footer>
           </section>
-        </div>,
-        document.body,
+        </div></ModalPortal>
       )}
     </>
   );

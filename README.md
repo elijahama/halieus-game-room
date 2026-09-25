@@ -721,3 +721,7 @@ Current work is focused on:
 ---
 
 Halieus Game Room is intended to show not only **what was built**, but **how a single game evolved into a multiplayer platform through requirements, architecture, testing, deployment and repeated iteration**.
+
+## Part 17 complete implementation
+
+The 4.5 UI, settings, gameplay recovery and progression implementation is recorded in [the current checklist](docs/project/PART17_IMPLEMENTATION_CHECKLIST.md). Earlier stage-only reports are historical. See that checklist for scope, validation commands and deployment limits.

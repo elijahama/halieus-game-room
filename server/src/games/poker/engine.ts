@@ -290,6 +290,11 @@ function settleShowdown(room: PokerRoom): void {
   });
   room.hand.phase = room.players.filter((player) => player.chips > 0).length <= 1 ? "finished" : "showdown";
   room.hand.currentTurnPlayerId = null;
+  for (const winner of room.hand.winners) {
+    const player = room.players.find(p => p.id === winner.playerId);
+    const hand = winnings.get(winner.playerId)?.hand;
+    if (player && hand?.score[0] === 8) { player.progressionFeats ??= {}; if (hand.score[1] === 14) player.progressionFeats.royalFlush = true; else player.progressionFeats.straightFlush = true; }
+  }
   room.hand.status = room.hand.winners.length === 1
     ? `${room.hand.winners[0].name} wins ${room.hand.winners[0].amount} chips with ${room.hand.winners[0].handName}.`
     : `${room.hand.winners.map((winner) => winner.name).join(" & ")} split the pot.`;

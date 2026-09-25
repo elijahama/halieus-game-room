@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import type {
   Server,
@@ -174,7 +175,7 @@ export function registerAuctionHandlers(
         acknowledge({
           ok: false,
           reason: result.error,
-          state: gameState,
+          state: publicProgressionState(gameState),
         });
         return;
       }
@@ -211,7 +212,7 @@ export function registerAuctionHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
     },
   );
@@ -293,7 +294,7 @@ export function registerAuctionHandlers(
         acknowledge({
           ok: false,
           reason: result.error,
-          state: gameState,
+          state: publicProgressionState(gameState),
         });
         return;
       }
@@ -330,7 +331,7 @@ export function registerAuctionHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
     },
   );

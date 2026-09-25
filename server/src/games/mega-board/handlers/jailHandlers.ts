@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import { recordCashFlow, recordDiceRoll } from "../utils/stats.js";
 import type {
@@ -226,7 +227,7 @@ export function registerJailHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
     },
   );
@@ -306,7 +307,7 @@ export function registerJailHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
     },
   );
@@ -458,7 +459,7 @@ export function registerJailHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
         roll,
       });
       console.log(message);

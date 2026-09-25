@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import { recordCashFlow } from "../utils/stats.js";
 import { rememberRejectedAutomatedTrade } from "../utils/automated-trade-memory.js";
@@ -940,7 +941,7 @@ export function registerTradeHandlers(
         const activityMessage = `${proposer.name} proposed a ${trade.participantIds!.length}-way deal involving ${participantNames}.`;
         recordActivity(gameState, activityMessage, "trade", proposer.id);
         emitGameState(io, code, gameState);
-        acknowledge({ ok: true, state: gameState });
+        acknowledge({ ok: true, state: publicProgressionState(gameState) });
         console.log(activityMessage);
         return;
       }
@@ -997,7 +998,7 @@ export function registerTradeHandlers(
         emitGameState(io, code, gameState);
         acknowledge({
           ok: true,
-          state: gameState,
+          state: publicProgressionState(gameState),
           reason: message,
         });
         return;
@@ -1231,7 +1232,7 @@ export function registerTradeHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },
@@ -1288,7 +1289,7 @@ export function registerTradeHandlers(
 
         trade.acceptedPlayerIds ??= [trade.proposerId];
         if (trade.acceptedPlayerIds.includes(socket.id)) {
-          acknowledge({ ok: true, state: gameState, reason: "You have already accepted this deal." });
+          acknowledge({ ok: true, state: publicProgressionState(gameState), reason: "You have already accepted this deal." });
           return;
         }
 
@@ -1308,7 +1309,7 @@ export function registerTradeHandlers(
           };
           recordActivity(gameState, message, "trade", socket.id);
           emitGameState(io, code, gameState);
-          acknowledge({ ok: false, reason: validationError, state: gameState });
+          acknowledge({ ok: false, reason: validationError, state: publicProgressionState(gameState) });
           return;
         }
 
@@ -1320,11 +1321,13 @@ export function registerTradeHandlers(
           const message = `${actor.name} accepted the ${participantIds.length}-way deal (${trade.acceptedPlayerIds.length}/${participantIds.length} approved).`;
           recordActivity(gameState, message, "trade", actor.id);
           emitGameState(io, code, gameState);
-          acknowledge({ ok: true, state: gameState, reason: message });
+          acknowledge({ ok: true, state: publicProgressionState(gameState), reason: message });
           return;
         }
 
         executeMultiPartyTrade(gameState, trade);
+        if (participantIds.length === 3 && participantIds.every(id => trade.transfers?.some(leg => (leg.fromPlayerId === id || leg.toPlayerId === id) && (leg.cash > 0 || leg.propertyIds.length > 0 || leg.busTicketIds.length > 0 || leg.jailCardIds.length > 0)))) for (const id of participantIds) { const stats = gameState.playerStats[id]; if (stats) { stats.completedThreeWayDeals = (stats.completedThreeWayDeals ?? 0) + 1; if (id === trade.proposerId) stats.initiatedThreeWayDeals = (stats.initiatedThreeWayDeals ?? 0) + 1; } }
+        for (const id of participantIds) { const stats = gameState.playerStats[id]; if (stats) stats.completedTrades = (stats.completedTrades ?? 0) + 1; }
         trade.status = "accepted";
         gameState.pendingTrade = null;
         const names = formatMultiPartyLabel(gameState, participantIds);
@@ -1348,7 +1351,7 @@ export function registerTradeHandlers(
         };
         recordActivity(gameState, activityMessage, "trade", actor.id);
         emitGameState(io, code, gameState);
-        acknowledge({ ok: true, state: gameState });
+        acknowledge({ ok: true, state: publicProgressionState(gameState) });
         console.log(activityMessage);
         return;
       }
@@ -1374,7 +1377,7 @@ export function registerTradeHandlers(
         acknowledge({
           ok: false,
           reason: validationError,
-          state: gameState,
+          state: publicProgressionState(gameState),
         });
         return;
       }
@@ -1440,6 +1443,7 @@ export function registerTradeHandlers(
 
       syncSpecialCardCounts(gameState);
 
+      for (const id of [proposer.id, recipient.id]) { const stats = gameState.playerStats[id]; if (stats) stats.completedTrades = (stats.completedTrades ?? 0) + 1; }
       trade.status = "accepted";
       gameState.pendingTrade = null;
       const activityMessage = `${recipient.name} accepted ${proposer.name}'s trade.`;
@@ -1466,7 +1470,7 @@ export function registerTradeHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },
@@ -1558,7 +1562,7 @@ export function registerTradeHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },
@@ -1619,7 +1623,7 @@ export function registerTradeHandlers(
       }
 
       emitGameState(io, code, gameState);
-      acknowledge({ ok: true, state: gameState });
+      acknowledge({ ok: true, state: publicProgressionState(gameState) });
     },
   );
 

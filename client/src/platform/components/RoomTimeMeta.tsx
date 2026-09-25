@@ -27,8 +27,8 @@ export function RoomTimeMeta({ createdAt: _createdAt, startedAt, started = true,
   const sharedClassName = `${className} room-time-meta`.trim();
   return (
     <>
-      <span className={`${sharedClassName} room-time-meta-duration`}>Duration <strong>{formatDuration(duration)}</strong></span>
-      <span className={`${sharedClassName} room-time-meta-clock`}>Time <strong>{clock}</strong></span>
+      <span className={`${sharedClassName} room-time-meta-duration room-match-duration`}>Duration <strong>{formatDuration(duration)}</strong></span>
+      <span className={`${sharedClassName} room-time-meta-clock room-wall-clock`}>Time <strong>{clock}</strong></span>
     </>
   );
 }

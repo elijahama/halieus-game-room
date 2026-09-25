@@ -1,3 +1,4 @@
+import { registerProgressionIdentity } from "./platform/progression.js";
 import cors from "cors";
 import express, {
   type NextFunction,
@@ -454,6 +455,10 @@ configureAccountAdminRuntimeControls({
 io.on(
   "connection",
   (socket: Socket) => {
+  let progressionBeta = socket.handshake.auth?.betaMode === true;
+  const clearProgressionIdentity = registerProgressionIdentity(socket.id, () => { const account = getAuthenticatedAccount(socket.request as Request); return account ? { accountId: account.id, beta: progressionBeta } : null; });
+  socket.on("platform:progression-mode", (value: { beta?: boolean }) => { progressionBeta = value?.beta === true; });
+  socket.once("disconnect", clearProgressionIdentity);
   console.log(
     `Player connected: ${socket.id}`,
   );

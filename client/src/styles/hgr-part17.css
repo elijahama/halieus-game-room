@@ -1,0 +1,182 @@
+/* Part 17: structural fixes. Game-rule colours and board geometry stay local. */
+.theme-preview-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:12px; border-top:1px solid var(--hgr-border); }
+.theme-preview-actions small { flex:1 1 100%; }
+.halieus-continue-secondary { width:100% !important; max-width:none !important; grid-column:1 / -1; box-sizing:border-box; }
+.halieus-continue-row { min-width:0; }
+.halieus-continue-row > button:first-child { min-width:0; flex:1; }
+.halieus-continue-row > button:first-child > span { min-width:0; overflow-wrap:anywhere; }
+.halieus-continue-row > button:first-child > b { color:var(--hgr-brand) !important; white-space:nowrap; }
+.halieus-continue-row .halieus-game-brand-icon { object-fit:contain; flex-shrink:0; }
+:where(.halieus-shell,.account-panel,.account-portal,.game-menu-modal) { --player-accent:var(--hgr-brand); }
+.account342-secondary button > span, .account-auth-back { color:var(--hgr-brand) !important; }
+.account342-note { padding:10px 14px !important; font-size:12px; }
+@media(min-width:900px) {
+ .account-portal .account342-stage { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(360px,480px) !important; width:min(1100px,100%) !important; max-width:1100px !important; gap:clamp(32px,6vw,96px); align-items:center; }
+ .account-portal .account342-intro { display:grid !important; gap:18px; max-width:480px; }
+ .account342-intro h1 { font-size:clamp(32px,4vw,54px); line-height:1.08; }
+}
+.halieus-confirm-backdrop { position:fixed !important; inset:0 !important; display:grid !important; place-items:center !important; align-items:center !important; padding:16px !important; }
+.halieus-confirm-dialog { margin:auto !important; width:min(460px,100%); max-height:calc(100dvh - 32px); overflow:auto; overscroll-behavior:contain; }
+.modal-backdrop.game-menu-top-layer { position:fixed !important; inset:0 !important; display:flex !important; align-items:center !important; justify-content:center !important; padding:16px !important; overflow:hidden !important; }
+.game-menu-modal { max-height:calc(100dvh - 32px) !important; margin:0 !important; overflow-y:auto !important; overscroll-behavior:contain; min-height:0 !important; }
+.halieus-display-settings, .halieus-display-group { max-height:none !important; overflow:visible !important; }
+.pre-game-shell { width:min(720px,calc(100vw - 32px)) !important; max-height:calc(100dvh - 32px) !important; overflow-y:auto !important; overscroll-behavior:contain; }
+.pre-game-shell .halieus-create-settings, .pre-game-shell .halieus-create-form { max-height:none !important; overflow:visible !important; padding:14px 0 !important; border:0 !important; background:transparent !important; box-shadow:none !important; }
+.pre-game-shell .halieus-create-form { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.pre-game-shell .halieus-create-form > button { grid-column:1 / -1; }
+:where(.player-badges,.card-game-meta,.halieus-game-tags,.game-card-badges) { min-width:0; flex-wrap:wrap; }
+:where(.you-badge,.host-badge-modern,.order-badge,.halieus-skin-state) { max-width:100%; white-space:normal; overflow-wrap:anywhere; box-sizing:border-box; }
+.lobby-shell-v2 { padding-bottom:100px !important; }
+.room-chat-dock { max-width:calc(100vw - 24px) !important; box-sizing:border-box; }
+.room-chat-trigger { max-width:100%; min-width:0; }
+.room-chat-preview { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.mega-live-page .board-deck-chance { background:#ef8d38 !important; color:#251708 !important; border-color:#b65513 !important; }
+.mega-live-page .board-deck-community { background:#80c6ed !important; color:#102c41 !important; border-color:#3184b8 !important; }
+.mega-live-page .board-deck-bus { background:#f7dd70 !important; color:#392e08 !important; border-color:#b59c36 !important; }
+.mega-live-page :where(.centre-turn-status,.movement-preview-badge,.board-primary-action) { background:var(--mega-panel-base, #f8f5e9) !important; }
+.room-match-duration { font-weight:700; font-variant-numeric:tabular-nums; }
+.room-wall-clock { opacity:.72; font-size:.85em; font-variant-numeric:tabular-nums; }
+.ludo-progress-list { max-height:none !important; overflow:visible !important; gap:8px; }
+.ludo-progress-list > article { min-height:52px; padding:8px 10px !important; }
+.ludo-side-stack { min-width:0; align-content:start; gap:12px; }
+.ayo-player-marker { width:100%; box-sizing:border-box; margin:0 !important; }
+.ayo-room-stack { min-width:0; align-self:stretch; }
+.ayo-live { align-items:start; gap:16px; }
+/* All discs share a plane below a perforated foreground, including the animated disc. */
+.connect-four-board { isolation:isolate; background:#102344 !important; gap:0 !important; padding:10px !important; }
+.connect-four-cell { z-index:auto !important; border-radius:0 !important; background:transparent !important; padding:7px !important; }
+.connect-four-cell > span { position:relative; z-index:1 !important; animation:none; }
+.connect-four-cell::after { content:""; position:absolute; inset:0; z-index:5; pointer-events:none; background:radial-gradient(circle closest-side, transparent 75%, #2563eb 77%, #1745b6 100%); }
+.connect-four-cell:focus-visible { outline:3px solid white; outline-offset:-3px; z-index:6 !important; }
+.connect-four-cell > span.is-last-drop { z-index:2 !important; }
+@media(max-width:700px) {
+ .pre-game-shell .halieus-create-form { grid-template-columns:1fr; }
+ .halieus-continue-row > button:first-child { flex-wrap:wrap; gap:10px; }
+ .halieus-continue-row > button:first-child > b { margin-left:auto; }
+ .account-profile-grid { grid-template-columns:minmax(0,1fr) !important; }
+ .halieus-topbar { min-width:0; flex-wrap:wrap; }
+ .halieus-mobile-nav { display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)) !important; }
+ .lobby-shell-v2 { padding-bottom:calc(104px + env(safe-area-inset-bottom)) !important; }
+ .connect-four-board { width:100%; grid-template-columns:repeat(7,minmax(0,1fr)) !important; grid-template-rows:repeat(6,auto) !important; }
+ .connect-four-cell { aspect-ratio:1; min-width:0; }
+}
+
+.room-chat-shell.is-floating { width:min(400px,calc(100vw - 24px)) !important; max-width:calc(100vw - 24px) !important; right:12px !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; box-sizing:border-box; }
+.room-chat-shell.is-embedded { position:relative !important; width:100% !important; min-width:0; max-width:100%; }
+.room-chat-panel { max-height:min(520px,70dvh); }
+.pre-game-shell .free-parking-toggle { border-top:1px solid var(--hgr-border); padding-top:12px; margin-top:12px; }
+
+.achievement-list { display:grid; gap:8px; } .achievement-list article { display:flex; flex-wrap:wrap; gap:10px; padding:10px; border-bottom:1px solid var(--hgr-border); } .achievement-list article strong { flex:1; }
+
+.account-username-setting { display:flex; align-items:center; gap:16px; justify-content:space-between; } .account-username-setting > span { display:grid; gap:4px; min-width:0; overflow-wrap:anywhere; }
+.account-stat-overview, .account-game-record-grid { grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr)) !important; }
+.account-profile-grid input[type="file"] { max-width:100%; }
+.halieus-skin-preview { position:relative; overflow:hidden; } .halieus-skin-preview b { font-size:18px; letter-spacing:5px; }
+.halieus-skin-preview[class*="board"] { border:10px solid color-mix(in srgb,var(--hgr-brand) 45%,var(--hgr-surface)); background:repeating-linear-gradient(90deg,transparent 0 18%,rgba(0,0,0,.15) 19% 20%),#ded6b9; }
+.halieus-skin-preview[class*="table"], .halieus-skin-preview.skin-classic-felt, .halieus-skin-preview.skin-muted-poker-room { border-radius:48%; border:8px solid #4b101c; background:radial-gradient(ellipse,#173d32,#09251f); color:white; }
+.halieus-skin-preview[class*="deck"] { width:64px; min-height:86px; margin:8px auto; border:4px solid white; border-radius:8px; background:repeating-linear-gradient(45deg,#182a56 0 4px,#334c7c 4px 8px); color:white; }
+
+.ayo-live-shell { gap:16px !important; grid-template-columns:minmax(0,1fr) minmax(240px,300px); align-items:start; }
+.ayo-table-panel { display:grid; gap:8px !important; padding:16px !important; }
+.ayo-board-wrap { margin-block:0 !important; }
+.word-arena-word-game .word-arena-live { display:grid; grid-template-columns:minmax(220px,280px) minmax(0,1fr) minmax(240px,300px); gap:16px; align-items:start; }
+.word-arena-word-game .word-arena-stage { min-width:0; min-height:0 !important; padding:20px; }
+.word-game-social-panel { position:static !important; min-width:0; width:100% !important; }
+.word-arena-word-game .word-game-social-toggle { display:none; }
+@media(max-width:1100px) {
+ .word-arena-word-game .word-arena-live { grid-template-columns:minmax(0,1fr) minmax(220px,300px); }
+ .word-arena-word-game .word-arena-stage { grid-column:1; grid-row:1; }
+ .word-game-social-panel { grid-column:2; }
+}
+@media(max-width:700px) {
+ .ayo-live-shell, .word-arena-word-game .word-arena-live { grid-template-columns:minmax(0,1fr) !important; }
+ .word-game-social-panel { grid-column:1; }
+ .word-arena-word-game .word-arena-stage { grid-row:1; }
+ .halieus-home-featured { min-height:0 !important; padding:20px !important; }
+ .halieus-home-featured h1 { font-size:clamp(24px,7vw,34px) !important; }
+ .account-feedback-list:empty { min-height:0 !important; }
+ /* A two-column seat grid contains eight seats on phones. Pot and controls retain their own rows. */
+ .poker-page .poker-table { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; padding:14px !important; min-height:0 !important; height:auto !important; border-radius:24px !important; }
+ .poker-page .poker-table-center { position:relative !important; inset:auto !important; transform:none !important; width:100% !important; grid-column:1 / -1; order:-1; }
+ .poker-page .poker-seat { position:relative !important; inset:auto !important; transform:none !important; width:100% !important; min-width:0 !important; max-width:none !important; margin:0 !important; box-sizing:border-box; }
+ .poker-page .poker-seat-head { min-width:0; }
+ .poker-page .poker-seat-head strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+ .poker-page .poker-seat-cards { justify-content:center; }
+}
+
+.mega-ordering-page { padding-bottom:calc(104px + env(safe-area-inset-bottom)) !important; }
+
+@media(max-width:700px) {
+ .halieus-mobile-bar { display:grid !important; grid-template-columns:40px minmax(0,1fr) auto !important; gap:8px !important; width:100% !important; padding:10px 12px !important; box-sizing:border-box; }
+ .halieus-mobile-brand { min-width:0 !important; width:auto !important; gap:6px !important; }
+ .halieus-mobile-brand strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px !important; }
+ .halieus-mobile-actions { min-width:0; gap:6px !important; }
+ .halieus-mobile-actions > button { flex:0 0 36px; width:36px !important; }
+ .halieus-showcase-copy { padding:18px !important; }
+ .halieus-feature-copy-stage h1 { font-size:32px !important; }
+ .halieus-showcase-feature { min-height:180px !important; padding:18px !important; }
+ .halieus-showcase-feature > .halieus-feature-card-stage { min-height:120px !important; }
+ .halieus-showcase-status { margin-top:14px !important; }
+ .halieus-sidebar.is-mobile-open { position:fixed !important; top:0 !important; bottom:0 !important; height:100dvh !important; overflow-y:auto !important; overscroll-behavior:contain; }
+}
+
+html[data-skin-mega-board="negotiator-board"] .mega-live-page { --mega-accent:#c7a251; --mega-panel-base:#f0e6cd; --mega-board-material:#25303d; }
+html[data-skin-mega-board="kass-board"] .mega-live-page { --mega-accent:#bf526e; --mega-panel-base:#f5e5d9; --mega-board-material:#533948; }
+html[data-skin-poker-table="royal-table"] .poker-page { --poker-felt:radial-gradient(ellipse,#4b285e,#261333); --poker-rail:#b28a41; --poker-accent:#d9ba69; }
+html[data-skin-cards="veteran-deck"] :where(.poker-card-back,.rebuild-card.is-back) { background:repeating-linear-gradient(45deg,#192e47 0 7px,#8298b0 7px 8px) !important; border-color:#c9d3df !important; }
+
+.mega-mode-configuration { border:1px solid var(--hgr-border); border-radius:14px; overflow:hidden; }
+.mega-mode-configuration .match-tabs { margin:0 !important; border:0 !important; border-radius:0 !important; }
+.mega-mode-configuration .free-parking-toggle { margin:0 !important; padding:12px !important; border:0 !important; border-top:1px solid var(--hgr-border) !important; border-radius:0 !important; }
+.lobby-start-game { background:var(--hgr-success) !important; border-color:var(--hgr-success) !important; color:#062d19 !important; }
+.halieus-game-chrome { --game-accent:var(--hgr-brand) !important; }
+:where(button,input,select,textarea,a):focus-visible { outline-color:var(--hgr-brand); }
+.mega-live-page .centre-roll-readout { color:var(--mega-centre-ink) !important; background:var(--mega-panel-base,#f4efdf); padding:6px 10px; border-radius:10px; opacity:1 !important; }
+.mega-live-page .centre-roll-readout > span { font-size:12px !important; font-weight:700; opacity:1 !important; }
+:where(.halieus-library-status,.halieus-showcase-feature > b,.halieus-showcase-feature .halieus-feature-card-stage > b,.account-status-badge,.account-role-badge) { min-width:0 !important; max-width:100% !important; box-sizing:border-box; white-space:normal !important; overflow-wrap:anywhere; padding-inline:clamp(4px,1vw,10px); }
+.poker-actions-workspace { align-content:start; }
+.poker-control-panel .poker-side-tab-panel { flex:1; }
+.halieus-build-info-popover { position:relative !important; inset:auto !important; transform:none !important; width:min(420px,100%); margin:auto; }
+
+.connect-four-cell:disabled { opacity:1 !important; cursor:default; }
+
+/* Override the legacy mobile bottom-sheet sizing as one bounded, centered scroll owner. */
+.modal-backdrop.game-menu-top-layer > .game-menu-modal { box-sizing:border-box !important; max-height:calc(100dvh - 32px) !important; max-width:100% !important; border-radius:22px !important; }
+.halieus-theme-popover, .halieus-skins-dialog { box-sizing:border-box; max-height:calc(100dvh - 32px) !important; overflow-y:auto !important; overscroll-behavior:contain; }
+.halieus-theme-library-grid, .halieus-skins-grid { max-height:none !important; overflow:visible !important; }
+.halieus-skins-dialog > nav { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)) !important; }
+
+/* Context previews show the same materials as the equipped surface. */
+.halieus-skin-preview.skin-night-board { background:#151d30; border-color:#596d9b; color:#e1e8f8; }
+.halieus-skin-preview.skin-transit-board { background:repeating-linear-gradient(25deg,#edf0e5 0 18%,#659991 19% 20%); border-color:#2b5e67; }
+.halieus-skin-preview.skin-tycoon-board { background:#232323; border-color:#b89a52; color:#f0d18b; }
+.halieus-skin-preview.skin-negotiator-board { background:#f0e6cd; border-color:#25303d; color:#6e5529; }
+.halieus-skin-preview.skin-kass-board { background:#f5e5d9; border-color:#533948; color:#bf526e; }
+.halieus-skin-preview.skin-muted-poker-room { background:#31413d; border-color:#4d4745; }
+.halieus-skin-preview.skin-royal-table { background:radial-gradient(ellipse,#4b285e,#261333); border-color:#b28a41; }
+.halieus-skin-preview.skin-casino-deck { background:#183c2e; border-color:#c8ae69; color:#edd19c; }
+.halieus-skin-preview.skin-neon-deck { background:repeating-linear-gradient(45deg,#103540 0 8px,#752a65 9px 11px); border-color:#55d5da; }
+.halieus-skin-preview.skin-veteran-deck { background:repeating-linear-gradient(45deg,#192e47 0 7px,#8298b0 7px 8px); border-color:#c9d3df; }
+.ludo-side-stack { border:1px solid var(--hgr-border); border-radius:18px; padding:12px; background:var(--hgr-surface); }
+.ludo-side-stack > .ludo-status-panel { border:0 !important; box-shadow:none; padding:4px !important; }
+.ludo-side-stack .room-chat-shell { margin:0; }
+@media(max-width:700px) {
+ .poker-settings-summary { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:8px !important; }
+ .poker-lobby-card { padding:16px !important; }
+}
+
+.ludo-side-stack { height:auto !important; overflow:visible !important; grid-template-rows:auto auto !important; }
+.ludo-side-stack .ludo-status-panel { max-height:none !important; overflow:visible !important; }
+.ludo-side-stack .room-chat-shell.is-embedded .room-chat-panel { height:380px !important; min-height:0 !important; max-height:50dvh !important; }
+.poker-page .poker-seat-head strong { color:#f8f6ef !important; }
+.poker-page .poker-seat-head small { color:#cfdbd5 !important; }
+.poker-control-panel { align-self:start !important; height:auto !important; grid-template-rows:auto auto auto auto auto !important; }
+.poker-actions-workspace { min-height:0 !important; }
+.room-chat-shell { --chat-accent:var(--hgr-brand) !important; }
+:where(.halieus-shell,.account-panel,.game-menu-modal) :is(.halieus-preference-row,.halieus-display-group,.halieus-settings-grid-secondary) :is(button,strong) { font-size:var(--hgr-control-text,14px) !important; }
+:where(.halieus-shell,.account-panel,.game-menu-modal) :is(.halieus-preference-row,.halieus-display-group,.halieus-settings-grid-secondary) small { font-size:var(--hgr-caption-text,12px) !important; }
+.account-panel :is(.account-profile-grid,.account-profile-setting) :is(input,select,label) { font-size:var(--hgr-control-text,14px) !important; }
+@media(max-width:700px) {
+ .poker-page .poker-board-cards { display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important; width:100% !important; gap:5px !important; }
+ .poker-page .poker-board-cards .poker-card { width:100% !important; height:auto !important; aspect-ratio:5 / 7; min-width:0 !important; }
+}

@@ -108,6 +108,7 @@ export interface HalieusGameStatLine {
 }
 
 export interface HalieusPersonalStats {
+  progression?: import("./progression.js").PlayerProgression;
   played: number;
   wins: number;
   winRate: number;

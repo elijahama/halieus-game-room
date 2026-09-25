@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import { recordCashFlow } from "../utils/stats.js";
 import type { Server, Socket } from "socket.io";
@@ -178,7 +179,7 @@ export function registerPurchaseHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },
@@ -285,7 +286,7 @@ export function registerPurchaseHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },

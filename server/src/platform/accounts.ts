@@ -1,3 +1,7 @@
+import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
+import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranked.js";
+import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSkinPreferences, type HalieusSkinSlot } from "../../../shared/platform/skins.js";
+import { readPlayerProgression } from "./progression.js";
 import type { Express, Request, Response } from "express";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -50,6 +54,7 @@ interface StoredAccount {
   passwordSalt: string;
   passwordHash: string;
   createdViaInviteId: string | null;
+  skins?: HalieusSkinPreferences;
   displayNameAliases?: string[];
   visibility?: HalieusPlayerVisibility;
 }
@@ -578,7 +583,7 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
   const byGame = [...rows.values()].map((row) => ({ ...row, winRate: row.played ? Math.round((row.wins / row.played) * 100) : 0 }));
   const played = byGame.reduce((sum, row) => sum + row.played, 0);
   const wins = byGame.reduce((sum, row) => sum + row.wins, 0);
-  return { played, wins, winRate: played ? Math.round((wins / played) * 100) : 0, byGame, recent: recent.sort((a, b) => b.at - a.at).slice(0, 16) };
+  return { progression: await readPlayerProgression(account.id), played, wins, winRate: played ? Math.round((wins / played) * 100) : 0, byGame, recent: recent.sort((a, b) => b.at - a.at).slice(0, 16) };
 }
 
 
@@ -906,6 +911,28 @@ export function registerAccountRoutes(app: Express): void {
     item.status = "closed"; item.respondedAt = Date.now();
     addAudit(auth.account.id, "game-request.closed", "account", item.senderAccountId === auth.account.id ? item.recipientAccountId : item.senderAccountId, `${auth.account.displayName} opened the accepted ${item.gameTitle} request.`);
     await saveStore(); response.json({ ok: true, request: item });
+  });
+
+  async function cosmeticState(account: StoredAccount) {
+    const progression = await readPlayerProgression(account.id);
+    const stats = { played: progression.played, wins: progression.wins, winRate: 0, recent: [], byGame: Object.entries(progression.byGame).map(([game, line]) => ({ game, gameTitle: game, ...line, winRate: 0 })) } as HalieusPersonalStats;
+    const rating = getRankedLeaderboard().find(entry => [account.displayName, ...(account.displayNameAliases ?? [])].some(name => normaliseRankedPlayerKey(name) === entry.playerKey))?.rating ?? 0;
+    const entitlements = SKIN_CATALOG.filter(skin => isSkinUnlocked(skin, { stats, ratings: { "mega-board": rating }, achievements: progression.awards.map(award => award.id) }, false)).map(skin => skin.id);
+    const preferences = { ...DEFAULT_SKIN_PREFERENCES, ...account.skins };
+    for (const slot of Object.keys(preferences) as HalieusSkinSlot[]) if (!entitlements.includes(preferences[slot])) preferences[slot] = DEFAULT_SKIN_PREFERENCES[slot];
+    return { preferences, entitlements };
+  }
+  app.get("/accounts/me/cosmetics", async (request, response) => {
+    const auth = currentSession(request); if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    response.json({ ok: true, ...await cosmeticState(auth.account) });
+  });
+  app.post("/accounts/me/cosmetics", async (request, response) => {
+    const auth = currentSession(request); if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    const state = await cosmeticState(auth.account);
+    const skin = SKIN_CATALOG.find(skin => skin.slot === request.body?.slot && skin.id === request.body?.id);
+    if (!skin || !state.entitlements.includes(skin.id)) { response.status(403).json({ ok: false, reason: "That cosmetic has not been earned." }); return; }
+    auth.account.skins = { ...state.preferences, [skin.slot]: skin.id }; await saveStore();
+    response.json({ ok: true, preferences: auth.account.skins, entitlements: state.entitlements });
   });
 
   app.get("/accounts/me/stats", async (request, response) => {

@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import type { Server, Socket } from "socket.io";
 
 import {
@@ -164,7 +165,7 @@ export function registerOrderHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
         roll,
       });
     },
@@ -186,7 +187,7 @@ export function registerOrderHandlers(
       player.tokenId = payload.tokenId;
       if (claimed?.isAi) claimed.tokenId = previousToken;
       emitGameState(io, code!, room.gameState);
-      acknowledge({ ok: true, state: room.gameState });
+      acknowledge({ ok: true, state: publicProgressionState(room.gameState) });
     },
   );
 

@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { recordActivity } from "../utils/activity.js";
 import type { Server, Socket } from "socket.io";
 
@@ -56,7 +57,7 @@ export function registerBankruptcyHandlers(
         socket.id,
       );
       emitGameState(io, code, gameState);
-      acknowledge({ ok: !result.error, state: gameState, ...(result.error ? { reason: result.error } : {}) });
+      acknowledge({ ok: !result.error, state: publicProgressionState(gameState), ...(result.error ? { reason: result.error } : {}) });
     },
   );
   socket.on(
@@ -136,7 +137,7 @@ export function registerBankruptcyHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
     },
   );
@@ -194,7 +195,7 @@ export function registerBankruptcyHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
     },
   );

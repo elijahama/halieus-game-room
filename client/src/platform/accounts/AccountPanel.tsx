@@ -1,3 +1,4 @@
+import { ModalPortal } from "../components/ModalPortal";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import type {
   HalieusAccountSummary,
@@ -94,6 +95,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [snapshot, setSnapshot] = useState<HalieusAdminSnapshot | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [message, setMessage] = useState("");
+  const [editingUsername, setEditingUsername] = useState(false);
   const [username, setUsername] = useState(account.username);
   const [displayName, setDisplayName] = useState(account.displayName);
   const [avatar, setAvatar] = useState(account.avatar);
@@ -352,12 +354,15 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
 
   const profileSettings = (
     <section className="account-self-service">
+      <section className="account-settings-card"><h3>Appearance</h3><DisplaySettingsPanel darkMode={false} onToggleDarkMode={() => {}} onToggleFullscreen={() => { if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen(); }} /></section>
       {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div><button type="button" className="button-outline account-open-owner-tools" onClick={() => setAdminTab("overview")}>Owner tools →</button></header>}
       <div className="account-profile-grid">
         <form className="account-settings-card" onSubmit={saveProfile}>
           <div><p className="modal-eyebrow">Player profile</p><h3>Your Halieus identity</h3></div>
           <label>Display name<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} maxLength={40} /><small className="account-field-help">Shown to other players in Halieus and in games.</small></label>
-          <label>Sign-in username<div className="account-username-input"><span>@</span><input value={username} onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))} minLength={3} maxLength={32} autoComplete="username" required /></div><small className="account-field-help">This is your account login — it does not need to be an email address. You can change it without losing your account or game history.</small></label>
+          <div className="account-username-setting"><span><strong>Sign-in username</strong><small>@{account.username}</small></span><button type="button" className="button-outline" onClick={() => { setEditingUsername(!editingUsername); setUsername(account.username); }}>{editingUsername ? "Cancel edit" : "Edit username"}</button></div>
+          {editingUsername && (<label>Sign-in username<div className="account-username-input"><span>@</span><input value={username} onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ""))} minLength={3} maxLength={32} autoComplete="username" required /></div><small className="account-field-help">This is your account login — it does not need to be an email address. You can change it without losing your account or game history.</small></label>)}
+
           <div className="account-profile-picture-editor"><span className="account-profile-picture-preview" style={{ background: playerColor }}>{profilePicture ? <img src={profilePicture} alt="Profile preview" /> : avatar}</span><div><label className="button-outline account-picture-upload">Upload profile picture<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => chooseProfilePicture(event.target.files?.[0] ?? null)} /></label>{profilePicture && <button type="button" className="button-muted" onClick={() => setProfilePicture(null)}>Remove picture</button>}<small>Optional · PNG, JPEG or WebP · up to 1 MB.</small></div></div>
           <div className="account-profile-row"><label>Initials fallback<input value={avatar} onChange={(event) => setAvatar(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} maxLength={3} /></label><label>Player colour<input type="color" value={playerColor} onChange={(event) => setPlayerColor(event.target.value)} /></label></div>
           <button type="submit" className="button-primary">Save profile</button>
@@ -369,7 +374,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
           <button type="submit" className="button-outline">Change password</button>
         </form>
       </div>
-      <section className="account-appearance-card"><DisplaySettingsPanel /></section>
+      {personalStats?.progression && <section className="account-settings-card"><p className="modal-eyebrow">Achievements</p><h3>{personalStats.progression.gamerScore} GamerScore</h3><small>Earned from verified completed games. Separate from rankings and cosmetic currency.</small><div className="achievement-list">{personalStats.progression.awards.length ? personalStats.progression.awards.map(award => <article key={award.id}><strong>{award.title}</strong><span>+{award.points}</span><small>{new Date(award.earnedAt).toLocaleDateString()}</small></article>) : <p>Complete a game to earn your first achievement.</p>}</div></section>}
       {personalStats && <section className="account-game-record">
         <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
         <div className="account-stat-overview">
@@ -404,7 +409,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   );
 
   return (
-    <div className="account-panel-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && onClose()}>
+    <ModalPortal onClose={onClose}><div className="account-panel-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && onClose()}>
       <section className="account-panel" role="dialog" aria-modal="true" aria-label="Halieus account">
         <header className="account-panel-header">
           <div className="account-profile-identity">
@@ -595,6 +600,6 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
         </div>
       </section>
       <ConfirmDialog open={confirmRequest !== null} title={confirmRequest?.title ?? "Confirm action"} message={confirmRequest?.message ?? ""} confirmLabel={confirmRequest?.label ?? "Confirm"} destructive onCancel={() => setConfirmRequest(null)} onConfirm={() => { const request = confirmRequest; setConfirmRequest(null); request?.action(); }} />
-    </div>
+    </div></ModalPortal>
   );
 }

@@ -8,6 +8,7 @@ import "./index.css";
 import "./styles/hgr-theme.css";
 import "./styles/hgr-design-v1.css";
 import "./styles/hgr-game-surfaces-v45.css";
+import "./styles/hgr-part17.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.

@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import type {
   Server,
   Socket,
@@ -128,7 +129,7 @@ export function registerAutopilotHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
 
       console.log(

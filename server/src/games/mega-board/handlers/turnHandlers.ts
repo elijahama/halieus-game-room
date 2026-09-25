@@ -1,4 +1,7 @@
-import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
+import { publicProgressionState } from "../../../platform/progression.js";
+import { recordActivity } from "../utils/activity.js";
+import { queueRoomSave } from "../utils/persistence.js";
+import { toPublicGameRoom } from "../utils/room-view.js";
 import type {
   Server,
   Socket,
@@ -37,7 +40,7 @@ export function registerTurnHandlers(
       const code = payload.code?.trim().toUpperCase();
       const room = code ? rooms.get(code) : undefined;
 
-      if (!code || !room?.started || !room.gameState) {
+      if (!code || !room) {
         acknowledge({ ok: false, reason: "The game could not be found." });
         return;
       }
@@ -50,41 +53,15 @@ export function registerTurnHandlers(
         return;
       }
 
-      const gameState = room.gameState;
-      const seconds = payload.seconds;
-      gameState.turnTimerSeconds = seconds;
-
-      // An explicit host change is allowed to restart the currently active human
-      // window at the new duration. Ordinary refresh/reconnect never does this.
-      const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-      if (
-        gameState.phase === "playing" &&
-        currentPlayer &&
-        !currentPlayer.isAi &&
-        !currentPlayer.isBankrupt &&
-        !currentPlayer.autopilotEnabled
-      ) {
-        if (gameState.turnPhase === "roll") {
-          gameState.turnRollDeadline = Date.now() + seconds * 1000;
-          gameState.turnRollDeadlinePlayerId = currentPlayer.id;
-        }
+      if (room.started || room.gameState) {
+        acknowledge({ ok: false, reason: "The turn timer is locked once the game starts." });
+        return;
       }
-
-      const label = seconds % 60 === 0
-        ? `${seconds / 60} minute${seconds === 60 ? "" : "s"}`
-        : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-      recordActivity(gameState, `Turn timer changed to ${label} by the host.`, "game", socket.id);
-      pushGlobalNotice(gameState, {
-        kind: "game-mode",
-        title: "⏱ Turn Timer Updated",
-        message: `The host changed the human turn timer to ${label}.`,
-        playerId: socket.id,
-        presentation: "standard",
-        durationMs: 2600,
-      });
-
-      emitGameState(io, code, gameState);
-      acknowledge({ ok: true, state: gameState });
+      room.turnTimerSeconds = payload.seconds;
+      room.updatedAt = Date.now();
+      queueRoomSave();
+      io.to(code).emit("lobby:updated", toPublicGameRoom(room));
+      acknowledge({ ok: true });
     },
   );
   socket.on(
@@ -173,7 +150,7 @@ export function registerTurnHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },

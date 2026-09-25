@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { recordActivity } from "../utils/activity.js";
 import type {
   Server,
@@ -159,7 +160,7 @@ function emitResolution(
 
   acknowledge({
     ok: true,
-    state: gameState,
+    state: publicProgressionState(gameState),
   });
 
   console.log(result.message);

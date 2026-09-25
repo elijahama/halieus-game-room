@@ -1,3 +1,4 @@
+import { ModalPortal } from "../../platform/components/ModalPortal";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { PokerAutopilotMode, PokerCard, PokerPublicState } from "./types";
@@ -334,7 +335,7 @@ export function PokerScreen({
 
       {/* Poker mirrors Mega Board's report/feedback tools inside the shared game menu. */}
       {menuOpen && (
-        <div className="modal-backdrop game-menu-top-layer" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setMenuOpen(false); setMenuView("menu"); } }}>
+        <ModalPortal onClose={() => setMenuOpen(false)}><div className="modal-backdrop game-menu-top-layer" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setMenuOpen(false); setMenuView("menu"); } }}>
           <section className="game-menu-modal poker-game-menu" role="dialog" aria-modal="true" aria-labelledby="poker-game-menu-title">
             <div className="modal-handle" />
             {menuView === "menu" ? (
@@ -387,7 +388,7 @@ export function PokerScreen({
               />
             )}
           </section>
-        </div>
+        </div></ModalPortal>
       )}
 
       {inviteOpen && !state.started && (

@@ -1,3 +1,5 @@
+import { useModalLifecycle } from "./useModalLifecycle";
+import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,9 +12,6 @@ import {
   readCustomTheme,
   readThemeMode,
   readThemeProfileId,
-  saveCustomTheme,
-  saveThemeProfile,
-  THEME_KEY,
 } from "../theme";
 
 interface ThemeButtonProps {
@@ -27,42 +26,6 @@ interface PopoverPosition {
   left: number;
   top: number;
   width: number;
-}
-
-function applyThemeMode(mode: HalieusThemeMode): void {
-  localStorage.setItem(THEME_KEY, mode);
-  window.dispatchEvent(new CustomEvent<HalieusThemeMode>("halieus-theme-mode", { detail: mode }));
-}
-
-function publishCustomTheme(theme: HalieusCustomTheme): void {
-  saveCustomTheme(theme);
-  window.dispatchEvent(new CustomEvent<HalieusCustomTheme>("halieus-custom-theme", { detail: theme }));
-}
-
-function publishThemeProfile(id: HalieusThemeProfileId): void {
-  saveThemeProfile(id);
-  window.dispatchEvent(new CustomEvent<HalieusThemeProfileId>("halieus-theme-profile", { detail: id }));
-  applyThemeMode("profile");
-}
-
-function previewThemeMode(mode: HalieusThemeMode): void {
-  window.dispatchEvent(new CustomEvent<HalieusThemeMode>("halieus-theme-mode", { detail: mode }));
-}
-function previewThemeProfile(id: HalieusThemeProfileId): void {
-  window.dispatchEvent(new CustomEvent<HalieusThemeProfileId>("halieus-theme-profile", { detail: id }));
-  previewThemeMode("profile");
-}
-function previewCustomTheme(theme: HalieusCustomTheme): void {
-  window.dispatchEvent(new CustomEvent<HalieusCustomTheme>("halieus-custom-theme", { detail: theme }));
-  previewThemeMode("custom");
-}
-function restoreCommittedAppearance(): void {
-  const committedProfile = readThemeProfileId();
-  const committedCustom = readCustomTheme();
-  const committedMode = readThemeMode();
-  window.dispatchEvent(new CustomEvent<HalieusThemeProfileId>("halieus-theme-profile", { detail: committedProfile }));
-  window.dispatchEvent(new CustomEvent<HalieusCustomTheme>("halieus-custom-theme", { detail: committedCustom }));
-  previewThemeMode(committedMode);
 }
 
 function rgbChannels(hex: string): [number, number, number] {
@@ -103,6 +66,7 @@ const THEME_PROFILE_GROUPS = [
 
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
+  const pending = useRef<ThemeSelection | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [mode, setMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [profileId, setProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
@@ -111,11 +75,11 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [menuOpen, setMenuOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [profilePreviewActive, setProfilePreviewActive] = useState(false);
-  const profilePreviewRef = useRef(false);
-  const customPreviewRef = useRef(false);
   const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ left: 12, top: 12, width: 300 });
 
+  const menuRef = useRef<HTMLDivElement>(null), editorRef = useRef<HTMLElement>(null);
+  useModalLifecycle(menuOpen, menuRef, () => { setMenuOpen(false); setLibraryOpen(false); });
+  useModalLifecycle(editorOpen, editorRef, () => setEditorOpen(false));
   const activeProfile = THEME_PROFILES.find((profile) => profile.id === profileId) ?? THEME_PROFILES[0];
   const activeLabel = mode === "profile"
     ? activeProfile.label
@@ -132,7 +96,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     const handleCustom = (event: Event) => {
       const next = (event as CustomEvent<HalieusCustomTheme>).detail;
       setCustom(next);
-      setDraft(next);
     };
     window.addEventListener("halieus-theme-mode", handleMode);
     window.addEventListener("halieus-theme-profile", handleProfile);
@@ -143,9 +106,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       window.removeEventListener("halieus-custom-theme", handleCustom);
     };
   }, []);
-
-  useEffect(() => { profilePreviewRef.current = profilePreviewActive; }, [profilePreviewActive]);
-  useEffect(() => () => { if (profilePreviewRef.current || customPreviewRef.current) restoreCommittedAppearance(); }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -178,53 +138,32 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     if (!menuOpen && !editorOpen) return;
     const handleKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      if (editorOpen) { cancelCustom(); return; }
-      if (libraryOpen) { cancelProfilePreview(); setLibraryOpen(false); return; }
+      setLibraryOpen(false);
       setMenuOpen(false);
+      setEditorOpen(false);
+      setDraft(custom);
     };
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [editorOpen, libraryOpen, menuOpen]);
+  }, [custom, editorOpen, libraryOpen, menuOpen]);
 
+  function preview(next: ThemeSelection) { pending.current = next; previewTheme(next); }
+  function cancelPreview() { pending.current = null; previewTheme(committedTheme()); }
+  function applyPreview() { if (pending.current) commitTheme(pending.current); pending.current = null; setMenuOpen(false); setEditorOpen(false); }
+  useEffect(() => { if (!menuOpen && !editorOpen && pending.current) cancelPreview(); }, [menuOpen, editorOpen]);
+  useEffect(() => () => { if (pending.current) previewTheme(committedTheme()); }, []);
+  useEffect(() => { if (editorOpen) preview({ ...committedTheme(), mode: "custom", custom: draft }); }, [draft, editorOpen]);
   function selectMode(next: "system" | "light" | "dark") {
-    if (profilePreviewActive) cancelProfilePreview();
-    customPreviewRef.current = false;
-    setMode(next);
-    applyThemeMode(next);
-    setLibraryOpen(false);
-    setMenuOpen(false);
+    preview({ ...committedTheme(), mode: next });
   }
-
   function selectProfile(id: HalieusThemeProfileId) {
-    setProfilePreviewActive(true);
-    profilePreviewRef.current = true;
-    setProfileId(id);
-    setMode("profile");
-    previewThemeProfile(id);
-  }
-  function applyProfilePreview() {
-    if (!profilePreviewActive) return;
-    publishThemeProfile(profileId);
-    profilePreviewRef.current = false;
-    setProfilePreviewActive(false);
-    setLibraryOpen(false);
-    setMenuOpen(false);
-  }
-  function cancelProfilePreview() {
-    if (!profilePreviewRef.current && !profilePreviewActive) return;
-    restoreCommittedAppearance();
-    profilePreviewRef.current = false;
-    setProfilePreviewActive(false);
-    setProfileId(readThemeProfileId());
-    setMode(readThemeMode());
+    preview({ ...committedTheme(), mode: "profile", profile: id });
   }
 
   function openCustom() {
-    cancelProfilePreview();
-    setDraft(readCustomTheme());
+    setDraft(custom);
     setLibraryOpen(false);
     setMenuOpen(false);
-    customPreviewRef.current = true;
     setEditorOpen(true);
   }
 
@@ -238,30 +177,10 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     updateDraftColour(key, rgbHex(channels));
   }
 
-  useEffect(() => {
-    if (!editorOpen) return;
-    customPreviewRef.current = true;
-    previewCustomTheme(draft);
-  }, [draft, editorOpen]);
-
-  function applyCustom() {
-    const next = { ...draft };
-    setCustom(next);
-    publishCustomTheme(next);
-    setMode("custom");
-    applyThemeMode("custom");
-    customPreviewRef.current = false;
-    setEditorOpen(false);
-  }
+  function applyCustom() { commitTheme({ ...committedTheme(), mode: "custom", custom: draft }); pending.current = null; setEditorOpen(false); }
 
   function cancelCustom() {
-    restoreCommittedAppearance();
-    const committed = readCustomTheme();
-    setCustom(committed);
-    setDraft(committed);
-    setMode(readThemeMode());
-    setProfileId(readThemeProfileId());
-    customPreviewRef.current = false;
+    setDraft(custom);
     setEditorOpen(false);
   }
 
@@ -274,11 +193,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         style={{ background, color: colour, borderColor: borderColour }}
         aria-haspopup="dialog"
         aria-expanded={menuOpen}
-        onClick={() => {
-          if (menuOpen && profilePreviewActive) cancelProfilePreview();
-          setLibraryOpen(false);
-          setMenuOpen((open) => !open);
-        }}
+        onClick={() => { setLibraryOpen(false); setMenuOpen((open) => !open); }}
       >
         <span className="halieus-theme-trigger-label">Theme</span>
         <span className="halieus-theme-trigger-value"><i aria-hidden="true">{activeIcon}</i><b>{activeLabel}</b></span>
@@ -287,8 +202,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
 
       {menuOpen && createPortal(
         <>
-          <button type="button" className="halieus-theme-popover-scrim" onClick={() => { cancelProfilePreview(); setMenuOpen(false); setLibraryOpen(false); }} aria-label="Close theme menu" />
+          <button type="button" className="halieus-theme-popover-scrim" onClick={() => { setMenuOpen(false); setLibraryOpen(false); }} aria-label="Close theme menu" />
           <div
+            ref={menuRef}
             className={`halieus-theme-popover ${libraryOpen ? "is-library-open" : ""}`}
             style={{ left: popoverPosition.left, top: popoverPosition.top, width: popoverPosition.width }}
             role="dialog"
@@ -323,7 +239,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 <b aria-hidden="true">→</b>
               </button>
             </> : <>
-              <button type="button" className="halieus-theme-library-back" onClick={() => { cancelProfilePreview(); setLibraryOpen(false); }}>← Appearance</button>
+              <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
               <div className="halieus-theme-library-grid">
                 {THEME_PROFILE_GROUPS.map((group) => (
                   <Fragment key={group.id}>
@@ -340,25 +256,22 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                           <i style={{ background: profile.theme.secondary }} />
                         </span>
                         <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small></span>
-                        {mode === "profile" && profileId === profile.id && <b aria-hidden="true">{profilePreviewActive ? "PREVIEW" : "✓"}</b>}
+                        {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
                       </button>
                     ))}
                   </Fragment>
                 ))}
               </div>
-              <footer className="halieus-theme-preview-actions" aria-live="polite">
-                <span>{profilePreviewActive ? `Previewing ${activeProfile.label}` : "Choose a theme to preview it across HGR."}</span>
-                <div><button type="button" className="button-outline" disabled={!profilePreviewActive} onClick={cancelProfilePreview}>Cancel</button><button type="button" className="button-primary" disabled={!profilePreviewActive} onClick={applyProfilePreview}>Apply theme</button></div>
-              </footer>
             </>}
+            <footer className="theme-preview-actions"><small>Preview only until you apply.</small><button type="button" className="button-outline" onClick={() => { cancelPreview(); setMenuOpen(false); }}>Cancel</button><button type="button" className="button-primary" onClick={applyPreview}>Apply theme</button></footer>
           </div>
         </>,
-        document.body,
+        document.fullscreenElement ?? document.body,
       )}
 
       {editorOpen && createPortal(
         <div className="halieus-custom-theme-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && cancelCustom()}>
-          <section className="halieus-custom-theme-dialog" role="dialog" aria-modal="true" aria-label="Custom HGR theme">
+          <section ref={editorRef} className="halieus-custom-theme-dialog" role="dialog" aria-modal="true" aria-label="Custom HGR theme">
             <header>
               <div><p>CUSTOM THEME</p><h2>Build your own HGR palette</h2><span>Start from a coordinated palette or go completely custom. Games keep their identity while the shared HGR shell follows your colours.</span></div>
               <button type="button" onClick={cancelCustom} aria-label="Close custom theme editor">×</button>
@@ -429,7 +342,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             </footer>
           </section>
         </div>,
-        document.body,
+        document.fullscreenElement ?? document.body,
       )}
     </>
   );

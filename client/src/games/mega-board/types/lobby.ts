@@ -22,6 +22,7 @@ export interface GameRoom {
   started: boolean;
   hostDisconnectDeadline: number | null;
   freeParkingJackpotEnabled?: boolean;
+  turnTimerSeconds?: number;
 }
 
 export interface GameResponse {
@@ -64,6 +65,7 @@ export interface LobbyState {
   players: LobbyPlayer[];
   hostDisconnectDeadline: number | null;
   freeParkingJackpotEnabled?: boolean;
+  turnTimerSeconds?: number;
   blitz?: boolean;
 }
 

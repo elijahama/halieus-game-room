@@ -1,3 +1,4 @@
+import { captureProgression } from "./progression.js";
 import { existsSync } from "node:fs";
 import { appendFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -39,6 +40,12 @@ function safePart(value: string): string {
   return value.replace(/[^a-z0-9_-]/gi, "-").slice(0, 80);
 }
 
+function matchTime(payload: any, fallback: number): number {
+  const state = payload?.gameState ?? payload;
+  const started = state?.gameStartedAt ?? state?.startedAt;
+  return typeof started === "number" && Number.isFinite(started) && started > 0 ? started : fallback;
+}
+
 function archiveKey(game: ArchiveGame, code: string, createdAt: number): string {
   return `${game}-${safePart(code)}-${Math.max(0, Math.floor(createdAt))}`;
 }
@@ -70,7 +77,7 @@ async function ensureArchiveDirs(): Promise<void> {
 function baseRecord(game: ArchiveGame, code: string, createdAt: number, payload: unknown) {
   return {
     schemaVersion: 1,
-    sessionId: archiveKey(game, code, createdAt),
+    sessionId: archiveKey(game, code, matchTime(payload, createdAt)),
     game,
     roomCode: code,
     appVersion: APP_VERSION,
@@ -87,7 +94,8 @@ async function writeWorking(game: ArchiveGame, code: string, createdAt: number, 
 }
 
 export function recordWorkingSession(game: ArchiveGame, code: string, createdAt: number, payload: unknown): void {
-  const key = archiveKey(game, code, createdAt);
+  captureProgression(payload);
+  const key = archiveKey(game, code, matchTime(payload, createdAt));
   if (finalizedKeys.has(key)) return;
   latestPayloads.set(key, payload);
   if (pendingWrites.has(key)) return;
@@ -103,7 +111,17 @@ export function recordWorkingSession(game: ArchiveGame, code: string, createdAt:
   }, 250));
 }
 
-export async function finalizeSession(
+const finalizations = new Map<string, Promise<void>>();
+export function finalizeSession(game: ArchiveGame, code: string, createdAt: number, status: ArchiveStatus, payload: unknown, summary: Record<string, unknown> = {}): Promise<void> {
+  const key = archiveKey(game, code, matchTime(payload, createdAt));
+  const pending = finalizations.get(key); if (pending) return pending;
+  captureProgression(payload);
+  const snapshot = sanitise(payload);
+  const task = writeFinalSession(game, code, createdAt, status, snapshot, summary).finally(() => finalizations.delete(key));
+  finalizations.set(key, task); return task;
+}
+
+async function writeFinalSession(
   game: ArchiveGame,
   code: string,
   createdAt: number,
@@ -111,14 +129,14 @@ export async function finalizeSession(
   payload: unknown,
   summary: Record<string, unknown> = {},
 ): Promise<void> {
-  const key = archiveKey(game, code, createdAt);
+  captureProgression(payload);
+  const key = archiveKey(game, code, matchTime(payload, createdAt));
   await ensureArchiveDirs();
   const finalPath = resolve(finalDir, `${key}.json`);
   if (finalizedKeys.has(key) || existsSync(finalPath)) {
     finalizedKeys.add(key);
     return;
   }
-  finalizedKeys.add(key);
   const timer = pendingWrites.get(key);
   if (timer) clearTimeout(timer);
   pendingWrites.delete(key);
@@ -130,7 +148,9 @@ export async function finalizeSession(
     finalisedAt: Date.now(),
     summary: sanitise(summary),
   };
-  await writeFile(finalPath, JSON.stringify(record, null, 2), "utf8");
+  await writeFile(`${finalPath}.tmp`, JSON.stringify(record, null, 2), "utf8");
+  await rename(`${finalPath}.tmp`, finalPath);
+  finalizedKeys.add(key);
 
   // Guilds never own game truth. Once the canonical archive is safely written,
   // project the completed normal HGR room into any matching guild history.

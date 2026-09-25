@@ -34,6 +34,7 @@ export type PokerPhase =
   | "finished";
 
 export interface PokerPlayer {
+  progressionFeats?: { royalFlush?: boolean; straightFlush?: boolean };
   id: string;
   name: string;
   isHost: boolean;

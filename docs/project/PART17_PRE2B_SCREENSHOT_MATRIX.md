@@ -62,3 +62,19 @@ Private screenshot images and raw documents are retained outside the repository.
 Reserve dock space above safe-area controls in lobby/turn-order; verify End Room and roll actions remain unobstructed with 1–8 seats. Reflow account statistics to readable cards without losing keyboard/scroll access. Retest auth arrows under custom, light and dark themes. Move Mega timer configuration only in approved Stage2B. Reduce Poker setup density without altering legal setup values. Reproduce Poker sheet positioning at multiple scroll offsets and eight-seat crowding before choosing a contained fix. Preserve Mega board geometry, Ludo and Poker action structure. Tablet changes should refine spacing and hierarchy. A single blurred transition frame is insufficient to diagnose a persistent invisible drawer.
 
 
+
+## Full implementation follow-through (supersedes Later-stage acceptance above)
+
+All 50 rows remain the original observations. Implementation now maps them as follows:
+- 014906, 015601, 015620: approved Mega geometry retained; centre/deck/metadata readability polished.
+- 015031, 015035, 015654, 015658, 015701, 015703, 015711: shared compact create shell and responsive Poker setup summary; legal options preserved.
+- 015044, 015047, 015049, 015107, 015729: approved Poker table/actions/Autopilot retained; materials, metadata and rail spacing corrected.
+- 015120, 015313, 015336, 015348, 015420, 015421, 015423: block H preserved, smaller phone hero, intentional desktop auth, themed arrows, contained mobile header.
+- 015339, 015341, 015344, 015346, 015647: responsive navigation and viewport-bound scrolling drawer; transient blurred image is not treated as a proven persistent defect.
+- 015405, 015407, 015409, 015412, 015415, 015417, 015818, 015820: shared account portal, compact identity, canonical Appearance and auto-fit record cards. Bounded data lists retain intentional scrolling.
+- 015504, 015507, 015516, 015531, 015532: dock width and reserved lobby/ordering bottom space corrected.
+- 015639, 015641: Mega timer moved to pregame; server rejects live changes.
+- 015720, 015722, 015725, 015803: eight-seat phone grid, bounded community cards, legible seat labels.
+- 015750, 015752, 015754, 015756: shared centered portal and menu max-height beat the legacy offscreen bottom-sheet rule; verified at phone/short-screen sizes.
+
+Additional Home screenshot: full-width Other Rooms, themed Continue action and canonical game icons. Current source and runnable checks: PART17_IMPLEMENTATION_CHECKLIST.md. Physical-device touch validation remains distinct from Chromium responsive emulation.

@@ -10,6 +10,7 @@ export function toPublicGameRoom(
     code: room.code,
     ranked: room.ranked,
     blitz: room.blitz,
+    turnTimerSeconds: room.turnTimerSeconds ?? (room.blitz ? 150 : 45),
     hostId: room.hostId,
     started: room.started,
     hostDisconnectDeadline:

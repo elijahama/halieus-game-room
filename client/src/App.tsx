@@ -55,8 +55,8 @@ import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
-import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId } from "./platform/theme";
-import { clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
+import { clearCustomThemeVariables, customThemeVariables, isDarkColour, readCustomTheme, readDensity, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
+import { saveSkinPreferences, clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
   DiceResponse,
@@ -504,6 +504,12 @@ export default function App() {
     updateBrowserPath("/");
   }
 
+  useEffect(() => {
+    socket.auth = { betaMode };
+    socket.emit("platform:progression-mode", { beta: betaMode });
+  }, [betaMode]);
+  useEffect(() => { if (authStatus?.account?.id && socket.connected) { socket.disconnect(); socket.connect(); } }, [authStatus?.account?.id]);
+
   function enterBetaTestMode(): void {
     const account = authStatus?.account;
     if (!account || (account.role !== "owner" && account.role !== "admin")) return;
@@ -566,6 +572,15 @@ export default function App() {
     if (!betaMode) clearBetaSkinPreview();
     setSkinPreferences(readEffectiveSkinPreferences(betaMode));
   }, [betaMode]);
+
+  useEffect(() => {
+    if (!authStatus?.account?.id || betaMode) return;
+    let active = true;
+    void accountApi<{ preferences: HalieusSkinPreferences }>("/accounts/me/cosmetics")
+      .then(result => { if (active) saveSkinPreferences(result.preferences); })
+      .catch(() => { /* Keep the cached appearance during a temporary connection failure. */ });
+    return () => { active = false; };
+  }, [authStatus?.account?.id, betaMode]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -756,6 +771,7 @@ export default function App() {
             code: response.code,
             playerId: response.playerId,
             players: response.room.players,
+      turnTimerSeconds: response.room.turnTimerSeconds,
             hostDisconnectDeadline: response.room.hostDisconnectDeadline,
             freeParkingJackpotEnabled: response.room.freeParkingJackpotEnabled,
             blitz: response.room.blitz,
@@ -843,7 +859,14 @@ export default function App() {
         return;
       }
       const ludoRouteCode = readLudoCodeFromPath();
-      if (ludoRouteCode) { setSelectedGame("ludo"); setRoomCode(ludoRouteCode); setConnectionStatus("Connected"); setMessage("Ludo invite ready. Enter your name and join the room."); return; }
+      if (ludoRouteCode) {
+        const savedLudoSeat = readCardSavedSession(LUDO_SESSION_KEY);
+        if (savedLudoSeat?.code === ludoRouteCode) {
+          setConnectionStatus("Recovering Ludo room...");
+          socket.emit("ludo:reconnect", savedLudoSeat, (response: LudoResponse) => { setConnectionStatus("Connected"); if (!applyLudoResponse(response, savedLudoSeat.playerName)) { setMessage(response.reason ?? "Saved Ludo seat could not be recovered."); updateBrowserPath("/"); } });
+        } else { setSelectedGame("ludo"); setRoomCode(ludoRouteCode); setConnectionStatus("Connected"); setMessage("Ludo invite ready. Enter your name and join the room."); }
+        return;
+      }
       const connectFourRouteCode = readConnectFourCodeFromPath();
       const connectFourSession = readCardSavedSession(CONNECT_FOUR_SESSION_KEY);
       if (connectFourRouteCode && connectFourSession?.code === connectFourRouteCode) {
@@ -951,6 +974,7 @@ export default function App() {
         return {
           ...currentLobby,
           players: room.players,
+          turnTimerSeconds: room.turnTimerSeconds,
           hostDisconnectDeadline:
             room.hostDisconnectDeadline,
         };
@@ -1164,6 +1188,7 @@ export default function App() {
       code: response.code,
       playerId: response.playerId,
       players: response.room.players,
+      turnTimerSeconds: response.room.turnTimerSeconds,
       hostDisconnectDeadline:
         response.room.hostDisconnectDeadline,
       blitz: response.room.blitz,
@@ -1329,6 +1354,7 @@ function handleSpectateGame() {
         code: response.code,
         playerId: response.playerId,
         players: response.room.players,
+      turnTimerSeconds: response.room.turnTimerSeconds,
         hostDisconnectDeadline: response.room.hostDisconnectDeadline,
         blitz: response.room.blitz,
       });
@@ -1424,6 +1450,7 @@ function handleLeaveSpectator() {
           code: response.code,
           playerId: response.playerId,
           players: response.room.players,
+      turnTimerSeconds: response.room.turnTimerSeconds,
           hostDisconnectDeadline:
             response.room.hostDisconnectDeadline,
           blitz: response.room.blitz,
@@ -1499,6 +1526,7 @@ function handleLeaveSpectator() {
           code: response.code,
           playerId: response.playerId,
           players: response.room.players,
+      turnTimerSeconds: response.room.turnTimerSeconds,
           hostDisconnectDeadline:
             response.room.hostDisconnectDeadline,
           blitz: response.room.blitz,
@@ -2190,7 +2218,7 @@ function handleLeaveSpectator() {
   }
 
   function handleTurnTimerChange(seconds: number) {
-    if (!lobby || !gameState) {
+    if (!lobby || gameStarted) {
       setMessage("The game state is not ready.");
       return;
     }
@@ -3169,7 +3197,7 @@ function handleLeaveSpectator() {
       : null;
 
   const theme = darkMode ? darkTheme : lightTheme;
-  const toggleDarkMode = () => setThemeMode(darkMode ? "light" : "dark");
+  const toggleDarkMode = () => { const next = darkMode ? "light" : "dark"; localStorage.setItem(THEME_KEY, next); setThemeMode(next); };
 
   const activeTabGameId: GameId | null =
     classicState?.game ??
@@ -3747,6 +3775,8 @@ function handleLeaveSpectator() {
           onBackToGameRoom={handleBackToGameRoom}
           onAddAi={handleAddAi}
           onRemoveAi={handleRemoveAi}
+          onTurnTimerChange={handleTurnTimerChange}
+          isUpdatingTurnTimer={isUpdatingTurnTimer}
         />
         <RoomChatPanel game="mega-board" code={lobby.code} accent="#16a34a" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
       </>

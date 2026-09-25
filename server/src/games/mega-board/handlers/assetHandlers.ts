@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { recordActivity } from "../utils/activity.js";
 import { recordCashFlow } from "../utils/stats.js";
 import type { Server, Socket } from "socket.io";
@@ -374,7 +375,7 @@ export function registerAssetHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },
@@ -530,7 +531,7 @@ export function registerAssetHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },
@@ -732,7 +733,7 @@ export function registerAssetHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
     },

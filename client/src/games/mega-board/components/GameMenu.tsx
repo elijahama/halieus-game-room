@@ -1,3 +1,5 @@
+import { ModalPortal } from "../../../platform/components/ModalPortal";
+import { ConfirmDialog } from "../../../platform/components/ConfirmDialog";
 import {
   type FormEvent,
   useEffect,
@@ -195,8 +197,9 @@ export function GameMenu({
     }
   };
 
+  if (view === "leave" || view === "forfeit" || view === "end") return <ConfirmDialog open title={view === "end" ? "End this game?" : view === "forfeit" ? "Forfeit this match?" : "Leave this room?"} message={view === "end" ? "This closes the saved room for every player." : view === "forfeit" ? "Your player is eliminated. The match continues for everyone else and you remain as a spectator." : "You can join another lobby after leaving."} destructive confirmLabel={view === "end" ? "End game" : view === "forfeit" ? "Forfeit match" : "Leave"} onCancel={() => setView("menu")} onConfirm={() => { const action = view === "end" ? onEndRoom : view === "forfeit" ? onForfeit : onLeave; action?.(); }} />;
   return (
-    <div
+    <ModalPortal onClose={onClose}><div
       className="modal-backdrop game-menu-top-layer"
       role="presentation"
       onMouseDown={(event) => {
@@ -265,26 +268,11 @@ export function GameMenu({
               <div className="turn-timer-settings-panel">
                 <div>
                   <strong>⏱ Turn timer settings</strong>
-                  <small>{isHost ? "Change how long a human has to start their move before Autopilot takes over." : "Move timer controlled by the room host."}</small>
+                  <small>Locked for this match. The host sets this in the waiting room.</small>
                 </div>
-                {isHost && onTurnTimerChange ? (
-                  <select
-                    aria-label="Turn timer"
-                    value={turnTimerSeconds}
-                    disabled={isUpdatingTurnTimer}
-                    onChange={(event) => onTurnTimerChange(Number(event.target.value))}
-                  >
-                    {TURN_TIMER_PRESET_SECONDS.map((seconds) => (
-                      <option key={seconds} value={seconds}>
-                        {seconds < 60 ? `${seconds} sec` : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="turn-timer-settings-value">
-                    {turnTimerSeconds < 60 ? `${turnTimerSeconds} sec` : `${Math.floor(turnTimerSeconds / 60)}:${String(turnTimerSeconds % 60).padStart(2, "0")}`}
-                  </span>
-                )}
+                <span className="turn-timer-settings-value">
+                  {turnTimerSeconds < 60 ? `${turnTimerSeconds} sec` : `${Math.floor(turnTimerSeconds / 60)}:${String(turnTimerSeconds % 60).padStart(2, "0")}`}
+                </span>
               </div>
             )}
 
@@ -545,70 +533,8 @@ export function GameMenu({
           </form>
         )}
 
-        {(view === "leave" ||
-          view === "forfeit" ||
-          view === "end") && (
-          <div className="confirmation-view">
-            <div className="confirmation-icon">
-              {view === "end"
-                ? "■"
-                : view === "forfeit"
-                  ? "🏳"
-                  : "↩"}
-            </div>
-            <p className="modal-eyebrow">
-              Please confirm
-            </p>
-            <h2>
-              {view === "end"
-                ? "End this game?"
-                : view === "forfeit"
-                  ? "Forfeit this match?"
-                  : isSpectator
-                    ? "Leave spectator view?"
-                    : "Leave this lobby?"}
-            </h2>
-            <p>
-              {view === "end"
-                ? "Every player will be returned to the home screen and this saved room will be removed."
-                : view === "forfeit"
-                  ? "Only your player will be eliminated. Your assets return to the Bank, the match continues for everyone else, and you will remain in the room as a spectator."
-                  : isSpectator
-                    ? "You can spectate again later using the room code."
-                    : "You can join another lobby after leaving."}
-            </p>
 
-            <div className="confirmation-buttons">
-              <button
-                type="button"
-                className="button-muted"
-                onClick={() =>
-                  setView("menu")
-                }
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="button-danger"
-                onClick={
-                  view === "end"
-                    ? onEndRoom
-                    : view === "forfeit"
-                      ? onForfeit
-                      : onLeave
-                }
-              >
-                {view === "end"
-                  ? "End game"
-                  : view === "forfeit"
-                    ? "Forfeit match"
-                    : "Leave"}
-              </button>
-            </div>
-          </div>
-        )}
       </section>
-    </div>
+    </div></ModalPortal>
   );
 }

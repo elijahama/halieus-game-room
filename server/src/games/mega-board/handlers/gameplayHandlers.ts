@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import type {
   Server,
@@ -175,7 +176,7 @@ export function registerGameplayHandlers(
         acknowledge({
           ok: false,
           reason: "Autopilot is controlling this seat. Take Control before rolling manually.",
-          state: gameState,
+          state: publicProgressionState(gameState),
         });
         return;
       }
@@ -186,7 +187,7 @@ export function registerGameplayHandlers(
         acknowledge({
           ok: false,
           reason: "That roll was ignored because another roll was just accepted.",
-          state: gameState,
+          state: publicProgressionState(gameState),
         });
         return;
       }
@@ -203,7 +204,7 @@ export function registerGameplayHandlers(
           ok: false,
           reason:
             "Choose a Jail action before rolling.",
-          state: gameState,
+          state: publicProgressionState(gameState),
         });
         return;
       }
@@ -273,7 +274,7 @@ export function registerGameplayHandlers(
 
         acknowledge({
           ok: true,
-          state: gameState,
+          state: publicProgressionState(gameState),
           roll,
         });
 
@@ -517,7 +518,7 @@ export function registerGameplayHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
         roll,
       });
 

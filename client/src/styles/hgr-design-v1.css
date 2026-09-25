@@ -3917,10 +3917,12 @@ html[data-text-scale="standard"] {
 html[data-text-scale="large"] {
   --hgr-text-adjust: 1px;
 }
-html[data-text-scale="small"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code),
-html[data-text-scale="large"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code) {
-  font-size: calc(1rem + var(--hgr-text-adjust));
-}
+/* Scale fixed text roles once; nested em rules must not compound. */
+html[data-text-scale="small"] { --hgr-control-text: 13px; --hgr-caption-text: 11px; }
+html[data-text-scale="standard"] { --hgr-control-text: 14px; --hgr-caption-text: 12px; }
+html[data-text-scale="large"] { --hgr-control-text: 16px; --hgr-caption-text: 14px; }
+:where(.halieus-shell,.account-panel,.game-menu-modal) :where(button,input,select,textarea,label,p,code) { font-size: var(--hgr-control-text,14px); }
+:where(.halieus-shell,.account-panel,.game-menu-modal) small { font-size: var(--hgr-caption-text,12px); }
 html[data-density="compact"] .halieus-player-identity,
 html[data-density="compact"] .halieus-display-group,
 html[data-density="compact"] .halieus-section-card {

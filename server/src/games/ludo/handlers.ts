@@ -291,10 +291,11 @@ function addAi(room: LudoRoom, level: LudoAiDifficulty): string | null {
   return null;
 }
 function startRoom(room: LudoRoom): string | null {
+  if (room.phase !== "lobby" && room.phase !== "finished") return "The current match is already in progress.";
   if (room.players.length < 2) return "Ludo needs at least two players.";
   assignColours(room);
-  for (const player of room.players) { player.pieces = piecesFor(player.colour); player.result = null; player.autopilotEnabled = false; player.orderRoll = null; }
-  room.started = true; room.startedAt ??= Date.now(); room.phase = "ordering"; room.orderRound = 1; room.orderContenderPlayerIds = room.players.map((player) => player.id); room.currentTurnPlayerId = room.players[0]?.id ?? null; room.lastRoll = null; room.canRoll = true; room.awaitingMove = false; room.winnerPlayerId = null; room.turnNumber = 0; room.status = `${room.players[0]?.name ?? "First player"} rolls for starting order.`;
+  for (const player of room.players) { player.pieces = piecesFor(player.colour); player.finishedCount = 0; player.result = null; player.autopilotEnabled = false; player.orderRoll = null; }
+  room.started = true; room.startedAt = Math.max(Date.now(), (room.startedAt ?? 0) + 1); room.phase = "ordering"; room.orderRound = 1; room.orderContenderPlayerIds = room.players.map((player) => player.id); room.currentTurnPlayerId = room.players[0]?.id ?? null; room.lastRoll = null; room.canRoll = true; room.awaitingMove = false; room.winnerPlayerId = null; room.turnNumber = 0; room.status = `${room.players[0]?.name ?? "First player"} rolls for starting order.`;
   recordAction(room, { playerId: null, playerName: null, playerIsAi: false, action: "table", roll: null, pieceId: null, fromSteps: null, toSteps: null, capturedPlayerIds: [], detail: `Ludo started with ${room.players.length} players using the Halieus Classic preset. Players will roll for starting order.`, aiReason: null });
   return null;
 }

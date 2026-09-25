@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import type {
   Server,
   Socket,
@@ -118,7 +119,7 @@ export function registerCardHandlers(
 
       acknowledge({
         ok: true,
-        state: gameState,
+        state: publicProgressionState(gameState),
       });
     },
   );

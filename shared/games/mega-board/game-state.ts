@@ -333,6 +333,9 @@ export interface PlayerMatchStats {
   busTicketsUsed: number;
   /** Direct Birthday Gift ↔ GO transitions tracked during live play. */
   kassManeuvers: number;
+  completedThreeWayDeals?: number;
+  initiatedThreeWayDeals?: number;
+  completedTrades?: number;
   /** Last position observed by the live stats tracker; not reconstructed post-match. */
   lastTrackedPosition: number;
   peakCash: number;
@@ -561,6 +564,7 @@ export function createInitialGameState(
     aiDifficulty?: AiDifficulty | null;
   }>,
   options: {
+    turnTimerSeconds?: number;
     freeParkingJackpotEnabled?: boolean;
     ranked?: boolean;
     blitz?: boolean;
@@ -634,7 +638,7 @@ export function createInitialGameState(
 
     turnNumber: 1,
     gameStartedAt: Date.now(),
-    turnTimerSeconds: Math.round((options.blitz ? BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS : TURN_ROLL_AUTOPILOT_DURATION_MS) / 1000),
+    turnTimerSeconds: options.turnTimerSeconds ?? Math.round((options.blitz ? BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS : TURN_ROLL_AUTOPILOT_DURATION_MS) / 1000),
     turnRollDeadline: null,
     turnRollDeadlinePlayerId: null,
     optionalActionDeadline: null,

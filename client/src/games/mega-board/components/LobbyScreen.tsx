@@ -1,3 +1,4 @@
+import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import { useState } from "react";
 
 import type { AiDifficulty } from "../../../../../shared/games/mega-board/game-state";
@@ -33,6 +34,8 @@ interface LobbyScreenProps {
   onBackToGameRoom: () => void;
   onAddAi: (difficulty: AiDifficulty) => void;
   onRemoveAi: (playerId: string) => void;
+  onTurnTimerChange: (seconds: number) => void;
+  isUpdatingTurnTimer: boolean;
 }
 
 export function LobbyScreen({
@@ -50,6 +53,8 @@ export function LobbyScreen({
   onBackToGameRoom,
   onAddAi,
   onRemoveAi,
+  onTurnTimerChange,
+  isUpdatingTurnTimer,
 }: LobbyScreenProps) {
   const [difficulty, setDifficulty] = useState<AiDifficulty>("normal");
   const [copied, setCopied] = useState(false);
@@ -142,6 +147,12 @@ export function LobbyScreen({
           </div>
         )}
 
+        <div className="turn-timer-settings-panel">
+          <div><strong>Turn timer</strong><small>Locked when the match starts. Reconnecting keeps the existing deadline.</small></div>
+          {isHost ? <select aria-label="Turn timer" value={lobby.turnTimerSeconds ?? (blitz ? 150 : 45)} disabled={isUpdatingTurnTimer} onChange={(event) => onTurnTimerChange(Number(event.target.value))}>
+            {TURN_TIMER_PRESET_SECONDS.map((seconds) => <option key={seconds} value={seconds}>{seconds} seconds</option>)}
+          </select> : <span>{lobby.turnTimerSeconds ?? (blitz ? 150 : 45)} seconds</span>}
+        </div>
         <InviteLobbyBar
           accent={MEGA_ACCENT}
           title="Bring friends straight to this Mega Board room"
@@ -216,7 +227,7 @@ export function LobbyScreen({
               <h2>{isHost ? "Host controls" : "Waiting for host"}</h2>
               <small>{isHost ? "Start when the room is ready, or close the room for everyone." : "The host controls when this match begins."}</small>
               <div className="lobby-actions lobby-actions-v2">
-                {isHost && <button type="button" className="button-primary" onClick={onStartGame} disabled={activePlayers.length < 2}>Start game</button>}
+                {isHost && <button type="button" className="button-primary lobby-start-game" onClick={onStartGame} disabled={activePlayers.length < 2}>Start game</button>}
                 <button type="button" className="button-danger" onClick={onLeaveLobby}>{isHost ? "End room" : "Leave lobby"}</button>
               </div>
             </section>

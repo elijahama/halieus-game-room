@@ -91,7 +91,7 @@ assert.match(
 );
 assert.match(
   archive,
-  /await writeFile\(finalPath,[\s\S]*?await recordGuildSessionResult/s,
+  /await rename\(`\$\{finalPath\}\.tmp`, finalPath\)[\s\S]*?await recordGuildSessionResult/s,
   'Guild result projection must happen only after the canonical final archive write',
 );
 
@@ -140,7 +140,7 @@ assert.match(hgrDesignV1,/\.halieus-mobile-menu-button::before[\s\S]*?content:\s
 assert.match(themeButton,/halieus-theme-custom-launch/,'Theme selector must expose Custom without bloating the quick choices');
 assert.match(themeButton,/type="color"/,'Custom theme must expose RGB colour controls');
 assert.match(themeModel,/CUSTOM_THEME_KEY/,'Custom theme palette must persist separately');
-assert.match(displaySettings,/THEME_PROFILES/,'Game menus must preserve coordinated colour profiles through the compact theme library');
+assert.match(displaySettings,/ThemeButton/,'Game menus must preserve coordinated colour profiles through the compact theme library');
 assert.doesNotMatch(read('client/src/App.tsx'),/classList\.add\("theme-transitioning"\)/,'Theme changes must apply immediately without transition choreography');
 assert.match(hgrDesignV1,/@media \(max-width: 1024px\)/,'Design System v1 tablet contract missing');
 assert.match(hgrDesignV1,/@media \(max-width: 720px\)/,'Design System v1 phone contract missing');

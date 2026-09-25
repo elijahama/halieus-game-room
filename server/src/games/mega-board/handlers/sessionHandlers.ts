@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import type {
   Server,
   Socket,
@@ -145,7 +146,7 @@ export function registerSessionHandlers(
         acknowledge({
           ok: true,
           room: toPublicGameRoom(room),
-          state: room.gameState,
+          state: publicProgressionState(room.gameState),
         });
         return;
       }
@@ -367,7 +368,7 @@ export function registerSessionHandlers(
         playerId: socket.id,
         room:
           toPublicGameRoom(room),
-        state: gameState,
+        state: publicProgressionState(gameState),
         spectator: true,
       });
 

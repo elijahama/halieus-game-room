@@ -26,7 +26,7 @@ for(const game of games){
 }
 assert.match(brand,/publicFallback = `\/game-icons\/\$\{game\}\.svg`/,'GameBrandIcon must fall back to the public copy of the same artwork');
 assert.match(brand,/onError=/,'GameBrandIcon must recover from an icon asset load failure');
-assert.match(home,/halieus-create-brand"><GameBrandIcon game=\{selectedGame\}/,'Create-game setup must use the shared game icon component');
+assert.match(read("client/src/platform/components/PreGameShell.tsx"),/halieus-create-brand"><GameBrandIcon game=\{game\}/,'Create-game setup must use the shared game icon component');
 assert.match(home,/halieus-library-art"><GameBrandIcon game=\{game\.id\}/,'Homepage library and create-game setup must use the same icon component');
 assert.match(css,/3\.7\.0l — game icon continuity/,'Icon continuity CSS marker missing');
 assert.match(css,/\.halieus-create-brand>img[\s\S]*?border:0 !important/,'Room-start icon must not have an extra square frame');

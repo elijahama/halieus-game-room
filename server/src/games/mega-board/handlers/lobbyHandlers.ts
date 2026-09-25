@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
@@ -365,7 +366,7 @@ export function registerLobbyHandlers(
         playerId: socket.id,
         reconnectToken,
         room: toPublicGameRoom(room),
-        state: room.gameState ?? undefined,
+        state: publicProgressionState(room.gameState) ?? undefined,
       });
 
       console.log(
@@ -401,7 +402,7 @@ socket.on(
       code,
       playerId: `spectator:${socket.id}`,
       room: toPublicGameRoom(room),
-      state: room.gameState,
+      state: publicProgressionState(room.gameState),
       spectator: true,
     });
   },
@@ -497,6 +498,7 @@ socket.on(
             room.freeParkingJackpotEnabled,
           ranked: room.ranked,
           blitz: room.blitz,
+          turnTimerSeconds: room.turnTimerSeconds,
         },
       );
 
@@ -534,7 +536,7 @@ socket.on(
         code,
         playerId: socket.id,
         room: publicRoom,
-        state: room.gameState,
+        state: publicProgressionState(room.gameState),
       });
 
       io.to(code).emit("game:started", publicRoom);

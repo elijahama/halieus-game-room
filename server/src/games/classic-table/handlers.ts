@@ -1,3 +1,4 @@
+import { captureProgression } from "../../platform/progression.js";
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
@@ -102,6 +103,7 @@ function orderedAny(room: AnyRoom): BasePlayer[] { return (room.players as BaseP
 function nextPlayer<P extends BasePlayer>(room: BaseRoom<P>, playerId: string): P | null { const list = ordered(room); if (!list.length) return null; const index = list.findIndex((player) => player.id === playerId); return list[(index + 1 + list.length) % list.length] ?? null; }
 function addLog(room: AnyRoom, detail: string): void { room.actionSequence += 1; room.actionLog.push({ sequence: room.actionSequence, at: Date.now(), detail }); if (room.actionLog.length > 80) room.actionLog.splice(0, room.actionLog.length - 80); room.status = detail; }
 function archivePayload(room: AnyRoom): unknown {
+  captureProgression(room);
   // Finalization awaits disk setup. Snapshot now so an immediate rematch or
   // reconnect cannot rewrite the previous match's result while it is saving.
   return structuredClone({ ...room, players: [...room.players, ...room.forfeitedPlayers], spectators: [...room.spectators.entries()] });

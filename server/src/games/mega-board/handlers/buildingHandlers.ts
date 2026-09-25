@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import { recordCashFlow } from "../utils/stats.js";
 import type { Server, Socket } from "socket.io";
@@ -144,7 +145,7 @@ export function registerBuildingHandlers(
       });
       recordActivity(gameState, activityMessage, "building", player.id);
       emitGameState(io, code, gameState);
-      acknowledge({ ok: true, state: gameState });
+      acknowledge({ ok: true, state: publicProgressionState(gameState) });
       console.log(activityMessage);
     },
   );
@@ -212,7 +213,7 @@ export function registerBuildingHandlers(
       });
       recordActivity(gameState, activityMessage, "building", player.id);
       emitGameState(io, code, gameState);
-      acknowledge({ ok: true, state: gameState });
+      acknowledge({ ok: true, state: publicProgressionState(gameState) });
       console.log(activityMessage);
     },
   );
@@ -288,7 +289,7 @@ export function registerBuildingHandlers(
         player.id,
       );
       emitGameState(io, code, gameState);
-      acknowledge({ ok: true, state: gameState });
+      acknowledge({ ok: true, state: publicProgressionState(gameState) });
       console.log(activityMessage);
     },
   );

@@ -33,16 +33,16 @@ const handlers=read('server/src/games/mega-board/handlers/turnHandlers.ts');
 assert.match(handlers,/"game:set-turn-timer"/,'Server must expose an in-match timer-setting event');
 assert.match(handlers,/room\.hostId !== socket\.id/,'Only the host may change the timer');
 assert.match(handlers,/isValidTurnTimerSeconds\(payload\.seconds\)/,'Server must reject unsupported timer values');
-assert.match(handlers,/gameState\.turnTimerSeconds = seconds/,'Timer choice must be stored in authoritative game state');
-assert.match(handlers,/gameState\.turnRollDeadline = Date\.now\(\) \+ seconds \* 1000/,'An explicit host change may restart the current roll window at the selected duration');
+assert.match(handlers,/room\.turnTimerSeconds = payload\.seconds/,'Timer choice must be stored in authoritative lobby state');
+assert.doesNotMatch(handlers,/turnRollDeadline = Date\.now/,'Pregame configuration must not restart an active deadline');
 
 const persistence=read('server/src/games/mega-board/utils/persistence.ts');
 assert.match(persistence,/turnTimerSeconds \?\?=/,'Older persisted matches must receive a timer default during migration');
 
 const menu=read('client/src/games/mega-board/components/GameMenu.tsx');
 assert.match(menu,/Turn timer/,'The live game menu must expose the turn timer control');
-assert.match(menu,/TURN_TIMER_PRESET_SECONDS\.map/,'The menu must render the shared server-approved presets');
-assert.match(menu,/isHost && onTurnTimerChange/,'Only the host gets the editable selector');
+assert.match(read('client/src/games/mega-board/components/LobbyScreen.tsx'),/TURN_TIMER_PRESET_SECONDS\.map/,'The waiting room renders shared presets');
+assert.match(menu,/Locked for this match/,'Live timer is read-only');
 
 const app=read('client/src/App.tsx');
 assert.match(app,/function handleTurnTimerChange\(seconds: number\)/,'Client must have a timer update handler');

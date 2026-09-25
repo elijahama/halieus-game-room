@@ -1,3 +1,4 @@
+import { publicProgressionState } from "../../../platform/progression.js";
 import { recordActivity } from "../utils/activity.js";
 import type {
   Server,
@@ -134,7 +135,7 @@ function finish(
     acknowledge({
       ok: false,
       reason: result.error,
-      state: gameState,
+      state: publicProgressionState(gameState),
     });
     return;
   }
@@ -148,7 +149,7 @@ function finish(
 
   acknowledge({
     ok: true,
-    state: gameState,
+    state: publicProgressionState(gameState),
     ...(result.utilityRoll
       ? { roll: result.utilityRoll }
       : {}),
