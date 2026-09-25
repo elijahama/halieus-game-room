@@ -677,9 +677,10 @@ A standalone 3.6.2 release note is not preserved in the current public archive; 
 | **4.0.1** | Rebuilt ranked/post-match presentation, especially mobile standings and result hierarchy, without changing authoritative scoring. |
 | **4.0.2** | Removed legacy phone-as-desktop viewport emulation and restored true device-width game layouts and mobile decision sheets. |
 | **4.1.0** | Added persistent private Guilds: roles, permissions, chat, guild-organised rooms, room history and internal leaderboards. |
-| **4.1.x current development** | Shared HGR design tokens, visual-system consolidation, complete project-history presentation and a clean matte Windows launcher family. |
+| **4.1.1** | Refined Game Room discovery, guild invitations, ranked presentation and the expanded Dark / Blue / Custom theme system while reducing nested UI scrolling. |
+| **4.5.0** | Consolidated shared theme ownership, Appearance and authentication UI, responsive shell behaviour, reusable pre-game/modal primitives, game-family layout refinement, recovery/lifecycle work and server-authoritative progression foundations. |
 
-This timeline is intentionally version-led: it shows how HGR moved from one complex game, through production/deployment hardening, into a multi-game social platform.
+The current 4.5 line is focused on shared platform rules and reusable UI foundations while preserving each game's own board/table identity and authoritative gameplay.
 
 ---
 
@@ -705,18 +706,18 @@ See [SECURITY.md](SECURITY.md) and [docs/PUBLICATION_CHECKLIST.md](docs/PUBLICAT
 
 ## Current direction
 
-Current work is focused on:
+Current work is focused on the 4.5 platform/UI line:
 
-- 4.1.0 Guilds & Persistent Groups: private groups, persistent chat, member roles, guild-organised rooms and internal group records;
-- continued mobile containment and responsive QA building on the 4.0.2 device-width recovery;
-- 4.0.1 clearer post-match/ranked results presentation;
-- visual consistency across game modules;
-- reconnect/recovery reliability;
-- responsive/mobile refinement;
-- stronger automated regression coverage;
-- clearer current-vs-historical documentation;
-- public portfolio presentation;
-- continuing gameplay polish across the catalogue.
+- theme-owned platform chrome with player colour reserved for identity;
+- Appearance, authentication and first-paint consistency;
+- reusable room-setup, modal and confirmation patterns;
+- responsive containment across desktop, short-height desktop, tablet and phone;
+- Mega Board and Poker visual refinement without replacing approved game geometry;
+- game-family standardisation across board, card/table and word/social modules;
+- recovery and room-lifecycle reliability;
+- server-authoritative achievements, Gamer Score and cosmetics progression;
+- stronger automated regression coverage plus live multiplayer/device validation;
+- public portfolio documentation that reflects shipped engineering milestones without exposing internal handoff notes.
 
 ---
 
