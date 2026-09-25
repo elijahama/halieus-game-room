@@ -501,6 +501,7 @@ export default function App() {
     setAuthStatus((current) => current ? { ...current, authenticated: false, account: null, setupRequired: false } : null);
     setAccountPanelOpen(false);
     sessionStorage.removeItem("halieus-beta-test-mode");
+    window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: false }));
     sessionStorage.removeItem(INTRO_SESSION_KEY);
     setSiteIntroSeen(false);
     setBetaMode(false);
@@ -519,6 +520,7 @@ export default function App() {
     if (!account || (account.role !== "owner" && account.role !== "admin")) return;
     const testName = `[BETA] ${account.displayName}`.slice(0, 24);
     sessionStorage.setItem("halieus-beta-test-mode", "1");
+    window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: true }));
     setBetaMode(true);
     setPlayerName(testName);
     setMessage("Beta Test Lab active. New rooms use an isolated test identity and do not count toward your account stats.");
@@ -526,6 +528,7 @@ export default function App() {
 
   function exitBetaTestMode(): void {
     sessionStorage.removeItem("halieus-beta-test-mode");
+    window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: false }));
     clearBetaSkinPreview();
     setBetaMode(false);
     if (authStatus?.account) setPlayerName(authStatus.account.displayName);
@@ -578,6 +581,7 @@ export default function App() {
   }, [betaMode]);
 
   useEffect(() => {
+    if (betaMode) return;
     let live = true;
     const validate = (ids: string[]) => {
       const current = committedTheme();
@@ -585,7 +589,7 @@ export default function App() {
     };
     void accountApi<{entitlements:string[]}>("/accounts/me/themes").then(r=>validate(r.entitlements)).catch(()=>validate(CORE_THEME_IDS));
     return ()=>{live=false;};
-  }, [authStatus?.account?.id]);
+  }, [authStatus?.account?.id, betaMode]);
 
   useEffect(() => {
     if (!authStatus?.account?.id || betaMode) return;
