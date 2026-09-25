@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { AchievementProgress, PlayerProgression } from "../../../../shared/platform/progression";
 import { ModalPortal } from "./ModalPortal";
 
@@ -41,10 +41,7 @@ export function AchievementBar({ progression, compact = false }: { progression?:
   const awards = [...progression.awards].sort((a,b)=>b.earnedAt-a.earnedAt);
   const latest = awards[0];
   const maxScore = progression.maxGamerScore ?? achievements.reduce((sum, achievement) => sum + achievement.points, 0);
-  const visible = useMemo(
-    () => achievements.filter((achievement) => filterAchievement(achievement, filter)),
-    [achievements, filter],
-  );
+  const visible = achievements.filter((achievement) => filterAchievement(achievement, filter));
 
   return <>
     <button type="button" className={`achievement-bar${compact ? " is-compact" : ""}`} onClick={()=>setOpen(true)} aria-haspopup="dialog" aria-label="Open Achievements">
