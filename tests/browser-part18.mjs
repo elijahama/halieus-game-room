@@ -17,10 +17,13 @@ const bundle=await build({stdin:{contents:`
  import {lightTheme,darkTheme} from './client/src/games/mega-board/styles/gameStyles';
  import {createInitialGameState} from './shared/games/mega-board/game-state';
  import {ThemeButton} from './client/src/platform/components/ThemeButton';
+ import {SKIN_CATALOG} from './shared/platform/skins';
  import {RoomChatPanel} from './client/src/platform/components/RoomChatPanel';
  const root=createRoot(document.getElementById('root'));const noop=()=>{};
  const players=Array.from({length:8},(_,i)=>({id:'p'+i,name:i===0?'A long player display name':'Player '+i,isConnected:true,isHost:i===0}));
  const state=createInitialGameState('VIS451',players);Object.assign(state,{phase:'playing',turnPhase:'roll',busTicketsRemaining:7,busTicketDeck:['bus-expire-1','bus-expire-2','normal-1'],winnerId:'p0'});
+ window.boardSkinIds=SKIN_CATALOG.filter(s=>s.slot==='mega-board').map(s=>s.id);
+ window.setMortgage=value=>{for(const id of [1,6,10]){state.propertyOwners[id]='p0';state.mortgagedProperties[id]=value;}state.players[0].properties=[1,6,10];};
  window.renderCase=(screen,mode='light',stage=0,count=3)=>{
  document.documentElement.dataset.theme=mode;const theme=mode==='light'?lightTheme:darkTheme;
  const shared={theme,darkMode:mode==='dark',onToggleDarkMode:noop};
@@ -52,6 +55,23 @@ for(const [device,width,height] of [['desktop',1440,900],['short',1280,600],['ta
   await page.getByRole('button',{name:/Board styles/}).click();await page.getByRole('dialog',{name:'HGR skins'}).waitFor();assert.ok(await page.locator('.halieus-skins-grid button:disabled').count()>0,'Locked boards show requirements');await page.keyboard.press('Escape');
   if(shots)await page.screenshot({path:resolve(shots,`${device}-${mode}-lobby.png`),fullPage:true});
   await show('board',mode);await page.locator('.board-bus-ticket-button').waitFor();await contained('.board-frame');
+  const normalGeometry=await page.locator('.board-space').evaluateAll(es=>es.map(e=>({w:e.offsetWidth,h:e.offsetHeight})));
+  await page.evaluate(()=>window.setMortgage(true));await show('board',mode);await page.locator('[data-mortgaged="true"]').first().waitFor();
+  for(const skin of await page.evaluate(()=>window.boardSkinIds)){
+   await page.evaluate(skin=>document.documentElement.dataset.skinMegaBoard=skin,skin);
+   const tiles=page.locator('[data-mortgaged="true"]');assert.equal(await tiles.count(),3);
+   for(let n=0;n<3;n++){
+    const tile=tiles.nth(n);await tile.hover();await tile.focus();
+    const colour=await tile.evaluate(e=>({bg:getComputedStyle(e).backgroundColor,filter:getComputedStyle(e).filter,strip:getComputedStyle(e.querySelector('.asset-class-strip')).backgroundColor,ink:getComputedStyle(e.querySelector('.board-space-name')).color}));
+    assert.deepEqual(colour,{bg:'rgb(185, 28, 28)',filter:'none',strip:'rgb(127, 29, 29)',ink:'rgb(255, 255, 255)'},device+' '+mode+' '+skin);
+    assert.match(await tile.getAttribute('aria-label'),/mortgaged/);
+   }
+  }
+  const mortgageGeometry=await page.locator('.board-space').evaluateAll(es=>es.map(e=>({w:e.offsetWidth,h:e.offsetHeight})));
+  assert.deepEqual(mortgageGeometry,normalGeometry,'Mortgage appearance changes board geometry');
+  if(shots)await page.screenshot({path:resolve(shots,`${device}-${mode}-mortgages.png`),fullPage:true});
+  await page.evaluate(()=>{window.setMortgage(false);document.documentElement.dataset.skinMegaBoard='classic-board';});await show('board',mode);await page.waitForFunction(()=>!document.querySelector('[data-mortgaged="true"]'));
+  assert.notEqual(await page.locator('[data-space-name="Old Kent Road"]').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(185, 28, 28)','Unmortgaging restores material');
   await page.locator('.board-bus-ticket-button').click();await page.getByRole('dialog',{name:'Bus Ticket deck information'}).waitFor();await page.getByRole('heading',{name:'7 remaining'}).waitFor();await page.keyboard.press('Escape');await page.locator('.bus-ticket-info-card').waitFor({state:'hidden'});
   if(shots)await page.screenshot({path:resolve(shots,`${device}-${mode}-board.png`),fullPage:true});
   await show('results',mode);await page.locator('.mario-results-card').waitFor();await contained('.mario-results-card');
@@ -61,6 +81,6 @@ for(const [device,width,height] of [['desktop',1440,900],['short',1280,600],['ta
  await show('podium');await page.locator('.leaderboard-podium').waitFor();const rects=await page.locator('.leaderboard-podium article').evaluateAll(es=>es.map(e=>({rank:e.className,...e.getBoundingClientRect().toJSON()})));const first=rects.find(r=>r.rank==='is-rank-1'),second=rects.find(r=>r.rank==='is-rank-2'),third=rects.find(r=>r.rank==='is-rank-3');assert.ok(second.x<first.x&&first.x<third.x&&first.height>second.height&&second.height>third.height,JSON.stringify(rects));assert.equal(await page.locator('.leaderboard-grid:not(.leaderboard-grid-head)').count(),3);assert.equal(await page.locator('.leaderboard-podium img').count(),3);
  await show('podium','light',0,1);await page.waitForFunction(()=>document.querySelectorAll('.leaderboard-podium article').length===1);assert.equal(await page.locator('.is-rank-1').evaluate(e=>getComputedStyle(e).gridColumnStart),'2');
  for(const stage of [1,2,3,0]){await show('dice','dark',stage);await page.locator('.dice-roll-overlay.is-settled').waitFor();assert.equal(await page.locator('.dice-roll-overlay').evaluate(e=>e.className.includes('is-doubles-stage-')),stage>0);if(stage)assert.ok(await page.locator('.is-doubles-stage-'+stage).count());}
- assert.deepEqual(errors,[]);console.log(`PASS ${device}: light/dark lobby, cosmetics locks, board geometry containment, Bus Ticket, results/dock, podium 1–3, doubles 0–3`);await page.close();
+ assert.deepEqual(errors,[]);console.log(`PASS ${device}: light/dark lobby, cosmetics locks, all-skin mortgage red/reset/geometry, board geometry containment, Bus Ticket, results/dock, podium 1–3, doubles 0–3`);await page.close();
 }
 }finally{await browser.close();}

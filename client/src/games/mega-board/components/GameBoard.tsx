@@ -1231,6 +1231,7 @@ export function GameBoard({
                 space.position,
               )}
               data-space-name={space.name}
+              data-mortgaged={gameState.mortgagedProperties[space.id] ? "true" : undefined}
               role={isInteractiveSpace ? "button" : undefined}
               tabIndex={isInteractiveSpace ? 0 : undefined}
               aria-label={
@@ -1239,7 +1240,7 @@ export function GameBoard({
                   : isFreeParking
                     ? "View Free Parking jackpot"
                     : canInspectDeed
-                      ? `View ${space.name} title deed`
+                      ? `View ${space.name} title deed${gameState.mortgagedProperties[space.id] ? ", mortgaged" : ""}`
                       : `View information about ${space.name}`
               }
               onClick={isInteractiveSpace ? activateSpace : undefined}
@@ -1301,7 +1302,7 @@ export function GameBoard({
                 </span>
               )}
 
-              <span style={styles.spaceNumber}>{space.position}</span>
+              <span className="board-space-number" style={styles.spaceNumber}>{space.position}</span>
 
               {space.position === JAIL_POSITION ? (
                 <div className="jail-corner-visual" aria-label="Jail and Just Visiting">
