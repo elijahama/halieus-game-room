@@ -10,6 +10,7 @@ import type {
 } from "../../shared/games/mega-board/game-state";
 import { type RankedLeaderboardEntry, type RankedMatchSummary } from "../../shared/games/mega-board/ranked";
 import { socket } from "./platform/network/sockets";
+import { fullscreenUnavailableMessage, stableFullscreenAvailable } from "./platform/fullscreen";
 import { HomeScreen } from "./platform/components/HomeScreen";
 import { AccountPortal } from "./platform/accounts/AccountPortal";
 import { AccountPanel } from "./platform/accounts/AccountPanel";
@@ -3301,13 +3302,15 @@ function handleLeaveSpectator() {
       void document.exitFullscreen();
       return;
     }
+    if (!stableFullscreenAvailable()) {
+      setMessage(fullscreenUnavailableMessage());
+      return;
+    }
 
     void document.documentElement
       .requestFullscreen()
       .catch(() => {
-        setMessage(
-          "Full-screen mode is not available in this browser.",
-        );
+        setMessage("Full-screen mode is not available in this browser.");
       });
   };
 
