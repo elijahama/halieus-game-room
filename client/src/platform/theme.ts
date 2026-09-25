@@ -1,3 +1,4 @@
+import type { HgrLogoPreset } from "../../../shared/platform/brand";
 export type HalieusThemeMode = "system" | "dark" | "light" | "blue" | "red" | "green" | "profile" | "custom";
 export type HalieusTextScale = "small" | "standard" | "large";
 export type HalieusDensity = "compact" | "standard" | "comfortable";
@@ -57,6 +58,7 @@ export const THEME_PROFILE_KEY = "halieus-game-room-theme-profile";
 export const CUSTOM_THEME_KEY = "halieus-game-room-custom-theme";
 export const TEXT_SCALE_KEY = "halieus-game-room-text-scale";
 export const DENSITY_KEY = "halieus-game-room-density";
+export const LOGO_PRESET_KEY = "halieus-game-room-logo-preset";
 
 export const DEFAULT_CUSTOM_THEME: HalieusCustomTheme = {
   page: "#111315",
@@ -148,6 +150,15 @@ export function readDensity(): HalieusDensity {
 
 export function saveDensity(value: HalieusDensity): void {
   localStorage.setItem(DENSITY_KEY, value);
+}
+
+export function readLogoPreset(): HgrLogoPreset {
+  const value = localStorage.getItem(LOGO_PRESET_KEY);
+  return value === "mono-light" || value === "mono-dark" || value === "light" ? value : "brand";
+}
+
+export function saveLogoPreset(value: HgrLogoPreset): void {
+  localStorage.setItem(LOGO_PRESET_KEY, value);
 }
 
 export function readCustomTheme(): HalieusCustomTheme {
