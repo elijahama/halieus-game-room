@@ -33,11 +33,13 @@ export function DisplaySettingsPanel({
 }: DisplaySettingsPanelProps) {
   const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [themeProfileId, setThemeProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
+  const [modePreviewActive, setModePreviewActive] = useState(false);
   const [profilePreviewActive, setProfilePreviewActive] = useState(false);
   const [textScale, setTextScale] = useState<HalieusTextScale>(() => readTextScale());
   const [density, setDensity] = useState<HalieusDensity>(() => readDensity());
   const [buildInfoOpen, setBuildInfoOpen] = useState(false);
-  const previewRef = useRef(false);
+  const modePreviewRef = useRef(false);
+  const profilePreviewRef = useRef(false);
 
   useEffect(() => {
     const handleTheme = (event: Event) => setThemeMode((event as CustomEvent<HalieusThemeMode>).detail);
@@ -56,24 +58,48 @@ export function DisplaySettingsPanel({
     };
   }, []);
 
-  useEffect(() => { previewRef.current = profilePreviewActive; }, [profilePreviewActive]);
-  useEffect(() => () => { if (previewRef.current) { dispatchThemeProfile(readThemeProfileId()); dispatchThemeMode(readThemeMode()); } }, []);
+  useEffect(() => { modePreviewRef.current = modePreviewActive; }, [modePreviewActive]);
+  useEffect(() => { profilePreviewRef.current = profilePreviewActive; }, [profilePreviewActive]);
+  useEffect(() => () => {
+    if (modePreviewRef.current || profilePreviewRef.current) {
+      dispatchThemeProfile(readThemeProfileId());
+      dispatchThemeMode(readThemeMode());
+    }
+  }, []);
 
-  const cancelProfilePreview = () => {
-    if (!previewRef.current && !profilePreviewActive) return;
+  const restoreCommittedTheme = () => {
     const committedProfile = readThemeProfileId(), committedMode = readThemeMode();
-    previewRef.current = false; setProfilePreviewActive(false); setThemeProfileId(committedProfile); setThemeMode(committedMode);
+    modePreviewRef.current = false; profilePreviewRef.current = false;
+    setModePreviewActive(false); setProfilePreviewActive(false);
+    setThemeProfileId(committedProfile); setThemeMode(committedMode);
     dispatchThemeProfile(committedProfile); dispatchThemeMode(committedMode);
   };
-  const changeTheme = (mode: HalieusThemeMode) => {
-    cancelProfilePreview(); setThemeMode(mode); localStorage.setItem(THEME_KEY, mode); dispatchThemeMode(mode);
+  const previewMode = (mode: HalieusThemeMode) => {
+    profilePreviewRef.current = false; setProfilePreviewActive(false);
+    modePreviewRef.current = true; setModePreviewActive(true);
+    setThemeMode(mode); dispatchThemeMode(mode);
   };
   const previewProfile = (id: HalieusThemeProfileId) => {
-    previewRef.current = true; setProfilePreviewActive(true); setThemeProfileId(id); setThemeMode("profile"); dispatchThemeProfile(id); dispatchThemeMode("profile");
+    modePreviewRef.current = false; setModePreviewActive(false);
+    profilePreviewRef.current = true; setProfilePreviewActive(true);
+    setThemeProfileId(id); setThemeMode("profile"); dispatchThemeProfile(id); dispatchThemeMode("profile");
   };
-  const applyProfile = () => {
-    if (!profilePreviewActive) return;
-    saveThemeProfile(themeProfileId); localStorage.setItem(THEME_KEY, "profile"); previewRef.current = false; setProfilePreviewActive(false); setThemeMode("profile"); dispatchThemeProfile(themeProfileId); dispatchThemeMode("profile");
+  const applyThemePreview = () => {
+    if (profilePreviewActive) {
+      saveThemeProfile(themeProfileId);
+      localStorage.setItem(THEME_KEY, "profile");
+      profilePreviewRef.current = false;
+      setProfilePreviewActive(false);
+      setThemeMode("profile");
+      dispatchThemeProfile(themeProfileId);
+      dispatchThemeMode("profile");
+      return;
+    }
+    if (!modePreviewActive) return;
+    localStorage.setItem(THEME_KEY, themeMode);
+    modePreviewRef.current = false;
+    setModePreviewActive(false);
+    dispatchThemeMode(themeMode);
   };
 
   const changeTextScale = (value: HalieusTextScale) => {
@@ -95,15 +121,15 @@ export function DisplaySettingsPanel({
       <p className="halieus-settings-eyebrow">Appearance</p>
 
       <div className="halieus-display-group">
-        <header><strong>Theme</strong><small>Standard modes apply immediately. Library profiles preview first, then wait for confirmation.</small></header>
+        <header><strong>Theme</strong><small>Every theme previews first. Apply confirms it; Cancel restores your saved appearance.</small></header>
         <div className="halieus-theme-mode-grid is-quick" role="group" aria-label="Quick theme mode">
           {(["system", "light", "dark"] as HalieusThemeMode[]).map((mode) => (
             <button
               type="button"
               key={mode}
-              className={!profilePreviewActive && themeMode === mode ? "is-active" : ""}
-              aria-pressed={!profilePreviewActive && themeMode === mode}
-              onClick={() => changeTheme(mode)}
+              className={themeMode === mode ? "is-active" : ""}
+              aria-pressed={themeMode === mode}
+              onClick={() => previewMode(mode)}
             >
               <span aria-hidden="true">{mode === "system" ? "◐" : mode === "dark" ? "●" : "○"}</span>
               <span><strong>{mode[0].toUpperCase() + mode.slice(1)}</strong><small>{mode === "system" ? "Follow this device" : "Standard " + mode}</small></span>
@@ -118,9 +144,9 @@ export function DisplaySettingsPanel({
               {THEME_PROFILES.map((profile) => <option key={profile.id} value={profile.id}>{profile.label} — {profile.mood}</option>)}
             </select>
           </label>
-          <button type="button" className={!profilePreviewActive && themeMode === "custom" ? "is-active" : ""} onClick={() => changeTheme("custom")}><span aria-hidden="true">✦</span><span><strong>Custom</strong><small>Your saved RGB / HEX palette</small></span></button>
+          <button type="button" className={themeMode === "custom" ? "is-active" : ""} onClick={() => previewMode("custom")}><span aria-hidden="true">✦</span><span><strong>Custom</strong><small>Preview your saved RGB / HEX palette</small></span></button>
         </div>
-        <div className={`halieus-settings-theme-preview ${profilePreviewActive ? "is-active" : ""}`} aria-live="polite"><span className="halieus-theme-profile-swatch" aria-hidden="true"><i style={{ background: activeProfile.theme.page }} /><i style={{ background: activeProfile.theme.surface }} /><i style={{ background: activeProfile.theme.accent }} /><i style={{ background: activeProfile.theme.secondary }} /></span><span><strong>{profilePreviewActive ? `Previewing ${activeProfile.label}` : "Theme preview"}</strong><small>{profilePreviewActive ? "Nothing is saved until you apply it." : "Choose a library profile to preview it across HGR."}</small></span><div><button type="button" className="button-outline" disabled={!profilePreviewActive} onClick={cancelProfilePreview}>Cancel</button><button type="button" className="button-primary" disabled={!profilePreviewActive} onClick={applyProfile}>Apply</button></div></div>
+        <div className={`halieus-settings-theme-preview ${modePreviewActive || profilePreviewActive ? "is-active" : ""}`} aria-live="polite"><span className="halieus-theme-profile-swatch" aria-hidden="true"><i style={{ background: activeProfile.theme.page }} /><i style={{ background: activeProfile.theme.surface }} /><i style={{ background: activeProfile.theme.accent }} /><i style={{ background: activeProfile.theme.secondary }} /></span><span><strong>{profilePreviewActive ? `Previewing ${activeProfile.label}` : modePreviewActive ? `Previewing ${themeMode[0].toUpperCase() + themeMode.slice(1)}` : "Theme preview"}</strong><small>{modePreviewActive || profilePreviewActive ? "Nothing is saved until you apply it." : "Choose any theme to preview it across HGR."}</small></span><div><button type="button" className="button-outline" disabled={!modePreviewActive && !profilePreviewActive} onClick={restoreCommittedTheme}>Cancel</button><button type="button" className="button-primary" disabled={!modePreviewActive && !profilePreviewActive} onClick={applyThemePreview}>Apply</button></div></div>
       </div>
 
       <div className="halieus-display-group">
