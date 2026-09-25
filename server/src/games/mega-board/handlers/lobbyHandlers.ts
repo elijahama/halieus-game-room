@@ -66,7 +66,7 @@ export function registerLobbyHandlers(
     if (!allowed()) { acknowledge({ ok: false, reason: "Only the host can change Room Style before play." }); return; }
     try {
       const cosmetics = await roomCosmeticState(socket.request as Request);
-      const betaMode = socket.data.betaMode === true;
+      const betaMode = socket.data?.betaMode === true;
       if (!SKIN_CATALOG.some(s => s.slot === "mega-board" && s.id === payload.style) || (!betaMode && !cosmetics.entitlements.includes(payload.style))) {
         acknowledge({ ok: false, reason: "That board style has not been earned." }); return;
       }
