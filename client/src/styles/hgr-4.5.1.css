@@ -1021,3 +1021,156 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
     font-size: .52rem !important;
   }
 }
+
+
+/* Part 19 — Gamer Score is account progression, never a substitute for Elo. */
+.halieus-gamer-score-leaderboard {
+  display: grid;
+  gap: 11px;
+  padding: 15px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-lg);
+  background: var(--hgr-surface);
+  box-shadow: var(--hgr-shadow-soft);
+}
+.halieus-gamer-score-leaderboard > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.halieus-gamer-score-leaderboard > header > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.halieus-gamer-score-leaderboard > header small {
+  color: var(--hgr-brand);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.halieus-gamer-score-leaderboard > header h2 {
+  margin: 0;
+  color: var(--hgr-text);
+  font-size: 18px;
+}
+.halieus-gamer-score-leaderboard > header span {
+  color: var(--hgr-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.halieus-gamer-score-leaderboard > header > b {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-pill);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text-soft);
+  font-size: 9px;
+}
+.halieus-gamer-score-list {
+  display: grid;
+  gap: 7px;
+}
+.halieus-gamer-score-list > button {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px 42px minmax(130px,1fr) minmax(70px,auto) minmax(82px,auto) minmax(72px,auto);
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-gamer-score-list > button:hover,
+.halieus-gamer-score-list > button.is-self {
+  border-color: color-mix(in srgb,var(--hgr-brand) 48%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-brand) 7%,var(--hgr-surface-soft));
+}
+.halieus-gamer-score-rank {
+  color: var(--hgr-brand);
+  font-size: 13px;
+  text-align: center;
+}
+.halieus-gamer-score-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+.halieus-gamer-score-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.halieus-gamer-score-player,
+.halieus-gamer-score-detail,
+.halieus-gamer-score-points {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-gamer-score-player > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.halieus-gamer-score-player > small,
+.halieus-gamer-score-detail > small,
+.halieus-gamer-score-points > small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+}
+.halieus-gamer-score-detail > strong {
+  font-size: 11px;
+}
+.halieus-gamer-score-points {
+  justify-items: end;
+}
+.halieus-gamer-score-points > strong {
+  color: var(--hgr-brand);
+  font-size: 18px;
+  line-height: 1;
+}
+.halieus-gamer-score-empty {
+  padding: 18px;
+  border: 1px dashed var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  color: var(--hgr-muted);
+  text-align: center;
+  font-size: 10px;
+}
+@media (max-width: 760px) {
+  .halieus-rankings-overview {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-gamer-score-leaderboard {
+    padding: 12px;
+  }
+  .halieus-gamer-score-leaderboard > header {
+    align-items: flex-start;
+  }
+  .halieus-gamer-score-list > button {
+    grid-template-columns: 34px 38px minmax(0,1fr) auto;
+    gap: 8px;
+  }
+  .halieus-gamer-score-detail {
+    display: none;
+  }
+  .halieus-gamer-score-points {
+    grid-column: 4;
+    grid-row: 1;
+  }
+}
