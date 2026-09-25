@@ -33,7 +33,19 @@ export function LeaderboardModal({ entries, recentMatches, loading, error, theme
         ) : (
           <>
           <div className="leaderboard-podium" aria-label="Top ranked players">
-            {entries.slice(0, 3).map((entry, index) => <article key={entry.playerKey} className={`is-rank-${index + 1}`}><span>{index === 0 ? "👑" : index === 1 ? "🥈" : "🥉"}</span><strong>{entry.playerName}</strong><b>{entry.rating}</b><small>{entry.wins} win{entry.wins === 1 ? "" : "s"} · {entry.gamesPlayed} game{entry.gamesPlayed === 1 ? "" : "s"}</small></article>)}
+            {[entries[1], entries[0], entries[2]].filter((entry): entry is RankedLeaderboardEntry => Boolean(entry)).map((entry) => {
+              const rank = entries.findIndex((candidate) => candidate.playerKey === entry.playerKey) + 1;
+              return <article key={entry.playerKey} className={`is-rank-${rank}`}>
+                <span className="leaderboard-podium-medal" aria-hidden="true">{rank === 1 ? "👑" : rank === 2 ? "🥈" : "🥉"}</span>
+                <span className="leaderboard-podium-avatar" style={{ background: entry.playerColor ?? "#64748b" }}>
+                  {entry.profilePicture ? <img src={entry.profilePicture} alt="" /> : entry.avatar ?? entry.playerName.slice(0, 2).toUpperCase()}
+                </span>
+                <strong>{entry.playerName}</strong>
+                <b>{entry.rating}</b>
+                <small>{entry.wins} win{entry.wins === 1 ? "" : "s"} · {entry.gamesPlayed} game{entry.gamesPlayed === 1 ? "" : "s"}</small>
+                <em>{rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"}</em>
+              </article>;
+            })}
           </div>
           <div className="leaderboard-table-wrap">
             <div className="leaderboard-grid leaderboard-grid-head"><span>#</span><span>Player</span><span>Rating</span><span>Games</span><span>Wins</span><span>Podiums</span><span>Avg finish</span><span>Awards</span></div>
