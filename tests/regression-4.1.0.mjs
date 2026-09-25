@@ -32,6 +32,7 @@ const guildServer=read('server/src/platform/guilds.ts');
 const server=read('server/src/index.ts');
 const archive=read('server/src/platform/sessionArchive.ts');
 const home=read('client/src/platform/components/HomeScreen.tsx');
+const accountPanel=read('client/src/platform/accounts/AccountPanel.tsx');
 const main=read('client/src/main.tsx');
 const guildPanel=read('client/src/platform/components/GuildsPanel.tsx');
 const css=read('client/src/index.css');
@@ -105,7 +106,9 @@ assert.match(home,/HgrIcon name="home"/,'Home navigation SVG icon missing');
 assert.match(home,/HgrIcon name="games"/,'Games navigation SVG icon missing');
 assert.match(home,/HgrIcon name="players"/,'Players navigation SVG icon missing');
 assert.match(home,/HgrIcon name="plus"/,'Join Game SVG icon missing');
-assert.match(home,/HgrIcon name="info"/,'Build Info SVG icon missing');
+assert.match(home,/HgrIcon name=\{isFullscreen \? "minimize" : "fullscreen"\}/,'Sidebar Full Screen SVG icon missing');
+assert.match(accountPanel,/HgrIcon name="info"/,'Account Build Info SVG icon missing');
+assert.doesNotMatch(home,/halieus-side-build-info/,'Build Info must not return to the Home sidebar');
 assert.doesNotMatch(home,/<span>⌂<\/span>|<span>▦<\/span>|<span>◉<\/span>|<span>＋<\/span>|<span>ⓘ<\/span>/,'Legacy text navigation glyphs must not return');
 assert.match(hgrIcon,/export function HgrIcon/,'Shared HGR SVG icon component missing');
 
