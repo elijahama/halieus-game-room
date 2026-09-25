@@ -22,6 +22,7 @@ import type {
   HalieusInviteSummary,
   HalieusGameInviteSummary,
   HalieusGameRequestSummary,
+  HalieusGamerScoreLeaderboardEntry,
   HalieusPlayerVisibility,
   HalieusPersonalStats,
   HalieusPlayerDirectoryEntry,
@@ -473,6 +474,34 @@ function playerDirectory(viewer: StoredAccount): HalieusPlayerDirectoryEntry[] {
     .sort((a, b) => Number(b.online) - Number(a.online) || a.displayName.localeCompare(b.displayName));
 }
 
+async function gamerScoreLeaderboard(viewer: StoredAccount): Promise<HalieusGamerScoreLeaderboardEntry[]> {
+  const visiblePlayers = playerDirectory(viewer);
+  const rows = await Promise.all(visiblePlayers.map(async (player) => {
+    const progression = await readPlayerProgression(player.id);
+    return {
+      rank: 0,
+      accountId: player.id,
+      displayName: player.displayName,
+      username: player.username,
+      avatar: player.avatar,
+      profilePicture: player.profilePicture,
+      playerColor: player.playerColor,
+      gamerScore: progression.gamerScore,
+      achievements: progression.awards.length,
+      verifiedGames: progression.played,
+      wins: progression.wins,
+    };
+  }));
+  rows.sort((a, b) =>
+    b.gamerScore - a.gamerScore
+    || b.achievements - a.achievements
+    || b.verifiedGames - a.verifiedGames
+    || b.wins - a.wins
+    || a.displayName.localeCompare(b.displayName),
+  );
+  return rows.map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
 const GAME_TITLES: Record<string, string> = {
   "mega-board": "Mega Board",
   poker: "Poker",
@@ -849,6 +878,12 @@ export function registerAccountRoutes(app: Express): void {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     response.json({ ok: true, players: playerDirectory(auth.account) });
+  });
+
+  app.get("/accounts/gamer-score/leaderboard", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    response.json({ ok: true, entries: await gamerScoreLeaderboard(auth.account) });
   });
 
   app.get("/accounts/live-games", (request, response) => {
