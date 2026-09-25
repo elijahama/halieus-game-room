@@ -180,3 +180,7 @@ html[data-skin-cards="veteran-deck"] :where(.poker-card-back,.rebuild-card.is-ba
  .poker-page .poker-board-cards { display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important; width:100% !important; gap:5px !important; }
  .poker-page .poker-board-cards .poker-card { width:100% !important; height:auto !important; aspect-ratio:5 / 7; min-width:0 !important; }
 }
+
+/* A short Actions tab must not reserve the old 240px empty workspace. */
+.poker-control-panel .poker-side-tab-panel { min-height:0 !important; }
+.poker-control-panel .poker-actions-workspace { height:auto !important; }
