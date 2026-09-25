@@ -383,19 +383,20 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
       {personalStats && <section className="account-game-record">
         <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
         <div className="account-stat-overview">
-          <article><small>Games played</small><strong>{personalStats.played}</strong></article>
-          <article><small>Wins</small><strong>{personalStats.wins}</strong></article>
-          <article><small>Overall win rate</small><strong>{Math.round(personalStats.winRate)}%</strong></article>
+          <article><small>Gamer Score</small><strong>{personalStats.progression?.gamerScore ?? 0}</strong></article>
+          <article><small>Achievements</small><strong>{personalStats.progression?.awards.length ?? 0}</strong></article>
+          <article><small>Verified games</small><strong>{personalStats.played}</strong></article>
           <article><small>Most played</small><strong>{personalFavourite?.gameTitle ?? "—"}</strong></article>
           <article><small>Current streak</small><strong>{currentWinStreak}</strong></article>
         </div>
-        {personalStats.breakdown && <section className="account-stat-breakdown" aria-label="Win rate breakdown">
-          <header><strong>Results by match type</strong><small>Human competition is kept separate from AI-involved and solo games.</small></header>
+        {personalStats.breakdown && <section className="account-stat-breakdown" aria-label="Record categories">
+          <header><strong>Record categories</strong><small>Like separate run categories: competitive, casual and practice records are not collapsed into one headline percentage.</small></header>
           <div>
+            <article><span>Overall record</span><strong>{Math.round(personalStats.winRate)}%</strong><small>{personalStats.wins}/{personalStats.played} wins</small></article>
             <article><span>Human only</span><strong>{personalStats.breakdown.humanOnly.winRate}%</strong><small>{personalStats.breakdown.humanOnly.wins}/{personalStats.breakdown.humanOnly.played} wins</small></article>
-            <article><span>Ranked</span><strong>{personalStats.breakdown.ranked.winRate}%</strong><small>{personalStats.breakdown.ranked.wins}/{personalStats.breakdown.ranked.played} wins</small></article>
+            <article><span>Ranked</span><strong>{personalStats.breakdown.ranked.winRate}%</strong><small>{personalStats.breakdown.ranked.wins}/{personalStats.breakdown.ranked.played} wins · Elo lives in Rankings</small></article>
             <article><span>Casual</span><strong>{personalStats.breakdown.casual.winRate}%</strong><small>{personalStats.breakdown.casual.wins}/{personalStats.breakdown.casual.played} wins</small></article>
-            <article><span>AI involved</span><strong>{personalStats.breakdown.aiInvolved.winRate}%</strong><small>{personalStats.breakdown.aiInvolved.wins}/{personalStats.breakdown.aiInvolved.played} wins</small></article>
+            <article><span>AI / practice</span><strong>{personalStats.breakdown.aiInvolved.winRate}%</strong><small>{personalStats.breakdown.aiInvolved.wins}/{personalStats.breakdown.aiInvolved.played} wins</small></article>
             <article><span>Solo</span><strong>{personalStats.breakdown.solo.winRate}%</strong><small>{personalStats.breakdown.solo.wins}/{personalStats.breakdown.solo.played} wins</small></article>
           </div>
         </section>}
