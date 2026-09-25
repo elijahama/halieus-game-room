@@ -111,7 +111,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [menuOpen, setMenuOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [modePreviewActive, setModePreviewActive] = useState(false);
   const [profilePreviewActive, setProfilePreviewActive] = useState(false);
+  const modePreviewRef = useRef(false);
   const profilePreviewRef = useRef(false);
   const customPreviewRef = useRef(false);
   const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ left: 12, top: 12, width: 300 });
@@ -144,8 +146,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     };
   }, []);
 
+  useEffect(() => { modePreviewRef.current = modePreviewActive; }, [modePreviewActive]);
   useEffect(() => { profilePreviewRef.current = profilePreviewActive; }, [profilePreviewActive]);
-  useEffect(() => () => { if (profilePreviewRef.current || customPreviewRef.current) restoreCommittedAppearance(); }, []);
+  useEffect(() => () => { if (modePreviewRef.current || profilePreviewRef.current || customPreviewRef.current) restoreCommittedAppearance(); }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -180,6 +183,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       if (event.key !== "Escape") return;
       if (editorOpen) { cancelCustom(); return; }
       if (libraryOpen) { cancelProfilePreview(); setLibraryOpen(false); return; }
+      cancelModePreview();
       setMenuOpen(false);
     };
     document.addEventListener("keydown", handleKey);
@@ -189,13 +193,30 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   function selectMode(next: "system" | "light" | "dark") {
     if (profilePreviewActive) cancelProfilePreview();
     customPreviewRef.current = false;
+    modePreviewRef.current = true;
+    setModePreviewActive(true);
     setMode(next);
-    applyThemeMode(next);
+    previewThemeMode(next);
     setLibraryOpen(false);
+  }
+  function applyModePreview() {
+    if (!modePreviewRef.current && !modePreviewActive) return;
+    applyThemeMode(mode);
+    modePreviewRef.current = false;
+    setModePreviewActive(false);
     setMenuOpen(false);
+  }
+  function cancelModePreview() {
+    if (!modePreviewRef.current && !modePreviewActive) return;
+    restoreCommittedAppearance();
+    modePreviewRef.current = false;
+    setModePreviewActive(false);
+    setMode(readThemeMode());
+    setProfileId(readThemeProfileId());
   }
 
   function selectProfile(id: HalieusThemeProfileId) {
+    cancelModePreview();
     setProfilePreviewActive(true);
     profilePreviewRef.current = true;
     setProfileId(id);
@@ -220,6 +241,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   }
 
   function openCustom() {
+    cancelModePreview();
     cancelProfilePreview();
     setDraft(readCustomTheme());
     setLibraryOpen(false);
@@ -276,6 +298,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         aria-expanded={menuOpen}
         onClick={() => {
           if (menuOpen && profilePreviewActive) cancelProfilePreview();
+          if (menuOpen && modePreviewActive) cancelModePreview();
           setLibraryOpen(false);
           setMenuOpen((open) => !open);
         }}
@@ -287,7 +310,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
 
       {menuOpen && createPortal(
         <>
-          <button type="button" className="halieus-theme-popover-scrim" onClick={() => { cancelProfilePreview(); setMenuOpen(false); setLibraryOpen(false); }} aria-label="Close theme menu" />
+          <button type="button" className="halieus-theme-popover-scrim" onClick={() => { cancelModePreview(); cancelProfilePreview(); setMenuOpen(false); setLibraryOpen(false); }} aria-label="Close theme menu" />
           <div
             className={`halieus-theme-popover ${libraryOpen ? "is-library-open" : ""}`}
             style={{ left: popoverPosition.left, top: popoverPosition.top, width: popoverPosition.width }}
@@ -317,11 +340,15 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 <span><strong>Theme Library</strong><small>{THEME_PROFILES.length} coordinated profiles</small></span>
                 <b aria-hidden="true">→</b>
               </button>
-              <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
+              <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" && !modePreviewActive ? "is-active" : ""}`} onClick={openCustom}>
                 <i aria-hidden="true">✦</i>
                 <span><strong>Custom</strong><small>Open RGB / HEX controls immediately</small></span>
                 <b aria-hidden="true">→</b>
               </button>
+              <footer className="halieus-theme-preview-actions" aria-live="polite">
+                <span>{modePreviewActive ? `Previewing ${mode[0].toUpperCase() + mode.slice(1)}. Nothing is saved yet.` : "Choose System, Light or Dark to preview it across HGR."}</span>
+                <div><button type="button" className="button-outline" disabled={!modePreviewActive} onClick={cancelModePreview}>Cancel</button><button type="button" className="button-primary" disabled={!modePreviewActive} onClick={applyModePreview}>Apply theme</button></div>
+              </footer>
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => { cancelProfilePreview(); setLibraryOpen(false); }}>← Appearance</button>
               <div className="halieus-theme-library-grid">
