@@ -66,7 +66,8 @@ export function registerLobbyHandlers(
     if (!allowed()) { acknowledge({ ok: false, reason: "Only the host can change Room Style before play." }); return; }
     try {
       const cosmetics = await roomCosmeticState(socket.request as Request);
-      if (!SKIN_CATALOG.some(s => s.slot === "mega-board" && s.id === payload.style) || !cosmetics.entitlements.includes(payload.style)) {
+      const betaMode = socket.data.betaMode === true;
+      if (!SKIN_CATALOG.some(s => s.slot === "mega-board" && s.id === payload.style) || (!betaMode && !cosmetics.entitlements.includes(payload.style))) {
         acknowledge({ ok: false, reason: "That board style has not been earned." }); return;
       }
       // Recheck after asynchronous entitlement lookup: start/end/host transfer may have happened.
