@@ -518,7 +518,7 @@ html[data-theme="dark"] .modal-eyebrow {
 
 html[data-theme="dark"] .halieus-side-nav button:hover .halieus-nav-icon,
 html[data-theme="dark"] .halieus-side-nav button.is-active .halieus-nav-icon {
-  color: var(--hgr-yellow);
+  color: var(--hgr-brand);
 }
 
 .halieus-global-join .halieus-nav-icon {
@@ -6105,3 +6105,125 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
 .halieus-library-status,.account-status-badge,.account-role-badge,.halieus-inbox-badge{box-sizing:border-box;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.15}.halieus-library-card,.halieus-library-card>*{min-width:0}
 @media(max-width:680px){.room-chat-shell.is-floating{left:auto!important;right:max(8px,env(safe-area-inset-right))!important;bottom:max(8px,env(safe-area-inset-bottom))!important;width:min(188px,calc(100vw - 18px))!important;max-width:calc(100vw - 18px)!important;transform:none!important;align-items:flex-end!important}.room-chat-shell.is-floating>.room-chat-trigger{width:auto!important;max-width:100%!important;min-width:0!important;padding-inline:10px!important}.room-chat-shell.is-floating>.room-chat-trigger .room-chat-preview{max-width:92px!important}.room-chat-shell.is-floating>.room-chat-panel{width:calc(100vw - 18px)!important;max-width:calc(100vw - 18px)!important}.account-profile-picture-editor>div{grid-template-columns:1fr!important;width:100%}.account-profile-picture-editor .account-picture-upload,.account-profile-picture-editor .button-muted{width:100%!important}.account-profile-picture-editor>div>small{grid-column:1}.account-panel .account-game-record-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.account-panel .account-game-record-grid>article{min-height:76px!important}.account-panel .account-game-record-grid strong,.account-panel .account-game-record-grid small{overflow-wrap:anywhere}.halieus-theme-library-select,.halieus-theme-library-select>label{grid-template-columns:1fr!important}.halieus-theme-library-select select{width:100%;max-width:none;min-width:0}.halieus-theme-preview-actions,.halieus-settings-theme-preview{grid-template-columns:1fr!important}.halieus-theme-preview-actions>div,.halieus-settings-theme-preview>div{justify-content:stretch}.halieus-theme-preview-actions button,.halieus-settings-theme-preview button{flex:1}}
 @media(min-width:900px){.account-entry-342 .account342-stage{max-width:1180px!important;grid-template-columns:minmax(0,1fr) minmax(390px,520px)!important;justify-content:stretch!important;align-items:center!important;gap:clamp(42px,6vw,92px)!important;padding:clamp(58px,8vh,96px) 0 48px!important}.account-entry-342 .account342-intro{display:grid!important;align-content:center;min-height:560px;padding:clamp(28px,4vw,58px)!important}.account-entry-342 .account342-card{width:auto!important;margin:0!important}}
+
+
+/* Part 17 implementation completion — platform theme authority and mobile room access. */
+/* The account/entry experience is platform chrome: the selected HGR theme,
+ * never a player profile colour or a legacy purple/blue gradient, owns it. */
+.account-entry-342,
+.account-portal.account-entry-342 {
+  background:
+    radial-gradient(circle at 14% 18%, color-mix(in srgb,var(--hgr-brand) 10%,transparent), transparent 31%),
+    radial-gradient(circle at 86% 78%, color-mix(in srgb,var(--hgr-info) 8%,transparent), transparent 32%),
+    var(--hgr-page) !important;
+  color: var(--hgr-text) !important;
+}
+.account-entry-342 .account342-card {
+  border-color: var(--hgr-border-strong) !important;
+  background: color-mix(in srgb,var(--hgr-surface-raised) 96%,transparent) !important;
+  color: var(--hgr-text) !important;
+}
+.account-entry-342 .account342-brand small,
+.account-entry-342 .account342-intro > span,
+.account-entry-342 .account342-card-head > span,
+.account-entry-342 .account342-form small,
+.account-entry-342 .account342-footer,
+.account-entry-342 .account342-secondary small {
+  color: var(--hgr-muted) !important;
+}
+.account-entry-342 .account342-intro p,
+.account-entry-342 .account342-card-head p,
+.account-entry-342 .account342-brand strong {
+  color: var(--hgr-brand) !important;
+}
+.account-entry-342 .account342-form label {
+  color: var(--hgr-text-soft) !important;
+}
+.account-entry-342 .account342-form input {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface) !important;
+  color: var(--hgr-text) !important;
+}
+.account-entry-342 .account342-form input:focus {
+  border-color: var(--hgr-brand) !important;
+  box-shadow: var(--hgr-focus) !important;
+}
+.account-entry-342 .account342-form .account-auth-primary {
+  border: 1px solid color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-border)) !important;
+  background: var(--hgr-action-bg) !important;
+  color: var(--hgr-action-ink) !important;
+  box-shadow: var(--hgr-shadow-brand) !important;
+}
+.account-entry-342 .account342-secondary button,
+.account-entry-342 .account-theme-toggle,
+.account-entry-342 .account-fullscreen-toggle {
+  border-color: var(--hgr-border) !important;
+  background: var(--hgr-surface-soft) !important;
+  color: var(--hgr-text) !important;
+}
+.account-entry-342 .account342-secondary button:hover,
+.account-entry-342 .account-theme-toggle:hover,
+.account-entry-342 .account-fullscreen-toggle:hover {
+  border-color: color-mix(in srgb,var(--hgr-brand) 42%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 8%,var(--hgr-surface-soft)) !important;
+}
+.account-entry-342 .account342-secondary span,
+.account-entry-342 .account342-note strong {
+  color: var(--hgr-brand) !important;
+}
+
+/* On phones the closed Room control is an icon-sized launcher, not a bar that
+ * obscures host controls or the last rows of a game. Opening it still exposes
+ * the full Chat / Game Log / Spectators surface. */
+@media (max-width: 680px) {
+  main:has(.room-chat-shell.is-floating) {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+  }
+  .room-chat-shell.is-floating {
+    left: auto !important;
+    right: max(10px,env(safe-area-inset-right)) !important;
+    bottom: max(10px,env(safe-area-inset-bottom)) !important;
+    width: 48px !important;
+    max-width: 48px !important;
+    align-items: flex-end !important;
+  }
+  .room-chat-shell.is-floating.is-open {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+  .room-chat-shell.is-floating > .room-chat-trigger {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+  }
+  .room-chat-shell.is-floating > .room-chat-trigger > strong,
+  .room-chat-shell.is-floating > .room-chat-trigger .room-chat-preview {
+    display: none !important;
+  }
+  .room-chat-shell.is-floating > .room-chat-trigger > b {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+  }
+  .room-chat-shell.is-floating > .room-chat-panel {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+}
+
+/* Desktop Appearance opens alongside the sidebar; keep its contents bounded
+ * and let the library own its own scroll rather than spilling off-screen. */
+@media (min-width: 760px) {
+  .halieus-theme-popover {
+    max-height: calc(100dvh - 24px);
+    overflow: hidden;
+  }
+  .halieus-theme-popover.is-library-open .halieus-theme-library-grid {
+    overflow-y: auto;
+    min-height: 0;
+  }
+}
