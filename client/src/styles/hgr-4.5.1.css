@@ -1586,3 +1586,70 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
     min-height: 82px !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5.2 atmosphere and board palettes
+   ========================================================================== */
+
+/* The ambient game layer must sit above the shell's theme canvas, otherwise
+ * profile/custom themes paint an opaque background over the floating motifs. */
+.halieus-shell > .halieus-game-atmosphere {
+  z-index: 0 !important;
+}
+.halieus-shell > .halieus-main,
+.halieus-shell > .halieus-sidebar,
+.halieus-shell > .halieus-mobile-bar {
+  position: relative;
+  z-index: 2;
+}
+.halieus-shell > .halieus-sidebar {
+  z-index: 35;
+}
+.halieus-game-atmosphere {
+  pointer-events: none !important;
+}
+html[data-theme="profile"] .halieus-game-atmosphere,
+html[data-theme="custom"] .halieus-game-atmosphere,
+html[data-theme="blue"] .halieus-game-atmosphere,
+html[data-theme="red"] .halieus-game-atmosphere,
+html[data-theme="green"] .halieus-game-atmosphere {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+html[data-theme="profile"] .halieus-game-atmosphere span,
+html[data-theme="custom"] .halieus-game-atmosphere span {
+  opacity: .07 !important;
+}
+
+/* Board-style thumbnails use their actual four-colour identity instead of
+ * provisional mini-board diagrams. */
+.halieus-skin-preview.halieus-skin-palette {
+  display: grid !important;
+  grid-template-columns: repeat(2,1fr);
+  grid-template-rows: repeat(2,1fr);
+  gap: 0;
+  padding: 0;
+  background: transparent !important;
+}
+.halieus-skin-preview.halieus-skin-palette > i {
+  position: static !important;
+  inset: auto !important;
+  width: 100%;
+  height: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.halieus-skin-preview.halieus-skin-palette > i:nth-child(1) {
+  border-top-left-radius: 11px !important;
+}
+.halieus-skin-preview.halieus-skin-palette > i:nth-child(2) {
+  border-top-right-radius: 11px !important;
+}
+.halieus-skin-preview.halieus-skin-palette > i:nth-child(3) {
+  border-bottom-left-radius: 11px !important;
+}
+.halieus-skin-preview.halieus-skin-palette > i:nth-child(4) {
+  border-bottom-right-radius: 11px !important;
+}
