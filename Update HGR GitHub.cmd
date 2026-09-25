@@ -81,11 +81,19 @@ echo.
 
 echo STEP 1 - Updating LOCAL files from GitHub...
 echo.
-git pull --rebase --autostash %REMOTE% %BRANCH%
+git fetch %REMOTE% %BRANCH%
 if errorlevel 1 (
     echo.
-    echo [STOPPED] Git could not update the local project automatically.
+    echo [STOPPED] Git could not fetch the latest %BRANCH% from %REMOTE%.
     echo Your files have NOT been force-pushed.
+    goto :PAUSE_EXIT
+)
+git rebase --autostash %REMOTE%/%BRANCH%
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Git could not rebase the local project onto %REMOTE%/%BRANCH%.
+    echo Your files have NOT been force-pushed.
+    echo Resolve the reported conflict, then run the updater again.
     goto :PAUSE_EXIT
 )
 
@@ -233,7 +241,14 @@ if errorlevel 1 (
 
 echo.
 echo STEP 6 - Final remote check before push...
-git pull --rebase %REMOTE% %BRANCH%
+git fetch %REMOTE% %BRANCH%
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Git could not fetch the final remote state before push.
+    echo Your local commit is safe, but it has NOT been pushed.
+    goto :PAUSE_EXIT
+)
+git rebase %REMOTE%/%BRANCH%
 if errorlevel 1 (
     echo.
     echo [STOPPED] A newer GitHub change caused a rebase conflict.
