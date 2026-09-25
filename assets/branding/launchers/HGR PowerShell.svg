@@ -1,12 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="HGR PowerShell">
-  <defs>
-    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#64748b"/>
-      <stop offset="1" stop-color="#566478"/>
-    </linearGradient>
-  </defs>
-  <rect x="3" y="3" width="58" height="58" rx="15" fill="url(#tile)"/>
-  <rect x="4.2" y="4.2" width="55.6" height="55.6" rx="13.8" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.2"/>
-  <path fill="#111318" d="M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z"/>
-  <g class="badge" color="#111318"><rect x="19" y="21" width="27" height="25" rx="6" fill="#111318" stroke="rgba(255,255,255,.22)" stroke-width="1.4"/><path d="m25 28 6 6-6 6M34 40h7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <rect x="3" y="3" width="58" height="58" rx="15" fill="#64748b"/>
+  <path d="M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z" fill="#000" fill-rule="evenodd"/>
+  <rect x="31" y="32" width="19" height="15" rx="4" fill="#000"/>
+  <path d="m35 36 4 3.5-4 3.5M41.5 43h4.5" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
