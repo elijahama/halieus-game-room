@@ -91,10 +91,12 @@ export function PlayerIdentityCard({
         {player.profilePicture ? <img src={player.profilePicture} alt="" /> : player.avatar}
       </span>
       <span className="halieus-player-identity-copy">
-        <strong>{player.displayName}</strong>
+        <span className="halieus-player-identity-name-row">
+          <strong>{player.displayName}</strong>
+          {status && <b className="halieus-player-identity-status">{status}</b>}
+        </span>
         <small>@{player.username}{detail ? ` · ${detail}` : ""}</small>
       </span>
-      {status && <b className="halieus-player-identity-status">{status}</b>}
       {trailing && <span className="halieus-player-identity-trailing" onClick={(event) => event.stopPropagation()}>{trailing}</span>}
       {actions.length > 0 && (
         <span className="halieus-player-action-shell" onClick={(event) => event.stopPropagation()}>
