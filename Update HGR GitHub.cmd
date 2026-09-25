@@ -93,7 +93,7 @@ echo.
 echo [OK] Local project now includes the latest GitHub changes.
 echo.
 echo STEP 2 - Preparing release identity BEFORE the browser build...
-echo This regenerates RELEASE.json and shared/release.ts from VERSION 4.1.0
+echo This regenerates RELEASE.json and shared/release.ts from the canonical VERSION file
 echo so the compiled website cannot embed an older build fingerprint.
 echo.
 call npm run prepare:release
@@ -288,7 +288,7 @@ if exist "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" (
     if not exist "%LOCAL_ORACLE_DIR%" mkdir "%LOCAL_ORACLE_DIR%" >nul 2>&1
     copy /Y "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" "%LOCAL_ORACLE_DIR%\deploy-from-windows.ps1" >nul
     copy /Y "%TRACKED_ORACLE_DIR%\quick-install.sh" "%LOCAL_ORACLE_DIR%\quick-install.sh" >nul
-    echo [OK] Local Oracle deploy helper refreshed from the current tracked 4.1 source.
+    echo [OK] Local Oracle deploy helper refreshed from the current tracked source.
 )
 
 set "PRIVATE_UPDATE_PS1=%~dp0update-website.ps1"
@@ -348,7 +348,7 @@ echo.
 pause
 popd
 endlocal
-exit /b 0
+exit 0
 
 :PAUSE_SUCCESS
 echo.
@@ -359,7 +359,7 @@ echo.
 pause
 popd
 endlocal
-exit /b 0
+exit 0
 
 :PAUSE_EXIT
 echo.
