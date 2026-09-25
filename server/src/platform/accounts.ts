@@ -556,6 +556,20 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
   const aliases = new Set([account.displayName, ...(account.displayNameAliases ?? [])].map((value) => value.trim().toLowerCase()).filter(Boolean));
   const rows = new Map<string, { game: any; gameTitle: string; played: number; wins: number }>();
   for (const game of Object.keys(GAME_TITLES)) rows.set(game, { game, gameTitle: GAME_TITLES[game], played: 0, wins: 0 });
+
+  const breakdown = {
+    humanOnly: { played: 0, wins: 0, winRate: 0 },
+    aiInvolved: { played: 0, wins: 0, winRate: 0 },
+    solo: { played: 0, wins: 0, winRate: 0 },
+    casual: { played: 0, wins: 0, winRate: 0 },
+    ranked: { played: 0, wins: 0, winRate: 0 },
+    blitz: { played: 0, wins: 0, winRate: 0 },
+  };
+  const countResult = (bucket: { played: number; wins: number; winRate: number }, won: boolean) => {
+    bucket.played += 1;
+    if (won) bucket.wins += 1;
+  };
+
   const recent: HalieusPersonalStats["recent"] = [];
   const archives = await readFinalisedSessionFiles();
   for (const archive of archives) {
@@ -566,11 +580,22 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
     const players = Array.isArray(gameState?.players) ? gameState.players : Array.isArray(state?.players) ? state.players : [];
     const matched = players.find((player: any) => !player?.isAi && aliases.has(String(player?.name ?? "").trim().toLowerCase()));
     if (!matched) continue;
+
     const row = rows.get(game)!;
     row.played += 1;
     const winnerName = String(archive?.summary?.winner ?? gameState?.players?.find?.((player: any) => player?.id === gameState?.winnerPlayerId)?.name ?? "").trim();
     const won = aliases.has(winnerName.toLowerCase());
     if (won) row.wins += 1;
+
+    const rawMode = String(archive?.summary?.matchMode ?? gameState?.matchMode ?? state?.matchMode ?? "").toLowerCase();
+    const matchMode: "casual" | "ranked" | "blitz" = rawMode === "ranked" ? "ranked" : rawMode === "blitz" ? "blitz" : "casual";
+    const aiCount = players.filter((player: any) => Boolean(player?.isAi)).length;
+    const humanCount = players.filter((player: any) => !player?.isAi).length;
+    const opponentType: "human-only" | "ai-involved" | "solo" = aiCount > 0 ? "ai-involved" : humanCount <= 1 ? "solo" : "human-only";
+
+    countResult(breakdown[matchMode], won);
+    countResult(opponentType === "human-only" ? breakdown.humanOnly : opponentType === "ai-involved" ? breakdown.aiInvolved : breakdown.solo, won);
+
     recent.push({
       game: game as HalieusPersonalStats["recent"][number]["game"],
       gameTitle: GAME_TITLES[game],
@@ -578,12 +603,16 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
       at: Number(archive?.finalisedAt ?? archive?.updatedAt ?? archive?.createdAt ?? 0),
       won,
       result: won ? "Win" : winnerName ? `Winner: ${winnerName}` : "Completed",
+      matchMode,
+      opponentType,
     });
   }
+
+  for (const bucket of Object.values(breakdown)) bucket.winRate = bucket.played ? Math.round((bucket.wins / bucket.played) * 100) : 0;
   const byGame = [...rows.values()].map((row) => ({ ...row, winRate: row.played ? Math.round((row.wins / row.played) * 100) : 0 }));
   const played = byGame.reduce((sum, row) => sum + row.played, 0);
   const wins = byGame.reduce((sum, row) => sum + row.wins, 0);
-  return { progression: await readPlayerProgression(account.id), played, wins, winRate: played ? Math.round((wins / played) * 100) : 0, byGame, recent: recent.sort((a, b) => b.at - a.at).slice(0, 16) };
+  return { progression: await readPlayerProgression(account.id), played, wins, winRate: played ? Math.round((wins / played) * 100) : 0, breakdown, byGame, recent: recent.sort((a, b) => b.at - a.at).slice(0, 16) };
 }
 
 
