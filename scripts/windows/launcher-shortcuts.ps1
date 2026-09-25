@@ -10,7 +10,8 @@ $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 # IMPORTANT: shortcut refresh is non-destructive.
 # It must never generate, delete, recolour or overwrite launcher artwork.
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
-$LauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
+$LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
+$FallbackLauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
 $StartIconPath = Join-Path $LauncherIconRoot 'start.ico'
 $RestartIconPath = Join-Path $LauncherIconRoot 'restart.ico'
 $CloseIconPath = Join-Path $LauncherIconRoot 'close.ico'
