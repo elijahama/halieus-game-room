@@ -25722,3 +25722,61 @@ html[data-theme="light"] .mega-live-page .game-sidebar small {
     transition: none !important;
   }
 }
+
+
+/* Mega Board deck identity is gameplay language and survives platform themes. */
+.mega-live-page .board-deck-chance {
+  border-color: #bb5d20 !important;
+  background: linear-gradient(155deg,#f39a3e,#ea7b28) !important;
+  color: #241208 !important;
+}
+.mega-live-page .board-deck-community {
+  border-color: #2580b7 !important;
+  background: linear-gradient(155deg,#8ed4f2,#68bce6) !important;
+  color: #082233 !important;
+}
+.mega-live-page .board-deck-bus {
+  border-color: #b7962e !important;
+  background: linear-gradient(155deg,#ffe88d,#ebc94c) !important;
+  color: #2a230a !important;
+}
+.mega-live-page .board-deck-chance small,
+.mega-live-page .board-deck-community small,
+.mega-live-page .board-deck-bus small {
+  color: inherit !important;
+  opacity: .9 !important;
+  font-weight: 900;
+}
+
+/* Last Roll is secondary information, not ghost text. */
+.mega-live-page .centre-roll-readout {
+  min-width: 118px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb,var(--mm-border) 82%,transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb,var(--mm-surface-1) 76%,transparent);
+  color: var(--mm-text) !important;
+  opacity: 1 !important;
+}
+.mega-live-page .centre-roll-readout > span {
+  color: var(--mm-text) !important;
+  opacity: .82 !important;
+  font-weight: 800;
+}
+html[data-theme="light"] .mega-live-page .centre-roll-readout {
+  background: rgba(255,255,255,.72);
+  border-color: rgba(30,50,45,.20);
+  color: #19221e !important;
+}
+html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
+  color: #33443d !important;
+}
+
+/* Board messages must remain readable over the centre field. */
+.mega-live-page .board-external-toast {
+  opacity: 1 !important;
+  background: color-mix(in srgb,var(--mm-surface-1) 96%,transparent) !important;
+  color: var(--mm-text) !important;
+  border: 1px solid var(--mm-border) !important;
+  backdrop-filter: blur(10px);
+}
