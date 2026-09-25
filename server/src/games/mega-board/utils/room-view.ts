@@ -16,6 +16,8 @@ export function toPublicGameRoom(
       room.hostDisconnectDeadline,
     freeParkingJackpotEnabled:
       room.freeParkingJackpotEnabled,
+    turnTimerSeconds:
+      room.turnTimerSeconds,
     players: room.players.map(
       ({
         id,
