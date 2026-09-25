@@ -42,6 +42,7 @@ interface LobbyScreenProps {
   onTurnTimerChange: (seconds: number) => void;
   isUpdatingTurnTimer: boolean;
   betaMode?: boolean;
+  onBoardStyleChange?: (style: string) => Promise<void>;
 }
 
 export function LobbyScreen({
@@ -62,6 +63,7 @@ export function LobbyScreen({
   onTurnTimerChange,
   isUpdatingTurnTimer,
   betaMode = false,
+  onBoardStyleChange,
 }: LobbyScreenProps) {
   const [difficulty, setDifficulty] = useState<AiDifficulty>("normal");
   const [copied, setCopied] = useState(false);
@@ -225,8 +227,8 @@ export function LobbyScreen({
             <section className="lobby-side-card lobby-board-appearance-card">
               <p className="modal-eyebrow">Board appearance</p>
               <h2>Table cosmetics</h2>
-              <small>Choose an unlocked Mega Board surface before the match starts. Locked boards show their unlock condition.</small>
-              <SkinLibraryButton stats={personalStats} betaMode={betaMode} slots={["mega-board"]} />
+              <small>The host chooses the shared board before play. Your HGR theme and accessibility remain personal.</small>
+              <SkinLibraryButton stats={personalStats} betaMode={false} slots={["mega-board"]} roomStyle={lobby.boardStyle ?? "classic-board"} onRoomStyleChange={onBoardStyleChange} readOnly={!isHost} />
             </section>
             <section className="lobby-side-card">
               <p className="modal-eyebrow">Room access</p>

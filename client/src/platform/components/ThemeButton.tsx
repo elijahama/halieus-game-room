@@ -76,7 +76,7 @@ const RETRO_PROFILE_IDS = new Set<HalieusThemeProfileId>([
 ]);
 const THEME_PROFILE_GROUPS = [
   { id: "hgr", label: "HGR Profiles", description: "Coordinated Halieus palettes", profiles: THEME_PROFILES.filter((profile) => !RETRO_PROFILE_IDS.has(profile.id)) },
-  { id: "retro", label: "Retro Consoles", description: "Original console-era inspired palettes", profiles: THEME_PROFILES.filter((profile) => RETRO_PROFILE_IDS.has(profile.id)) },
+  { id: "retro", label: "Retro Collection", description: "Hardware-era colour palettes", profiles: THEME_PROFILES.filter((profile) => RETRO_PROFILE_IDS.has(profile.id)) },
 ] as const;
 
 

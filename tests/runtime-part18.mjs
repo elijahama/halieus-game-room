@@ -10,13 +10,7 @@ for(const theme of [...THEME_PROFILES.map(p=>p.theme),...Array.from({length:256}
  assert.ok(contrast(v['--hgr-page-text'],v['--hgr-page'])>=4.5);
  assert.ok(contrast(v['--hgr-action-ink'],v['--hgr-action-bg'])>=4.5);
 }
-const storage=new Map();globalThis.localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)};
-const {matchBoardAppearance}=await import('../client/src/platform/boardAppearance.ts');
-assert.equal(matchBoardAppearance(null,'classic-board'),'classic-board');
-assert.equal(matchBoardAppearance('room:1','classic-board'),'classic-board');
-assert.equal(matchBoardAppearance('room:1','tycoon-board'),'classic-board');
-assert.equal(matchBoardAppearance('room:2','tycoon-board'),'tycoon-board');
-console.log('PASS all retro palettes + 256 custom greys: 4.5:1 surface/page/action contrast; per-match appearance lock');
+console.log('PASS all retro palettes + 256 custom greys: 4.5:1 surface/page/action contrast');
 
 const data=await mkdtemp(resolve(tmpdir(),'hgr-part18-'));process.env.HALIEUS_DATA_DIR=data;
 const {rooms}=await import('../server/src/games/mega-board/state/rooms.ts');
@@ -39,3 +33,30 @@ try {
  }
  console.log('PASS real server roll handler: first/second/third doubles, jail/turn transition and non-double reset');
 }finally{Math.random=random;rooms.clear();const {flushRoomSave}=await import('../server/src/games/mega-board/utils/persistence.ts');await flushRoomSave();await rm(data,{recursive:true,force:true});}
+
+// Host-only Room Style, server entitlement gates, start locking and persistence.
+{
+
+ // The earlier test initialized the persistence module; use its configured temporary path.
+ const {registerLobbyHandlers}=await import('../server/src/games/mega-board/handlers/lobbyHandlers.ts');
+ const {toPublicGameRoom}=await import('../server/src/games/mega-board/utils/room-view.ts');
+ const events=[];const io={to:()=>({emit:(event,value)=>events.push([event,value])})};
+ const handlersFor=id=>{const handlers={};registerLobbyHandlers(io,{id,request:{headers:{}},connected:true,join:()=>{},on:(name,fn)=>handlers[name]=fn});return handlers;};
+ const host=handlersFor('host'),guest=handlersFor('guest');
+ let reply;const ack=r=>reply=r;
+ try {
+  await host['game:create']({code:'STYLE1',playerName:'Host',ranked:false},ack);assert.equal(reply.ok,true,reply.reason);
+  const room=rooms.get('STYLE1');assert.equal(reply.room.boardStyle,'classic-board');
+  await guest['game:set-board-style']({code:'STYLE1',style:'classic-board'},ack);assert.equal(reply.ok,false);
+  await host['game:set-board-style']({code:'STYLE1',style:'tycoon-board'},ack);assert.equal(reply.ok,false,'unearned style rejected');
+  await host['game:set-board-style']({code:'STYLE1',style:'arbitrary-css'},ack);assert.equal(reply.ok,false);
+  await host['game:set-board-style']({code:'STYLE1',style:'muted-tournament-board'},ack);assert.equal(reply.ok,true);assert.equal(events.at(-1)[1].boardStyle,'muted-tournament-board');
+  guest['game:join']({code:'STYLE1',playerName:'Guest'},ack);assert.equal(reply.room.boardStyle,'muted-tournament-board');
+  host['game:start']({code:'STYLE1'},ack);assert.equal(reply.ok,true,reply.reason);assert.equal(room.gameState.boardStyle,'muted-tournament-board');
+  await host['game:set-board-style']({code:'STYLE1',style:'muted-tournament-board'},ack);assert.equal(reply.ok,false,'started match locks room style');
+  assert.equal(toPublicGameRoom(room).boardStyle,room.gameState.boardStyle);
+  const {flushRoomSave,loadRoomsFromDisk}=await import('../server/src/games/mega-board/utils/persistence.ts');
+  await flushRoomSave();rooms.clear();await loadRoomsFromDisk();assert.equal(rooms.get('STYLE1').gameState.boardStyle,'muted-tournament-board');
+  console.log('PASS shared room style: host-only, catalog/entitlement validation, broadcast, join, start lock, disk recovery');
+ }finally{rooms.clear();const {flushRoomSave}=await import('../server/src/games/mega-board/utils/persistence.ts');await flushRoomSave();await rm(data,{recursive:true,force:true});}
+}

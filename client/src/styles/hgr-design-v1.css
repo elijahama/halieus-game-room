@@ -2843,7 +2843,7 @@ html[data-theme="custom"] .account-admin-content-card {
   --hgr-action-bg: var(--hgr-brand);
   --hgr-action-ink: var(--hgr-brand-ink);
   --hgr-logo-bg: #f0b83f;
-  --hgr-logo-ink: #132033;
+  --hgr-logo-ink: #000000;
   --hgr-logo-border: color-mix(in srgb, var(--hgr-logo-bg) 70%, #7a5600);
 }
 
@@ -2863,7 +2863,7 @@ html[data-theme="dark"] {
   --hgr-action-bg: #d6aa45;
   --hgr-action-ink: #17191d;
   --hgr-logo-bg: #d6aa45;
-  --hgr-logo-ink: #17191d;
+  --hgr-logo-ink: #000000;
   --hgr-logo-border: #8c6d28;
 
   --mm-page: var(--hgr-page);
@@ -2888,7 +2888,7 @@ html[data-theme="light"] {
   --hgr-action-bg: #1f6fb2;
   --hgr-action-ink: #ffffff;
   --hgr-logo-bg: #f0b83f;
-  --hgr-logo-ink: #18233c;
+  --hgr-logo-ink: #000000;
 }
 
 .halieus-shell,
@@ -3344,7 +3344,7 @@ html[data-theme="light"] {
   --hgr-action-bg: #d6a11f;
   --hgr-action-ink: #181b20;
   --hgr-logo-bg: #d6a11f;
-  --hgr-logo-ink: #181b20;
+  --hgr-logo-ink: #000000;
   --hgr-logo-border: #9a7215;
   --hgr-info: #3979b8;
   --hgr-update: #3979b8;
@@ -3560,8 +3560,8 @@ html[data-theme="green"] {
   --hgr-space-5: 24px;
 }
 
-/* Website H: reference-backed block silhouette, separate from launcher artwork. Keep the treatment matte:
- * no crystal facets, shard language or decorative internal geometry. */
+/* Canonical reference-backed H. Colour presets share the play-cut silhouette;
+ * runtime treatment stays flat and recolourable. */
 .halieus-brand-mark-h-shape {
   fill: var(--hgr-logo-ink);
 }

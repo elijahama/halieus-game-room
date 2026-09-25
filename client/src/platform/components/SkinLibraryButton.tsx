@@ -14,6 +14,9 @@ import {
 } from "../skins";
 
 interface SkinLibraryButtonProps {
+  roomStyle?: string;
+  onRoomStyleChange?: (id: string) => Promise<void>;
+  readOnly?: boolean;
   stats: HalieusPersonalStats;
   betaMode: boolean;
   ratings?: HalieusGameRatings;
@@ -35,7 +38,7 @@ const COLLECTION_LABELS = {
   event: "Event",
 } as const;
 
-export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["interface"] }: SkinLibraryButtonProps) {
+export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["interface"], roomStyle, onRoomStyleChange, readOnly = false }: SkinLibraryButtonProps) {
   const [open, setOpen] = useState(false);
   const [slot, setSlot] = useState<HalieusSkinSlot>(slots[0]);
   const [preferences, setPreferences] = useState<HalieusSkinPreferences>(() => readEffectiveSkinPreferences(betaMode));
@@ -61,7 +64,11 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
   const skins = useMemo(() => skinsForSlot(slot), [slot]);
 
   const choose = async (skinId: string, unlocked: boolean) => {
-    if (!unlocked) return;
+    if (!unlocked || readOnly) return;
+    if (roomStyle !== undefined) {
+      try { await onRoomStyleChange?.(skinId); setError(""); } catch (e) { setError(e instanceof Error ? e.message : "Unable to change Room Style."); }
+      return;
+    }
     if (betaMode) { setPreferences(saveSkinPreference(slot, skinId, true)); return; }
     try { const result = await accountApi<{ preferences: HalieusSkinPreferences }>("/accounts/me/cosmetics", { method: "POST", body: JSON.stringify({ slot, id: skinId }) }); setPreferences(result.preferences); saveSkinPreferences(result.preferences); setError(""); } catch { setError("Unable to equip this cosmetic. Your saved selection is unchanged."); }
   };
@@ -93,7 +100,7 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
             <div className="halieus-skins-grid">
               {skins.map((skin) => {
                 const unlocked = betaMode || entitlements.includes(skin.id);
-                const active = preferences[slot] === skin.id;
+                const active = (roomStyle ?? preferences[slot]) === skin.id;
                 const state = active
                   ? "Equipped"
                   : betaMode
@@ -101,7 +108,7 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
                     : unlocked
                       ? "Unlocked"
                       : "🔒 " + skin.unlock.label;
-                return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked")} disabled={!unlocked} onClick={() => void choose(skin.id, unlocked)}>
+                return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked")} disabled={!unlocked || readOnly} onClick={() => void choose(skin.id, unlocked)}>
                   <span className={"halieus-skin-preview skin-" + skin.id} aria-hidden="true"><i /><i /><b>{slot === "cards" ? "♠" : slot === "poker-table" ? "♠ ♥ ♣ ♦" : slot === "mega-board" ? "GO ▧ ▧ ▧" : "Aa"}</b></span>
                   <span><em>{COLLECTION_LABELS[skin.collection]} · {skin.mood}</em><strong>{skin.label}</strong><small>{skin.description}</small></span>
                   <span className="halieus-skin-state">{state}</span>

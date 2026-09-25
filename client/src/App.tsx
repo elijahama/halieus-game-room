@@ -1,5 +1,6 @@
+import { HGR_H_PATH } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
-import { matchBoardAppearance } from "./platform/boardAppearance";
+
 import type {
   AiDifficulty,
   GameState,
@@ -259,7 +260,7 @@ function formatDuration(milliseconds: number): string {
 }
 
 function makeHalieusTabGlyph(fill: string, ink: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="${fill}" stroke="${ink}" stroke-width="0.8" paint-order="stroke fill" d="M17 15h10v12h10V15h10v34H37V36H27v13H17z"/></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill-rule="evenodd" fill="${fill}" stroke="${ink}" stroke-width="0.8" paint-order="stroke fill" d="${HGR_H_PATH}"/></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
@@ -587,12 +588,11 @@ export default function App() {
     const root = document.documentElement;
     root.dataset.skinInterface = skinPreferences.interface;
     root.dataset.skinCards = skinPreferences.cards;
-    root.dataset.skinMegaBoard = matchBoardAppearance(
-      gameStarted && gameState ? `${betaMode ? "beta" : authStatus?.account?.id ?? "guest"}:${gameState.roomCode}:${gameState.gameStartedAt}` : null,
-      skinPreferences["mega-board"],
-    );
+    root.dataset.skinMegaBoard = gameStarted && gameState
+      ? gameState.boardStyle ?? "classic-board"
+      : lobby ? lobby.boardStyle ?? "classic-board" : skinPreferences["mega-board"];
     root.dataset.skinPokerTable = skinPreferences["poker-table"];
-  }, [skinPreferences, gameStarted, gameState?.roomCode, gameState?.gameStartedAt, betaMode, authStatus?.account?.id]);
+  }, [skinPreferences, gameStarted, gameState?.roomCode, gameState?.gameStartedAt, gameState?.boardStyle, lobby?.boardStyle, lobby?.code, betaMode, authStatus?.account?.id]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -776,6 +776,7 @@ export default function App() {
             playerId: response.playerId,
             players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      boardStyle: response.room.boardStyle,
             hostDisconnectDeadline: response.room.hostDisconnectDeadline,
             freeParkingJackpotEnabled: response.room.freeParkingJackpotEnabled,
             blitz: response.room.blitz,
@@ -979,6 +980,7 @@ export default function App() {
           ...currentLobby,
           players: room.players,
           turnTimerSeconds: room.turnTimerSeconds,
+          boardStyle: room.boardStyle,
           hostDisconnectDeadline:
             room.hostDisconnectDeadline,
         };
@@ -1193,6 +1195,7 @@ export default function App() {
       playerId: response.playerId,
       players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      boardStyle: response.room.boardStyle,
       hostDisconnectDeadline:
         response.room.hostDisconnectDeadline,
       blitz: response.room.blitz,
@@ -1359,6 +1362,7 @@ function handleSpectateGame() {
         playerId: response.playerId,
         players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      boardStyle: response.room.boardStyle,
         hostDisconnectDeadline: response.room.hostDisconnectDeadline,
         blitz: response.room.blitz,
       });
@@ -1455,6 +1459,7 @@ function handleLeaveSpectator() {
           playerId: response.playerId,
           players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      boardStyle: response.room.boardStyle,
           hostDisconnectDeadline:
             response.room.hostDisconnectDeadline,
           blitz: response.room.blitz,
@@ -1531,6 +1536,7 @@ function handleLeaveSpectator() {
           playerId: response.playerId,
           players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      boardStyle: response.room.boardStyle,
           hostDisconnectDeadline:
             response.room.hostDisconnectDeadline,
           blitz: response.room.blitz,
@@ -3779,6 +3785,13 @@ function handleLeaveSpectator() {
           onBackToGameRoom={handleBackToGameRoom}
           onAddAi={handleAddAi}
           onRemoveAi={handleRemoveAi}
+          onBoardStyleChange={(style) => new Promise<void>((resolve, reject) => {
+            socket.emit("game:set-board-style", { code: lobby.code, style }, (response: GameResponse) => {
+              if (!response.ok) { reject(new Error(response.reason ?? "Unable to change Room Style.")); return; }
+              if (response.room) setLobby(current => current ? { ...current, boardStyle: response.room!.boardStyle } : current);
+              resolve();
+            });
+          })}
           onTurnTimerChange={handleTurnTimerChange}
           isUpdatingTurnTimer={isUpdatingTurnTimer}
           betaMode={betaMode}

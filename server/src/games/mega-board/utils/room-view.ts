@@ -8,6 +8,7 @@ export function toPublicGameRoom(
 ): PublicGameRoom {
   return {
     code: room.code,
+    boardStyle: room.boardStyle ?? "classic-board",
     ranked: room.ranked,
     blitz: room.blitz,
     turnTimerSeconds: room.turnTimerSeconds ?? (room.blitz ? 150 : 45),

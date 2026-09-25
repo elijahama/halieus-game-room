@@ -23,6 +23,7 @@ export interface GameRoom {
   hostDisconnectDeadline: number | null;
   freeParkingJackpotEnabled?: boolean;
   turnTimerSeconds?: number;
+  boardStyle?: string;
 }
 
 export interface GameResponse {
@@ -66,6 +67,7 @@ export interface LobbyState {
   hostDisconnectDeadline: number | null;
   freeParkingJackpotEnabled?: boolean;
   turnTimerSeconds?: number;
+  boardStyle?: string;
   blitz?: boolean;
 }
 

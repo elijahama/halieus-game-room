@@ -16,6 +16,9 @@ const bundle=await build({stdin:{contents:`
  import {DiceRollOverlay} from './client/src/games/mega-board/components/DiceRollOverlay';
  import {lightTheme,darkTheme} from './client/src/games/mega-board/styles/gameStyles';
  import {createInitialGameState} from './shared/games/mega-board/game-state';
+ import {HalieusBrandMark} from './client/src/platform/components/HalieusBrandMark';
+ import {SkinLibraryButton} from './client/src/platform/components/SkinLibraryButton';
+ import {ModalPortal} from './client/src/platform/components/ModalPortal';
  import {ThemeButton} from './client/src/platform/components/ThemeButton';
  import {SKIN_CATALOG} from './shared/platform/skins';
  import {RoomChatPanel} from './client/src/platform/components/RoomChatPanel';
@@ -35,6 +38,8 @@ const bundle=await build({stdin:{contents:`
  {screen==='results'&&<><WinnerScreen {...shared} gameState={{...state,phase:'finished'}} isHost={true} onExit={noop}/>{dock}</>}
  {screen==='podium'&&<LeaderboardModal {...shared} entries={players.slice(0,count).map((p,i)=>({playerKey:p.id,playerName:p.name,rating:1500-i*100,wins:3,gamesPlayed:7,podiums:4,averageFinish:2,awardsWon:1,profilePicture:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="green"/></svg>'}))} recentMatches={[]} loading={false} error="" onRefresh={noop} onClose={noop}/>}
  {screen==='dice'&&<DiceRollOverlay roll={{white1:2,white2:2,speed:null,movementTotal:4}} doublesStage={stage} settleMs={1}/>}
+ {screen==='nested'&&<ModalPortal onClose={noop}><div className="halieus-create-backdrop halieus-viewport-overlay"><section className="halieus-create-panel halieus-create-modal pre-game-shell"><h2>Create room</h2><SkinLibraryButton stats={{}} betaMode={false} slots={['mega-board']}/><ThemeButton {...shared} background={theme.cardBackground} colour={theme.text} borderColour={theme.border} onToggle={noop}/></section></div></ModalPortal>}
+ {screen==='logos'&&<div style={{display:'flex',background:'#999'}}>{['brand','mono-light','mono-dark','light'].map(preset=><HalieusBrandMark preset={preset}/>)}</div>}
  {screen==='theme'&&<ThemeButton {...shared} background={theme.cardBackground} colour={theme.text} borderColour={theme.border} onToggle={noop}/>}
  </React.Fragment>);
  };
@@ -81,6 +86,27 @@ for(const [device,width,height] of [['desktop',1440,900],['short',1280,600],['ta
  await show('podium');await page.locator('.leaderboard-podium').waitFor();const rects=await page.locator('.leaderboard-podium article').evaluateAll(es=>es.map(e=>({rank:e.className,...e.getBoundingClientRect().toJSON()})));const first=rects.find(r=>r.rank==='is-rank-1'),second=rects.find(r=>r.rank==='is-rank-2'),third=rects.find(r=>r.rank==='is-rank-3');assert.ok(second.x<first.x&&first.x<third.x&&first.height>second.height&&second.height>third.height,JSON.stringify(rects));assert.equal(await page.locator('.leaderboard-grid:not(.leaderboard-grid-head)').count(),3);assert.equal(await page.locator('.leaderboard-podium img').count(),3);
  await show('podium','light',0,1);await page.waitForFunction(()=>document.querySelectorAll('.leaderboard-podium article').length===1);assert.equal(await page.locator('.is-rank-1').evaluate(e=>getComputedStyle(e).gridColumnStart),'2');
  for(const stage of [1,2,3,0]){await show('dice','dark',stage);await page.locator('.dice-roll-overlay.is-settled').waitFor();assert.equal(await page.locator('.dice-roll-overlay').evaluate(e=>e.className.includes('is-doubles-stage-')),stage>0);if(stage)assert.ok(await page.locator('.is-doubles-stage-'+stage).count());}
+
+ await show('logos');await page.locator('.halieus-brand-mark').first().waitFor();
+ assert.equal(await page.locator('[data-logo-preset="mono-dark"] path').evaluate(e=>getComputedStyle(e).fill),'rgb(0, 0, 0)');
+ assert.equal(await page.locator('[data-logo-preset="mono-light"] path').evaluate(e=>getComputedStyle(e).fill),'rgb(255, 255, 255)');
+ assert.equal(new Set(await page.locator('.halieus-brand-mark path').evaluateAll(es=>es.map(e=>e.getAttribute('d')))).size,1);
+ for(const overlay of ['Board styles','Theme']){
+  await show('nested');await page.getByRole('heading',{name:'Create room'}).waitFor();
+  await page.getByRole('button',{name:new RegExp(overlay)}).first().click();
+  const dialog=page.getByRole('dialog',{name:overlay==='Theme'?'Appearance':'HGR skins',exact:true});await dialog.waitFor();
+  assert.equal(await dialog.evaluate(e=>{const b=e.getBoundingClientRect();return e.contains(document.elementFromPoint(b.x+b.width/2,b.y+20));}),true,'Nested overlay above Create Room');
+  if(overlay==='Theme'){
+   await page.getByRole('button',{name:/Theme Library/}).click();await contained('.halieus-theme-popover');
+   const text=await page.locator('.halieus-theme-library-grid').innerText();assert.doesNotMatch(text,/Xbox|PlayStation|PS2|PS3|PS4|PSP|Vita|Dreamcast|GameCube|N64|SNES|Atari|C64|SNK/);
+   const footer=await page.locator('.theme-preview-actions').boundingBox();assert.ok(footer.y+footer.height<=height,'Theme footer remains visible');
+   await page.locator('.halieus-theme-library-grid').evaluate(e=>e.scrollTop=e.scrollHeight);
+   const card=page.getByRole('button',{name:/Arcade Crimson/});await card.click();
+   assert.ok((await page.locator('.theme-preview-actions').boundingBox()).y+footer.height<=height);
+   if(shots)await page.screenshot({path:resolve(shots,device+'-theme-library.png')});
+  }
+  await page.keyboard.press('Escape');await page.getByRole('heading',{name:'Create room'}).waitFor();assert.equal(await page.getByRole('dialog').count(),0);
+ }
  assert.deepEqual(errors,[]);console.log(`PASS ${device}: light/dark lobby, cosmetics locks, all-skin mortgage red/reset/geometry, board geometry containment, Bus Ticket, results/dock, podium 1–3, doubles 0–3`);await page.close();
 }
 }finally{await browser.close();}

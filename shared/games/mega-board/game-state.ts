@@ -412,6 +412,8 @@ export interface TradeOffer {
 }
 
 export interface GameState {
+  /** Host-selected shared surface, immutable for the match. */
+  boardStyle?: string;
   roomCode: string;
 
   players: GamePlayer[];

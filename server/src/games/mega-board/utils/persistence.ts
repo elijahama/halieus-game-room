@@ -74,6 +74,8 @@ function prepareLoadedRoom(
   room.freeParkingJackpotEnabled ??=
     false;
   room.blitz ??= false;
+  room.boardStyle ??= "classic-board";
+  if (room.gameState) room.gameState.boardStyle ??= room.boardStyle;
 
   room.players = room.players.map(
     (player) => {

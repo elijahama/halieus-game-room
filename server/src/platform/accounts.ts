@@ -968,15 +968,6 @@ export function registerAccountRoutes(app: Express): void {
     await saveStore(); response.json({ ok: true, request: item });
   });
 
-  async function cosmeticState(account: StoredAccount) {
-    const progression = await readPlayerProgression(account.id);
-    const stats = { played: progression.played, wins: progression.wins, winRate: 0, recent: [], byGame: Object.entries(progression.byGame).map(([game, line]) => ({ game, gameTitle: game, ...line, winRate: 0 })) } as HalieusPersonalStats;
-    const rating = getRankedLeaderboard().find(entry => [account.displayName, ...(account.displayNameAliases ?? [])].some(name => normaliseRankedPlayerKey(name) === entry.playerKey))?.rating ?? 0;
-    const entitlements = SKIN_CATALOG.filter(skin => isSkinUnlocked(skin, { stats, ratings: { "mega-board": rating }, achievements: progression.awards.map(award => award.id) }, false)).map(skin => skin.id);
-    const preferences = { ...DEFAULT_SKIN_PREFERENCES, ...account.skins };
-    for (const slot of Object.keys(preferences) as HalieusSkinSlot[]) if (!entitlements.includes(preferences[slot])) preferences[slot] = DEFAULT_SKIN_PREFERENCES[slot];
-    return { preferences, entitlements };
-  }
   app.get("/accounts/me/cosmetics", async (request, response) => {
     const auth = currentSession(request); if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     response.json({ ok: true, ...await cosmeticState(auth.account) });
@@ -1301,4 +1292,19 @@ export function registerAccountRoutes(app: Express): void {
     addAudit(actor.id, "account.reset-issued", "account", account.id, `${actor.displayName} issued a one-time password reset for ${account.displayName}.`);
     await saveStore(); response.status(201).json({ ok: true, code: rawCode, expiresAt: reset.expiresAt });
   });
+}
+
+export async function cosmeticState(account: StoredAccount) {
+    const progression = await readPlayerProgression(account.id);
+    const stats = { played: progression.played, wins: progression.wins, winRate: 0, recent: [], byGame: Object.entries(progression.byGame).map(([game, line]) => ({ game, gameTitle: game, ...line, winRate: 0 })) } as HalieusPersonalStats;
+    const rating = getRankedLeaderboard().find(entry => [account.displayName, ...(account.displayNameAliases ?? [])].some(name => normaliseRankedPlayerKey(name) === entry.playerKey))?.rating ?? 0;
+    const entitlements = SKIN_CATALOG.filter(skin => isSkinUnlocked(skin, { stats, ratings: { "mega-board": rating }, achievements: progression.awards.map(award => award.id) }, false)).map(skin => skin.id);
+    const preferences = { ...DEFAULT_SKIN_PREFERENCES, ...account.skins };
+    for (const slot of Object.keys(preferences) as HalieusSkinSlot[]) if (!entitlements.includes(preferences[slot])) preferences[slot] = DEFAULT_SKIN_PREFERENCES[slot];
+    return { preferences, entitlements };
+  }
+
+export async function roomCosmeticState(request: Request) {
+ const auth = currentSession(request);
+ return auth ? cosmeticState(auth.account) : { preferences: DEFAULT_SKIN_PREFERENCES, entitlements: SKIN_CATALOG.filter(skin => skin.slot === "mega-board" && skin.unlock.kind === "starter").map(skin => skin.id) };
 }

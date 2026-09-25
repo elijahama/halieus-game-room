@@ -1,3 +1,6 @@
+import type { Request } from "express";
+import { roomCosmeticState } from "../../../platform/accounts.js";
+import { SKIN_CATALOG } from "../../../../../shared/platform/skins.js";
 import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
 import { randomBytes } from "node:crypto";
@@ -55,6 +58,23 @@ export function registerLobbyHandlers(
   io: Server,
   socket: Socket,
 ): void {
+  socket.on("game:set-board-style", async (payload: { code: string; style: string }, acknowledge: (response: GameResponse) => void) => {
+    if (typeof acknowledge !== "function") return;
+    if (typeof payload?.code !== "string" || typeof payload?.style !== "string") { acknowledge({ ok: false, reason: "A room and board style are required." }); return; }
+    const room = rooms.get(payload.code.trim().toUpperCase());
+    const allowed = () => room && rooms.get(room.code) === room && !room.started && room.hostId === socket.id;
+    if (!allowed()) { acknowledge({ ok: false, reason: "Only the host can change Room Style before play." }); return; }
+    try {
+      const cosmetics = await roomCosmeticState(socket.request as Request);
+      if (!SKIN_CATALOG.some(s => s.slot === "mega-board" && s.id === payload.style) || !cosmetics.entitlements.includes(payload.style)) {
+        acknowledge({ ok: false, reason: "That board style has not been earned." }); return;
+      }
+      // Recheck after asynchronous entitlement lookup: start/end/host transfer may have happened.
+      if (!allowed() || !room) { acknowledge({ ok: false, reason: "Room Style is locked." }); return; }
+      room.boardStyle = payload.style; room.updatedAt = Date.now(); queueRoomSave(); emitLobby(io, room.code);
+      acknowledge({ ok: true, room: toPublicGameRoom(room) });
+    } catch { acknowledge({ ok: false, reason: "Unable to verify board ownership. Try again." }); }
+  });
   socket.on(
     "game:preview",
     (
@@ -131,7 +151,7 @@ export function registerLobbyHandlers(
   );
   socket.on(
     "game:create",
-    (
+    async (
       payload: CreateGamePayload,
       acknowledge: (response: GameResponse) => void,
     ) => {
@@ -162,6 +182,10 @@ export function registerLobbyHandlers(
         return;
       }
 
+      let boardStyle = "classic-board";
+      try { boardStyle = (await roomCosmeticState(socket.request as Request)).preferences["mega-board"]; }
+      catch { acknowledge({ ok: false, reason: "Unable to verify Room Style. Try again." }); return; }
+      if (rooms.has(code) || socket.connected === false) { acknowledge({ ok: false, reason: "Room creation changed. Try again." }); return; }
       const reconnectToken = createRecoveryKey();
       const now = Date.now();
       const hostPlayer: RoomPlayer = {
@@ -181,6 +205,7 @@ export function registerLobbyHandlers(
         ranked,
         blitz,
         hostId: socket.id,
+        boardStyle,
         players: [hostPlayer],
         started: false,
         gameState: null,
@@ -502,6 +527,7 @@ socket.on(
         },
       );
 
+      room.gameState.boardStyle = room.boardStyle ?? "classic-board";
       initialiseCardDecks(room.gameState);
       recordActivity(
         room.gameState,

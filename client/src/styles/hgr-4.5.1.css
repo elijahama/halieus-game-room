@@ -1,3 +1,4 @@
+:root { --hgr-overlay-appearance: 130000; }
 /* HGR 4.5.1
  * Final release overrides for the Mega Board game-by-game polish pass.
  * This file intentionally loads after Part 17 so stale legacy rules cannot
@@ -10,11 +11,11 @@
 
 .halieus-theme-modal-backdrop,
 .halieus-custom-theme-backdrop {
-  z-index: 91000 !important;
+  z-index: var(--hgr-overlay-appearance) !important;
 }
 .halieus-theme-popover,
 .halieus-custom-theme-dialog {
-  z-index: 91001 !important;
+  z-index: calc(var(--hgr-overlay-appearance) + 1) !important;
 }
 .halieus-theme-library-launch {
   grid-template-columns: 52px minmax(0,1fr) auto !important;
@@ -843,3 +844,46 @@ body:has(.room-chat-shell.is-floating) .results-footer {
 html[data-theme="light"] .mario-results-card .winner-subtitle { color: #4b5563 !important; }
 html[data-theme="dark"] .mario-results-card .modal-eyebrow,
 html[data-theme="dark"] .mario-results-card .results-awards-grid article p { color: #86efac !important; }
+
+/* Part 18 locked architecture: personal chrome, shared surfaces, local readability. */
+.halieus-skins-backdrop { z-index: var(--hgr-overlay-appearance) !important; }
+.halieus-skins-dialog { position: relative; z-index: calc(var(--hgr-overlay-appearance) + 1) !important; }
+.halieus-theme-popover.is-library-open {
+  display: flex !important; flex-direction: column !important;
+  max-height: calc(100dvh - 32px) !important; overflow: hidden !important;
+}
+.halieus-theme-popover.is-library-open > header,
+.halieus-theme-library-back { flex: 0 0 auto; }
+.halieus-theme-library-grid {
+  display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  gap: 10px !important; min-height: 0; overflow-y: auto !important; padding: 4px;
+}
+.halieus-theme-library-group { grid-column: 1 / -1; }
+.halieus-theme-library-grid > button {
+  position: relative; min-height: 112px !important; align-items: center !important;
+  grid-template-columns: 52px minmax(0,1fr) !important; padding: 12px 24px 12px 10px !important;
+}
+.halieus-theme-library-grid > button > b { position: absolute; top: 6px; right: 7px; }
+.halieus-theme-popover .theme-preview-actions {
+  flex: 0 0 auto; background: var(--hgr-surface) !important;
+  border-top: 1px solid var(--hgr-border) !important; padding: 10px 4px !important;
+}
+.halieus-brand-mark { --logo-bg: var(--hgr-logo-bg); --logo-glyph: var(--hgr-logo-ink); --logo-accent: var(--hgr-logo-border); }
+.halieus-brand-mark .halieus-brand-mark-tile { fill: var(--logo-bg); stroke: var(--logo-accent); }
+.halieus-brand-mark .halieus-brand-mark-h-shape { fill: var(--logo-glyph); }
+.halieus-brand-mark[data-logo-preset="mono-light"] { --logo-bg: transparent; --logo-glyph: #ffffff; --logo-accent: transparent; }
+.halieus-brand-mark[data-logo-preset="mono-dark"] { --logo-bg: transparent; --logo-glyph: #000000; --logo-accent: transparent; }
+.halieus-brand-mark[data-logo-preset="light"] { --logo-bg: var(--hgr-surface); --logo-glyph: var(--hgr-text); }
+@media (max-width: 540px) {
+ .halieus-theme-library-grid { grid-template-columns: minmax(0,1fr) !important; }
+}
+@media (forced-colors: active) {
+ .mega-live-page .board-space { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+ .mega-live-page .board-space button { color: ButtonText !important; }
+ .halieus-brand-mark .halieus-brand-mark-h-shape { fill: CanvasText; }
+}
+.halieus-theme-library-grid strong { font-size: 14px !important; line-height: 1.3; }
+.halieus-theme-library-grid small { font-size: 12px !important; line-height: 1.4 !important; }
+.halieus-theme-library-grid em { font-size: 10px !important; }
+.halieus-theme-library-back { display: block !important; text-align: left; padding: 8px !important; }
+.halieus-theme-popover .theme-preview-actions > small { font-size: 12px !important; }

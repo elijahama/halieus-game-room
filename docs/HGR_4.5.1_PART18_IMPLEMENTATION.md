@@ -7,7 +7,7 @@ Baseline: latest fetched `main`, `97c7bf2` (25 September 2026). This is an imple
 | Item | Implementation and evidence |
 | --- | --- |
 | 1 Lobby composition | Roster and controls share their bottom edge; eight-player roster scrolls within its column. Setup, timer, invites, recovery and Start/End remain grouped. Desktop and short-height measurements verify alignment; tablet/phone verify containment. |
-| 2 Board appearance | Contextual selector in create-room and lobby exposes owned/locked boards and requirements. A per-account, per-room, per-match browser snapshot freezes the selected cosmetic after start, including refresh and parked-room recovery. Preferences changed elsewhere apply to the next match. It is a personal cosmetic, not a shared game-rule setting. A different device starts with that device's equipped appearance. |
+| 2 Board appearance | Host selects an earned board in create-room/lobby. Server validates ownership, broadcasts the shared surface, locks it at start and persists it through recovery. Personal platform themes, text scale, density and reduced motion remain local. Forced-colour accessibility overrides functional board surfaces. |
 | 3 Light mode | Surface/page/action foregrounds use measured luminance. All retro profiles and 256 grayscale custom surfaces pass 4.5:1 text contrast tests across base/raised/soft/strong surfaces. Light/dark lobby, board and results inspected at five viewport sizes. Fixed low-contrast primary roll/start controls and secondary lobby/result text. |
 | 4 Mega green | Scoped game/setup/results tokens, host badge, active result tabs, primary actions and board focus use green/neutral identity. Property groups, decks, warnings, danger, award medals and player identity keep their semantic colours. |
 | 5 Mortgage Broker | Resolved from the original Part 18 note as the mortgaged board-tile state. Restored strong red across the whole property/station/utility tile, including its strip, with white text. Removed material desaturation; skins, hover and focus cannot wash out the state. Accessible title-deed label announces mortgaged. All 11 board skins checked in light/dark at five viewports, including unmortgage reset and unchanged tile dimensions. |
@@ -40,3 +40,14 @@ Known limits: native-device testing and live production deployment are outside t
 ## Navigation backlog only
 
 Future platform navigation: **Home → Games → Players → Rankings → Guilds → Inbox**. Rankings should eventually offer Gamer Score and per-game Elo leaderboards. Define mobile navigation, permissions, empty states and authoritative data sources in that future work. The fetched baseline already includes a Rankings destination; this pass preserves it and does not implement the proposed navigation migration or add new ranking backends.
+
+
+## Locked Part 18 completion — 25 September 2026
+
+- Canonical serif H with internal play cutout derived from the supplied reference sheet. Runtime, tab, boot and public SVGs use the same path; flat presets expose background/glyph/accent. Mono Dark is pure black and Mono Light pure white. Reproducible SVG/PNG/ICO launcher exports share alignment; detailed reference artwork and existing installed launcher files are preserved.
+- Theme Library uses a two-column collection (one column on phones), readable type, a separate persistent action strip and consistent selection placement. Visible console-brand names are replaced with approved indirect names without changing stored profile IDs. Appearance/Board Styles share an overlay layer above Create Room and retain the parent when closed.
+- Cleaner Anagrams Race letter/swap icon and a legible two-row six-pit Ayo board; bundled and public fallbacks match.
+- Personal theme → shared host Room Style → personal accessibility. The shared-surface implementation in this release applies to Mega Board; expansion to other game surfaces is not part of this Mega Board batch.
+- Removed the superseded browser-only match appearance snapshot. Old persisted rooms default safely to Classic Board.
+- Added runtime and real-socket coverage for ownership, guest rejection, start lock, broadcasts, spectator/reconnect and disk recovery. Responsive fixture coverage includes nested overlays, monochrome geometry and the Theme Library footer.
+- Existing protected assets remain hash-checked. Newly supplied 25 September references are added to the inventory. Only intentional new canonical-H raster/geometry contracts change.

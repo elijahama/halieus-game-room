@@ -22,6 +22,17 @@ try{
  assert.equal(progress.played,1);assert.equal(progress.wins,1);assert.equal(progress.gamerScore,40);
  const equip=async(id)=>fetch(base+"/accounts/me/cosmetics",{method:"POST",headers:{Cookie:cookie,"Content-Type":"application/json"},body:JSON.stringify({slot:"mega-board",id})});assert.equal((await equip("tycoon-board")).status,403);assert.equal((await equip("classic-board")).status,200);
  await ack(realHost,"connect-four:create",{code:"CLOSE1",playerName:"Verified Player"});await ack(realGuest,"connect-four:join",{code:"CLOSE1",playerName:"Other Player"});await ack(realHost,"connect-four:start",{code:"CLOSE1"});await ack(realHost,"connect-four:end-game",{code:"CLOSE1"});await new Promise(r=>setTimeout(r,200));assert.equal((await(await fetch(base+"/accounts/me/stats",{headers:{Cookie:cookie}})).json()).stats.progression.played,1);
+
+ const createdStyle=await ack(realHost,'game:create',{code:'STYLE2',playerName:'Verified Player',ranked:false});
+ await ack(realHost,'game:set-board-style',{code:'STYLE2',style:'muted-tournament-board'});
+ const joinedStyle=await ack(realGuest,'game:join',{code:'STYLE2',playerName:'Guest'});assert.equal(joinedStyle.room.boardStyle,'muted-tournament-board');
+ await assert.rejects(ack(realGuest,'game:set-board-style',{code:'STYLE2',style:'classic-board'}));
+ const startedStyle=await ack(realHost,'game:start',{code:'STYLE2'});assert.equal(startedStyle.state.boardStyle,'muted-tournament-board');
+ await assert.rejects(ack(realHost,'game:set-board-style',{code:'STYLE2',style:'classic-board'}));
+ const viewer=await connect();const view=await ack(viewer,'game:spectate',{code:'STYLE2',playerName:'Viewer'});assert.equal(view.state.boardStyle,'muted-tournament-board');
+ realGuest.disconnect();const recovered=await connect();const recovery=await ack(recovered,'game:reconnect',{code:'STYLE2',reconnectToken:joinedStyle.reconnectToken,playerName:'Guest'});assert.equal(recovery.state.boardStyle,'muted-tournament-board');
+ await ack(realHost,'game:end-room',{code:'STYLE2'});
+ console.log('PASS real sockets: shared host surface, guest denial, start lock, spectator and recovery');
  realHost.disconnect();realGuest.disconnect();console.log("PASS authenticated real match: account-bound award, earned score, locked cosmetic rejection, permitted cosmetic save, host-close exclusion");
  browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE});
  if(process.env.HGR_SCREENSHOTS)await mkdir(process.env.HGR_SCREENSHOTS,{recursive:true});
@@ -55,6 +66,7 @@ try{
     const prefix=game==="mega-board"?"game":game, code=`V${String(++serial).padStart(5,"0")}`;
     const host=io(base,{transports:["websocket"],reconnection:false});sockets.push(host);await new Promise((ok,fail)=>{host.once("connect",ok);host.once("connect_error",fail);});
     const created=await ack(host,`${prefix}:create`,{code,playerName:"Visual Host",aiCount:game==="dominoes"?3:0,wordGameMode:"practice"});
+    if(game==="mega-board")await ack(host,"game:set-board-style",{code,style:"muted-tournament-board"});
     for(let i=0;i<ai;i++)await ack(host,`${prefix}:add-ai`,{code,difficulty:"normal"});
     await ack(host,`${prefix}:start`,{code,matchId:created.state?.matchId});host.disconnect();await new Promise(r=>setTimeout(r,150));
     await page.evaluate(({game,code,token})=>{for(const key of Object.keys(localStorage))if(key.includes("session-v"))localStorage.removeItem(key);localStorage.setItem(game==="mega-board"?"mega-board-session-v1":`halieus-${game}-session-v1`,JSON.stringify({code,reconnectToken:token,playerName:"Visual Host"}));},{game,code,token:created.reconnectToken});
@@ -62,6 +74,13 @@ try{
     const menu=page.locator('.halieus-game-menu-trigger, .ordering-menu-button').first();await menu.waitFor({timeout:10000}).catch(async error=>{throw Error(`${device} ${game}: ${(await page.locator("body").innerText()).slice(-1800)}; ${error.message}`)});
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${device} ${game} page overflow`);
     if(game==="poker"&&width<700){const boxes=await page.locator(".poker-seat").evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom};}));assert.equal(boxes.length,8);for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++)assert.ok(boxes[i].right<=boxes[j].x+1||boxes[j].right<=boxes[i].x+1||boxes[i].bottom<=boxes[j].y+1||boxes[j].bottom<=boxes[i].y+1,"Poker seats overlap");}
+    if(game==="mega-board"){
+      await page.waitForFunction(()=>document.documentElement.dataset.skinMegaBoard==='muted-tournament-board');
+      const personal=await page.evaluate(()=>({profile:document.documentElement.dataset.themeProfile,text:document.documentElement.dataset.textScale}));
+      assert.equal(personal.profile,'redline','Host surface must not overwrite personal theme');
+      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('halieus-skins-change',{detail:{interface:'classic',cards:'classic','mega-board':'tycoon-board','poker-table':'classic'}})));
+      assert.equal(await page.evaluate(()=>document.documentElement.dataset.skinMegaBoard),'muted-tournament-board','Personal cosmetic cannot overwrite shared match surface');
+    }
     if(game==="ludo")assert.ok(await page.locator(".ludo-status-panel").evaluate(el=>el.scrollHeight<=el.clientHeight+1),"Ludo race status panel clips or scrolls");
     if(process.env.HGR_SCREENSHOTS)await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-${game}-live.png`),fullPage:true});
     await menu.click();const dialog=page.locator(".game-menu-modal");await dialog.waitFor();const box=await dialog.boundingBox();assert.ok(box.y>=0&&box.y+box.height<=height+1,`${device} ${game} menu off viewport`);assert.equal(await page.evaluate(()=>document.body.style.overflow),"hidden");if(game==="poker") {
