@@ -564,6 +564,7 @@ export function createInitialGameState(
     freeParkingJackpotEnabled?: boolean;
     ranked?: boolean;
     blitz?: boolean;
+    turnTimerSeconds?: number;
   } = {},
 ): GameState {
   const gamePlayers = players.map(
@@ -634,7 +635,7 @@ export function createInitialGameState(
 
     turnNumber: 1,
     gameStartedAt: Date.now(),
-    turnTimerSeconds: Math.round((options.blitz ? BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS : TURN_ROLL_AUTOPILOT_DURATION_MS) / 1000),
+    turnTimerSeconds: options.turnTimerSeconds ?? Math.round((options.blitz ? BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS : TURN_ROLL_AUTOPILOT_DURATION_MS) / 1000),
     turnRollDeadline: null,
     turnRollDeadlinePlayerId: null,
     optionalActionDeadline: null,
