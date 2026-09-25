@@ -3,6 +3,10 @@ import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 
 import { createInitialGameState } from "../../../../../shared/games/mega-board/game-state.js";
+import {
+  BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS,
+  TURN_ROLL_AUTOPILOT_DURATION_MS,
+} from "../../../../../shared/games/mega-board/game-rules.js";
 import { rooms } from "../state/rooms.js";
 import { addSpectator, listSpectators, removeSpectator } from "../state/spectators.js";
 import type {
@@ -187,6 +191,9 @@ export function registerLobbyHandlers(
         updatedAt: now,
         hostDisconnectDeadline: null,
         freeParkingJackpotEnabled,
+        turnTimerSeconds: Math.round(
+          (blitz ? BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS : TURN_ROLL_AUTOPILOT_DURATION_MS) / 1000,
+        ),
       };
 
       rooms.set(code, room);
@@ -497,6 +504,7 @@ socket.on(
             room.freeParkingJackpotEnabled,
           ranked: room.ranked,
           blitz: room.blitz,
+          turnTimerSeconds: room.turnTimerSeconds,
         },
       );
 
