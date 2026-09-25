@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { AiDifficulty } from "../../../../../shared/games/mega-board/game-state";
+import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import type { LobbyState } from "../types/lobby";
 
 import { BackToGameRoomButton } from "../../../platform/components/BackToGameRoomButton";
@@ -29,6 +30,9 @@ interface LobbyScreenProps {
   };
   onToggleDarkMode: () => void;
   onStartGame: () => void;
+  turnTimerSeconds: number;
+  isUpdatingTurnTimer?: boolean;
+  onTurnTimerChange: (seconds: number) => void;
   onLeaveLobby: () => void;
   onBackToGameRoom: () => void;
   onAddAi: (difficulty: AiDifficulty) => void;
@@ -46,6 +50,9 @@ export function LobbyScreen({
   theme,
   onToggleDarkMode,
   onStartGame,
+  turnTimerSeconds,
+  isUpdatingTurnTimer = false,
+  onTurnTimerChange,
   onLeaveLobby,
   onBackToGameRoom,
   onAddAi,
@@ -215,6 +222,27 @@ export function LobbyScreen({
               <p className="modal-eyebrow">Room controls</p>
               <h2>{isHost ? "Host controls" : "Waiting for host"}</h2>
               <small>{isHost ? "Start when the room is ready, or close the room for everyone." : "The host controls when this match begins."}</small>
+              <div className="lobby-turn-timer-setting">
+                <span><strong>Turn timer</strong><small>Human move window. Locked when the match starts.</small></span>
+                {isHost ? (
+                  <select
+                    aria-label="Pre-game turn timer"
+                    value={turnTimerSeconds}
+                    disabled={isUpdatingTurnTimer}
+                    onChange={(event) => onTurnTimerChange(Number(event.target.value))}
+                  >
+                    {TURN_TIMER_PRESET_SECONDS.map((seconds) => (
+                      <option key={seconds} value={seconds}>
+                        {seconds < 60 ? `${seconds} sec` : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <strong className="lobby-turn-timer-value">
+                    {turnTimerSeconds < 60 ? `${turnTimerSeconds} sec` : `${Math.floor(turnTimerSeconds / 60)}:${String(turnTimerSeconds % 60).padStart(2, "0")}`}
+                  </strong>
+                )}
+              </div>
               <div className="lobby-actions lobby-actions-v2">
                 {isHost && <button type="button" className="button-primary" onClick={onStartGame} disabled={activePlayers.length < 2}>Start game</button>}
                 <button type="button" className="button-danger" onClick={onLeaveLobby}>{isHost ? "End room" : "Leave lobby"}</button>
