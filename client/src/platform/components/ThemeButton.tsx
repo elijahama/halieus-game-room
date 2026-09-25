@@ -22,12 +22,6 @@ interface ThemeButtonProps {
   onToggle: () => void;
 }
 
-interface PopoverPosition {
-  left: number;
-  top: number;
-  width: number;
-}
-
 function rgbChannels(hex: string): [number, number, number] {
   const value = hex.replace("#", "");
   return [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16)) as [number, number, number];
@@ -67,7 +61,6 @@ const THEME_PROFILE_GROUPS = [
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
   const pending = useRef<ThemeSelection | null>(null);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [mode, setMode] = useState<HalieusThemeMode>(() => readThemeMode());
   const [profileId, setProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
   const [custom, setCustom] = useState<HalieusCustomTheme>(() => readCustomTheme());
@@ -75,7 +68,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [menuOpen, setMenuOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ left: 12, top: 12, width: 300 });
 
   const menuRef = useRef<HTMLDivElement>(null), editorRef = useRef<HTMLElement>(null);
   useModalLifecycle(menuOpen, menuRef, () => { setMenuOpen(false); setLibraryOpen(false); });
@@ -106,33 +98,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       window.removeEventListener("halieus-custom-theme", handleCustom);
     };
   }, []);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const positionMenu = () => {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const desiredWidth = libraryOpen ? 610 : 310;
-      const width = Math.min(desiredWidth, Math.max(240, window.innerWidth - 24));
-      const canOpenBesideTrigger = rect.right + 8 + width <= window.innerWidth - 12;
-      const besideLeft = rect.right + 8;
-      const fallbackLeft = Math.min(Math.max(12, rect.left), Math.max(12, window.innerWidth - width - 12));
-      const left = canOpenBesideTrigger ? besideLeft : fallbackLeft;
-      const menuHeight = libraryOpen ? 560 : 390;
-      const maxTop = Math.max(12, window.innerHeight - menuHeight - 12);
-      const alignedTop = Math.min(Math.max(12, rect.top), maxTop);
-      const above = rect.top - menuHeight - 8;
-      const top = canOpenBesideTrigger ? alignedTop : above >= 12 ? above : Math.min(maxTop, rect.bottom + 8);
-      setPopoverPosition({ left, top: Math.max(12, top), width });
-    };
-    positionMenu();
-    window.addEventListener("resize", positionMenu);
-    window.addEventListener("scroll", positionMenu, true);
-    return () => {
-      window.removeEventListener("resize", positionMenu);
-      window.removeEventListener("scroll", positionMenu, true);
-    };
-  }, [libraryOpen, menuOpen]);
 
   useEffect(() => {
     if (!menuOpen && !editorOpen) return;
@@ -187,7 +152,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   return (
     <>
       <button
-        ref={triggerRef}
         type="button"
         className="theme-button halieus-theme-button halieus-theme-trigger"
         style={{ background, color: colour, borderColor: borderColour }}
@@ -201,14 +165,19 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
       </button>
 
       {menuOpen && createPortal(
-        <>
-          <button type="button" className="halieus-theme-popover-scrim" onClick={() => { setMenuOpen(false); setLibraryOpen(false); }} aria-label="Close theme menu" />
+        <div className="halieus-theme-modal-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.currentTarget !== event.target) return;
+          cancelPreview();
+          setLibraryOpen(false);
+          setMenuOpen(false);
+        }}>
           <div
             ref={menuRef}
             className={`halieus-theme-popover ${libraryOpen ? "is-library-open" : ""}`}
-            style={{ left: popoverPosition.left, top: popoverPosition.top, width: popoverPosition.width }}
             role="dialog"
-            aria-label="Theme"
+            aria-modal="true"
+            aria-label={libraryOpen ? "Theme Library" : "Appearance"}
+            onMouseDown={(event) => event.stopPropagation()}
           >
             <header><span>{libraryOpen ? "Theme Library" : "Appearance"}</span><small>{libraryOpen ? "Go further than a colour swap" : "Fast defaults, library or your own palette"}</small></header>
 
@@ -265,7 +234,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             </>}
             <footer className="theme-preview-actions"><small>Preview only until you apply.</small><button type="button" className="button-outline" onClick={() => { cancelPreview(); setMenuOpen(false); }}>Cancel</button><button type="button" className="button-primary" onClick={applyPreview}>Apply theme</button></footer>
           </div>
-        </>,
+        </div>,
         document.fullscreenElement ?? document.body,
       )}
 
