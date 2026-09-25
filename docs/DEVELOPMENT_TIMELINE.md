@@ -164,17 +164,44 @@ Gameplay/ranking rules remained unchanged.
 
 Guilds deliberately remain a social/platform layer rather than a second gameplay authority.
 
-## Current 4.1.x development — Brand & Product Polish
+## 4.1.1 — Social, Theme and Game Room Polish
 
-The current post-Guilds polish pass is consolidating HGR's visual language rather than introducing another game-state authority.
+4.1.1 refined the post-Guilds platform without changing HGR's server-authoritative gameplay model.
 
-Current work includes:
+The release added or improved:
 
-- shared `--hgr-*` design tokens;
-- one consistent Halieus surface/spacing/radius/shadow language;
-- launcher artwork derived from the real Halieus mark instead of unrelated utility styling;
-- a version-led project-history surface on Home;
-- cleanup of inconsistent layouts using the shared design system;
-- developer/tooling surfaces that look native to the product.
+- richer Game Room discovery shelves and player social strips;
+- direct persistent guild invitations between HGR accounts;
+- better guild-member identity and profile-picture handling;
+- ranked Mega Board podium presentation while preserving the full standings table;
+- neutral Dark plus explicit Blue and Custom theme modes;
+- persisted custom theme colours;
+- first-paint awareness of the expanded theme system;
+- reduced nested scrolling in room creation and game-menu surfaces;
+- targeted Mega Board debt/liquidation layout improvements.
 
-The application version remains 4.1.0 until the next release decision. Launcher-art revisions are separate from product-version numbers.
+WHOT's larger gameplay/table redesign remained intentionally separate from this patch.
+
+## 4.5.0 — Shared UI, Theme and Progression Foundation
+
+4.5.0 is the current HGR milestone. It consolidates a large set of platform-wide UI and lifecycle rules so future game work can reuse shared primitives instead of accumulating isolated fixes.
+
+The 4.5 line includes:
+
+- canonical 4.5.0 release identity and refreshed website/platform H branding;
+- separation of launcher/reference artwork from the website/platform identity;
+- selected-theme ownership of generic platform chrome, with profile colour reserved for player identity;
+- theme-library preview before apply, with cancel/revert behaviour;
+- rebuilt Appearance/account presentation and theme-aware authentication actions;
+- shared text-size and density preferences;
+- responsive shell and mobile room-access corrections;
+- centralized modal/confirmation infrastructure;
+- reusable pre-game/create-room foundations;
+- Mega Board setup, timer and board-presentation refinements while protecting approved board geometry;
+- Poker table palette and layout restoration while protecting the approved lobby and Actions / Players / Chat structure;
+- Ludo and Connect Four table-layout refinements, including Connect Four disc layering behind the foreground grid;
+- classic-table lifecycle corrections and stronger room recovery handling;
+- platform progression infrastructure for server-authoritative achievements, account-wide Gamer Score and cosmetics unlock state;
+- expanded browser/runtime regression coverage for the shared 4.5 contracts.
+
+The 4.5 work is still validated feature-by-feature through regression checks and live UI/gameplay testing; a source commit alone is not treated as proof that every player-facing detail is accepted.
