@@ -595,7 +595,8 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                 <div className="account-test-lab-grid">
                   <article><strong>Isolated identity</strong><small>Games use a [BETA] name that does not match your permanent account aliases, keeping personal stats clean.</small></article>
                   <article><strong>Full game access</strong><small>Use the normal Games page, AI seats, spectators and room controls while test mode is active.</small></article>
-                  <article><strong>Admin-only</strong><small>Only Owner/Admin accounts can enter this mode. Exit at any time to restore your normal account identity.</small></article>
+                  <article><strong>All cosmetics unlocked</strong><small>Every progression-gated theme, board, table and visual reward is selectable for this beta session. Real unlock requirements and permanent ownership stay unchanged.</small></article>
+                  <article><strong>Admin-only</strong><small>Only Owner/Admin accounts can enter this mode. Exit at any time to restore your normal account identity and normal cosmetic locks.</small></article>
                 </div>
                 <button type="button" className={betaMode ? "button-outline" : "button-primary"} onClick={() => { if (betaMode) onExitBetaMode(); else onEnterBetaMode(); onClose(); }}>{betaMode ? "Exit Test Lab" : "Enter Test Lab"}</button>
               </section>}
