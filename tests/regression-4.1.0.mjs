@@ -96,15 +96,16 @@ assert.match(
   'Guild result projection must happen only after the canonical final archive write',
 );
 
-assert.match(home,/type HomeView = "home" \| "games" \| "players" \| "guilds"/,'Guilds must live in the Game Room social navigation');
+assert.match(home,/type HomeView = "home" \| "games" \| "players" \| "rankings" \| "guilds"/,'Rankings and Guilds must live in the Game Room social navigation');
 assert.match(home,/import \{ GuildsPanel \} from "\.\/GuildsPanel"/,'Game Room must import the Guilds surface');
 assert.match(home,/function openGuildCreate\(game: GameId, roomCode: string\)/,'Guild rooms must hand off to the existing game create flow');
-assert.match(home,/view === "players" \|\| view === "guilds"/,'Players navigation must remain active while browsing Guilds');
+assert.match(home,/view === "players" \|\| view === "rankings" \|\| view === "guilds"/,'Players mobile navigation must remain active while browsing Rankings or Guilds');
 assert.doesNotMatch(home,/import \{ ProjectTimeline \} from "\.\/ProjectTimeline"/,'Project history should no longer occupy the player Home screen');
 assert.match(home,/import \{ HgrIcon \} from "\.\/HgrIcon"/,'Home navigation must import the shared SVG icon system');
 assert.match(home,/HgrIcon name="home"/,'Home navigation SVG icon missing');
 assert.match(home,/HgrIcon name="games"/,'Games navigation SVG icon missing');
 assert.match(home,/HgrIcon name="players"/,'Players navigation SVG icon missing');
+assert.match(home,/HgrIcon name="leaderboard"/,'Rankings navigation SVG icon missing');
 assert.match(home,/HgrIcon name="plus"/,'Join Game SVG icon missing');
 assert.match(home,/HgrIcon name=\{isFullscreen \? "minimize" : "fullscreen"\}/,'Sidebar Full Screen SVG icon missing');
 assert.match(accountPanel,/HgrIcon name="info"/,'Account Build Info SVG icon missing');
