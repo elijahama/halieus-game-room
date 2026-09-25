@@ -104,6 +104,8 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const activeIcon = mode === "system" ? "◐" : mode === "light" ? "○" : mode === "dark" ? "●" : mode === "custom" ? "✦" : "◆";
   const previewSurfaceInk = isDarkColour(draft.surface) ? "#f8fafc" : "#101318";
   const previewSurfaceMuted = isDarkColour(draft.surface) ? "#cbd5e1" : "#4b5563";
+  const previewPageInk = isDarkColour(draft.page) ? "#f8fafc" : "#101318";
+  const previewPageMuted = isDarkColour(draft.page) ? "#cbd5e1" : "#4b5563";
 
   useEffect(() => {
     const handleMode = (event: Event) => setMode((event as CustomEvent<HalieusThemeMode>).detail);
@@ -316,15 +318,15 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 </article>
               ))}
             </div>
-            <div className="halieus-custom-theme-preview" style={{ background: draft.page }}>
+            <div className="halieus-custom-theme-preview" style={{ background: draft.page, color: previewPageInk }}>
               <section className="halieus-custom-preview-window" style={{ background: draft.surface, color: previewSurfaceInk }}>
                 <header><i style={{ background: draft.accent }} /><b style={{ color: previewSurfaceInk }}>HALIEUS GAME ROOM</b><em style={{ background: draft.secondary }} /></header>
                 <div style={{ color: previewSurfaceInk }}><strong>Game night</strong><span style={{ borderColor: draft.accent, color: previewSurfaceInk }}>Primary action</span><small style={{ color: previewSurfaceMuted }}>Secondary accent</small></div>
               </section>
               <div className="halieus-custom-preview-palette" aria-label="Selected palette">
-                {(["page", "surface", "accent", "secondary"] as Array<keyof HalieusCustomTheme>).map((key) => <span key={key}><i style={{ background: draft[key] }} /><code>{draft[key].toUpperCase()}</code></span>)}
+                {(["page", "surface", "accent", "secondary"] as Array<keyof HalieusCustomTheme>).map((key) => <span key={key}><i style={{ background: draft[key] }} /><code style={{ color: previewPageMuted }}>{draft[key].toUpperCase()}</code></span>)}
               </div>
-              <small>Live palette preview</small>
+              <small style={{ color: previewPageMuted }}>Live palette preview</small>
             </div>
             <footer>
               <button type="button" className="button-muted" onClick={() => setDraft({ ...DEFAULT_CUSTOM_THEME })}>Reset</button>
