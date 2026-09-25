@@ -110,7 +110,9 @@ These are cosmetic requirements only and do not affect matchmaking or game resul
 
 Normal Owner/Admin play follows normal player progression.
 
-Beta/Test Lab may preview every cosmetic for the active beta session. Preview access does not grant permanent ownership and is cleared when leaving Test Lab.
+Beta/Test Lab makes every progression-gated visual reward selectable for the active beta session, including themes, board/table surfaces, decks, interface cosmetics and future appearance rewards. The real unlock condition remains intact and can still be shown as the normal requirement.
+
+This testing access never grants permanent ownership or changes entitlement data, and it is cleared when leaving Test Lab. Custom theme creation remains available in both normal and Beta modes.
 
 ## Persistence and safe fallback
 
