@@ -107,13 +107,38 @@ export interface HalieusGameStatLine {
   winRate: number;
 }
 
+export interface HalieusStatBucket {
+  played: number;
+  wins: number;
+  winRate: number;
+}
+
+export interface HalieusStatsBreakdown {
+  humanOnly: HalieusStatBucket;
+  aiInvolved: HalieusStatBucket;
+  solo: HalieusStatBucket;
+  casual: HalieusStatBucket;
+  ranked: HalieusStatBucket;
+  blitz: HalieusStatBucket;
+}
+
 export interface HalieusPersonalStats {
   progression?: import("./progression.js").PlayerProgression;
   played: number;
   wins: number;
   winRate: number;
+  breakdown?: HalieusStatsBreakdown;
   byGame: HalieusGameStatLine[];
-  recent: Array<{ game: HalieusGameStatLine["game"]; gameTitle: string; roomCode: string; at: number; won: boolean; result: string }>;
+  recent: Array<{
+    game: HalieusGameStatLine["game"];
+    gameTitle: string;
+    roomCode: string;
+    at: number;
+    won: boolean;
+    result: string;
+    matchMode?: "casual" | "ranked" | "blitz";
+    opponentType?: "human-only" | "ai-involved" | "solo";
+  }>;
 }
 
 export interface HalieusQuickPlayPreference {
