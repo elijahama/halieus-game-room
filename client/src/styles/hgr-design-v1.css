@@ -242,20 +242,20 @@ button:focus-visible,
 
 .halieus-side-nav button.is-active {
   border-color: var(--hgr-border-brand) !important;
-  background: color-mix(in srgb, var(--hgr-yellow) 14%, var(--hgr-surface)) !important;
+  background: color-mix(in srgb, var(--hgr-brand) 14%, var(--hgr-surface)) !important;
   color: var(--hgr-text) !important;
-  box-shadow: inset 3px 0 0 var(--hgr-yellow);
+  box-shadow: inset 3px 0 0 var(--hgr-brand);
 }
 
 .halieus-side-nav button.is-active svg,
 .halieus-side-nav button.is-active span:first-child {
-  color: var(--hgr-yellow-strong);
+  color: var(--hgr-brand);
 }
 
 .halieus-global-join {
   border-radius: var(--hgr-radius-sm) !important;
-  background: linear-gradient(180deg, #ffd84a 0%, var(--hgr-yellow) 58%, #efad00 100%) !important;
-  color: var(--hgr-navy) !important;
+  background: var(--hgr-action-bg) !important;
+  color: var(--hgr-action-ink) !important;
   box-shadow: var(--hgr-shadow-brand);
 }
 
@@ -513,7 +513,7 @@ html[data-theme="dark"] .modal-eyebrow {
 
 .halieus-side-nav button:hover .halieus-nav-icon,
 .halieus-side-nav button.is-active .halieus-nav-icon {
-  color: var(--hgr-yellow-strong);
+  color: var(--hgr-brand);
 }
 
 html[data-theme="dark"] .halieus-side-nav button:hover .halieus-nav-icon,
@@ -3919,7 +3919,7 @@ html[data-text-scale="large"] {
 }
 html[data-text-scale="small"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code),
 html[data-text-scale="large"] :where(.halieus-shell,.account-panel,.game-menu) :where(button,input,select,textarea,small,label,p,code) {
-  font-size: calc(1em + var(--hgr-text-adjust));
+  font-size: calc(1rem + var(--hgr-text-adjust));
 }
 html[data-density="compact"] .halieus-player-identity,
 html[data-density="compact"] .halieus-display-group,
@@ -6081,3 +6081,27 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
   font-size: 9px;
   line-height: 1.45;
 }
+
+
+/* Part 17: centered confirmation ownership. */
+.halieus-confirm-backdrop.game-menu-top-layer{display:grid!important;place-items:center!important;align-items:center!important;justify-items:center!important;overflow-y:auto!important;padding:16px!important}
+.halieus-confirm-backdrop .halieus-confirm-dialog{width:min(520px,calc(100dvw - 32px))!important;margin:auto!important}
+.account342-secondary>button>span{color:var(--hgr-brand)!important}.account342-note strong{color:var(--hgr-brand)}
+
+/* Part 17 shared UI correction pass — theme ownership and responsive containment. */
+.halieus-shell{--player-accent:var(--hgr-brand,#8b5cf6)}
+.account-admin-tabs button.is-active,.account-admin-quickbar button.is-active,.account-admin-quickbar button.is-active>span,.account-step-badge{border-color:var(--hgr-brand)!important;background:var(--hgr-brand)!important;color:var(--hgr-brand-ink,#fff)!important}
+.account-admin-quickbar button>span{background:color-mix(in srgb,var(--hgr-brand) 10%,transparent)!important;color:var(--hgr-brand)!important}
+.account-open-code-tab,.account-invite-codes-heading>span{color:var(--hgr-brand)!important}.account-invite-codes-heading>span{background:color-mix(in srgb,var(--hgr-brand) 10%,transparent)!important}
+.halieus-theme-preview-actions,.halieus-settings-theme-preview{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--hgr-border);border-radius:var(--hgr-radius-sm);background:var(--hgr-surface-raised)}
+.halieus-theme-preview-actions>span,.halieus-settings-theme-preview>span:nth-child(2){min-width:0;display:grid;gap:2px;color:var(--hgr-muted);font-size:8px}
+.halieus-settings-theme-preview>span:nth-child(2) strong{color:var(--hgr-text);font-size:9px}.halieus-theme-preview-actions>div,.halieus-settings-theme-preview>div{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.halieus-theme-preview-actions button,.halieus-settings-theme-preview button{min-height:32px!important;padding:6px 10px!important}.halieus-theme-preview-actions button:disabled,.halieus-settings-theme-preview button:disabled{opacity:.42;cursor:not-allowed}
+.halieus-settings-theme-preview.is-active{border-color:color-mix(in srgb,var(--hgr-brand) 48%,var(--hgr-border));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--hgr-brand) 12%,transparent)}
+.halieus-settings-theme-preview .halieus-theme-profile-swatch{width:48px;height:36px}.halieus-theme-library-grid>button>b{min-width:42px;text-align:right;color:var(--hgr-brand);font-size:7px;letter-spacing:.04em}
+.account-appearance-card{margin-top:14px;padding:16px;border:1px solid var(--hgr-border);border-radius:var(--hgr-radius-lg);background:var(--hgr-surface-soft)}.account-appearance-card .halieus-display-settings{margin:0}.account-appearance-card .halieus-settings-eyebrow{color:var(--hgr-brand)}
+.account-profile-picture-editor>div{display:grid!important;grid-template-columns:max-content max-content!important;align-items:center!important;justify-content:start!important;gap:8px!important}.account-profile-picture-editor .account-picture-upload,.account-profile-picture-editor .button-muted{min-height:38px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;margin:0!important}.account-profile-picture-editor>div>small{grid-column:1/-1;margin:0!important;text-align:left}
+.account-username-input{min-height:42px!important}.account-username-input>span{padding-left:11px!important;color:var(--hgr-muted)!important}.account-username-input input{min-height:40px!important;padding-block:6px!important}
+.halieus-library-status,.account-status-badge,.account-role-badge,.halieus-inbox-badge{box-sizing:border-box;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.15}.halieus-library-card,.halieus-library-card>*{min-width:0}
+@media(max-width:680px){.room-chat-shell.is-floating{left:auto!important;right:max(8px,env(safe-area-inset-right))!important;bottom:max(8px,env(safe-area-inset-bottom))!important;width:min(188px,calc(100vw - 18px))!important;max-width:calc(100vw - 18px)!important;transform:none!important;align-items:flex-end!important}.room-chat-shell.is-floating>.room-chat-trigger{width:auto!important;max-width:100%!important;min-width:0!important;padding-inline:10px!important}.room-chat-shell.is-floating>.room-chat-trigger .room-chat-preview{max-width:92px!important}.room-chat-shell.is-floating>.room-chat-panel{width:calc(100vw - 18px)!important;max-width:calc(100vw - 18px)!important}.account-profile-picture-editor>div{grid-template-columns:1fr!important;width:100%}.account-profile-picture-editor .account-picture-upload,.account-profile-picture-editor .button-muted{width:100%!important}.account-profile-picture-editor>div>small{grid-column:1}.account-panel .account-game-record-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.account-panel .account-game-record-grid>article{min-height:76px!important}.account-panel .account-game-record-grid strong,.account-panel .account-game-record-grid small{overflow-wrap:anywhere}.halieus-theme-library-select,.halieus-theme-library-select>label{grid-template-columns:1fr!important}.halieus-theme-library-select select{width:100%;max-width:none;min-width:0}.halieus-theme-preview-actions,.halieus-settings-theme-preview{grid-template-columns:1fr!important}.halieus-theme-preview-actions>div,.halieus-settings-theme-preview>div{justify-content:stretch}.halieus-theme-preview-actions button,.halieus-settings-theme-preview button{flex:1}}
+@media(min-width:900px){.account-entry-342 .account342-stage{max-width:1180px!important;grid-template-columns:minmax(0,1fr) minmax(390px,520px)!important;justify-content:stretch!important;align-items:center!important;gap:clamp(42px,6vw,92px)!important;padding:clamp(58px,8vh,96px) 0 48px!important}.account-entry-342 .account342-intro{display:grid!important;align-content:center;min-height:560px;padding:clamp(28px,4vw,58px)!important}.account-entry-342 .account342-card{width:auto!important;margin:0!important}}

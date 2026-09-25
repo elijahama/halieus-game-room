@@ -45,6 +45,26 @@ function publishThemeProfile(id: HalieusThemeProfileId): void {
   applyThemeMode("profile");
 }
 
+function previewThemeMode(mode: HalieusThemeMode): void {
+  window.dispatchEvent(new CustomEvent<HalieusThemeMode>("halieus-theme-mode", { detail: mode }));
+}
+function previewThemeProfile(id: HalieusThemeProfileId): void {
+  window.dispatchEvent(new CustomEvent<HalieusThemeProfileId>("halieus-theme-profile", { detail: id }));
+  previewThemeMode("profile");
+}
+function previewCustomTheme(theme: HalieusCustomTheme): void {
+  window.dispatchEvent(new CustomEvent<HalieusCustomTheme>("halieus-custom-theme", { detail: theme }));
+  previewThemeMode("custom");
+}
+function restoreCommittedAppearance(): void {
+  const committedProfile = readThemeProfileId();
+  const committedCustom = readCustomTheme();
+  const committedMode = readThemeMode();
+  window.dispatchEvent(new CustomEvent<HalieusThemeProfileId>("halieus-theme-profile", { detail: committedProfile }));
+  window.dispatchEvent(new CustomEvent<HalieusCustomTheme>("halieus-custom-theme", { detail: committedCustom }));
+  previewThemeMode(committedMode);
+}
+
 function rgbChannels(hex: string): [number, number, number] {
   const value = hex.replace("#", "");
   return [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16)) as [number, number, number];
@@ -91,6 +111,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [menuOpen, setMenuOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [profilePreviewActive, setProfilePreviewActive] = useState(false);
+  const profilePreviewRef = useRef(false);
+  const customPreviewRef = useRef(false);
   const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ left: 12, top: 12, width: 300 });
 
   const activeProfile = THEME_PROFILES.find((profile) => profile.id === profileId) ?? THEME_PROFILES[0];
@@ -121,6 +144,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     };
   }, []);
 
+  useEffect(() => { profilePreviewRef.current = profilePreviewActive; }, [profilePreviewActive]);
+  useEffect(() => () => { if (profilePreviewRef.current || customPreviewRef.current) restoreCommittedAppearance(); }, []);
+
   useEffect(() => {
     if (!menuOpen) return;
     const positionMenu = () => {
@@ -147,19 +173,17 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     if (!menuOpen && !editorOpen) return;
     const handleKey = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      if (libraryOpen) {
-        setLibraryOpen(false);
-        return;
-      }
+      if (editorOpen) { cancelCustom(); return; }
+      if (libraryOpen) { cancelProfilePreview(); setLibraryOpen(false); return; }
       setMenuOpen(false);
-      setEditorOpen(false);
-      setDraft(custom);
     };
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [custom, editorOpen, libraryOpen, menuOpen]);
+  }, [editorOpen, libraryOpen, menuOpen]);
 
   function selectMode(next: "system" | "light" | "dark") {
+    if (profilePreviewActive) cancelProfilePreview();
+    customPreviewRef.current = false;
     setMode(next);
     applyThemeMode(next);
     setLibraryOpen(false);
@@ -167,17 +191,35 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   }
 
   function selectProfile(id: HalieusThemeProfileId) {
+    setProfilePreviewActive(true);
+    profilePreviewRef.current = true;
     setProfileId(id);
     setMode("profile");
-    publishThemeProfile(id);
+    previewThemeProfile(id);
+  }
+  function applyProfilePreview() {
+    if (!profilePreviewActive) return;
+    publishThemeProfile(profileId);
+    profilePreviewRef.current = false;
+    setProfilePreviewActive(false);
     setLibraryOpen(false);
     setMenuOpen(false);
   }
+  function cancelProfilePreview() {
+    if (!profilePreviewRef.current && !profilePreviewActive) return;
+    restoreCommittedAppearance();
+    profilePreviewRef.current = false;
+    setProfilePreviewActive(false);
+    setProfileId(readThemeProfileId());
+    setMode(readThemeMode());
+  }
 
   function openCustom() {
-    setDraft(custom);
+    cancelProfilePreview();
+    setDraft(readCustomTheme());
     setLibraryOpen(false);
     setMenuOpen(false);
+    customPreviewRef.current = true;
     setEditorOpen(true);
   }
 
@@ -191,17 +233,30 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     updateDraftColour(key, rgbHex(channels));
   }
 
+  useEffect(() => {
+    if (!editorOpen) return;
+    customPreviewRef.current = true;
+    previewCustomTheme(draft);
+  }, [draft, editorOpen]);
+
   function applyCustom() {
     const next = { ...draft };
     setCustom(next);
     publishCustomTheme(next);
     setMode("custom");
     applyThemeMode("custom");
+    customPreviewRef.current = false;
     setEditorOpen(false);
   }
 
   function cancelCustom() {
-    setDraft(custom);
+    restoreCommittedAppearance();
+    const committed = readCustomTheme();
+    setCustom(committed);
+    setDraft(committed);
+    setMode(readThemeMode());
+    setProfileId(readThemeProfileId());
+    customPreviewRef.current = false;
     setEditorOpen(false);
   }
 
@@ -214,7 +269,11 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         style={{ background, color: colour, borderColor: borderColour }}
         aria-haspopup="dialog"
         aria-expanded={menuOpen}
-        onClick={() => { setLibraryOpen(false); setMenuOpen((open) => !open); }}
+        onClick={() => {
+          if (menuOpen && profilePreviewActive) cancelProfilePreview();
+          setLibraryOpen(false);
+          setMenuOpen((open) => !open);
+        }}
       >
         <span className="halieus-theme-trigger-label">Theme</span>
         <span className="halieus-theme-trigger-value"><i aria-hidden="true">{activeIcon}</i><b>{activeLabel}</b></span>
@@ -223,7 +282,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
 
       {menuOpen && createPortal(
         <>
-          <button type="button" className="halieus-theme-popover-scrim" onClick={() => { setMenuOpen(false); setLibraryOpen(false); }} aria-label="Close theme menu" />
+          <button type="button" className="halieus-theme-popover-scrim" onClick={() => { cancelProfilePreview(); setMenuOpen(false); setLibraryOpen(false); }} aria-label="Close theme menu" />
           <div
             className={`halieus-theme-popover ${libraryOpen ? "is-library-open" : ""}`}
             style={{ left: popoverPosition.left, top: popoverPosition.top, width: popoverPosition.width }}
@@ -259,7 +318,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 <b aria-hidden="true">→</b>
               </button>
             </> : <>
-              <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
+              <button type="button" className="halieus-theme-library-back" onClick={() => { cancelProfilePreview(); setLibraryOpen(false); }}>← Appearance</button>
               <div className="halieus-theme-library-grid">
                 {THEME_PROFILE_GROUPS.map((group) => (
                   <Fragment key={group.id}>
@@ -276,12 +335,16 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                           <i style={{ background: profile.theme.secondary }} />
                         </span>
                         <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small></span>
-                        {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
+                        {mode === "profile" && profileId === profile.id && <b aria-hidden="true">{profilePreviewActive ? "PREVIEW" : "✓"}</b>}
                       </button>
                     ))}
                   </Fragment>
                 ))}
               </div>
+              <footer className="halieus-theme-preview-actions" aria-live="polite">
+                <span>{profilePreviewActive ? `Previewing ${activeProfile.label}` : "Choose a theme to preview it across HGR."}</span>
+                <div><button type="button" className="button-outline" disabled={!profilePreviewActive} onClick={cancelProfilePreview}>Cancel</button><button type="button" className="button-primary" disabled={!profilePreviewActive} onClick={applyProfilePreview}>Apply theme</button></div>
+              </footer>
             </>}
           </div>
         </>,

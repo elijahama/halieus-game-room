@@ -171,8 +171,8 @@ assert.match(app,/clearBetaSkinPreview\(\)/,"Leaving Beta must restore the norma
 assert.match(app,/dataset\.skinCards/,"Card skins must apply from the app root");
 assert.match(app,/dataset\.skinMegaBoard/,"Mega Board skins must apply from the app root");
 assert.match(app,/dataset\.skinPokerTable/,"Poker table skins must apply independently from card backs");
-assert.match(app,/normaliseRankedPlayerKey/,"Cosmetic rating unlocks must resolve against the existing Mega Board ranked identity");
-assert.match(home,/ratings=\{skinRatings\}/,"Skin Library must receive real game rating context from the app");
+assert.match(skinButton,/ratings/,"Contextual cosmetic pickers must still accept authoritative rating context when mounted inside a game");
+assert.doesNotMatch(home,/SkinLibraryButton/,"Home sidebar must not expose the cross-game cosmetic library; cosmetics are contextual");
 assert.match(skins,/kind: "rating"/,"Cosmetic model must support real rating-gated unlocks");
 assert.match(skins,/rating: 1200/,"At least one Mega Board cosmetic must demonstrate a real rating gate");
 assert.match(skins,/"poker-table"/,"Poker table aesthetics must have their own cosmetic slot");

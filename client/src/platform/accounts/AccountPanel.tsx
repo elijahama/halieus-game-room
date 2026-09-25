@@ -11,6 +11,7 @@ import type { HalieusFeedbackStatus, HalieusFeedbackSummary } from "../../../../
 import { GAME_CATALOG } from "../games/catalog";
 import { accountApi } from "./api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { DisplaySettingsPanel } from "../components/DisplaySettingsPanel";
 
 interface Props {
   account: HalieusAccountSummary;
@@ -368,6 +369,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
           <button type="submit" className="button-outline">Change password</button>
         </form>
       </div>
+      <section className="account-appearance-card"><DisplaySettingsPanel /></section>
       {personalStats && <section className="account-game-record">
         <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
         <div className="account-stat-overview">
