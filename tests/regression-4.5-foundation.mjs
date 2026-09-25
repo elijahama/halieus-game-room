@@ -155,7 +155,7 @@ assert.match(accountContracts,/HalieusGamerScoreLeaderboardEntry/,"Gamer Score l
 assert.match(accountServer,/async function gamerScoreLeaderboard\(viewer: StoredAccount\)/,"Gamer Score ordering must be server-authoritative");
 assert.match(accountServer,/account\.visibility !== "hidden" \|\| account\.id === viewer\.id/,"Gamer Score must inherit player-directory visibility rules");
 assert.match(accountServer,/\/accounts\/gamer-score\/leaderboard/,"Accounts API must expose Gamer Score independently from game Elo");
-assert.match(home,/Gamer Score leaderboard/,"Rankings must show account progression alongside per-game ladders");
+assert.match(home,/Gamer Score leaderboard/,"Rankings must show account progression alongside per-game ladders");assert.match(home,/Per-game Elo ladders/,"Rankings must visually separate competitive Elo from Gamer Score progression");
 assert.match(home,/\/accounts\/gamer-score\/leaderboard/,"Rankings UI must load the authoritative Gamer Score board");
 assert.match(home,/style=\{\{ background: entry\.playerColor \}\}/,"Player colour may remain on the Gamer Score avatar as identity");
 assert.match(release451Css,/\.halieus-gamer-score-list > button[\s\S]*?var\(--hgr-border\)/,"Gamer Score row chrome must inherit the active HGR theme");
