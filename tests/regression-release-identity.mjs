@@ -16,11 +16,11 @@ const good = run(root, '--verify');
 assert.equal(good.status, 0, good.stderr);
 assert.equal(manifest.version, version);
 assert.ok(manifest.fingerprint.startsWith(`hgr-${version}-`));
-for (const file of ['HomeScreen.tsx', 'DisplaySettingsPanel.tsx']) {
-  const source = read(`client/src/platform/components/${file}`);
-  assert.ok(source.includes('Build {APP_RELEASE_LABEL}'), `${file} must use the canonical display label`);
-  assert.ok(source.includes('import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version"'));
-}
+const accountPanel = read('client/src/platform/accounts/AccountPanel.tsx');
+assert.ok(accountPanel.includes('Build {APP_RELEASE_LABEL}'), 'AccountPanel.tsx must use the canonical display label');
+assert.ok(accountPanel.includes('import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version"'));
+const homeScreen = read('client/src/platform/components/HomeScreen.tsx');
+assert.ok(!homeScreen.includes('halieus-side-build-info'), 'Build Info must not return to the Home sidebar');
 assert.match(read('server/src/index.ts'), /version: APP_VERSION/);
 assert.match(read('server/src/index.ts'), /releaseFingerprint: RELEASE_FINGERPRINT/);
 assert.match(read('client/src/main.tsx'), /register\(`\/sw\.js\?release=\$\{encodeURIComponent\(RELEASE_FINGERPRINT\)\}`\)/);
@@ -42,7 +42,7 @@ try {
     ['shared/release.ts', (s) => s.replace(version, '4.1.1')],
     ['client/public/sw.js', (s) => s.replace('v4-5-0', 'v4-1-1')],
     ['client/index.html', (s) => s.replaceAll(`?v=${version}`, '?v=4.1.1')],
-    ['client/src/platform/components/HomeScreen.tsx', (s) => s.replace('Build {APP_RELEASE_LABEL}', 'Build 4.1.1')],
+    ['client/src/platform/accounts/AccountPanel.tsx', (s) => s.replace('Build {APP_RELEASE_LABEL}', 'Build 4.1.1')],
     ['server/src/index.ts', (s) => s.replace('version: APP_VERSION', 'version: "4.1.1"')],
   ];
   for (const [file, corrupt] of corruptions) {
