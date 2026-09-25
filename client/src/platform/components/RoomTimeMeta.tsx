@@ -24,10 +24,11 @@ export function RoomTimeMeta({ createdAt: _createdAt, startedAt, started = true,
   }, []);
   const duration = started && startedAt ? now - startedAt : 0;
   const clock = new Date(now).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const sharedClassName = `${className} room-time-meta`.trim();
   return (
     <>
-      <span className={className}>Duration <strong>{formatDuration(duration)}</strong></span>
-      <span className={className}>Time <strong>{clock}</strong></span>
+      <span className={`${sharedClassName} room-time-meta-duration`}>Duration <strong>{formatDuration(duration)}</strong></span>
+      <span className={`${sharedClassName} room-time-meta-clock`}>Time <strong>{clock}</strong></span>
     </>
   );
 }

@@ -6227,3 +6227,31 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
     min-height: 0;
   }
 }
+
+
+/* Part 17 setup/time hierarchy: connect Mega's mode and house-rule controls
+ * and distinguish elapsed match duration from the wall clock. */
+.halieus-game-options .mega-match-tabs:has(+ .free-parking-toggle) {
+  margin-bottom: 0 !important;
+  border-radius: 15px 15px 0 0 !important;
+}
+.halieus-game-options .mega-match-tabs + .free-parking-toggle {
+  margin-top: -1px !important;
+  border-radius: 0 0 14px 14px !important;
+  border-top-color: color-mix(in srgb,var(--game-create-accent) 34%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--game-create-accent) 5%,var(--hgr-surface-soft)) !important;
+}
+.room-time-meta {
+  font-variant-numeric: tabular-nums;
+}
+.poker-page .room-time-meta-duration {
+  border-color: color-mix(in srgb,var(--poker-accent,#e11d48) 24%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--poker-accent,#e11d48) 5%,var(--hgr-surface-soft)) !important;
+}
+.poker-page .room-time-meta-clock {
+  border-color: color-mix(in srgb,var(--hgr-brand) 38%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface-raised)) !important;
+}
+.poker-page .room-time-meta-clock strong {
+  letter-spacing: .035em;
+}

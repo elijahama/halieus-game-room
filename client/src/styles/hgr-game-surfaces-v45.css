@@ -387,34 +387,34 @@ html[data-skin-mega-board="grey-disc-board"] .mega-live-page {
    ========================================================================== */
 
 .poker-page {
-  --poker-room-material: linear-gradient(145deg, #30251f, #151310);
-  --poker-room-line: rgba(214,178,106,.22);
-  --poker-rail: #4f2f25;
-  --poker-rail-line: #7a4d3c;
+  --poker-room-material: rgba(10,12,18,.34);
+  --poker-room-line: rgba(225,29,72,.20);
+  --poker-rail: #260911;
+  --poker-rail-line: #7c2438;
   --poker-felt:
-    radial-gradient(circle at 50% 43%, rgba(255,255,255,.045), transparent 43%),
-    radial-gradient(circle at 50% 52%, transparent 46%, rgba(0,0,0,.18) 100%),
-    linear-gradient(145deg, #126044, #083d2e);
-  --poker-felt-line: #664338;
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,.04), transparent 52%),
+    linear-gradient(145deg, #173d32, #09251f);
+  --poker-felt-line: #4b101c;
   --poker-felt-ink: #f5fff9;
-  --poker-accent: #c9a45a;
-  --poker-seat-material: linear-gradient(145deg, rgba(255,255,255,.07), transparent 52%), rgba(18,24,22,.90);
-  --poker-seat-line: rgba(214,178,106,.25);
-  --poker-seat-ink: #f5f7f6;
-  --poker-seat-muted: #aebbb5;
+  --poker-accent: #e11d48;
+  --poker-seat-material: rgba(13,17,24,.92);
+  --poker-seat-line: rgba(225,29,72,.25);
+  --poker-seat-ink: #fff;
+  --poker-seat-muted: #b8adb2;
 }
 
 html[data-skin-poker-table="classic-felt"] .poker-page {
-  --poker-room-material: linear-gradient(145deg, #38291f, #17120f);
-  --poker-room-line: rgba(205,168,94,.25);
-  --poker-rail: #4d2f24;
-  --poker-rail-line: #76503e;
+  --poker-room-material: rgba(10,12,18,.34);
+  --poker-room-line: rgba(225,29,72,.20);
+  --poker-rail: #260911;
+  --poker-rail-line: #7c2438;
   --poker-felt:
-    radial-gradient(circle at 50% 43%, rgba(255,255,255,.05), transparent 42%),
-    radial-gradient(circle at 50% 52%, transparent 45%, rgba(0,0,0,.17) 100%),
-    linear-gradient(145deg, #126348, #073e2e);
-  --poker-felt-line: #6b493c;
-  --poker-accent: #d0aa5c;
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,.04), transparent 52%),
+    linear-gradient(145deg, #173d32, #09251f);
+  --poker-felt-line: #4b101c;
+  --poker-accent: #e11d48;
+  --poker-seat-material: rgba(13,17,24,.92);
+  --poker-seat-line: rgba(225,29,72,.25);
 }
 
 html[data-skin-poker-table="muted-poker-room"] .poker-page {
@@ -737,3 +737,77 @@ html[data-skin-poker-table="grey-disc-table"] .poker-page {
     inset 0 1px 0 rgba(255,255,255,.045) !important;
 }
 
+
+
+/* Part 17 game-identity corrections.
+ * Keep approved game geometry untouched: these rules restore semantic paint
+ * and readability only. */
+.mega-live-page .board-deck-chance {
+  background: linear-gradient(145deg, #f09a3d, #e58822) !important;
+  border-color: #a95d12 !important;
+  color: #fff !important;
+}
+.mega-live-page .board-deck-community {
+  background: linear-gradient(145deg, #438dd8, #2c76c7) !important;
+  border-color: #19579a !important;
+  color: #fff !important;
+}
+.mega-live-page .board-deck-bus {
+  background: linear-gradient(145deg, #d6534f, #c53a36) !important;
+  border-color: #912925 !important;
+  color: #fff !important;
+}
+.mega-live-page .board-space-chance {
+  background:
+    linear-gradient(color-mix(in srgb,#e58822 17%,transparent), color-mix(in srgb,#e58822 17%,transparent)),
+    var(--mega-space-material) !important;
+}
+.mega-live-page .board-space-community-chest {
+  background:
+    linear-gradient(color-mix(in srgb,#2c76c7 16%,transparent), color-mix(in srgb,#2c76c7 16%,transparent)),
+    var(--mega-space-material) !important;
+}
+.mega-live-page .board-space[data-space-name="Bus Ticket"] {
+  background:
+    linear-gradient(color-mix(in srgb,#c53a36 15%,transparent), color-mix(in srgb,#c53a36 15%,transparent)),
+    var(--mega-space-material) !important;
+}
+.mega-live-page .board-space-chance .board-space-icon { color:#c96b10 !important; }
+.mega-live-page .board-space-community-chest .board-space-icon { color:#2c76c7 !important; }
+.mega-live-page .board-space[data-space-name="Bus Ticket"] .board-space-icon { color:#c53a36 !important; }
+
+.mega-live-page .centre-turn-status {
+  border-color: color-mix(in srgb,var(--mega-accent) 44%,var(--mega-deck-line)) !important;
+  background: color-mix(in srgb,var(--mega-panel-base) 92%,#fff 8%) !important;
+  box-shadow: 0 7px 18px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+.mega-live-page .centre-turn-status strong {
+  color: var(--mega-centre-ink) !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 0 color-mix(in srgb,#fff 22%,transparent);
+}
+.mega-live-page .centre-roll-readout {
+  color: var(--mega-centre-ink) !important;
+  opacity: 1 !important;
+  font-weight: 760;
+  text-shadow: 0 1px 0 color-mix(in srgb,#fff 20%,transparent);
+}
+
+/* Dealer and blind chips are gameplay semantics, not table-skin accents. */
+.poker-page .poker-position-marker.is-dealer {
+  border: 2px solid #111 !important;
+  background: #f8fafc !important;
+  color: #111 !important;
+}
+.poker-page .poker-blind-chip.is-small-blind {
+  border-color: rgba(255,255,255,.82) !important;
+  background: #facc15 !important;
+  color: #111 !important;
+}
+.poker-page .poker-blind-chip.is-small-blind span { color:#111 !important; }
+.poker-page .poker-blind-chip.is-big-blind {
+  border-color: rgba(255,255,255,.82) !important;
+  background: #3b82f6 !important;
+  color: #fff !important;
+}
+.poker-page .poker-blind-chip.is-big-blind span { color:#fff !important; }
