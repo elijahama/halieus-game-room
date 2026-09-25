@@ -103,7 +103,7 @@ export function DiceRollOverlay({
 
   return (
     <div
-      className={`dice-roll-overlay ${rolling ? "is-rolling" : "is-settled"} ${!rolling && doubles ? `is-doubles-stage-${Math.max(1, doublesStage)}` : ""}`}
+      className={`dice-roll-overlay ${rolling ? "is-rolling" : "is-settled"} ${!rolling && doubles && doublesStage > 0 ? `is-doubles-stage-${doublesStage}` : ""}`}
       aria-live="assertive"
       aria-label={rolling ? "Dice rolling" : `Dice result ${roll.white1}, ${roll.white2}`}
     >
@@ -141,7 +141,7 @@ export function DiceRollOverlay({
                   ? "Third double · Jail"
                   : doublesStage === 2
                     ? "Doubles! One more sends you to Jail"
-                    : "Doubles! Roll again"
+                    : doublesStage === 1 ? "Doubles! Roll again" : "Doubles!"
                 : `Move ${roll.movementTotal}`}
         </strong>
       </div>

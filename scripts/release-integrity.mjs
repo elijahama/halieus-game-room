@@ -62,6 +62,7 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
+  'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',
   'scripts/generate-platform-icons.mjs', 'tests/regression-protected-brand-assets.mjs',
   'tests/regression-website-identity.mjs', 'tests/browser-website-identity.mjs',
   'tests/fixtures/pre2b-protected-assets.json', 'tests/fixtures/pre2b-website-assets.json',

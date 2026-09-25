@@ -1,3 +1,4 @@
+import { ModalPortal } from "../../../platform/components/ModalPortal";
 import type { RankedLeaderboardEntry, RankedMatchSummary } from "../../../../../shared/games/mega-board/ranked";
 
 interface Props {
@@ -18,7 +19,7 @@ interface Props {
 
 export function LeaderboardModal({ entries, recentMatches, loading, error, theme, onClose, onRefresh }: Props) {
   return (
-    <div className="leaderboard-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+    <ModalPortal onClose={onClose}><div className="leaderboard-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section className="leaderboard-modal glass-card" role="dialog" aria-modal="true" aria-label="Ranked leaderboard" style={{ background: theme.cardBackground, borderColor: theme.border, color: theme.text }}>
         <header className="leaderboard-header">
           <div><p className="modal-eyebrow">Ranked</p><h2>🏆 Leaderboard</h2><small style={{ color: theme.mutedText }}>Placement drives rating. Performance and awards add bonus rating.</small></div>
@@ -61,6 +62,6 @@ export function LeaderboardModal({ entries, recentMatches, loading, error, theme
           <section className="leaderboard-recent"><h3>Recent Ranked matches</h3>{recentMatches.slice(0, 6).map((match) => <div key={match.matchId} style={{ borderColor: theme.border }}><strong>{match.roomCode}</strong><span>{new Date(match.completedAt).toLocaleString()}</span><small style={{ color: theme.mutedText }}>{match.players.map((player) => `#${player.finishPosition} ${player.playerName} (${player.ratingDelta >= 0 ? "+" : ""}${player.ratingDelta})`).join(" · ")}</small></div>)}</section>
         )}
       </section>
-    </div>
+    </div></ModalPortal>
   );
 }

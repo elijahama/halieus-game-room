@@ -12,7 +12,7 @@ import {
   readCustomTheme,
   readThemeMode,
   readThemeProfileId,
-  isDarkColour,
+  readableInk,
 } from "../theme";
 
 interface ThemeButtonProps {
@@ -102,10 +102,10 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     : mode === "custom" ? "Custom"
     : mode[0].toUpperCase() + mode.slice(1);
   const activeIcon = mode === "system" ? "◐" : mode === "light" ? "○" : mode === "dark" ? "●" : mode === "custom" ? "✦" : "◆";
-  const previewSurfaceInk = isDarkColour(draft.surface) ? "#f8fafc" : "#101318";
-  const previewSurfaceMuted = isDarkColour(draft.surface) ? "#cbd5e1" : "#4b5563";
-  const previewPageInk = isDarkColour(draft.page) ? "#f8fafc" : "#101318";
-  const previewPageMuted = isDarkColour(draft.page) ? "#cbd5e1" : "#4b5563";
+  const previewSurfaceInk = readableInk([draft.surface], "#101318");
+  const previewSurfaceMuted = readableInk([draft.surface], "#4b5563");
+  const previewPageInk = readableInk([draft.page], "#101318");
+  const previewPageMuted = readableInk([draft.page], "#4b5563");
 
   useEffect(() => {
     const handleMode = (event: Event) => setMode((event as CustomEvent<HalieusThemeMode>).detail);

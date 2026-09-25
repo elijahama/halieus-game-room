@@ -42,10 +42,12 @@ try {
     account: { id: 'identity-test', username: 'tester', displayName: 'Release Test', role: 'player', status: 'active', avatar: 'H', playerColor: '#8b5cf6', createdAt: 0, lastLoginAt: null },
   } }));
   await page.goto(base);
-  await page.getByRole('button', { name: 'Build Info', exact: true }).click();
-  const info = page.getByRole('dialog', { name: 'Build information' });
-  assert.equal(await info.locator('h3').textContent(), `Build ${label}`);
-  assert.equal(await info.locator('code').textContent(), release.fingerprint);
+  await page.locator('.halieus-side-account').click();
+  const info = page.locator('.account-build-info-label');
+  await info.waitFor();
+  assert.equal((await info.textContent()).trim(), `Build ${label}`);
+  assert.equal(await info.getAttribute('aria-label'), `Halieus Game Room build ${label}`);
+  assert.equal(await page.getByRole('button', { name: 'Build Info', exact: true }).count(), 0);
   assert.equal(await page.locator('html').getAttribute('data-halieus-build'), version);
   assert.equal(await page.locator('html').getAttribute('data-halieus-release'), release.fingerprint);
   const expectedCache = `halieus-shell-v${version.replaceAll('.', '-')}-${release.fingerprint}`;

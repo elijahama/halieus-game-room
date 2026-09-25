@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { matchBoardAppearance } from "./platform/boardAppearance";
 import type {
   AiDifficulty,
   GameState,
@@ -586,9 +587,12 @@ export default function App() {
     const root = document.documentElement;
     root.dataset.skinInterface = skinPreferences.interface;
     root.dataset.skinCards = skinPreferences.cards;
-    root.dataset.skinMegaBoard = skinPreferences["mega-board"];
+    root.dataset.skinMegaBoard = matchBoardAppearance(
+      gameStarted && gameState ? `${betaMode ? "beta" : authStatus?.account?.id ?? "guest"}:${gameState.roomCode}:${gameState.gameStartedAt}` : null,
+      skinPreferences["mega-board"],
+    );
     root.dataset.skinPokerTable = skinPreferences["poker-table"];
-  }, [skinPreferences]);
+  }, [skinPreferences, gameStarted, gameState?.roomCode, gameState?.gameStartedAt, betaMode, authStatus?.account?.id]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");

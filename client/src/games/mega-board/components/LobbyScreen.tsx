@@ -1,3 +1,4 @@
+import { ModalPortal } from "../../../platform/components/ModalPortal";
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import { useEffect, useState } from "react";
 
@@ -99,7 +100,7 @@ export function LobbyScreen({
     >
 
       {inviteOpen && (
-        <div className="modal-backdrop lobby-invite-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setInviteOpen(false); }}>
+        <ModalPortal onClose={() => setInviteOpen(false)}><div className="modal-backdrop lobby-invite-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setInviteOpen(false); }}>
           <section className="lobby-invite-modal" role="dialog" aria-modal="true" aria-label="Invite players to Mega Board">
             <button type="button" className="icon-button lobby-invite-close" aria-label="Close invite panel" onClick={() => setInviteOpen(false)}>×</button>
             <InviteLobbyPanel
@@ -115,7 +116,7 @@ export function LobbyScreen({
               theme={theme}
             />
           </section>
-        </div>
+        </div></ModalPortal>
       )}
 
       <section className="lobby-card lobby-card-v2 glass-card" style={{ background: theme.cardBackground, borderColor: theme.border }}>

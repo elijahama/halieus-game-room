@@ -44,6 +44,17 @@ export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount
   const [status, setStatus] = useState("Connecting chat…");
   const [unread, setUnread] = useState(0);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const dockRef = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    if (embedded || !dockRef.current) return;
+    const root = document.documentElement;
+    const dock = dockRef.current;
+    const measure = () => { if (dock.isConnected) root.style.setProperty("--hgr-room-dock-clearance", `${Math.ceil(dock.getBoundingClientRect().height) + 24}px`); };
+    const observer = new ResizeObserver(measure);
+    observer.observe(dockRef.current);
+    measure();
+    return () => { observer.disconnect(); root.style.removeProperty("--hgr-room-dock-clearance"); };
+  }, [embedded]);
   const openRef = useRef(open);
   const tabRef = useRef(activeTab);
   openRef.current = open;
@@ -192,7 +203,7 @@ export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount
         </section>
       )}
 
-      <button type="button" className="room-chat-trigger" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+      <button ref={dockRef} type="button" className="room-chat-trigger" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
         <span className="room-chat-trigger-icon" aria-hidden="true"><HgrIcon name="chat" size={18} /></span>
         <strong>Room</strong>
         <span className="room-chat-preview">{latestMessage ? `${latestMessage.senderName}: ${latestMessage.text}` : "Chat · Game Log · Spectators"}</span>

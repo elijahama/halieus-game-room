@@ -34,17 +34,18 @@
   gap: 3px !important;
 }
 .halieus-theme-library-launch strong {
-  font-size: 11px !important;
-  line-height: 1.15 !important;
+  font-size: var(--hgr-control-text,14px) !important;
+  line-height: 1.25 !important;
 }
 .halieus-theme-library-launch small {
-  font-size: 8px !important;
+  font-size: var(--hgr-caption-text,12px) !important;
   line-height: 1.3 !important;
   white-space: normal !important;
   overflow-wrap: anywhere;
 }
 .theme-preview-actions {
   position: relative !important;
+  display: grid !important;
   grid-template-columns: minmax(0,1fr) auto auto !important;
   min-height: 48px !important;
   gap: 8px !important;
@@ -53,6 +54,16 @@
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+.halieus-create-panel.halieus-create-modal.pre-game-shell {
+  box-sizing: border-box !important;
+  max-height: calc(100dvh - 32px) !important;
+  overflow-y: auto !important;
+  margin: 0 !important;
+}
+.halieus-create-backdrop.halieus-viewport-overlay {
+  align-items: center !important;
+  padding: 16px !important;
 }
 .theme-preview-actions > small {
   align-self: center;
@@ -120,8 +131,8 @@
 .halieus-player-identity-name-row .halieus-player-identity-status {
   flex: 0 0 auto;
   margin: 0;
-  font-size: 8px;
-  line-height: 1;
+  font-size: var(--hgr-caption-text,12px);
+  line-height: 1.2;
   letter-spacing: .02em;
 }
 .halieus-player-directory .halieus-player-identity {
@@ -244,6 +255,23 @@
 /* Mega Board pre-game ownership                                               */
 /* -------------------------------------------------------------------------- */
 
+:is(.mega-live-page,.lobby-shell-v2,.mega-mode-configuration,.mario-results-shell) {
+  --hgr-brand: #15803d;
+  --hgr-yellow: #15803d;
+  --hgr-yellow-strong: #166534;
+  --hgr-brand-ink: #fff;
+  --hgr-action-bg: #15803d;
+  --hgr-action-ink: #fff;
+  --mega-focus: #15803d;
+}
+.lobby-shell-v2 .host-badge-modern {
+  color: var(--mm-text) !important;
+  background: var(--mm-surface-2) !important;
+}
+html[data-theme="light"] .lobby-shell-v2 .turn-timer-settings-panel small {
+  color: #4b5563 !important;
+}
+
 .mega-create-cosmetics {
   display: grid;
   grid-template-columns: minmax(0,1fr) auto;
@@ -293,11 +321,16 @@ html[data-theme="dark"] .mega-create-cosmetics p { color: #4ade80 !important; }
     align-items: stretch !important;
   }
   .lobby-shell-v2 .players-panel-v2 {
-    min-height: 350px !important;
-    max-height: min(470px,calc(100dvh - 405px)) !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+    position: relative;
   }
   .lobby-shell-v2 .modern-player-list-v2 {
     min-height: 0 !important;
+    max-height: none !important;
+    align-content: start;
+    flex: 1 1 0 !important;
     overflow-y: auto !important;
     overscroll-behavior: contain;
   }
@@ -332,10 +365,16 @@ html[data-theme="dark"] .mega-create-cosmetics p { color: #4ade80 !important; }
   border-color: color-mix(in srgb,#16a34a 42%,var(--mm-border)) !important;
   background: color-mix(in srgb,#16a34a 7%,var(--mm-surface-1)) !important;
 }
+.lobby-board-appearance-card .halieus-skins-trigger:focus-visible {
+  outline-color: #15803d !important;
+  box-shadow: 0 0 0 3px rgba(21,128,61,.2) !important;
+}
+.lobby-board-appearance-card .halieus-skins-trigger strong { font-size: 14px !important; }
+.lobby-board-appearance-card .halieus-skins-trigger small { font-size: 12px !important; }
 .lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
 .lobby-shell-v2 .lobby-start-game {
   border-color: color-mix(in srgb,#16a34a 72%,#000 10%) !important;
-  background: #16a34a !important;
+  background: #15803d !important;
   color: #fff !important;
   box-shadow: none !important;
 }
@@ -406,12 +445,12 @@ html[data-theme="light"] .lobby-shell-v2 .player-copy > span {
 .mega-live-page .centre-turn-status span { color: #a7d9b7 !important; }
 .mega-live-page .centre-turn-status strong { color: #f4fff7 !important; }
 html[data-theme="light"] .mega-live-page .centre-turn-status {
-  background: #173b29 !important;
-  border-color: #2f7650 !important;
-  color: #fff !important;
+  background: #e3f0e7 !important;
+  border-color: #47855d !important;
+  color: #102e1c !important;
 }
-html[data-theme="light"] .mega-live-page .centre-turn-status span { color: #c5ebd0 !important; }
-html[data-theme="light"] .mega-live-page .centre-turn-status strong { color: #fff !important; }
+html[data-theme="light"] .mega-live-page .centre-turn-status span { color: #28553a !important; }
+html[data-theme="light"] .mega-live-page .centre-turn-status strong { color: #102e1c !important; }
 
 .dice-roll-stage {
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
@@ -490,9 +529,15 @@ html[data-theme="light"] .mega-live-page .centre-turn-status strong { color: #ff
 /* Bus Ticket deck information reveals counts, never deck order. */
 .board-bus-ticket-button {
   appearance: none;
+  pointer-events: auto !important;
   font: inherit;
   color: inherit;
   cursor: pointer;
+}
+.mega-live-page .board-centre-decoration { z-index: 5; }
+.mega-live-page .board-primary-action.is-primary {
+  background: #166534 !important;
+  color: #fff !important;
 }
 .board-bus-ticket-button:hover,
 .board-bus-ticket-button:focus-visible {
@@ -502,7 +547,7 @@ html[data-theme="light"] .mega-live-page .centre-turn-status strong { color: #ff
 }
 .bus-ticket-info-layer {
   position: fixed;
-  z-index: 230;
+  z-index: 90000;
   inset: 0;
   display: grid;
   place-items: center;
@@ -567,6 +612,10 @@ html[data-theme="light"] .mega-live-page .centre-turn-status strong { color: #ff
 
 /* Floating room activity reserves its own clearance. */
 :root { --hgr-room-dock-clearance: 64px; }
+body:has(.room-chat-shell.is-floating) :is(.lobby-shell,.winner-shell,.game-page) {
+  padding-bottom: calc(var(--hgr-room-dock-clearance) + env(safe-area-inset-bottom)) !important;
+  scroll-padding-bottom: var(--hgr-room-dock-clearance);
+}
 body:has(.room-chat-shell.is-floating) .lobby-card-v2,
 body:has(.room-chat-shell.is-floating) .mario-results-card {
   margin-bottom: var(--hgr-room-dock-clearance) !important;
@@ -605,13 +654,16 @@ body:has(.room-chat-shell.is-floating) .game-page .player-rail {
   transform: none !important;
 }
 .leaderboard-podium > article.is-rank-1 {
-  min-height: 218px !important;
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 270px !important;
   padding-top: 20px !important;
   border-color: color-mix(in srgb,#e5b52e 52%,var(--mm-border)) !important;
   background: linear-gradient(180deg,color-mix(in srgb,#e5b52e 10%,var(--mm-surface-2)),var(--mm-surface-2)) !important;
 }
-.leaderboard-podium > article.is-rank-2 { min-height: 184px !important; }
-.leaderboard-podium > article.is-rank-3 { min-height: 164px !important; }
+.leaderboard-podium > article.is-rank-2 { grid-column: 1; grid-row: 1; min-height: 240px !important; }
+.leaderboard-podium > article.is-rank-3 { grid-column: 3; grid-row: 1; min-height: 210px !important; }
+.leaderboard-podium > article > strong { overflow-wrap: anywhere; min-height: 2.4em; line-height: 1.2; }
 .leaderboard-podium-medal {
   position: absolute;
   top: -15px;
@@ -653,7 +705,21 @@ body:has(.room-chat-shell.is-floating) .game-page .player-rail {
   text-transform: uppercase;
 }
 
-.mario-results-card { padding-bottom: 18px !important; }
+.mario-results-shell { overflow: visible !important; }
+.mario-results-card { min-height: 0 !important; padding-bottom: 18px !important; }
+.mario-results-card .results-tab-body { overflow: visible; }
+.mario-results-card .results-tabs button.is-active {
+  border-color: #15803d !important;
+  box-shadow: inset 0 -3px 0 #15803d !important;
+}
+.mario-results-card .modal-eyebrow,
+.mario-results-card .results-awards-grid article p { color: #15803d !important; }
+.mario-results-card .results-footer .button-primary {
+  background: #15803d !important;
+  color: #fff !important;
+  border-color: #166534 !important;
+  box-shadow: none !important;
+}
 .final-player-row {
   min-height: 68px !important;
   padding-block: 9px !important;
@@ -671,11 +737,18 @@ body:has(.room-chat-shell.is-floating) .game-page .player-rail {
   gap: 8px !important;
 }
 .results-awards-grid article {
+  display: grid !important;
+  grid-template-columns: 38px minmax(0,1fr);
+  align-content: center;
+  text-align: left;
+  column-gap: 10px;
   min-height: 90px !important;
   padding: 12px !important;
   border-radius: 12px !important;
 }
-.results-awards-grid article > span { font-size: 28px !important; }
+.results-awards-grid article > span { font-size: 28px !important; grid-row: 1 / 4; align-self: center; }
+.results-awards-grid article > :not(span) { grid-column: 2; margin: 0; }
+.results-awards-grid article > small { color: var(--mm-muted) !important; }
 .results-footer {
   position: sticky !important;
   bottom: 0 !important;
@@ -684,6 +757,10 @@ body:has(.room-chat-shell.is-floating) .game-page .player-rail {
   padding: 12px 0 0 !important;
   background: color-mix(in srgb,var(--mm-surface-1) 94%,transparent) !important;
   backdrop-filter: blur(10px);
+}
+body:has(.room-chat-shell.is-floating) .results-footer {
+  bottom: var(--hgr-room-dock-clearance) !important;
+  scroll-margin-bottom: calc(var(--hgr-room-dock-clearance) + 16px);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -742,3 +819,10 @@ body:has(.room-chat-shell.is-floating) .game-page .player-rail {
 @media (prefers-reduced-motion: reduce) {
   .dice-roll-stage { transition: none !important; }
 }
+
+/* Close actions stay inside their owning surface. */
+.results-hero > div:nth-child(2) { min-width: 0; flex: 1; }
+.results-hero .results-close { position: static; align-self: start; flex: 0 0 40px; width: 40px; height: 40px; border: 1px solid var(--mm-border); border-radius: 10px; background: var(--mm-surface-2); color: var(--mm-text); font-size: 22px; cursor: pointer; }
+html[data-theme="light"] .mario-results-card .winner-subtitle { color: #4b5563 !important; }
+html[data-theme="dark"] .mario-results-card .modal-eyebrow,
+html[data-theme="dark"] .mario-results-card .results-awards-grid article p { color: #86efac !important; }

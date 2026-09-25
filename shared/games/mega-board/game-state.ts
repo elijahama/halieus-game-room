@@ -106,6 +106,8 @@ export interface AiDecisionEvent {
 }
 
 export interface DiceRoll {
+  /** Server-resolved chain at this roll; absent for jail/ordering/legacy rolls. */
+  doublesStage?: 0 | 1 | 2 | 3;
   white1: number;
   white2: number;
   speed: SpeedDieFace | null;

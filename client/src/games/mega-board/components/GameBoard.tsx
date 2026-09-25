@@ -1,3 +1,4 @@
+import { ModalPortal } from "../../../platform/components/ModalPortal";
 import {
   useEffect,
   useMemo,
@@ -1777,12 +1778,7 @@ export function GameBoard({
         animatedRoll && (
           <DiceRollOverlay
             roll={animatedRoll}
-            doublesStage={(
-              animatedRoll.white1 === animatedRoll.white2 &&
-              gameState.players.find((player) => player.id === rollingPlayerId)?.inJail
-                ? 3
-                : Math.min(2, Math.max(0, gameState.consecutiveDoubles))
-            ) as 0 | 1 | 2 | 3}
+            doublesStage={animatedRoll.doublesStage ?? 0}
             settleMs={
               gameState.players.find((player) => player.id === rollingPlayerId)?.isAi ||
               gameState.players.find((player) => player.id === rollingPlayerId)?.autopilotEnabled
@@ -1825,7 +1821,7 @@ export function GameBoard({
         </div>
       )}
       {busTicketInfoOpen && (
-        <div className="bus-ticket-info-layer" onMouseDown={() => setBusTicketInfoOpen(false)}>
+        <ModalPortal onClose={() => setBusTicketInfoOpen(false)}><div className="bus-ticket-info-layer" onMouseDown={() => setBusTicketInfoOpen(false)}>
           <section
             className="bus-ticket-info-card"
             role="dialog"
@@ -1834,7 +1830,7 @@ export function GameBoard({
             onMouseDown={(event) => event.stopPropagation()}
             style={{ background: theme.cardBackground, borderColor: theme.border, color: theme.text }}
           >
-            <button type="button" className="modal-close-button" onClick={() => setBusTicketInfoOpen(false)}>×</button>
+            <button type="button" className="modal-close-button" aria-label="Close Bus Ticket information" onClick={() => setBusTicketInfoOpen(false)}>×</button>
             <span className="bus-ticket-info-icon">🚌</span>
             <p className="modal-eyebrow">Bus Ticket deck</p>
             <h2>{gameState.busTicketsRemaining} remaining</h2>
@@ -1844,7 +1840,7 @@ export function GameBoard({
             </div>
             <p style={{ color: theme.mutedText }}>There are three expiry tickets in a fresh deck. Drawing one keeps the newly drawn ticket but expires all Bus Tickets already being held.</p>
           </section>
-        </div>
+        </div></ModalPortal>
       )}
       {freeParkingInfoOpen && (
         <div className="free-parking-info-layer" onMouseDown={() => setFreeParkingInfoOpen(false)}>

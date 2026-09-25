@@ -178,7 +178,7 @@ assert.match(app,/dataset\.skinCards/,"Card skins must apply from the app root")
 assert.match(app,/dataset\.skinMegaBoard/,"Mega Board skins must apply from the app root");
 assert.match(app,/dataset\.skinPokerTable/,"Poker table skins must apply independently from card backs");
 assert.match(skinButton,/ratings/,"Contextual cosmetic pickers must still accept authoritative rating context when mounted inside a game");
-assert.doesNotMatch(home,/SkinLibraryButton/,"Home sidebar must not expose the cross-game cosmetic library; cosmetics are contextual");
+assert.doesNotMatch(home.slice(home.indexOf('<aside className={`halieus-sidebar'), home.indexOf('</aside>')),/<SkinLibraryButton/,"Home sidebar must not expose the cross-game cosmetic library; cosmetics are contextual");
 assert.match(read("server/src/platform/accounts.ts"),/getRankedLeaderboard\(\)/,"Cosmetic rating gates must use authoritative server ratings");
 assert.match(skins,/kind: "rating"/,"Cosmetic model must support real rating-gated unlocks");
 assert.match(skins,/rating: 1200/,"At least one Mega Board cosmetic must demonstrate a real rating gate");
@@ -297,7 +297,7 @@ assert.match(home,/BOARD APPEARANCE[\s\S]*?SkinLibraryButton[\s\S]*?slots=\{\["m
 assert.match(megaDice,/doublesStage[\s\S]*?Third double · Jail/s,"Mega Board dice overlay must communicate escalating doubles risk");
 assert.match(megaBoard,/expiringBusTicketsRemaining[\s\S]*?Bus Ticket deck/s,"Bus Ticket deck must expose remaining expiry-ticket inventory without revealing order");
 assert.match(megaLeaderboard,/\[entries\[1\], entries\[0\], entries\[2\]\]/,"Mega Board leaderboard must render a true 2nd/1st/3rd podium order");
-assert.match(megaLeaderboard,/profilePicture[\s\S]*?leaderboard-podium-avatar/s,"Ranked podium must use player profile pictures with identity fallback");
+assert.match(megaLeaderboard,/leaderboard-podium-avatar[\s\S]*?entry.profilePicture[\s\S]*?entry.avatar/s,"Ranked podium must use player profile pictures with identity fallback");
 assert.match(accountPanel,/Gamer Score[\s\S]*?Achievements[\s\S]*?Verified games/s,"Player profile headline must be accomplishment-first rather than win-rate-first");
 assert.match(release451Css,/HGR 4\.5\.1/,"Mega Board 4.5.1 final cascade contract must remain explicit");
 assert.match(release451Css,/is-doubles-stage-1[\s\S]*?is-doubles-stage-2[\s\S]*?is-doubles-stage-3/s,"Doubles escalation must retain three visible warning stages");

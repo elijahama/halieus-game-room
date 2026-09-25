@@ -285,6 +285,7 @@ export function WinnerScreen({
             <h1>{winner?.name ?? "Winner"} wins!</h1>
             <p className="winner-subtitle">{gameState.blitz ? "Blitz result: all 37 ownable assets were shuffled and dealt evenly by count with no value/group balancing; normal Mega Board rules decided the outcome." : gameState.ranked ? "Ranked result: placement is the main rating driver, with performance and awards adding meaningful bonus rating." : "Game placement decides the winner. Stats and awards are post-match analysis only."}</p>
           </div>
+          <button type="button" className="results-close" onClick={onExit} aria-label={isHost ? "Close completed room and return to Game Room" : "Close results and return to Game Room"}>×</button>
         </header>
 
         <nav className="results-tabs" aria-label="Final game results">

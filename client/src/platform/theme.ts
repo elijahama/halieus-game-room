@@ -171,10 +171,23 @@ function rgb(hex: string): [number, number, number] {
   return [Number.parseInt(value.slice(0, 2), 16), Number.parseInt(value.slice(2, 4), 16), Number.parseInt(value.slice(4, 6), 16)];
 }
 
-export function isDarkColour(hex: string): boolean {
+export function colourLuminance(hex: string): number {
   const [r, g, b] = rgb(hex).map((channel) => channel / 255) as [number, number, number];
   const linear = [r, g, b].map((channel) => channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
-  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2] < 0.36;
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+
+export function isDarkColour(hex: string): boolean {
+  return colourLuminance(hex) < 0.36;
+}
+
+export function readableInk(surfaces: string[], preferred?: string): string {
+  const contrast = (ink: string) => Math.min(...surfaces.map(surface => {
+    const a = colourLuminance(ink), b = colourLuminance(surface);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }));
+  if (preferred && contrast(preferred) >= 4.5) return preferred;
+  return contrast("#000000") >= contrast("#ffffff") ? "#000000" : "#ffffff";
 }
 
 function mix(a: string, b: string, weight: number): string {
@@ -187,16 +200,20 @@ function mix(a: string, b: string, weight: number): string {
 export function customThemeVariables(theme: HalieusCustomTheme): Record<string, string> {
   const pageDark = isDarkColour(theme.page);
   const surfaceDark = isDarkColour(theme.surface);
-  const text = surfaceDark ? "#f8fafc" : "#101318";
-  const textSoft = surfaceDark ? "#d7dbe2" : "#343a44";
-  const muted = surfaceDark ? "#a6adb8" : "#68707c";
-  const pageText = pageDark ? "#f8fafc" : "#101318";
-  const raised = mix(theme.surface, surfaceDark ? "#ffffff" : "#000000", surfaceDark ? 0.05 : 0.025);
-  const soft = mix(theme.surface, surfaceDark ? "#ffffff" : "#000000", surfaceDark ? 0.09 : 0.06);
-  const strong = mix(theme.surface, surfaceDark ? "#ffffff" : "#000000", surfaceDark ? 0.15 : 0.11);
+  const text = readableInk([theme.surface], surfaceDark ? "#f8fafc" : "#101318");
+  // Derived surfaces move away from the foreground, including middle-luminance
+  // custom colours where neither a fixed dark nor a fixed light palette works.
+  const surfaceTarget = colourLuminance(text) > 0.5 ? "#000000" : "#ffffff";
+  const raised = mix(theme.surface, surfaceTarget, 0.05);
+  const soft = mix(theme.surface, surfaceTarget, 0.09);
+  const strong = mix(theme.surface, surfaceTarget, 0.15);
+  const surfaces = [theme.surface, raised, soft, strong];
+  const textSoft = readableInk(surfaces, surfaceDark ? "#d7dbe2" : "#343a44");
+  const muted = readableInk(surfaces, surfaceDark ? "#a6adb8" : "#68707c");
+  const pageText = readableInk([theme.page], pageDark ? "#f8fafc" : "#101318");
   const accentNeedsDepth = !isDarkColour(theme.accent);
   const action = accentNeedsDepth ? mix(theme.accent, "#000000", 0.24) : theme.accent;
-  const brandInk = isDarkColour(action) ? "#ffffff" : "#111318";
+  const brandInk = readableInk([action], "#ffffff");
   return {
     "--hgr-page": theme.page,
     "--hgr-surface": theme.surface,

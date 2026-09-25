@@ -41,7 +41,7 @@ try {
     ['package-lock.json', (s) => s.replace(version, '4.1.1')],
     ['RELEASE.json', (s) => s.replace(version, '4.1.1')],
     ['shared/release.ts', (s) => s.replace(version, '4.1.1')],
-    ['client/public/sw.js', (s) => s.replace('v4-5-0', 'v4-1-1')],
+    ['client/public/sw.js', (s) => s.replace(`v${version.replaceAll('.', '-')}`, 'v4-1-1')],
     ['client/index.html', (s) => s.replaceAll(`?v=${version}`, '?v=4.1.1')],
     ['client/src/platform/accounts/AccountPanel.tsx', (s) => s.replace('Build {APP_RELEASE_LABEL}', 'Build 4.1.1')],
     ['server/src/index.ts', (s) => s.replace('version: APP_VERSION', 'version: "4.1.1"')],

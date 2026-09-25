@@ -241,6 +241,7 @@ export function registerGameplayHandlers(
         white2,
         speed,
         movementTotal,
+        doublesStage: rolledDoubles && !rolledTriples ? Math.min(3, gameState.consecutiveDoubles + 1) as 1 | 2 | 3 : 0,
       };
       gameState.rollSequence = (gameState.rollSequence ?? 0) + 1;
 

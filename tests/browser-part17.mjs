@@ -44,6 +44,7 @@ try{
   await page.waitForFunction(()=>document.documentElement.dataset.theme==="custom");await page.getByRole("button",{name:"Cancel",exact:true}).click();await page.waitForFunction(()=>document.documentElement.dataset.theme==="profile");
   signedIn=true;await page.reload();await page.locator(".halieus-shell").waitFor();
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${device} home overflow`);
+  assert.equal(await page.locator(".modal-close-button:visible,.results-close:visible").count(),0,"Home has a stray modal close control");
   if(process.env.HGR_SCREENSHOTS)await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-part17-home.png`)});
   if(width<700){const avatar=await page.locator(".halieus-mobile-account").boundingBox();assert.ok(avatar.x>=0&&avatar.x+avatar.width<=width,"Home profile button clipped");}
   const start=page.locator(".halieus-showcase-actions button.button-primary").first();{await start.click();await page.locator(".pre-game-shell").waitFor();const box=await page.locator(".pre-game-shell").boundingBox();assert.ok(box.y>=0&&box.y+box.height<=height+1,`${device} setup containment`);await page.keyboard.press("Escape");await page.locator(".pre-game-shell").waitFor({state:"hidden"});}
@@ -68,7 +69,7 @@ try{
       for(const size of ["Small","Standard","Large"]){await group.getByRole("button",{name:size,exact:true}).click();sizes.push(await group.getByRole("button",{name:size,exact:true}).evaluate(el=>parseFloat(getComputedStyle(el).fontSize)));}
       assert.ok(sizes[0]<sizes[1]&&sizes[1]<sizes[2],`Text scale ineffective: ${sizes}`);
       await group.getByRole("button",{name:"Standard",exact:true}).click();
-      await dialog.getByRole("button",{name:/Build info/}).click();await page.getByRole("dialog",{name:"Build information"}).waitFor();await page.keyboard.press("Escape");assert.ok(await dialog.isVisible(),"Closing nested dialog closed game menu");
+      await dialog.locator(".halieus-theme-trigger").click();await page.locator(".halieus-theme-popover").waitFor();assert.ok(await page.locator(".halieus-theme-popover").evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+20));}),"Theme modal is behind game menu");await page.keyboard.press("Escape");assert.ok(await dialog.isVisible(),"Closing nested dialog closed game menu");
     }
     await page.keyboard.press("Escape");await dialog.waitFor({state:"hidden"});
     console.log(`PASS ${device} ${game}: live/recovery containment and reachable centered menu`);
