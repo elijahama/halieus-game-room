@@ -17186,7 +17186,13 @@ html[data-theme="light"] .halieus-mobile-bar,html[data-theme="light"] .halieus-m
 .halieus-view{max-width:1180px!important}
 .halieus-hero-clean{display:block!important;padding:26px 0 20px!important}
 .halieus-hero-clean h1{font-size:clamp(2.8rem,5vw,4.7rem)!important}
-.halieus-continue-home{margin:4px 0 22px;max-width:760px}
+.halieus-continue-home{margin:4px 0 22px;max-width:none;width:100%;box-sizing:border-box}
+.halieus-continue-home .halieus-continue-list{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.halieus-continue-home .halieus-continue-row{min-width:0;border:1px solid color-mix(in srgb,var(--hgr-brand) 12%,var(--hgr-border));background:var(--hgr-surface-soft)}
+.halieus-continue-home .halieus-continue-row>button:first-child{min-width:0}
+.halieus-continue-home .halieus-continue-row>button:first-child span{min-width:0}
+.halieus-continue-home .halieus-continue-row>button:first-child strong,.halieus-continue-home .halieus-continue-row>button:first-child small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:760px){.halieus-continue-home .halieus-continue-list{grid-template-columns:1fr}}
 .halieus-home-games-primary{margin-top:8px!important}
 .halieus-home-games-primary>header{margin-bottom:14px!important}
 .halieus-featured-row{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:12px!important}
