@@ -1,4 +1,4 @@
-import { CORE_THEME_IDS, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
+import { CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
 import { accountApi } from "../accounts/api";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
@@ -73,6 +73,16 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [menuOpen, setMenuOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [betaMode, setBetaMode] = useState(() => sessionStorage.getItem("halieus-beta-test-mode") === "1");
+
+  useEffect(() => {
+    const syncBetaMode = (event?: Event) => {
+      const detail = event instanceof CustomEvent ? event.detail : undefined;
+      setBetaMode(typeof detail === "boolean" ? detail : sessionStorage.getItem("halieus-beta-test-mode") === "1");
+    };
+    window.addEventListener("halieus-beta-mode", syncBetaMode);
+    return () => window.removeEventListener("halieus-beta-mode", syncBetaMode);
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -134,7 +144,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     const next = pending.current;
     setApplying(true); setThemeError("");
     try {
-      if (next?.mode === "profile" && !CORE_THEME_IDS.includes(next.profile)) {
+      if (next?.mode === "profile" && !CORE_THEME_IDS.includes(next.profile) && !betaMode) {
         await accountApi("/accounts/me/themes", {method:"POST",body:JSON.stringify({id:next.profile})});
       }
       // Closing/cancelling while a request is in flight must not commit a stale preview.
@@ -151,7 +161,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     preview({ ...committedTheme(), mode: next });
   }
   function selectProfile(id: HalieusThemeProfileId) {
-    if (!entitlements.includes(id)) return;
+    if (!themeIsAvailable(id, entitlements, betaMode)) return;
     preview({ ...committedTheme(), mode: "profile", profile: id });
   }
 
@@ -248,7 +258,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                       <small>{group.description}</small>
                     </div>
                     {group.profiles.map((profile) => (
-                      <button type="button" key={profile.id} disabled={!entitlements.includes(profile.id)} aria-label={`${profile.label} · ${themeUnlockLabel(profile.id)}`} className={mode === "profile" && profileId === profile.id ? "is-active" : ""} onClick={() => selectProfile(profile.id)}>
+                      <button type="button" key={profile.id} disabled={!themeIsAvailable(profile.id, entitlements, betaMode)} aria-label={`${profile.label} · ${themeUnlockLabel(profile.id)}`} className={`${mode === "profile" && profileId === profile.id ? "is-active" : ""}${betaMode && !entitlements.includes(profile.id) ? " is-beta-unlocked" : ""}`.trim()} onClick={() => selectProfile(profile.id)}>
                         <span className="halieus-theme-profile-visual" aria-hidden="true">
                           <span className="halieus-theme-profile-swatch">
                             <i style={{ background: profile.theme.page }} />
@@ -258,7 +268,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                           </span>
                           {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
                         </span>
-                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{entitlements.includes(profile.id) ? (CORE_THEME_IDS.includes(profile.id) ? "Core" : "Unlocked") : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
+                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{betaMode && !entitlements.includes(profile.id) ? `Beta access · Normally: ${themeUnlockLabel(profile.id)}` : entitlements.includes(profile.id) ? (CORE_THEME_IDS.includes(profile.id) ? "Core" : "Unlocked") : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
                         {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
                       </button>
                     ))}
