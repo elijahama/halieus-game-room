@@ -6255,3 +6255,48 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
 .poker-page .room-time-meta-clock strong {
   letter-spacing: .035em;
 }
+
+
+/* Part 17 — Mega Board pre-game timer ownership. */
+.lobby-turn-timer-setting{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  margin-top:12px;
+  padding:11px 12px;
+  border:1px solid var(--hgr-border);
+  border-radius:var(--hgr-radius-sm);
+  background:var(--hgr-surface-soft);
+}
+.lobby-turn-timer-setting>span{min-width:0;display:grid;gap:2px}
+.lobby-turn-timer-setting>span>strong{font-size:.78rem}
+.lobby-turn-timer-setting>span>small{color:var(--hgr-muted);font-size:.64rem;line-height:1.35}
+.lobby-turn-timer-setting select{
+  min-width:108px;
+  min-height:38px;
+  border:1px solid var(--hgr-border-strong);
+  border-radius:10px;
+  background:var(--hgr-surface);
+  color:var(--hgr-text);
+  padding:0 10px;
+  font:inherit;
+  font-weight:850;
+}
+.lobby-turn-timer-setting select:focus{outline:none;border-color:var(--hgr-brand);box-shadow:var(--hgr-focus)}
+.lobby-turn-timer-value{font-size:.8rem;color:var(--hgr-brand)}
+.turn-timer-settings-panel.is-read-only{
+  grid-template-columns:minmax(0,1fr) auto;
+}
+.turn-timer-settings-panel.is-read-only .turn-timer-settings-value{
+  border:1px solid var(--hgr-border);
+  background:var(--hgr-surface-soft);
+  color:var(--hgr-text);
+  border-radius:999px;
+  padding:7px 10px;
+  font-weight:900;
+}
+@media(max-width:680px){
+  .lobby-turn-timer-setting{grid-template-columns:1fr}
+  .lobby-turn-timer-setting select,.lobby-turn-timer-value{width:100%}
+}
