@@ -6,7 +6,6 @@ import {
 
 import { DisplaySettingsPanel } from "../../../platform/components/DisplaySettingsPanel";
 import { accountApi } from "../../../platform/accounts/api";
-import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 
 interface GameMenuProps {
   open: boolean;
@@ -19,11 +18,9 @@ interface GameMenuProps {
   darkMode: boolean;
   soundEnabled: boolean;
   turnTimerSeconds?: number;
-  isUpdatingTurnTimer?: boolean;
   onToggleDarkMode: () => void;
   onToggleSound: () => void;
   onToggleFullscreen: () => void;
-  onTurnTimerChange?: (seconds: number) => void;
   onClose: () => void;
   onLeave: () => void;
   onForfeit?: () => void;
@@ -59,11 +56,9 @@ export function GameMenu({
   darkMode,
   soundEnabled,
   turnTimerSeconds,
-  isUpdatingTurnTimer = false,
   onToggleDarkMode,
   onToggleSound,
   onToggleFullscreen,
-  onTurnTimerChange,
   onClose,
   onLeave,
   onForfeit,
@@ -262,29 +257,14 @@ export function GameMenu({
             />
 
             {gameStarted && turnTimerSeconds != null && (
-              <div className="turn-timer-settings-panel">
+              <div className="turn-timer-settings-panel is-read-only">
                 <div>
-                  <strong>⏱ Turn timer settings</strong>
-                  <small>{isHost ? "Change how long a human has to start their move before Autopilot takes over." : "Move timer controlled by the room host."}</small>
+                  <strong>⏱ Turn timer</strong>
+                  <small>Locked when this match started. Change it from the lobby before the next match.</small>
                 </div>
-                {isHost && onTurnTimerChange ? (
-                  <select
-                    aria-label="Turn timer"
-                    value={turnTimerSeconds}
-                    disabled={isUpdatingTurnTimer}
-                    onChange={(event) => onTurnTimerChange(Number(event.target.value))}
-                  >
-                    {TURN_TIMER_PRESET_SECONDS.map((seconds) => (
-                      <option key={seconds} value={seconds}>
-                        {seconds < 60 ? `${seconds} sec` : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="turn-timer-settings-value">
-                    {turnTimerSeconds < 60 ? `${turnTimerSeconds} sec` : `${Math.floor(turnTimerSeconds / 60)}:${String(turnTimerSeconds % 60).padStart(2, "0")}`}
-                  </span>
-                )}
+                <span className="turn-timer-settings-value">
+                  {turnTimerSeconds < 60 ? `${turnTimerSeconds} sec` : `${Math.floor(turnTimerSeconds / 60)}:${String(turnTimerSeconds % 60).padStart(2, "0")}`}
+                </span>
               </div>
             )}
 
