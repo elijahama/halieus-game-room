@@ -16,7 +16,7 @@ const presets={'brand-default':['#daa017','#000000','#ffffff'],'mono-light':['no
 const browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE});
 try {
  const page=await browser.newPage({viewport:{width:256,height:256}});
- for(const [name,[bg,fg,accent]] of [...Object.entries(presets),...Object.keys(motifs).map(n=>[n,[{start:'#16a34a',restart:'#f97316',close:'#dc2626',update:'#168be0',powershell:'#64859b',openshard:'#8739d8'}[n],'#000000','#ffffff']])]){
+ for(const [name,[bg,fg,accent]] of [...Object.entries(presets),...Object.keys(motifs).map(n=>[n,[{start:'#4e7f5d',restart:'#e67e22',close:'#b44848',update:'#4878bb',powershell:'#64748b',openshard:'#8b5bd6'}[n],'#000000','#ffffff']])]){
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><g transform="scale(16)"><rect x="3" y="3" width="58" height="58" rx="15" fill="var(--logo-bg,${bg})"/><path fill-rule="evenodd" d="${HGR_H_PATH}" fill="var(--logo-glyph,${fg})"/>${motifs[name]?`<circle cx="49" cy="49" r="12" fill="var(--logo-bg,${bg})"/><path d="${motifs[name]}" fill="none" stroke="var(--logo-accent,${accent})" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`:''}</g></svg>`;
   const folder=resolve(root,motifs[name]?'launcher':'flat');await mkdir(folder,{recursive:true});
   await writeFile(resolve(folder,name+'.svg'),svg+'\n');
