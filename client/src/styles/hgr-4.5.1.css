@@ -938,3 +938,86 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 /* Swap contrast-critical logo layers together; never interpolate the H through grey. */
 .halieus-brand-mark :is(rect,path,g) { transition:none !important; }
 .theme-custom-always { display:block !important; white-space:normal !important; min-height:40px !important; text-align:left; }
+
+
+/* Part 19 mobile navigation parity */
+@media (max-width: 920px) {
+  .halieus-mobile-join {
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    display: grid !important;
+    place-items: center;
+    padding: 0 !important;
+    border: 1px solid color-mix(in srgb,var(--hgr-brand) 46%,var(--hgr-border)) !important;
+    border-radius: 11px !important;
+    background: var(--hgr-action-bg) !important;
+    color: var(--hgr-action-ink) !important;
+    cursor: pointer;
+  }
+
+  .halieus-mobile-nav {
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+  }
+  .halieus-mobile-nav.has-account {
+    grid-template-columns: repeat(6,minmax(0,1fr)) !important;
+    gap: 2px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+  .halieus-mobile-nav button {
+    position: relative;
+    min-width: 0;
+  }
+  .halieus-mobile-nav.has-account button {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .halieus-mobile-nav.has-account button > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(.52rem,1.7vw,.66rem) !important;
+  }
+  .halieus-mobile-nav button:nth-child(3):not(.is-active) {
+    color: inherit !important;
+  }
+  .halieus-mobile-nav button:nth-child(3):not(.is-active) > span {
+    font-weight: 800 !important;
+  }
+  .halieus-mobile-nav button.is-active {
+    color: var(--hgr-brand) !important;
+  }
+  .halieus-mobile-nav-badge {
+    position: absolute;
+    top: 3px;
+    right: max(3px,18%);
+    display: grid;
+    place-items: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--hgr-close,#dc2626);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+  }
+}
+@media (max-width: 390px) {
+  .halieus-mobile-nav.has-account {
+    gap: 0 !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+  }
+  .halieus-mobile-nav.has-account button svg {
+    width: 18px;
+    height: 18px;
+  }
+  .halieus-mobile-nav.has-account button > span {
+    font-size: .52rem !important;
+  }
+}

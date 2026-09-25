@@ -63,6 +63,7 @@ const roots = [
 ];
 const singles = [
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
+  'docs/HGR_4.5.1_PART19_NAVIGATION.md',
   'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',
   'scripts/generate-flat-brand.mjs', 'scripts/generate-platform-icons.mjs', 'tests/regression-protected-brand-assets.mjs',
   'tests/regression-website-identity.mjs', 'tests/browser-website-identity.mjs',
