@@ -626,7 +626,19 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
   const byGame = [...rows.values()].map((row) => ({ ...row, winRate: row.played ? Math.round((row.wins / row.played) * 100) : 0 }));
   const played = byGame.reduce((sum, row) => sum + row.played, 0);
   const wins = byGame.reduce((sum, row) => sum + row.wins, 0);
-  return { progression: await readPlayerProgression(account.id), played, wins, winRate: played ? Math.round((wins / played) * 100) : 0, breakdown, byGame, recent: recent.sort((a, b) => b.at - a.at).slice(0, 16) };
+  const megaRanked = getRankedLeaderboard().find((entry) =>
+    [...aliases].some((alias) => normaliseRankedPlayerKey(alias) === entry.playerKey),
+  );
+  const ratings: HalieusPersonalStats["ratings"] = megaRanked
+    ? { "mega-board": {
+        rating: megaRanked.rating,
+        gamesPlayed: megaRanked.gamesPlayed,
+        wins: megaRanked.wins,
+        podiums: megaRanked.podiums,
+        averageFinish: megaRanked.averageFinish,
+      } }
+    : {};
+  return { progression: await readPlayerProgression(account.id), played, wins, winRate: played ? Math.round((wins / played) * 100) : 0, breakdown, ratings, byGame, recent: recent.sort((a, b) => b.at - a.at).slice(0, 16) };
 }
 
 
