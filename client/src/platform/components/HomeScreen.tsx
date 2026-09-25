@@ -788,7 +788,7 @@ export function HomeScreen(props: HomeScreenProps) {
         {view === "players" && <section className="halieus-view view-players panel-enter">
           {selectedPlayer ? <div className="halieus-player-profile-page-shell">
             <button type="button" className="halieus-profile-page-back" onClick={() => { setSelectedPlayerId(null); setInviteNotice(""); }}><HgrIcon name="chevron-left" size={17} /> Back to players</button>
-            <article className="halieus-player-profile-page panel-enter" style={{ ["--profile-accent" as string]: selectedPlayer.playerColor }}>
+            <article className="halieus-player-profile-page panel-enter">
               <header className="halieus-player-profile-hero">
                 <span className="halieus-profile-avatar halieus-avatar-media" style={{ background: selectedPlayer.playerColor }}>{selectedPlayer.profilePicture ? <img src={selectedPlayer.profilePicture} alt="" /> : selectedPlayer.avatar}</span>
                 <div className="halieus-profile-hero-copy"><p>{selectedPlayerRoom ? "IN A GAME" : selectedPlayer.online ? "ONLINE NOW" : "PLAYER PROFILE"}</p><h1>{selectedPlayer.displayName}</h1><small>@{selectedPlayer.username}</small></div>
