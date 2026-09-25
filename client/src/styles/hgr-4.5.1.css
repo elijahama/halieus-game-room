@@ -1,0 +1,724 @@
+/* HGR 4.5.1
+ * Final release overrides for the Mega Board game-by-game polish pass.
+ * This file intentionally loads after Part 17 so stale legacy rules cannot
+ * retake layout, contrast, z-index or semantic-colour ownership.
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Platform theme / social fixes exposed during the Mega Board pass           */
+/* -------------------------------------------------------------------------- */
+
+.halieus-theme-modal-backdrop,
+.halieus-custom-theme-backdrop {
+  z-index: 91000 !important;
+}
+.halieus-theme-popover,
+.halieus-custom-theme-dialog {
+  z-index: 91001 !important;
+}
+.halieus-theme-library-launch {
+  grid-template-columns: 52px minmax(0,1fr) auto !important;
+  min-height: 72px !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+}
+.halieus-theme-library-art {
+  width: 52px !important;
+  height: 52px !important;
+  flex: 0 0 52px !important;
+  border-radius: 12px !important;
+}
+.halieus-theme-library-launch > span:not(.halieus-theme-library-art) {
+  min-width: 0;
+  align-content: center;
+  gap: 3px !important;
+}
+.halieus-theme-library-launch strong {
+  font-size: 11px !important;
+  line-height: 1.15 !important;
+}
+.halieus-theme-library-launch small {
+  font-size: 8px !important;
+  line-height: 1.3 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+.theme-preview-actions {
+  position: relative !important;
+  grid-template-columns: minmax(0,1fr) auto auto !important;
+  min-height: 48px !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 8px 2px 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.theme-preview-actions > small {
+  align-self: center;
+  max-width: 260px;
+}
+.halieus-custom-theme-preview {
+  overflow: hidden;
+}
+.halieus-custom-preview-window,
+.halieus-custom-preview-window > header b,
+.halieus-custom-preview-window > div {
+  color: inherit;
+}
+.halieus-custom-preview-window > header {
+  color: inherit;
+  background: color-mix(in srgb,currentColor 8%,transparent);
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview {
+  grid-template-columns: minmax(0,1fr) max-content !important;
+  grid-template-rows: auto auto !important;
+  align-items: center !important;
+  padding: 12px 12px 10px !important;
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview > small {
+  position: static !important;
+  grid-column: 1 / -1 !important;
+  justify-self: end !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+.halieus-theme-profile-visual {
+  width: 52px;
+  display: grid;
+  gap: 4px;
+}
+.halieus-theme-profile-visual .halieus-theme-profile-swatch {
+  width: 52px !important;
+  height: 38px !important;
+}
+.halieus-theme-profile-motif {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 3px;
+  padding-inline: 3px;
+}
+.halieus-theme-profile-motif > i {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(127,127,127,.16);
+}
+
+.halieus-player-identity-name-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.halieus-player-identity-name-row > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-player-identity-name-row .halieus-player-identity-status {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: .02em;
+}
+.halieus-player-directory .halieus-player-identity {
+  min-height: 68px !important;
+  padding: 9px 10px !important;
+}
+.halieus-player-directory .halieus-player-action-trigger,
+.halieus-home-player-strip .halieus-player-action-trigger {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+}
+.halieus-home-social-grid {
+  align-items: start !important;
+}
+.halieus-home-player-strip {
+  align-self: start !important;
+  min-height: 0 !important;
+}
+.halieus-home-player-strip > div {
+  margin-top: 10px !important;
+}
+.halieus-home-player-strip .halieus-player-identity {
+  min-height: 62px !important;
+}
+
+/* Rankings is platform navigation, but every game retains its own Elo table. */
+.view-rankings {
+  display: grid;
+  gap: 14px;
+}
+.halieus-rankings-overview {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 10px;
+}
+.halieus-rankings-overview > article {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-rankings-overview small {
+  color: var(--hgr-brand);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.halieus-rankings-overview strong { font-size: 16px; }
+.halieus-rankings-overview span {
+  color: var(--hgr-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+.halieus-rankings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap: 10px;
+}
+.halieus-ranking-card {
+  min-width: 0;
+  min-height: 104px;
+  display: grid;
+  grid-template-columns: 58px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb,var(--game-card-accent) 28%,var(--hgr-border));
+  border-radius: var(--hgr-radius-md);
+  background: linear-gradient(145deg,color-mix(in srgb,var(--game-card-accent) 7%,var(--hgr-surface-raised)),var(--hgr-surface));
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-ranking-card:hover {
+  border-color: color-mix(in srgb,var(--game-card-accent) 62%,var(--hgr-border));
+}
+.halieus-ranking-game-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: color-mix(in srgb,var(--game-card-accent) 12%,var(--hgr-surface-soft));
+}
+.halieus-ranking-game-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.halieus-ranking-card > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-ranking-card small {
+  color: var(--game-card-accent);
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.halieus-ranking-card strong { font-size: 13px; }
+.halieus-ranking-card em {
+  color: var(--hgr-muted);
+  font-size: 8px;
+  font-style: normal;
+}
+.halieus-ranking-card > b {
+  color: var(--game-card-accent);
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mega Board pre-game ownership                                               */
+/* -------------------------------------------------------------------------- */
+
+.mega-create-cosmetics {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb,#16a34a 34%,var(--hgr-border));
+  border-radius: var(--hgr-radius-md);
+  background: color-mix(in srgb,#16a34a 6%,var(--hgr-surface-soft));
+}
+.mega-create-cosmetics > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.mega-create-cosmetics p {
+  margin: 0;
+  color: #168a42;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.mega-create-cosmetics strong { font-size: 11px; }
+.mega-create-cosmetics small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+  line-height: 1.35;
+}
+.mega-create-cosmetics .halieus-skins-trigger {
+  min-width: 150px;
+  border-color: color-mix(in srgb,#16a34a 42%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,#16a34a 8%,var(--hgr-surface-raised)) !important;
+}
+.mega-mode-configuration .mega-match-tabs button.active,
+.mega-mode-configuration .free-parking-toggle:has(input:checked) {
+  border-color: #16a34a !important;
+  box-shadow: inset 0 -2px 0 #16a34a !important;
+}
+.mega-mode-configuration .mega-match-tabs button.active { color: #168a42 !important; }
+html[data-theme="dark"] .mega-mode-configuration .mega-match-tabs button.active,
+html[data-theme="dark"] .mega-create-cosmetics p { color: #4ade80 !important; }
+
+/* Lobby: roster owns its overflow; controls stay aligned with the roster. */
+@media (min-width: 921px) {
+  .lobby-shell-v2 .lobby-main-grid {
+    grid-template-columns: minmax(0,1.62fr) minmax(290px,.82fr) !important;
+    align-items: stretch !important;
+  }
+  .lobby-shell-v2 .players-panel-v2 {
+    min-height: 350px !important;
+    max-height: min(470px,calc(100dvh - 405px)) !important;
+  }
+  .lobby-shell-v2 .modern-player-list-v2 {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .lobby-shell-v2 .lobby-side-panel {
+    position: static !important;
+    align-self: stretch !important;
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0,1fr) !important;
+    align-content: stretch !important;
+    gap: 10px !important;
+  }
+  .lobby-shell-v2 .lobby-start-card {
+    min-height: 0 !important;
+    align-self: stretch !important;
+  }
+  .lobby-shell-v2 .lobby-start-card .lobby-actions-v2 {
+    margin-top: auto !important;
+    padding-top: 12px;
+  }
+}
+.lobby-board-appearance-card {
+  display: grid !important;
+  gap: 7px !important;
+  border-color: color-mix(in srgb,#16a34a 30%,var(--mm-border)) !important;
+  background: color-mix(in srgb,#16a34a 5%,var(--mm-surface-2)) !important;
+}
+.lobby-board-appearance-card .modal-eyebrow { color: #16a34a !important; }
+.lobby-board-appearance-card .halieus-skins-trigger {
+  width: 100% !important;
+  min-height: 44px !important;
+  margin-top: 3px !important;
+  border-color: color-mix(in srgb,#16a34a 42%,var(--mm-border)) !important;
+  background: color-mix(in srgb,#16a34a 7%,var(--mm-surface-1)) !important;
+}
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
+.lobby-shell-v2 .lobby-start-game {
+  border-color: color-mix(in srgb,#16a34a 72%,#000 10%) !important;
+  background: #16a34a !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.lobby-shell-v2 .modal-eyebrow { color: #16a34a !important; }
+.lobby-shell-v2 .lobby-recovery-compact {
+  border-color: color-mix(in srgb,#16a34a 26%,var(--mm-border)) !important;
+  background: color-mix(in srgb,#16a34a 5%,var(--mm-surface-1)) !important;
+}
+
+/* Light lobby surfaces use explicit foreground ownership. */
+html[data-theme="light"] .lobby-shell-v2 {
+  background: #f3f0e8 !important;
+  color: #151a1d !important;
+}
+html[data-theme="light"] .lobby-card-v2 {
+  background: #fffefb !important;
+  border-color: #d7d9d6 !important;
+}
+html[data-theme="light"] .lobby-overview-tile,
+html[data-theme="light"] .players-panel-v2,
+html[data-theme="light"] .lobby-side-card,
+html[data-theme="light"] .turn-timer-settings-panel,
+html[data-theme="light"] .halieus-invite-bar {
+  background: #f2f4f3 !important;
+  color: #151a1d !important;
+  border-color: #d2d7d4 !important;
+}
+html[data-theme="light"] .modern-player-row,
+html[data-theme="light"] .lobby-recovery-compact {
+  background: #fff !important;
+  color: #151a1d !important;
+}
+html[data-theme="light"] .lobby-shell-v2 small,
+html[data-theme="light"] .lobby-shell-v2 .player-copy > span {
+  color: #5c6670 !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mega Board in-game                                                         */
+/* -------------------------------------------------------------------------- */
+
+.mega-live-page .centre-turn-status {
+  background: linear-gradient(145deg,#0d2418,#152f21) !important;
+  border-color: rgba(74,222,128,.38) !important;
+  color: #f4fff7 !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.16) !important;
+}
+.mega-live-page .centre-turn-status span { color: #a7d9b7 !important; }
+.mega-live-page .centre-turn-status strong { color: #f4fff7 !important; }
+html[data-theme="light"] .mega-live-page .centre-turn-status {
+  background: #173b29 !important;
+  border-color: #2f7650 !important;
+  color: #fff !important;
+}
+html[data-theme="light"] .mega-live-page .centre-turn-status span { color: #c5ebd0 !important; }
+html[data-theme="light"] .mega-live-page .centre-turn-status strong { color: #fff !important; }
+
+.dice-roll-stage {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.dice-roll-overlay.is-doubles-stage-1 .dice-roll-stage {
+  border-color: rgba(248,113,113,.42) !important;
+  box-shadow: 0 20px 58px rgba(127,29,29,.18),0 0 0 1px rgba(248,113,113,.1) !important;
+}
+.dice-roll-overlay.is-doubles-stage-2 .dice-roll-stage {
+  border-color: rgba(239,68,68,.72) !important;
+  background: linear-gradient(150deg,#2b1718,#130d0e) !important;
+  box-shadow: 0 22px 64px rgba(185,28,28,.32),0 0 0 2px rgba(239,68,68,.13) !important;
+}
+.dice-roll-overlay.is-doubles-stage-3 .dice-roll-stage {
+  border-color: #ef4444 !important;
+  background: linear-gradient(150deg,#481619,#180b0d) !important;
+  box-shadow: 0 24px 70px rgba(185,28,28,.5),0 0 0 3px rgba(239,68,68,.18) !important;
+}
+.dice-roll-overlay:is(.is-doubles-stage-1,.is-doubles-stage-2,.is-doubles-stage-3) .dice-roll-stage p {
+  color: #fca5a5 !important;
+}
+
+.mega-live-page .board-deck-chance {
+  border-color: #bb5d20 !important;
+  background: linear-gradient(155deg,#f39a3e,#ea7b28) !important;
+  color: #241208 !important;
+}
+.mega-live-page .board-deck-community {
+  border-color: #2580b7 !important;
+  background: linear-gradient(155deg,#8ed4f2,#68bce6) !important;
+  color: #082233 !important;
+}
+.mega-live-page .board-deck-bus {
+  border-color: #b7962e !important;
+  background: linear-gradient(155deg,#ffe88d,#ebc94c) !important;
+  color: #2a230a !important;
+}
+.mega-live-page .board-deck-chance small,
+.mega-live-page .board-deck-community small,
+.mega-live-page .board-deck-bus small {
+  color: inherit !important;
+  opacity: .9 !important;
+  font-weight: 900 !important;
+}
+.mega-live-page .centre-roll-readout {
+  min-width: 118px;
+  padding: 7px 10px !important;
+  border: 1px solid color-mix(in srgb,var(--mm-border) 82%,transparent) !important;
+  border-radius: 11px !important;
+  background: color-mix(in srgb,var(--mm-surface-1) 76%,transparent) !important;
+  color: var(--mm-text) !important;
+  opacity: 1 !important;
+}
+.mega-live-page .centre-roll-readout > span {
+  color: var(--mm-text) !important;
+  opacity: .82 !important;
+  font-weight: 800 !important;
+}
+.mega-live-page .board-external-toast {
+  opacity: 1 !important;
+  background: color-mix(in srgb,var(--mm-surface-1) 96%,transparent) !important;
+  color: var(--mm-text) !important;
+  border: 1px solid var(--mm-border) !important;
+  backdrop-filter: blur(10px);
+}
+.board-space.is-mortgaged-space {
+  background: linear-gradient(145deg,#8b1e24,#5f1117) !important;
+  box-shadow: inset 0 0 0 3px #ef4444 !important;
+}
+.board-space.is-mortgaged-space .board-space-name,
+.board-space.is-mortgaged-space .board-space-price,
+.board-space.is-mortgaged-space .board-space-icon {
+  color: #fff !important;
+}
+
+/* Bus Ticket deck information reveals counts, never deck order. */
+.board-bus-ticket-button {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.board-bus-ticket-button:hover,
+.board-bus-ticket-button:focus-visible {
+  filter: brightness(1.06);
+  outline: 2px solid color-mix(in srgb,#d7b33f 62%,transparent);
+  outline-offset: 2px;
+}
+.bus-ticket-info-layer {
+  position: fixed;
+  z-index: 230;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.24);
+  backdrop-filter: blur(5px);
+}
+.bus-ticket-info-card {
+  position: relative;
+  width: min(430px,calc(100vw - 36px));
+  display: grid;
+  gap: 9px;
+  padding: 22px;
+  border: 1px solid;
+  border-radius: 18px;
+  box-shadow: 0 22px 64px rgba(0,0,0,.28);
+}
+.bus-ticket-info-icon { font-size: 38px; }
+.bus-ticket-info-card h2,
+.bus-ticket-info-card p { margin: 0; }
+.bus-ticket-info-stats {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+}
+.bus-ticket-info-stats > span {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border: 1px solid var(--mm-border);
+  border-radius: 11px;
+  background: var(--mm-surface-2);
+}
+
+/* In-game menu: controls stack before labels can overflow. */
+.game-menu-modal .halieus-preference-row {
+  min-width: 0 !important;
+  grid-template-columns: minmax(120px,.8fr) minmax(0,1.2fr) !important;
+  gap: 10px !important;
+}
+.game-menu-modal .halieus-preference-row > span,
+.game-menu-modal .halieus-preference-row > div {
+  min-width: 0 !important;
+}
+.game-menu-modal .halieus-preference-row > div {
+  display: grid !important;
+  grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  gap: 6px !important;
+}
+.game-menu-modal .halieus-preference-row button {
+  min-width: 0 !important;
+  width: 100% !important;
+  padding-inline: 7px !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+}
+.game-menu-modal .turn-timer-settings-panel {
+  align-items: center !important;
+  gap: 12px !important;
+}
+.game-menu-modal .turn-timer-settings-panel > div { min-width: 0 !important; }
+
+/* Floating room activity reserves its own clearance. */
+:root { --hgr-room-dock-clearance: 64px; }
+body:has(.room-chat-shell.is-floating) .lobby-card-v2,
+body:has(.room-chat-shell.is-floating) .mario-results-card {
+  margin-bottom: var(--hgr-room-dock-clearance) !important;
+}
+body:has(.room-chat-shell.is-floating) .game-page .game-sidebar,
+body:has(.room-chat-shell.is-floating) .game-page .player-rail {
+  padding-bottom: var(--hgr-room-dock-clearance) !important;
+  box-sizing: border-box !important;
+}
+.room-chat-shell.is-floating { z-index: 1450 !important; }
+
+/* -------------------------------------------------------------------------- */
+/* Ranked podium and post-match density                                       */
+/* -------------------------------------------------------------------------- */
+
+.leaderboard-podium {
+  display: grid !important;
+  grid-template-columns: minmax(0,.9fr) minmax(0,1.12fr) minmax(0,.9fr) !important;
+  align-items: end !important;
+  gap: 10px !important;
+  margin: 8px 0 22px !important;
+  min-height: 230px !important;
+}
+.leaderboard-podium > article {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 16px 12px 18px !important;
+  border: 1px solid var(--mm-border);
+  border-radius: 18px 18px 10px 10px !important;
+  background: var(--mm-surface-2);
+  text-align: center;
+  transform: none !important;
+}
+.leaderboard-podium > article.is-rank-1 {
+  min-height: 218px !important;
+  padding-top: 20px !important;
+  border-color: color-mix(in srgb,#e5b52e 52%,var(--mm-border)) !important;
+  background: linear-gradient(180deg,color-mix(in srgb,#e5b52e 10%,var(--mm-surface-2)),var(--mm-surface-2)) !important;
+}
+.leaderboard-podium > article.is-rank-2 { min-height: 184px !important; }
+.leaderboard-podium > article.is-rank-3 { min-height: 164px !important; }
+.leaderboard-podium-medal {
+  position: absolute;
+  top: -15px;
+  font-size: 28px;
+}
+.leaderboard-podium-avatar {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-top: 4px;
+  border: 3px solid color-mix(in srgb,currentColor 12%,#fff);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+}
+.is-rank-1 .leaderboard-podium-avatar {
+  width: 78px;
+  height: 78px;
+}
+.leaderboard-podium-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.leaderboard-podium > article > b {
+  font-size: 26px;
+  color: var(--hgr-brand,#d43a42);
+}
+.leaderboard-podium > article > em {
+  margin-top: auto;
+  color: var(--mm-muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.mario-results-card { padding-bottom: 18px !important; }
+.final-player-row {
+  min-height: 68px !important;
+  padding-block: 9px !important;
+}
+.results-stats-grid { gap: 8px !important; }
+.results-player-stats {
+  gap: 7px !important;
+  padding: 11px !important;
+  border-radius: 12px !important;
+}
+.results-mini-stats { gap: 6px !important; }
+.results-mini-stats > span { padding: 8px !important; }
+.results-awards-grid {
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr)) !important;
+  gap: 8px !important;
+}
+.results-awards-grid article {
+  min-height: 90px !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+}
+.results-awards-grid article > span { font-size: 28px !important; }
+.results-footer {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 3 !important;
+  margin-top: 8px !important;
+  padding: 12px 0 0 !important;
+  background: color-mix(in srgb,var(--mm-surface-1) 94%,transparent) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsive                                                                 */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  .theme-preview-actions {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .theme-preview-actions > small {
+    grid-column: 1 / -1 !important;
+    max-width: none !important;
+  }
+  .halieus-custom-theme-dialog .halieus-custom-theme-preview {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .halieus-rankings-overview {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .halieus-ranking-card {
+    grid-template-columns: 52px minmax(0,1fr) !important;
+  }
+  .halieus-ranking-card > b {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .mega-create-cosmetics {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .mega-create-cosmetics .halieus-skins-trigger { width: 100% !important; }
+}
+@media (max-width: 680px) {
+  .leaderboard-podium {
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+    gap: 6px !important;
+    min-height: 180px !important;
+  }
+  .leaderboard-podium > article { padding-inline: 6px !important; }
+  .leaderboard-podium-avatar,
+  .is-rank-1 .leaderboard-podium-avatar {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+@media (max-width: 560px) {
+  .game-menu-modal .halieus-preference-row {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+}
+@media (max-width: 390px) {
+  .game-menu-modal .halieus-preference-row > div {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dice-roll-stage { transition: none !important; }
+}
