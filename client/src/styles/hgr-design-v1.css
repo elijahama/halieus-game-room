@@ -6976,3 +6976,13 @@ html[data-theme="dark"] .mega-create-cosmetics p {
     width: 100%;
   }
 }
+
+
+/* 4.5.1 profile categories: headline identity is accomplishment-first; detailed
+ * percentages remain in separate record categories. */
+.account-stat-breakdown > div {
+  grid-template-columns: repeat(auto-fit,minmax(150px,1fr)) !important;
+}
+.account-stat-breakdown article {
+  min-height: 76px;
+}
