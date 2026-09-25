@@ -6664,3 +6664,315 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
     justify-self: start;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5.1 — platform polish exposed by the Mega Board pass
+   ========================================================================== */
+
+/* Theme tools must sit above an already-open game menu. The game menu remains
+ * mounted underneath so closing Appearance returns the player to the same menu. */
+.halieus-theme-modal-backdrop,
+.halieus-custom-theme-backdrop {
+  z-index: 91000 !important;
+}
+.halieus-theme-popover,
+.halieus-custom-theme-dialog {
+  z-index: 91001 !important;
+}
+
+/* The Theme Library launcher is an identity row, not a squeezed inline chip. */
+.halieus-theme-library-launch {
+  grid-template-columns: 52px minmax(0,1fr) auto !important;
+  min-height: 72px;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+}
+.halieus-theme-library-art {
+  width: 52px !important;
+  height: 52px !important;
+  flex: 0 0 52px;
+  border-radius: 12px !important;
+}
+.halieus-theme-library-launch > span:not(.halieus-theme-library-art) {
+  align-content: center;
+  gap: 3px !important;
+}
+.halieus-theme-library-launch strong {
+  font-size: 11px !important;
+  line-height: 1.15;
+}
+.halieus-theme-library-launch small {
+  font-size: 8px !important;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Preview actions belong to the modal composition rather than pretending to be
+ * a separate full-width toolbar. */
+.theme-preview-actions {
+  grid-template-columns: minmax(0,1fr) auto auto !important;
+  min-height: 48px;
+  padding: 8px 2px 0 !important;
+  border-top: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.theme-preview-actions > small {
+  align-self: center;
+  max-width: 260px;
+}
+.halieus-theme-popover.is-library-open .theme-preview-actions {
+  position: relative !important;
+}
+
+/* Custom preview foreground follows the previewed surface instead of the
+ * currently applied HGR theme. Keep metadata in real layout flow. */
+.halieus-custom-preview-window,
+.halieus-custom-preview-window > header b,
+.halieus-custom-preview-window > div {
+  color: inherit;
+}
+.halieus-custom-preview-window > header {
+  color: inherit;
+  background: color-mix(in srgb,currentColor 8%,transparent);
+}
+.halieus-custom-preview-window > div {
+  color: inherit !important;
+}
+.halieus-custom-preview-palette code {
+  color: inherit;
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview {
+  grid-template-columns: minmax(0,1fr) max-content !important;
+  grid-template-rows: auto auto;
+  align-items: center;
+  padding: 12px 12px 10px !important;
+}
+.halieus-custom-theme-dialog .halieus-custom-theme-preview > small {
+  position: static !important;
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin: 0 !important;
+  line-height: 1.2;
+}
+
+/* Player identity uses its horizontal space for identity, not a remote status
+ * badge or a full-height three-dot button. */
+.halieus-player-identity-name-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.halieus-player-identity-name-row > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-player-identity-name-row .halieus-player-identity-status {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: .02em;
+}
+.halieus-player-directory .halieus-player-identity {
+  min-height: 68px !important;
+  padding: 9px 10px !important;
+}
+.halieus-player-directory .halieus-player-action-trigger,
+.halieus-home-player-strip .halieus-player-action-trigger {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+}
+.halieus-home-social-grid {
+  align-items: start !important;
+}
+.halieus-home-player-strip {
+  align-self: start;
+}
+.halieus-home-player-strip > div {
+  margin-top: 10px !important;
+}
+.halieus-home-player-strip .halieus-player-identity {
+  min-height: 62px;
+}
+
+/* Global Rankings is a platform destination. Each game owns its own ladder. */
+.view-rankings {
+  display: grid;
+  gap: 14px;
+}
+.halieus-rankings-overview {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 10px;
+}
+.halieus-rankings-overview > article {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-rankings-overview small {
+  color: var(--hgr-brand);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.halieus-rankings-overview strong {
+  font-size: 16px;
+}
+.halieus-rankings-overview span {
+  color: var(--hgr-muted);
+  font-size: 9px;
+  line-height: 1.4;
+}
+.halieus-rankings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap: 10px;
+}
+.halieus-ranking-card {
+  min-width: 0;
+  min-height: 104px;
+  display: grid;
+  grid-template-columns: 58px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb,var(--game-card-accent) 28%,var(--hgr-border));
+  border-radius: var(--hgr-radius-md);
+  background: linear-gradient(145deg,color-mix(in srgb,var(--game-card-accent) 7%,var(--hgr-surface-raised)),var(--hgr-surface));
+  color: var(--hgr-text);
+  text-align: left;
+  cursor: pointer;
+}
+.halieus-ranking-card:hover {
+  border-color: color-mix(in srgb,var(--game-card-accent) 62%,var(--hgr-border));
+}
+.halieus-ranking-game-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: color-mix(in srgb,var(--game-card-accent) 12%,var(--hgr-surface-soft));
+}
+.halieus-ranking-game-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.halieus-ranking-card > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-ranking-card small {
+  color: var(--game-card-accent);
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.halieus-ranking-card strong {
+  font-size: 13px;
+}
+.halieus-ranking-card em {
+  color: var(--hgr-muted);
+  font-size: 8px;
+  font-style: normal;
+}
+.halieus-ranking-card > b {
+  color: var(--game-card-accent);
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+/* Mega Board owns green game identity in pre-game, independent from platform
+ * profile/theme accent. */
+.mega-create-cosmetics {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb,#16a34a 34%,var(--hgr-border));
+  border-radius: var(--hgr-radius-md);
+  background: color-mix(in srgb,#16a34a 6%,var(--hgr-surface-soft));
+}
+.mega-create-cosmetics > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.mega-create-cosmetics p {
+  margin: 0;
+  color: #168a42;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.mega-create-cosmetics strong {
+  font-size: 11px;
+}
+.mega-create-cosmetics small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+  line-height: 1.35;
+}
+.mega-create-cosmetics .halieus-skins-trigger {
+  min-width: 150px;
+  border-color: color-mix(in srgb,#16a34a 42%,var(--hgr-border));
+  background: color-mix(in srgb,#16a34a 8%,var(--hgr-surface-raised));
+}
+.mega-mode-configuration .mega-match-tabs button.active,
+.mega-mode-configuration .free-parking-toggle:has(input:checked) {
+  border-color: #16a34a !important;
+  box-shadow: inset 0 -2px 0 #16a34a !important;
+}
+.mega-mode-configuration .mega-match-tabs button.active {
+  color: #168a42 !important;
+}
+html[data-theme="dark"] .mega-mode-configuration .mega-match-tabs button.active,
+html[data-theme="dark"] .mega-create-cosmetics p {
+  color: #4ade80 !important;
+}
+
+@media (max-width: 760px) {
+  .theme-preview-actions {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .theme-preview-actions > small {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+  .halieus-custom-theme-dialog .halieus-custom-theme-preview {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .halieus-rankings-overview {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-ranking-card {
+    grid-template-columns: 52px minmax(0,1fr);
+  }
+  .halieus-ranking-card > b {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .mega-create-cosmetics {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .mega-create-cosmetics .halieus-skins-trigger {
+    width: 100%;
+  }
+}
