@@ -2,6 +2,7 @@ export type HalieusThemeMode = "system" | "dark" | "light" | "blue" | "red" | "g
 export type HalieusTextScale = "small" | "standard" | "large";
 export type HalieusDensity = "compact" | "standard" | "comfortable";
 export type HalieusThemeProfileId =
+  | "minimal-mono"
   | "blue-circuit"
   | "redline"
   | "emerald-arcade"
@@ -65,6 +66,7 @@ export const DEFAULT_CUSTOM_THEME: HalieusCustomTheme = {
 };
 
 export const THEME_PROFILES: readonly HalieusThemeProfile[] = [
+  { id: "minimal-mono", label: "Mono Minimal", description: "Black, white and neutral grey with decoration stripped back to the essentials.", mood: "Minimal", motif: ["#ffffff","#b8b8b8","#5d5d5d","#000000"], theme: { page: "#090909", surface: "#171717", accent: "#ffffff", secondary: "#8a8a8a" } },
   { id: "blue-circuit", label: "Blue Circuit", description: "Electric cobalt controls over an ink-black room.", mood: "Electric", theme: { page: "#050b14", surface: "#0c1726", accent: "#258dff", secondary: "#62d7ff" } },
   { id: "redline", label: "Redline", description: "Deep carbon surfaces with racing-red actions.", mood: "Aggressive", theme: { page: "#12080b", surface: "#241014", accent: "#e03b46", secondary: "#ff8a72" } },
   { id: "emerald-arcade", label: "Emerald Arcade", description: "Dark arcade cabinet greens with luminous mint.", mood: "Arcade", theme: { page: "#07110c", surface: "#102219", accent: "#3ccf78", secondary: "#93f5bd" } },
