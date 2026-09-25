@@ -16985,7 +16985,7 @@ html[data-theme="dark"] .account-code-value { background:rgba(15,23,42,.42); }
 .account-username-input { display:flex; align-items:center; min-width:0; border:1px solid var(--panel-border, rgba(148,163,184,.24)); border-radius:12px; background:rgba(10,15,24,.62); overflow:hidden; }
 .account-username-input > span { flex:0 0 auto; padding:0 0 0 13px; color:#7f8ba0; font-weight:900; }
 .account-username-input input { min-width:0; width:100%; border:0 !important; background:transparent !important; box-shadow:none !important; padding-left:4px !important; }
-.account-username-input:focus-within { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.14); }
+.account-username-input:focus-within { border-color:var(--hgr-brand,#3b82f6); box-shadow:var(--hgr-focus,0 0 0 3px rgba(59,130,246,.14)); }
 .account-field-help { display:block; margin-top:6px; color:#7b8494; font-size:.74rem; line-height:1.4; font-weight:650; }
 
 /* ============================================================
@@ -17050,7 +17050,7 @@ html[data-theme="dark"] .account-code-value { background:rgba(15,23,42,.42); }
 .account342-form .account-auth-primary:disabled{opacity:.58;cursor:wait;}
 .account342-secondary{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px;}
 .account342-secondary button{min-height:72px;display:grid;grid-template-columns:1fr auto;grid-template-areas:"strong arrow" "small arrow";gap:3px 8px;text-align:left;padding:12px 13px;border:1px solid rgba(148,163,184,.15);border-radius:13px;background:rgba(255,255,255,.025);color:#eef2f7;font:inherit;cursor:pointer;}
-.account342-secondary strong{grid-area:strong;font-size:.75rem;}.account342-secondary small{grid-area:small;color:#7f8b9d;font-size:.62rem;}.account342-secondary span{grid-area:arrow;align-self:center;color:#a78bfa;font-weight:950;}
+.account342-secondary strong{grid-area:strong;font-size:.75rem;}.account342-secondary small{grid-area:small;color:#7f8b9d;font-size:.62rem;}.account342-secondary span{grid-area:arrow;align-self:center;color:var(--hgr-brand,#a78bfa);font-weight:950;}
 .account342-note{margin-top:17px;padding-top:15px;border-top:1px solid rgba(148,163,184,.12);color:#7f8b9d;font-size:.67rem;line-height:1.45;}
 .account342-footer{display:flex;justify-content:space-between;gap:20px;padding-top:20px;border-top:1px solid rgba(148,163,184,.11);color:#687487;font-size:.62rem;font-weight:750;letter-spacing:.05em;}
 .account-entry-342 .account-auth-back{margin:0 0 15px;padding:0;border:0;background:transparent;color:#9ea8b8;font:inherit;font-size:.72rem;font-weight:850;cursor:pointer;}
@@ -17111,7 +17111,7 @@ html[data-theme="light"] .home342-status-grid article,html[data-theme="light"] .
 /* ========================================================================== */
 /* Halieus 3.4.2a — account shell, personalization, presence and motion       */
 /* ========================================================================== */
-.halieus-shell{--player-accent:#8b5cf6;min-height:100vh;background:var(--halieus-page, #071018);color:var(--halieus-text,#f7f4ed);position:relative;overflow-x:hidden;isolation:isolate}
+.halieus-shell{--player-accent:var(--hgr-brand,#8b5cf6);min-height:100vh;background:var(--halieus-page, #071018);color:var(--halieus-text,#f7f4ed);position:relative;overflow-x:hidden;isolation:isolate}
 html[data-theme="light"] .halieus-shell{--halieus-page:#f4f1e8;--halieus-text:#191713}
 .halieus-game-atmosphere{position:fixed;inset:0;pointer-events:none;z-index:-2;overflow:hidden;transition:background .55s ease}
 .halieus-game-atmosphere::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 78% 18%,color-mix(in srgb,var(--player-accent) 13%,transparent),transparent 42%),linear-gradient(125deg,rgba(255,255,255,.025),transparent 45%)}
@@ -20227,15 +20227,15 @@ html:fullscreen .halieus-viewport-overlay {
   gap:12px;
   margin:18px 0 22px;
   padding:15px;
-  border:1px solid color-mix(in srgb,#8b5cf6 28%,var(--mm-border));
+  border:1px solid color-mix(in srgb,var(--hgr-brand) 28%,var(--mm-border));
   border-radius:19px;
-  background:linear-gradient(145deg,color-mix(in srgb,#8b5cf6 7%,var(--mm-surface-1)),var(--mm-surface-1));
+  background:linear-gradient(145deg,color-mix(in srgb,var(--hgr-brand) 7%,var(--mm-surface-1)),var(--mm-surface-1));
 }
 .halieus-game-inbox>header { display:flex; align-items:end; justify-content:space-between; gap:12px; }
 .halieus-game-inbox>header>div { display:grid; gap:2px; }
-.halieus-game-inbox>header p { margin:0; color:#a78bfa; font-size:.59rem; font-weight:950; letter-spacing:.14em; }
+.halieus-game-inbox>header p { margin:0; color:var(--hgr-brand); font-size:.59rem; font-weight:950; letter-spacing:.14em; }
 .halieus-game-inbox>header h2 { margin:0; font-size:1.18rem; }
-.halieus-game-inbox>header>b { min-width:27px; height:27px; display:grid; place-items:center; border-radius:999px; background:#7c3aed; color:#fff; font-size:.68rem; }
+.halieus-game-inbox>header>b { min-width:27px; height:27px; display:grid; place-items:center; border-radius:999px; background:var(--hgr-brand); color:#fff; font-size:.68rem; }
 .halieus-game-inbox>div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
 .halieus-game-inbox article { min-width:0; display:grid; grid-template-columns:44px minmax(0,1fr) auto; align-items:center; gap:10px; padding:11px; border:1px solid color-mix(in srgb,var(--game-card-accent) 24%,var(--mm-border)); border-radius:14px; background:color-mix(in srgb,var(--game-card-accent) 5%,var(--mm-surface-2)); }
 .halieus-game-inbox article>img { width:44px; height:44px; object-fit:contain; border-radius:11px; }
@@ -23899,7 +23899,7 @@ html[data-theme="light"] .halieus-intro-v4-card {
 }
 
 .halieus-guilds-heading p {
-  color: var(--mm-warning);
+  color: var(--hgr-brand);
   font-size: .68rem;
   font-weight: 950;
   letter-spacing: .15em;
@@ -23942,7 +23942,7 @@ html[data-theme="light"] .halieus-intro-v4-card {
 .halieus-guild-create-room small,
 .halieus-guild-room-list header small,
 .halieus-guild-leaderboard header small {
-  color: var(--mm-warning);
+  color: var(--hgr-brand);
   font-size: .62rem;
   font-weight: 950;
   letter-spacing: .12em;
@@ -24053,8 +24053,8 @@ html[data-theme="light"] .halieus-intro-v4-card {
 
 .halieus-guild-list > button:hover,
 .halieus-guild-list > button.is-selected {
-  border-color: color-mix(in srgb, var(--mm-warning) 38%, var(--mm-border));
-  background: color-mix(in srgb, var(--mm-warning) 7%, var(--mm-surface-2));
+  border-color: color-mix(in srgb, var(--hgr-brand) 38%, var(--mm-border));
+  background: color-mix(in srgb, var(--hgr-brand) 7%, var(--mm-surface-2));
 }
 
 .halieus-guild-list > button > div {
@@ -24085,9 +24085,9 @@ html[data-theme="light"] .halieus-intro-v4-card {
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid color-mix(in srgb, var(--mm-warning) 38%, var(--mm-border));
+  border: 1px solid color-mix(in srgb, var(--hgr-brand) 38%, var(--mm-border));
   border-radius: 13px;
-  background: color-mix(in srgb, var(--mm-warning) 10%, var(--mm-surface-2));
+  background: color-mix(in srgb, var(--hgr-brand) 10%, var(--mm-surface-2));
   font-size: .76rem;
   font-weight: 950;
   letter-spacing: -.02em;
@@ -24112,7 +24112,7 @@ html[data-theme="light"] .halieus-intro-v4-card {
   padding: 18px;
   border-bottom: 1px solid var(--mm-border);
   background:
-    radial-gradient(circle at 0 0, color-mix(in srgb, var(--mm-warning) 10%, transparent), transparent 40%),
+    radial-gradient(circle at 0 0, color-mix(in srgb, var(--hgr-brand) 10%, transparent), transparent 40%),
     var(--mm-surface-1);
 }
 
@@ -24127,7 +24127,7 @@ html[data-theme="light"] .halieus-intro-v4-card {
 }
 
 .halieus-guild-hero p {
-  color: var(--mm-warning);
+  color: var(--hgr-brand);
   font-size: .58rem;
   font-weight: 950;
   letter-spacing: .11em;
@@ -24190,8 +24190,8 @@ html[data-theme="light"] .halieus-intro-v4-card {
 }
 
 .halieus-guild-tabs button.is-active {
-  border-color: color-mix(in srgb, var(--mm-warning) 42%, var(--mm-border));
-  background: color-mix(in srgb, var(--mm-warning) 8%, var(--mm-surface-2));
+  border-color: color-mix(in srgb, var(--hgr-brand) 42%, var(--mm-border));
+  background: color-mix(in srgb, var(--hgr-brand) 8%, var(--mm-surface-2));
   color: var(--mm-text);
 }
 
@@ -24352,13 +24352,13 @@ html[data-theme="light"] .halieus-intro-v4-card {
 
 .halieus-guild-messages article.is-own {
   justify-self: end;
-  border-color: color-mix(in srgb, var(--mm-warning) 38%, var(--mm-border));
+  border-color: color-mix(in srgb, var(--hgr-brand) 38%, var(--mm-border));
 }
 
 .halieus-guild-messages article.is-system {
   width: 100%;
   justify-self: stretch;
-  background: color-mix(in srgb, var(--mm-warning) 6%, var(--mm-surface-2));
+  background: color-mix(in srgb, var(--hgr-brand) 6%, var(--mm-surface-2));
 }
 
 .halieus-guild-messages article header {
