@@ -6,6 +6,7 @@ import type {
   HalieusAccountSummary,
   HalieusGameInviteSummary,
   HalieusGameRequestSummary,
+  HalieusGamerScoreLeaderboardEntry,
   HalieusPersonalStats,
   HalieusPlayerDirectoryEntry,
   HalieusQuickPlayProfile,
@@ -118,6 +119,8 @@ export function HomeScreen(props: HomeScreenProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
   const [directory, setDirectory] = useState<HalieusPlayerDirectoryEntry[]>([]);
+  const [gamerScoreLeaderboard, setGamerScoreLeaderboard] = useState<HalieusGamerScoreLeaderboardEntry[]>([]);
+  const [gamerScoreLoading, setGamerScoreLoading] = useState(false);
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
   const [quickPlay, setQuickPlay] = useState<HalieusQuickPlayProfile>({ preferences: [] });
   const [dataError, setDataError] = useState("");
@@ -233,6 +236,17 @@ export function HomeScreen(props: HomeScreenProps) {
       .finally(() => { if (!cancelled) setPlayerStatsLoading(false); });
     return () => { cancelled = true; };
   }, [selectedPlayerId, view]);
+
+  useEffect(() => {
+    if (view !== "rankings" || !account?.id) return;
+    let cancelled = false;
+    setGamerScoreLoading(true);
+    void accountApi<{ ok: true; entries: HalieusGamerScoreLeaderboardEntry[] }>("/accounts/gamer-score/leaderboard")
+      .then((result) => { if (!cancelled) setGamerScoreLeaderboard(result.entries); })
+      .catch(() => { if (!cancelled) setGamerScoreLeaderboard([]); })
+      .finally(() => { if (!cancelled) setGamerScoreLoading(false); });
+    return () => { cancelled = true; };
+  }, [view, account?.id]);
 
   const joinAction = classicSelected && selectedClassicGame ? () => onJoinClassic(selectedClassicGame) : wordArenaSelected && selectedWordArenaGame ? () => onJoinWordArena(selectedWordArenaGame) : pokerSelected ? onJoinPoker : blackjackSelected ? onJoinBlackjack : whotSelected ? onJoinWhot : ludoSelected ? onJoinLudo : connectFourSelected ? onJoinConnectFour : ayoSelected ? onJoinAyo : wordBoardSelected ? onJoinWordBoard : hiddenDictatorSelected ? onJoinHiddenDictator : onJoinGame;
   const spectateAction = classicSelected && selectedClassicGame ? () => onSpectateClassic(selectedClassicGame) : wordArenaSelected && selectedWordArenaGame ? () => onSpectateWordArena(selectedWordArenaGame) : pokerSelected ? onSpectatePoker : blackjackSelected ? onSpectateBlackjack : whotSelected ? onSpectateWhot : ludoSelected ? onSpectateLudo : connectFourSelected ? onSpectateConnectFour : ayoSelected ? onSpectateAyo : wordBoardSelected ? onSpectateWordBoard : hiddenDictatorSelected ? onSpectateHiddenDictator : onSpectateGame;
@@ -843,6 +857,19 @@ export function HomeScreen(props: HomeScreenProps) {
             <article><small>RATING MODEL</small><strong>Per-game Elo</strong><span>No single combined Elo across unrelated games.</span></article>
             <article><small>ACCOUNT PROGRESSION</small><strong>Gamer Score</strong><span>Accomplishments and achievements live on your profile, not in ranked Elo.</span></article>
             <article><small>RANKED PLAY</small><strong>Human competition</strong><span>AI-involved matches never inflate competitive ladders.</span></article>
+          </section>
+          <section className="halieus-gamer-score-leaderboard" aria-label="Gamer Score leaderboard">
+            <header><div><small>ACCOUNT PROGRESSION</small><h2>Gamer Score leaderboard</h2><span>Achievement points across Halieus. This board is separate from every game-specific Elo ladder.</span></div><b>{gamerScoreLeaderboard.length} player{gamerScoreLeaderboard.length === 1 ? "" : "s"}</b></header>
+            {gamerScoreLoading ? <div className="halieus-gamer-score-empty">Loading Gamer Score…</div> : gamerScoreLeaderboard.length ? <div className="halieus-gamer-score-list">
+              {gamerScoreLeaderboard.map((entry) => <button type="button" key={entry.accountId} className={entry.accountId === account?.id ? "is-self" : ""} onClick={() => { setSelectedPlayerId(entry.accountId); setView("players"); }}>
+                <strong className="halieus-gamer-score-rank">#{entry.rank}</strong>
+                <span className="halieus-gamer-score-avatar halieus-avatar-media" style={{ background: entry.playerColor }}>{entry.profilePicture ? <img src={entry.profilePicture} alt="" /> : entry.avatar}</span>
+                <span className="halieus-gamer-score-player"><strong>{entry.displayName}</strong><small>@{entry.username}{entry.accountId === account?.id ? " · You" : ""}</small></span>
+                <span className="halieus-gamer-score-detail"><small>Achievements</small><strong>{entry.achievements}</strong></span>
+                <span className="halieus-gamer-score-detail"><small>Verified games</small><strong>{entry.verifiedGames}</strong></span>
+                <span className="halieus-gamer-score-points"><strong>{entry.gamerScore}</strong><small>GS</small></span>
+              </button>)}
+            </div> : <div className="halieus-gamer-score-empty">No Gamer Score has been earned yet. Completed non-Beta achievements will appear here.</div>}
           </section>
           <div className="halieus-rankings-grid">
             {RANKED_HUB_GAMES.map((gameId) => {
