@@ -1,9 +1,13 @@
 import { ThemeButton } from "./ThemeButton";
+import { HalieusBrandMark } from "./HalieusBrandMark";
+import type { HgrLogoPreset } from "../../../../shared/platform/brand";
 import { useEffect, useState } from "react";
 import {
   readDensity,
+  readLogoPreset,
   readTextScale,
   saveDensity,
+  saveLogoPreset,
   saveTextScale,
   type HalieusDensity,
   type HalieusTextScale,
@@ -26,15 +30,19 @@ export function DisplaySettingsPanel({
 }: DisplaySettingsPanelProps) {
   const [textScale, setTextScale] = useState<HalieusTextScale>(() => readTextScale());
   const [density, setDensity] = useState<HalieusDensity>(() => readDensity());
+  const [logoPreset, setLogoPreset] = useState<HgrLogoPreset>(() => readLogoPreset());
 
   useEffect(() => {
     const handleText = (event: Event) => setTextScale((event as CustomEvent<HalieusTextScale>).detail);
     const handleDensity = (event: Event) => setDensity((event as CustomEvent<HalieusDensity>).detail);
+    const handleLogo = (event: Event) => setLogoPreset((event as CustomEvent<HgrLogoPreset>).detail);
     window.addEventListener("halieus-text-scale", handleText);
     window.addEventListener("halieus-density", handleDensity);
+    window.addEventListener("halieus-logo-preset", handleLogo);
     return () => {
       window.removeEventListener("halieus-text-scale", handleText);
       window.removeEventListener("halieus-density", handleDensity);
+      window.removeEventListener("halieus-logo-preset", handleLogo);
     };
   }, []);
 
@@ -50,6 +58,12 @@ export function DisplaySettingsPanel({
     window.dispatchEvent(new CustomEvent<HalieusDensity>("halieus-density", { detail: value }));
   };
 
+  const changeLogoPreset = (value: HgrLogoPreset) => {
+    setLogoPreset(value);
+    saveLogoPreset(value);
+    window.dispatchEvent(new CustomEvent<HgrLogoPreset>("halieus-logo-preset", { detail: value }));
+  };
+
   return (
     <section className="halieus-display-settings" aria-label="Appearance settings">
       <div className="halieus-display-group halieus-display-group-theme">
@@ -58,6 +72,26 @@ export function DisplaySettingsPanel({
           <span>Preview → Apply</span>
         </header>
         <ThemeButton darkMode={false} background="var(--hgr-surface)" colour="var(--hgr-text)" borderColour="var(--hgr-border)" onToggle={() => {}} />
+      </div>
+
+      <div className="halieus-display-group halieus-display-group-logo">
+        <header>
+          <div><strong>Halieus logo</strong><small>Choose the H treatment independently from your colour theme.</small></div>
+          <span>Personal</span>
+        </header>
+        <div className="halieus-logo-preset-grid" role="group" aria-label="Halieus logo style">
+          {([
+            ["brand", "Theme", "Theme-aware tile"],
+            ["mono-light", "White H", "White glyph only"],
+            ["mono-dark", "Black H", "Black glyph only"],
+            ["light", "Light tile", "Theme-safe light mark"],
+          ] as Array<[HgrLogoPreset,string,string]>).map(([value,label,description]) => (
+            <button type="button" key={value} className={logoPreset === value ? "is-active" : ""} aria-pressed={logoPreset === value} onClick={() => changeLogoPreset(value)}>
+              <HalieusBrandMark preset={value} className="halieus-logo-preset-preview" />
+              <span><strong>{label}</strong><small>{description}</small></span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="halieus-display-group halieus-display-group-readability">
