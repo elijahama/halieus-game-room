@@ -1856,11 +1856,27 @@ function handleLeaveSpectator() {
 
     setMessage("Starting game...");
     socket.emit("game:start", { code: lobby.code }, (response: GameResponse) => {
-      if (!response.ok || !response.room) {
+      if (!response.ok || !response.room || !response.state) {
         setMessage(response.reason ?? "Could not start the game.");
         return;
       }
 
+      // The start acknowledgement is authoritative. Do not make the host depend
+      // on a separate room broadcast to leave the lobby; that broadcast remains
+      // useful for the other players and as a duplicate state sync.
+      setLobby((current) => current ? {
+        ...current,
+        players: response.room!.players,
+        turnTimerSeconds: response.room!.turnTimerSeconds,
+        boardStyle: response.room!.boardStyle,
+        hostDisconnectDeadline: response.room!.hostDisconnectDeadline,
+        blitz: response.room!.blitz,
+      } : current);
+      setGameState(response.state);
+      setRanked(response.state.ranked);
+      setBlitz(response.state.blitz);
+      setGameStarted(true);
+      setMegaBoardParked(false);
       setMessage("");
     });
   }
