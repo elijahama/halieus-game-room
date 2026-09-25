@@ -504,7 +504,9 @@ socket.on(
             room.freeParkingJackpotEnabled,
           ranked: room.ranked,
           blitz: room.blitz,
-          turnTimerSeconds: room.turnTimerSeconds,
+          turnTimerSeconds: room.turnTimerSeconds ?? Math.round(
+            (room.blitz ? BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS : TURN_ROLL_AUTOPILOT_DURATION_MS) / 1000,
+          ),
         },
       );
 
