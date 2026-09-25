@@ -2,6 +2,7 @@ import type { PlayerProgression } from "./progression.js";
 export type ThemeRequirement = { kind: "core" } | { kind: "score"; count: number } | { kind: "played"; count: number } | { kind: "achievement"; id: string; label: string };
 /** Stable IDs; theme rewards never use Elo, account role or client-supplied totals. */
 export const THEME_REQUIREMENTS: Record<string, ThemeRequirement> = {
+  "minimal-mono": {kind:"core"},
   "blue-circuit": {kind:"core"}, "redline": {kind:"core"}, "emerald-arcade": {kind:"core"},
   "ultraviolet": {kind:"core"}, "neon-grid": {kind:"core"}, "brass-coal": {kind:"core"},
   "terminal": {kind:"core"}, "solar-dusk": {kind:"core"}, "icebox": {kind:"core"},
@@ -18,7 +19,12 @@ export const THEME_REQUIREMENTS: Record<string, ThemeRequirement> = {
   "atari-woodgrain": {kind:"played",count:50}, "c64-breadbox": {kind:"score",count:400},
   "arcade-cabinet": {kind:"score",count:450}, "neo-arcade": {kind:"score",count:500},
 };
-export const CORE_THEME_IDS = Object.keys(THEME_REQUIREMENTS).filter(id => THEME_REQUIREMENTS[id].kind === "core");
+export const ALL_THEME_IDS = Object.keys(THEME_REQUIREMENTS);
+export const CORE_THEME_IDS = ALL_THEME_IDS.filter(id => THEME_REQUIREMENTS[id].kind === "core");
+/** Beta is a testing override only: it never mutates or deletes the real entitlement metadata. */
+export function themeIsAvailable(id: string, entitlements: readonly string[], betaMode = false): boolean {
+  return ALL_THEME_IDS.includes(id) && (betaMode || entitlements.includes(id));
+}
 export function themeEntitlements(progression?: PlayerProgression): string[] {
  return Object.entries(THEME_REQUIREMENTS).filter(([,r]) => r.kind === "core" || !!progression && (
   r.kind === "score" ? progression.gamerScore >= r.count : r.kind === "played" ? progression.played >= r.count : progression.awards.some(a=>a.id===r.id)
