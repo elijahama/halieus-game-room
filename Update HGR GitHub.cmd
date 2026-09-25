@@ -345,7 +345,6 @@ echo   6. Changes committed/pushed when needed
 echo   7. Final release identity re-verified
 echo   8. Website deployment completed
 echo.
-pause
 popd
 endlocal
 exit 0
@@ -356,7 +355,6 @@ echo ============================================================
 echo                 HGR UPDATE COMPLETE
 echo ============================================================
 echo.
-pause
 popd
 endlocal
 exit 0
