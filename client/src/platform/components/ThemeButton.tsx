@@ -12,6 +12,7 @@ import {
   readCustomTheme,
   readThemeMode,
   readThemeProfileId,
+  isDarkColour,
 } from "../theme";
 
 interface ThemeButtonProps {
@@ -52,7 +53,27 @@ const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; la
   { mode: "dark", icon: "●", label: "Dark", description: "Standard graphite HGR" },
 ];
 
-const RETRO_PROFILE_IDS = new Set<HalieusThemeProfileId>(["ivory-8bit", "lavender-16bit", "black-drive", "grey-disc"]);
+const RETRO_PROFILE_IDS = new Set<HalieusThemeProfileId>([
+  "ivory-8bit",
+  "lavender-16bit",
+  "black-drive",
+  "grey-disc",
+  "xbox-core",
+  "ps2-midnight",
+  "ps3-xmb",
+  "psp-silver",
+  "psp-go-pearl",
+  "vita-graphite",
+  "ps4-wave",
+  "dreamcast-white",
+  "cube-indigo",
+  "n64-fog",
+  "snes-colour",
+  "atari-woodgrain",
+  "c64-breadbox",
+  "arcade-cabinet",
+  "neo-arcade",
+]);
 const THEME_PROFILE_GROUPS = [
   { id: "hgr", label: "HGR Profiles", description: "Coordinated Halieus palettes", profiles: THEME_PROFILES.filter((profile) => !RETRO_PROFILE_IDS.has(profile.id)) },
   { id: "retro", label: "Retro Consoles", description: "Original console-era inspired palettes", profiles: THEME_PROFILES.filter((profile) => RETRO_PROFILE_IDS.has(profile.id)) },
@@ -81,6 +102,8 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     : mode === "custom" ? "Custom"
     : mode[0].toUpperCase() + mode.slice(1);
   const activeIcon = mode === "system" ? "◐" : mode === "light" ? "○" : mode === "dark" ? "●" : mode === "custom" ? "✦" : "◆";
+  const previewSurfaceInk = isDarkColour(draft.surface) ? "#f8fafc" : "#101318";
+  const previewSurfaceMuted = isDarkColour(draft.surface) ? "#cbd5e1" : "#4b5563";
 
   useEffect(() => {
     const handleMode = (event: Event) => setMode((event as CustomEvent<HalieusThemeMode>).detail);
@@ -294,9 +317,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               ))}
             </div>
             <div className="halieus-custom-theme-preview" style={{ background: draft.page }}>
-              <section className="halieus-custom-preview-window" style={{ background: draft.surface }}>
-                <header><i style={{ background: draft.accent }} /><b>HALIEUS GAME ROOM</b><em style={{ background: draft.secondary }} /></header>
-                <div><strong>Game night</strong><span style={{ borderColor: draft.accent }}>Primary action</span><small style={{ color: draft.secondary }}>Secondary accent</small></div>
+              <section className="halieus-custom-preview-window" style={{ background: draft.surface, color: previewSurfaceInk }}>
+                <header><i style={{ background: draft.accent }} /><b style={{ color: previewSurfaceInk }}>HALIEUS GAME ROOM</b><em style={{ background: draft.secondary }} /></header>
+                <div style={{ color: previewSurfaceInk }}><strong>Game night</strong><span style={{ borderColor: draft.accent, color: previewSurfaceInk }}>Primary action</span><small style={{ color: previewSurfaceMuted }}>Secondary accent</small></div>
               </section>
               <div className="halieus-custom-preview-palette" aria-label="Selected palette">
                 {(["page", "surface", "accent", "secondary"] as Array<keyof HalieusCustomTheme>).map((key) => <span key={key}><i style={{ background: draft[key] }} /><code>{draft[key].toUpperCase()}</code></span>)}
