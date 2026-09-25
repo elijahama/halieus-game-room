@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Close Halieus Game Room">
+  <rect x="3" y="3" width="58" height="58" rx="15" fill="#b44848"/>
+  <path d="M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z" fill="#000" fill-rule="evenodd"/>
+  <circle cx="32" cy="37" r="10.5" fill="#b44848" stroke="#000" stroke-width="3"/>
+  <path d="m27.5 32.5 9 9m0-9-9 9" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+</svg>
