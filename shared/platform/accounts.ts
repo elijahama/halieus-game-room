@@ -128,6 +128,13 @@ export interface HalieusPersonalStats {
   wins: number;
   winRate: number;
   breakdown?: HalieusStatsBreakdown;
+  ratings?: Partial<Record<HalieusGameStatLine["game"], {
+    rating: number;
+    gamesPlayed: number;
+    wins: number;
+    podiums: number;
+    averageFinish: number;
+  }>>;
   byGame: HalieusGameStatLine[];
   recent: Array<{
     game: HalieusGameStatLine["game"];
