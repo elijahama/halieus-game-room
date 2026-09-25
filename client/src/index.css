@@ -25250,3 +25250,475 @@ html[data-theme="light"] .halieus-intro-v4-card {
     min-height: 0 !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5.1 — Mega Board focused polish
+   ========================================================================== */
+
+:root {
+  --hgr-room-dock-clearance: 64px;
+  --mega-accent: #16a34a;
+  --mega-accent-soft: #4ade80;
+}
+
+/* Waiting room is one balanced composition. The ready list owns its overflow;
+ * the right column keeps setup, recovery and host controls within the same
+ * visual height instead of ending halfway up the roster. */
+@media (min-width: 921px) {
+  .lobby-shell-v2 .lobby-main-grid {
+    grid-template-columns: minmax(0,1.62fr) minmax(290px,.82fr) !important;
+    align-items: stretch !important;
+  }
+  .lobby-shell-v2 .players-panel-v2 {
+    min-height: 350px !important;
+    max-height: min(470px,calc(100dvh - 405px)) !important;
+  }
+  .lobby-shell-v2 .modern-player-list-v2 {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .lobby-shell-v2 .lobby-side-panel {
+    position: static !important;
+    align-self: stretch !important;
+    display: grid !important;
+    grid-template-rows: auto auto minmax(0,1fr);
+    align-content: stretch;
+    gap: 10px !important;
+  }
+  .lobby-shell-v2 .lobby-start-card {
+    min-height: 0;
+    align-self: stretch;
+  }
+  .lobby-shell-v2 .lobby-start-card .lobby-actions-v2 {
+    margin-top: auto;
+    padding-top: 12px;
+  }
+}
+.lobby-board-appearance-card {
+  display: grid;
+  gap: 7px;
+  border-color: color-mix(in srgb,var(--mega-accent) 30%,var(--mm-border)) !important;
+  background: color-mix(in srgb,var(--mega-accent) 5%,var(--mm-surface-2)) !important;
+}
+.lobby-board-appearance-card .modal-eyebrow {
+  color: var(--mega-accent) !important;
+}
+.lobby-board-appearance-card .halieus-skins-trigger {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 3px;
+  border-color: color-mix(in srgb,var(--mega-accent) 42%,var(--mm-border)) !important;
+  background: color-mix(in srgb,var(--mega-accent) 7%,var(--mm-surface-1)) !important;
+}
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
+.lobby-shell-v2 .lobby-start-game {
+  border-color: color-mix(in srgb,var(--mega-accent) 72%,#000 10%) !important;
+  background: var(--mega-accent) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.lobby-shell-v2 .modal-eyebrow {
+  color: var(--mega-accent);
+}
+.lobby-shell-v2 .lobby-recovery-compact {
+  border-color: color-mix(in srgb,var(--mega-accent) 26%,var(--mm-border)) !important;
+  background: color-mix(in srgb,var(--mega-accent) 5%,var(--mm-surface-1)) !important;
+}
+.lobby-shell-v2 .lobby-recovery-compact button {
+  border-color: color-mix(in srgb,var(--mega-accent) 42%,var(--mm-border));
+  background: color-mix(in srgb,var(--mega-accent) 12%,var(--mm-surface-2));
+  color: inherit;
+}
+
+/* Mega light mode gets deliberate surface hierarchy rather than several nearly
+ * identical pale greys. Semantic green remains green. */
+html[data-theme="light"] .lobby-shell-v2 {
+  background: #f3f0e8 !important;
+  color: #151a1d !important;
+}
+html[data-theme="light"] .lobby-card-v2 {
+  background: #fffefb !important;
+  border-color: #d7d9d6 !important;
+}
+html[data-theme="light"] .lobby-overview-tile,
+html[data-theme="light"] .players-panel-v2,
+html[data-theme="light"] .lobby-side-card,
+html[data-theme="light"] .turn-timer-settings-panel,
+html[data-theme="light"] .halieus-invite-bar {
+  background: #f2f4f3 !important;
+  color: #151a1d !important;
+  border-color: #d2d7d4 !important;
+}
+html[data-theme="light"] .modern-player-row,
+html[data-theme="light"] .lobby-recovery-compact {
+  background: #fff !important;
+  color: #151a1d !important;
+}
+html[data-theme="light"] .lobby-shell-v2 small,
+html[data-theme="light"] .lobby-shell-v2 .player-copy > span,
+html[data-theme="light"] .lobby-shell-v2 .lobby-side-muted {
+  color: #5c6670 !important;
+}
+html[data-theme="light"] .lobby-shell-v2 .connection-pill.is-online,
+html[data-theme="light"] .lobby-shell-v2 .connection-pill.is-online i {
+  color: #087a36 !important;
+}
+
+/* In-game turn state is an information strip with strong contrast. */
+.mega-live-page .centre-turn-status {
+  background: linear-gradient(145deg,#0d2418,#152f21) !important;
+  border-color: rgba(74,222,128,.38) !important;
+  color: #f4fff7 !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,.16);
+}
+.mega-live-page .centre-turn-status span {
+  color: #a7d9b7 !important;
+}
+.mega-live-page .centre-turn-status strong {
+  color: #f4fff7 !important;
+}
+html[data-theme="light"] .mega-live-page .centre-turn-status {
+  background: #173b29 !important;
+  border-color: #2f7650 !important;
+  color: #fff !important;
+}
+html[data-theme="light"] .mega-live-page .centre-turn-status span {
+  color: #c5ebd0 !important;
+}
+html[data-theme="light"] .mega-live-page .centre-turn-status strong {
+  color: #fff !important;
+}
+
+/* Dice doubles warning escalates visually without changing server rules. */
+.dice-roll-stage {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.dice-roll-overlay.is-doubles-stage-1 .dice-roll-stage {
+  border-color: rgba(248,113,113,.42) !important;
+  box-shadow: 0 20px 58px rgba(127,29,29,.18),0 0 0 1px rgba(248,113,113,.1) !important;
+}
+.dice-roll-overlay.is-doubles-stage-2 .dice-roll-stage {
+  border-color: rgba(239,68,68,.72) !important;
+  background: linear-gradient(150deg,#2b1718,#130d0e) !important;
+  box-shadow: 0 22px 64px rgba(185,28,28,.32),0 0 0 2px rgba(239,68,68,.13) !important;
+}
+.dice-roll-overlay.is-doubles-stage-3 .dice-roll-stage {
+  border-color: #ef4444 !important;
+  background: linear-gradient(150deg,#481619,#180b0d) !important;
+  box-shadow: 0 24px 70px rgba(185,28,28,.5),0 0 0 3px rgba(239,68,68,.18) !important;
+}
+.dice-roll-overlay.is-doubles-stage-1 .dice-roll-stage p,
+.dice-roll-overlay.is-doubles-stage-2 .dice-roll-stage p,
+.dice-roll-overlay.is-doubles-stage-3 .dice-roll-stage p {
+  color: #fca5a5 !important;
+}
+
+/* Bus Ticket deck is inspectable: remaining cards and expiry cards are visible
+ * without revealing deck order. */
+.board-bus-ticket-button {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.board-bus-ticket-button:hover,
+.board-bus-ticket-button:focus-visible {
+  filter: brightness(1.06);
+  outline: 2px solid color-mix(in srgb,#d7b33f 62%,transparent);
+  outline-offset: 2px;
+}
+.bus-ticket-info-layer {
+  position: fixed;
+  z-index: 230;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.24);
+  backdrop-filter: blur(5px);
+}
+.bus-ticket-info-card {
+  position: relative;
+  width: min(430px,calc(100vw - 36px));
+  display: grid;
+  gap: 9px;
+  padding: 22px;
+  border: 1px solid;
+  border-radius: 18px;
+  box-shadow: 0 22px 64px rgba(0,0,0,.28);
+}
+.bus-ticket-info-icon {
+  font-size: 38px;
+}
+.bus-ticket-info-card h2,
+.bus-ticket-info-card p {
+  margin: 0;
+}
+.bus-ticket-info-stats {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+}
+.bus-ticket-info-stats > span {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border: 1px solid var(--mm-border);
+  border-radius: 11px;
+  background: var(--mm-surface-2);
+}
+.bus-ticket-info-stats small {
+  color: var(--mm-muted);
+  font-size: 9px;
+}
+.bus-ticket-info-stats strong {
+  font-size: 20px;
+}
+
+/* Game menu settings have one responsive owner. Labels and controls stop
+ * fighting for fixed widths; controls stack before text can overflow. */
+.game-menu-modal .halieus-display-settings {
+  min-width: 0;
+}
+.game-menu-modal .halieus-display-group-readability {
+  min-width: 0;
+}
+.game-menu-modal .halieus-preference-row {
+  min-width: 0;
+  grid-template-columns: minmax(120px,.8fr) minmax(0,1.2fr) !important;
+  gap: 10px !important;
+}
+.game-menu-modal .halieus-preference-row > span {
+  min-width: 0;
+}
+.game-menu-modal .halieus-preference-row > div {
+  min-width: 0;
+  display: grid !important;
+  grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  gap: 6px !important;
+}
+.game-menu-modal .halieus-preference-row button {
+  min-width: 0 !important;
+  width: 100% !important;
+  padding-inline: 7px !important;
+  overflow-wrap: anywhere;
+  white-space: normal !important;
+}
+.game-menu-modal .turn-timer-settings-panel {
+  align-items: center;
+  gap: 12px;
+}
+.game-menu-modal .turn-timer-settings-panel > div {
+  min-width: 0;
+}
+@media (max-width: 560px) {
+  .game-menu-modal .halieus-preference-row {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .game-menu-modal .halieus-preference-row > div {
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 390px) {
+  .game-menu-modal .halieus-preference-row > div {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+}
+
+/* A floating Room dock always gets reserved clearance from the surfaces it can
+ * overlap. This is shared ownership rather than per-screen margin hacks. */
+body:has(.room-chat-shell.is-floating) .lobby-card-v2,
+body:has(.room-chat-shell.is-floating) .mario-results-card {
+  margin-bottom: var(--hgr-room-dock-clearance) !important;
+}
+body:has(.room-chat-shell.is-floating) .game-page .game-sidebar,
+body:has(.room-chat-shell.is-floating) .game-page .player-rail {
+  padding-bottom: var(--hgr-room-dock-clearance) !important;
+  box-sizing: border-box;
+}
+.room-chat-shell.is-floating {
+  z-index: 1450 !important;
+}
+
+/* Ranked top three is a literal podium: 2nd / 1st / 3rd in visual order. */
+.leaderboard-podium {
+  display: grid;
+  grid-template-columns: minmax(0,.9fr) minmax(0,1.12fr) minmax(0,.9fr);
+  align-items: end;
+  gap: 10px;
+  margin: 8px 0 22px;
+  min-height: 230px;
+}
+.leaderboard-podium > article {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 16px 12px 18px;
+  border: 1px solid var(--mm-border);
+  border-radius: 18px 18px 10px 10px;
+  background: var(--mm-surface-2);
+  text-align: center;
+}
+.leaderboard-podium > article.is-rank-1 {
+  min-height: 218px;
+  padding-top: 20px;
+  border-color: color-mix(in srgb,#e5b52e 52%,var(--mm-border));
+  background: linear-gradient(180deg,color-mix(in srgb,#e5b52e 10%,var(--mm-surface-2)),var(--mm-surface-2));
+}
+.leaderboard-podium > article.is-rank-2 {
+  min-height: 184px;
+}
+.leaderboard-podium > article.is-rank-3 {
+  min-height: 164px;
+}
+.leaderboard-podium-medal {
+  position: absolute;
+  top: -15px;
+  font-size: 28px;
+}
+.leaderboard-podium-avatar {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-top: 4px;
+  border: 3px solid color-mix(in srgb,currentColor 12%,#fff);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+}
+.is-rank-1 .leaderboard-podium-avatar {
+  width: 78px;
+  height: 78px;
+}
+.leaderboard-podium-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.leaderboard-podium > article > strong {
+  font-size: 15px;
+}
+.leaderboard-podium > article > b {
+  font-size: 26px;
+  color: var(--hgr-brand,#d43a42);
+}
+.leaderboard-podium > article > small {
+  color: var(--mm-muted);
+  font-size: 10px;
+}
+.leaderboard-podium > article > em {
+  margin-top: auto;
+  color: var(--mm-muted);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+@media (max-width: 680px) {
+  .leaderboard-podium {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 6px;
+    min-height: 180px;
+  }
+  .leaderboard-podium > article {
+    padding-inline: 6px;
+  }
+  .leaderboard-podium-avatar,
+  .is-rank-1 .leaderboard-podium-avatar {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Post-match data keeps the same information at a cleaner density. */
+.mario-results-card {
+  padding-bottom: 18px !important;
+}
+.final-player-row {
+  min-height: 68px !important;
+  padding-block: 9px !important;
+}
+.results-stats-grid {
+  gap: 8px !important;
+}
+.results-player-stats {
+  gap: 7px !important;
+  padding: 11px !important;
+  border-radius: 12px !important;
+}
+.results-player-stats > header {
+  min-height: 34px;
+}
+.results-mini-stats {
+  gap: 6px !important;
+}
+.results-mini-stats > span {
+  padding: 8px !important;
+}
+.results-awards-grid {
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr)) !important;
+  gap: 8px !important;
+}
+.results-awards-grid article {
+  min-height: 90px;
+  padding: 12px !important;
+  border-radius: 12px !important;
+}
+.results-awards-grid article > span {
+  font-size: 28px !important;
+}
+.results-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin-top: 8px;
+  padding: 12px 0 0 !important;
+  background: color-mix(in srgb,var(--mm-surface-1) 94%,transparent);
+  backdrop-filter: blur(10px);
+}
+
+/* Preserve the useful semantic mortgage warning regardless of platform theme. */
+.board-space.is-mortgaged-space {
+  background: linear-gradient(145deg,#8b1e24,#5f1117) !important;
+  box-shadow: inset 0 0 0 3px #ef4444 !important;
+}
+.board-space.is-mortgaged-space .board-space-name,
+.board-space.is-mortgaged-space .board-space-price,
+.board-space.is-mortgaged-space .board-space-icon {
+  color: #fff !important;
+}
+
+/* Light Mega Board chrome has explicit foreground ownership. */
+html[data-theme="light"] .mega-live-page,
+html[data-theme="light"] .mega-ordering-page {
+  color: #151a1d;
+}
+html[data-theme="light"] .mega-live-page .game-header,
+html[data-theme="light"] .mega-live-page .player-rail,
+html[data-theme="light"] .mega-live-page .game-sidebar {
+  color: #151a1d !important;
+}
+html[data-theme="light"] .mega-live-page .player-rail-card,
+html[data-theme="light"] .mega-live-page .sidebar-info-box,
+html[data-theme="light"] .mega-live-page .sidebar-turn-summary {
+  color: #151a1d !important;
+}
+html[data-theme="light"] .mega-live-page .player-rail-card small,
+html[data-theme="light"] .mega-live-page .game-sidebar small {
+  color: #5d6771 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dice-roll-stage {
+    transition: none !important;
+  }
+}
