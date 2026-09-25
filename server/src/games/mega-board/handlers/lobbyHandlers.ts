@@ -184,8 +184,13 @@ export function registerLobbyHandlers(
       }
 
       let boardStyle = "classic-board";
-      try { boardStyle = (await roomCosmeticState(socket.request as Request)).preferences["mega-board"]; }
-      catch { acknowledge({ ok: false, reason: "Unable to verify Room Style. Try again." }); return; }
+      try {
+        boardStyle = (await roomCosmeticState(socket.request as Request)).preferences["mega-board"] ?? "classic-board";
+      } catch {
+        // Cosmetics must never block gameplay. If account/progression storage is
+        // temporarily unavailable, create the room with the starter board.
+        boardStyle = "classic-board";
+      }
       if (rooms.has(code) || socket.connected === false) { acknowledge({ ok: false, reason: "Room creation changed. Try again." }); return; }
       const reconnectToken = createRecoveryKey();
       const now = Date.now();
@@ -556,6 +561,11 @@ socket.on(
         });
       }
       queueRoomSave();
+
+      // A recovered or long-lived host socket may no longer be in Socket.IO's
+      // room even though it still owns the authoritative HGR seat. Re-joining is
+      // idempotent and ensures the host receives the same broadcasts as guests.
+      socket.join(code);
 
       const publicRoom = toPublicGameRoom(room);
       acknowledge({
