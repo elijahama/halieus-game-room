@@ -151,7 +151,7 @@ assert.match(html,/ivory-8bit[\s\S]*lavender-16bit[\s\S]*black-drive[\s\S]*grey-
 assert.match(themeButton,/Theme Library/,"Primary theme menu must group expressive profiles into a library");
 assert.match(themeButton,/QUICK_OPTIONS/,"Primary theme menu must retain a compact quick-choice layer");
 assert.match(themeButton,/halieus-theme-custom-launch/,"Custom RGB\/HEX access must remain immediate");
-assert.match(display,/Text & density/,"Game display settings must expose readability controls");
+assert.match(display,/Readability/,"Game display settings must expose readability controls");
 assert.match(display,/Interface density/,"Game display settings must expose density controls");
 assert.match(app,/dataset\.textScale/,"Text size must apply from the shared app root");
 assert.match(app,/dataset\.density/,"Density must apply from the shared app root");
