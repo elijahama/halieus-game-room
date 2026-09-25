@@ -243,11 +243,14 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                     </div>
                     {group.profiles.map((profile) => (
                       <button type="button" key={profile.id} className={mode === "profile" && profileId === profile.id ? "is-active" : ""} onClick={() => selectProfile(profile.id)}>
-                        <span className="halieus-theme-profile-swatch" aria-hidden="true">
-                          <i style={{ background: profile.theme.page }} />
-                          <i style={{ background: profile.theme.surface }} />
-                          <i style={{ background: profile.theme.accent }} />
-                          <i style={{ background: profile.theme.secondary }} />
+                        <span className="halieus-theme-profile-visual" aria-hidden="true">
+                          <span className="halieus-theme-profile-swatch">
+                            <i style={{ background: profile.theme.page }} />
+                            <i style={{ background: profile.theme.surface }} />
+                            <i style={{ background: profile.theme.accent }} />
+                            <i style={{ background: profile.theme.secondary }} />
+                          </span>
+                          {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
                         </span>
                         <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small></span>
                         {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
