@@ -109,7 +109,13 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
                       ? "Unlocked"
                       : "🔒 " + skin.unlock.label;
                 return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked")} disabled={!unlocked || readOnly} onClick={() => void choose(skin.id, unlocked)}>
-                  <span className={"halieus-skin-preview skin-" + skin.id} aria-hidden="true"><i /><i /><b>{slot === "cards" ? "♠" : slot === "poker-table" ? "♠ ♥ ♣ ♦" : slot === "mega-board" ? "GO ▧ ▧ ▧" : "Aa"}</b></span>
+                  {skin.previewPalette ? (
+                    <span className="halieus-skin-preview halieus-skin-palette" aria-hidden="true">
+                      {skin.previewPalette.map((colour, index) => <i key={`${skin.id}-${index}`} style={{ background: colour }} />)}
+                    </span>
+                  ) : (
+                    <span className={"halieus-skin-preview skin-" + skin.id} aria-hidden="true"><i /><i /><b>{slot === "cards" ? "♠" : slot === "poker-table" ? "♠ ♥ ♣ ♦" : slot === "mega-board" ? "GO ▧ ▧ ▧" : "Aa"}</b></span>
+                  )}
                   <span><em>{COLLECTION_LABELS[skin.collection]} · {skin.mood}</em><strong>{skin.label}</strong><small>{skin.description}</small></span>
                   <span className="halieus-skin-state">{state}</span>
                 </button>;
