@@ -3832,8 +3832,16 @@ function handleLeaveSpectator() {
           onAddAi={handleAddAi}
           onRemoveAi={handleRemoveAi}
           onBoardStyleChange={(style) => new Promise<void>((resolve, reject) => {
+            const previousStyle = lobby.boardStyle ?? "classic-board";
+            // Cosmetic selection should feel immediate. The server remains
+            // authoritative; a rejected choice rolls back to the prior board.
+            setLobby(current => current ? { ...current, boardStyle: style } : current);
             socket.emit("game:set-board-style", { code: lobby.code, style }, (response: GameResponse) => {
-              if (!response.ok) { reject(new Error(response.reason ?? "Unable to change Room Style.")); return; }
+              if (!response.ok) {
+                setLobby(current => current ? { ...current, boardStyle: previousStyle } : current);
+                reject(new Error(response.reason ?? "Unable to change Room Style."));
+                return;
+              }
               if (response.room) setLobby(current => current ? { ...current, boardStyle: response.room!.boardStyle } : current);
               resolve();
             });
