@@ -6329,3 +6329,133 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
   .account-username-edit-row{grid-template-columns:1fr}
   .account-username-edit-row>.button-muted{width:100%}
 }
+
+
+/* Part 17 — shared create-room/table composition. */
+.hgr-pre-game-shell{
+  --pre-game-gap:12px;
+  width:min(820px,100%)!important;
+  padding:16px!important;
+}
+.hgr-pre-game-header{
+  margin-bottom:12px!important;
+  padding-bottom:12px!important;
+  border-bottom:1px solid var(--hgr-border);
+}
+.hgr-pre-game-body{display:grid;gap:var(--pre-game-gap);min-width:0}
+.hgr-pre-game-shell .halieus-game-options{
+  display:grid!important;
+  gap:10px!important;
+  min-width:0;
+  margin:0!important;
+}
+.hgr-pre-game-shell .match-tabs{margin:0!important}
+.hgr-pre-game-shell .halieus-create-form{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:10px!important;
+  margin:0!important;
+  padding-top:12px;
+  border-top:1px solid var(--hgr-border);
+}
+.hgr-pre-game-shell .halieus-create-form>label{min-width:0;margin:0!important}
+.hgr-pre-game-shell .halieus-create-form>.full-button{grid-column:1/-1;min-height:44px!important;margin:0!important}
+.hgr-pre-game-shell .input-action-row{min-width:0}
+.hgr-pre-game-shell .ranked-universal-leaderboard-button{
+  justify-self:start;
+  min-height:34px!important;
+  padding:6px 10px!important;
+  font-size:10px!important;
+}
+.hgr-pre-game-shell[data-game="poker"] .poker-variant-picker{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,.8fr)!important;
+  gap:9px!important;
+  align-items:stretch;
+  padding:10px!important;
+  border:1px solid var(--hgr-border)!important;
+  border-radius:12px!important;
+  background:var(--hgr-surface-soft)!important;
+}
+.hgr-pre-game-shell[data-game="poker"] .poker-variant-picker>p{
+  grid-column:1/-1;
+  margin:0!important;
+  color:var(--hgr-muted)!important;
+  font-size:9px!important;
+}
+.hgr-pre-game-shell[data-game="poker"] .poker-variant-live{
+  min-height:64px!important;
+  padding:9px 11px!important;
+  border-radius:10px!important;
+}
+.hgr-pre-game-shell[data-game="poker"] .poker-variant-roadmap{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:5px!important;
+  align-content:center;
+}
+.hgr-pre-game-shell[data-game="poker"] .poker-variant-roadmap>span{
+  min-height:0!important;
+  padding:5px 8px!important;
+  border:1px solid var(--hgr-border)!important;
+  border-radius:8px!important;
+  background:var(--hgr-surface)!important;
+  color:var(--hgr-muted)!important;
+  font-size:9px!important;
+}
+.hgr-pre-game-shell[data-game="poker"] .poker-variant-roadmap i{
+  float:right;
+  font-size:8px!important;
+}
+.hgr-pre-game-shell .poker-home-settings,
+.hgr-pre-game-shell .word-arena-create-settings{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:9px!important;
+  margin:0!important;
+}
+.hgr-pre-game-shell .poker-home-settings label,
+.hgr-pre-game-shell .word-arena-create-settings label{
+  min-width:0;
+  padding:9px 10px!important;
+  border:1px solid var(--hgr-border)!important;
+  border-radius:11px!important;
+  background:var(--hgr-surface-soft)!important;
+}
+.hgr-pre-game-shell .halieus-rule-note{
+  margin:0!important;
+  padding:9px 10px!important;
+  border-radius:11px!important;
+}
+.hgr-pre-game-shell[data-game="connect-four"] .connect-four-series-picker{
+  display:grid!important;
+  grid-template-columns:auto repeat(3,minmax(0,1fr))!important;
+  align-items:center;
+  gap:6px!important;
+  margin:0!important;
+  padding:8px!important;
+  border:1px solid var(--hgr-border)!important;
+  border-radius:11px!important;
+  background:var(--hgr-surface-soft)!important;
+}
+.hgr-pre-game-shell[data-game="connect-four"] .connect-four-series-picker>p{
+  margin:0 4px 0 0!important;
+  font-size:9px!important;
+}
+.hgr-pre-game-shell[data-game="connect-four"] .connect-four-series-picker>button{
+  min-height:34px!important;
+  padding:5px 8px!important;
+}
+@media(max-width:680px){
+  .hgr-pre-game-shell{width:100%!important;padding:14px!important}
+  .hgr-pre-game-shell .halieus-create-form,
+  .hgr-pre-game-shell .poker-home-settings,
+  .hgr-pre-game-shell .word-arena-create-settings,
+  .hgr-pre-game-shell[data-game="poker"] .poker-variant-picker{
+    grid-template-columns:1fr!important;
+  }
+  .hgr-pre-game-shell[data-game="connect-four"] .connect-four-series-picker{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  .hgr-pre-game-shell[data-game="connect-four"] .connect-four-series-picker>p{grid-column:1/-1}
+}
