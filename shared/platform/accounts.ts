@@ -82,6 +82,20 @@ export interface HalieusPlayerDirectoryEntry {
   lastSeenAt: number | null;
 }
 
+export interface HalieusGamerScoreLeaderboardEntry {
+  rank: number;
+  accountId: string;
+  displayName: string;
+  username: string;
+  avatar: string;
+  profilePicture: string | null;
+  playerColor: string;
+  gamerScore: number;
+  achievements: number;
+  verifiedGames: number;
+  wins: number;
+}
+
 export type HalieusGameRequestStatus = "pending" | "accepted" | "declined" | "cancelled" | "expired" | "closed";
 
 export interface HalieusGameRequestSummary {
