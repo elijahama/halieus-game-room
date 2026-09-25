@@ -13,6 +13,8 @@ import { GAME_CATALOG } from "../games/catalog";
 import { accountApi } from "./api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DisplaySettingsPanel } from "../components/DisplaySettingsPanel";
+import { HgrIcon } from "../components/HgrIcon";
+import { APP_RELEASE_LABEL, RELEASE_FINGERPRINT } from "../../version";
 
 interface Props {
   account: HalieusAccountSummary;
@@ -121,6 +123,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackReplyDrafts, setFeedbackReplyDrafts] = useState<Record<string, string>>({});
   const [confirmRequest, setConfirmRequest] = useState<{ title: string; message: string; label: string; action: () => void } | null>(null);
+  const [buildInfoOpen, setBuildInfoOpen] = useState(false);
 
   async function refreshAdmin() {
     if (!isAdmin) return;
@@ -354,7 +357,10 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
 
   const profileSettings = (
     <section className="account-self-service">
-      <section className="account-settings-card"><h3>Appearance</h3><DisplaySettingsPanel darkMode={false} onToggleDarkMode={() => {}} onToggleFullscreen={() => { if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen(); }} /></section>
+      <section className="account-appearance-card">
+        <header className="account-appearance-heading"><div><p className="modal-eyebrow">Player settings</p><h3>Appearance</h3></div><small>Theme, text size and density follow you across HGR.</small></header>
+        <DisplaySettingsPanel darkMode={false} onToggleDarkMode={() => {}} showFullscreen={false} onToggleFullscreen={() => {}} />
+      </section>
       {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div><button type="button" className="button-outline account-open-owner-tools" onClick={() => setAdminTab("overview")}>Owner tools →</button></header>}
       <div className="account-profile-grid">
         <form className="account-settings-card" onSubmit={saveProfile}>
@@ -380,12 +386,22 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
         <div className="account-stat-overview">
           <article><small>Games played</small><strong>{personalStats.played}</strong></article>
           <article><small>Wins</small><strong>{personalStats.wins}</strong></article>
-          <article><small>Win rate</small><strong>{Math.round(personalStats.winRate)}%</strong></article>
+          <article><small>Overall win rate</small><strong>{Math.round(personalStats.winRate)}%</strong></article>
           <article><small>Most played</small><strong>{personalFavourite?.gameTitle ?? "—"}</strong></article>
           <article><small>Current streak</small><strong>{currentWinStreak}</strong></article>
         </div>
-        <div className="account-game-record-grid">{personalStats.byGame.map((row) => <article key={row.game}><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.played ? Math.round((row.wins / row.played) * 100) : 0}%</small></article>)}</div>
-        {personalStats.recent.length > 0 && <div className="account-game-record-recent"><h4>Recent results</h4>{personalStats.recent.slice(0, 6).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><span><strong>{item.gameTitle}</strong><small>{new Date(item.at).toLocaleDateString()} · Room {item.roomCode}</small></span><b className={item.won ? "is-win" : ""}>{item.result}</b></article>)}</div>}
+        {personalStats.breakdown && <section className="account-stat-breakdown" aria-label="Win rate breakdown">
+          <header><strong>Results by match type</strong><small>Human competition is kept separate from AI-involved and solo games.</small></header>
+          <div>
+            <article><span>Human only</span><strong>{personalStats.breakdown.humanOnly.winRate}%</strong><small>{personalStats.breakdown.humanOnly.wins}/{personalStats.breakdown.humanOnly.played} wins</small></article>
+            <article><span>Ranked</span><strong>{personalStats.breakdown.ranked.winRate}%</strong><small>{personalStats.breakdown.ranked.wins}/{personalStats.breakdown.ranked.played} wins</small></article>
+            <article><span>Casual</span><strong>{personalStats.breakdown.casual.winRate}%</strong><small>{personalStats.breakdown.casual.wins}/{personalStats.breakdown.casual.played} wins</small></article>
+            <article><span>AI involved</span><strong>{personalStats.breakdown.aiInvolved.winRate}%</strong><small>{personalStats.breakdown.aiInvolved.wins}/{personalStats.breakdown.aiInvolved.played} wins</small></article>
+            <article><span>Solo</span><strong>{personalStats.breakdown.solo.winRate}%</strong><small>{personalStats.breakdown.solo.wins}/{personalStats.breakdown.solo.played} wins</small></article>
+          </div>
+        </section>}
+        <div className="account-game-record-grid">{personalStats.byGame.map((row) => <article key={row.game}><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.played ? Math.round((row.wins / row.played) * 100) : 0}% overall</small></article>)}</div>
+        {personalStats.recent.length > 0 && <div className="account-game-record-recent"><h4>Recent results</h4>{personalStats.recent.slice(0, 6).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><span><strong>{item.gameTitle}</strong><small>{new Date(item.at).toLocaleDateString()} · Room {item.roomCode}{item.matchMode ? ` · ${item.matchMode[0].toUpperCase() + item.matchMode.slice(1)}` : ""}{item.opponentType ? ` · ${item.opponentType === "human-only" ? "Human" : item.opponentType === "ai-involved" ? "AI involved" : "Solo"}` : ""}</small></span><b className={item.won ? "is-win" : ""}>{item.result}</b></article>)}</div>}
       </section>}
       <section className="account-feedback-card">
         <header><div><p className="modal-eyebrow">Feedback</p><h3>Send feedback</h3><small>Send a game issue, UI note or suggestion directly to the HGR owner. Replies stay attached to your account here.</small></div></header>
@@ -416,7 +432,10 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
             <span className="account-profile-picture-preview" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span>
             <div><p>{account.role === "owner" ? "Halieus owner" : account.role === "admin" ? "Administrator" : "Approved player"}</p><h2>{account.displayName}</h2><small>@{account.username}</small></div>
           </div>
-          <button type="button" className="icon-button" onClick={onClose} aria-label="Close account panel">×</button>
+          <div className="account-panel-header-actions">
+            <button type="button" className="button-outline account-build-info-button" onClick={() => setBuildInfoOpen(true)}><HgrIcon name="info" size={17} /><span>Build {APP_RELEASE_LABEL}</span></button>
+            <button type="button" className="icon-button" onClick={onClose} aria-label="Close account panel">×</button>
+          </div>
         </header>
 
         <div className="account-panel-scroll">
@@ -600,6 +619,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
         </div>
       </section>
       <ConfirmDialog open={confirmRequest !== null} title={confirmRequest?.title ?? "Confirm action"} message={confirmRequest?.message ?? ""} confirmLabel={confirmRequest?.label ?? "Confirm"} destructive onCancel={() => setConfirmRequest(null)} onConfirm={() => { const request = confirmRequest; setConfirmRequest(null); request?.action(); }} />
+      {buildInfoOpen && <ModalPortal onClose={() => setBuildInfoOpen(false)}><div className="modal-backdrop halieus-confirm-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setBuildInfoOpen(false)}><section className="halieus-build-info-popover account-build-info-modal" role="dialog" aria-modal="true" aria-label="Build information"><button type="button" aria-label="Close build information" onClick={() => setBuildInfoOpen(false)}><HgrIcon name="close" size={18} /></button><p>HALIEUS GAME ROOM</p><h3>Build {APP_RELEASE_LABEL}</h3><span>Exact release</span><code>{RELEASE_FINGERPRINT}</code></section></div></ModalPortal>}
     </div></ModalPortal>
   );
 }
