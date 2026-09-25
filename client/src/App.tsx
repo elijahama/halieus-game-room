@@ -757,7 +757,8 @@ export default function App() {
             playerId: response.playerId,
             players: response.room.players,
             hostDisconnectDeadline: response.room.hostDisconnectDeadline,
-            freeParkingJackpotEnabled: response.room.freeParkingJackpotEnabled,
+freeParkingJackpotEnabled: response.room.freeParkingJackpotEnabled,
+            turnTimerSeconds: response.room.turnTimerSeconds,
             blitz: response.room.blitz,
           });
           setRanked(response.room.ranked);
@@ -953,6 +954,8 @@ export default function App() {
           players: room.players,
           hostDisconnectDeadline:
             room.hostDisconnectDeadline,
+          turnTimerSeconds:
+            room.turnTimerSeconds,
         };
       });
       setRanked(room.ranked);
@@ -1164,9 +1167,9 @@ export default function App() {
       code: response.code,
       playerId: response.playerId,
       players: response.room.players,
-      hostDisconnectDeadline:
-        response.room.hostDisconnectDeadline,
-      blitz: response.room.blitz,
+      hostDisconnectDeadline: response.room.hostDisconnectDeadline,
+turnTimerSeconds: response.room.turnTimerSeconds,
+blitz: response.room.blitz,
     });
     setRanked(response.room.ranked);
     setBlitz(response.room.blitz);
@@ -1330,7 +1333,8 @@ function handleSpectateGame() {
         playerId: response.playerId,
         players: response.room.players,
         hostDisconnectDeadline: response.room.hostDisconnectDeadline,
-        blitz: response.room.blitz,
+turnTimerSeconds: response.room.turnTimerSeconds,
+blitz: response.room.blitz,
       });
       setRanked(response.room.ranked);
       setBlitz(response.room.blitz);
@@ -1424,9 +1428,9 @@ function handleLeaveSpectator() {
           code: response.code,
           playerId: response.playerId,
           players: response.room.players,
-          hostDisconnectDeadline:
-            response.room.hostDisconnectDeadline,
-          blitz: response.room.blitz,
+          hostDisconnectDeadline: response.room.hostDisconnectDeadline,
+turnTimerSeconds: response.room.turnTimerSeconds,
+blitz: response.room.blitz,
         });
         setRanked(response.room.ranked);
         setBlitz(response.room.blitz);
@@ -1499,9 +1503,9 @@ function handleLeaveSpectator() {
           code: response.code,
           playerId: response.playerId,
           players: response.room.players,
-          hostDisconnectDeadline:
-            response.room.hostDisconnectDeadline,
-          blitz: response.room.blitz,
+          hostDisconnectDeadline: response.room.hostDisconnectDeadline,
+turnTimerSeconds: response.room.turnTimerSeconds,
+blitz: response.room.blitz,
         });
         setRanked(response.room.ranked);
         setBlitz(response.room.blitz);
@@ -2190,8 +2194,12 @@ function handleLeaveSpectator() {
   }
 
   function handleTurnTimerChange(seconds: number) {
-    if (!lobby || !gameState) {
-      setMessage("The game state is not ready.");
+    if (!lobby) {
+      setMessage("The lobby is not ready.");
+      return;
+    }
+    if (gameStarted) {
+      setMessage("The turn timer is locked once the match starts.");
       return;
     }
 
@@ -2205,7 +2213,7 @@ function handleLeaveSpectator() {
           setMessage(response.reason ?? "Unable to change the turn timer.");
           return;
         }
-        setMessage(`Turn timer changed to ${seconds < 60 ? `${seconds} seconds` : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}.`);
+        setMessage(`Turn timer set to ${seconds < 60 ? `${seconds} seconds` : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`} for this match.`);
       },
     );
   }
@@ -3390,11 +3398,9 @@ function handleLeaveSpectator() {
           darkMode={darkMode}
           soundEnabled={soundEnabled}
           turnTimerSeconds={gameState?.turnTimerSeconds}
-          isUpdatingTurnTimer={isUpdatingTurnTimer}
           onToggleDarkMode={toggleDarkMode}
           onToggleSound={toggleSound}
           onToggleFullscreen={toggleFullscreen}
-          onTurnTimerChange={handleTurnTimerChange}
           onClose={() =>
             setGameMenuOpen(false)
           }
@@ -3439,11 +3445,9 @@ function handleLeaveSpectator() {
           darkMode={darkMode}
           soundEnabled={soundEnabled}
           turnTimerSeconds={gameState?.turnTimerSeconds}
-          isUpdatingTurnTimer={isUpdatingTurnTimer}
           onToggleDarkMode={toggleDarkMode}
           onToggleSound={toggleSound}
           onToggleFullscreen={toggleFullscreen}
-          onTurnTimerChange={handleTurnTimerChange}
           onClose={() =>
             setGameMenuOpen(false)
           }
@@ -3738,6 +3742,7 @@ function handleLeaveSpectator() {
           theme={theme}
           onToggleDarkMode={toggleDarkMode}
           onStartGame={handleStartGame}
+          turnTimerSeconds={lobby.turnTimerSeconds}
           recoveryKey={activeRecoveryKey}
           onLeaveLobby={
             isHost
