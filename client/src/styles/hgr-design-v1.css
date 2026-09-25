@@ -3560,7 +3560,7 @@ html[data-theme="green"] {
   --hgr-space-5: 24px;
 }
 
-/* Model-sheet H: one stable slab-serif silhouette. Keep the treatment matte:
+/* Website H: reference-backed block silhouette, separate from launcher artwork. Keep the treatment matte:
  * no crystal facets, shard language or decorative internal geometry. */
 .halieus-brand-mark-h-shape {
   fill: var(--hgr-logo-ink);

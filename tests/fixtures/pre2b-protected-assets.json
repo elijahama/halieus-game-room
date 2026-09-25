@@ -1,0 +1,66 @@
+[
+  {
+    "path": "assets/branding/references/ChatGPT Image 24 Sept 2026, 21_54_08.png",
+    "sha256": "4abfa28460656f7bf33d2f3806dd86889f595b91409168b1423900b6f71e6565"
+  },
+  {
+    "path": "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_31 AM.png",
+    "sha256": "222577560dc6d488aead95350bbe2ab96d760951ce852d2e81fd21a0b3269bb0"
+  },
+  {
+    "path": "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_37 AM.png",
+    "sha256": "32ec1f2f045329e6897591ae0c08c4a1d9c7497eeb6b0d39e0f4ddb96d2993dc"
+  },
+  {
+    "path": "assets/branding/references/README.md",
+    "sha256": "c3ef2775b7087d1dff15b9339acb06b99084fe0c4af1359b335b4cb0193fe813"
+  },
+  {
+    "path": "assets/branding/references/web mock up",
+    "sha256": "fac8505d342284e94e51e98643bb457d7271fc5799a5e73d37cc643124002e2b"
+  },
+  {
+    "path": "assets/branding/launchers/Close Halieus Game Room.ico",
+    "sha256": "d8660699eb2e1f618f4cb84275067c35bec34eb070f1f0791a5c49eb5c856799"
+  },
+  {
+    "path": "assets/branding/launchers/Close Halieus Game Room.svg",
+    "sha256": "69dbefb13f19613109a7f462312e9b4ef253a52c69190e58a18ec2038b8cfbec"
+  },
+  {
+    "path": "assets/branding/launchers/HGR OpenShard TUI.svg",
+    "sha256": "dd4895106e2c589c528c277d2313b684e0fcc3f8cdc5abc08bbb3cf53b031fce"
+  },
+  {
+    "path": "assets/branding/launchers/HGR PowerShell.ico",
+    "sha256": "40f9c7a75aa8e12982ac5769e149c545be01cebc2cf0e51b3a69a07139535a97"
+  },
+  {
+    "path": "assets/branding/launchers/HGR PowerShell.svg",
+    "sha256": "88ab04d50272c5c495da5d9f0bb47a61974609973472e6f3d670cdb8e79fb508"
+  },
+  {
+    "path": "assets/branding/launchers/Restart Halieus Game Room.ico",
+    "sha256": "c8ec6f444d7d5e4e721b73541de39c931cba83d6a0ec69de9bdb496382b2938c"
+  },
+  {
+    "path": "assets/branding/launchers/Restart Halieus Game Room.svg",
+    "sha256": "277e38563770f6e624d60779f825d2a355f88ed73a74dd83b97e5b361deb21e9"
+  },
+  {
+    "path": "assets/branding/launchers/Start Halieus Game Room.ico",
+    "sha256": "f78003897025790f0c6ad24df9677b9fdb46b24d1758b637729f17be59480cd9"
+  },
+  {
+    "path": "assets/branding/launchers/Start Halieus Game Room.svg",
+    "sha256": "0631fae4b5da86538775823c5789e7bea9b11214c6ccc88477dfe67ce8f79983"
+  },
+  {
+    "path": "assets/branding/launchers/Update Halieus Website.ico",
+    "sha256": "ddb79294cd10758091951783ce60d2dbb4aafa2a2c5ca10000492d08f4841b2d"
+  },
+  {
+    "path": "assets/branding/launchers/Update Halieus Website.svg",
+    "sha256": "78db6227f4d5c5a95b85b2b8bfa98687aa9b320ac2687202337a52f0bea01e92"
+  }
+]

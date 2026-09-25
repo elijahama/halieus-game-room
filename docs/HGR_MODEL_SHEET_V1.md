@@ -7,18 +7,11 @@ This model sheet defines the shared visual language for Halieus Game Room. Indiv
 
 ## 1. Halieus H
 
-The earlier faceted 4.5 experiment is no longer the approved direction.
+The platform has **separate website and launcher identities**. The website uses the simple block H shown in the approved website concept (ChatGPT Image Sep 22, 2026, 08_26_37 AM.png). The historical website path at 477d352 matches that reference: `M17 15h10v12h10V15h10v34H37V36H27v13H17z` in a 64 × 64 viewBox.
 
-The current approved identity returns to the calmer **approved H utility family** established by the launcher references:
+Preserve yellow/gold as the default Halieus brand colour and theme-aware contrast. The shared React mark, boot mark, platform tab glyph, web favicons and installable-site icons use this website silhouette. Retain their existing compact sizing and theme tokens.
 
-- a strong serif/slab H silhouette;
-- a restrained rounded tile where a tile is needed;
-- yellow/gold as the default Halieus brand colour;
-- theme-aware variants where appropriate;
-- no crystal/shard language outside the dedicated OpenShard launcher;
-- no unnecessary sci-fi/glass treatment.
-
-The H remains one stable silhouette across the product. Theme variants change colour/contrast treatment, not its identity.
+The serif/slab H belongs to the protected Windows launcher artwork. It must not be propagated into website icons. Website asset generation must never write to assets/branding/launchers or assets/branding/references. Portal uses H; Mega Board uses M; Poker uses P; other games retain contextual identities.
 
 ### Approved contrast variants
 
@@ -31,7 +24,7 @@ The H must not be stretched, skewed, replaced with unrelated geometry, or made t
 
 ## 2. Launcher utility family
 
-The Windows/developer launcher family uses the approved launcher utility treatment: restrained rounded-square tiles, the canonical H as the family anchor, and one clear task-specific symbol.
+The Windows/developer launcher family uses the approved launcher utility treatment: restrained rounded-square tiles, the separate launcher H as the family anchor, and one clear task-specific symbol.
 
 Canonical action colours:
 

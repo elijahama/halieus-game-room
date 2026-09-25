@@ -62,6 +62,12 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
+  'scripts/generate-platform-icons.mjs', 'tests/regression-protected-brand-assets.mjs',
+  'tests/regression-website-identity.mjs', 'tests/browser-website-identity.mjs',
+  'tests/fixtures/pre2b-protected-assets.json', 'tests/fixtures/pre2b-website-assets.json',
+  'docs/project/PART17_PRE2B_INSPECTION.md', 'docs/project/PART17_PRE2B_SCREENSHOT_MATRIX.md',
+  'docs/project/PART17_PRE2B_REFERENCES.md', 'docs/project/PART17_PRE2B_IMPLEMENTATION.md',
+  'docs/HGR_MODEL_SHEET_V1.md', 'tests/regression-4.5-foundation.mjs',
   'tests/runtime-classic-lifecycle.mjs', 'tests/fixtures/classic-lifecycle-server.mjs',
   'docs/project/PART17_STAGE2A_CLASSIC_LIFECYCLE.md',
   'desktop/package.json', 'tests/regression-release-identity.mjs', 'tests/browser-release-identity.mjs',

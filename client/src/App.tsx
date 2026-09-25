@@ -258,7 +258,7 @@ function formatDuration(milliseconds: number): string {
 }
 
 function makeHalieusTabGlyph(fill: string, ink: string): string {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="${fill}" stroke="${ink}" stroke-width="0.8" paint-order="stroke fill" d="M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z"/></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="${fill}" stroke="${ink}" stroke-width="0.8" paint-order="stroke fill" d="M17 15h10v12h10V15h10v34H37V36H27v13H17z"/></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 

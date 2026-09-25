@@ -11,7 +11,7 @@ export function HalieusBrandMark({ className = "", variant = "standard" }: Halie
         <g className="halieus-brand-mark-h">
           <path
             className="halieus-brand-mark-h-shape"
-            d="M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z"
+            d="M17 15h10v12h10V15h10v34H37V36H27v13H17z"
           />
         </g>
       </svg>

@@ -60,14 +60,14 @@ assert.match(home,/Spectate/,"Player menu must expose real spectate where availa
 assert.match(home,/Invite to my room/,"Player menu must expose active-room invitation where available");
 assert.match(home,/Copy username/,"Player menu must expose a useful identity action");
 
-assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved shared slab silhouette");
+assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved website block silhouette");
 assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-bridge/,"Retired faceted H geometry must not return");
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
-assert.match(modelSheet,/approved H utility family/,"Model sheet must document the approved H construction");
+assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
-assert.match(halieusMark,/M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(halieusMark,/M17 15h10v12h10V15h10v34H37V36H27v13H17z/,"Canonical public Halieus mark must use the approved H geometry");
 assert.match(html,/id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg"/,"Initial browser identity must use the canonical Halieus mark");
-assert.match(html,/halieus-boot-mark[\s\S]*?M12 12h17v5h-4v12h14V17h-4v-5h17v5h-5v30h5v5H35v-5h4V35H25v12h4v5H12v-5h5V17h-5z/,"First-paint mark must reuse the approved H geometry");
+assert.match(html,/halieus-boot-mark[\s\S]*?M17 15h10v12h10V15h10v34H37V36H27v13H17z/,"First-paint mark must reuse the approved H geometry");
 assert.match(app,/function makeHalieusTabGlyph/,"Platform tab identity must use the compact Halieus H glyph");
 assert.match(app,/getPropertyValue\("--hgr-brand"\)/,"Platform tab H must derive its colour from the saved theme");
 assert.match(app,/getPropertyValue\("--hgr-brand-ink"\)/,"Platform tab H must derive its outline contrast from the saved theme");
