@@ -49,7 +49,7 @@ assert.doesNotMatch(html,/width=980/,'HTML viewport must never request the old d
 // follows the current canonical Halieus mark without resurrecting retired assets.
 assert.match(
   html,
-  /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg\?v=4\.\d+\.\d+(?:-[^"]+)?"/,
+  /id="halieus-dynamic-favicon"[^>]+href="\/app-icon-reference\.png\?v=4\.\d+\.\d+(?:-[^"]+)?"/,
   '4.0.2 browser asset cache identity missing',
 );
 
