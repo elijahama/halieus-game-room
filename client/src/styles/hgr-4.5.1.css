@@ -2013,3 +2013,60 @@ html[data-theme="custom"] .halieus-game-atmosphere span {
     grid-template-columns: minmax(0,1fr);
   }
 }
+
+
+.halieus-generic-ranked-list {
+  display: grid;
+  gap: 6px;
+}
+.halieus-generic-ranked-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(150px,1fr) repeat(3,minmax(72px,auto));
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 9px 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-generic-ranked-position {
+  color: var(--game-icon-accent,var(--hgr-brand));
+  text-align: center;
+  font-size: 13px;
+}
+.halieus-generic-ranked-player {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-generic-ranked-player > strong {
+  overflow: hidden;
+  color: var(--hgr-text);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-generic-ranked-player > small,
+.halieus-generic-ranked-row > span:not(.halieus-generic-ranked-player) > small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+}
+.halieus-generic-ranked-row > span:not(.halieus-generic-ranked-player) {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+}
+.halieus-generic-ranked-row > span:not(.halieus-generic-ranked-player) > strong {
+  color: var(--hgr-text);
+  font-size: 11px;
+}
+@media (max-width: 620px) {
+  .halieus-generic-ranked-row {
+    grid-template-columns: 34px minmax(0,1fr) auto auto;
+  }
+  .halieus-generic-ranked-row > span:nth-of-type(n+4) {
+    display: none;
+  }
+}
