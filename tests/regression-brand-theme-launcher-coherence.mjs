@@ -62,6 +62,7 @@ assert.match(updater,/if not exist "%%F"[\s\S]*?git restore --source=HEAD --stag
 assert.match(guilds,/id: "members", label: "Members", icon: "players"/,"Guild Members tab must use the shared HGR players SVG icon");
 assert.match(guilds,/<HgrIcon name=\{tab\.icon\} size=\{16\} \/>/,"Guild tabs must render through the shared HGR icon system");
 assert.doesNotMatch(guilds,/👥 Members|💬 Chat|🏆 Leaderboard|🎲 Rooms/,"Guild tabs must not depend on platform-specific emoji glyphs");
+assert.match(guilds,/className="halieus-guild-member-row"[\s\S]*?player=\{\{[\s\S]*?profilePicture: member\.profilePicture[\s\S]*?playerColor: member\.playerColor/,"Guild member rows must use the shared player identity component and real HGR profile artwork");
 assert.match(guilds,/halieus-guild-heading-actions/,"Guild Join/Create actions must live in the page heading");
 assert.doesNotMatch(guilds,/<div className="halieus-guild-actions">/,"Guild landing must not render a second full-width setup bar");
 assert.match(guilds,/setGuildAction\("join"\)/,"Guild heading must open the Join modal");
