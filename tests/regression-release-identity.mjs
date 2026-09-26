@@ -11,6 +11,10 @@ const read = (p) => readFileSync(resolve(root, p), 'utf8');
 assert.equal(read('VERSION').trim(), '4.5.2', 'Approved HGR 4.5.2 release intent');
 const version = read('VERSION').trim();
 const manifest = JSON.parse(read('RELEASE.json'));
+const approvedPwaSource = 'assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png';
+const generatedPwaCopy = 'client/public/app-icon-reference.png';
+assert.ok(manifest.integrityFiles.includes(approvedPwaSource), 'Release identity must hash the approved PWA reference source');
+assert.ok(!manifest.integrityFiles.includes(generatedPwaCopy), 'Generated PWA public copy must not become a release-identity input');
 const run = (cwd, mode) => spawnSync(process.execPath, ['scripts/release-integrity.mjs', mode], { cwd, encoding: 'utf8' });
 const good = run(root, '--verify');
 assert.equal(good.status, 0, good.stderr);
@@ -35,6 +39,11 @@ try {
     copyFileSync(resolve(root, file), resolve(fixture, file));
   }
   assert.equal(run(fixture, '--verify').status, 0, 'Untouched deployment fixture');
+  // Client prebuild materialises this byte-for-byte copy after release preparation.
+  // Its presence must not invalidate an otherwise identical release fingerprint.
+  mkdirSync(dirname(resolve(fixture, generatedPwaCopy)), { recursive: true });
+  copyFileSync(resolve(root, approvedPwaSource), resolve(fixture, generatedPwaCopy));
+  assert.equal(run(fixture, '--verify').status, 0, 'Materialised PWA icon copy must not change release identity');
   const corruptions = [
     ['shared/version.ts', (s) => s.replace(version, '4.1.1')],
     ['package.json', (s) => s.replace(version, '4.1.1')],
