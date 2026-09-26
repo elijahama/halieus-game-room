@@ -13,6 +13,7 @@ import type {
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
 import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, GAME_BY_ID, type GameId } from "../games/catalog";
+import { HgrIcon } from "./HgrIcon";
 import { PlayerIdentityCard } from "./PlayerIdentityCard";
 
 type GuildView = "rooms" | "chat" | "leaderboard" | "members";
@@ -37,6 +38,13 @@ const ROOM_POLICY_LABELS: Record<HalieusGuildRoomPolicy, string> = {
   moderators: "Moderators +",
   admins: "Admins only",
 };
+
+const GUILD_TABS = [
+  { id: "rooms", label: "Rooms", icon: "games" },
+  { id: "chat", label: "Chat", icon: "chat" },
+  { id: "leaderboard", label: "Leaderboard", icon: "leaderboard" },
+  { id: "members", label: "Members", icon: "players" },
+] as const;
 
 function GuildEmblem({ name, picture, large = false }: { name: string; picture: string | null; large?: boolean }) {
   return <span className={`halieus-guild-emblem${large ? " is-large" : ""}`}>{picture ? <img src={picture} alt="" /> : name.slice(0, 2).toUpperCase()}</span>;
@@ -494,9 +502,10 @@ export function GuildsPanel({
             </header>
 
             <nav className="halieus-guild-tabs" aria-label="Guild sections">
-              {(["rooms", "chat", "leaderboard", "members"] as GuildView[]).map((tab) => (
-                <button type="button" key={tab} className={view === tab ? "is-active" : ""} onClick={() => setView(tab)}>
-                  {tab === "rooms" ? "🎲 Rooms" : tab === "chat" ? "💬 Chat" : tab === "leaderboard" ? "🏆 Leaderboard" : "👥 Members"}
+              {GUILD_TABS.map((tab) => (
+                <button type="button" key={tab.id} className={view === tab.id ? "is-active" : ""} onClick={() => setView(tab.id)}>
+                  <HgrIcon name={tab.icon} size={16} />
+                  <span>{tab.label}</span>
                 </button>
               ))}
             </nav>

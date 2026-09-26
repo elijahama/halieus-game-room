@@ -59,6 +59,9 @@ assert.match(updater,/for %%F in \("assets\/branding\/Halieus Game Room\.ico" "a
 assert.match(updater,/git ls-tree -r --name-only HEAD -- "assets\/branding\/launchers" "assets\/branding\/references"/,"Updater must derive the protected launcher/reference inventory from the current tracked HEAD");
 assert.match(updater,/if not exist "%%F"[\s\S]*?git restore --source=HEAD --staged --worktree -- "%%F"/,"Updater must restore only missing tracked protected assets");
 
+assert.match(guilds,/id: "members", label: "Members", icon: "players"/,"Guild Members tab must use the shared HGR players SVG icon");
+assert.match(guilds,/<HgrIcon name=\{tab\.icon\} size=\{16\} \/>/,"Guild tabs must render through the shared HGR icon system");
+assert.doesNotMatch(guilds,/👥 Members|💬 Chat|🏆 Leaderboard|🎲 Rooms/,"Guild tabs must not depend on platform-specific emoji glyphs");
 assert.match(guilds,/halieus-guild-heading-actions/,"Guild Join/Create actions must live in the page heading");
 assert.doesNotMatch(guilds,/<div className="halieus-guild-actions">/,"Guild landing must not render a second full-width setup bar");
 assert.match(guilds,/setGuildAction\("join"\)/,"Guild heading must open the Join modal");

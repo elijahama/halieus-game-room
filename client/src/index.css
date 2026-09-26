@@ -24187,6 +24187,21 @@ html[data-theme="light"] .halieus-intro-v4-card {
   font-size: .7rem;
   font-weight: 850;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.halieus-guild-tabs button > svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.halieus-guild-tabs button > span {
+  min-width: 0;
+  line-height: 1;
 }
 
 .halieus-guild-tabs button.is-active {
