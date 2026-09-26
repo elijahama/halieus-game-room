@@ -676,7 +676,69 @@ export function HomeScreen(props: HomeScreenProps) {
 
   const joinOverlay = joinOpen && overlayHost ? createPortal(
     <div className="halieus-join-backdrop halieus-viewport-overlay" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setJoinOpen(false)}>
-      <section className={`halieus-join-modal panel-enter ${joinIntent === "watch" ? "is-watch-mode" : ""}`} style={{ ["--game-create-accent" as string]: gameAccent }} role="dialog" aria-modal="true" aria-label={joinIntent === "watch" ? "Watch a Halieus game" : "Join a Halieus game"}><header><div><p>{joinIntent === "watch" ? "WATCH GAME" : "JOIN GAME"}</p><h2>{joinIntent === "watch" ? "Watch a room" : "Enter a room"}</h2><span>{joinIntent === "watch" ? "Choose the game and enter its room code to spectate without taking a seat." : "Choose the game, enter the code, and take your seat."}</span></div><button type="button" onClick={() => setJoinOpen(false)} aria-label="Close room entry">×</button></header><div className="halieus-join-games">{GAMES.map((game) => <button type="button" key={game.id} style={{ ["--game-card-accent" as string]: game.accent }} className={selectedGame === game.id ? "is-selected" : ""} onClick={() => selectGame(game.id)}><img src={game.icon} alt="" /><span>{game.name}</span></button>)}</div><div className="halieus-join-fields"><label>{joinIntent === "watch" ? "Watching as" : "Playing as"}<input value={betaMode ? playerName : (account?.displayName ?? playerName)} readOnly /></label><label>Room code<input autoFocus value={roomCode} onChange={(event) => onRoomCodeChange(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} maxLength={6} placeholder="ABC123" /></label></div><div className="halieus-join-actions">{joinIntent === "watch" ? <><button type="button" className="button-primary" disabled={disabled || !roomCode.trim()} onClick={spectateAction}>Watch {selected.name}</button><button type="button" className="button-outline" disabled={disabled || !roomCode.trim()} onClick={joinAction}>{isJoining ? "Joining…" : "Take a seat instead"}</button></> : <><button type="button" className="button-primary" disabled={disabled || !roomCode.trim()} onClick={joinAction}>{isJoining ? "Joining…" : `Join ${selected.name}`}</button><button type="button" className="button-outline" disabled={disabled || !roomCode.trim()} onClick={spectateAction}>Watch instead</button></>}</div><button type="button" className="halieus-recovery-toggle" onClick={() => setShowRecovery((current) => !current)}>🔑 Recovery key <span>{showRecovery ? "−" : "+"}</span></button>{showRecovery && <div className="halieus-join-recovery"><label>Recovery key<input value={activeRecovery} onChange={(event) => recoveryChange(event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ""))} /></label><button type="button" className="button-muted" disabled={disabled} onClick={manualReconnect}>Rejoin this seat</button></div>}{message && <p className="status-toast" role="status">{message}</p>}</section>
+      <section className={`halieus-join-modal halieus-join-modal-v452 panel-enter ${joinIntent === "watch" ? "is-watch-mode" : ""}`} style={{ ["--game-create-accent" as string]: gameAccent }} role="dialog" aria-modal="true" aria-label={joinIntent === "watch" ? "Watch a Halieus game" : "Join a Halieus game"}>
+        <header>
+          <div>
+            <p>{joinIntent === "watch" ? "WATCH GAME" : "JOIN GAME"}</p>
+            <h2>{joinIntent === "watch" ? "Watch a room" : "Enter a room"}</h2>
+            <span>{joinIntent === "watch" ? "Choose a game and room code. Spectating never takes a player seat." : "Choose the game, enter the room code, and join the waiting room."}</span>
+          </div>
+          <button type="button" onClick={() => setJoinOpen(false)} aria-label="Close room entry">×</button>
+        </header>
+
+        <section className="halieus-join-selected-game" aria-label={`Selected game: ${selected.name}`}>
+          <GameBrandIcon game={selected.id} className="halieus-join-selected-icon" />
+          <div><small>SELECTED GAME</small><strong>{selected.name}</strong><span>{selected.subtitle}</span></div>
+          <b>{joinIntent === "watch" ? "Spectate" : "Join"}</b>
+        </section>
+
+        <div className="halieus-join-games" aria-label="Choose game">
+          {GAMES.map((game) => <button type="button" key={game.id} style={{ ["--game-card-accent" as string]: game.accent }} className={selectedGame === game.id ? "is-selected" : ""} aria-pressed={selectedGame === game.id} onClick={() => selectGame(game.id)}>
+            <img src={game.icon} alt="" />
+            <span>{game.name}</span>
+          </button>)}
+        </div>
+
+        <section className="halieus-join-entry-card">
+          <div className="halieus-join-fields">
+            <label>
+              <span>{joinIntent === "watch" ? "Watching as" : "Playing as"}</span>
+              <input value={betaMode ? playerName : (account?.displayName ?? playerName)} readOnly />
+            </label>
+            <label>
+              <span>Room code</span>
+              <input className="halieus-room-code-input" autoFocus value={roomCode} onChange={(event) => onRoomCodeChange(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} maxLength={6} placeholder="ABC123" inputMode="text" autoCapitalize="characters" />
+            </label>
+          </div>
+          <div className="halieus-join-actions">
+            {joinIntent === "watch" ? <>
+              <button type="button" className="button-primary" disabled={disabled || !roomCode.trim()} onClick={spectateAction}>Watch {selected.name}</button>
+              <button type="button" className="button-outline" disabled={disabled || !roomCode.trim()} onClick={joinAction}>{isJoining ? "Joining…" : "Take a seat instead"}</button>
+            </> : <>
+              <button type="button" className="button-primary" disabled={disabled || !roomCode.trim()} onClick={joinAction}>{isJoining ? "Joining…" : `Join ${selected.name}`}</button>
+              <button type="button" className="button-outline" disabled={disabled || !roomCode.trim()} onClick={spectateAction}>Watch instead</button>
+            </>}
+          </div>
+        </section>
+
+        <section className={`halieus-recovery-panel ${showRecovery ? "is-open" : ""}`}>
+          <button type="button" className="halieus-recovery-toggle" aria-expanded={showRecovery} onClick={() => setShowRecovery((current) => !current)}>
+            <span className="halieus-recovery-symbol" aria-hidden="true">↻</span>
+            <span><strong>Recover an existing seat</strong><small>Only use this if you already have a recovery key for this room.</small></span>
+            <b aria-hidden="true">{showRecovery ? "−" : "+"}</b>
+          </button>
+          {showRecovery && <div className="halieus-join-recovery">
+            <label>
+              <span>Recovery key</span>
+              <input value={activeRecovery} onChange={(event) => recoveryChange(event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ""))} placeholder="Enter saved key" autoCapitalize="characters" />
+              <small>This reclaims your previous player seat. It is not needed for a normal room join.</small>
+            </label>
+            <button type="button" className="button-muted" disabled={disabled || !activeRecovery.trim() || !roomCode.trim()} onClick={manualReconnect}>Recover seat</button>
+          </div>}
+        </section>
+
+        {message && <p className="status-toast" role="status">{message}</p>}
+      </section>
     </div>,
     overlayHost,
   ) : null;
