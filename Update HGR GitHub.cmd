@@ -100,6 +100,34 @@ if errorlevel 1 (
 echo.
 echo [OK] Local project now includes the latest GitHub changes.
 echo.
+
+rem Rebase --autostash can reapply a local deletion after GitHub restored a
+rem protected branding asset. Repair ONLY the canonical base HGR artwork when
+rem the file is missing and the current HEAD still owns that exact tracked path.
+rem Existing modified artwork is never overwritten, and arbitrary source-file
+rem deletions are never auto-restored.
+set "HGR_REPAIRED_PROTECTED_ASSET="
+for %%F in ("assets/branding/Halieus Game Room.ico" "assets/branding/Halieus Game Room.png") do (
+    if not exist "%%~F" (
+        git cat-file -e "HEAD:%%~F" >nul 2>&1
+        if not errorlevel 1 (
+            echo [RECOVERY] Restoring missing protected branding asset from current HEAD:
+            echo   %%~F
+            git restore --source=HEAD --staged --worktree -- "%%~F"
+            if errorlevel 1 (
+                echo [STOPPED] Could not restore required tracked branding asset:
+                echo   %%~F
+                goto :PAUSE_EXIT
+            )
+            set "HGR_REPAIRED_PROTECTED_ASSET=1"
+        )
+    )
+)
+if defined HGR_REPAIRED_PROTECTED_ASSET (
+    echo [OK] Missing protected branding assets restored from current GitHub-backed HEAD.
+    echo.
+)
+
 echo STEP 2 - Preparing release identity BEFORE the browser build...
 echo This regenerates RELEASE.json and shared/release.ts from the canonical VERSION file
 echo so the compiled website cannot embed an older build fingerprint.

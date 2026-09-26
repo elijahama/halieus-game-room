@@ -11,6 +11,7 @@ const css=read("client/src/styles/hgr-design-v1.css");
 const shortcuts=read("scripts/windows/launcher-shortcuts.ps1");
 const packagedShortcuts=read("server/launcher-shortcuts.ps1");
 const guilds=read("client/src/platform/components/GuildsPanel.tsx");
+const updater=read("Update HGR GitHub.cmd");
 
 assert.match(home,/HalieusBrandMark/,"Home chrome must use the shared Halieus mark");
 assert.match(home,/HgrIcon name="chevron-left"/,"Featured previous control must use the shared SVG chevron");
@@ -50,6 +51,11 @@ assert.match(shortcuts,/StartMenuLauncherDirectory = Join-Path \$ProgramsRoot 'H
 assert.match(shortcuts,/ tui`""/,"OpenShard shortcut must open the receipt dashboard/TUI");
 assert.match(packagedShortcuts,/Close HGR App\.lnk/,"Packaged launcher must use the same Close HGR App wording");
 assert.match(packagedShortcuts,/desktop app window only/,"Packaged Close shortcut must not imply cloud shutdown");
+
+const recoveryStart=updater.indexOf('for %%F in ("assets/branding/Halieus Game Room.ico" "assets/branding/Halieus Game Room.png") do (');
+assert.ok(recoveryStart >= 0,"Updater must repair a missing canonical base brand asset after autostash");
+assert.ok(recoveryStart < updater.indexOf("STEP 2 - Preparing release identity"),"Protected-brand recovery must run before release preparation");
+assert.match(updater,/if not exist "%%~F"[\s\S]*?git cat-file -e "HEAD:%%~F"[\s\S]*?git restore --source=HEAD --staged --worktree -- "%%~F"/,"Updater may restore protected base artwork only when missing and still owned by current HEAD");
 
 assert.match(guilds,/halieus-guild-heading-actions/,"Guild Join/Create actions must live in the page heading");
 assert.doesNotMatch(guilds,/<div className="halieus-guild-actions">/,"Guild landing must not render a second full-width setup bar");
