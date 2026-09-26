@@ -7,7 +7,7 @@ import { chromium } from 'playwright';
 
 const root = resolve(import.meta.dirname, '..');
 const version = (await readFile(resolve(root, 'VERSION'), 'utf8')).trim();
-assert.equal(version, '4.5.1', 'Approved HGR 4.5.1 release intent');
+assert.equal(version, '4.5.2', 'Approved HGR 4.5.2 release intent');
 const label = version.replace(/\.0$/, '');
 const release = JSON.parse(await readFile(resolve(root, 'RELEASE.json'), 'utf8'));
 const data = await mkdtemp(resolve(tmpdir(), 'hgr-built-identity-'));
