@@ -111,3 +111,6 @@ docs/OWNER BUILD - DO NOT SHARE.txt
 # Optional locally generated launcher previews. Approved launcher icons live
 # directly under assets/branding/launchers and are real project assets.
 assets/branding/launchers/generated-preview/
+
+# Generated from the approved protected PWA reference during client prebuild
+/client/public/app-icon-reference.png
