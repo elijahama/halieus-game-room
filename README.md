@@ -580,6 +580,7 @@ Start here:
 - [4.1.0 deployment debugging postmortem](docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md)
 - [4.1.1 release notes](docs/releases/RELEASE_4.1.1.md)
 - [4.1.1 implementation log](docs/project/HGR_4.1.1_IMPLEMENTATION_LOG.md)
+- [4.5.2 release notes](docs/releases/RELEASE_4.5.2.md)
 
 Older RC and patch notes remain part of the project's history but are not the current source of truth.
 
@@ -679,6 +680,8 @@ A standalone 3.6.2 release note is not preserved in the current public archive; 
 | **4.1.0** | Added persistent private Guilds: roles, permissions, chat, guild-organised rooms, room history and internal leaderboards. |
 | **4.1.1** | Refined Game Room discovery, guild invitations, ranked presentation and the expanded Dark / Blue / Custom theme system while reducing nested UI scrolling. |
 | **4.5.0** | Consolidated shared theme ownership, Appearance and authentication UI, responsive shell behaviour, reusable pre-game/modal primitives, game-family layout refinement, recovery/lifecycle work and server-authoritative progression foundations. |
+| **4.5.1** | Closed Part 19 platform-navigation parity: desktop and signed-in mobile share Home, Games, Players, Rankings, Guilds and Inbox destinations, while Join Game remains a global action rather than a destination tab. |
+| **4.5.2** | Added quantified Achievements and Gamer Score, game-native Ranked formats and archive-derived standings for Connect Four, Ludo and Ayo, Join/recovery polish, iPad/touch stability work, theme/logo refinements and hardened browser/PWA identity handling. |
 
 The current 4.5 line is focused on shared platform rules and reusable UI foundations while preserving each game's own board/table identity and authoritative gameplay.
 
