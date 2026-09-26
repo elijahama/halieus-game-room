@@ -11,9 +11,11 @@ for (const file of sources) {
   assert.ok(!read(file).includes('M12 12h17v5h-4'), `${file}: launcher slab must not enter website identity`);
 }
 for (const file of ['client/src/platform/components/HomeScreen.tsx', 'client/src/platform/accounts/AccountPortal.tsx', 'client/src/platform/components/HalieusIntro.tsx']) assert.match(read(file), /HalieusBrandMark/);
-assert.match(read('client/src/App.tsx'), /favicon\.href = game\.icon/);
-assert.match(read('client/src/App.tsx'), /document\.title = `\$\{game\.name\} · Halieus Game Room`/);
-assert.match(read('client/src/App.tsx'), /d="\$\{HGR_H_PATH\}"/);
+const app = read('client/src/App.tsx');
+assert.match(app, /favicon\.href = game\.icon/);
+assert.match(app, /document\.title = `\$\{game\.name\} · Halieus Game Room`/);
+assert.match(app, /favicon\.href = "\/app-icon-reference\.png\?v=4\.5\.2-approved-reference-favicon"/, 'HGR home/tab favicon must use the approved rendered reference PNG');
+assert.doesNotMatch(app, /makeHalieusTabGlyph/, 'Runtime must not redraw or recolour the approved HGR favicon');
 const fixture = JSON.parse(read('tests/fixtures/pre2b-website-assets.json'));
 for (const [file, expected] of Object.entries(fixture)) {
   let bytes = readFileSync(resolve(root, file));
@@ -24,6 +26,11 @@ const manifest = JSON.parse(read('client/public/site.webmanifest'));
 assert.ok(manifest.icons.every(i => i.src.includes('4.5.2')), 'PWA identities must invalidate prior artwork URLs for 4.5.2');
 assert.ok(manifest.icons.some(i => i.src.startsWith('/halieus-app-icon.svg')));
 assert.equal(manifest.icons[0]?.src.split("?")[0], '/app-icon-reference.png', 'Installed PWA must prefer the approved rendered reference PNG');
+const indexHtml = read('client/index.html');
+assert.match(indexHtml, /id="halieus-dynamic-favicon"[^>]*href="\/app-icon-reference\.png\?v=4\.5\.2-approved-reference-favicon"/, 'Initial browser favicon must use the approved reference PNG');
+assert.match(indexHtml, /rel="shortcut icon"[^>]*href="\/app-icon-reference\.png\?v=4\.5\.2-approved-reference-favicon"/, 'Shortcut favicon must use the approved reference PNG');
+assert.match(indexHtml, /rel="apple-touch-icon"[^>]*href="\/app-icon-reference\.png\?v=4\.5\.2-approved-reference-favicon"/, 'Apple touch icon must use the approved reference PNG');
+assert.doesNotMatch(indexHtml, /favicon\.ico|favicon-32\.png|app-icon-180\.png/, 'Stale generated favicon fallbacks must not override the approved reference artwork');
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
 assert.match(pwaCopy,/assets\/branding\/references\/ChatGPT Image 25 Sept 2026, 18_24_09\.png/,'PWA icon must come from the approved reference PNG');
 assert.match(pwaCopy,/copyFile\(source, destination\)/,'PWA icon source must be copied byte-for-byte rather than redrawn or recoloured');
