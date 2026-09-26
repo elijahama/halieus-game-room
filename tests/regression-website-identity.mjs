@@ -17,7 +17,7 @@ const app = read('client/src/App.tsx');
 assert.match(app, /favicon\.href = game\.icon/);
 assert.match(app, /document\.title = `\$\{game\.name\} · Halieus Game Room`/);
 assert.match(app, /favicon\.href = "\/halieus-mark\.svg\?v=4\.5\.2-icon-set"/, 'HGR home/tab favicon must use the canonical icon-set web mark');
-assert.doesNotMatch(app, /makeHalieusTabGlyph/, 'Runtime must not redraw or recolour the approved HGR favicon');
+assert.doesNotMatch(app, /makeHalieusTabGlyph/, 'Runtime must not redraw the HGR favicon');
 const fixture = JSON.parse(read('tests/fixtures/pre2b-website-assets.json'));
 for (const [file, expected] of Object.entries(fixture)) {
   let bytes = readFileSync(resolve(root, file));
@@ -27,10 +27,10 @@ for (const [file, expected] of Object.entries(fixture)) {
 const manifest = JSON.parse(read('client/public/site.webmanifest'));
 assert.ok(manifest.icons.every(i => i.src.includes('4.5.2')), 'PWA identities must invalidate prior artwork URLs for 4.5.2');
 assert.ok(manifest.icons.some(i => i.src.startsWith('/halieus-app-icon.svg')));
-assert.equal(manifest.icons[0]?.src.split("?")[0], '/app-icon-reference.png', 'Installed PWA must prefer the canonical icon-set web mark');
+assert.equal(manifest.icons[0]?.src.split("?")[0], '/app-icon-reference.png', 'Installed PWA must prefer the approved rendered reference PNG');
 const indexHtml = read('client/index.html');
-assert.match(indexHtml, /id="halieus-dynamic-favicon"[^>]*href="\/app-icon-reference\.png\?v=4\.5\.2-approved-reference-favicon"/, 'Initial browser favicon must use the canonical icon-set web mark');
-assert.match(indexHtml, /rel="shortcut icon"[^>]*href="\/app-icon-reference\.png\?v=4\.5\.2-approved-reference-favicon"/, 'Shortcut favicon must use the canonical icon-set web mark');
+assert.match(indexHtml, /id="halieus-dynamic-favicon"[^>]*href="\/halieus-mark\.svg\?v=4\.5\.2-icon-set"/, 'Initial browser favicon must use the canonical icon-set web mark');
+assert.match(indexHtml, /rel="shortcut icon"[^>]*href="\/halieus-mark\.svg\?v=4\.5\.2-icon-set"/, 'Shortcut favicon must use the canonical icon-set web mark');
 assert.match(indexHtml, /rel="apple-touch-icon"[^>]*href="\/app-icon-reference\.png\?v=4\.5\.2-approved-reference"/, 'Installed Apple/PWA icon must keep the approved rendered reference artwork');
 assert.doesNotMatch(indexHtml, /favicon\.ico|favicon-32\.png|app-icon-180\.png/, 'Stale generated favicon fallbacks must not override the canonical icon-set favicon');
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
