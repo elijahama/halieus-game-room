@@ -1,4 +1,5 @@
 import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
+import { buildRankedLeaderboard } from "./ranked.js";
 import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranked.js";
 import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSkinPreferences, type HalieusSkinSlot } from "../../../shared/platform/skins.js";
 import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/themeProgression.js";
@@ -884,6 +885,23 @@ export function registerAccountRoutes(app: Express): void {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     response.json({ ok: true, entries: await gamerScoreLeaderboard(auth.account) });
+  });
+
+  app.get("/accounts/ranked/:game/leaderboard", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    const game = String(request.params.game ?? "");
+    if (!["connect-four", "ludo", "ayo"].includes(game)) {
+      response.status(404).json({ ok: false, reason: "That Ranked leaderboard is not active yet." });
+      return;
+    }
+    try {
+      const leaderboard = await buildRankedLeaderboard(game as "connect-four" | "ludo" | "ayo");
+      const visibleIds = new Set(playerDirectory(auth.account).map((player) => player.id));
+      response.json({ ok: true, leaderboard: { ...leaderboard, entries: leaderboard.entries.filter((entry) => visibleIds.has(entry.accountId)) } });
+    } catch {
+      response.status(500).json({ ok: false, reason: "Unable to rebuild Ranked standings right now." });
+    }
   });
 
   app.get("/accounts/live-games", (request, response) => {
