@@ -1954,3 +1954,62 @@ html[data-theme="custom"] .halieus-game-atmosphere span {
     width: 100%;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5.2 — game-native Ranked formats
+   ========================================================================== */
+.halieus-ranked-format-card {
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb,var(--game-icon-accent,var(--hgr-brand)) 34%,var(--hgr-border));
+  border-radius: var(--hgr-radius-md);
+  background: color-mix(in srgb,var(--game-icon-accent,var(--hgr-brand)) 5%,var(--hgr-surface-soft));
+}
+.halieus-ranked-format-card > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+.halieus-ranked-format-card > div:first-child small,
+.halieus-ranked-format-grid article small {
+  color: var(--game-icon-accent,var(--hgr-brand));
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .09em;
+}
+.halieus-ranked-format-card > div:first-child strong {
+  color: var(--hgr-text);
+  font-size: 15px;
+}
+.halieus-ranked-format-card > div:first-child span,
+.halieus-ranked-format-grid article span {
+  color: var(--hgr-muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+.halieus-ranked-format-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px;
+}
+.halieus-ranked-format-grid article {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  padding: 9px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-sm);
+  background: var(--hgr-surface-raised);
+}
+.connect-four-series-picker button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  filter: saturate(.45);
+}
+@media (max-width: 560px) {
+  .halieus-ranked-format-grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+}
