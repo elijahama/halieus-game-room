@@ -1,4 +1,4 @@
-# Halieus Game Room architecture — 4.1.0
+# Halieus Game Room architecture — 4.5.2
 
 ## Runtime structure
 
@@ -35,9 +35,21 @@ Direct joins, game links, spectators and saved-seat recovery bypass the intro. M
 
 Reconnect tokens identify seats. Mega Board migrates socket-dependent player references while retaining absolute timer deadlines. Other games define their own public projections and reconnect lifecycle. HGR account identity is authoritative for persistent social systems such as Guilds; live game seats still retain their existing game-specific reconnect/display-name lifecycle.
 
+## Platform navigation, progression and identity
+
+The desktop shell and signed-in mobile shell share the same platform destination hierarchy: Home, Games, Players, Rankings, Guilds and Inbox. Join Game remains a global action rather than a page-navigation destination. Mobile uses a six-destination bottom bar, while Join stays reachable from the fixed top bar and the existing navigation drawer.
+
+Appearance state has separate responsibilities. The active colour theme owns platform chrome and game atmosphere tokens; player profile colour remains an identity concern. Logo style is persisted independently so changing theme does not overwrite an explicit Halieus logo choice.
+
+Achievements and Gamer Score are account-wide progression systems separate from competitive rating. Gamer Score is derived from verified completed achievement values. Ranked competition remains game-native rather than being collapsed into one universal Elo model: Connect Four uses human-vs-human ranked series, Ludo uses human-only placement-aware ranked comparison, and Ayo uses human-only ranked duels with captured-seed differential retained as a secondary statistic. Standings are rebuilt from finalized verified Ranked session archives and exclude Beta play.
+
+Browser and installed-app identity deliberately use different source roles. The normal HGR browser-tab mark uses the canonical H geometry sourced from the branding icon set; supported game contexts may switch the tab identity to the current game's icon. Installed PWA/Apple-touch identity continues to use the approved rendered reference artwork. Regression coverage locks those source boundaries so stale favicon assets or runtime redraws cannot silently take ownership again.
+
+Apple touch devices use a guarded fullscreen policy rather than assuming desktop fullscreen behavior. Touch presentation also reduces expensive backdrop/animation work where needed for responsiveness.
+
 ## Release and deployment
 
-VERSION and all workspace versions identify the current 4.1.0 development line. RELEASE.json records a source fingerprint, generated into shared/release.ts and exposed by /health. Start and Restart launch the app; Update is the explicit deployment operation. The updater builds a candidate and checks its release identity before activation. Provisioning remains separate. Runtime data must live outside the application release tree.
+VERSION and all workspace versions identify the current 4.5.2 release line. RELEASE.json records a source fingerprint, generated into shared/release.ts and exposed by /health. Start and Restart launch the app; Update is the explicit deployment operation. The updater builds a candidate and checks its release identity before activation. Provisioning remains separate. Runtime data must live outside the application release tree.
 
 Run npm ci, npm run typecheck, npm run test:regression, npm run prepare:release, npm run build, and npm run test:browser. Install the test browser with npx playwright install chromium. Regenerate release identity before the final build. Historical tests may assert retired versions and layouts; they are not all current release gates.
 
