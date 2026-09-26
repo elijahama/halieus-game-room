@@ -44,7 +44,7 @@ try {
       signedIn = true;
       await page.reload(); await page.locator('.halieus-shell').waitFor();
       for (const d of await page.locator('.halieus-brand-mark-h-shape').evaluateAll(paths => paths.map(p => p.getAttribute('d')))) assert.equal(d, shape);
-      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), '/app-icon-reference.png?v=4.5.2-approved-reference-favicon');
+      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), '/halieus-mark.svg?v=4.5.2-icon-set');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${device} home overflow`);
       if (process.env.HGR_SCREENSHOTS) await page.screenshot({ path: resolve(process.env.HGR_SCREENSHOTS, `${device}-${theme}-home.png`) });
 
@@ -56,7 +56,7 @@ try {
         const actual=await page.locator('.halieus-brand-mark-h-shape').first().evaluate(e=>getComputedStyle(e).fill);
         assert.ok(['rgb(0, 0, 0)','rgb(255, 255, 255)'].includes(actual));
         const favicon=await page.locator('#halieus-dynamic-favicon').getAttribute('href');
-        assert.equal(favicon,previousFavicon,'Approved browser favicon must not be recoloured by theme changes');
+        assert.equal(favicon,previousFavicon,'Canonical icon-set favicon must not be recoloured by theme changes');
       }
       await page.evaluate(theme=>window.dispatchEvent(new CustomEvent('halieus-theme-mode',{detail:theme})),theme);
       for (const [route, title, icon] of [['poker', 'Poker', 'poker.svg'], ['game', 'Mega Board', 'mega-board.svg']]) {
