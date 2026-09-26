@@ -1,5 +1,5 @@
 # Halieus Game Room — Logo System Reference
-Version: 4.5.1
+Version: 4.5.2
 
 ## Core Rule
 
@@ -149,6 +149,17 @@ Example:
 ```
 
 This guarantees that all themes keep identical logo geometry.
+
+### Installed app / PWA identity
+
+The installed mobile/web-app icon is intentionally a different delivery case from the live in-app logo.
+
+- The in-app Halieus mark remains canonical vector geometry and may use the player's saved logo treatment.
+- The installed PWA icon may use approved rendered reference artwork so its saturation/material finish survives Android/iOS launcher rendering.
+- For 4.5.2 the approved installed-app source is copied directly from:
+  `assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png`
+- Do not redraw, recolour, desaturate or regenerate that PNG through the flat SVG exporter.
+- Changing the runtime theme or logo preference must not mutate an already-installed launcher icon.
 
 ---
 
