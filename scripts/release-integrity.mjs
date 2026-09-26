@@ -65,7 +65,8 @@ const singles = [
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
   'docs/HGR_4.5.1_PART19_NAVIGATION.md',
   'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',
-  'scripts/generate-flat-brand.mjs', 'scripts/generate-platform-icons.mjs', 'tests/regression-protected-brand-assets.mjs',
+  'scripts/generate-flat-brand.mjs', 'scripts/generate-platform-icons.mjs', 'scripts/copy-approved-pwa-icon.mjs',
+  'assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png', 'tests/regression-protected-brand-assets.mjs',
   'tests/regression-website-identity.mjs', 'tests/browser-website-identity.mjs',
   'tests/fixtures/pre2b-protected-assets.json', 'tests/fixtures/pre2b-website-assets.json',
   'docs/project/PART17_PRE2B_INSPECTION.md', 'docs/project/PART17_PRE2B_SCREENSHOT_MATRIX.md',
@@ -106,6 +107,11 @@ const excludedExtensions = new Set(['.key', '.pem', '.ppk', '.pub']);
 // server/data contains both shipped dictionaries and local runtime state.
 // Fingerprint only the shipped source assets; account/social/session state must
 // never become part of a release identity or deployment archive.
+const excludedGeneratedPaths = new Set([
+  // Materialised by client prebuild from the approved reference above. Hash the
+  // source artwork, not this disposable copy, so build order cannot change the release identity.
+  'client/public/app-icon-reference.png',
+]);
 const excludedRuntimePaths = new Set([
   'server/data/accounts',
   'server/data/sessions',
@@ -125,7 +131,7 @@ function walk(dir) {
     if (name === 'node_modules' || name === 'dist' || name === '.git' || name === '.runtime' || name === 'logs') continue;
     const full = resolve(dir, name);
     const rel = posix(relative(root, full));
-    if (excludedRuntimePaths.has(rel)) continue;
+    if (excludedRuntimePaths.has(rel) || excludedGeneratedPaths.has(rel)) continue;
     const st = statSync(full);
     if (st.isDirectory()) walk(full);
     else {
