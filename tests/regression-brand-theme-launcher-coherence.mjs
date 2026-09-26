@@ -52,10 +52,12 @@ assert.match(shortcuts,/ tui`""/,"OpenShard shortcut must open the receipt dashb
 assert.match(packagedShortcuts,/Close HGR App\.lnk/,"Packaged launcher must use the same Close HGR App wording");
 assert.match(packagedShortcuts,/desktop app window only/,"Packaged Close shortcut must not imply cloud shutdown");
 
-const recoveryStart=updater.indexOf('for %%F in ("assets/branding/Halieus Game Room.ico" "assets/branding/Halieus Game Room.png") do (');
-assert.ok(recoveryStart >= 0,"Updater must repair a missing canonical base brand asset after autostash");
+const recoveryStart=updater.indexOf('for /f "delims=" %%F in (\'git ls-tree -r --name-only HEAD -- "assets/branding/launchers" "assets/branding/references"\') do (');
+assert.ok(recoveryStart >= 0,"Updater must repair missing protected launcher/reference assets after autostash");
 assert.ok(recoveryStart < updater.indexOf("STEP 2 - Preparing release identity"),"Protected-brand recovery must run before release preparation");
-assert.match(updater,/if not exist "%%~F"[\s\S]*?git cat-file -e "HEAD:%%~F"[\s\S]*?git restore --source=HEAD --staged --worktree -- "%%~F"/,"Updater may restore protected base artwork only when missing and still owned by current HEAD");
+assert.match(updater,/for %%F in \("assets\/branding\/Halieus Game Room\.ico" "assets\/branding\/Halieus Game Room\.png"\) do \(/,"Updater must protect the canonical base brand assets");
+assert.match(updater,/git ls-tree -r --name-only HEAD -- "assets\/branding\/launchers" "assets\/branding\/references"/,"Updater must derive the protected launcher/reference inventory from the current tracked HEAD");
+assert.match(updater,/if not exist "%%F"[\s\S]*?git restore --source=HEAD --staged --worktree -- "%%F"/,"Updater must restore only missing tracked protected assets");
 
 assert.match(guilds,/halieus-guild-heading-actions/,"Guild Join/Create actions must live in the page heading");
 assert.doesNotMatch(guilds,/<div className="halieus-guild-actions">/,"Guild landing must not render a second full-width setup bar");

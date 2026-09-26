@@ -101,12 +101,13 @@ echo.
 echo [OK] Local project now includes the latest GitHub changes.
 echo.
 
-rem Rebase --autostash can reapply a local deletion after GitHub restored a
-rem protected branding asset. Repair ONLY the canonical base HGR artwork when
-rem the file is missing and the current HEAD still owns that exact tracked path.
-rem Existing modified artwork is never overwritten, and arbitrary source-file
-rem deletions are never auto-restored.
+rem Rebase --autostash can reapply local deletions after GitHub restored
+rem tracked branding. Rehydrate ONLY missing protected branding files that the
+rem current HEAD still owns. Existing modified artwork is never overwritten.
+rem This covers the canonical base assets plus the approved launcher/reference
+rem inventories used by the regression and shortcut systems.
 set "HGR_REPAIRED_PROTECTED_ASSET="
+
 for %%F in ("assets/branding/Halieus Game Room.ico" "assets/branding/Halieus Game Room.png") do (
     if not exist "%%~F" (
         git cat-file -e "HEAD:%%~F" >nul 2>&1
@@ -123,6 +124,21 @@ for %%F in ("assets/branding/Halieus Game Room.ico" "assets/branding/Halieus Gam
         )
     )
 )
+
+for /f "delims=" %%F in ('git ls-tree -r --name-only HEAD -- "assets/branding/launchers" "assets/branding/references"') do (
+    if not exist "%%F" (
+        echo [RECOVERY] Restoring missing protected branding asset from current HEAD:
+        echo   %%F
+        git restore --source=HEAD --staged --worktree -- "%%F"
+        if errorlevel 1 (
+            echo [STOPPED] Could not restore required tracked branding asset:
+            echo   %%F
+            goto :PAUSE_EXIT
+        )
+        set "HGR_REPAIRED_PROTECTED_ASSET=1"
+    )
+)
+
 if defined HGR_REPAIRED_PROTECTED_ASSET (
     echo [OK] Missing protected branding assets restored from current GitHub-backed HEAD.
     echo.
