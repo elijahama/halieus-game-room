@@ -44,7 +44,14 @@ assert.match(
   'Static viewport must remain device-width and safe-area aware',
 );
 assert.doesNotMatch(html,/width=980/,'HTML viewport must never request the old desktop mobile width');
-assert.match(html,/favicon\.ico\?v=4\.\d+\.\d+/,'4.0.2 browser asset cache identity missing');
+// 4.0.2 only requires a cache-busted browser identity. Later 4.x releases
+// may replace the original favicon.ico artwork, so this historical regression
+// follows the current canonical Halieus mark without resurrecting retired assets.
+assert.match(
+  html,
+  /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg\?v=4\.\d+\.\d+(?:-[^"]+)?"/,
+  '4.0.2 browser asset cache identity missing',
+);
 
 assert.match(ordering,/className="mega-ordering-page"/,'Mega ordering screen needs its mobile layout hook');
 
