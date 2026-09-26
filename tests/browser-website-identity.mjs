@@ -44,7 +44,7 @@ try {
       signedIn = true;
       await page.reload(); await page.locator('.halieus-shell').waitFor();
       for (const d of await page.locator('.halieus-brand-mark-h-shape').evaluateAll(paths => paths.map(p => p.getAttribute('d')))) assert.equal(d, shape);
-      assert.ok(decodeURIComponent(await page.locator('#halieus-dynamic-favicon').getAttribute('href')).includes(shape));
+      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), '/app-icon-reference.png?v=4.5.2-approved-reference-favicon');
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${device} home overflow`);
       if (process.env.HGR_SCREENSHOTS) await page.screenshot({ path: resolve(process.env.HGR_SCREENSHOTS, `${device}-${theme}-home.png`) });
 
@@ -55,10 +55,8 @@ try {
         await page.waitForFunction(accent=>document.documentElement.style.getPropertyValue('--hgr-brand')===accent,accent);
         const actual=await page.locator('.halieus-brand-mark-h-shape').first().evaluate(e=>getComputedStyle(e).fill);
         assert.ok(['rgb(0, 0, 0)','rgb(255, 255, 255)'].includes(actual));
-        const favicon=decodeURIComponent(await page.locator('#halieus-dynamic-favicon').getAttribute('href'));
-        assert.notEqual(favicon,previousFavicon);
-        const ink=await page.evaluate(favicon=>new DOMParser().parseFromString(favicon.slice(favicon.indexOf(',')+1),'image/svg+xml').querySelector('path').getAttribute('fill'),favicon);
-        assert.equal(actual,ink==='#000000'?'rgb(0, 0, 0)':'rgb(255, 255, 255)',`Logo/favicon foreground mismatch for ${accent}`);
+        const favicon=await page.locator('#halieus-dynamic-favicon').getAttribute('href');
+        assert.equal(favicon,previousFavicon,'Approved browser favicon must not be recoloured by theme changes');
       }
       await page.evaluate(theme=>window.dispatchEvent(new CustomEvent('halieus-theme-mode',{detail:theme})),theme);
       for (const [route, title, icon] of [['poker', 'Poker', 'poker.svg'], ['game', 'Mega Board', 'mega-board.svg']]) {
