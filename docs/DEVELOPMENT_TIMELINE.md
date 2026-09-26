@@ -184,7 +184,7 @@ WHOT's larger gameplay/table redesign remained intentionally separate from this 
 
 ## 4.5.0 — Shared UI, Theme and Progression Foundation
 
-4.5.0 is the current HGR milestone. It consolidates a large set of platform-wide UI and lifecycle rules so future game work can reuse shared primitives instead of accumulating isolated fixes.
+4.5.0 established the shared UI, theme and progression foundation for the current 4.5 line. It consolidated platform-wide UI and lifecycle rules so later work could reuse shared primitives instead of accumulating isolated fixes.
 
 The 4.5 line includes:
 
@@ -205,3 +205,49 @@ The 4.5 line includes:
 - expanded browser/runtime regression coverage for the shared 4.5 contracts.
 
 The 4.5 work is still validated feature-by-feature through regression checks and live UI/gameplay testing; a source commit alone is not treated as proof that every player-facing detail is accepted.
+
+
+## 4.5.1 — Part 19 Platform Navigation Parity
+
+4.5.1 closed the platform-navigation backlog carried out of the earlier 4.5 UI work.
+
+The signed-in desktop and mobile shells now share the same destination hierarchy:
+
+- Home;
+- Games;
+- Players;
+- Rankings;
+- Guilds;
+- Inbox.
+
+Join Game remains a global action rather than a page-navigation destination. Rankings and Guilds own their own mobile active states, Inbox is reachable from the destination bar, and the signed-in mobile bar uses six contained destination slots.
+
+Part 19 also updated historical regression expectations that still treated Players as the active parent for Rankings/Guilds and repaired the navigation regression expressions so the new hierarchy is protected.
+
+Source implementation is present. Live phone/tablet readability, reachability and obstruction checks remain acceptance work where not already confirmed by the owner.
+
+## 4.5.2 — Progression, Ranked Formats and Platform Polish
+
+4.5.2 continues the 4.5 platform line without replacing authoritative game rules.
+
+Major changes include:
+
+- quantified Achievements with requirements, progress, tiers and Gamer Score values;
+- account-wide Gamer Score as accomplishment progression, separate from competitive rating;
+- game-native Ranked formats rather than one universal Elo model;
+- Connect Four human-vs-human Ranked best-of-3/best-of-5 series, with best-of-1 remaining Casual;
+- Ludo human-only placement-aware Ranked comparison;
+- Ayo human-only Ranked duels with captured-seed differential retained as a secondary statistic;
+- archive-derived verified standings that exclude Beta play and respect visibility rules;
+- a more compact Join Game flow with recovery kept as a separate seat-reclaim action;
+- iPad/Apple-touch fullscreen and interaction safeguards;
+- persistent logo-style preference independent from active colour theme;
+- compact Theme Library and active-palette game atmosphere motifs;
+- explicit browser-tab versus installed-app identity source ownership;
+- release/update robustness around rebase behaviour and generated release identity.
+
+The browser-tab H now uses the canonical H geometry sourced from the branding icon set, while installed PWA/Apple-touch identity retains the approved rendered reference artwork. Current regression coverage protects that distinction.
+
+Automated validation covers the current source contracts, but real-device/user acceptance remains separate. Outstanding checks include installed-app icon appearance in real browsers, iPad focus/select/fullscreen behaviour, perceived board-style selection latency, Join/recovery presentation on phone/tablet and standings behaviour as genuine Ranked results accumulate.
+
+See [4.5.2 release notes](releases/RELEASE_4.5.2.md).
