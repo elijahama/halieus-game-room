@@ -1686,3 +1686,271 @@ html[data-theme="custom"] .halieus-game-atmosphere span {
     backdrop-filter: none !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5.2 — Join Game / recovery hub
+   ========================================================================== */
+.halieus-join-modal-v452 {
+  width: min(760px,calc(100vw - 28px)) !important;
+  max-height: min(860px,calc(100dvh - 28px));
+  display: grid;
+  gap: 12px;
+  padding: 16px !important;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.halieus-join-modal-v452 > header {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+.halieus-join-modal-v452 > header > div {
+  min-width: 0;
+}
+.halieus-join-modal-v452 > header h2 {
+  margin: 2px 0 4px;
+}
+.halieus-join-selected-game {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb,var(--game-create-accent) 34%,var(--hgr-border));
+  border-radius: var(--hgr-radius-md);
+  background: color-mix(in srgb,var(--game-create-accent) 6%,var(--hgr-surface-soft));
+}
+.halieus-join-selected-icon {
+  width: 44px;
+  height: 44px;
+}
+.halieus-join-selected-game > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-join-selected-game small {
+  color: var(--game-create-accent);
+  font-size: 7px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.halieus-join-selected-game strong {
+  color: var(--hgr-text);
+  font-size: 13px;
+}
+.halieus-join-selected-game span {
+  overflow: hidden;
+  color: var(--hgr-muted);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-join-selected-game > b {
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb,var(--game-create-accent) 35%,var(--hgr-border));
+  border-radius: var(--hgr-radius-pill);
+  color: var(--game-create-accent);
+  font-size: 8px;
+}
+
+.halieus-join-modal-v452 .halieus-join-games {
+  display: grid !important;
+  grid-template-columns: repeat(7,minmax(0,1fr));
+  gap: 5px !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+.halieus-join-modal-v452 .halieus-join-games > button {
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-rows: 30px auto;
+  place-items: center;
+  gap: 3px;
+  padding: 6px 4px !important;
+}
+.halieus-join-modal-v452 .halieus-join-games > button img {
+  width: 28px !important;
+  height: 28px !important;
+}
+.halieus-join-modal-v452 .halieus-join-games > button span {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 8px !important;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.halieus-join-modal-v452 .halieus-join-games > button.is-selected {
+  box-shadow: inset 0 -2px 0 var(--game-card-accent);
+}
+
+.halieus-join-entry-card {
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-join-modal-v452 .halieus-join-fields {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(190px,.72fr);
+  gap: 9px !important;
+}
+.halieus-join-modal-v452 .halieus-join-fields label {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.halieus-join-modal-v452 .halieus-join-fields label > span,
+.halieus-join-modal-v452 .halieus-join-recovery label > span {
+  color: var(--hgr-text-soft);
+  font-size: 9px;
+  font-weight: 850;
+}
+.halieus-join-modal-v452 .halieus-join-fields input,
+.halieus-join-modal-v452 .halieus-join-recovery input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 10px !important;
+  box-sizing: border-box;
+  font-size: 16px !important;
+}
+.halieus-room-code-input {
+  font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-weight: 900 !important;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.halieus-join-modal-v452 .halieus-join-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 7px !important;
+}
+.halieus-join-modal-v452 .halieus-join-actions button {
+  min-height: 42px;
+}
+
+.halieus-recovery-panel {
+  overflow: hidden;
+  border: 1px solid var(--hgr-border);
+  border-radius: var(--hgr-radius-md);
+  background: var(--hgr-surface-soft);
+}
+.halieus-recovery-panel.is-open {
+  border-color: color-mix(in srgb,var(--game-create-accent) 30%,var(--hgr-border));
+}
+.halieus-join-modal-v452 .halieus-recovery-toggle {
+  width: 100%;
+  min-height: 52px;
+  display: grid !important;
+  grid-template-columns: 34px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  text-align: left;
+}
+.halieus-recovery-symbol {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb,var(--game-create-accent) 32%,var(--hgr-border));
+  border-radius: 9px;
+  background: color-mix(in srgb,var(--game-create-accent) 7%,var(--hgr-surface-raised));
+  color: var(--game-create-accent);
+  font-size: 16px;
+  font-weight: 900;
+}
+.halieus-join-modal-v452 .halieus-recovery-toggle > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.halieus-join-modal-v452 .halieus-recovery-toggle strong {
+  color: var(--hgr-text);
+  font-size: 10px;
+}
+.halieus-join-modal-v452 .halieus-recovery-toggle small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+  line-height: 1.3;
+}
+.halieus-join-modal-v452 .halieus-recovery-toggle > b {
+  color: var(--hgr-muted);
+  font-size: 16px;
+}
+.halieus-join-modal-v452 .halieus-join-recovery {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: end;
+  gap: 8px;
+  padding: 0 10px 10px;
+  border: 0 !important;
+  border-top: 1px solid var(--hgr-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.halieus-join-modal-v452 .halieus-join-recovery label {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  padding-top: 9px;
+}
+.halieus-join-modal-v452 .halieus-join-recovery label > small {
+  color: var(--hgr-muted);
+  font-size: 8px;
+  line-height: 1.35;
+}
+.halieus-join-modal-v452 .halieus-join-recovery > button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .halieus-join-modal-v452 .halieus-join-games {
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 520px) {
+  .halieus-join-modal-v452 {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px);
+    gap: 9px;
+    padding: 11px !important;
+  }
+  .halieus-join-selected-game {
+    grid-template-columns: 40px minmax(0,1fr) auto;
+  }
+  .halieus-join-selected-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .halieus-join-modal-v452 .halieus-join-games {
+    grid-template-columns: repeat(3,minmax(0,1fr)) !important;
+  }
+  .halieus-join-modal-v452 .halieus-join-games > button {
+    min-height: 54px !important;
+  }
+  .halieus-join-modal-v452 .halieus-join-fields {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-join-modal-v452 .halieus-join-actions {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-join-modal-v452 .halieus-join-recovery {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-join-modal-v452 .halieus-join-recovery > button {
+    width: 100%;
+  }
+}
