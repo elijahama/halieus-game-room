@@ -24,6 +24,7 @@ assert.match(rootPackage.scripts['test:regression'],/regression-4\.1\.0\.mjs.*re
 
 const home=read('client/src/platform/components/HomeScreen.tsx');
 const guildPanel=read('client/src/platform/components/GuildsPanel.tsx');
+const playerIdentity=read('client/src/platform/components/PlayerIdentityCard.tsx');
 const guildServer=read('server/src/platform/guilds.ts');
 const accounts=read('server/src/platform/accounts.ts');
 const contracts=read('shared/platform/guilds.ts');
@@ -51,7 +52,16 @@ assert.match(guildServer,/app\.post\("\/guilds\/invitations\/:invitationId\/resp
 assert.match(accounts,/export function getAccountSummaryById\(/,'Guilds must resolve invite targets from canonical accounts');
 assert.match(guildPanel,/INVITE PLAYERS/,'Guild Members must expose player search/invite');
 assert.match(guildPanel,/pendingInvitations/,'Guild Members must expose pending invitations');
-assert.match(guildPanel,/profilePicture \? <img/,'Guild member avatars must prefer the canonical profile picture');
+assert.match(
+  guildPanel,
+  /<PlayerIdentityCard[\s\S]*?profilePicture:\s*member\.profilePicture[\s\S]*?playerColor:\s*member\.playerColor/,
+  'Guild member rows must pass canonical profile identity into the shared player card',
+);
+assert.match(
+  playerIdentity,
+  /player\.profilePicture\s*\?\s*<img\s+src=\{player\.profilePicture\}/,
+  'Shared player identity must prefer the canonical profile picture over the avatar fallback',
+);
 
 assert.match(theme,/HalieusThemeMode = "system" \\| "dark" \\| "light" \\| "blue" \\| "red" \\| "green" \\| (?:"profile" \\| )?"custom"/,'Expanded theme contract missing');
 assert.match(theme,/CUSTOM_THEME_KEY/,'Custom theme persistence missing');
