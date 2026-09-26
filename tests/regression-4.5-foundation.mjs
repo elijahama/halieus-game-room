@@ -48,6 +48,8 @@ const connectFourHandlers=read("server/src/games/connect-four/handlers.ts");
 const ludoHandlers=read("server/src/games/ludo/handlers.ts");
 const ayoHandlers=read("server/src/games/ayo/handlers.ts");
 const rankedFormats=read("shared/platform/rankedFormats.ts");
+const rankedBoardContracts=read("shared/platform/rankedLeaderboard.ts");
+const rankedServer=read("server/src/platform/ranked.ts");
 const guildContracts=read("shared/platform/guilds.ts");
 const guildServer=read("server/src/platform/guilds.ts");
 const guildPanel=read("client/src/platform/components/GuildsPanel.tsx");
@@ -181,6 +183,18 @@ assert.match(connectFourHandlers,/Ranked Connect Four requires a best-of-3 or be
 assert.match(ludoHandlers,/Ranked Ludo is human-only/,"Ludo server must reject Ranked AI seats");
 assert.match(ayoHandlers,/Ranked Ayo is human vs human/,"Ayo server must reject Ranked AI seats");
 assert.match(release451Css,/\.halieus-ranked-format-card/,"Ranked format explanation must have an HGR 4.5.2 presentation layer");
+assert.match(rankedBoardContracts,/HalieusRankedLeaderboardSnapshot/,"Game-native Ranked standings must have a shared typed snapshot");
+assert.match(rankedServer,/getSessionDataDirectory\(\)[\s\S]*?finalized/,"Ranked standings must rebuild from finalized archive truth");
+assert.match(rankedServer,/state\.matchMode !== "ranked"/,"Only actual Ranked matches may enter the generic standings");
+assert.match(rankedServer,/progressionIdentity\?\.beta/,"Beta play must never enter Ranked standings");
+assert.match(rankedServer,/function processConnectFour/,"Connect Four standings must use a dedicated series result processor");
+assert.match(rankedServer,/function processLudo/,"Ludo standings must use a dedicated multiplayer placement processor");
+assert.match(rankedServer,/function processAyo/,"Ayo standings must use a dedicated duel processor");
+assert.match(accountServer,/\/accounts\/ranked\/:game\/leaderboard/,"Accounts API must expose verified game-native Ranked standings");
+assert.match(accountServer,/visibleIds\.has\(entry\.accountId\)/,"Ranked standings must respect player visibility");
+assert.match(home,/genericRankedSnapshot\.entries\.map/,"Rankings UI must render real verified standings when available");
+assert.match(release451Css,/\.halieus-generic-ranked-list/,"Verified Ranked standings must use the 4.5.2 compact list layout");
+
 
 assert.match(home,/\/accounts\/gamer-score\/leaderboard/,"Rankings UI must load the authoritative Gamer Score board");
 assert.match(home,/style=\{\{ background: entry\.playerColor \}\}/,"Player colour may remain on the Gamer Score avatar as identity");
