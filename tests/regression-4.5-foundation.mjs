@@ -140,6 +140,13 @@ assert.match(css,/\.results-tabs,[\s\S]*?\.halieus-results-tabs[\s\S]*?backgroun
 assert.match(css,/HGR 4\.5 shared room creation \/ invite surfaces/,"4.5 must define a shared create\/join\/invite layer");
 assert.match(css,/\.halieus-create-panel\.halieus-create-modal,[\s\S]*?\.halieus-join-modal,[\s\S]*?\.invite-lobby-panel-redesigned,[\s\S]*?\.invite-join-card[\s\S]*?background:\s*var\(--hgr-surface-raised\) !important/s,"Create, Join and Invite surfaces must share the same elevated HGR surface");
 assert.match(css,/\.halieus-join-games > button[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,"Join game choices must preserve existing artwork inside the shared tile grammar");
+assert.match(home,/halieus-join-modal-v452/,"4.5.2 Join Game hub must use the compact rebuilt room-entry surface");
+assert.match(home,/Recover an existing seat/,"Recovery must be clearly separated from normal room joining");
+assert.match(home,/This reclaims your previous player seat\. It is not needed for a normal room join\./,"Recovery UI must explain when the key is actually required");
+assert.match(home,/disabled=\{disabled \|\| !activeRecovery\.trim\(\) \|\| !roomCode\.trim\(\)\}/,"Recovery action must require both a room code and key");
+assert.match(release451Css,/\.halieus-join-modal-v452[\s\S]*?width:\s*min\(760px/s,"4.5.2 Join hub must use the compact responsive layout");
+assert.match(release451Css,/\.halieus-recovery-panel[\s\S]*?var\(--hgr-surface-soft\)/s,"Recovery must be a contained secondary panel rather than a loose input row");
+
 assert.match(hgrIcons,/\| "chat"/,"Shared HGR icon set must include a room-chat glyph");
 assert.match(roomChat,/HgrIcon name="chat"/,"Room activity trigger must use the shared HGR chat glyph");
 assert.match(css,/HGR 4\.5 shared communication \/ confirmation surfaces/,"4.5 must define one shared communication-surface layer");
