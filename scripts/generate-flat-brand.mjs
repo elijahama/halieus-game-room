@@ -1,9 +1,11 @@
 // Flat exports from the same geometry used by the runtime React mark.
-import { HGR_H_PATH } from '../shared/platform/brand.ts';
 import { mkdir, writeFile, copyFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
 const root=resolve(import.meta.dirname,'../client/public/brand');
+const canonicalGlyph=await readFile(resolve(import.meta.dirname,'../assets/branding/icon-sets/glyphs/hgr-h.svg'),'utf8');
+const HGR_H_PATH=canonicalGlyph.match(/<path\b[^>]*\bd="([^"]+)"/)?.[1];
+if(!HGR_H_PATH) throw new Error('Canonical icon-set H path missing.');
 // Static first-paint/PWA consumers are generated from the same master, never redrawn.
 for(const relative of ['client/public/halieus-mark.svg','client/public/halieus-app-icon.svg','client/public/app-icon.svg','client/index.html']) {
  const file=resolve(import.meta.dirname,'..',relative);
