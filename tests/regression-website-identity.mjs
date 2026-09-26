@@ -21,8 +21,15 @@ for (const [file, expected] of Object.entries(fixture)) {
   assert.equal(createHash('sha256').update(bytes).digest('hex'), expected, `${file}: website raster or contextual game artwork changed`);
 }
 const manifest = JSON.parse(read('client/public/site.webmanifest'));
-assert.ok(manifest.icons.every(i => i.src.includes('4.5.1-canonical-h')), 'PWA identities must invalidate prior artwork URLs');
+assert.ok(manifest.icons.every(i => i.src.includes('4.5.2')), 'PWA identities must invalidate prior artwork URLs for 4.5.2');
 assert.ok(manifest.icons.some(i => i.src.startsWith('/halieus-app-icon.svg')));
+assert.equal(manifest.icons[0]?.src.split("?")[0], '/app-icon-reference.png', 'Installed PWA must prefer the approved rendered reference PNG');
+const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
+assert.match(pwaCopy,/assets\/branding\/references\/ChatGPT Image 25 Sept 2026, 18_24_09\.png/,'PWA icon must come from the approved reference PNG');
+assert.match(pwaCopy,/copyFile\(source, destination\)/,'PWA icon source must be copied byte-for-byte rather than redrawn or recoloured');
+const clientPackage = JSON.parse(read('client/package.json'));
+assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client build must materialise the approved PWA reference before Vite runs');
+
 const generator = read('scripts/generate-platform-icons.mjs');
 assert.doesNotMatch(generator, /assets\/branding/, 'Website generator must be independent of launcher assets');
 assert.match(generator, /client\/public/);
