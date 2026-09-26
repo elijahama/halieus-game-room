@@ -1,6 +1,6 @@
 import { CORE_THEME_IDS } from "../../shared/platform/themeProgression";
 import { committedTheme, commitTheme } from "./platform/themePreview";
-import { HGR_H_PATH, type HgrLogoPreset } from "../../shared/platform/brand";
+import { type HgrLogoPreset } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import type {
@@ -260,15 +260,6 @@ function formatDuration(milliseconds: number): string {
   return [hours, minutes, seconds]
     .map((value) => String(value).padStart(2, "0"))
     .join(":");
-}
-
-function makeHalieusTabGlyph(preset: HgrLogoPreset, fill: string, ink: string, surface: string, surfaceInk: string): string {
-  const tile = preset === "mono-light" || preset === "mono-dark"
-    ? ""
-    : `<rect x="3" y="3" width="58" height="58" rx="15" fill="${preset === "light" ? surface : fill}"/>`;
-  const glyph = preset === "mono-light" ? "#ffffff" : preset === "mono-dark" ? "#000000" : preset === "light" ? surfaceInk : ink;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${tile}<path fill-rule="evenodd" fill="${glyph}" d="${HGR_H_PATH}"/></svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
 export default function App() {
@@ -3276,24 +3267,23 @@ function handleLeaveSpectator() {
       favicon.rel = "icon";
       document.head.appendChild(favicon);
     }
-    favicon.type = "image/svg+xml";
-    favicon.sizes = "any";
 
     if (activeTabGameId) {
       const game = GAME_BY_ID[activeTabGameId];
       document.title = `${game.name} · Halieus Game Room`;
+      favicon.type = "image/svg+xml";
+      favicon.sizes = "any";
       favicon.href = game.icon;
       return;
     }
 
+    // HGR/home browser identity uses the exact approved rendered reference PNG.
+    // Do not redraw/recolour it from theme or logo settings.
     document.title = "Halieus Game Room";
-    const rootStyle = getComputedStyle(document.documentElement);
-    const brand = rootStyle.getPropertyValue("--hgr-logo-bg").trim() || "#daa017";
-    const brandInk = readableInk([brand]);
-    const surface = rootStyle.getPropertyValue("--hgr-surface").trim() || "#ffffff";
-    const surfaceInk = readableInk([surface]);
-    favicon.href = makeHalieusTabGlyph(logoPreset, brand, brandInk, surface, surfaceInk);
-  }, [activeTabGameId, customTheme, logoPreset, systemPrefersDark, themeMode, themeProfileId]);
+    favicon.type = "image/png";
+    favicon.sizes = "1024x1024";
+    favicon.href = "/app-icon-reference.png?v=4.5.2-approved-reference-favicon";
+  }, [activeTabGameId]);
 
   const toggleSound = () =>
     setSoundEnabled((current) => !current);
