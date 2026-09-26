@@ -1609,17 +1609,52 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 .halieus-game-atmosphere {
   pointer-events: none !important;
 }
-html[data-theme="profile"] .halieus-game-atmosphere,
-html[data-theme="custom"] .halieus-game-atmosphere,
-html[data-theme="blue"] .halieus-game-atmosphere,
-html[data-theme="red"] .halieus-game-atmosphere,
-html[data-theme="green"] .halieus-game-atmosphere {
+html[data-theme-mode="blue"] .halieus-game-atmosphere,
+html[data-theme-mode="red"] .halieus-game-atmosphere,
+html[data-theme-mode="green"] .halieus-game-atmosphere,
+html[data-theme-mode="profile"] .halieus-game-atmosphere,
+html[data-theme-mode="custom"] .halieus-game-atmosphere {
   visibility: visible !important;
   opacity: 1 !important;
+  color: var(--hgr-brand) !important;
+  background:
+    radial-gradient(circle at 74% 20%, color-mix(in srgb,var(--hgr-brand) 14%,transparent), transparent 37%),
+    radial-gradient(circle at 18% 78%, color-mix(in srgb,var(--hgr-info) 9%,transparent), transparent 34%),
+    var(--hgr-page) !important;
 }
-html[data-theme="profile"] .halieus-game-atmosphere span,
-html[data-theme="custom"] .halieus-game-atmosphere span {
-  opacity: .07 !important;
+html[data-theme-mode="blue"] .halieus-game-atmosphere::after,
+html[data-theme-mode="red"] .halieus-game-atmosphere::after,
+html[data-theme-mode="green"] .halieus-game-atmosphere::after,
+html[data-theme-mode="profile"] .halieus-game-atmosphere::after,
+html[data-theme-mode="custom"] .halieus-game-atmosphere::after {
+  background:
+    radial-gradient(circle at 78% 18%, color-mix(in srgb,var(--hgr-brand) 15%,transparent), transparent 40%),
+    radial-gradient(circle at 16% 78%, color-mix(in srgb,var(--hgr-info) 10%,transparent), transparent 35%),
+    linear-gradient(125deg,color-mix(in srgb,var(--hgr-brand) 2%,transparent),transparent 45%) !important;
+}
+html[data-theme-mode="blue"] .halieus-game-atmosphere span,
+html[data-theme-mode="red"] .halieus-game-atmosphere span,
+html[data-theme-mode="green"] .halieus-game-atmosphere span,
+html[data-theme-mode="profile"] .halieus-game-atmosphere span,
+html[data-theme-mode="custom"] .halieus-game-atmosphere span {
+  color: var(--hgr-brand) !important;
+  opacity: .09 !important;
+  text-shadow: 0 10px 40px color-mix(in srgb,var(--hgr-brand) 18%,transparent) !important;
+}
+html[data-theme-mode="blue"] .halieus-game-atmosphere span:nth-child(3n+2),
+html[data-theme-mode="red"] .halieus-game-atmosphere span:nth-child(3n+2),
+html[data-theme-mode="green"] .halieus-game-atmosphere span:nth-child(3n+2),
+html[data-theme-mode="profile"] .halieus-game-atmosphere span:nth-child(3n+2),
+html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n+2) {
+  color: var(--hgr-info) !important;
+  text-shadow: 0 10px 40px color-mix(in srgb,var(--hgr-info) 18%,transparent) !important;
+}
+html[data-theme-mode="blue"] .halieus-game-atmosphere span:nth-child(3n),
+html[data-theme-mode="red"] .halieus-game-atmosphere span:nth-child(3n),
+html[data-theme-mode="green"] .halieus-game-atmosphere span:nth-child(3n),
+html[data-theme-mode="profile"] .halieus-game-atmosphere span:nth-child(3n),
+html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
+  color: color-mix(in srgb,var(--hgr-brand) 62%,var(--hgr-info)) !important;
 }
 
 /* Board-style thumbnails use their actual four-colour identity instead of
