@@ -81,7 +81,11 @@ assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formal
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
 assert.match(halieusMark,/M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"Canonical public Halieus mark must use the approved H geometry");
-assert.match(html,/id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg"/,"Initial browser identity must use the canonical Halieus mark");
+assert.match(
+  html,
+  /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg(?:\?[^"]+)?"/,
+  "Initial browser identity must use the canonical Halieus mark",
+);
 assert.match(html,/halieus-boot-mark[\s\S]*?M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"First-paint mark must reuse the approved H geometry");
 assert.match(app,/function makeHalieusTabGlyph/,"Platform tab identity must use the compact Halieus H glyph");
 assert.match(app,/getPropertyValue\("--hgr-logo-bg"\)/,"Platform tab H must derive its colour from the saved theme");
