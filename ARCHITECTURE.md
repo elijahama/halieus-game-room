@@ -43,7 +43,7 @@ Appearance state has separate responsibilities. The active colour theme owns pla
 
 Achievements and Gamer Score are account-wide progression systems separate from competitive rating. Gamer Score is derived from verified completed achievement values. Ranked competition remains game-native rather than being collapsed into one universal Elo model: Connect Four uses human-vs-human ranked series, Ludo uses human-only placement-aware ranked comparison, and Ayo uses human-only ranked duels with captured-seed differential retained as a secondary statistic. Standings are rebuilt from finalized verified Ranked session archives and exclude Beta play.
 
-Browser and installed-app identity deliberately use different source roles. The normal HGR browser-tab mark uses the canonical H geometry sourced from the branding icon set; supported game contexts may switch the tab identity to the current game's icon. Installed PWA/Apple-touch identity continues to use the approved rendered reference artwork. Regression coverage locks those source boundaries so stale favicon assets or runtime redraws cannot silently take ownership again.
+The standard HGR browser tab, shortcut favicon and installed PWA/Apple-touch identity use the approved rendered reference PNG. Supported game contexts may temporarily switch the tab identity to the current game's icon. The live in-app H remains canonical themeable vector geometry. Regression coverage prevents generated/simple favicon fallbacks or runtime redraws from replacing the approved reference artwork.
 
 Apple touch devices use a guarded fullscreen policy rather than assuming desktop fullscreen behavior. Touch presentation also reduces expensive backdrop/animation work where needed for responsiveness.
 
