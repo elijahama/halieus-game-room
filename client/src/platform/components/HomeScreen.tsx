@@ -20,6 +20,7 @@ import type { LudoMatchMode } from "../../../../shared/games/ludo/types";
 import type { WhotAiDifficulty, WhotMatchMode } from "../../../../shared/games/whot/types";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
 import { rankedFormatFor } from "../../../../shared/platform/rankedFormats";
+import type { HalieusRankedLeaderboardSnapshot } from "../../../../shared/platform/rankedLeaderboard";
 import type { HalieusGuildInvitation } from "../../../../shared/platform/guilds";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaMatchMode, WordGameMode } from "../../../../shared/games/word-arena/types";
 import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicMatchMode } from "../../../../shared/games/classic-table/types";
@@ -119,6 +120,9 @@ export function HomeScreen(props: HomeScreenProps) {
   const [view, setView] = useState<HomeView>("home");
   const [joinOpen, setJoinOpen] = useState(false);
   const [rankedLeaderboardGame, setRankedLeaderboardGame] = useState<GameId | null>(null);
+  const [genericRankedSnapshot, setGenericRankedSnapshot] = useState<HalieusRankedLeaderboardSnapshot | null>(null);
+  const [genericRankedLoading, setGenericRankedLoading] = useState(false);
+  const [genericRankedError, setGenericRankedError] = useState("");
   const [joinIntent, setJoinIntent] = useState<"join" | "watch">("join");
   const [createOpen, setCreateOpen] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
@@ -252,6 +256,34 @@ export function HomeScreen(props: HomeScreenProps) {
       .finally(() => { if (!cancelled) setGamerScoreLoading(false); });
     return () => { cancelled = true; };
   }, [view, account?.id]);
+
+  useEffect(() => {
+    if (!rankedLeaderboardGame || !account?.id) {
+      setGenericRankedSnapshot(null);
+      setGenericRankedError("");
+      setGenericRankedLoading(false);
+      return;
+    }
+    if (!["connect-four", "ludo", "ayo"].includes(rankedLeaderboardGame)) {
+      setGenericRankedSnapshot(null);
+      setGenericRankedError("");
+      setGenericRankedLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setGenericRankedLoading(true);
+    setGenericRankedError("");
+    void accountApi<{ ok: true; leaderboard: HalieusRankedLeaderboardSnapshot }>(`/accounts/ranked/${encodeURIComponent(rankedLeaderboardGame)}/leaderboard`)
+      .then((result) => { if (!cancelled) setGenericRankedSnapshot(result.leaderboard); })
+      .catch((error) => {
+        if (!cancelled) {
+          setGenericRankedSnapshot(null);
+          setGenericRankedError(error instanceof Error ? error.message : "Unable to load Ranked standings.");
+        }
+      })
+      .finally(() => { if (!cancelled) setGenericRankedLoading(false); });
+    return () => { cancelled = true; };
+  }, [rankedLeaderboardGame, account?.id]);
 
   const joinAction = classicSelected && selectedClassicGame ? () => onJoinClassic(selectedClassicGame) : wordArenaSelected && selectedWordArenaGame ? () => onJoinWordArena(selectedWordArenaGame) : pokerSelected ? onJoinPoker : blackjackSelected ? onJoinBlackjack : whotSelected ? onJoinWhot : ludoSelected ? onJoinLudo : connectFourSelected ? onJoinConnectFour : ayoSelected ? onJoinAyo : wordBoardSelected ? onJoinWordBoard : hiddenDictatorSelected ? onJoinHiddenDictator : onJoinGame;
   const spectateAction = classicSelected && selectedClassicGame ? () => onSpectateClassic(selectedClassicGame) : wordArenaSelected && selectedWordArenaGame ? () => onSpectateWordArena(selectedWordArenaGame) : pokerSelected ? onSpectatePoker : blackjackSelected ? onSpectateBlackjack : whotSelected ? onSpectateWhot : ludoSelected ? onSpectateLudo : connectFourSelected ? onSpectateConnectFour : ayoSelected ? onSpectateAyo : wordBoardSelected ? onSpectateWordBoard : hiddenDictatorSelected ? onSpectateHiddenDictator : onSpectateGame;
@@ -640,9 +672,22 @@ export function HomeScreen(props: HomeScreenProps) {
             <article><small>PROVISIONAL</small><span>{rankedFormatFor(rankedLeaderboardGame)!.provisionalMatches} ranked match{rankedFormatFor(rankedLeaderboardGame)!.provisionalMatches === 1 ? "" : "es"} before the rating is considered established.</span></article>
           </div>
         </section>}
-        <div className="leaderboard-empty-state" style={{ borderColor: theme.border }}>
-          <div aria-hidden="true">🏆</div><strong>No completed Ranked {GAME_BY_ID[rankedLeaderboardGame].name} results yet</strong><span style={{ color: theme.mutedText }}>The format is defined above. The persistent results table is being activated separately so HGR does not fake standings from incomplete data.</span>
+        {genericRankedLoading ? <div className="leaderboard-empty-state" style={{ borderColor: theme.border }}><div aria-hidden="true">↻</div><strong>Rebuilding verified standings…</strong><span style={{ color: theme.mutedText }}>HGR is reading finalized Ranked match archives for this game.</span></div>
+        : genericRankedError ? <div className="leaderboard-empty-state" style={{ borderColor: theme.border }}><div aria-hidden="true">!</div><strong>Standings unavailable</strong><span style={{ color: theme.mutedText }}>{genericRankedError}</span></div>
+        : genericRankedSnapshot?.entries.length ? <div className="halieus-generic-ranked-list">
+          {genericRankedSnapshot.entries.map((entry) => <article key={entry.accountId} className="halieus-generic-ranked-row">
+            <strong className="halieus-generic-ranked-position">#{entry.rank}</strong>
+            <span className="halieus-generic-ranked-player"><strong>{entry.displayName}</strong><small>{entry.provisional ? `Provisional · ${entry.matches}/${rankedFormatFor(rankedLeaderboardGame)?.provisionalMatches ?? 5} matches` : `${entry.matches} ranked matches`}</small></span>
+            <span><small>Rating</small><strong>{entry.rating}</strong></span>
+            <span><small>Record</small><strong>{entry.wins}-{entry.losses}{entry.draws ? `-${entry.draws}` : ""}</strong></span>
+            {rankedLeaderboardGame === "connect-four" && <span><small>Round diff</small><strong>{(entry.roundDifferential ?? 0) >= 0 ? "+" : ""}{entry.roundDifferential ?? 0}</strong></span>}
+            {rankedLeaderboardGame === "ludo" && <span><small>Avg place</small><strong>{entry.averagePlacement?.toFixed(2) ?? "—"}</strong></span>}
+            {rankedLeaderboardGame === "ayo" && <span><small>Seed diff</small><strong>{(entry.scoreDifferential ?? 0) >= 0 ? "+" : ""}{entry.scoreDifferential ?? 0}</strong></span>}
+          </article>)}
         </div>
+        : <div className="leaderboard-empty-state" style={{ borderColor: theme.border }}>
+          <div aria-hidden="true">🏆</div><strong>No completed Ranked {GAME_BY_ID[rankedLeaderboardGame].name} results yet</strong><span style={{ color: theme.mutedText }}>Standings appear only after finalized, verified, non-Beta Ranked matches. HGR does not invent seed data.</span>
+        </div>}
       </section>
     </div>,
     overlayHost,
