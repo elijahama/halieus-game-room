@@ -283,6 +283,7 @@ function scheduleAi(io: Server, room: LudoRoom): void {
 }
 function addAi(room: LudoRoom, level: LudoAiDifficulty): string | null {
   if (room.started) return "AI can only be added before Ludo starts.";
+  if (room.matchMode === "ranked") return "Ranked Ludo is human-only.";
   if (room.players.length >= 4) return "Ludo supports up to four players.";
   const used = new Set(room.players.map((player) => player.name));
   const name = AI_NAMES.find((candidate) => !used.has(candidate)) ?? `AI ${room.players.length + 1}`;
@@ -293,6 +294,7 @@ function addAi(room: LudoRoom, level: LudoAiDifficulty): string | null {
 function startRoom(room: LudoRoom): string | null {
   if (room.phase !== "lobby" && room.phase !== "finished") return "The current match is already in progress.";
   if (room.players.length < 2) return "Ludo needs at least two players.";
+  if (room.matchMode === "ranked" && room.players.some((player) => player.isAi)) return "Ranked Ludo requires human players only.";
   assignColours(room);
   for (const player of room.players) { player.pieces = piecesFor(player.colour); player.finishedCount = 0; player.result = null; player.autopilotEnabled = false; player.orderRoll = null; }
   room.started = true; room.startedAt = Math.max(Date.now(), (room.startedAt ?? 0) + 1); room.phase = "ordering"; room.orderRound = 1; room.orderContenderPlayerIds = room.players.map((player) => player.id); room.currentTurnPlayerId = room.players[0]?.id ?? null; room.lastRoll = null; room.canRoll = true; room.awaitingMove = false; room.winnerPlayerId = null; room.turnNumber = 0; room.status = `${room.players[0]?.name ?? "First player"} rolls for starting order.`;
