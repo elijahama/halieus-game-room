@@ -8,7 +8,7 @@ const root = resolve(import.meta.dirname, '..');
 const read = (p) => readFileSync(resolve(root, p), 'utf8');
 // Intent, not a generated consumer: changing the milestone requires a deliberate
 // test update. A self-consistent rollback to 4.1.1 must fail this gate.
-assert.equal(read('VERSION').trim(), '4.5.1', 'Approved HGR 4.5.1 Mega Board release intent');
+assert.equal(read('VERSION').trim(), '4.5.2', 'Approved HGR 4.5.2 release intent');
 const version = read('VERSION').trim();
 const manifest = JSON.parse(read('RELEASE.json'));
 const run = (cwd, mode) => spawnSync(process.execPath, ['scripts/release-integrity.mjs', mode], { cwd, encoding: 'utf8' });
@@ -66,7 +66,7 @@ try {
   const stable = readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8');
   assert.equal(run(fixture, '--write').status, 0);
   assert.equal(readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8'), stable, 'Generation must be idempotent');
-  console.log('PASS: canonical 4.5 intent, 9 corrupted-package rejections, same-version identity and idempotent generation');
+  console.log('PASS: canonical 4.5.2 intent, 9 corrupted-package rejections, same-version identity and idempotent generation');
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
