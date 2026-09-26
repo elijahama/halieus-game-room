@@ -246,7 +246,7 @@ Major changes include:
 - explicit browser-tab versus installed-app identity source ownership;
 - release/update robustness around rebase behaviour and generated release identity.
 
-The standard HGR browser tab, shortcut favicon and installed PWA/Apple-touch identity use the approved rendered reference PNG. Game contexts may switch the tab to the current game icon, while the live in-app H remains the canonical themeable vector. Current regression coverage protects that source hierarchy.
+The standard HGR browser tab and shortcut favicon use the canonical H geometry sourced from the branding icon set, while installed PWA/Apple-touch identity retains the approved rendered reference artwork. Game contexts may switch the tab to the current game icon. Current regression coverage protects that source hierarchy.
 
 Automated validation covers the current source contracts, but real-device/user acceptance remains separate. Outstanding checks include installed-app icon appearance in real browsers, iPad focus/select/fullscreen behaviour, perceived board-style selection latency, Join/recovery presentation on phone/tablet and standings behaviour as genuine Ranked results accumulate.
 
