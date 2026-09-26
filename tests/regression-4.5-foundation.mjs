@@ -87,9 +87,9 @@ assert.match(
   "Initial browser identity must use the canonical Halieus mark",
 );
 assert.match(html,/halieus-boot-mark[\s\S]*?M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,/function makeHalieusTabGlyph/,"Platform tab identity must use the compact Halieus H glyph");
-assert.match(app,/getPropertyValue\("--hgr-logo-bg"\)/,"Platform tab H must derive its colour from the saved theme");
-assert.match(app,/readableInk\(\[brand\]\)/,"Platform tab H must select black/white contrast against its own background");
+assert.match(app,/favicon\.href = "\/halieus-mark\.svg\?v=4\.5\.2-icon-set"/,"Platform tab identity must use the canonical icon-set web mark");
+assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
+assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
 assert.match(halieusAppIcon,/#daa017/i,"Installable app icon must preserve the approved default yellow brand");
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
 assert.match(launcherReferenceDoc,/Reference artwork beats generated interpretation/,"Launcher reference README must make approved artwork authoritative");
