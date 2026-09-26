@@ -624,7 +624,33 @@ export function GuildsPanel({
                   const canRemove = member.accountId !== account.id && member.role !== "owner" && (
                     detail.canManage || (detail.role === "moderator" && member.role === "member")
                   );
-                  return <article key={member.accountId} className="halieus-guild-member-row"><span className="halieus-avatar-media" style={{ background: member.playerColor }}>{member.profilePicture ? <img src={member.profilePicture} alt="" /> : member.avatar}</span><div><strong>{member.displayName}</strong><small>@{member.username} · joined {new Date(member.joinedAt).toLocaleDateString()}</small></div>{canEditRole ? <select value={member.role} disabled={busy} onChange={(event) => void changeRole(member.accountId, event.target.value as Exclude<HalieusGuildRole, "owner">)}><option value="admin">Admin</option><option value="moderator">Moderator</option><option value="member">Member</option></select> : <b>{ROLE_LABELS[member.role]}</b>}{canRemove && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Remove</button>}{member.accountId === account.id && member.role !== "owner" && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Leave</button>}</article>;
+                  return (
+                    <PlayerIdentityCard
+                      key={member.accountId}
+                      className="halieus-guild-member-row"
+                      compact
+                      player={{
+                        id: member.accountId,
+                        username: member.username,
+                        displayName: member.displayName,
+                        avatar: member.avatar,
+                        profilePicture: member.profilePicture,
+                        playerColor: member.playerColor,
+                      }}
+                      detail={`joined ${new Date(member.joinedAt).toLocaleDateString()}`}
+                      trailing={<>
+                        {canEditRole ? (
+                          <select value={member.role} disabled={busy} onChange={(event) => void changeRole(member.accountId, event.target.value as Exclude<HalieusGuildRole, "owner">)}>
+                            <option value="admin">Admin</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="member">Member</option>
+                          </select>
+                        ) : <b>{ROLE_LABELS[member.role]}</b>}
+                        {canRemove && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Remove</button>}
+                        {member.accountId === account.id && member.role !== "owner" && <button type="button" className="halieus-guild-remove-member" disabled={busy} onClick={() => void removeMember(member.accountId)}>Leave</button>}
+                      </>}
+                    />
+                  );
                 })}
               </div>
             )}
