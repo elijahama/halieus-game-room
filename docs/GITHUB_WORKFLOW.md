@@ -49,3 +49,22 @@ GitHub is for:
 Google Drive remains the deeper internal source of truth for long-form project decisions and continuity.
 
 Oracle remains the production runtime/deployment target.
+
+
+## Generated release identity
+
+HGR 4.5.2 treats `RELEASE.json` and `shared/release.ts` as generated release-identity outputs, not ordinary human-authored source changes.
+
+The root `Update HGR GitHub.cmd` workflow therefore:
+
+1. clears stale generated release-file conflicts or local drift before the initial fetch/rebase;
+2. runs `npm run prepare:release` before validation/build so the build uses the current source fingerprint;
+3. keeps `RELEASE.json` and `shared/release.ts` out of the human source commit;
+4. commits and pushes only meaningful source/documentation changes;
+5. fetches/rebases again before push rather than force-pushing;
+6. regenerates the final release identity from the synced source tree;
+7. runs `npm run validate:release` before handing the candidate to the private Oracle deployment path.
+
+If only generated release identity changed, no human source commit is required.
+
+This prevents generated fingerprint files from becoming routine rebase-conflict ownership and keeps source history focused on intentional code/documentation changes.
