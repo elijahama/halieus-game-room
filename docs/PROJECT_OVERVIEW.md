@@ -79,9 +79,9 @@ Halieus logo style persists independently from theme so changing colour theme do
 
 Browser and installed-app identity also have distinct source roles:
 
-- the standard HGR browser-tab mark uses canonical H geometry sourced from the branding icon set;
+- the standard HGR browser tab and shortcut favicon use the approved rendered reference PNG;
 - supported game contexts may use the current game's icon;
-- installed PWA/Apple-touch identity retains the approved rendered reference artwork.
+- installed PWA/Apple-touch identity uses that approved rendered reference artwork as well; the live in-app H remains the themeable canonical vector.
 
 ## Architecture
 
