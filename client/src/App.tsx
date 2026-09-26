@@ -30,7 +30,7 @@ import type { BlackjackAction, BlackjackAiDifficulty, BlackjackMatchMode, Blackj
 import type { WhotAiDifficulty, WhotMatchMode, WhotPublicState, WhotShape } from "../../shared/games/whot/types";
 import type { LudoAiDifficulty, LudoMatchMode, LudoPublicState } from "../../shared/games/ludo/types";
 import type { ConnectFourAiDifficulty, ConnectFourBestOf, ConnectFourMatchMode, ConnectFourPublicState } from "../../shared/games/connect-four/types";
-import type { AyoAiDifficulty, AyoPublicState } from "../../shared/games/ayo/types";
+import type { AyoAiDifficulty, AyoMatchMode, AyoPublicState } from "../../shared/games/ayo/types";
 import type { WordBoardAiDifficulty, WordBoardPlacement, WordBoardPublicState } from "../../shared/games/word-board/types";
 import type { HiddenDictatorAiDifficulty, HiddenDictatorMatchMode, HiddenDictatorPublicState } from "../../shared/games/hidden-dictator/types";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaPublicState } from "../../shared/games/word-arena/types";
@@ -336,6 +336,7 @@ export default function App() {
   const [ludoMatchMode, setLudoMatchMode] = useState<LudoMatchMode>("casual");
   const [blackjackMatchMode, setBlackjackMatchMode] = useState<BlackjackMatchMode>("casual");
   const [connectFourMatchMode, setConnectFourMatchMode] = useState<ConnectFourMatchMode>("casual");
+  const [ayoMatchMode, setAyoMatchMode] = useState<AyoMatchMode>("casual");
   const [connectFourBestOf, setConnectFourBestOf] = useState<ConnectFourBestOf>(3);
   const [hiddenDictatorMatchMode, setHiddenDictatorMatchMode] = useState<HiddenDictatorMatchMode>("casual");
   const [isUpdatingPokerAutopilot, setIsUpdatingPokerAutopilot] = useState(false);
@@ -3133,7 +3134,7 @@ function handleLeaveSpectator() {
     if (!spectator && response.reconnectToken) { const session={code,playerName:name,reconnectToken:response.reconnectToken}; saveCardSession(AYO_SESSION_KEY,session); setAyoSavedSession(session); setAyoRecoveryCode(response.reconnectToken); }
     updateBrowserPath(`/ayo/${code}`); setMessage(""); return true;
   }
-  function createAyo(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if(!playerName.trim()||!roomCode.trim()) return setMessage("Enter your name and room code first."); setIsCreating(true); socket.emit("ayo:create",{code:roomCode,playerName,matchMode:"casual"},(response:AyoResponse)=>{setIsCreating(false);if(!applyAyoResponse(response,playerName))setMessage(response.reason??"Unable to create Ayo room.")}); }
+  function createAyo(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if(!playerName.trim()||!roomCode.trim()) return setMessage("Enter your name and room code first."); setIsCreating(true); socket.emit("ayo:create",{code:roomCode,playerName,matchMode:ayoMatchMode},(response:AyoResponse)=>{setIsCreating(false);if(!applyAyoResponse(response,playerName))setMessage(response.reason??"Unable to create Ayo room.")}); }
   function joinAyo(){if(!playerName.trim()||!roomCode.trim())return setMessage("Enter your name and Ayo room code.");setIsJoining(true);socket.emit("ayo:join",{code:roomCode,playerName},(response:AyoResponse)=>{setIsJoining(false);if(!applyAyoResponse(response,playerName))setMessage(response.reason??"Unable to join Ayo.")});}
   function spectateAyo(){if(!roomCode.trim())return setMessage("Enter the Ayo room code.");setIsJoining(true);socket.emit("ayo:spectate",{code:roomCode,playerName:playerName||"Spectator"},(response:AyoResponse)=>{setIsJoining(false);if(!applyAyoResponse(response,playerName||"Spectator",true))setMessage(response.reason??"Unable to spectate Ayo.")});}
   function recoverAyo(session:SavedSession){setIsRecovering(true);socket.emit("ayo:reconnect",session,(response:AyoResponse)=>{setIsRecovering(false);if(!applyAyoResponse(response,session.playerName))setMessage(response.reason??"Ayo room could not be recovered.")});}
@@ -3955,6 +3956,7 @@ function handleLeaveSpectator() {
       blackjackMatchMode={blackjackMatchMode}
       connectFourMatchMode={connectFourMatchMode}
       connectFourBestOf={connectFourBestOf}
+      ayoMatchMode={ayoMatchMode}
       hiddenDictatorMatchMode={hiddenDictatorMatchMode}
       isCreating={isCreating}
       isJoining={isJoining}
@@ -3987,6 +3989,7 @@ function handleLeaveSpectator() {
       onBlackjackMatchModeChange={setBlackjackMatchMode}
       onConnectFourMatchModeChange={setConnectFourMatchMode}
       onConnectFourBestOfChange={setConnectFourBestOf}
+      onAyoMatchModeChange={setAyoMatchMode}
       onHiddenDictatorMatchModeChange={setHiddenDictatorMatchMode}
       onGenerateRoomCode={() => setRoomCode(generateRoomCode())}
       onOpenLeaderboard={handleOpenLeaderboard}
