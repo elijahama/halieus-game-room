@@ -3277,12 +3277,12 @@ function handleLeaveSpectator() {
       return;
     }
 
-    // HGR/home browser identity uses the exact approved rendered reference PNG.
-    // Do not redraw, simplify or recolour it from theme/logo settings.
+    // Browser/tab identity uses the canonical H from assets/branding/icon-sets/glyphs.
+    // Installed PWA/Apple-touch artwork remains the approved rendered PNG reference.
     document.title = "Halieus Game Room";
-    favicon.type = "image/png";
-    favicon.sizes = "1024x1024";
-    favicon.href = "/app-icon-reference.png?v=4.5.2-approved-reference-favicon";
+    favicon.type = "image/svg+xml";
+    favicon.sizes = "any";
+    favicon.href = "/halieus-mark.svg?v=4.5.2-icon-set";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
