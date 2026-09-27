@@ -398,6 +398,18 @@ html[data-theme-contrast="dark"] .mega-create-cosmetics p {
   border-color: color-mix(in srgb,var(--hgr-brand) 24%,var(--hgr-border)) !important;
   background: color-mix(in srgb,var(--hgr-brand) 3%,var(--hgr-surface)) !important;
 }
+.mega-poker-timer-setting select {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb,var(--hgr-brand) 24%,var(--hgr-border));
+  border-radius: 9px;
+  background: var(--hgr-surface-raised);
+  color: var(--hgr-text);
+  font: inherit;
+  font-weight: 850;
+}
+
 .mega-lobby-poker-standard .poker-settings-summary div,
 .mega-lobby-poker-standard .poker-player-list-card {
   border-color: color-mix(in srgb,var(--hgr-brand) 22%,var(--hgr-border)) !important;
