@@ -1,4 +1,3 @@
-import { ModalPortal } from "../../../platform/components/ModalPortal";
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import { useEffect, useState } from "react";
 
@@ -9,8 +8,6 @@ import type { HalieusPersonalStats } from "../../../../../shared/platform/accoun
 import { BackToGameRoomButton } from "../../../platform/components/BackToGameRoomButton";
 import { GameBrandIcon } from "../../../platform/components/GameBrandIcon";
 import { GAME_BY_ID } from "../../../platform/games/catalog";
-import { InviteLobbyPanel } from "../../../platform/components/InviteLobbyPanel";
-import { InviteLobbyBar } from "../../../platform/components/InviteLobbyBar";
 import { SkinLibraryButton } from "../../../platform/components/SkinLibraryButton";
 import { accountApi } from "../../../platform/accounts/api";
 
@@ -52,9 +49,7 @@ export function LobbyScreen({
   blitz,
   message,
   recoveryKey,
-  darkMode,
   theme,
-  onToggleDarkMode,
   onStartGame,
   onLeaveLobby,
   onBackToGameRoom,
@@ -67,7 +62,6 @@ export function LobbyScreen({
 }: LobbyScreenProps) {
   const [difficulty, setDifficulty] = useState<AiDifficulty>("normal");
   const [copied, setCopied] = useState(false);
-  const [inviteOpen, setInviteOpen] = useState(false);
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
 
   useEffect(() => {
@@ -100,26 +94,6 @@ export function LobbyScreen({
       data-blitz={blitz ? "true" : "false"}
       style={{ background: theme.pageBackground, color: theme.text, ["--game-accent" as string]: MEGA_ACCENT }}
     >
-
-      {inviteOpen && (
-        <ModalPortal onClose={() => setInviteOpen(false)}><div className="modal-backdrop lobby-invite-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setInviteOpen(false); }}>
-          <section className="lobby-invite-modal" role="dialog" aria-modal="true" aria-label="Invite players to Mega Board">
-            <button type="button" className="icon-button lobby-invite-close" aria-label="Close invite panel" onClick={() => setInviteOpen(false)}>×</button>
-            <InviteLobbyPanel
-              roomCode={lobby.code}
-              darkMode={darkMode}
-              gameTitle="Mega Board"
-              invitePathPrefix="/join"
-              spectatorPathPrefix="/spectate/mega"
-              accent={MEGA_ACCENT}
-              eyebrow="Mega Board invite"
-              title="Invite players"
-              description="Share this room directly. Friends opening the link land in the correct Mega Board waiting room with this code already loaded."
-              theme={theme}
-            />
-          </section>
-        </div></ModalPortal>
-      )}
 
       <section className="lobby-card lobby-card-v2 glass-card" style={{ background: theme.cardBackground, borderColor: theme.border }}>
         <header className="lobby-heading lobby-heading-v2">
@@ -173,12 +147,6 @@ export function LobbyScreen({
                 {TURN_TIMER_PRESET_SECONDS.map((seconds) => <option key={seconds} value={seconds}>{seconds} seconds</option>)}
               </select> : <span>{lobby.turnTimerSeconds ?? (blitz ? 150 : 45)} seconds</span>}
             </div>
-
-            <InviteLobbyBar
-              accent={MEGA_ACCENT}
-              title="Bring friends straight to this Mega Board room"
-              onOpen={() => setInviteOpen(true)}
-            />
 
             <section className="lobby-side-card lobby-board-appearance-card">
               <p className="modal-eyebrow">Board appearance</p>

@@ -7215,7 +7215,18 @@ html[data-theme="dark"] .mega-create-cosmetics p {
 .mega-standard-lobby-card {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 12px !important;
+  gap: 14px !important;
+}
+
+.mega-standard-lobby-card > * {
+  margin: 0 !important;
+}
+
+.mega-standard-lobby-card > .lobby-overview-grid,
+.mega-standard-lobby-card > .ranked-scoring-note,
+.mega-standard-lobby-card > .turn-timer-settings-panel,
+.mega-standard-lobby-card > .lobby-side-card {
+  align-self: stretch !important;
 }
 .mega-standard-lobby-card .lobby-overview-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -7226,9 +7237,13 @@ html[data-theme="dark"] .mega-create-cosmetics p {
 .mega-standard-lobby-card > .lobby-overview-grid,
 .mega-standard-lobby-card > .ranked-scoring-note,
 .mega-standard-lobby-card > .turn-timer-settings-panel,
-.mega-standard-lobby-card > .halieus-invite-bar,
 .mega-standard-lobby-card > .lobby-start-card {
   grid-column: 1 / -1;
+}
+
+.mega-standard-lobby-card > .ranked-scoring-note,
+.mega-standard-lobby-card > .turn-timer-settings-panel {
+  min-height: 0 !important;
 }
 
 .mega-standard-lobby-card .lobby-overview-code {

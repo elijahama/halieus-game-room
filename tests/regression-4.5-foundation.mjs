@@ -379,6 +379,8 @@ assert.match(css,/grid-template-columns:\s*minmax\(620px,\s*\.98fr\)\s*minmax\(5
 assert.match(css,/\.mega-standard-lobby-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(720px,\s*1\.08fr\)\s*minmax\(500px,\s*\.92fr\)/,"Mega Board must keep the wider setup column that prevents unnecessary vertical scrolling");
 assert.match(megaLobby,/hgr-standard-lobby-grid mega-standard-lobby-grid/,"Mega Board lobby must opt into the Poker-standard room grid");
 assert.match(megaLobby,/hgr-standard-lobby-card mega-standard-lobby-card[\s\S]*?lobby-ai-quick-controls[\s\S]*?hgr-standard-lobby-roster/s,"Mega Board must keep setup/AI controls on the left and the seat roster on the right");
+assert.doesNotMatch(megaLobby,/InviteLobbyBar|InviteLobbyPanel|inviteOpen/,"Mega Board must not reintroduce the legacy full-width invite bar/modal");
+assert.match(css,/\.mega-standard-lobby-card\s*\{[\s\S]*?gap:\s*14px !important;[\s\S]*?\.mega-standard-lobby-card > \*\s*\{[\s\S]*?margin:\s*0 !important;/s,"Mega Board setup sections must use one even spacing rhythm");
 for (const [name, source, selector] of [
   ["Poker", pokerScreen, "poker-lobby-shell"],
   ["Ludo", ludoScreen, "card-game-lobby"],
