@@ -59,6 +59,7 @@ export function PlayerRail({
       style={{
         background: theme.cardBackground,
         borderColor: theme.border,
+        ["--rail-player-count" as string]: String(Math.max(1, visiblePlayers.length)),
       }}
     >
       <header className="player-rail-header">
@@ -79,6 +80,8 @@ export function PlayerRail({
           const currentSpace = getBoardSpace(player.position);
           const ownedSpaceIds = new Set(player.properties);
           const orderedOwnedSpaces = BOARD_SPACES.filter((space) => ownedSpaceIds.has(space.id));
+          const compactOwnedSpaces = orderedOwnedSpaces.slice(0, 6);
+          const hiddenOwnedSpaceCount = Math.max(0, orderedOwnedSpaces.length - compactOwnedSpaces.length);
 
           return (
             <article
@@ -163,7 +166,7 @@ export function PlayerRail({
                 {orderedOwnedSpaces.length === 0 ? (
                   <small style={{ color: theme.mutedText }}>No properties yet</small>
                 ) : (
-                  orderedOwnedSpaces.map((space) => {
+                  compactOwnedSpaces.map((space) => {
                     const spaceId = space.id;
                     const mortgaged = Boolean(gameState.mortgagedProperties[spaceId]);
                     const propertyColour =
@@ -197,6 +200,15 @@ export function PlayerRail({
                       </span>
                     );
                   })
+                )}
+                {hiddenOwnedSpaceCount > 0 && (
+                  <span
+                    className="player-property-chip is-more"
+                    title={`${hiddenOwnedSpaceCount} more owned asset${hiddenOwnedSpaceCount === 1 ? "" : "s"}. Open player details to view the full portfolio.`}
+                  >
+                    <i style={{ background: player.colour }} />
+                    <span className="player-property-chip-name">+{hiddenOwnedSpaceCount} more</span>
+                  </span>
                 )}
               </div>
             </article>
