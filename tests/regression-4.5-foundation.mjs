@@ -374,7 +374,9 @@ assert.match(css,/Explicit themes tint board-style preview palettes[\s\S]*?--ski
 assert.match(skinButton,/--skin-source-colour/,"Skin previews must expose authored colours through theme-tintable CSS variables");
 assert.match(css,/HGR Part 20 — Poker-standard pre-game lobby grammar/,"Shared Poker-standard lobby CSS contract missing");
 assert.match(css,/\.card-game-lobby,[\s\S]*?\.rebuild-lobby-layout,[\s\S]*?\.classic-lobby-layout,[\s\S]*?\.word-arena-lobby,[\s\S]*?\.hgr-standard-lobby-grid/,"All shared lobby families must use the Poker-standard two-column geometry");
-assert.match(css,/grid-template-columns:\s*minmax\(360px,\s*\.9fr\)\s*minmax\(420px,\s*1\.1fr\)/,"Shared lobby geometry must preserve Poker's setup-left / roster-right balance");
+assert.match(css,/width:\s*min\(1420px,\s*calc\(100vw - 64px\)\)/,"Poker-standard desktop lobby must use the widened 1420px shell");
+assert.match(css,/grid-template-columns:\s*minmax\(620px,\s*\.98fr\)\s*minmax\(500px,\s*1\.02fr\)/,"Shared lobby geometry must preserve the widened setup-left / roster-right balance");
+assert.match(css,/\.mega-standard-lobby-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(720px,\s*1\.08fr\)\s*minmax\(500px,\s*\.92fr\)/,"Mega Board must keep the wider setup column that prevents unnecessary vertical scrolling");
 assert.match(megaLobby,/hgr-standard-lobby-grid mega-standard-lobby-grid/,"Mega Board lobby must opt into the Poker-standard room grid");
 assert.match(megaLobby,/hgr-standard-lobby-card mega-standard-lobby-card[\s\S]*?lobby-ai-quick-controls[\s\S]*?hgr-standard-lobby-roster/s,"Mega Board must keep setup/AI controls on the left and the seat roster on the right");
 for (const [name, source, selector] of [
