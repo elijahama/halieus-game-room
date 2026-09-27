@@ -7,6 +7,7 @@ import type { HalieusPersonalStats } from "../../../../../shared/platform/accoun
 
 import { BackToGameRoomButton } from "../../../platform/components/BackToGameRoomButton";
 import { GameBrandIcon } from "../../../platform/components/GameBrandIcon";
+import { RecoveryKeyPanel } from "../../../platform/components/RecoveryKeyPanel";
 import { GAME_BY_ID } from "../../../platform/games/catalog";
 import { SkinLibraryButton } from "../../../platform/components/SkinLibraryButton";
 import { accountApi } from "../../../platform/accounts/api";
@@ -61,7 +62,6 @@ export function LobbyScreen({
   onBoardStyleChange,
 }: LobbyScreenProps) {
   const [difficulty, setDifficulty] = useState<AiDifficulty>("normal");
-  const [copied, setCopied] = useState(false);
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
 
   useEffect(() => {
@@ -76,158 +76,170 @@ export function LobbyScreen({
   const isHost = currentPlayer?.isHost ?? false;
   const activePlayers = lobby.players.filter((player) => !player.hasLeft);
   const roomIsFull = activePlayers.length >= 8;
-
-  const copyText = async (value: string) => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      setCopied(false);
-    }
-  };
+  const host = activePlayers.find((player) => player.isHost);
+  const turnTimerSeconds = lobby.turnTimerSeconds ?? (blitz ? 150 : 45);
 
   return (
     <main
-      className="lobby-shell lobby-shell-v2 page-enter"
-      data-ui-revision="mega-lobby-v2"
+      className="lobby-shell lobby-shell-v2 poker-page mega-lobby-poker-standard page-enter"
+      data-ui-revision="mega-lobby-poker-standard"
       data-blitz={blitz ? "true" : "false"}
-      style={{ background: theme.pageBackground, color: theme.text, ["--game-accent" as string]: MEGA_ACCENT }}
+      style={{
+        background: theme.pageBackground,
+        color: theme.text,
+        ["--game-accent" as string]: "var(--hgr-brand)",
+        ["--game-identity-accent" as string]: MEGA_ACCENT,
+      }}
     >
-
-      <section className="lobby-card lobby-card-v2 glass-card" style={{ background: theme.cardBackground, borderColor: theme.border }}>
-        <header className="lobby-heading lobby-heading-v2">
-          <div className="card-game-brand-lockup lobby-brand-lockup">
-            <GameBrandIcon game="mega-board" className="lobby-game-brand-icon" />
-            <div>
-              <p className="modal-eyebrow">Mega Board lobby</p>
-              <h1>Waiting room</h1>
-              <span>Bring everyone in, set the table and start when the room is ready.</span>
-            </div>
+      <header className="poker-header mega-poker-header">
+        <div className="poker-brand-lockup">
+          <GameBrandIcon game="mega-board" className="poker-logo-token mega-poker-logo-token" />
+          <div>
+            <p>Halieus Game Room</p>
+            <h1>Mega Board</h1>
           </div>
-          <div className="lobby-heading-actions">
-            <BackToGameRoomButton onClick={onBackToGameRoom} />
-            <div className={`connection-pill ${connectionStatus === "Connected" ? "is-online" : ""}`}>
-              <i />
-              {connectionStatus}
-            </div>
-          </div>
-        </header>
-
-        <div className="hgr-standard-lobby-grid mega-standard-lobby-grid">
-          <article className="hgr-standard-lobby-card mega-standard-lobby-card">
-            <div className="lobby-overview-grid">
-              <button type="button" className="lobby-overview-tile lobby-overview-code" onClick={() => void copyText(lobby.code)}>
-                <span>Room code</span>
-                <strong>{lobby.code}</strong>
-                <small>{copied ? "Copied" : "Click to copy"}</small>
-              </button>
-              <div className="lobby-overview-tile">
-                <span>Match</span>
-                <strong>{blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual"}</strong>
-                <small>{ranked ? "Competitive room" : blitz ? "Fast-start variant" : "Friends table"}</small>
-              </div>
-              <div className="lobby-overview-tile">
-                <span>Players</span>
-                <strong>{activePlayers.length} / 8</strong>
-                <small>{roomIsFull ? "Room full" : `${8 - activePlayers.length} seats available`}</small>
-              </div>
-            </div>
-
-            {blitz && (
-              <div className="ranked-scoring-note blitz-mode-note lobby-blitz-note">
-                <strong>⚡ Blitz lobby</strong>
-                <small>All 37 ownable assets are shuffled together and dealt round-robin. Counts stay as even as mathematically possible without balancing by value, colour or strength.</small>
-              </div>
-            )}
-
-            <div className="turn-timer-settings-panel">
-              <div><strong>Turn timer</strong><small>Locked when the match starts. Reconnecting keeps the existing deadline.</small></div>
-              {isHost ? <select aria-label="Turn timer" value={lobby.turnTimerSeconds ?? (blitz ? 150 : 45)} disabled={isUpdatingTurnTimer} onChange={(event) => onTurnTimerChange(Number(event.target.value))}>
-                {TURN_TIMER_PRESET_SECONDS.map((seconds) => <option key={seconds} value={seconds}>{seconds} seconds</option>)}
-              </select> : <span>{lobby.turnTimerSeconds ?? (blitz ? 150 : 45)} seconds</span>}
-            </div>
-
-            <section className="lobby-side-card lobby-board-appearance-card">
-              <p className="modal-eyebrow">Board appearance</p>
-              <h2>Table cosmetics</h2>
-              <small>The host chooses the shared board before play. Your HGR theme and accessibility remain personal.</small>
-              <SkinLibraryButton stats={personalStats} betaMode={betaMode} slots={["mega-board"]} roomStyle={lobby.boardStyle ?? "classic-board"} onRoomStyleChange={onBoardStyleChange} readOnly={!isHost} />
-            </section>
-
-            <section className="lobby-side-card">
-              <p className="modal-eyebrow">Room access</p>
-              <h2>Recovery & status</h2>
-              {recoveryKey ? (
-                <div className="lobby-recovery-compact">
-                  <span>Your recovery key</span>
-                  <strong>{recoveryKey}</strong>
-                  <small>Use this to reclaim your seat from another browser or device.</small>
-                  <button type="button" onClick={() => void copyText(recoveryKey)}>Copy key</button>
-                </div>
-              ) : (
-                <p className="lobby-side-muted">A recovery key is issued to active player seats.</p>
-              )}
-              {lobby.hostDisconnectDeadline && <div className="host-warning">The host is reconnecting. This room closes automatically if they do not return within 90 seconds.</div>}
-            </section>
-
-            <section className="lobby-side-card lobby-start-card">
-              <p className="modal-eyebrow">Room controls</p>
-              <h2>{isHost ? "Host controls" : "Waiting for host"}</h2>
-              <small>{isHost ? "Start when the room is ready, or close the room for everyone." : "The host controls when this match begins."}</small>
-              {isHost && (
-                <div className="ai-controls lobby-ai-quick-controls" aria-label="Add AI player">
-                  <select
-                    value={difficulty}
-                    onChange={(event) => setDifficulty(event.target.value as AiDifficulty)}
-                    disabled={ranked || roomIsFull}
-                    title={ranked ? "AI players are unavailable in ranked games." : roomIsFull ? "This lobby is full." : "Choose AI difficulty"}
-                    style={{ background: theme.secondaryBackground, color: theme.text, borderColor: theme.border }}
-                  >
-                    <option value="easy">Easy AI</option>
-                    <option value="normal">Normal AI</option>
-                    <option value="hard">Hard AI</option>
-                  </select>
-                  <button type="button" className="button-outline" disabled={ranked || roomIsFull} onClick={() => onAddAi(difficulty)}>＋ Add AI player</button>
-                </div>
-              )}
-              <div className="lobby-actions lobby-actions-v2">
-                {isHost && <button type="button" className="button-primary lobby-start-game" onClick={onStartGame} disabled={activePlayers.length < 2}>Start game</button>}
-                <button type="button" className="button-danger" onClick={onLeaveLobby}>{isHost ? "End room" : "Leave lobby"}</button>
-              </div>
-            </section>
-          </article>
-
-          <section className="players-panel players-panel-v2 hgr-standard-lobby-roster">
-            <div className="section-heading-row lobby-players-heading lobby-players-heading-v2">
-              <div>
-                <p className="modal-eyebrow">Players</p>
-                <h2>Ready list</h2>
-                <small>{activePlayers.length < 2 ? "At least two players are needed to start." : "Room is ready when the host is."}</small>
-              </div>
-            </div>
-
-            <div className="modern-player-list modern-player-list-v2">
-              {activePlayers.map((player, index) => (
-                <article key={player.id} className={`modern-player-row ${player.id === lobby.playerId ? "is-you" : ""}`}>
-                  <span className="avatar-token">{player.name.charAt(0).toUpperCase()}</span>
-                  <div className="player-copy">
-                    <strong>{player.name}</strong>
-                    <span>{player.isAi ? `AI • ${player.aiDifficulty ?? "normal"}` : player.isConnected ? "Connected" : "Reconnecting"}</span>
-                  </div>
-                  <div className="player-badges">
-                    {player.id === lobby.playerId && <span className="you-badge">You</span>}
-                    {player.isHost && <span className="host-badge-modern">♛ Host</span>}
-                    <span className="order-badge">#{index + 1}</span>
-                    {isHost && player.isAi && <button type="button" className="mini-danger-button" onClick={() => onRemoveAi(player.id)}>Remove</button>}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
         </div>
 
-        {message && <p role="status" aria-live="polite" className="status-toast lobby-status-toast">{message}</p>}
+        <div className="mega-poker-header-tools">
+          <div className="poker-room-meta">
+            <span>Room <strong>{lobby.code}</strong></span>
+            <span>{blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual"}</span>
+            <span>{activePlayers.length}/8 players</span>
+            <span>{turnTimerSeconds}s turns</span>
+            <span className={connectionStatus === "Connected" ? "is-online" : ""}><i aria-hidden="true" />{connectionStatus}</span>
+          </div>
+          <BackToGameRoomButton onClick={onBackToGameRoom} />
+        </div>
+      </header>
+
+      <section className="poker-lobby-shell mega-poker-lobby-shell">
+        <article
+          className="poker-lobby-card glass-card mega-poker-lobby-card"
+          style={{ background: theme.cardBackground, borderColor: theme.border }}
+        >
+          <div>
+            <p className="poker-eyebrow">Private room</p>
+            <h2>{blitz ? "Blitz Mega Board" : "Mega Board"}</h2>
+            <p className="poker-lobby-copy">
+              Bring everyone in, choose the shared board and start when the room is ready.
+              Room code <strong>{lobby.code}</strong>.
+            </p>
+          </div>
+
+          <dl className="poker-settings-summary">
+            <div><dt>Room code</dt><dd>{lobby.code}</dd></div>
+            <div><dt>Match</dt><dd>{blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual"}</dd></div>
+            <div><dt>Players</dt><dd>{activePlayers.length} / 8</dd></div>
+            <div><dt>Turn timer</dt><dd>{turnTimerSeconds}s</dd></div>
+            <div><dt>Host</dt><dd>{host?.name ?? "—"}</dd></div>
+            <div><dt>Board</dt><dd>{(lobby.boardStyle ?? "classic-board").replaceAll("-", " ")}</dd></div>
+          </dl>
+
+          {blitz && (
+            <section className="poker-ranked-lobby-tools mega-blitz-lobby-note" aria-label="Blitz rules">
+              <div>
+                <span>Blitz lobby</span>
+                <strong>Fast-start property deal</strong>
+                <small>All 37 ownable assets are shuffled and dealt round-robin as evenly as mathematically possible.</small>
+              </div>
+            </section>
+          )}
+
+          <section className="poker-variant-roadmap mega-board-style-roadmap" aria-label="Mega Board appearance">
+            <div className="poker-variant-roadmap-heading">
+              <span>Board appearance</span>
+              <small>The host chooses the shared board; your HGR theme and accessibility remain personal.</small>
+            </div>
+            <SkinLibraryButton
+              stats={personalStats}
+              betaMode={betaMode}
+              slots={["mega-board"]}
+              roomStyle={lobby.boardStyle ?? "classic-board"}
+              onRoomStyleChange={onBoardStyleChange}
+              readOnly={!isHost}
+            />
+          </section>
+
+          <RecoveryKeyPanel recoveryKey={recoveryKey} />
+
+          {lobby.hostDisconnectDeadline && (
+            <div className="host-warning">
+              The host is reconnecting. This room closes automatically if they do not return within 90 seconds.
+            </div>
+          )}
+
+          {isHost ? (
+            <div className="poker-lobby-actions poker-lobby-actions-v2 mega-poker-lobby-actions">
+              <label className="poker-global-ai-control">
+                <span>AI difficulty <small>Applies to new AI players</small></span>
+                <select
+                  value={difficulty}
+                  onChange={(event) => setDifficulty(event.target.value as AiDifficulty)}
+                  disabled={ranked || roomIsFull}
+                  aria-label="Mega Board AI difficulty"
+                >
+                  <option value="easy">Easy</option>
+                  <option value="normal">Normal</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                className="button-outline"
+                disabled={ranked || roomIsFull}
+                onClick={() => onAddAi(difficulty)}
+              >
+                ＋ Add AI player
+              </button>
+              <button
+                type="button"
+                className="button-primary"
+                disabled={activePlayers.length < 2}
+                onClick={onStartGame}
+              >
+                Start game
+              </button>
+              <button type="button" className="button-danger" onClick={onLeaveLobby}>End room</button>
+            </div>
+          ) : (
+            <div className="mega-poker-guest-actions">
+              <button type="button" className="button-danger" onClick={onLeaveLobby}>Leave lobby</button>
+            </div>
+          )}
+        </article>
+
+        <section className="poker-player-list mega-poker-player-list" aria-label="Mega Board players">
+          {activePlayers.map((player, index) => (
+            <article key={player.id} className="poker-player-list-card">
+              <span className="poker-avatar">{player.name.charAt(0).toUpperCase()}</span>
+              <div>
+                <strong>{player.name}</strong>
+                <small>
+                  {player.isHost
+                    ? "Host"
+                    : player.isAi
+                      ? `AI player · ${player.aiDifficulty ?? "normal"}`
+                      : player.isConnected
+                        ? "Connected"
+                        : "Reconnecting"}
+                </small>
+              </div>
+              <b>Seat {index + 1}</b>
+              {isHost && player.isAi && (
+                <button
+                  type="button"
+                  className="poker-remove-ai"
+                  onClick={() => onRemoveAi(player.id)}
+                  aria-label={`Remove ${player.name}`}
+                >
+                  ×
+                </button>
+              )}
+            </article>
+          ))}
+        </section>
+
+        {message && <p role="status" aria-live="polite" className="status-toast poker-status-toast">{message}</p>}
       </section>
     </main>
   );
