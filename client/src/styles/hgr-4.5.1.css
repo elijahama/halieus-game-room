@@ -256,14 +256,12 @@
 /* Mega Board pre-game ownership                                               */
 /* -------------------------------------------------------------------------- */
 
+/* Mega Board keeps its game identity, but HGR theme colours remain authoritative.
+ * Do not shadow --hgr-brand with a fixed Mega green on live play, setup or lobby. */
 :is(.mega-live-page,.lobby-shell-v2,.mega-mode-configuration,.mario-results-shell) {
-  --hgr-brand: #15803d;
-  --hgr-yellow: #15803d;
-  --hgr-yellow-strong: #166534;
-  --hgr-brand-ink: #fff;
-  --hgr-action-bg: #15803d;
-  --hgr-action-ink: #fff;
-  --mega-focus: #15803d;
+  --hgr-action-bg: var(--hgr-brand);
+  --hgr-action-ink: var(--hgr-brand-ink);
+  --mega-focus: var(--hgr-brand);
 }
 .lobby-shell-v2 .host-badge-modern {
   color: var(--mm-text) !important;
@@ -279,9 +277,9 @@ html[data-theme="light"] .lobby-shell-v2 .turn-timer-settings-panel small {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border: 1px solid color-mix(in srgb,#16a34a 34%,var(--hgr-border));
+  border: 1px solid color-mix(in srgb,var(--hgr-brand) 34%,var(--hgr-border));
   border-radius: var(--hgr-radius-md);
-  background: color-mix(in srgb,#16a34a 6%,var(--hgr-surface-soft));
+  background: color-mix(in srgb,var(--hgr-brand) 6%,var(--hgr-surface-soft));
 }
 .mega-create-cosmetics > div {
   min-width: 0;
@@ -290,7 +288,7 @@ html[data-theme="light"] .lobby-shell-v2 .turn-timer-settings-panel small {
 }
 .mega-create-cosmetics p {
   margin: 0;
-  color: #168a42;
+  color: var(--hgr-brand);
   font-size: 8px;
   font-weight: 950;
   letter-spacing: .1em;
@@ -303,97 +301,195 @@ html[data-theme="light"] .lobby-shell-v2 .turn-timer-settings-panel small {
 }
 .mega-create-cosmetics .halieus-skins-trigger {
   min-width: 150px;
-  border-color: color-mix(in srgb,#16a34a 42%,var(--hgr-border)) !important;
-  background: color-mix(in srgb,#16a34a 8%,var(--hgr-surface-raised)) !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 42%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 8%,var(--hgr-surface-raised)) !important;
 }
 .mega-mode-configuration .mega-match-tabs button.active,
 .mega-mode-configuration .free-parking-toggle:has(input:checked) {
-  border-color: #16a34a !important;
-  box-shadow: inset 0 -2px 0 #16a34a !important;
+  border-color: var(--hgr-brand) !important;
+  box-shadow: inset 0 -2px 0 var(--hgr-brand) !important;
 }
-.mega-mode-configuration .mega-match-tabs button.active { color: #168a42 !important; }
-html[data-theme="dark"] .mega-mode-configuration .mega-match-tabs button.active,
-html[data-theme="dark"] .mega-create-cosmetics p { color: #4ade80 !important; }
+.mega-mode-configuration .mega-match-tabs button.active { color: var(--hgr-brand) !important; }
+html[data-theme-contrast="dark"] .mega-mode-configuration .mega-match-tabs button.active,
+html[data-theme-contrast="dark"] .mega-create-cosmetics p {
+  color: color-mix(in srgb,var(--hgr-brand) 66%,white) !important;
+}
 
-/* Lobby: roster owns its overflow; controls stay aligned with the roster. */
-@media (min-width: 921px) {
-  .lobby-shell-v2 .lobby-main-grid {
-    grid-template-columns: minmax(0,1.62fr) minmax(290px,.82fr) !important;
-    align-items: stretch !important;
-  }
-  .lobby-shell-v2 .players-panel-v2 {
-    min-height: 0 !important;
-    height: 100% !important;
-    max-height: none !important;
-    position: relative;
-  }
-  .lobby-shell-v2 .modern-player-list-v2 {
-    min-height: 0 !important;
-    max-height: none !important;
-    align-content: start;
-    flex: 1 1 0 !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain;
-  }
-  .lobby-shell-v2 .lobby-side-panel {
-    position: static !important;
-    align-self: stretch !important;
-    display: grid !important;
-    grid-template-rows: auto auto minmax(0,1fr) !important;
-    align-content: stretch !important;
-    gap: 10px !important;
-  }
-  .lobby-shell-v2 .lobby-start-card {
-    min-height: 0 !important;
-    align-self: stretch !important;
-  }
-  .lobby-shell-v2 .lobby-start-card .lobby-actions-v2 {
-    margin-top: auto !important;
-    padding-top: 12px;
-  }
-}
 .lobby-board-appearance-card {
   display: grid !important;
   gap: 7px !important;
-  border-color: color-mix(in srgb,#16a34a 30%,var(--mm-border)) !important;
-  background: color-mix(in srgb,#16a34a 5%,var(--mm-surface-2)) !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 30%,var(--mm-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 5%,var(--mm-surface-2)) !important;
 }
-.lobby-board-appearance-card .modal-eyebrow { color: #16a34a !important; }
+.lobby-board-appearance-card .modal-eyebrow { color: var(--hgr-brand) !important; }
 .lobby-board-appearance-card .halieus-skins-trigger {
   width: 100% !important;
   min-height: 44px !important;
   margin-top: 3px !important;
-  border-color: color-mix(in srgb,#16a34a 42%,var(--mm-border)) !important;
-  background: color-mix(in srgb,#16a34a 7%,var(--mm-surface-1)) !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 42%,var(--mm-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 7%,var(--mm-surface-1)) !important;
 }
 .lobby-board-appearance-card .halieus-skins-trigger:focus-visible {
-  outline-color: #15803d !important;
-  box-shadow: 0 0 0 3px rgba(21,128,61,.2) !important;
+  outline-color: var(--hgr-brand) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb,var(--hgr-brand) 20%,transparent) !important;
 }
 .lobby-board-appearance-card .halieus-skins-trigger strong { font-size: 14px !important; }
 .lobby-board-appearance-card .halieus-skins-trigger small { font-size: 12px !important; }
 .lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
 .lobby-shell-v2 .lobby-start-game {
-  border-color: color-mix(in srgb,#16a34a 72%,#000 10%) !important;
-  background: #15803d !important;
-  color: #fff !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 72%,#000 10%) !important;
+  background: var(--hgr-brand) !important;
+  color: var(--hgr-brand-ink) !important;
   box-shadow: none !important;
 }
-.lobby-shell-v2 .modal-eyebrow { color: #16a34a !important; }
+.lobby-shell-v2 .modal-eyebrow { color: var(--hgr-brand) !important; }
 .lobby-shell-v2 .lobby-recovery-compact {
-  border-color: color-mix(in srgb,#16a34a 26%,var(--mm-border)) !important;
-  background: color-mix(in srgb,#16a34a 5%,var(--mm-surface-1)) !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 26%,var(--mm-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 5%,var(--mm-surface-1)) !important;
 }
 .lobby-shell-v2 .lobby-recovery-compact button,
 .lobby-shell-v2 .halieus-invite-bar button {
-  border-color: color-mix(in srgb,#16a34a 38%,var(--mm-border)) !important;
-  background: color-mix(in srgb,#16a34a 8%,var(--mm-surface-1)) !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 38%,var(--mm-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 8%,var(--mm-surface-1)) !important;
   color: var(--mm-text) !important;
   box-shadow: none !important;
 }
 .lobby-shell-v2 .lobby-recovery-compact button:hover,
 .lobby-shell-v2 .halieus-invite-bar button:hover {
-  background: color-mix(in srgb,#16a34a 13%,var(--mm-surface-1)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 13%,var(--mm-surface-1)) !important;
+}
+
+/* Part 20 final authority: Mega Board uses Poker's actual waiting-room grammar. */
+.mega-lobby-poker-standard {
+  --game-accent: var(--hgr-brand);
+  padding: 24px clamp(18px,3vw,42px) 104px !important;
+}
+.mega-lobby-poker-standard .poker-header {
+  width: min(1540px,100%) !important;
+  max-width: 1540px !important;
+  margin: 0 auto 22px !important;
+  padding-right: 0 !important;
+}
+.mega-poker-header-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+.mega-lobby-poker-standard .poker-brand-lockup p,
+.mega-lobby-poker-standard .poker-eyebrow {
+  color: var(--hgr-brand) !important;
+}
+.mega-lobby-poker-standard .poker-logo-token {
+  border-color: color-mix(in srgb,var(--game-identity-accent,#16a34a) 44%,transparent) !important;
+  background: color-mix(in srgb,var(--game-identity-accent,#16a34a) 82%,#111 18%) !important;
+  box-shadow: 0 12px 28px color-mix(in srgb,var(--game-identity-accent,#16a34a) 24%,transparent) !important;
+}
+.mega-lobby-poker-standard .poker-lobby-shell {
+  width: min(1420px,calc(100vw - 64px)) !important;
+  max-width: 1420px !important;
+  grid-template-columns: minmax(620px,.98fr) minmax(500px,1.02fr) !important;
+  gap: 18px !important;
+  margin: 34px auto 0 !important;
+  align-items: start !important;
+}
+.mega-lobby-poker-standard .poker-lobby-card {
+  border-color: color-mix(in srgb,var(--hgr-brand) 24%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 3%,var(--hgr-surface)) !important;
+}
+.mega-lobby-poker-standard .poker-settings-summary div,
+.mega-lobby-poker-standard .poker-player-list-card {
+  border-color: color-mix(in srgb,var(--hgr-brand) 22%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 4%,var(--hgr-surface-soft)) !important;
+}
+.mega-lobby-poker-standard .poker-player-list {
+  gap: 10px !important;
+}
+.mega-lobby-poker-standard .poker-player-list-card {
+  min-height: 64px !important;
+}
+.mega-lobby-poker-standard .poker-avatar {
+  background: color-mix(in srgb,var(--hgr-brand) 84%,#111 16%) !important;
+  color: var(--hgr-brand-ink) !important;
+}
+.mega-lobby-poker-standard .poker-remove-ai {
+  border-color: color-mix(in srgb,var(--hgr-brand) 34%,var(--hgr-border)) !important;
+  color: var(--hgr-brand) !important;
+}
+.mega-board-style-roadmap,
+.mega-blitz-lobby-note {
+  border-color: color-mix(in srgb,var(--hgr-brand) 28%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 5%,var(--hgr-surface-soft)) !important;
+}
+.mega-board-style-roadmap .halieus-skins-trigger {
+  width: 100% !important;
+  margin: 0 !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 36%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 6%,var(--hgr-surface-raised)) !important;
+}
+.mega-lobby-poker-standard .room-recovery-key-panel {
+  border-color: color-mix(in srgb,var(--hgr-brand) 28%,var(--hgr-border)) !important;
+  background: color-mix(in srgb,var(--hgr-brand) 6%,var(--hgr-surface-soft)) !important;
+}
+.mega-lobby-poker-standard .poker-lobby-actions .button-primary {
+  border-color: var(--hgr-brand) !important;
+  background: linear-gradient(135deg,var(--hgr-brand),color-mix(in srgb,var(--hgr-brand) 82%,#000 18%)) !important;
+  color: var(--hgr-brand-ink) !important;
+}
+.mega-poker-lobby-actions {
+  grid-template-columns: minmax(160px,.9fr) 1fr 1fr .82fr !important;
+  align-items: stretch !important;
+}
+.mega-poker-lobby-actions > * {
+  min-width: 0;
+}
+.mega-poker-guest-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+@media (max-width: 980px) {
+  .mega-lobby-poker-standard .poker-header {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .mega-poker-header-tools {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .mega-lobby-poker-standard .poker-room-meta {
+    justify-content: flex-start !important;
+  }
+  .mega-lobby-poker-standard .poker-lobby-shell {
+    width: min(760px,100%) !important;
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .mega-poker-lobby-actions {
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  }
+  .mega-poker-lobby-actions .poker-global-ai-control {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .mega-lobby-poker-standard {
+    padding-inline: 10px !important;
+  }
+  .mega-lobby-poker-standard .poker-lobby-shell {
+    width: 100% !important;
+    margin-top: 20px !important;
+  }
+  .mega-poker-lobby-actions {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  .mega-poker-lobby-actions .poker-global-ai-control {
+    grid-column: auto;
+  }
 }
 
 /* Light lobby surfaces use explicit foreground ownership. */
