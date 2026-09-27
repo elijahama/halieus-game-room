@@ -3441,7 +3441,7 @@ function handleLeaveSpectator() {
                 : handleLeaveGame
           }
         />
-        {lobby && <RoomChatPanel game="mega-board" code={lobby.code} accent="#16a34a" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />}
+        {lobby && <RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />}
       </>
     );
   }
@@ -3489,7 +3489,7 @@ function handleLeaveSpectator() {
           onExportReport={() => downloadGameReport(gameState)}
           onEndRoom={handleEndRoom}
         />
-        <RoomChatPanel game="mega-board" code={lobby.code} accent="#16a34a" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
+        <RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
       </>
     );
   }
@@ -3505,7 +3505,7 @@ function handleLeaveSpectator() {
         }}
       >
         <GameChrome
-          accent="#16a34a"
+          accent="var(--hgr-brand)"
           className="mega-game-chrome"
           onBackToGameRoom={handleBackToGameRoom}
           onOpenMenu={() => {
@@ -3807,7 +3807,7 @@ function handleLeaveSpectator() {
           </div>
         </div>
         <ConfirmDialog open={bankruptcyConfirmOpen} title="Declare bankruptcy?" message="You will leave active play, surrender the remaining estate according to the game rules, and continue watching as a spectator." confirmLabel="Declare bankruptcy" destructive onCancel={() => setBankruptcyConfirmOpen(false)} onConfirm={() => { setBankruptcyConfirmOpen(false); handleDebtAction("game:declare-bankruptcy", "Declaring bankruptcy..."); }} />
-        <RoomChatPanel game="mega-board" code={lobby.code} accent="#16a34a" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
+        <RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
       </main>
     );
   }
@@ -3853,7 +3853,7 @@ function handleLeaveSpectator() {
           isUpdatingTurnTimer={isUpdatingTurnTimer}
           betaMode={betaMode}
         />
-        <RoomChatPanel game="mega-board" code={lobby.code} accent="#16a34a" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
+        <RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
       </>
     );
   }
