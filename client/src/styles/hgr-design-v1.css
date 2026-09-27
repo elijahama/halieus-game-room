@@ -7202,9 +7202,10 @@ html[data-theme="dark"] .mega-create-cosmetics p {
   box-shadow: none !important;
 }
 .lobby-heading-v2 {
-  width: 100% !important;
+  width: min(1420px, calc(100vw - 64px)) !important;
+  max-width: 1420px !important;
   margin: 0 auto 22px !important;
-  padding: 0 120px 0 0 !important;
+  padding: 0 !important;
   border: 0 !important;
 }
 .mega-standard-lobby-grid {
@@ -7300,6 +7301,10 @@ html[data-theme="dark"] .mega-create-cosmetics p {
     .lobby-heading-v2
   ) {
     padding-right: 0 !important;
+  }
+
+  .lobby-heading-v2 {
+    width: min(760px, 100%) !important;
   }
 
   :where(
