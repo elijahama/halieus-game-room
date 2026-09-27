@@ -17,6 +17,17 @@ const gitBlobSha=(path)=>{
 };
 
 const playerCard=read("client/src/platform/components/PlayerIdentityCard.tsx");
+const pokerScreen=read("client/src/games/poker/PokerScreen.tsx");
+const megaLobby=read("client/src/games/mega-board/components/LobbyScreen.tsx");
+const ludoScreen=read("client/src/games/ludo/LudoScreen.tsx");
+const ayoScreen=read("client/src/games/ayo/AyoScreen.tsx");
+const connectFourScreen=read("client/src/games/connect-four/ConnectFourScreen.tsx");
+const hiddenDictatorScreen=read("client/src/games/hidden-dictator/HiddenDictatorScreen.tsx");
+const wordBoardScreen=read("client/src/games/word-board/WordBoardScreen.tsx");
+const blackjackRebuild=read("client/src/games/blackjack/BlackjackRebuildScreen.tsx");
+const whotRebuild=read("client/src/games/whot/WhotRebuildScreen.tsx");
+const classicTableScreen=read("client/src/games/classic-table/ClassicTableScreen.tsx");
+const wordArenaScreen=read("client/src/games/word-arena/WordArenaScreen.tsx");
 const home=read("client/src/platform/components/HomeScreen.tsx");
 const brand=read("client/src/platform/components/HalieusBrandMark.tsx");
 const theme=read("client/src/platform/theme.ts");
@@ -357,6 +368,25 @@ assert.match(megaDice,/doublesStage[\s\S]*?Third double · Jail/s,"Mega Board di
 assert.match(megaBoard,/expiringBusTicketsRemaining[\s\S]*?Bus Ticket deck/s,"Bus Ticket deck must expose remaining expiry-ticket inventory without revealing order");
 assert.match(megaLeaderboard,/\[entries\[1\], entries\[0\], entries\[2\]\]/,"Mega Board leaderboard must render a true 2nd/1st/3rd podium order");
 assert.match(megaLeaderboard,/leaderboard-podium-avatar[\s\S]*?entry.profilePicture[\s\S]*?entry.avatar/s,"Ranked podium must use player profile pictures with identity fallback");
+
+/* Poker-standard lobby grammar: one hierarchy across all 14 active games. */
+assert.match(css,/HGR Part 20 — Poker-standard pre-game lobby grammar/,"Shared Poker-standard lobby CSS contract missing");
+assert.match(css,/\.card-game-lobby,[\s\S]*?\.rebuild-lobby-layout,[\s\S]*?\.classic-lobby-layout,[\s\S]*?\.word-arena-lobby,[\s\S]*?\.hgr-standard-lobby-grid/,"All shared lobby families must use the Poker-standard two-column geometry");
+assert.match(css,/grid-template-columns:\s*minmax\(360px,\s*\.9fr\)\s*minmax\(420px,\s*1\.1fr\)/,"Shared lobby geometry must preserve Poker's setup-left / roster-right balance");
+assert.match(megaLobby,/hgr-standard-lobby-grid mega-standard-lobby-grid/,"Mega Board lobby must opt into the Poker-standard room grid");
+assert.match(megaLobby,/hgr-standard-lobby-card mega-standard-lobby-card[\s\S]*?lobby-ai-quick-controls[\s\S]*?hgr-standard-lobby-roster/s,"Mega Board must keep setup/AI controls on the left and the seat roster on the right");
+for (const [name, source, selector] of [
+  ["Poker", pokerScreen, "poker-lobby-shell"],
+  ["Ludo", ludoScreen, "card-game-lobby"],
+  ["Ayo", ayoScreen, "card-game-lobby"],
+  ["Connect Four", connectFourScreen, "card-game-lobby"],
+  ["Hidden Dictator", hiddenDictatorScreen, "card-game-lobby"],
+  ["Word Board", wordBoardScreen, "card-game-lobby"],
+  ["Blackjack", blackjackRebuild, "rebuild-lobby-layout"],
+  ["WHOT", whotRebuild, "rebuild-lobby-layout"],
+  ["Cheat / Dominoes", classicTableScreen, "classic-lobby-layout"],
+  ["Word Game / Password / Anagrams Race", wordArenaScreen, "word-arena-lobby"],
+]) assert.ok(source.includes(selector), `${name} must remain on the shared Poker-standard lobby family`);
 assert.match(accountPanel,/Gamer Score[\s\S]*?Achievements[\s\S]*?Verified games/s,"Player profile headline must be accomplishment-first rather than win-rate-first");
 assert.match(release451Css,/HGR 4\.5\.1/,"Mega Board 4.5.1 final cascade contract must remain explicit");
 assert.match(release451Css,/is-doubles-stage-1[\s\S]*?is-doubles-stage-2[\s\S]*?is-doubles-stage-3/s,"Doubles escalation must retain three visible warning stages");

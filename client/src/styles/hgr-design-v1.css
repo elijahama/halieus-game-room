@@ -7011,3 +7011,326 @@ html[data-theme="dark"] .mega-create-cosmetics p {
   border-radius: 999px;
   box-shadow: inset 0 0 0 1px rgba(127,127,127,.16);
 }
+
+
+/* HGR Part 20 — Poker-standard pre-game lobby grammar */
+/*
+ * Poker is the visual reference for every waiting room. Game-specific copy,
+ * rules and controls stay owned by each game, but the room hierarchy is shared:
+ * identity/meta header, setup card on the left, seat roster on the right,
+ * compact host controls at the bottom, then one-column collapse on smaller
+ * screens. This covers all 14 current catalogue games through their lobby
+ * families rather than duplicating Poker markup.
+ */
+:where(
+  .card-game-lobby,
+  .rebuild-lobby-layout,
+  .classic-lobby-layout,
+  .word-arena-lobby,
+  .hgr-standard-lobby-grid
+) {
+  width: min(1160px, 100%) !important;
+  max-width: 1160px !important;
+  display: grid !important;
+  grid-template-columns: minmax(360px, .9fr) minmax(420px, 1.1fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+  margin: 50px auto 0 !important;
+}
+
+:where(
+  .card-game-lobby-card,
+  .rebuild-lobby-main,
+  .classic-lobby-main,
+  .word-arena-intro,
+  .hgr-standard-lobby-card
+) {
+  min-width: 0;
+  padding: 26px !important;
+  border: 1px solid color-mix(in srgb, var(--game-accent) 24%, var(--hgr-border)) !important;
+  border-radius: 24px !important;
+  background: color-mix(in srgb, var(--game-accent) 3%, var(--hgr-surface)) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: var(--hgr-shadow-panel) !important;
+}
+
+:where(
+  .card-game-roster,
+  .rebuild-lobby-layout > .rebuild-panel:not(.rebuild-lobby-main),
+  .classic-roster,
+  .word-arena-roster,
+  .word-game-lobby-stats,
+  .hgr-standard-lobby-roster
+) {
+  min-width: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  align-self: start !important;
+}
+
+:where(
+  .card-game-roster,
+  .rebuild-roster,
+  .classic-roster,
+  .word-arena-roster,
+  .modern-player-list-v2
+) {
+  display: grid !important;
+  gap: 10px !important;
+  align-content: start !important;
+}
+
+:where(
+  .card-game-player-row,
+  .rebuild-roster > div,
+  .classic-roster > article,
+  .word-arena-roster > article,
+  .modern-player-list-v2 .modern-player-row
+) {
+  min-height: 64px !important;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+  align-items: center !important;
+  gap: 11px !important;
+  margin: 0 !important;
+  padding: 13px 15px !important;
+  border: 1px solid color-mix(in srgb, var(--game-accent) 22%, var(--hgr-border)) !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--game-accent) 4%, var(--hgr-surface-soft)) !important;
+  color: var(--hgr-text) !important;
+  box-shadow: none !important;
+}
+
+:where(
+  .card-game-avatar,
+  .rebuild-roster > div > span,
+  .classic-roster > article > span,
+  .word-arena-roster > article > span,
+  .modern-player-list-v2 .avatar-token
+) {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 50% !important;
+  background: color-mix(in srgb, var(--game-accent) 82%, #111827) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+}
+
+:where(
+  .card-game-roster > header,
+  .rebuild-panel-head,
+  .classic-roster > header,
+  .word-arena-roster > header,
+  .lobby-players-heading-v2
+) {
+  min-height: 0 !important;
+  margin: 0 0 10px !important;
+  padding: 0 2px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+:where(
+  .card-game-host-actions,
+  .rebuild-host-controls,
+  .classic-host-actions
+) {
+  display: grid !important;
+  grid-template-columns: minmax(160px, .8fr) 1fr 1.15fr !important;
+  align-items: end !important;
+  gap: 10px !important;
+  margin-top: 16px !important;
+}
+
+.word-arena-lobby-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin-top: 16px !important;
+}
+
+:where(
+  .card-game-header,
+  .rebuild-game-header,
+  .classic-table-header,
+  .word-arena-header
+) {
+  width: min(1540px, 100%) !important;
+  max-width: 1540px !important;
+  min-height: 54px;
+  margin: 0 auto 22px !important;
+  padding: 0 120px 0 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.classic-meta {
+  gap: 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+:where(.card-game-meta > span, .rebuild-game-meta span, .classic-meta > span, .word-arena-meta > span) {
+  min-width: 0 !important;
+  padding: 8px 10px !important;
+  border: 1px solid color-mix(in srgb, var(--game-accent) 24%, var(--hgr-border)) !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--game-accent) 5%, var(--hgr-surface-soft)) !important;
+}
+
+/* Mega Board now follows Poker's setup-left / seats-right order. */
+.lobby-shell-v2 {
+  padding: 24px clamp(18px, 3vw, 42px) 34px !important;
+}
+.lobby-card-v2 {
+  width: min(1540px, 100%) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.lobby-heading-v2 {
+  width: 100% !important;
+  margin: 0 auto 22px !important;
+  padding: 0 120px 0 0 !important;
+  border: 0 !important;
+}
+.mega-standard-lobby-grid {
+  margin-top: 50px !important;
+}
+.mega-standard-lobby-card {
+  display: grid !important;
+  gap: 12px !important;
+}
+.mega-standard-lobby-card .lobby-overview-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+.mega-standard-lobby-card .lobby-overview-code {
+  grid-column: 1 / -1;
+}
+.mega-standard-lobby-card .lobby-side-card {
+  padding: 13px !important;
+  border-radius: 14px !important;
+}
+.mega-standard-lobby-card .lobby-ai-quick-controls {
+  display: grid !important;
+  grid-template-columns: minmax(120px, .8fr) 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin-top: 12px !important;
+}
+.mega-standard-lobby-card .lobby-actions-v2 {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+.hgr-standard-lobby-roster.players-panel-v2 {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Word Game has personal daily stats instead of a multiplayer roster, but the
+ * second column keeps the same Poker-weighted card rhythm. */
+.word-game-lobby-stats {
+  display: grid !important;
+  gap: 10px !important;
+}
+.word-game-stat-grid {
+  display: grid !important;
+  gap: 10px !important;
+}
+.word-game-stat-grid > span {
+  min-height: 64px;
+  padding: 13px 15px !important;
+  border: 1px solid color-mix(in srgb, var(--game-accent) 22%, var(--hgr-border)) !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--game-accent) 4%, var(--hgr-surface-soft)) !important;
+}
+
+@media (max-width: 980px) {
+  :where(
+    .poker-lobby-shell,
+    .card-game-lobby,
+    .rebuild-lobby-layout,
+    .classic-lobby-layout,
+    .word-arena-lobby,
+    .hgr-standard-lobby-grid
+  ) {
+    width: min(760px, 100%) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    margin-top: 34px !important;
+  }
+
+  :where(
+    .card-game-header,
+    .rebuild-game-header,
+    .classic-table-header,
+    .word-arena-header,
+    .lobby-heading-v2
+  ) {
+    padding-right: 0 !important;
+  }
+
+  :where(
+    .card-game-host-actions,
+    .rebuild-host-controls,
+    .classic-host-actions
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .mega-standard-lobby-card .lobby-actions-v2,
+  .mega-standard-lobby-card .lobby-ai-quick-controls {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  :where(
+    .card-game-lobby-card,
+    .rebuild-lobby-main,
+    .classic-lobby-main,
+    .word-arena-intro,
+    .hgr-standard-lobby-card
+  ) {
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  .word-arena-lobby-actions {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .mega-standard-lobby-card .lobby-overview-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .mega-standard-lobby-card .lobby-overview-code {
+    grid-column: auto;
+  }
+
+  :where(
+    .card-game-player-row,
+    .rebuild-roster > div,
+    .classic-roster > article,
+    .word-arena-roster > article,
+    .modern-player-list-v2 .modern-player-row
+  ) {
+    padding: 11px 12px !important;
+  }
+}
