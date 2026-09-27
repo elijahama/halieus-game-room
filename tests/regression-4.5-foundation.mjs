@@ -382,11 +382,13 @@ assert.match(css,/HGR Part 20 — Poker-standard pre-game lobby grammar/,"Shared
 assert.match(css,/\.card-game-lobby,[\s\S]*?\.rebuild-lobby-layout,[\s\S]*?\.classic-lobby-layout,[\s\S]*?\.word-arena-lobby,[\s\S]*?\.hgr-standard-lobby-grid/,"All shared lobby families must use the Poker-standard two-column geometry");
 assert.match(css,/width:\s*min\(1420px,\s*calc\(100vw - 64px\)\)/,"Poker-standard desktop lobby must use the widened 1420px shell");
 assert.match(css,/grid-template-columns:\s*minmax\(620px,\s*\.98fr\)\s*minmax\(500px,\s*1\.02fr\)/,"Shared lobby geometry must preserve the widened setup-left / roster-right balance");
-assert.match(css,/\.mega-standard-lobby-grid\s*\{[\s\S]*?grid-template-columns:\s*minmax\(720px,\s*1\.08fr\)\s*minmax\(500px,\s*\.92fr\)/,"Mega Board must keep the wider setup column that prevents unnecessary vertical scrolling");
-assert.match(megaLobby,/hgr-standard-lobby-grid mega-standard-lobby-grid/,"Mega Board lobby must opt into the Poker-standard room grid");
-assert.match(megaLobby,/hgr-standard-lobby-card mega-standard-lobby-card[\s\S]*?lobby-ai-quick-controls[\s\S]*?hgr-standard-lobby-roster/s,"Mega Board must keep setup/AI controls on the left and the seat roster on the right");
+assert.match(megaLobby,/poker-header mega-poker-header[\s\S]*?poker-lobby-shell mega-poker-lobby-shell[\s\S]*?poker-lobby-card glass-card mega-poker-lobby-card[\s\S]*?poker-player-list mega-poker-player-list/s,"Mega Board must use Poker's actual header, lobby card and roster class structure");
+assert.match(megaLobby,/poker-settings-summary[\s\S]*?poker-global-ai-control[\s\S]*?poker-lobby-actions poker-lobby-actions-v2 mega-poker-lobby-actions/s,"Mega Board setup and host controls must follow Poker's actual lobby grammar");
+assert.doesNotMatch(megaLobby,/hgr-standard-lobby-grid|mega-standard-lobby-grid|players-panel-v2|lobby-overview-grid/,"Mega Board must not fall back to the previous approximate lobby shell");
 assert.doesNotMatch(megaLobby,/InviteLobbyBar|InviteLobbyPanel|inviteOpen/,"Mega Board must not reintroduce the legacy full-width invite bar/modal");
-assert.match(css,/\.mega-standard-lobby-card\s*\{[\s\S]*?gap:\s*14px !important;[\s\S]*?\.mega-standard-lobby-card > \*\s*\{[\s\S]*?margin:\s*0 !important;/s,"Mega Board setup sections must use one even spacing rhythm");
+assert.match(release451Css,/Part 20 final authority: Mega Board uses Poker's actual waiting-room grammar[\s\S]*?\.mega-lobby-poker-standard \.poker-lobby-shell[\s\S]*?grid-template-columns:\s*minmax\(620px,\.98fr\)\s*minmax\(500px,1\.02fr\)/s,"Final cascade must preserve the real Poker-standard Mega lobby geometry");
+assert.doesNotMatch(release451Css,/--hgr-brand:\s*#15803d/,"Mega Board must not shadow the active HGR theme with a fixed green brand token");
+assert.match(release451Css,/\.mega-live-page \.player-rail-order[\s\S]*?background:\s*var\(--hgr-brand\)/s,"Mega Board live chrome must inherit the active HGR theme brand");
 for (const [name, source, selector] of [
   ["Poker", pokerScreen, "poker-lobby-shell"],
   ["Ludo", ludoScreen, "card-game-lobby"],
