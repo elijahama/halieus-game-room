@@ -7366,3 +7366,46 @@ html[data-theme="dark"] .mega-create-cosmetics p {
     padding: 11px 12px !important;
   }
 }
+
+
+/* Explicit themes tint board-style preview palettes to match the live board. */
+.halieus-skin-preview.halieus-skin-palette > i {
+  background: var(--skin-source-colour) !important;
+}
+
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .halieus-skin-preview.halieus-skin-palette > i:nth-child(1) {
+  background: color-mix(in srgb, color-mix(in srgb, var(--skin-source-colour) 66%, var(--hgr-surface) 34%) 82%, var(--hgr-brand) 18%) !important;
+}
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .halieus-skin-preview.halieus-skin-palette > i:nth-child(2) {
+  background: color-mix(in srgb, color-mix(in srgb, var(--skin-source-colour) 62%, var(--hgr-surface-raised) 38%) 80%, var(--hgr-brand) 20%) !important;
+}
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .halieus-skin-preview.halieus-skin-palette > i:nth-child(3) {
+  background: color-mix(in srgb, var(--skin-source-colour) 42%, var(--hgr-brand) 58%) !important;
+}
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .halieus-skin-preview.halieus-skin-palette > i:nth-child(4) {
+  background: color-mix(in srgb, var(--skin-source-colour) 48%, var(--hgr-info, var(--hgr-brand-soft)) 52%) !important;
+}

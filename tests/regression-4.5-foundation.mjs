@@ -368,6 +368,10 @@ assert.match(megaLeaderboard,/\[entries\[1\], entries\[0\], entries\[2\]\]/,"Meg
 assert.match(megaLeaderboard,/leaderboard-podium-avatar[\s\S]*?entry.profilePicture[\s\S]*?entry.avatar/s,"Ranked podium must use player profile pictures with identity fallback");
 
 /* Poker-standard lobby grammar: one hierarchy across all 14 active games. */
+assert.match(surfaceCss,/data-theme-mode="blue"[\s\S]*?data-theme-mode="profile"[\s\S]*?data-theme-mode="custom"[\s\S]*?\.mega-live-page \.board-grid/s,"Board skins must tint with explicit HGR themes");
+assert.doesNotMatch(surfaceCss,/data-theme-mode="system"[\s\S]*?\.mega-live-page \.board-grid/s,"System theme must preserve authored board palettes");
+assert.match(css,/Explicit themes tint board-style preview palettes[\s\S]*?--skin-source-colour[\s\S]*?var\(--hgr-brand\)/s,"Board-style preview palettes must follow the active explicit theme");
+assert.match(skinButton,/--skin-source-colour/,"Skin previews must expose authored colours through theme-tintable CSS variables");
 assert.match(css,/HGR Part 20 — Poker-standard pre-game lobby grammar/,"Shared Poker-standard lobby CSS contract missing");
 assert.match(css,/\.card-game-lobby,[\s\S]*?\.rebuild-lobby-layout,[\s\S]*?\.classic-lobby-layout,[\s\S]*?\.word-arena-lobby,[\s\S]*?\.hgr-standard-lobby-grid/,"All shared lobby families must use the Poker-standard two-column geometry");
 assert.match(css,/grid-template-columns:\s*minmax\(360px,\s*\.9fr\)\s*minmax\(420px,\s*1\.1fr\)/,"Shared lobby geometry must preserve Poker's setup-left / roster-right balance");

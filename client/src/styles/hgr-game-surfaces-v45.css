@@ -5,9 +5,13 @@
  * colour, material, border, shadow and atmosphere, but intentionally do not
  * own geometry, hitboxes, scrolling, responsive breakpoints or game state.
  *
- * Skin slots remain independent from the platform theme:
+ * Skin geometry/material remains independent from the platform theme:
  *   data-skin-mega-board
  *   data-skin-poker-table
+ *
+ * Colour ownership is layered: system/light/dark preserve the authored skin
+ * palette, while explicit Blue/Red/Green/Profile/Custom themes tint the
+ * selected skin so board appearance follows the user's active HGR theme.
  */
 
 /* ==========================================================================
@@ -380,6 +384,107 @@ html[data-skin-mega-board="grey-disc-board"] .mega-live-page {
   background: var(--mega-deck-material) !important;
   color: var(--mega-centre-ink) !important;
   box-shadow: 0 6px 14px rgba(0,0,0,.18);
+}
+
+/* Explicit HGR themes tint Mega Board skins without replacing their material/pattern identity. */
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .mega-live-page {
+  --mega-accent: var(--hgr-brand);
+  --mega-focus: var(--hgr-info, var(--hgr-brand-soft));
+  --mega-frame-line: color-mix(in srgb, var(--hgr-brand) 34%, var(--hgr-border-strong));
+}
+
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .mega-live-page .board-frame {
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--hgr-brand) 11%, transparent),
+      color-mix(in srgb, var(--hgr-info, var(--hgr-brand-soft)) 7%, transparent)),
+    var(--mega-frame-material) !important;
+}
+
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .mega-live-page .board-grid {
+  border-color: color-mix(in srgb, var(--hgr-brand) 30%, var(--mega-board-line)) !important;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--hgr-brand) 20%, transparent),
+      color-mix(in srgb, var(--hgr-info, var(--hgr-brand-soft)) 11%, transparent)),
+    var(--mega-board-material) !important;
+}
+
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .mega-live-page .board-space {
+  border-color: color-mix(in srgb, var(--hgr-brand) 22%, var(--mega-space-line)) !important;
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--hgr-brand) 9%, transparent),
+      color-mix(in srgb, var(--hgr-info, var(--hgr-brand-soft)) 5%, transparent)),
+    var(--mega-space-material) !important;
+}
+
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .mega-live-page .board-space.is-corner {
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--hgr-brand) 13%, transparent),
+      color-mix(in srgb, var(--hgr-info, var(--hgr-brand-soft)) 7%, transparent)),
+    var(--mega-corner-material) !important;
+}
+
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .mega-live-page .board-centre-authentic {
+  background:
+    radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--hgr-brand) 18%, transparent), transparent 48%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--hgr-brand) 12%, transparent),
+      color-mix(in srgb, var(--hgr-info, var(--hgr-brand-soft)) 8%, transparent)),
+    var(--mega-centre-material) !important;
+}
+
+:is(
+  html[data-theme-mode="blue"],
+  html[data-theme-mode="red"],
+  html[data-theme-mode="green"],
+  html[data-theme-mode="profile"],
+  html[data-theme-mode="custom"]
+) .mega-live-page .board-deck {
+  border-color: color-mix(in srgb, var(--hgr-brand) 30%, var(--mega-deck-line)) !important;
+  background:
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--hgr-brand) 12%, transparent),
+      color-mix(in srgb, var(--hgr-info, var(--hgr-brand-soft)) 7%, transparent)),
+    var(--mega-deck-material) !important;
 }
 
 /* ==========================================================================

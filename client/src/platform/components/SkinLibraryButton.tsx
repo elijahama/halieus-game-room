@@ -1,6 +1,7 @@
 import { ModalPortal } from "./ModalPortal";
 import { accountApi } from "../accounts/api";
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 
 import type { HalieusPersonalStats } from "../../../../shared/platform/accounts";
 import {
@@ -111,7 +112,7 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
                 return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked")} disabled={!unlocked || readOnly} onClick={() => void choose(skin.id, unlocked)}>
                   {skin.previewPalette ? (
                     <span className="halieus-skin-preview halieus-skin-palette" aria-hidden="true">
-                      {skin.previewPalette.map((colour, index) => <i key={`${skin.id}-${index}`} style={{ background: colour }} />)}
+                      {skin.previewPalette.map((colour, index) => <i key={`${skin.id}-${index}`} style={{ "--skin-source-colour": colour } as CSSProperties} />)}
                     </span>
                   ) : (
                     <span className={"halieus-skin-preview skin-" + skin.id} aria-hidden="true"><i /><i /><b>{slot === "cards" ? "♠" : slot === "poker-table" ? "♠ ♥ ♣ ♦" : slot === "mega-board" ? "GO ▧ ▧ ▧" : "Aa"}</b></span>
