@@ -48,6 +48,7 @@ const accountPortal=read("client/src/platform/accounts/AccountPortal.tsx");
 const megaGameMenu=read("client/src/games/mega-board/components/GameMenu.tsx");
 const megaDice=read("client/src/games/mega-board/components/DiceRollOverlay.tsx");
 const megaBoard=read("client/src/games/mega-board/components/GameBoard.tsx");
+const playerRail=read("client/src/games/mega-board/components/PlayerRail.tsx");
 const megaLeaderboard=read("client/src/games/mega-board/components/LeaderboardModal.tsx");
 const accountPanel=read("client/src/platform/accounts/AccountPanel.tsx");
 const megaGameRules=read("shared/games/mega-board/game-rules.ts");
@@ -369,6 +370,11 @@ assert.match(megaLeaderboard,/leaderboard-podium-avatar[\s\S]*?entry.profilePict
 
 /* Poker-standard lobby grammar: one hierarchy across all 14 active games. */
 assert.match(surfaceCss,/data-theme-mode="blue"[\s\S]*?data-theme-mode="profile"[\s\S]*?data-theme-mode="custom"[\s\S]*?\.mega-live-page \.board-grid/s,"Board skins must tint with explicit HGR themes");
+assert.match(app,/root\.dataset\.themeContrast = darkMode \? "dark" : "light"/,"Resolved theme contrast must be exposed to semantic game-surface CSS");
+assert.match(surfaceCss,/data-theme-contrast="dark"[\s\S]*?\.board-space\.is-jail-corner[\s\S]*?color:\s*#ffffff !important/s,"Dark Mega Board themes must force Jail / Just Visiting text to white");
+assert.match(indexCss,/HGR Part 20 — 100% desktop fit for Mega Board[\s\S]*?var\(--mega-board-size[\s\S]*?grid-template-rows:\s*repeat\(var\(--rail-player-count/s,"Mega Board desktop must size the square from available width\/height and keep player rails non-scrolling");
+assert.match(playerRail,/compactOwnedSpaces = orderedOwnedSpaces\.slice\(0, 6\)/,"Desktop player rails must cap the inline portfolio summary");
+assert.match(playerRail,/hiddenOwnedSpaceCount[\s\S]*?player-property-chip is-more/s,"Condensed rail portfolios must expose a +N more indicator");
 assert.doesNotMatch(surfaceCss,/data-theme-mode="system"[\s\S]*?\.mega-live-page \.board-grid/s,"System theme must preserve authored board palettes");
 assert.match(css,/Explicit themes tint board-style preview palettes[\s\S]*?--skin-source-colour[\s\S]*?var\(--hgr-brand\)/s,"Board-style preview palettes must follow the active explicit theme");
 assert.match(skinButton,/--skin-source-colour/,"Skin previews must expose authored colours through theme-tintable CSS variables");
