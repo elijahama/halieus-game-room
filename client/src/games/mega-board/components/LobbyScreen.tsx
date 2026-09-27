@@ -1,3 +1,4 @@
+import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import { useEffect, useState } from "react";
 
 import type { AiDifficulty } from "../../../../../shared/games/mega-board/game-state";
@@ -55,6 +56,8 @@ export function LobbyScreen({
   onBackToGameRoom,
   onAddAi,
   onRemoveAi,
+  onTurnTimerChange,
+  isUpdatingTurnTimer,
   betaMode = false,
   onBoardStyleChange,
 }: LobbyScreenProps) {
@@ -127,7 +130,25 @@ export function LobbyScreen({
             <div><dt>Room code</dt><dd>{lobby.code}</dd></div>
             <div><dt>Match</dt><dd>{blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual"}</dd></div>
             <div><dt>Players</dt><dd>{activePlayers.length} / 8</dd></div>
-            <div><dt>Turn timer</dt><dd>{turnTimerSeconds}s</dd></div>
+            <div className="mega-poker-timer-setting">
+              <dt>Turn timer</dt>
+              <dd>
+                {isHost ? (
+                  <select
+                    aria-label="Turn timer"
+                    value={turnTimerSeconds}
+                    disabled={isUpdatingTurnTimer}
+                    onChange={(event) => onTurnTimerChange(Number(event.target.value))}
+                  >
+                    {TURN_TIMER_PRESET_SECONDS.map((seconds) => (
+                      <option key={seconds} value={seconds}>{seconds} seconds</option>
+                    ))}
+                  </select>
+                ) : (
+                  `${turnTimerSeconds}s`
+                )}
+              </dd>
+            </div>
             <div><dt>Host</dt><dd>{host?.name ?? "—"}</dd></div>
             <div><dt>Board</dt><dd>{(lobby.boardStyle ?? "classic-board").replaceAll("-", " ")}</dd></div>
           </dl>
