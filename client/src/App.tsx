@@ -646,6 +646,7 @@ export default function App() {
     const root = document.documentElement;
     root.dataset.themeMode = themeMode;
     root.dataset.theme = resolvedThemeMode;
+    root.dataset.themeContrast = darkMode ? "dark" : "light";
     root.dataset.themeProfile = themeProfileId;
     root.dataset.textScale = textScale;
     root.dataset.density = density;
