@@ -388,6 +388,8 @@ assert.doesNotMatch(megaLobby,/hgr-standard-lobby-grid|mega-standard-lobby-grid|
 assert.doesNotMatch(megaLobby,/InviteLobbyBar|InviteLobbyPanel|inviteOpen/,"Mega Board must not reintroduce the legacy full-width invite bar/modal");
 assert.match(release451Css,/Part 20 final authority: Mega Board uses Poker's actual waiting-room grammar[\s\S]*?\.mega-lobby-poker-standard \.poker-lobby-shell[\s\S]*?grid-template-columns:\s*minmax\(620px,\.98fr\)\s*minmax\(500px,1\.02fr\)/s,"Final cascade must preserve the real Poker-standard Mega lobby geometry");
 assert.doesNotMatch(release451Css,/--hgr-brand:\s*#15803d/,"Mega Board must not shadow the active HGR theme with a fixed green brand token");
+assert.match(release451Css,/\.mega-lobby-poker-standard\s*\{[\s\S]*?background:\s*var\(--hgr-page\) !important;/s,"Mega Board lobby canvas must come directly from the active HGR page theme");
+assert.match(release451Css,/\.mega-lobby-poker-standard::before,[\s\S]*?\.mega-lobby-poker-standard::after[\s\S]*?content:\s*none !important;/s,"Mega Board lobby must not inherit Poker's red\/purple ambient page wash");
 assert.match(release451Css,/\.mega-live-page \.player-rail-order[\s\S]*?background:\s*var\(--hgr-brand\)/s,"Mega Board live chrome must inherit the active HGR theme brand");
 assert.match(app,/const theme = \{[\s\S]*?pageBackground: "var\(--hgr-page\)"[\s\S]*?cardBackground: "var\(--hgr-surface\)"[\s\S]*?secondaryBackground: "var\(--hgr-surface-soft\)"[\s\S]*?text: "var\(--hgr-text\)"[\s\S]*?border: "var\(--hgr-border\)"/s,"Game theme props must use active HGR CSS tokens instead of a dark/light-only object");
 assert.doesNotMatch(app,/const theme = darkMode \? darkTheme : lightTheme/,"Game screens must not fall back to the legacy two-state theme object");
