@@ -1,4 +1,3 @@
-import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import { useEffect, useState } from "react";
 
 import type { AiDifficulty } from "../../../../../shared/games/mega-board/game-state";
@@ -56,8 +55,6 @@ export function LobbyScreen({
   onBackToGameRoom,
   onAddAi,
   onRemoveAi,
-  onTurnTimerChange,
-  isUpdatingTurnTimer,
   betaMode = false,
   onBoardStyleChange,
 }: LobbyScreenProps) {
