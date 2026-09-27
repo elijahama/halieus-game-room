@@ -525,29 +525,27 @@ html[data-theme="light"] .lobby-shell-v2 .player-copy > span {
 /* -------------------------------------------------------------------------- */
 
 .mega-live-page .player-rail-order {
-  background: #168a42 !important;
-  color: #ffffff !important;
+  background: var(--hgr-brand) !important;
+  color: var(--hgr-brand-ink) !important;
 }
 .mega-live-page .player-rail-card.is-current .player-rail-order {
-  background: #16a34a !important;
-  box-shadow: 0 0 0 3px rgba(22,163,74,.14);
+  background: var(--hgr-brand) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb,var(--hgr-brand) 14%,transparent);
 }
 
 .mega-live-page .centre-turn-status {
-  background: linear-gradient(145deg,#0d2418,#152f21) !important;
-  border-color: rgba(74,222,128,.38) !important;
-  color: #f4fff7 !important;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb,var(--hgr-brand) 11%,var(--hgr-surface-raised)),
+      color-mix(in srgb,var(--hgr-brand) 6%,var(--hgr-surface))
+    ) !important;
+  border-color: color-mix(in srgb,var(--hgr-brand) 38%,var(--hgr-border)) !important;
+  color: var(--hgr-text) !important;
   box-shadow: 0 8px 22px rgba(0,0,0,.16) !important;
 }
-.mega-live-page .centre-turn-status span { color: #a7d9b7 !important; }
-.mega-live-page .centre-turn-status strong { color: #f4fff7 !important; }
-html[data-theme="light"] .mega-live-page .centre-turn-status {
-  background: #e3f0e7 !important;
-  border-color: #47855d !important;
-  color: #102e1c !important;
-}
-html[data-theme="light"] .mega-live-page .centre-turn-status span { color: #28553a !important; }
-html[data-theme="light"] .mega-live-page .centre-turn-status strong { color: #102e1c !important; }
+.mega-live-page .centre-turn-status span { color: var(--hgr-muted) !important; }
+.mega-live-page .centre-turn-status strong { color: var(--hgr-text) !important; }
 
 .dice-roll-stage {
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
