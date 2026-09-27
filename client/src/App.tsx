@@ -59,7 +59,7 @@ import { WinnerScreen } from "./games/mega-board/components/WinnerScreen";
 import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal";
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
-import { darkTheme, lightTheme, styles } from "./games/mega-board/styles/gameStyles";
+import { styles } from "./games/mega-board/styles/gameStyles";
 import { clearCustomThemeVariables, customThemeVariables, readableInk, isDarkColour, readCustomTheme, readDensity, readLogoPreset, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
 import { saveSkinPreferences, clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
@@ -3244,7 +3244,15 @@ function handleLeaveSpectator() {
       ? savedSession.reconnectToken
       : null;
 
-  const theme = darkMode ? darkTheme : lightTheme;
+  const theme = {
+    pageBackground: "var(--hgr-page)",
+    cardBackground: "var(--hgr-surface)",
+    secondaryBackground: "var(--hgr-surface-soft)",
+    inputBackground: "var(--hgr-surface-raised)",
+    text: "var(--hgr-text)",
+    mutedText: "var(--hgr-muted)",
+    border: "var(--hgr-border)",
+  };
   const toggleDarkMode = () => { const next = darkMode ? "light" : "dark"; localStorage.setItem(THEME_KEY, next); setThemeMode(next); };
 
   const activeTabGameId: GameId | null =
