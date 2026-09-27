@@ -363,6 +363,15 @@ html[data-theme-contrast="dark"] .mega-create-cosmetics p {
 .mega-lobby-poker-standard {
   --game-accent: var(--hgr-brand);
   padding: 24px clamp(18px,3vw,42px) 104px !important;
+  background: var(--hgr-page) !important;
+}
+
+/* Mega borrows Poker's lobby geometry, not Poker's red/purple page atmosphere. */
+.mega-lobby-poker-standard::before,
+.mega-lobby-poker-standard::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
 }
 .mega-lobby-poker-standard .poker-header {
   width: min(1540px,100%) !important;
