@@ -36,9 +36,16 @@ artifact('client/public/sw.js', readText('client/public/sw.js').replace(
   /^const CACHE = .*;\r?$/m,
   `const CACHE = '${cachePrefix}-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');`,
 ));
-artifact('client/index.html', readText('client/index.html').replace(
-  /(href="\/favicon[^"?]*\?v=)[^"&]+/g, `$1${version}`,
-));
+// Release-tagged browser/PWA asset URLs are generated consumers too. Keep
+// their cache-busting version prefix in lockstep with VERSION while preserving
+// semantic suffixes such as -icon-set and -approved-reference.
+const syncReleaseQueryVersion = (source) => source.replace(
+  /(\?v=)\d+\.\d+\.\d+[a-z]?/g,
+  `$1${version}`,
+);
+for (const file of ['client/index.html', 'client/src/App.tsx', 'client/public/site.webmanifest']) {
+  artifact(file, syncReleaseQueryVersion(readText(file)));
+}
 artifact('README.md', readText('README.md').replace(/(\*\*Current milestone:\*\* )\S+/, `$1${version}`));
 for (const file of packages) {
   const actual = JSON.parse(readText(file)).version;
