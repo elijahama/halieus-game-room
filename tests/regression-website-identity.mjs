@@ -59,3 +59,9 @@ assert.match(read('client/public/brand/glyphs/H.svg'),/fill="currentColor"/);
 assert.match(read('client/public/brand/flat/mono-dark.svg'),/--logo-glyph,#000000/);
 assert.match(read('client/public/brand/flat/mono-light.svg'),/--logo-glyph,#ffffff/);
 for(const game of ['anagrams-race','ayo']) assert.equal(read(`client/public/game-icons/${game}.svg`),read(`client/src/assets/game-icons/${game}.svg`));
+
+
+assert.match(indexHtml, /property="og:image" content="https:\/\/halieus\.remotewire\.net\/app-icon-512\.png\?v=4\.5\.2-social-share-icon"/, 'Social share metadata must use the real HGR icon');
+assert.match(indexHtml, /property="og:image:secure_url" content="https:\/\/halieus\.remotewire\.net\/app-icon-512\.png\?v=4\.5\.2-social-share-icon"/, 'Social share image must expose a secure URL');
+assert.match(indexHtml, /name="twitter:image" content="https:\/\/halieus\.remotewire\.net\/app-icon-512\.png\?v=4\.5\.2-social-share-icon"/, 'Twitter/social fallback must use the real HGR icon');
+assert.doesNotMatch(indexHtml, /(?:og:image|twitter:image)[^>]+app-icon-reference\.png/, 'Social previews must never use the installed-app reference sheet');
