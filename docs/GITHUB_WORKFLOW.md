@@ -106,3 +106,12 @@ That meant `prepare:release` could correctly move package metadata to 4.5.3 whil
 The release generator now synchronises the semver prefix of every `?v=` release token in the three browser/PWA consumers above while preserving descriptive suffixes such as `-icon-set`, `-approved-reference`, and `-social-share-icon`. The matching website/browser regression tests derive their expected patch version from `VERSION` instead of embedding `4.5.2`.
 
 The general rule is: a patch number should not be copied into a test or runtime asset by hand when it can be derived from `VERSION`. Hard-coded duplicates eventually become stale when a release advances.
+
+
+### Regression tests are consumers too
+
+The 4.5.3 migration also exposed older platform/theme regressions that checked the correct HGR favicon path but embedded the old `4.5.2` cache version inside their regular expressions. Those tests were logically checking branding geometry, not declaring a release, so the patch number did not belong there.
+
+Release-sensitive regression checks must now read `VERSION` and build their expected asset identity from it. Historical labels such as “4.5.2 appearance density” may remain when they describe the patch that introduced a feature; executable expectations for the current runtime release must not pin an old patch.
+
+This distinction prevents a feature-history assertion from accidentally becoming another release-version authority.
