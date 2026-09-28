@@ -2363,10 +2363,9 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
   }
 
   /* The five-slot bottom bar is the primary mobile navigation owner. */
-  .halieus-mobile-nav,
-  .halieus-mobile-nav.has-account {
+  .halieus-mobile-nav {
     display: grid !important;
-    grid-template-columns: repeat(5,minmax(0,1fr)) !important;
+    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
     align-items: end !important;
     gap: 2px !important;
     position: fixed !important;
@@ -2385,6 +2384,10 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     box-shadow: 0 -12px 30px rgba(0,0,0,.14) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+  }
+
+  .halieus-mobile-nav.has-account {
+    grid-template-columns: repeat(5,minmax(0,1fr)) !important;
   }
 
   .halieus-mobile-nav button,
