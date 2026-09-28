@@ -95,3 +95,14 @@ This preserves both protections:
 - normal corrective patch bumps such as 4.5.2 -> 4.5.3 do not require a second hard-coded version edit.
 
 When moving HGR to a new release family, update the family gate deliberately. For ordinary patch bumps inside 4.5.x, change `VERSION` and let `npm run prepare:release` regenerate the consumers. Do not hand-edit `RELEASE.json` or `shared/release.ts`.
+
+
+### Static asset version drift
+
+The first 4.5.3 gate repair exposed a second stale-version path in the same release chain. The browser/PWA asset URLs in `client/index.html`, `client/src/App.tsx`, and `client/public/site.webmanifest` still contained 4.5.2 cache-busting query strings. The older release generator only knew how to rewrite URLs beginning with `/favicon...`; the branding system had since moved the real browser mark to `/halieus-mark.svg` and added versioned PWA/social asset URLs.
+
+That meant `prepare:release` could correctly move package metadata to 4.5.3 while leaving some browser-facing identity strings at 4.5.2. The release regression then failed because its deliberate corruption test could not find a 4.5.3 token in `client/index.html` to mutate.
+
+The release generator now synchronises the semver prefix of every `?v=` release token in the three browser/PWA consumers above while preserving descriptive suffixes such as `-icon-set`, `-approved-reference`, and `-social-share-icon`. The matching website/browser regression tests derive their expected patch version from `VERSION` instead of embedding `4.5.2`.
+
+The general rule is: a patch number should not be copied into a test or runtime asset by hand when it can be derived from `VERSION`. Hard-coded duplicates eventually become stale when a release advances.

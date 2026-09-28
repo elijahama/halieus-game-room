@@ -54,6 +54,8 @@ try {
     ['shared/release.ts', (s) => s.replace(version, '4.1.1')],
     ['client/public/sw.js', (s) => s.replace(`v${version.replaceAll('.', '-')}`, 'v4-1-1')],
     ['client/index.html', (s) => s.replaceAll(`?v=${version}`, '?v=4.1.1')],
+    ['client/src/App.tsx', (s) => s.replace(`?v=${version}`, '?v=4.1.1')],
+    ['client/public/site.webmanifest', (s) => s.replaceAll(`?v=${version}`, '?v=4.1.1')],
     ['client/src/platform/accounts/AccountPanel.tsx', (s) => s.replace('Build {APP_RELEASE_LABEL}', 'Build 4.1.1')],
     ['server/src/index.ts', (s) => s.replace('version: APP_VERSION', 'version: "4.1.1"')],
   ];
@@ -77,7 +79,7 @@ try {
   const stable = readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8');
   assert.equal(run(fixture, '--write').status, 0);
   assert.equal(readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8'), stable, 'Generation must be idempotent');
-  console.log(`PASS: canonical ${version} intent on approved 4.5.x release family, 9 corrupted-package rejections, same-version identity and idempotent generation`);
+  console.log(`PASS: canonical ${version} intent on approved 4.5.x release family, ${corruptions.length} corrupted-consumer rejections, same-version identity and idempotent generation`);
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
