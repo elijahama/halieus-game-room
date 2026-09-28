@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const read = p => readFileSync(resolve(root, p), 'utf8');
 const version = read('VERSION').trim();
-const versionRe = version.replace(/[.*+?^${}()|[\]\\]/g, '\\const read = p => readFileSync(resolve(root, p), 'utf8');');
+const versionRe = version.replaceAll('.', '\\.');
 const path = 'M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z';
 const iconSetGlyph = read('assets/branding/icon-sets/glyphs/hgr-h.svg');
 assert.ok(iconSetGlyph.includes(path), 'Canonical icon-set H glyph must contain the approved H geometry');
