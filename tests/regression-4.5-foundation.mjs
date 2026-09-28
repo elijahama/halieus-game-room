@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 
 const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),"utf8");
 const readBytes=(path)=>readFileSync(new URL(`../${path}`,import.meta.url));
+const version=read("VERSION").trim();
+const versionRe=version.replaceAll(".","\\.");
 const gitBlobSha=(path)=>{
   const bytes=readBytes(path);
   // Git stores text assets canonically, while Windows may check text files out
@@ -97,7 +99,7 @@ assert.match(
   "Initial browser identity must use the canonical Halieus mark",
 );
 assert.match(html,/halieus-boot-mark[\s\S]*?M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,/favicon\.href = "\/halieus-mark\.svg\?v=4\.5\.2-icon-set"/,"Platform tab identity must use the canonical icon-set web mark");
+assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-icon-set"`),"Platform tab identity must use the canonical icon-set web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
 assert.match(halieusAppIcon,/#daa017/i,"Installable app icon must preserve the approved default yellow brand");
