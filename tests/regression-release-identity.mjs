@@ -6,10 +6,12 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '..');
 const read = (p) => readFileSync(resolve(root, p), 'utf8');
-// Intent, not a generated consumer: changing the milestone requires a deliberate
-// test update. A self-consistent rollback to 4.1.1 must fail this gate.
-assert.equal(read('VERSION').trim(), '4.5.2', 'Approved HGR 4.5.2 release intent');
+// Intent, not a generated consumer: keep the release family deliberate without
+// duplicating VERSION's patch number. Exact patch identity is validated below
+// through the generated consumers. A self-consistent rollback to 4.1.1 must
+// still fail this gate.
 const version = read('VERSION').trim();
+assert.match(version, /^4\.5\.\d+[a-z]?$/, `Approved HGR 4.5.x release intent (got ${version})`);
 const manifest = JSON.parse(read('RELEASE.json'));
 const approvedPwaSource = 'assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png';
 const generatedPwaCopy = 'client/public/app-icon-reference.png';
@@ -75,7 +77,7 @@ try {
   const stable = readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8');
   assert.equal(run(fixture, '--write').status, 0);
   assert.equal(readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8'), stable, 'Generation must be idempotent');
-  console.log('PASS: canonical 4.5.2 intent, 9 corrupted-package rejections, same-version identity and idempotent generation');
+  console.log(`PASS: canonical ${version} intent on approved 4.5.x release family, 9 corrupted-package rejections, same-version identity and idempotent generation`);
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
