@@ -73,13 +73,13 @@ jobs:
       - name: Commit generated release identity when changed
         shell: bash
         run: |
-          if git diff --quiet -- RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/public/sw.js README.md; then
+          if git diff --quiet -- RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/src/App.tsx client/public/site.webmanifest client/public/sw.js README.md; then
             echo "Release identity is already current."
             exit 0
           fi
 
           git config user.name "HGR Release Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/public/sw.js README.md
+          git add RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/src/App.tsx client/public/site.webmanifest client/public/sw.js README.md
           git commit -m "chore: refresh HGR release identity"
           git push origin HEAD:main
