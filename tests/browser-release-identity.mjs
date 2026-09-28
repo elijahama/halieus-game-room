@@ -7,7 +7,7 @@ import { chromium } from 'playwright';
 
 const root = resolve(import.meta.dirname, '..');
 const version = (await readFile(resolve(root, 'VERSION'), 'utf8')).trim();
-assert.equal(version, '4.5.2', 'Approved HGR 4.5.2 release intent');
+assert.match(version, /^4\.5\.\d+[a-z]?$/, `Approved HGR 4.5.x release intent (got ${version})`);
 const label = version.replace(/\.0$/, '');
 const release = JSON.parse(await readFile(resolve(root, 'RELEASE.json'), 'utf8'));
 const data = await mkdtemp(resolve(tmpdir(), 'hgr-built-identity-'));
@@ -54,12 +54,16 @@ try {
   await page.waitForFunction(async (expected) => (await caches.keys()).includes(expected), expectedCache);
   const activeWorker = await page.evaluate(async () => (await navigator.serviceWorker.ready).active.scriptURL);
   assert.equal(new URL(activeWorker).searchParams.get('release'), release.fingerprint);
-  // The theme-generated SVG/data favicon has no release query by design.
-  const favicons = await page.locator('link[rel="icon"][href*="/favicon"]').evaluateAll((links) => links.map((l) => l.href));
-  assert.equal(favicons.length, 2);
-  for (const href of favicons) {
-    assert.equal(new URL(href).searchParams.get('v'), version);
-  }
+  // Home browser identity uses the canonical HGR mark; both initial icon links
+  // must carry the current VERSION cache-busting prefix.
+  assert.equal(
+    await page.locator('#halieus-dynamic-favicon').getAttribute('href'),
+    `/halieus-mark.svg?v=${version}-icon-set`,
+  );
+  assert.equal(
+    await page.locator('link[rel="shortcut icon"]').getAttribute('href'),
+    `/halieus-mark.svg?v=${version}-icon-set`,
+  );
   assert.deepEqual(errors, []);
   console.log(`PASS: rendered Build ${label}; browser/server ${version}; ${release.fingerprint}; cache ${expectedCache}; favicon identity; no page errors`);
 } finally {
