@@ -208,8 +208,10 @@ For local development, HGR now owns the token handoff instead of asking you to c
 Start the authenticated local agent from the repository root:
 
 ```powershell
-.\Start HGR Control.cmd
+.\Start-HGR-Control.cmd
 ```
+
+Use the no-space launcher name in PowerShell so the command does not require quoting. The spaced `Start HGR Control.cmd` entrypoint remains available for Explorer/shortcut use.
 
 That launcher runs:
 
