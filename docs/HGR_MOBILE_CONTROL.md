@@ -540,13 +540,15 @@ Players receive a site-wide warning that the server is about to restart and are 
 
 On reconnect, `server:ready` now includes the exact active HGR version and release fingerprint. The loaded browser bundle compares the server fingerprint with the fingerprint compiled into that client. If they differ, the existing browser tab displays an “update complete” state and calls `window.location.reload()` to load the new release.
 
-This replaces the old successful-update behaviour that always killed and reopened the dedicated HGR Edge app. The Windows post-update helper now:
+This replaces the old successful-update behaviour that always killed and reopened the dedicated HGR Edge app. There is one bootstrap exception: an HGR window that was already open before this feature was installed is still running the old JavaScript and cannot self-refresh yet. The Windows post-update helper therefore stores a local `release-aware-refresh.enabled` capability marker.
 
-1. detects an already-running dedicated HGR window;
-2. leaves it open so the release-aware client can refresh itself in place;
-3. opens HGR only if no dedicated HGR window is currently running.
+On the first successful update after this feature lands, an already-open pre-feature HGR window receives one canonical hard Restart so it loads the release-aware client. After that:
 
-`Restart Halieus Game Room.cmd` remains available as the explicit recovery/troubleshooting fallback.
+1. an already-running release-aware HGR window is left open and refreshes itself in place;
+2. HGR is opened only if no dedicated HGR window is running;
+3. the hard Restart launcher remains the explicit recovery/troubleshooting fallback.
+
+This bootstrap marker is local owner-machine state and is not committed to Git.
 
 ### Expanded action implementation verification
 
