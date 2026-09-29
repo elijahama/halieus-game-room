@@ -209,7 +209,7 @@ Stable Windows entrypoints include:
 - `Restart Halieus Game Room.cmd`
 - `Close Halieus Game Room.cmd`
 - `Update HGR GitHub.cmd`
-- `Start HGR Control.cmd`
+- `Start HGR Control.cmd` / `Start-HGR-Control.cmd`
 - `FIRST RUN - Refresh Halieus Launchers.cmd`
 
 Their responsibilities are deliberately separated.
