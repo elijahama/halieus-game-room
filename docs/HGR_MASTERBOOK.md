@@ -330,7 +330,7 @@ Important boundaries include:
 Near-term work:
 
 1. HGR Control read-only foundation. **Complete.**
-2. Secure Windows action executor. Restart is now authenticated and implemented; Start/Close/Update remain staged.
+2. Secure Windows action executor. Restart is authenticated, implemented and verified on the owner Windows machine; Start/Close/Update remain staged.
 3. Operation locking + audit log are implemented for Restart; structured live update progress remains.
 4. mobile HGR Control PWA.
 5. private Tailscale connection and device setup.
