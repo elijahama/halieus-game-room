@@ -266,6 +266,8 @@ The first foundation is intentionally read-only: a local status endpoint plus a 
 
 See [HGR Mobile Control](HGR_MOBILE_CONTROL.md).
 
+The Mobile Control document also keeps a troubleshooting history of real implementation failures and their fixes so future changes preserve the reasoning behind the architecture.
+
 ## 11. Release engineering
 
 HGR uses candidate-first release/deployment thinking:

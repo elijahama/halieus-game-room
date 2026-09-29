@@ -76,6 +76,7 @@ const singles = [
   'HGR-Control.cmd',
   'scripts/windows/start-control-agent.ps1',
   'scripts/windows/hgr-control-client.ps1',
+  'scripts/windows/control-restart.ps1',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
   'docs/HGR_4.5.1_PART19_NAVIGATION.md',
   'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',

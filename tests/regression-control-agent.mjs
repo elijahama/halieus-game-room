@@ -18,6 +18,7 @@ const controlClientHelper = read("scripts/windows/hgr-control-client.ps1");
 const controlLauncher = read("Start HGR Control.cmd");
 const controlLauncherAlias = read("Start-HGR-Control.cmd");
 const controlClientEntry = read("HGR-Control.cmd");
+const controlRestartBridge = read("scripts/windows/control-restart.ps1");
 const gitignore = read(".gitignore");
 
 for (const id of [
@@ -78,6 +79,9 @@ assert.match(agent, /timingSafeEqual\(expectedBytes, providedBytes\)/, "Bearer t
 assert.match(agent, /Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions/, "Mutable actions must refuse to run without an explicit token");
 assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/actions\/restart"/, "Restart must be exposed only through the fixed restart endpoint");
 assert.match(agent, /const restartScript = resolve\(projectRoot, "Restart Halieus Game Room\.cmd"\)/, "Restart action must map to the fixed repository restart launcher");
+assert.match(agent, /const restartBridge = resolve\(projectRoot, "scripts", "windows", "control-restart\.ps1"\)/, "Restart action must use the fixed Windows bridge");
+assert.match(agent, /execFileAsync\([\s\S]*?"powershell\.exe"[\s\S]*?"-File",[\s\S]*?restartBridge/s, "Restart action must invoke the fixed bridge without cmd.exe quoting");
+assert.doesNotMatch(agent, /ComSpec|cmd\.exe[\s\S]*?restartScript/i, "Control Agent must not launch the spaced restart CMD through cmd.exe quoting");
 assert.match(agent, /activeOperation: HalieusControlActiveOperation \| null = null/, "Mutable control actions must have a single-operation lock");
 assert.match(agent, /if \(activeOperation\)/, "Restart must reject concurrent mutable operations");
 assert.match(agent, /hgr-control-audit\.ndjson/, "Mutable actions must write a dedicated audit trail");
@@ -128,5 +132,8 @@ assert.match(controlStartHelper, /HGR-Control\.cmd' logs/, "Running agent must p
 assert.match(controlDoc, /\.\\Start-HGR-Control\.cmd/, "PowerShell walkthrough must use the no-space launcher alias");
 assert.match(controlDoc, /\.\\HGR-Control\.cmd status/, "PowerShell walkthrough must use the stable root Control client");
 assert.match(gitignore, /server\/data\/runtime\//, "Temporary HGR Control token and audit files must remain ignored by Git");
+assert.match(controlRestartBridge, /Join-Path \$projectRoot "Restart Halieus Game Room\.cmd"/, "Windows restart bridge must resolve only the canonical restart launcher");
+assert.match(controlRestartBridge, /& \$restartLauncher/, "Windows restart bridge must invoke the fixed launcher path directly");
+assert.doesNotMatch(controlRestartBridge, /param\([\s\S]*?Command|Invoke-Expression|Start-Process/i, "Windows restart bridge must not accept or evaluate arbitrary commands");
 
 console.log("HGR Control foundation / Masterbook regression: PASS");

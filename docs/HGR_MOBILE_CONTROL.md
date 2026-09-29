@@ -391,3 +391,91 @@ A real token belongs in local environment configuration, never in Git.
 - [ ] automatic token rotation support
 - [ ] recovery if an update/restart is interrupted
 - [ ] security regression tests
+
+## Implementation notes and troubleshooting history
+
+This section records real issues encountered while building HGR Control so future changes do not repeat the same mistakes.
+
+### Repository root detection
+
+**Observed failure:** the first Control Agent reported an HGR version such as `0.22.9-rc.3.3.28` and printed the project root as `...\Halieus Game Room\server`.
+
+**Cause:** the workspace command runs from the `server/` package, and the initial root search accepted the first directory containing a `VERSION` file. `server/VERSION` is not the authoritative HGR product version.
+
+**Fix:** a repository root is now accepted only when it contains the canonical root package plus `client/`, `server/`, `shared/` and the root `VERSION`.
+
+**Lesson:** shared filenames are not enough to establish authority. Validate the identity of the owning repository/workspace.
+
+### Clean Git state
+
+**Observed failure:** a clean repository appeared as `dirty=` instead of `dirty=False`.
+
+**Cause:** empty successful output from `git status --porcelain` was collapsed into `null`, making “clean” indistinguishable from “Git inspection failed”.
+
+**Fix:** empty output is preserved as a successful value.
+
+**Status semantics:**
+
+- clean → `false`
+- changed → `true`
+- Git unavailable → `null`
+
+### Token generation
+
+**Observed failures:** PowerShell/.NET combinations on the owner machine did not consistently expose the same `RandomNumberGenerator` overloads.
+
+**Fix:** cryptographic token generation moved to Node's `node:crypto`, which is already an HGR dependency.
+
+**Lesson:** when a project already owns a runtime, prefer one predictable crypto/runtime path over shell-version-specific APIs.
+
+### Token handoff
+
+**Observed failure:** using the clipboard for the temporary bearer token was fragile because copying the next command replaced the token before the second shell read it.
+
+**Fix:** the authenticated local launcher writes the token to the ignored runtime directory and the allow-listed client helper reads it directly. The token is removed when the agent exits.
+
+**Lesson:** secrets should not depend on a human copy/paste sequence when a local ephemeral file can safely bridge two trusted local processes.
+
+### PowerShell paths with spaces
+
+**Observed failure:** `.\Start HGR Control.cmd` was parsed as `.\Start` because the launcher filename contains spaces.
+
+**Fix:** `Start-HGR-Control.cmd` is the PowerShell-safe alias. The spaced launcher remains for Explorer/shortcut compatibility.
+
+### Client shell working directory
+
+**Observed failure:** the second PowerShell opened in `C:\Users\...`, so a relative path such as `.\scripts\windows\hgr-control-client.ps1` could not be found.
+
+**Fix:** `HGR-Control.cmd` is the stable root client entrypoint, and the running agent prints absolute commands that work from any directory.
+
+**Lesson:** operator tooling should not assume the shell starts in the repository root.
+
+### Restart execution bridge
+
+**Observed failure:** authentication and the `POST /api/actions/restart` endpoint succeeded, but the restart action itself failed when Node invoked a spaced `.cmd` path through `cmd.exe /c`.
+
+**Fix:** HGR Control now invokes a fixed PowerShell bridge:
+
+```text
+scripts/windows/control-restart.ps1
+```
+
+The bridge resolves and runs only the canonical `Restart Halieus Game Room.cmd`. The API still never accepts a command path or shell string from the client.
+
+**Lesson:** keep the remote API allow-listed, and isolate Windows shell/quoting details inside a fixed local adapter.
+
+### Regression philosophy for Control
+
+Each bug above resulted in a regression or contract check. HGR Control regressions should protect:
+
+- repository-root authority;
+- status semantics;
+- fixed action IDs;
+- no arbitrary shell input;
+- token/authentication requirements;
+- single-operation locking;
+- audit logging;
+- stable launcher/client entrypoints;
+- documented operator workflow;
+- fixed Windows action bridges.
+
