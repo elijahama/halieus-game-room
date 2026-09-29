@@ -44,3 +44,17 @@ self.addEventListener('notificationclick', (event) => {
     return self.clients.openWindow(target);
   }));
 });
+
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type !== 'HALIEUS_RELEASE_REFRESH') return;
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key.startsWith('halieus-shell-'))
+          .map((key) => caches.delete(key)),
+      ),
+    ),
+  );
+});
