@@ -79,7 +79,10 @@ const singles = [
   'scripts/windows/start-control-agent.ps1',
   'scripts/windows/start-control-mobile.ps1',
   'scripts/windows/hgr-control-client.ps1',
+  'scripts/windows/control-start.ps1',
   'scripts/windows/control-restart.ps1',
+  'scripts/windows/control-close.ps1',
+  'scripts/windows/control-update.ps1',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
   'docs/HGR_4.5.1_PART19_NAVIGATION.md',
   'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',
@@ -308,6 +311,8 @@ const manifest = {
     'hgr-control-readonly-foundation-4.5.3',
     'hgr-control-authenticated-restart-4.5.3',
     'hgr-control-private-mobile-pwa-4.5.3',
+    'hgr-control-start-close-update-4.5.3',
+    'hgr-control-confirmed-update-progress-4.5.3',
   ],
 };
 
