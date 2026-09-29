@@ -209,18 +209,22 @@ Generate a temporary token with Node, which HGR already requires. This avoids Po
 
 ```powershell
 $env:HGR_CONTROL_TOKEN = node -e "process.stdout.write(require('node:crypto').randomBytes(32).toString('base64'))"
-$env:HGR_CONTROL_TOKEN
+Set-Clipboard $env:HGR_CONTROL_TOKEN
 npm run control:dev
 ```
 
 The token is created by Node's cryptographic random-number generator and placed only in the current PowerShell process environment. Closing that shell clears it unless you explicitly persist it elsewhere.
 
-Keep that token private. In a second PowerShell window, copy it into a local variable:
+Keep that token private. The first command copies it directly to the Windows clipboard without printing it.
+
+In a second PowerShell window, read it from the clipboard:
 
 ```powershell
-$token = "PASTE-THE-TOKEN-HERE"
+$token = Get-Clipboard
 $headers = @{ Authorization = "Bearer $token" }
 ```
+
+Do not paste the raw token by itself at a PowerShell prompt; PowerShell will try to execute it as a command. Do not omit `$headers` from the second line.
 
 The request header is then:
 
