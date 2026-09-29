@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ErrorBoundary } from "./platform/components/ErrorBoundary";
 import { GlobalGameActivity } from "./platform/components/GlobalGameActivity";
+import { PlatformMaintenanceBanner } from "./platform/components/PlatformMaintenanceBanner";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "./version";
 import "./index.css";
 import "./styles/hgr-theme.css";
@@ -25,6 +26,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
+      <PlatformMaintenanceBanner />
       <App />
       <GlobalGameActivity />
     </ErrorBoundary>
