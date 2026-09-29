@@ -77,7 +77,7 @@ function authorised(request: IncomingMessage): boolean {
   return request.headers.authorization === `Bearer ${token}`;
 }
 
-async function gitValue(args: string[]): Promise<string | null> {
+async function gitValue(args: string[], allowEmpty = false): Promise<string | null> {
   try {
     const { stdout } = await execFileAsync("git", args, {
       cwd: projectRoot,
@@ -85,7 +85,8 @@ async function gitValue(args: string[]): Promise<string | null> {
       windowsHide: true,
       encoding: "utf8",
     });
-    return stdout.trim() || null;
+    const value = stdout.trim();
+    return value || (allowEmpty ? "" : null);
   } catch {
     return null;
   }
@@ -96,7 +97,7 @@ async function buildStatus(): Promise<HalieusControlStatus> {
     readFile(resolve(projectRoot, "VERSION"), "utf8").then((value) => value.trim()),
     gitValue(["rev-parse", "--abbrev-ref", "HEAD"]),
     gitValue(["rev-parse", "--short", "HEAD"]),
-    gitValue(["status", "--porcelain", "--untracked-files=no"]),
+    gitValue(["status", "--porcelain", "--untracked-files=no"], true),
   ]);
 
   return {
