@@ -27,12 +27,14 @@ assert.doesNotMatch(home,/className="halieus-mobile-menu-button"/,"Mobile must n
 assert.match(home,/id="halieus-mobile-more-sheet"[\s\S]*?<strong>Rankings<\/strong>[\s\S]*?<strong>Watch Game<\/strong>/s,"Mobile tools sheet must keep Rankings and Watch Game available away from the primary bar");
 assert.doesNotMatch(home,/id="halieus-mobile-more-sheet"[\s\S]*?<strong>Games<\/strong>/s,"Games must not be duplicated inside the mobile tools sheet");
 assert.doesNotMatch(home,/id="halieus-mobile-more-sheet"[\s\S]*?<strong>Join Game<\/strong>/s,"Join Game must not be duplicated inside the mobile tools sheet");
-assert.match(home,/className="halieus-mobile-fullscreen-emblem"[\s\S]*?toggleFullscreen\(\)/,"Mobile must expose a subtle direct fullscreen emblem outside the navigation bar");
+assert.match(home,/className="halieus-mobile-top-fullscreen"[\s\S]*?toggleFullscreen\(\)/,"Mobile Full Screen must live in the fixed top utility bar");
+assert.doesNotMatch(home,/className="halieus-mobile-fullscreen-emblem"/,"Floating Full Screen emblem must not return over mobile content");
 assert.match(part19Css,/HGR 4\.5\.3 — mobile app shell final authority/,"4.5.3 mobile final-authority CSS must exist");
 assert.match(part19Css,/\.halieus-sidebar,[\s\S]*?display:\s*none !important;/s,"Desktop sidebar must be absent on mobile");
 assert.match(part19Css,/\.halieus-shell \{[\s\S]*?height:\s*100dvh !important;[\s\S]*?overflow:\s*hidden !important;/s,"Mobile shell must own exactly one viewport instead of scrolling the fixed chrome");
 assert.match(part19Css,/\.halieus-main \{[\s\S]*?height:\s*100dvh !important;[\s\S]*?overflow-y:\s*auto !important;/s,"Only mobile page content may scroll inside the app shell");
 assert.match(part19Css,/\.halieus-mobile-nav \{[\s\S]*?repeat\(5,minmax\(0,1fr\)\)[\s\S]*?position:\s*fixed !important;[\s\S]*?inset:\s*auto 0 0 0 !important;/s,"4.5.3 bottom navigation must stay fixed to the viewport with five stable slots");
-assert.match(part19Css,/\.halieus-mobile-fullscreen-emblem \{[\s\S]*?position:\s*fixed !important;[\s\S]*?bottom:\s*calc\(92px \+ env\(safe-area-inset-bottom\)\)/s,"Fullscreen emblem must remain directly accessible above the fixed bottom bar");
+assert.match(part19Css,/\.halieus-mobile-tools,[\s\S]*?\.halieus-mobile-top-fullscreen,[\s\S]*?\.halieus-mobile-inbox,[\s\S]*?\.halieus-mobile-account/s,"Top mobile utilities must own tools, Full Screen, Inbox and profile");
+assert.match(part19Css,/\.halieus-inbox-panel \{[\s\S]*?max-height:\s*min\(58dvh,480px\) !important;[\s\S]*?border-radius:\s*18px !important;/s,"Mobile Inbox must be a compact panel rather than a full-height drawer");
 assert.match(part19Css,/\.halieus-mobile-more-sheet[\s\S]*?bottom:\s*calc\(86px \+ env\(safe-area-inset-bottom\)\)/s,"Mobile tools sheet must open above the fixed navigation");
 console.log("PASS Part 17 theme ownership, preview/apply, account appearance, responsive containment and updater-close contracts");
