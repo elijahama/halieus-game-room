@@ -96,6 +96,9 @@ assert.match(controlDoc, /Loopback by default/, "Control documentation must expl
 assert.match(controlDoc, /Stage A — understand one GET endpoint/, "Control documentation must contain the guided implementation walkthrough");
 assert.match(controlDoc, /POST \/api\/actions\/restart/, "Control documentation must explain the authenticated restart endpoint");
 assert.match(controlDoc, /node -e "process\.stdout\.write\(require\('node:crypto'\)\.randomBytes\(32\)\.toString\('base64'\)\)"/, "Control token walkthrough must use HGR's Node runtime for cross-PowerShell cryptographic token generation");
+assert.match(controlDoc, /Set-Clipboard \$env:HGR_CONTROL_TOKEN/, "Control token walkthrough must hand off the token without printing it");
+assert.match(controlDoc, /\$token = Get-Clipboard/, "Second PowerShell must recover the HGR Control token from the clipboard");
+assert.doesNotMatch(controlDoc, /PASTE-THE-TOKEN-HERE/, "Control walkthrough must not encourage manually pasting a raw token into a command template");
 assert.doesNotMatch(controlDoc, /RandomNumberGenerator\]::(?:Create|GetBytes)/, "Control docs must not depend on PowerShell/.NET RNG API differences");
 assert.match(controlDoc, /one mutable operation at a time/i, "Control documentation must explain the operation lock");
 assert.match(controlDoc, /hgr-control-audit\.ndjson/, "Control documentation must identify the local audit trail");
