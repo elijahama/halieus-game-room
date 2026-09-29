@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.3",
-  "fingerprint": "hgr-4.5.3-78d2861a0d8bb2af",
+  "fingerprint": "hgr-4.5.3-0c479bebf8d3d1d9",
   "algorithm": "sha256",
-  "sourceHash": "78d2861a0d8bb2afb2b7813c7ef44f3bf1a92a83d1debd77688fe4fa418c3519",
-  "integrityFileCount": 442,
+  "sourceHash": "0c479bebf8d3d1d9c8cb4eb5632d90e4ab5775206a38e0fa69f8d62ddcc08fa9",
+  "integrityFileCount": 450,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -15,8 +15,10 @@
     "README.md",
     "Restart Halieus Game Room.cmd",
     "SECURITY.md",
+    "Start HGR Control Mobile.cmd",
     "Start HGR Control.cmd",
     "Start Halieus Game Room.cmd",
+    "Start-HGR-Control-Mobile.cmd",
     "Start-HGR-Control.cmd",
     "Update HGR GitHub.cmd",
     "Update Halieus Website.cmd",
@@ -261,9 +263,15 @@
     "scripts/windows/show-feedback.ps1",
     "scripts/windows/start-background.ps1",
     "scripts/windows/start-control-agent.ps1",
+    "scripts/windows/start-control-mobile.ps1",
     "scripts/windows/start-production.ps1",
     "scripts/windows/stop-background.ps1",
     "scripts/windows/tailscale-funnel.ps1",
+    "server/control-ui/control.css",
+    "server/control-ui/control.js",
+    "server/control-ui/index.html",
+    "server/control-ui/manifest.webmanifest",
+    "server/control-ui/sw.js",
     "server/data/word-board/SCOWL-COPYRIGHT.txt",
     "server/data/word-board/scowl-en-us.dic",
     "server/package.json",
@@ -550,6 +558,7 @@
     "hgr-shared-game-shell-polish-4.1.0",
     "matte-launcher-family-4.1.0",
     "hgr-control-readonly-foundation-4.5.3",
-    "hgr-control-authenticated-restart-4.5.3"
+    "hgr-control-authenticated-restart-4.5.3",
+    "hgr-control-private-mobile-pwa-4.5.3"
   ]
 }
