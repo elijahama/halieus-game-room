@@ -93,7 +93,20 @@ try{
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${device} home overflow`);
   assert.equal(await page.locator(".modal-close-button:visible,.results-close:visible").count(),0,"Home has a stray modal close control");
   if(process.env.HGR_SCREENSHOTS)await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-part17-home.png`)});
-  if(width<700){const avatar=await page.locator(".halieus-mobile-account").boundingBox();assert.ok(avatar.x>=0&&avatar.x+avatar.width<=width,"Home profile button clipped");}
+  if(width<700){
+    const avatar=await page.locator(".halieus-mobile-account").boundingBox();assert.ok(avatar.x>=0&&avatar.x+avatar.width<=width,"Home profile button clipped");
+    const mobileNav=page.locator(".halieus-mobile-nav");await mobileNav.waitFor();
+    assert.deepEqual((await mobileNav.locator("button").allTextContents()).map(text=>text.trim()),["Home","Games","Join","Players","Guilds"],"Mobile nav order/labels");
+    assert.equal(await mobileNav.evaluate(el=>getComputedStyle(el).position),"fixed","Mobile nav must be viewport-fixed");
+    const before=await mobileNav.boundingBox();assert.ok(before&&Math.abs((before.y+before.height)-height)<=2,"Mobile nav must touch viewport bottom");
+    await page.locator(".halieus-main").evaluate(el=>{el.scrollTop=Math.min(480,el.scrollHeight-el.clientHeight);});
+    await page.waitForTimeout(40);
+    const after=await mobileNav.boundingBox();assert.ok(after&&Math.abs(after.y-before.y)<=1,"Mobile nav moved with page content");
+    await mobileNav.getByRole("button",{name:"Join Game",exact:true}).click();
+    await page.getByRole("dialog",{name:"Join a Halieus game",exact:true}).waitFor();
+    await page.getByRole("button",{name:"Close room entry",exact:true}).click();
+    await page.getByRole("dialog",{name:"Join a Halieus game",exact:true}).waitFor({state:"hidden"});
+  }
   const start=page.locator(".halieus-showcase-actions button.button-primary").first();{await start.click();await page.locator(".pre-game-shell").waitFor();const box=await page.locator(".pre-game-shell").boundingBox();assert.ok(box.y>=0&&box.y+box.height<=height+1,`${device} setup containment`);await page.keyboard.press("Escape");await page.locator(".pre-game-shell").waitFor({state:"hidden"});}
   if (!(await page.locator(".halieus-library-card").count())) await page.locator(".halieus-showcase-status button").first().click();
   const count=await page.locator(".halieus-library-card").count(); assert.equal(count,14);
