@@ -23,7 +23,7 @@ export function PlatformMaintenanceBanner() {
     };
 
     const onMaintenanceCleared = () => {
-      if (mode !== "reloading") setNotice(null);
+      setNotice(null);
     };
 
     const onServerReady = (ready: HalieusServerReadyPayload) => {
@@ -49,9 +49,7 @@ export function PlatformMaintenanceBanner() {
         return;
       }
 
-      if (mode === "maintenance") {
-        setNotice((current) => current?.state === "restarting" ? null : current);
-      }
+      setNotice((current) => current?.state === "restarting" ? null : current);
     };
 
     const onDisconnect = () => {
@@ -78,7 +76,7 @@ export function PlatformMaintenanceBanner() {
       socket.off("disconnect", onDisconnect);
       if (reloadTimer.current) window.clearTimeout(reloadTimer.current);
     };
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     if (!notice?.restartAt || notice.state === "restarting") {
