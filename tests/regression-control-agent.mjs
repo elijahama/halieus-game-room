@@ -61,13 +61,26 @@ assert.match(agent, /HGR_CONTROL_HOST\?\.trim\(\) \|\| "127\.0\.0\.1"/, "Control
 assert.match(agent, /HGR_CONTROL_PORT \|\| "43127"/, "Control agent must keep one documented default port");
 assert.match(agent, /Refusing to expose HGR Control beyond loopback without HGR_CONTROL_TOKEN/, "Non-loopback control must require a token");
 assert.match(agent, /request\.method === "GET" && request\.url === "\/api\/status"/, "Foundation agent must expose a read-only status endpoint");
-assert.match(agent, /implemented: action\.id === "status"/, "Mutable process actions must remain disabled in the foundation stage");
+assert.match(agent, /implemented: action\.id === "status" \|\| action\.id === "restart" \|\| action\.id === "logs"/, "Stage 2 must expose only status, restart and logs as implemented");
 assert.match(agent, /execFileAsync\("git"/, "Foundation agent may use fixed read-only Git inspection");
 assert.match(agent, /gitValue\(\["status", "--porcelain", "--untracked-files=no"\], true\)/, "Clean git status output must be preserved as an empty string rather than null");
 assert.match(agent, /dirty: porcelain === null \? null : porcelain\.length > 0/, "Repository dirty state must distinguish clean false from unavailable null");
 assert.doesNotMatch(agent, /\bexec\s*\(/, "Control agent must not use shell exec");
 assert.doesNotMatch(agent, /\bspawn\s*\(/, "Control agent foundation must not spawn arbitrary processes");
 assert.doesNotMatch(agent, /request\.(?:body|query)[\s\S]*?(?:command|exe|args)/i, "Control endpoint must not accept arbitrary execution input");
+assert.match(agent, /timingSafeEqual\(expectedBytes, providedBytes\)/, "Bearer token comparison must use timing-safe equality");
+assert.match(agent, /Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions/, "Mutable actions must refuse to run without an explicit token");
+assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/actions\/restart"/, "Restart must be exposed only through the fixed restart endpoint");
+assert.match(agent, /const restartScript = resolve\(projectRoot, "Restart Halieus Game Room\.cmd"\)/, "Restart action must map to the fixed repository restart launcher");
+assert.match(agent, /activeOperation: HalieusControlActiveOperation \| null = null/, "Mutable control actions must have a single-operation lock");
+assert.match(agent, /if \(activeOperation\)/, "Restart must reject concurrent mutable operations");
+assert.match(agent, /hgr-control-audit\.ndjson/, "Mutable actions must write a dedicated audit trail");
+assert.match(agent, /state: "running"/, "Restart audit must record operation start");
+assert.match(agent, /state: "succeeded"/, "Restart audit must record success");
+assert.match(agent, /state: "failed"/, "Restart audit must record failure");
+assert.match(agent, /request\.method === "GET" && request\.url === "\/api\/logs"/, "Authenticated audit log endpoint must exist");
+assert.doesNotMatch(agent, /execFileAsync\([^,]+,\s*request\./s, "Request data must never become an executable or command path");
+assert.doesNotMatch(agent, /restartScript\s*=\s*request\./, "Restart script path must never come from the request");
 
 assert.equal(rootPackage.scripts["control:dev"], "npm --workspace server run control:dev");
 assert.equal(rootPackage.scripts["control:start"], "npm --workspace server run control:start");
@@ -81,6 +94,9 @@ assert.match(masterbook, /HGR Control — phone launcher\/control plane/, "Maste
 assert.match(controlDoc, /The goal is not “remote command prompt from a phone\.”/, "Control documentation must reject generic remote-shell design");
 assert.match(controlDoc, /Loopback by default/, "Control documentation must explain the initial network boundary");
 assert.match(controlDoc, /Stage A — understand one GET endpoint/, "Control documentation must contain the guided implementation walkthrough");
+assert.match(controlDoc, /POST \/api\/actions\/restart/, "Control documentation must explain the authenticated restart endpoint");
+assert.match(controlDoc, /one mutable operation at a time/i, "Control documentation must explain the operation lock");
+assert.match(controlDoc, /hgr-control-audit\.ndjson/, "Control documentation must identify the local audit trail");
 assert.match(docsIndex, /HGR_MASTERBOOK\.md/, "Documentation index must expose the Masterbook");
 assert.match(docsIndex, /HGR_MOBILE_CONTROL\.md/, "Documentation index must expose HGR Mobile Control");
 assert.match(projectReadme, /docs\/HGR_MASTERBOOK\.md/, "Root README must link the Masterbook");
