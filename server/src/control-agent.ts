@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { hostname } from "node:os";
@@ -15,16 +15,38 @@ import {
 const execFileAsync = promisify(execFile);
 const here = dirname(fileURLToPath(import.meta.url));
 
+function isHgrRepositoryRoot(candidate: string): boolean {
+  if (!existsSync(resolve(candidate, "VERSION"))) return false;
+  if (!existsSync(resolve(candidate, "package.json"))) return false;
+  if (!existsSync(resolve(candidate, "client"))) return false;
+  if (!existsSync(resolve(candidate, "server"))) return false;
+  if (!existsSync(resolve(candidate, "shared"))) return false;
+
+  try {
+    const metadata = JSON.parse(
+      readFileSync(resolve(candidate, "package.json"), "utf8"),
+    ) as { name?: string };
+    return metadata.name === "halieus-game-room";
+  } catch {
+    return false;
+  }
+}
+
 function findProjectRoot(): string {
   const candidates = [
     process.cwd(),
     resolve(process.cwd(), ".."),
+    resolve(process.cwd(), "../.."),
     resolve(here, "../.."),
     resolve(here, "../../.."),
     resolve(here, "../../../.."),
   ];
-  const root = candidates.find((candidate) => existsSync(resolve(candidate, "VERSION")));
-  if (!root) throw new Error("Unable to locate HGR project root (VERSION not found).");
+  const root = candidates.find(isHgrRepositoryRoot);
+  if (!root) {
+    throw new Error(
+      "Unable to locate the HGR repository root (VERSION + root package/client/server/shared required).",
+    );
+  }
   return root;
 }
 
