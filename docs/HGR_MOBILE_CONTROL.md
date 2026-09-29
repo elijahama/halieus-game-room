@@ -419,6 +419,7 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 - [ ] final automatic HGR restart
 
 ### Phase 4 — mobile PWA
+- [ ] brief HGR Control intro/connection animation before dashboard or pairing state
 - [x] HGR Control screen
 - [x] status cards
 - [x] touch-first Restart action
@@ -437,7 +438,7 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 - [x] Forget this phone / session revoke
 - [x] automatic session loss when the agent exits
 - [x] first real-phone end-to-end Restart verification
-- [ ] installed-PWA session persistence after app close/reopen
+- [x] installed-PWA session persistence after app close/reopen
 - [ ] session invalidation verified after Control Agent exit
 
 ### Phase 6 — hardening
@@ -482,7 +483,7 @@ This test also verified:
 - the PWA install prompt is available on the real device;
 - the real phone can trigger the owner-PC Restart action successfully.
 
-The remaining mobile-session checks are app close/reopen persistence and deliberate invalidation when the Control Agent exits.
+Installed-PWA session persistence is verified: closing HGR Control from Android Recent Apps and reopening it returned directly to the connected dashboard without re-pairing. The remaining mobile-session check is deliberate invalidation when the Control Agent exits.
 
 ## Implementation notes and troubleshooting history
 
