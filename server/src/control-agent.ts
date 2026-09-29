@@ -10,6 +10,7 @@ import { promisify } from "node:util";
 
 import {
   HGR_CONTROL_ACTIONS,
+  type HalieusControlActionId,
   type HalieusControlActiveOperation,
   type HalieusControlAuditEntry,
   type HalieusControlStatus,
@@ -76,8 +77,14 @@ if (remoteBinding && !token) {
 
 const auditDirectory = resolve(projectRoot, "server", "data", "runtime");
 const auditFile = resolve(auditDirectory, "hgr-control-audit.ndjson");
+const startScript = resolve(projectRoot, "Start Halieus Game Room.cmd");
 const restartScript = resolve(projectRoot, "Restart Halieus Game Room.cmd");
+const closeScript = resolve(projectRoot, "Close Halieus Game Room.cmd");
+const updateScript = resolve(projectRoot, "Update HGR GitHub.cmd");
+const startBridge = resolve(projectRoot, "scripts", "windows", "control-start.ps1");
 const restartBridge = resolve(projectRoot, "scripts", "windows", "control-restart.ps1");
+const closeBridge = resolve(projectRoot, "scripts", "windows", "control-close.ps1");
+const updateBridge = resolve(projectRoot, "scripts", "windows", "control-update.ps1");
 const controlUiDirectory = resolve(projectRoot, "server", "control-ui");
 const appIcon192 = resolve(projectRoot, "client", "public", "app-icon-192.png");
 const appIcon512 = resolve(projectRoot, "client", "public", "app-icon-512.png");
@@ -86,7 +93,13 @@ const MOBILE_SESSION_COOKIE = "hgr_control_session";
 const MOBILE_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 const PAIR_FAILURE_LIMIT = 5;
 const PAIR_BLOCK_MS = 60 * 1000;
+const ACTION_CONFIRMATION_TTL_MS = 30 * 1000;
 const mobileSessions = new Map<string, number>();
+const actionConfirmations = new Map<string, {
+  action: "close" | "update";
+  authIdentity: string;
+  expiresAt: number;
+}>();
 let pairFailureCount = 0;
 let pairBlockedUntil = 0;
 let activeOperation: HalieusControlActiveOperation | null = null;
@@ -177,13 +190,30 @@ function mobileSessionMatches(request: IncomingMessage): boolean {
   return true;
 }
 
+function requestAuthIdentity(request: IncomingMessage): string | null {
+  if (bearerTokenMatches(request)) {
+    return `bearer:${sessionDigest(token)}`;
+  }
+
+  const raw = readCookie(request, MOBILE_SESSION_COOKIE);
+  if (!raw) return null;
+  const digest = sessionDigest(raw);
+  const expiresAt = mobileSessions.get(digest);
+  if (!expiresAt) return null;
+  if (expiresAt <= Date.now()) {
+    mobileSessions.delete(digest);
+    return null;
+  }
+  return `session:${digest}`;
+}
+
 function readRequestAuthorised(request: IncomingMessage): boolean {
-  if (bearerTokenMatches(request) || mobileSessionMatches(request)) return true;
+  if (requestAuthIdentity(request)) return true;
   return !token;
 }
 
 function mutableRequestAuthorised(request: IncomingMessage): boolean {
-  return bearerTokenMatches(request) || mobileSessionMatches(request);
+  return Boolean(requestAuthIdentity(request));
 }
 
 async function readJsonBody(request: IncomingMessage): Promise<Record<string, unknown>> {
@@ -283,6 +313,70 @@ function handleUnpair(request: IncomingMessage, response: ServerResponse): void 
   sendJson(response, 200, { ok: true, paired: false });
 }
 
+async function handleActionConfirmation(
+  request: IncomingMessage,
+  response: ServerResponse,
+): Promise<void> {
+  const authIdentity = requestAuthIdentity(request);
+  if (!authIdentity) {
+    sendJson(response, token ? 401 : 503, {
+      ok: false,
+      reason: token
+        ? "HGR Control authentication required."
+        : "Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions.",
+    });
+    return;
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    sendJson(response, 400, { ok: false, reason: "Invalid confirmation request." });
+    return;
+  }
+
+  const action = body.action;
+  if (action !== "close" && action !== "update") {
+    sendJson(response, 400, {
+      ok: false,
+      reason: "Only Close HGR and Update HGR use action confirmations.",
+    });
+    return;
+  }
+
+  const confirmation = randomBytes(24).toString("base64url");
+  const expiresAt = Date.now() + ACTION_CONFIRMATION_TTL_MS;
+  actionConfirmations.set(sessionDigest(confirmation), {
+    action,
+    authIdentity,
+    expiresAt,
+  });
+  sendJson(response, 200, {
+    ok: true,
+    action,
+    confirmation,
+    expiresAt: new Date(expiresAt).toISOString(),
+  });
+}
+
+function consumeActionConfirmation(
+  request: IncomingMessage,
+  action: "close" | "update",
+  body: Record<string, unknown>,
+): boolean {
+  const authIdentity = requestAuthIdentity(request);
+  const raw = typeof body.confirmation === "string" ? body.confirmation.trim() : "";
+  if (!authIdentity || !raw) return false;
+
+  const digest = sessionDigest(raw);
+  const stored = actionConfirmations.get(digest);
+  actionConfirmations.delete(digest);
+  if (!stored) return false;
+  if (stored.expiresAt <= Date.now()) return false;
+  return stored.action === action && stored.authIdentity === authIdentity;
+}
+
 async function gitValue(args: string[], allowEmpty = false): Promise<string | null> {
   try {
     const { stdout } = await execFileAsync("git", args, {
@@ -350,10 +444,143 @@ async function buildStatus(): Promise<HalieusControlStatus> {
       label: action.label,
       kind: action.kind,
       confirmation: action.confirmation,
-      implemented: action.id === "status" || action.id === "restart" || action.id === "logs",
+      implemented: action.id !== "open-site" && action.id !== "open-github",
     })),
     timestamp: new Date().toISOString(),
   };
+}
+
+async function runFixedBridgeAction(
+  action: "start" | "close",
+  bridgePath: string,
+  launcherPath: string,
+  response: ServerResponse,
+  successMessage: string,
+): Promise<void> {
+  if (!token) {
+    sendJson(response, 503, {
+      ok: false,
+      reason: "Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions.",
+    });
+    return;
+  }
+
+  if (activeOperation) {
+    const now = new Date().toISOString();
+    const rejected: HalieusControlAuditEntry = {
+      id: randomUUID(),
+      action,
+      state: "rejected",
+      startedAt: now,
+      finishedAt: now,
+      exitCode: null,
+      reason: `Another HGR Control action is already running: ${activeOperation.action}.`,
+    };
+    await writeAudit(rejected);
+    sendJson(response, 409, {
+      ok: false,
+      reason: rejected.reason,
+      activeOperation,
+    });
+    return;
+  }
+
+  if (process.platform !== "win32") {
+    sendJson(response, 501, {
+      ok: false,
+      reason: `${action === "start" ? "Start" : "Close"} HGR is currently implemented for the Windows owner machine only.`,
+    });
+    return;
+  }
+
+  if (!existsSync(launcherPath) || !existsSync(bridgePath)) {
+    sendJson(response, 500, {
+      ok: false,
+      reason: `The fixed HGR ${action} launcher or Control bridge is missing.`,
+    });
+    return;
+  }
+
+  const operation: HalieusControlActiveOperation = {
+    id: randomUUID(),
+    action,
+    startedAt: new Date().toISOString(),
+    phase: action === "start" ? "Opening HGR" : "Closing HGR",
+    progress: 20,
+  };
+  activeOperation = operation;
+
+  try {
+    await writeAudit({
+      id: operation.id,
+      action: operation.action,
+      state: "running",
+      startedAt: operation.startedAt,
+      finishedAt: null,
+      exitCode: null,
+      reason: null,
+    });
+
+    await execFileAsync(
+      "powershell.exe",
+      ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", bridgePath],
+      {
+        cwd: projectRoot,
+        timeout: 45_000,
+        windowsHide: true,
+        encoding: "utf8",
+      },
+    );
+
+    const finishedAt = new Date().toISOString();
+    await writeAudit({
+      id: operation.id,
+      action: operation.action,
+      state: "succeeded",
+      startedAt: operation.startedAt,
+      finishedAt,
+      exitCode: 0,
+      reason: null,
+    });
+    sendJson(response, 200, {
+      ok: true,
+      action,
+      operationId: operation.id,
+      startedAt: operation.startedAt,
+      finishedAt,
+      message: successMessage,
+    });
+  } catch (error) {
+    const finishedAt = new Date().toISOString();
+    const exitCode =
+      typeof (error as { code?: unknown }).code === "number"
+        ? (error as { code: number }).code
+        : null;
+    try {
+      await writeAudit({
+        id: operation.id,
+        action: operation.action,
+        state: "failed",
+        startedAt: operation.startedAt,
+        finishedAt,
+        exitCode,
+        reason: error instanceof Error
+          ? `${action} bridge failed: ${error.message}`
+          : `${action} bridge failed.`,
+      });
+    } catch (auditError) {
+      console.error("HGR Control failure audit could not be written:", auditError);
+    }
+    console.error(`HGR Control ${action} failed:`, error);
+    sendJson(response, 500, {
+      ok: false,
+      action,
+      operationId: operation.id,
+      reason: `HGR ${action} failed. Check the local HGR Control output or audit log.`,
+    });
+  } finally {
+    activeOperation = null;
+  }
 }
 
 async function runRestart(response: ServerResponse): Promise<void> {
@@ -487,6 +714,224 @@ async function runRestart(response: ServerResponse): Promise<void> {
   }
 }
 
+
+const UPDATE_PROGRESS_MARKERS: Array<{
+  match: string;
+  phase: string;
+  progress: number;
+}> = [
+  { match: "STEP 1 - Updating LOCAL files from GitHub", phase: "Syncing from GitHub", progress: 10 },
+  { match: "STEP 2 - Preparing release identity", phase: "Preparing release identity", progress: 22 },
+  { match: "STEP 3 - HGR validation", phase: "Typecheck, build and regressions", progress: 38 },
+  { match: "STEP 3B - Validating the real Oracle deployment package", phase: "Oracle package preflight", progress: 54 },
+  { match: "STEP 4 - Reviewing local SOURCE changes", phase: "Reviewing source state", progress: 62 },
+  { match: "STEP 8 - Regenerating final release identity", phase: "Final release identity", progress: 70 },
+  { match: "STEP 8B - Final release check", phase: "Validating final release", progress: 78 },
+  { match: "STEP 9 - Publishing the validated HGR release", phase: "Publishing to Oracle", progress: 88 },
+  { match: "FINAL STEP - Restarting Halieus Game Room", phase: "Restarting HGR", progress: 96 },
+];
+
+function updateOperationProgress(line: string): void {
+  if (!activeOperation || activeOperation.action !== "update") return;
+  for (const marker of UPDATE_PROGRESS_MARKERS) {
+    if (!line.includes(marker.match)) continue;
+    activeOperation = {
+      ...activeOperation,
+      phase: marker.phase,
+      progress: marker.progress,
+    };
+    break;
+  }
+}
+
+async function blockingRemoteUpdateChanges(): Promise<string[] | null> {
+  const porcelain = await gitValue(["status", "--porcelain", "--untracked-files=no"], true);
+  if (porcelain === null) return null;
+  const generated = new Set(["RELEASE.json", "shared/release.ts"]);
+  return porcelain
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      const path = line.slice(3).trim();
+      const renameTarget = path.includes(" -> ") ? path.split(" -> ").at(-1) || path : path;
+      return renameTarget.replace(/^"|"$/g, "");
+    })
+    .filter((path) => !generated.has(path));
+}
+
+async function runUpdate(response: ServerResponse): Promise<void> {
+  if (!token) {
+    sendJson(response, 503, {
+      ok: false,
+      reason: "Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions.",
+    });
+    return;
+  }
+
+  if (activeOperation) {
+    const now = new Date().toISOString();
+    const rejected: HalieusControlAuditEntry = {
+      id: randomUUID(),
+      action: "update",
+      state: "rejected",
+      startedAt: now,
+      finishedAt: now,
+      exitCode: null,
+      reason: `Another HGR Control action is already running: ${activeOperation.action}.`,
+    };
+    await writeAudit(rejected);
+    sendJson(response, 409, {
+      ok: false,
+      reason: rejected.reason,
+      activeOperation,
+    });
+    return;
+  }
+
+  if (process.platform !== "win32") {
+    sendJson(response, 501, {
+      ok: false,
+      reason: "Update HGR is currently implemented for the Windows owner machine only.",
+    });
+    return;
+  }
+
+  if (!existsSync(updateScript) || !existsSync(updateBridge)) {
+    sendJson(response, 500, {
+      ok: false,
+      reason: "The fixed HGR update launcher or Control bridge is missing.",
+    });
+    return;
+  }
+
+  const blockingChanges = await blockingRemoteUpdateChanges();
+  if (blockingChanges === null) {
+    sendJson(response, 503, {
+      ok: false,
+      reason: "Git status is unavailable, so remote Update was not started.",
+    });
+    return;
+  }
+  if (blockingChanges.length > 0) {
+    const now = new Date().toISOString();
+    const rejected: HalieusControlAuditEntry = {
+      id: randomUUID(),
+      action: "update",
+      state: "rejected",
+      startedAt: now,
+      finishedAt: now,
+      exitCode: null,
+      reason: "Remote Update refused because tracked source changes are present on the owner PC.",
+    };
+    await writeAudit(rejected);
+    sendJson(response, 409, {
+      ok: false,
+      reason: rejected.reason,
+      files: blockingChanges.slice(0, 8),
+    });
+    return;
+  }
+
+  const operation: HalieusControlActiveOperation = {
+    id: randomUUID(),
+    action: "update",
+    startedAt: new Date().toISOString(),
+    phase: "Starting approved updater",
+    progress: 3,
+  };
+  activeOperation = operation;
+  await writeAudit({
+    id: operation.id,
+    action: operation.action,
+    state: "running",
+    startedAt: operation.startedAt,
+    finishedAt: null,
+    exitCode: null,
+    reason: null,
+  });
+
+  let outputCarry = "";
+  try {
+    const child = execFile(
+      "powershell.exe",
+      ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", updateBridge],
+      {
+        cwd: projectRoot,
+        timeout: 45 * 60 * 1000,
+        windowsHide: true,
+        encoding: "utf8",
+        maxBuffer: 20 * 1024 * 1024,
+      },
+      (error) => {
+        void (async () => {
+          const finishedAt = new Date().toISOString();
+          const exitCode =
+            typeof (error as { code?: unknown } | null)?.code === "number"
+              ? (error as { code: number }).code
+              : error
+                ? null
+                : 0;
+          try {
+            await writeAudit({
+              id: operation.id,
+              action: operation.action,
+              state: error ? "failed" : "succeeded",
+              startedAt: operation.startedAt,
+              finishedAt,
+              exitCode,
+              reason: error
+                ? "Approved HGR update flow failed. Review the updater output on the owner PC."
+                : null,
+            });
+          } catch (auditError) {
+            console.error("HGR Control update audit could not be written:", auditError);
+          }
+          if (error) console.error("HGR Control update failed:", error);
+          if (activeOperation?.id === operation.id) activeOperation = null;
+        })();
+      },
+    );
+
+    child.stdout?.on("data", (chunk: string | Buffer) => {
+      outputCarry += chunk.toString();
+      const lines = outputCarry.split(/\r?\n/);
+      outputCarry = lines.pop() || "";
+      for (const line of lines) updateOperationProgress(line);
+    });
+    child.stderr?.on("data", (chunk: string | Buffer) => {
+      const text = chunk.toString();
+      if (text.trim()) console.error("HGR updater:", text.trim());
+    });
+  } catch (error) {
+    activeOperation = null;
+    await writeAudit({
+      id: operation.id,
+      action: operation.action,
+      state: "failed",
+      startedAt: operation.startedAt,
+      finishedAt: new Date().toISOString(),
+      exitCode: null,
+      reason: "The approved HGR update process could not be started.",
+    });
+    console.error("HGR Control could not start Update:", error);
+    sendJson(response, 500, {
+      ok: false,
+      action: "update",
+      operationId: operation.id,
+      reason: "HGR Update could not be started.",
+    });
+    return;
+  }
+
+  sendJson(response, 202, {
+    ok: true,
+    action: "update",
+    operationId: operation.id,
+    startedAt: operation.startedAt,
+    message: "HGR Update started. Progress will continue on the owner PC.",
+  });
+}
+
 const staticAssets = new Map<string, { path: string; contentType: string; cacheControl: string }>([
   ["/", { path: resolve(controlUiDirectory, "index.html"), contentType: "text/html; charset=utf-8", cacheControl: "no-store" }],
   ["/control.css", { path: resolve(controlUiDirectory, "control.css"), contentType: "text/css; charset=utf-8", cacheControl: "no-cache" }],
@@ -540,6 +985,31 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === "POST" && request.url === "/api/confirm") {
+    await handleActionConfirmation(request, response);
+    return;
+  }
+
+  if (request.method === "POST" && request.url === "/api/actions/start") {
+    if (!mutableRequestAuthorised(request)) {
+      sendJson(response, token ? 401 : 503, {
+        ok: false,
+        reason: token
+          ? "HGR Control authentication required."
+          : "Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions.",
+      });
+      return;
+    }
+    await runFixedBridgeAction(
+      "start",
+      startBridge,
+      startScript,
+      response,
+      "HGR start command completed successfully.",
+    );
+    return;
+  }
+
   if (request.method === "GET" && request.url === "/api/logs") {
     if (!mutableRequestAuthorised(request)) {
       sendJson(response, token ? 401 : 503, {
@@ -573,6 +1043,68 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === "POST" && request.url === "/api/actions/close") {
+    if (!mutableRequestAuthorised(request)) {
+      sendJson(response, token ? 401 : 503, {
+        ok: false,
+        reason: token
+          ? "HGR Control authentication required."
+          : "Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions.",
+      });
+      return;
+    }
+    let body: Record<string, unknown>;
+    try {
+      body = await readJsonBody(request);
+    } catch {
+      sendJson(response, 400, { ok: false, reason: "Invalid Close HGR request." });
+      return;
+    }
+    if (!consumeActionConfirmation(request, "close", body)) {
+      sendJson(response, 409, {
+        ok: false,
+        reason: "Close HGR requires a fresh one-time confirmation.",
+      });
+      return;
+    }
+    await runFixedBridgeAction(
+      "close",
+      closeBridge,
+      closeScript,
+      response,
+      "HGR close command completed successfully.",
+    );
+    return;
+  }
+
+  if (request.method === "POST" && request.url === "/api/actions/update") {
+    if (!mutableRequestAuthorised(request)) {
+      sendJson(response, token ? 401 : 503, {
+        ok: false,
+        reason: token
+          ? "HGR Control authentication required."
+          : "Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions.",
+      });
+      return;
+    }
+    let body: Record<string, unknown>;
+    try {
+      body = await readJsonBody(request);
+    } catch {
+      sendJson(response, 400, { ok: false, reason: "Invalid Update HGR request." });
+      return;
+    }
+    if (!consumeActionConfirmation(request, "update", body)) {
+      sendJson(response, 409, {
+        ok: false,
+        reason: "Update HGR requires a fresh one-time confirmation.",
+      });
+      return;
+    }
+    await runUpdate(response);
+    return;
+  }
+
   sendJson(response, 404, {
     ok: false,
     reason: "Unknown HGR Control endpoint.",
@@ -584,5 +1116,5 @@ server.listen(port, host, () => {
   console.log(`Project root: ${projectRoot}`);
   console.log(token ? "Bearer-token authentication: ON" : "Bearer-token authentication: OFF (status only)");
   console.log(pairCode ? "Mobile pairing: ON (short-lived code supplied by launcher)" : "Mobile pairing: OFF");
-  console.log("Mutable actions: Restart HGR is available only with authenticated Control access.");
+  console.log("Mutable actions: Start, Restart, Close and Update are available only with authenticated Control access.");
 });
