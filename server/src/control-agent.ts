@@ -225,21 +225,22 @@ async function runRestart(response: ServerResponse): Promise<void> {
     startedAt: new Date().toISOString(),
   };
   activeOperation = operation;
-  await writeAudit({
-    id: operation.id,
-    action: operation.action,
-    state: "running",
-    startedAt: operation.startedAt,
-    finishedAt: null,
-    exitCode: null,
-    reason: null,
-  });
 
   try {
+    await writeAudit({
+      id: operation.id,
+      action: operation.action,
+      state: "running",
+      startedAt: operation.startedAt,
+      finishedAt: null,
+      exitCode: null,
+      reason: null,
+    });
+
     const commandProcessor = process.env.ComSpec?.trim() || "cmd.exe";
     await execFileAsync(
       commandProcessor,
-      ["/d", "/s", "/c", `"${restartScript}"`],
+      ["/d", "/s", "/c", `call "${restartScript}"`],
       {
         cwd: projectRoot,
         timeout: 45_000,
@@ -272,21 +273,25 @@ async function runRestart(response: ServerResponse): Promise<void> {
       typeof (error as { code?: unknown }).code === "number"
         ? (error as { code: number }).code
         : null;
-    await writeAudit({
-      id: operation.id,
-      action: operation.action,
-      state: "failed",
-      startedAt: operation.startedAt,
-      finishedAt,
-      exitCode,
-      reason: "Restart Halieus Game Room.cmd failed.",
-    });
+    try {
+      await writeAudit({
+        id: operation.id,
+        action: operation.action,
+        state: "failed",
+        startedAt: operation.startedAt,
+        finishedAt,
+        exitCode,
+        reason: "Restart Halieus Game Room.cmd failed or its audit trail could not be started.",
+      });
+    } catch (auditError) {
+      console.error("HGR Control failure audit could not be written:", auditError);
+    }
     console.error("HGR Control restart failed:", error);
     sendJson(response, 500, {
       ok: false,
       action: "restart",
       operationId: operation.id,
-      reason: "HGR restart failed. Check the local HGR Control audit/log output.",
+      reason: "HGR restart failed or could not be audited. Check the local HGR Control output.",
     });
   } finally {
     activeOperation = null;
