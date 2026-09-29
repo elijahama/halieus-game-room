@@ -205,15 +205,19 @@ That request/response cycle is the basis of the phone controller.
 
 Stage 2 requires a bearer token before any mutable action or audit-log read is allowed.
 
-Generate a temporary token in PowerShell 7:
+Generate a temporary token. This form works in both Windows PowerShell 5.1 and modern PowerShell:
 
 ```powershell
-$env:HGR_CONTROL_TOKEN = [Convert]::ToBase64String(
-  [System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32)
-)
+$bytes = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($bytes)
+$env:HGR_CONTROL_TOKEN = [Convert]::ToBase64String($bytes)
+$rng.Dispose()
 $env:HGR_CONTROL_TOKEN
 npm run control:dev
 ```
+
+Do not use the newer one-line static `RandomNumberGenerator::GetBytes(32)` form in HGR documentation because the launcher may open a Windows PowerShell environment whose .NET runtime does not provide that overload.
 
 Keep that token private. In a second PowerShell window, copy it into a local variable:
 
