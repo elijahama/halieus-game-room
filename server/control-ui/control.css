@@ -7,9 +7,9 @@
   --surface-2: #181d23;
   --border: #2a3038;
   --muted: #9aa4b2;
-  --control: #7667d8;
-  --control-2: #9a8cff;
-  --control-soft: rgba(118,103,216,.14);
+  --control: #4F7BFE;
+  --control-2: #6E92FF;
+  --control-soft: rgba(79,123,254,.14);
   --start: #258B58;
   --restart: #B97818;
   --close: #BD4545;
@@ -23,13 +23,13 @@ html, body { margin: 0; min-height: 100%; background: #0b0d10; }
 body {
   min-height: 100dvh;
   background:
-    radial-gradient(circle at 15% -10%, rgba(118,103,216,.22), transparent 36%),
-    radial-gradient(circle at 90% 15%, rgba(154,140,255,.10), transparent 34%),
+    radial-gradient(circle at 15% -10%, rgba(79,123,254,.22), transparent 36%),
+    radial-gradient(circle at 90% 15%, rgba(110,146,255,.10), transparent 34%),
     #0b0d10;
 }
 button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, input:focus-visible { outline: 3px solid rgba(154,140,255,.42); outline-offset: 2px; }
+button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,.42); outline-offset: 2px; }
 [hidden] { display: none !important; }
 
 .intro-splash {
@@ -41,7 +41,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(154,140,255,
   justify-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 50% 35%, rgba(118,103,216,.18), transparent 24rem),
+    radial-gradient(circle at 50% 35%, rgba(79,123,254,.18), transparent 24rem),
     #090b0e;
   text-align: center;
   transition: opacity .34s ease, visibility .34s ease;
@@ -59,11 +59,11 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(154,140,255,
 .intro-ring {
   position: absolute;
   inset: 8px;
-  border: 1px solid rgba(154,140,255,.30);
+  border: 1px solid rgba(110,146,255,.30);
   border-radius: 50%;
 }
 .intro-ring-two { inset: 0; opacity: .4; }
-.intro-splash > p { margin: 0; color: #9f93ff; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+.intro-splash > p { margin: 0; color: #7FA0FF; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
 .intro-splash > h1 { margin: 5px 0 19px; font-size: 31px; line-height: 1; }
 .intro-link-state { display: inline-flex; align-items: center; gap: 9px; color: #aab3bf; font-size: 11px; }
 .intro-link-state > span { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 5px rgba(242,184,75,.08); }
@@ -79,7 +79,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(154,140,255,
 .brand-lockup img { width: 48px; height: 48px; border-radius: 13px; box-shadow: 0 8px 26px rgba(0,0,0,.3); }
 .brand-lockup p, .section-heading p, .card-kicker {
   margin: 0;
-  color: #9f93ff;
+  color: #7FA0FF;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: .13em;
@@ -164,7 +164,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(154,140,255,
   border-radius: 17px;
   background: rgba(18,22,27,.88);
 }
-.status-card > span { display: block; color: #9f93ff; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; }
+.status-card > span { display: block; color: #7FA0FF; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; }
 .status-card > strong { display: block; margin: 18px 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 18px; }
 .status-card > small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
 
@@ -319,7 +319,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(154,140,255,
 
 .control-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 0; }
 .control-footer small { color: #66717e; font-size: 9px; text-align: right; }
-.text-button { min-height: 34px; border: 0; background: transparent; color: #9f93ff; padding: 0; }
+.text-button { min-height: 34px; border: 0; background: transparent; color: #7FA0FF; padding: 0; }
 
 .confirm-dialog {
   width: min(430px, calc(100% - 32px));
