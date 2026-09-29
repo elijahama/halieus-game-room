@@ -53,6 +53,10 @@ assert.match(
   "Update must require confirmation",
 );
 
+assert.match(agent, /function isHgrRepositoryRoot\(candidate: string\)/, "Control agent must verify the real HGR repository root rather than any VERSION file");
+assert.match(agent, /metadata\.name === "halieus-game-room"/, "Control agent must identify the root package by the canonical repository package name");
+assert.match(agent, /existsSync\(resolve\(candidate, "client"\)\)[\s\S]*?existsSync\(resolve\(candidate, "server"\)\)[\s\S]*?existsSync\(resolve\(candidate, "shared"\)\)/s, "Control root detection must require the HGR workspace directories");
+assert.doesNotMatch(agent, /candidates\.find\(\(candidate\) => existsSync\(resolve\(candidate, "VERSION"\)\)\)/, "A nested VERSION file must never be enough to identify the repository root");
 assert.match(agent, /HGR_CONTROL_HOST\?\.trim\(\) \|\| "127\.0\.0\.1"/, "Control agent must bind to loopback by default");
 assert.match(agent, /HGR_CONTROL_PORT \|\| "43127"/, "Control agent must keep one documented default port");
 assert.match(agent, /Refusing to expose HGR Control beyond loopback without HGR_CONTROL_TOKEN/, "Non-loopback control must require a token");
