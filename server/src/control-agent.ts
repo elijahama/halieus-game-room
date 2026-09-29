@@ -72,6 +72,7 @@ if (remoteBinding && !token) {
 const auditDirectory = resolve(projectRoot, "server", "data", "runtime");
 const auditFile = resolve(auditDirectory, "hgr-control-audit.ndjson");
 const restartScript = resolve(projectRoot, "Restart Halieus Game Room.cmd");
+const restartBridge = resolve(projectRoot, "scripts", "windows", "control-restart.ps1");
 let activeOperation: HalieusControlActiveOperation | null = null;
 
 function sendJson(response: ServerResponse, status: number, body: unknown): void {
@@ -211,10 +212,10 @@ async function runRestart(response: ServerResponse): Promise<void> {
     return;
   }
 
-  if (!existsSync(restartScript)) {
+  if (!existsSync(restartScript) || !existsSync(restartBridge)) {
     sendJson(response, 500, {
       ok: false,
-      reason: "Restart Halieus Game Room.cmd is missing from the HGR repository root.",
+      reason: "The fixed HGR restart launcher or Control bridge is missing.",
     });
     return;
   }
@@ -237,10 +238,15 @@ async function runRestart(response: ServerResponse): Promise<void> {
       reason: null,
     });
 
-    const commandProcessor = process.env.ComSpec?.trim() || "cmd.exe";
     await execFileAsync(
-      commandProcessor,
-      ["/d", "/s", "/c", `call "${restartScript}"`],
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        restartBridge,
+      ],
       {
         cwd: projectRoot,
         timeout: 45_000,
@@ -281,7 +287,9 @@ async function runRestart(response: ServerResponse): Promise<void> {
         startedAt: operation.startedAt,
         finishedAt,
         exitCode,
-        reason: "Restart Halieus Game Room.cmd failed or its audit trail could not be started.",
+        reason: error instanceof Error
+        ? `Restart bridge failed: ${error.message}`
+        : "Restart bridge failed.",
       });
     } catch (auditError) {
       console.error("HGR Control failure audit could not be written:", auditError);
@@ -291,7 +299,7 @@ async function runRestart(response: ServerResponse): Promise<void> {
       ok: false,
       action: "restart",
       operationId: operation.id,
-      reason: "HGR restart failed or could not be audited. Check the local HGR Control output.",
+      reason: "HGR restart failed. Check the local HGR Control output or audit log.",
     });
   } finally {
     activeOperation = null;
