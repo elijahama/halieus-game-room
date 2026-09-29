@@ -255,9 +255,11 @@ assert.match(maintenanceBanner, /window\.location\.reload\(\)/, "An existing web
 assert.match(maintenanceBanner, /recovery key or room code/i, "Maintenance warning must remind live players about recovery information");
 assert.match(clientMain, /<PlatformMaintenanceBanner \/>/, "Maintenance UI must be mounted across the whole website");
 assert.match(maintenanceBannerCss, /z-index: 10000/, "Maintenance warning must stay above game surfaces");
-assert.match(postUpdateClient, /Existing HGR app window detected/, "Post-update helper must preserve an already-open dedicated HGR window");
-assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper may open HGR only when no dedicated window is running");
-assert.doesNotMatch(postUpdateClient, /Restart Halieus Game Room\.cmd/, "Normal successful Update must not force-close and reopen an existing HGR window");
+assert.match(postUpdateClient, /release-aware-refresh\.enabled/, "Post-update helper must persist the one-time release-aware capability marker");
+assert.match(postUpdateClient, /Existing release-aware HGR app window detected/, "Post-update helper must preserve an already-open release-aware HGR window");
+assert.match(postUpdateClient, /Existing HGR window predates release-aware refresh/, "Pre-feature clients must receive one bootstrap restart");
+assert.match(postUpdateClient, /Restart Halieus Game Room\.cmd/, "One-time bootstrap may use the canonical hard Restart fallback");
+assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper may open HGR when no dedicated window is running");
 assert.match(updateLauncher, /FINAL STEP - Refreshing the HGR client/, "Updater must use release-aware client refresh as its final local step");
 
 for (const releasePath of [
