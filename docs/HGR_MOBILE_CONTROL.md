@@ -355,6 +355,8 @@ A real token belongs in local environment configuration, never in Git.
 - [x] token required before non-loopback bind
 
 ### Phase 2 — safe local execution
+
+**Real-machine verification:** authenticated Restart was successfully executed on the owner Windows PC through the local HGR Control client, fixed API endpoint, operation lock and PowerShell restart bridge. The dedicated HGR app restarted successfully and the Control Agent remained available.
 - [x] bearer-token protection for mutable actions
 - [x] timing-safe token comparison
 - [x] one-operation-at-a-time lock
