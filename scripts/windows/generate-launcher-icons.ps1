@@ -7,7 +7,6 @@ if (-not ('HgrNativeIcon' -as [type])) {
     Add-Type @"
 using System;
 using System.Runtime.InteropServices;
-
 public static class HgrNativeIcon {
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     public static extern bool DestroyIcon(IntPtr handle);
@@ -16,16 +15,12 @@ public static class HgrNativeIcon {
 }
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$LauncherRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$PreviewRoot = Join-Path $LauncherRoot 'generated-preview'
-
-# Generated artwork is quarantined from approved launcher assets.
-# This script must never delete or overwrite approved files directly under assets\branding\launchers\.
-New-Item -ItemType Directory -Force -Path $PreviewRoot | Out-Null
+$RuntimeRoot = Join-Path $ProjectRoot 'server\data\runtime\launcher-icons'
+New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
 
 function Get-HgrColour {
     param([Parameter(Mandatory = $true)][string]$Hex)
-    return [System.Drawing.ColorTranslator]::FromHtml($Hex)
+    [System.Drawing.ColorTranslator]::FromHtml($Hex)
 }
 
 function Mix-HgrColour {
@@ -34,9 +29,8 @@ function Mix-HgrColour {
         [Parameter(Mandatory = $true)][System.Drawing.Color]$B,
         [Parameter(Mandatory = $true)][double]$Amount
     )
-
     $t = [Math]::Max(0.0, [Math]::Min(1.0, $Amount))
-    return [System.Drawing.Color]::FromArgb(
+    [System.Drawing.Color]::FromArgb(
         255,
         [int][Math]::Round(($A.R * (1.0 - $t)) + ($B.R * $t)),
         [int][Math]::Round(($A.G * (1.0 - $t)) + ($B.G * $t)),
@@ -49,7 +43,6 @@ function New-RoundedRectanglePath {
         [Parameter(Mandatory = $true)][System.Drawing.RectangleF]$Rect,
         [Parameter(Mandatory = $true)][single]$Radius
     )
-
     $diameter = $Radius * 2.0
     $path = [System.Drawing.Drawing2D.GraphicsPath]::new()
     $path.AddArc($Rect.X, $Rect.Y, $diameter, $diameter, 180, 90)
@@ -57,7 +50,7 @@ function New-RoundedRectanglePath {
     $path.AddArc($Rect.Right - $diameter, $Rect.Bottom - $diameter, $diameter, $diameter, 0, 90)
     $path.AddArc($Rect.X, $Rect.Bottom - $diameter, $diameter, $diameter, 90, 90)
     $path.CloseFigure()
-    return $path
+    $path
 }
 
 function Save-BitmapAsIcon {
@@ -65,146 +58,149 @@ function Save-BitmapAsIcon {
         [Parameter(Mandatory = $true)][System.Drawing.Bitmap]$Bitmap,
         [Parameter(Mandatory = $true)][string]$Path
     )
-
     $handle = $Bitmap.GetHicon()
     try {
         $icon = [System.Drawing.Icon]::FromHandle($handle)
         $stream = [System.IO.File]::Create($Path)
-        try {
-            $icon.Save($stream)
-        } finally {
-            $stream.Dispose()
-            $icon.Dispose()
-        }
+        try { $icon.Save($stream) } finally { $stream.Dispose(); $icon.Dispose() }
     } finally {
         [void][HgrNativeIcon]::DestroyIcon($handle)
     }
 }
 
-function New-MatteHgrLauncher {
+function Draw-HalieusH {
+    param(
+        [Parameter(Mandatory = $true)][System.Drawing.Graphics]$Graphics,
+        [Parameter(Mandatory = $true)][System.Drawing.Brush]$Brush
+    )
+    # Canonical 64-unit H geometry rendered at 4x into the 256px icon.
+    foreach ($rect in @(
+        [System.Drawing.RectangleF]::new(56, 48, 68, 20),
+        [System.Drawing.RectangleF]::new(76, 68, 32, 120),
+        [System.Drawing.RectangleF]::new(56, 188, 68, 20),
+        [System.Drawing.RectangleF]::new(132, 48, 68, 20),
+        [System.Drawing.RectangleF]::new(148, 68, 32, 120),
+        [System.Drawing.RectangleF]::new(132, 188, 68, 20),
+        [System.Drawing.RectangleF]::new(108, 112, 40, 32)
+    )) {
+        $Graphics.FillRectangle($Brush, $rect)
+    }
+}
+
+function Draw-HgrBadge {
+    param(
+        [Parameter(Mandatory = $true)][System.Drawing.Graphics]$Graphics,
+        [Parameter(Mandatory = $true)][string]$Role
+    )
+    $white = [System.Drawing.Color]::White
+    $pen = [System.Drawing.Pen]::new($white, 10)
+    $pen.StartCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.EndCap = [System.Drawing.Drawing2D.LineCap]::Round
+    $pen.LineJoin = [System.Drawing.Drawing2D.LineJoin]::Round
+    try {
+        switch ($Role) {
+            'start' {
+                $points = [System.Drawing.PointF[]]@(
+                    [System.Drawing.PointF]::new(176, 172),
+                    [System.Drawing.PointF]::new(176, 220),
+                    [System.Drawing.PointF]::new(216, 196)
+                )
+                $Graphics.DrawPolygon($pen, $points)
+            }
+            'close' {
+                $Graphics.DrawLine($pen, 176, 176, 216, 216)
+                $Graphics.DrawLine($pen, 216, 176, 176, 216)
+            }
+            'update' {
+                $Graphics.DrawLine($pen, 196, 220, 196, 172)
+                $Graphics.DrawLine($pen, 176, 192, 196, 172)
+                $Graphics.DrawLine($pen, 216, 192, 196, 172)
+            }
+            'restart' {
+                $Graphics.DrawArc($pen, 168, 168, 56, 56, 35, 285)
+                $Graphics.DrawLine($pen, 216, 172, 216, 192)
+                $Graphics.DrawLine($pen, 216, 192, 196, 192)
+            }
+            'powershell' {
+                $Graphics.DrawLine($pen, 172, 180, 188, 196)
+                $Graphics.DrawLine($pen, 188, 196, 172, 212)
+                $Graphics.DrawLine($pen, 196, 212, 216, 212)
+            }
+            'openshard' {
+                $points = [System.Drawing.PointF[]]@(
+                    [System.Drawing.PointF]::new(196, 172),
+                    [System.Drawing.PointF]::new(220, 196),
+                    [System.Drawing.PointF]::new(196, 220),
+                    [System.Drawing.PointF]::new(172, 196)
+                )
+                $Graphics.DrawPolygon($pen, $points)
+            }
+            'control' {
+                $Graphics.DrawEllipse($pen, 180, 180, 32, 32)
+                foreach ($line in @(
+                    @(196, 168, 196, 176), @(196, 216, 196, 224),
+                    @(168, 196, 176, 196), @(216, 196, 224, 196),
+                    @(177, 177, 183, 183), @(209, 209, 215, 215),
+                    @(215, 177, 209, 183), @(183, 209, 177, 215)
+                )) {
+                    $Graphics.DrawLine($pen, $line[0], $line[1], $line[2], $line[3])
+                }
+            }
+        }
+    } finally {
+        $pen.Dispose()
+    }
+}
+
+function New-HgrLauncherIcon {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
         [Parameter(Mandatory = $true)][string]$BaseHex,
-        [switch]$PowerShell
+        [Parameter(Mandatory = $true)][string]$Role
     )
 
     $size = 256
     $bitmap = [System.Drawing.Bitmap]::new($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-
     try {
         $graphics.Clear([System.Drawing.Color]::Transparent)
         $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-        $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
         $graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-        $graphics.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
 
         $base = Get-HgrColour $BaseHex
         $white = [System.Drawing.Color]::White
         $black = [System.Drawing.Color]::Black
-        $navy = Get-HgrColour '#18233C'
 
-        # Soft depth only. No glass, glow, lens highlight or neon treatment.
-        $shadowRect = [System.Drawing.RectangleF]::new(29, 33, 202, 202)
+        $shadowRect = [System.Drawing.RectangleF]::new(26, 30, 204, 204)
         $shadowPath = New-RoundedRectanglePath -Rect $shadowRect -Radius 45
-        $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(50, 0, 0, 0))
-        try {
-            $graphics.FillPath($shadowBrush, $shadowPath)
-        } finally {
-            $shadowBrush.Dispose()
-            $shadowPath.Dispose()
-        }
+        $shadowBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(48, 0, 0, 0))
+        try { $graphics.FillPath($shadowBrush, $shadowPath) } finally { $shadowBrush.Dispose(); $shadowPath.Dispose() }
 
         $tileRect = [System.Drawing.RectangleF]::new(26, 26, 204, 204)
         $tilePath = New-RoundedRectanglePath -Rect $tileRect -Radius 45
-        $top = Mix-HgrColour -A $base -B $white -Amount 0.10
-        $bottom = Mix-HgrColour -A $base -B $black -Amount 0.10
-
+        $top = Mix-HgrColour -A $base -B $white -Amount 0.18
+        $bottom = Mix-HgrColour -A $base -B $black -Amount 0.08
         $gradient = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
-            $tileRect,
-            $top,
-            $bottom,
-            [System.Drawing.Drawing2D.LinearGradientMode]::Vertical
+            $tileRect, $top, $bottom, [System.Drawing.Drawing2D.LinearGradientMode]::Vertical
         )
+        try { $graphics.FillPath($gradient, $tilePath) } finally { $gradient.Dispose() }
 
+        $innerPen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(45, 255, 255, 255), 2)
         try {
-            $graphics.FillPath($gradient, $tilePath)
-        } finally {
-            $gradient.Dispose()
-        }
-
-        $border = Mix-HgrColour -A $base -B $black -Amount 0.28
-        $borderPen = [System.Drawing.Pen]::new($border, 4)
-        try {
-            $graphics.DrawPath($borderPen, $tilePath)
-        } finally {
-            $borderPen.Dispose()
-        }
-
-        # One restrained inner line is enough to give definition at Windows
-        # icon sizes without becoming shiny.
-        $innerRect = [System.Drawing.RectangleF]::new(32, 32, 192, 192)
-        $innerPath = New-RoundedRectanglePath -Rect $innerRect -Radius 40
-        $inner = Mix-HgrColour -A $base -B $white -Amount 0.18
-        $innerPen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(105, $inner.R, $inner.G, $inner.B), 2)
-        try {
+            $innerRect = [System.Drawing.RectangleF]::new(31, 31, 194, 194)
+            $innerPath = New-RoundedRectanglePath -Rect $innerRect -Radius 41
             $graphics.DrawPath($innerPen, $innerPath)
-        } finally {
-            $innerPen.Dispose()
             $innerPath.Dispose()
-        }
+        } finally { $innerPen.Dispose() }
 
-        # Consistent H mark across the family.
-        $fontFamily = [System.Drawing.FontFamily]::new('Arial')
-        $font = [System.Drawing.Font]::new($fontFamily, 118, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-        $format = [System.Drawing.StringFormat]::new()
-        $format.Alignment = [System.Drawing.StringAlignment]::Center
-        $format.LineAlignment = [System.Drawing.StringAlignment]::Center
-        $hBrush = [System.Drawing.SolidBrush]::new($navy)
-        $hShadow = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(36, 0, 0, 0))
+        $hBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(7, 9, 13))
+        try { Draw-HalieusH -Graphics $graphics -Brush $hBrush } finally { $hBrush.Dispose() }
+        Draw-HgrBadge -Graphics $graphics -Role $Role
 
-        try {
-            $hBox = [System.Drawing.RectangleF]::new(55, 48, 146, 154)
-            $hShadowBox = [System.Drawing.RectangleF]::new(57, 51, 146, 154)
-            $graphics.DrawString('H', $font, $hShadow, $hShadowBox, $format)
-            $graphics.DrawString('H', $font, $hBrush, $hBox, $format)
-        } finally {
-            $hBrush.Dispose()
-            $hShadow.Dispose()
-            $format.Dispose()
-            $font.Dispose()
-            $fontFamily.Dispose()
-        }
-
-        if ($PowerShell) {
-            $badgeRect = [System.Drawing.RectangleF]::new(158, 163, 72, 54)
-            $badgePath = New-RoundedRectanglePath -Rect $badgeRect -Radius 14
-            $badgeBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(244, 28, 39, 57))
-            $badgePen = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(205, 210, 220, 232), 2)
-            try {
-                $graphics.FillPath($badgeBrush, $badgePath)
-                $graphics.DrawPath($badgePen, $badgePath)
-            } finally {
-                $badgeBrush.Dispose()
-                $badgePen.Dispose()
-                $badgePath.Dispose()
-            }
-
-            $badgeFont = [System.Drawing.Font]::new('Consolas', 25, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
-            $badgeText = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(248, 250, 252))
-            try {
-                $graphics.DrawString('>_', $badgeFont, $badgeText, 166, 173)
-            } finally {
-                $badgeFont.Dispose()
-                $badgeText.Dispose()
-            }
-        }
-
-        $pngPath = Join-Path $PreviewRoot "$Name.png"
-        $icoPath = Join-Path $PreviewRoot "$Name.ico"
+        $pngPath = Join-Path $RuntimeRoot "$Name.png"
+        $icoPath = Join-Path $RuntimeRoot "$Name.ico"
         $bitmap.Save($pngPath, [System.Drawing.Imaging.ImageFormat]::Png)
         Save-BitmapAsIcon -Bitmap $bitmap -Path $icoPath
-
         $tilePath.Dispose()
     } finally {
         $graphics.Dispose()
@@ -212,12 +208,18 @@ function New-MatteHgrLauncher {
     }
 }
 
-New-MatteHgrLauncher -Name 'Start Halieus Game Room' -BaseHex '#258B58'
-New-MatteHgrLauncher -Name 'Restart Halieus Game Room' -BaseHex '#B97818'
-New-MatteHgrLauncher -Name 'Close Halieus Game Room' -BaseHex '#BD4545'
-New-MatteHgrLauncher -Name 'Update Halieus Website' -BaseHex '#3475C5'
-New-MatteHgrLauncher -Name 'HGR PowerShell' -BaseHex '#526981' -PowerShell
+$roles = [ordered]@{
+    start = '#22C55E'
+    restart = '#F59E0B'
+    close = '#EF4444'
+    update = '#38BDF8'
+    powershell = '#64748B'
+    openshard = '#A855F7'
+    control = '#4F7BFE'
+}
 
-Write-Host 'HGR placeholder launcher previews generated.' -ForegroundColor Green
-Write-Host 'Approved icons directly under assets\branding\launchers were not touched.' -ForegroundColor Green
-Write-Host "Preview folder: $PreviewRoot" -ForegroundColor DarkGray
+foreach ($entry in $roles.GetEnumerator()) {
+    New-HgrLauncherIcon -Name $entry.Key -BaseHex $entry.Value -Role $entry.Key
+}
+
+Write-Host "HGR runtime launcher icons generated: $RuntimeRoot" -ForegroundColor Green
