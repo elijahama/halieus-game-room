@@ -563,6 +563,7 @@ The repository contains both current technical documentation and historical deve
 
 Start here:
 
+- [HGR Masterbook](docs/HGR_MASTERBOOK.md) — living project summary and engineering map
 - [Current architecture](ARCHITECTURE.md)
 - [Documentation index](docs/README.md)
 - [Project overview](docs/PROJECT_OVERVIEW.md)
@@ -575,6 +576,7 @@ Start here:
 - [AI-assisted development](docs/AI_ASSISTED_DEVELOPMENT.md)
 - [Openshard development receipts](docs/OPENSHARD.md)
 - [AI provenance architecture](docs/project/HGR_AI_PROVENANCE_ARCHITECTURE.md)
+- [HGR Mobile Control](docs/HGR_MOBILE_CONTROL.md)
 - [4.0.0 audit](docs/AUDIT_4.0.0.md)
 - [4.0.0 validation](docs/VALIDATION_4.0.0.md)
 - [4.1.0 deployment debugging postmortem](docs/project/HGR_4.1.0_DEPLOYMENT_DEBUGGING_POSTMORTEM.md)
