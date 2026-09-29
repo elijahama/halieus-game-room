@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.3",
-  "fingerprint": "hgr-4.5.3-fa72438717ad9561",
+  "fingerprint": "hgr-4.5.3-ad42e4de4f52c0bb",
   "algorithm": "sha256",
-  "sourceHash": "fa72438717ad9561c6cadfd8ebbaaa49e3ea89c18ae83314a3ca247013684cc4",
-  "integrityFileCount": 453,
+  "sourceHash": "ad42e4de4f52c0bb7ae904d90b95949ed51203a18ed06e99e06eb29d7d50e083",
+  "integrityFileCount": 457,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -189,6 +189,8 @@
     "client/src/platform/components/InviteLobbyPanel.tsx",
     "client/src/platform/components/ModalPortal.tsx",
     "client/src/platform/components/NotificationPermissionButton.tsx",
+    "client/src/platform/components/PlatformMaintenanceBanner.css",
+    "client/src/platform/components/PlatformMaintenanceBanner.tsx",
     "client/src/platform/components/PlayerIdentityCard.tsx",
     "client/src/platform/components/PreGameShell.tsx",
     "client/src/platform/components/ProjectTimeline.tsx",
@@ -262,6 +264,7 @@
     "scripts/windows/generate-launcher-icons.ps1",
     "scripts/windows/hgr-control-client.ps1",
     "scripts/windows/launcher-shortcuts.ps1",
+    "scripts/windows/post-update-client.ps1",
     "scripts/windows/restart-background.ps1",
     "scripts/windows/show-feedback.ps1",
     "scripts/windows/start-background.ps1",
@@ -390,6 +393,7 @@
     "shared/platform/game-activity.ts",
     "shared/platform/guilds.ts",
     "shared/platform/live-games.ts",
+    "shared/platform/maintenance.ts",
     "shared/platform/progression.ts",
     "shared/platform/rankedFormats.ts",
     "shared/platform/rankedLeaderboard.ts",
@@ -564,6 +568,8 @@
     "hgr-control-authenticated-restart-4.5.3",
     "hgr-control-private-mobile-pwa-4.5.3",
     "hgr-control-start-close-update-4.5.3",
-    "hgr-control-confirmed-update-progress-4.5.3"
+    "hgr-control-confirmed-update-progress-4.5.3",
+    "hgr-control-distinct-action-palette-4.5.3",
+    "hgr-maintenance-release-aware-refresh-4.5.3"
   ]
 }
