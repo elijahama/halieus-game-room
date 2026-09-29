@@ -429,16 +429,43 @@ echo   5. Regression tests passed
 echo   6. Source changes committed/pushed when needed
 echo   7. Final release identity regenerated and re-verified
 echo   8. Website deployment completed
+echo   9. HGR app restart queued as the final successful step
 echo.
-popd
-endlocal
-exit 0
+goto :RESTART_AFTER_UPDATE
 
 :PAUSE_SUCCESS
 echo.
 echo ============================================================
 echo                 HGR UPDATE COMPLETE
 echo ============================================================
+echo.
+goto :RESTART_AFTER_UPDATE
+
+:RESTART_AFTER_UPDATE
+echo.
+echo FINAL STEP - Restarting Halieus Game Room...
+echo This refreshes the dedicated HGR app window only.
+echo.
+if not exist "%~dp0Restart Halieus Game Room.cmd" (
+    echo [STOPPED] Update completed, but the HGR restart launcher is missing:
+    echo   %~dp0Restart Halieus Game Room.cmd
+    echo Run Start Halieus Game Room.cmd manually after restoring the restart launcher.
+    popd
+    endlocal
+    exit /b 1
+)
+
+call "%~dp0Restart Halieus Game Room.cmd"
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Update/deploy completed, but HGR could not restart automatically.
+    echo Run Restart Halieus Game Room.cmd manually.
+    popd
+    endlocal
+    exit /b 1
+)
+
+echo [OK] Halieus Game Room restarted on the current website build.
 echo.
 popd
 endlocal
