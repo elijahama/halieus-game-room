@@ -186,7 +186,18 @@ fi
 chown root:"$SERVICE_USER" "$ENV_DIR/halieus.env"
 chmod 640 "$ENV_DIR/halieus.env"
 
-# Candidate has passed install/build validation. Swap it into production only now.
+# Candidate has passed install/build validation. Warn connected players before
+# the production service is stopped. This talks only to the current server over
+# Oracle loopback; it does not expose a public maintenance-control endpoint.
+MAINTENANCE_GRACE_SECONDS="${MAINTENANCE_GRACE_SECONDS:-12}"
+MAINTENANCE_JSON="$(node -e 'const version=process.argv[1];const seconds=Number(process.argv[2])||12;process.stdout.write(JSON.stringify({state:"scheduled",reason:"HGR is about to restart for an update.",targetVersion:version,estimatedSeconds:seconds}))' "$EXPECTED_VERSION" "$MAINTENANCE_GRACE_SECONDS")"
+if curl -fsS -X POST   -H 'Content-Type: application/json'   --data "$MAINTENANCE_JSON"   http://127.0.0.1:3000/internal/maintenance >/dev/null 2>&1; then
+  echo "Connected players notified of the incoming HGR restart."
+  sleep "$MAINTENANCE_GRACE_SECONDS"
+else
+  echo "Current server does not support maintenance notices yet; continuing activation."
+fi
+
 echo "Activating validated Halieus candidate..."
 systemctl stop halieus-game-room 2>/dev/null || true
 if [[ -d "$APP_DIR" ]]; then
