@@ -436,7 +436,9 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 - [x] HttpOnly mobile session provisioning
 - [x] Forget this phone / session revoke
 - [x] automatic session loss when the agent exits
-- [ ] first real-phone end-to-end verification
+- [x] first real-phone end-to-end Restart verification
+- [ ] installed-PWA session persistence after app close/reopen
+- [ ] session invalidation verified after Control Agent exit
 
 ### Phase 6 — hardening
 - [x] pairing failure cooldown
@@ -445,6 +447,42 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 - [ ] short-lived action confirmations for Close/Update
 - [ ] recovery if an update/restart is interrupted
 - [ ] expanded runtime security regression tests
+
+### Real-device mobile verification
+
+**Verified on the owner Android phone and owner Windows PC:** the complete private mobile Restart path is now working end to end.
+
+Observed path:
+
+```text
+installed/browser HGR Control on phone
+   ↓
+Tailscale private HTTPS
+   ↓
+HGR Control Agent on owner PC
+   ↓
+authenticated fixed Restart action
+   ↓
+PowerShell restart bridge
+   ↓
+Halieus Game Room restarts locally
+   ↓
+success appears in the phone audit log
+```
+
+The Restart response was effectively immediate in real use. This is expected because Restart performs no Git sync, build, validation or deployment work; it only invokes the fixed local restart path after authentication.
+
+This test also verified:
+
+- the phone can resolve and reach the private `.ts.net:8443` controller URL;
+- the short-lived 8-digit pairing flow succeeds;
+- the mobile HttpOnly session is accepted by the API;
+- version, machine, branch/commit and working-tree status are visible on the phone;
+- recent Control audit entries render on the phone;
+- the PWA install prompt is available on the real device;
+- the real phone can trigger the owner-PC Restart action successfully.
+
+The remaining mobile-session checks are app close/reopen persistence and deliberate invalidation when the Control Agent exits.
 
 ## Implementation notes and troubleshooting history
 
