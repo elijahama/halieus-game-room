@@ -150,7 +150,6 @@ export function HomeScreen(props: HomeScreenProps) {
   const [invitingPlayerId, setInvitingPlayerId] = useState<string | null>(null);
   const [inviteNotice, setInviteNotice] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const themeAtmosphere = useMemo(() => themeAtmosphereSymbols(themeMode, themeProfileId), [themeMode, themeProfileId]);
   const [playerSearch, setPlayerSearch] = useState("");
   const [playerFilter, setPlayerFilter] = useState<"all" | "online" | "in-game" | "offline">("all");
   const [wordArenaMatchMode, setWordArenaMatchMode] = useState<WordArenaMatchMode>("casual");
@@ -167,6 +166,11 @@ export function HomeScreen(props: HomeScreenProps) {
   const [discoveryShelf, setDiscoveryShelf] = useState<DiscoveryShelf>("featured");
 
   const selected = GAME_BY_ID[selectedGame];
+  const standardGameAtmosphere = themeMode === "system" || themeMode === "dark" || themeMode === "light";
+  const atmosphereSymbols = useMemo(
+    () => standardGameAtmosphere ? selected.motifs.concat(selected.motifs.slice(0, 3)) : themeAtmosphereSymbols(themeMode, themeProfileId),
+    [selected, standardGameAtmosphere, themeMode, themeProfileId],
+  );
   const selectedRankedFormat = rankedFormatFor(selectedGame);
   const selectedPlayer = directory.find((entry) => entry.id === selectedPlayerId) ?? null;
   const gameAccent = selected.accent;
@@ -806,8 +810,13 @@ export function HomeScreen(props: HomeScreenProps) {
 
   return (
     <main className={`halieus-shell page-enter game-bg-${selectedGame}`} style={{ background: theme.pageBackground, color: theme.text, ["--selected-game-accent" as string]: gameAccent }}>
-      <div className="halieus-game-atmosphere halieus-theme-atmosphere" data-theme-atmosphere={themeMode === "profile" ? themeProfileId : themeMode} aria-hidden="true">
-        {themeAtmosphere.map((symbol, index) => <span key={`${symbol}-${index}`} style={{ ["--float-index" as string]: index }}>{symbol}</span>)}
+      <div
+        className="halieus-game-atmosphere halieus-theme-atmosphere"
+        data-atmosphere-source={standardGameAtmosphere ? "game" : "theme"}
+        data-theme-atmosphere={themeMode === "profile" ? themeProfileId : themeMode}
+        aria-hidden="true"
+      >
+        {atmosphereSymbols.map((symbol, index) => <span key={`${symbol}-${index}`} style={{ ["--float-index" as string]: index }}>{symbol}</span>)}
       </div>
       {mobileMenuOpen && <>
         <button type="button" className="halieus-mobile-more-backdrop" onClick={() => setMobileMenuOpen(false)} aria-label="Close More menu" />

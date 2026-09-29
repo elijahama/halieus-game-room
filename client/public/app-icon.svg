@@ -2,8 +2,8 @@
   <title id="halieus-app-icon-title">Halieus Game Room</title>
   <defs>
     <linearGradient id="halieus-app-tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#daa017"/>
-      <stop offset="1" stop-color="#bb8914"/>
+      <stop offset="0" stop-color="#e7a900"/>
+      <stop offset="1" stop-color="#c98500"/>
     </linearGradient>
   </defs>
   <rect x="3" y="3" width="58" height="58" rx="15" fill="url(#halieus-app-tile)"/>
