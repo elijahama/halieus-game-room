@@ -172,6 +172,9 @@ app.get(
     _request: Request,
     response: Response,
   ) => {
+  response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  response.setHeader("Pragma", "no-cache");
+  response.setHeader("Expires", "0");
   response.json({
     name: "Halieus Game Room Server",
     version: APP_VERSION,
@@ -654,7 +657,8 @@ const canServeClient =
 if (canServeClient) {
   // Never let an old HTML shell pin the browser to an obsolete compiled client.
   app.use((request: Request, response: Response, next: NextFunction) => {
-    if (request.path === "/" || request.path.endsWith(".html")) {
+    const acceptsHtml = request.method === "GET" && request.accepts("html");
+    if (request.path === "/" || request.path.endsWith(".html") || acceptsHtml) {
       response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
       response.setHeader("Pragma", "no-cache");
       response.setHeader("Expires", "0");
