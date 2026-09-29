@@ -18,7 +18,11 @@ const controlClientHelper = read("scripts/windows/hgr-control-client.ps1");
 const controlLauncher = read("Start HGR Control.cmd");
 const controlLauncherAlias = read("Start-HGR-Control.cmd");
 const controlClientEntry = read("HGR-Control.cmd");
+const controlStartBridge = read("scripts/windows/control-start.ps1");
 const controlRestartBridge = read("scripts/windows/control-restart.ps1");
+const controlCloseBridge = read("scripts/windows/control-close.ps1");
+const controlUpdateBridge = read("scripts/windows/control-update.ps1");
+const updateLauncher = read("Update HGR GitHub.cmd");
 const controlMobileHelper = read("scripts/windows/start-control-mobile.ps1");
 const controlMobileLauncher = read("Start HGR Control Mobile.cmd");
 const controlMobileLauncherAlias = read("Start-HGR-Control-Mobile.cmd");
@@ -78,7 +82,7 @@ assert.match(agent, /HGR_CONTROL_HOST\?\.trim\(\) \|\| "127\.0\.0\.1"/, "Control
 assert.match(agent, /HGR_CONTROL_PORT \|\| "43127"/, "Control agent must keep one documented default port");
 assert.match(agent, /Refusing to expose HGR Control beyond loopback without HGR_CONTROL_TOKEN/, "Non-loopback control must require a token");
 assert.match(agent, /request\.method === "GET" && request\.url === "\/api\/status"/, "Foundation agent must expose a read-only status endpoint");
-assert.match(agent, /implemented: action\.id === "status" \|\| action\.id === "restart" \|\| action\.id === "logs"/, "Stage 2 must expose only status, restart and logs as implemented");
+assert.match(agent, /implemented: action\.id !== "open-site" && action\.id !== "open-github"/, "Implemented Control actions must include status/start/restart/close/update/logs while links remain staged");
 assert.match(agent, /execFileAsync\("git"/, "Foundation agent may use fixed read-only Git inspection");
 assert.match(agent, /gitValue\(\["status", "--porcelain", "--untracked-files=no"\], true\)/, "Clean git status output must be preserved as an empty string rather than null");
 assert.match(agent, /dirty: porcelain === null \? null : porcelain\.length > 0/, "Repository dirty state must distinguish clean false from unavailable null");
@@ -87,9 +91,22 @@ assert.doesNotMatch(agent, /\bspawn\s*\(/, "Control agent foundation must not sp
 assert.doesNotMatch(agent, /request\.(?:body|query)[\s\S]*?(?:command|exe|args)/i, "Control endpoint must not accept arbitrary execution input");
 assert.match(agent, /timingSafeEqual\(expectedBytes, providedBytes\)/, "Bearer token comparison must use timing-safe equality");
 assert.match(agent, /Set HGR_CONTROL_TOKEN before enabling mutable HGR Control actions/, "Mutable actions must refuse to run without an explicit token");
+assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/actions\/start"/, "Start must use a fixed authenticated endpoint");
 assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/actions\/restart"/, "Restart must be exposed only through the fixed restart endpoint");
+assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/actions\/close"/, "Close must use a fixed authenticated endpoint");
+assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/actions\/update"/, "Update must use a fixed authenticated endpoint");
+assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/confirm"/, "Confirmation actions must use a dedicated fixed confirmation endpoint");
+assert.match(agent, /ACTION_CONFIRMATION_TTL_MS = 30 \* 1000/, "Close and Update confirmations must be short lived");
+assert.match(agent, /consumeActionConfirmation\(request, "close", body\)/, "Close must consume a one-time server confirmation");
+assert.match(agent, /consumeActionConfirmation\(request, "update", body\)/, "Update must consume a one-time server confirmation");
+assert.match(agent, /const startScript = resolve\(projectRoot, "Start Halieus Game Room\.cmd"\)/, "Start action must map to the fixed repository launcher");
 assert.match(agent, /const restartScript = resolve\(projectRoot, "Restart Halieus Game Room\.cmd"\)/, "Restart action must map to the fixed repository restart launcher");
+assert.match(agent, /const closeScript = resolve\(projectRoot, "Close Halieus Game Room\.cmd"\)/, "Close action must map to the fixed repository launcher");
+assert.match(agent, /const updateScript = resolve\(projectRoot, "Update HGR GitHub\.cmd"\)/, "Update action must map to the fixed approved updater");
+assert.match(agent, /const startBridge = resolve\(projectRoot, "scripts", "windows", "control-start\.ps1"\)/, "Start action must use the fixed Windows bridge");
 assert.match(agent, /const restartBridge = resolve\(projectRoot, "scripts", "windows", "control-restart\.ps1"\)/, "Restart action must use the fixed Windows bridge");
+assert.match(agent, /const closeBridge = resolve\(projectRoot, "scripts", "windows", "control-close\.ps1"\)/, "Close action must use the fixed Windows bridge");
+assert.match(agent, /const updateBridge = resolve\(projectRoot, "scripts", "windows", "control-update\.ps1"\)/, "Update action must use the fixed Windows bridge");
 assert.match(agent, /execFileAsync\([\s\S]*?"powershell\.exe"[\s\S]*?"-File",[\s\S]*?restartBridge/s, "Restart action must invoke the fixed bridge without cmd.exe quoting");
 assert.doesNotMatch(agent, /ComSpec|cmd\.exe[\s\S]*?restartScript/i, "Control Agent must not launch the spaced restart CMD through cmd.exe quoting");
 assert.match(agent, /activeOperation: HalieusControlActiveOperation \| null = null/, "Mutable control actions must have a single-operation lock");
@@ -143,10 +160,22 @@ assert.match(controlStartHelper, /HGR-Control\.cmd' logs/, "Running agent must p
 assert.match(controlDoc, /\.\\Start-HGR-Control\.cmd/, "PowerShell walkthrough must use the no-space launcher alias");
 assert.match(controlDoc, /\.\\HGR-Control\.cmd status/, "PowerShell walkthrough must use the stable root Control client");
 assert.match(gitignore, /server\/data\/runtime\//, "Temporary HGR Control token and audit files must remain ignored by Git");
+assert.match(controlStartBridge, /Join-Path \$projectRoot "Start Halieus Game Room\.cmd"/, "Windows start bridge must resolve only the canonical start launcher");
+assert.match(controlStartBridge, /& \$startLauncher/, "Windows start bridge must invoke the fixed launcher path directly");
+assert.doesNotMatch(controlStartBridge, /param\([\s\S]*?Command|Invoke-Expression|Start-Process/i, "Windows start bridge must not accept or evaluate arbitrary commands");
 assert.match(controlRestartBridge, /Join-Path \$projectRoot "Restart Halieus Game Room\.cmd"/, "Windows restart bridge must resolve only the canonical restart launcher");
 assert.match(controlRestartBridge, /& \$restartLauncher/, "Windows restart bridge must invoke the fixed launcher path directly");
 assert.doesNotMatch(controlRestartBridge, /param\([\s\S]*?Command|Invoke-Expression|Start-Process/i, "Windows restart bridge must not accept or evaluate arbitrary commands");
-
+assert.match(controlCloseBridge, /Join-Path \$projectRoot "Close Halieus Game Room\.cmd"/, "Windows close bridge must resolve only the canonical close launcher");
+assert.match(controlCloseBridge, /& \$closeLauncher/, "Windows close bridge must invoke the fixed launcher path directly");
+assert.doesNotMatch(controlCloseBridge, /param\([\s\S]*?Command|Invoke-Expression|Start-Process/i, "Windows close bridge must not accept or evaluate arbitrary commands");
+assert.match(controlUpdateBridge, /Join-Path \$projectRoot "Update HGR GitHub\.cmd"/, "Windows update bridge must resolve only the canonical updater");
+assert.match(controlUpdateBridge, /HGR_UPDATE_NONINTERACTIVE = "1"/, "Control update bridge must force non-interactive updater mode");
+assert.match(updateLauncher, /Remote\/non-interactive Update found local source changes/, "Non-interactive updater must refuse to stage unexpected owner edits");
+assert.match(updateLauncher, /if \/i "%HGR_UPDATE_NONINTERACTIVE%"=="1"/, "Updater must bypass pause prompts in Control mode");
+assert.match(agent, /blockingRemoteUpdateChanges/, "Remote Update must preflight tracked source changes before running");
+assert.match(agent, /UPDATE_PROGRESS_MARKERS/, "Remote Update must expose structured stage progress");
+assert.match(agent, /timeout: 45 \* 60 \* 1000/, "Remote Update must use a bounded long-running timeout");
 
 assert.match(agent, /HGR_CONTROL_PAIR_CODE/, "Mobile pairing must use a separate short-lived pairing secret");
 assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/pair"/, "Control agent must expose the fixed mobile pairing endpoint");
@@ -168,19 +197,33 @@ assert.match(controlMobileLauncher, /start-control-mobile\.ps1/i, "Stable mobile
 assert.match(controlMobileLauncherAlias, /call "%~dp0Start HGR Control Mobile\.cmd"/i, "PowerShell-safe mobile alias must delegate to the canonical launcher");
 assert.match(controlUiHtml, /manifest\.webmanifest/, "Mobile Control must be installable as a PWA");
 assert.match(controlUiHtml, /id="pairCode"/, "Mobile Control must provide an explicit device pairing surface");
+assert.match(controlUiHtml, /id="introSplash"/, "Mobile Control must provide the requested intro/connection surface");
+assert.match(controlUiHtml, /id="startButton"/, "Mobile Control must expose Start");
+assert.match(controlUiHtml, /id="closeButton"/, "Mobile Control must expose Close");
+assert.match(controlUiHtml, /id="updateButton"/, "Mobile Control must expose Update");
+assert.match(controlUiHtml, /id="operationPanel"/, "Mobile Control must expose live operation progress");
+assert.match(controlUiHtml, /id="confirmDialog"/, "Mobile Control must provide confirmation UX for destructive/expensive actions");
 assert.match(controlUiJs, /credentials:\s*"include"/, "Mobile PWA API calls must use the HttpOnly session cookie");
+assert.match(controlUiJs, /\/api\/confirm/, "Mobile PWA must request server-side one-time confirmations");
+assert.match(controlUiJs, /\/api\/actions\/\$\{action\}/, "Mobile PWA must call only fixed action routes");
+assert.match(controlUiJs, /queueOperationPoll/, "Mobile PWA must poll active Update progress without holding one HTTP request open");
+assert.match(controlUiJs, /finishIntro\("Secure link ready"\)/, "Mobile PWA intro must resolve into the authenticated state");
 assert.doesNotMatch(controlUiJs, /localStorage|sessionStorage/, "Mobile Control must not persist control credentials in browser storage");
 assert.match(controlManifest, /"display": "standalone"/, "Mobile Control manifest must support standalone installation");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(controlDoc, /Tailscale Serve/, "Control documentation must record the private HTTPS proxy design");
 assert.match(controlDoc, /HttpOnly; Secure; SameSite=Strict/, "Control documentation must record the mobile session boundary");
-assert.match(masterbook, /real-phone verification pending/i, "Masterbook must distinguish implementation from real-device verification");
+assert.match(masterbook, /real-device pairing, installed-PWA persistence and session invalidation verified/i, "Masterbook must record the completed real-device mobile security QA milestone");
 
 for (const releasePath of [
   "server/control-ui",
   "Start HGR Control Mobile.cmd",
   "Start-HGR-Control-Mobile.cmd",
   "scripts/windows/start-control-mobile.ps1",
+  "scripts/windows/control-start.ps1",
+  "scripts/windows/control-restart.ps1",
+  "scripts/windows/control-close.ps1",
+  "scripts/windows/control-update.ps1",
 ]) {
   assert.ok(
     releaseIntegrity.includes(releasePath),
@@ -205,6 +248,10 @@ for (const rootLauncher of [
 }
 for (const packagedControlFile of [
   "scripts/windows/start-control-mobile.ps1",
+  "scripts/windows/control-start.ps1",
+  "scripts/windows/control-restart.ps1",
+  "scripts/windows/control-close.ps1",
+  "scripts/windows/control-update.ps1",
   "server/control-ui/index.html",
   "server/control-ui/control.css",
   "server/control-ui/control.js",
@@ -220,6 +267,16 @@ assert.match(
   releaseIntegrity,
   /hgr-control-private-mobile-pwa-4\.5\.3/,
   "Release feature inventory must record the private mobile Control PWA",
+);
+assert.match(
+  releaseIntegrity,
+  /hgr-control-start-close-update-4\.5\.3/,
+  "Release feature inventory must record the expanded Control action set",
+);
+assert.match(
+  releaseIntegrity,
+  /hgr-control-confirmed-update-progress-4\.5\.3/,
+  "Release feature inventory must record confirmed Update progress",
 );
 
 console.log("HGR Control foundation / mobile PWA / Masterbook regression: PASS");
