@@ -30,6 +30,15 @@ const controlUiHtml = read("server/control-ui/index.html");
 const controlUiJs = read("server/control-ui/control.js");
 const controlManifest = read("server/control-ui/manifest.webmanifest");
 const controlServiceWorker = read("server/control-ui/sw.js");
+const controlCss = read("server/control-ui/control.css");
+const launcherIconGenerator = read("scripts/windows/generate-launcher-icons.ps1");
+const serverIndex = read("server/src/index.ts");
+const clientMain = read("client/src/main.tsx");
+const maintenanceBanner = read("client/src/platform/components/PlatformMaintenanceBanner.tsx");
+const maintenanceBannerCss = read("client/src/platform/components/PlatformMaintenanceBanner.css");
+const maintenanceContract = read("shared/platform/maintenance.ts");
+const oracleQuickInstall = read("tests/dev-tools/Oracle Quick Deploy/quick-install.sh");
+const postUpdateClient = read("scripts/windows/post-update-client.ps1");
 const releaseIntegrity = read("scripts/release-integrity.mjs");
 const oraclePacker = read("tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1");
 const oraclePackageRegression = read("tests/package-oracle-4.0.0.ps1");
@@ -60,8 +69,8 @@ assert.match(
 );
 assert.match(
   contract,
-  /id: "update"[\s\S]*?update\/validation\/deploy flow[\s\S]*?restart on success/s,
-  "Update must retain the full update/deploy/restart responsibility",
+  /id: "update"[\s\S]*?update\/validation\/deploy flow[\s\S]*?refresh the existing client or open HGR if it was closed/s,
+  "Update must retain the full update/deploy/client-refresh responsibility",
 );
 assert.match(
   contract,
@@ -178,6 +187,7 @@ assert.match(updateLauncher, /Remote\/non-interactive Update found local source 
 assert.match(updateLauncher, /if \/i "%HGR_UPDATE_NONINTERACTIVE%"=="1"/, "Updater must bypass pause prompts in Control mode");
 assert.match(agent, /blockingRemoteUpdateChanges/, "Remote Update must preflight tracked source changes before running");
 assert.match(agent, /UPDATE_PROGRESS_MARKERS/, "Remote Update must expose structured stage progress");
+assert.match(agent, /FINAL STEP - Refreshing the HGR client/, "Control progress must follow the release-aware final client refresh step");
 assert.match(agent, /timeout: 45 \* 60 \* 1000/, "Remote Update must use a bounded long-running timeout");
 
 assert.match(agent, /HGR_CONTROL_PAIR_CODE/, "Mobile pairing must use a separate short-lived pairing secret");
@@ -211,12 +221,44 @@ assert.match(controlUiJs, /\/api\/confirm/, "Mobile PWA must request server-side
 assert.match(controlUiJs, /\/api\/actions\/\$\{action\}/, "Mobile PWA must call only fixed action routes");
 assert.match(controlUiJs, /queueOperationPoll/, "Mobile PWA must poll active Update progress without holding one HTTP request open");
 assert.match(controlUiJs, /finishIntro\("Secure link ready"\)/, "Mobile PWA intro must resolve into the authenticated state");
+assert.match(controlUiJs, /classList\.toggle\("is-close", action === "close"\)/, "Close confirmation must inherit Close action colour");
+assert.match(controlUiJs, /classList\.toggle\("is-update", action === "update"\)/, "Update confirmation must inherit Update action colour");
 assert.doesNotMatch(controlUiJs, /localStorage|sessionStorage/, "Mobile Control must not persist control credentials in browser storage");
 assert.match(controlManifest, /"display": "standalone"/, "Mobile Control manifest must support standalone installation");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
+assert.match(launcherIconGenerator, /Start Halieus Game Room'[\s\S]*?#258B58/, "Launcher family must retain Start green");
+assert.match(launcherIconGenerator, /Restart Halieus Game Room'[\s\S]*?#B97818/, "Launcher family must retain Restart amber");
+assert.match(launcherIconGenerator, /Close Halieus Game Room'[\s\S]*?#BD4545/, "Launcher family must retain Close red");
+assert.match(launcherIconGenerator, /Update Halieus Website'[\s\S]*?#3475C5/, "Launcher family must retain Update blue");
+assert.match(controlCss, /--start: #258B58/, "Control UI must reuse the established Start green");
+assert.match(controlCss, /--restart: #B97818/, "Control UI must reuse the established Restart amber");
+assert.match(controlCss, /--close: #BD4545/, "Control UI must reuse the established Close red");
+assert.match(controlCss, /--update: #3475C5/, "Control UI must reuse the established Update blue");
+assert.match(controlCss, /--control: #7667d8/, "HGR Control must have a distinct non-action violet identity");
+assert.match(controlCss, /progressSheen/, "Update progress must visibly animate while the percentage is unchanged");
 assert.match(controlDoc, /Tailscale Serve/, "Control documentation must record the private HTTPS proxy design");
 assert.match(controlDoc, /HttpOnly; Secure; SameSite=Strict/, "Control documentation must record the mobile session boundary");
 assert.match(masterbook, /real-device verified for pairing, status, logs, session persistence\/invalidation and Restart/i, "Masterbook must record the completed real-device mobile security QA milestone");
+
+assert.match(maintenanceContract, /HalieusMaintenanceNotice/, "Shared platform must define the maintenance-notice contract");
+assert.match(maintenanceContract, /releaseFingerprint: string/, "Server-ready contract must expose exact release identity");
+assert.match(serverIndex, /app\.post\("\/internal\/maintenance"/, "Production server must expose the internal maintenance hook");
+assert.match(serverIndex, /isLoopbackRequest\(request\)/, "Maintenance control must remain loopback-only");
+assert.match(serverIndex, /io\.emit\("platform:maintenance"/, "Production server must broadcast maintenance state to connected players");
+assert.match(serverIndex, /releaseFingerprint: RELEASE_FINGERPRINT/, "Server reconnect must publish the exact active release fingerprint");
+assert.match(serverIndex, /socket\.emit\("platform:maintenance", activeMaintenanceNotice\)/, "Players connecting during the warning must receive current maintenance state");
+assert.match(oracleQuickInstall, /Connected players notified of the incoming HGR restart/, "Oracle activation must notify players before stopping production");
+assert.match(oracleQuickInstall, /sleep "\$MAINTENANCE_GRACE_SECONDS"[\s\S]*?systemctl stop halieus-game-room/s, "Oracle activation must provide a grace window before service stop");
+assert.match(maintenanceBanner, /socket\.on\("platform:maintenance"/, "Website must render server maintenance events");
+assert.match(maintenanceBanner, /ready\.releaseFingerprint !== RELEASE_FINGERPRINT/, "Website must compare reconnect release identity with its loaded bundle");
+assert.match(maintenanceBanner, /window\.location\.reload\(\)/, "An existing website tab must refresh itself when a new release reconnects");
+assert.match(maintenanceBanner, /recovery key or room code/i, "Maintenance warning must remind live players about recovery information");
+assert.match(clientMain, /<PlatformMaintenanceBanner \/>/, "Maintenance UI must be mounted across the whole website");
+assert.match(maintenanceBannerCss, /z-index: 10000/, "Maintenance warning must stay above game surfaces");
+assert.match(postUpdateClient, /Existing HGR app window detected/, "Post-update helper must preserve an already-open dedicated HGR window");
+assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper may open HGR only when no dedicated window is running");
+assert.doesNotMatch(postUpdateClient, /Restart Halieus Game Room\.cmd/, "Normal successful Update must not force-close and reopen an existing HGR window");
+assert.match(updateLauncher, /FINAL STEP - Refreshing the HGR client/, "Updater must use release-aware client refresh as its final local step");
 
 for (const releasePath of [
   "server/control-ui",
@@ -227,6 +269,7 @@ for (const releasePath of [
   "scripts/windows/control-restart.ps1",
   "scripts/windows/control-close.ps1",
   "scripts/windows/control-update.ps1",
+  "scripts/windows/post-update-client.ps1",
 ]) {
   assert.ok(
     releaseIntegrity.includes(releasePath),
@@ -255,6 +298,7 @@ for (const packagedControlFile of [
   "scripts/windows/control-restart.ps1",
   "scripts/windows/control-close.ps1",
   "scripts/windows/control-update.ps1",
+  "scripts/windows/post-update-client.ps1",
   "server/control-ui/index.html",
   "server/control-ui/control.css",
   "server/control-ui/control.js",
@@ -280,6 +324,16 @@ assert.match(
   releaseIntegrity,
   /hgr-control-confirmed-update-progress-4\.5\.3/,
   "Release feature inventory must record confirmed Update progress",
+);
+assert.match(
+  releaseIntegrity,
+  /hgr-control-distinct-action-palette-4\.5\.3/,
+  "Release feature inventory must record the Control/action colour split",
+);
+assert.match(
+  releaseIntegrity,
+  /hgr-maintenance-release-aware-refresh-4\.5\.3/,
+  "Release feature inventory must record player maintenance and in-place release refresh",
 );
 
 console.log("HGR Control foundation / mobile PWA / Masterbook regression: PASS");
