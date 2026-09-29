@@ -336,7 +336,7 @@ Near-term work:
 2. Secure Windows action executor. Restart is authenticated, implemented and verified on the owner Windows machine; Start/Close/Update remain staged.
 3. Operation locking + audit log are implemented for Restart; structured live update progress remains.
 4. mobile HGR Control PWA first usable slice (status, Restart and logs). **Implemented and real-device Restart verified.**
-5. private Tailscale Serve + short-lived phone pairing path. **Implemented; real-device pairing and installed-PWA persistence verified; invalidation QA remains.**
+5. private Tailscale Serve + short-lived phone pairing path. **Implemented; real-device pairing, installed-PWA persistence and session invalidation verified. Persistent trusted-device pairing is a future convenience improvement.**
 6. themed atmosphere continuation for profile themes such as Brass & Coal.
 7. Light-mode contrast review for coloured fills and text.
 8. continued real-device mobile QA.
