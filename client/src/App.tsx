@@ -3965,6 +3965,8 @@ function handleLeaveSpectator() {
       betaMode={betaMode}
       onOpenAccount={() => setAccountPanelOpen(true)}
       theme={theme}
+      themeMode={themeMode}
+      themeProfileId={themeProfileId}
       onToggleDarkMode={toggleDarkMode}
       onGameSelect={(game) => { setSelectedGame(game); setMessage(""); }}
       onPlayerNameChange={setPlayerName}
