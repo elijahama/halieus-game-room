@@ -63,6 +63,8 @@ assert.match(agent, /Refusing to expose HGR Control beyond loopback without HGR_
 assert.match(agent, /request\.method === "GET" && request\.url === "\/api\/status"/, "Foundation agent must expose a read-only status endpoint");
 assert.match(agent, /implemented: action\.id === "status"/, "Mutable process actions must remain disabled in the foundation stage");
 assert.match(agent, /execFileAsync\("git"/, "Foundation agent may use fixed read-only Git inspection");
+assert.match(agent, /gitValue\(\["status", "--porcelain", "--untracked-files=no"\], true\)/, "Clean git status output must be preserved as an empty string rather than null");
+assert.match(agent, /dirty: porcelain === null \? null : porcelain\.length > 0/, "Repository dirty state must distinguish clean false from unavailable null");
 assert.doesNotMatch(agent, /\bexec\s*\(/, "Control agent must not use shell exec");
 assert.doesNotMatch(agent, /\bspawn\s*\(/, "Control agent foundation must not spawn arbitrary processes");
 assert.doesNotMatch(agent, /request\.(?:body|query)[\s\S]*?(?:command|exe|args)/i, "Control endpoint must not accept arbitrary execution input");
