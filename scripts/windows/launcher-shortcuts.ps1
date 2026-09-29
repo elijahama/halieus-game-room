@@ -7,8 +7,8 @@ $ErrorActionPreference = 'Stop'
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 
-# IMPORTANT: shortcut refresh is non-destructive.
-# It must never generate, delete, recolour or overwrite launcher artwork.
+# Shortcut refresh regenerates runtime ICO/PNG artwork from the canonical
+# Halieus role palette. Tracked source artwork is never overwritten here.
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $RuntimeLauncherIconRoot = Join-Path $ProjectRoot 'server\data\runtime\launcher-icons'
 $TrackedLauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
