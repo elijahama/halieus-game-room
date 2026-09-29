@@ -216,6 +216,12 @@ if not errorlevel 1 (
     goto :DONE
 )
 
+if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
+    echo [STOPPED] Remote/non-interactive Update found local source changes.
+    echo Review and commit or discard those edits from the owner PC before retrying.
+    goto :PAUSE_EXIT
+)
+
 choice /c YN /n /m "Stage these changes for GitHub? [Y/N]: "
 if errorlevel 2 (
     echo.
@@ -473,6 +479,11 @@ exit 0
 
 :PAUSE_EXIT
 echo.
+if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
+    popd
+    endlocal
+    exit /b 1
+)
 pause
 popd
 endlocal
