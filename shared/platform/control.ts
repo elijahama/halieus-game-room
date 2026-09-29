@@ -104,7 +104,7 @@ export interface HalieusControlStatus {
   hgrVersion: string;
   machine: {
     name: string;
-    platform: NodeJS.Platform;
+    platform: string;
   };
   repository: HalieusControlRepositoryStatus;
   actions: HalieusControlActionStatus[];
