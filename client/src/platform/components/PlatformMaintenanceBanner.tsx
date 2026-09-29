@@ -73,6 +73,7 @@ export function PlatformMaintenanceBanner() {
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [releaseTarget, setReleaseTarget] = useState<HalieusServerReadyPayload | null>(null);
   const reloadTimer = useRef<number | null>(null);
+  const fallbackTimer = useRef<number | null>(null);
   const pollTimer = useRef<number | null>(null);
   const maintenanceSeen = useRef(false);
 
@@ -117,9 +118,13 @@ export function PlatformMaintenanceBanner() {
       });
 
       if (reloadTimer.current) window.clearTimeout(reloadTimer.current);
+      if (fallbackTimer.current) window.clearTimeout(fallbackTimer.current);
       reloadTimer.current = window.setTimeout(() => {
         navigateToRelease(ready);
       }, 850);
+      fallbackTimer.current = window.setTimeout(() => {
+        setMode("refresh-required");
+      }, 4500);
     };
 
     const pollForRelease = async () => {
@@ -148,7 +153,7 @@ export function PlatformMaintenanceBanner() {
     };
 
     const onMaintenanceCleared = () => {
-      if (!releaseTarget) setNotice(null);
+      setNotice((current) => current?.state === "restarting" ? current : null);
     };
 
     const onServerReady = (ready: HalieusServerReadyPayload) => {
@@ -197,8 +202,9 @@ export function PlatformMaintenanceBanner() {
       socket.off("server:ready", onServerReady);
       socket.off("disconnect", onDisconnect);
       if (reloadTimer.current) window.clearTimeout(reloadTimer.current);
+      if (fallbackTimer.current) window.clearTimeout(fallbackTimer.current);
     };
-  }, [releaseTarget]);
+  }, []);
 
   useEffect(() => {
     if (!notice?.restartAt || notice.state === "restarting") {
