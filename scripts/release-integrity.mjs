@@ -297,6 +297,7 @@ const manifest = {
     'hgr-shared-game-shell-polish-4.1.0',
     'matte-launcher-family-4.1.0',
     'hgr-control-readonly-foundation-4.5.3',
+    'hgr-control-authenticated-restart-4.5.3',
   ],
 };
 
