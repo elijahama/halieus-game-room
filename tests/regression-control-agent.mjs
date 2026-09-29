@@ -213,7 +213,7 @@ assert.match(controlManifest, /"display": "standalone"/, "Mobile Control manifes
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(controlDoc, /Tailscale Serve/, "Control documentation must record the private HTTPS proxy design");
 assert.match(controlDoc, /HttpOnly; Secure; SameSite=Strict/, "Control documentation must record the mobile session boundary");
-assert.match(masterbook, /real-device pairing, installed-PWA persistence and session invalidation verified/i, "Masterbook must record the completed real-device mobile security QA milestone");
+assert.match(masterbook, /real-device verified for pairing, status, logs, session persistence\/invalidation and Restart/i, "Masterbook must record the completed real-device mobile security QA milestone");
 
 for (const releasePath of [
   "server/control-ui",
