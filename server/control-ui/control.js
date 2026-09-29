@@ -276,10 +276,12 @@
     }
   }
 
-  function askForConfirmation(title, copy, acceptLabel) {
+  function askForConfirmation(title, copy, acceptLabel, action) {
     confirmTitle.textContent = title;
     confirmCopy.textContent = copy;
     confirmAcceptButton.textContent = acceptLabel;
+    confirmDialog.classList.toggle("is-close", action === "close");
+    confirmDialog.classList.toggle("is-update", action === "update");
 
     if (typeof confirmDialog.showModal !== "function") {
       return Promise.resolve(window.confirm(`${title}\n\n${copy}`));
@@ -321,7 +323,7 @@
   }
 
   async function runConfirmedAction(action, title, copy, acceptLabel) {
-    const accepted = await askForConfirmation(title, copy, acceptLabel);
+    const accepted = await askForConfirmation(title, copy, acceptLabel, action);
     if (!accepted) return;
 
     for (const button of actionButtons) button.disabled = true;
