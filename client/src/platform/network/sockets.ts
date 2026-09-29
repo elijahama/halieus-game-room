@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 const configuredServerUrl =
   import.meta.env.VITE_SERVER_URL?.trim();
 
-const serverUrl =
+export const serverUrl =
   configuredServerUrl ||
   (import.meta.env.DEV
     ? "http://localhost:3000"
