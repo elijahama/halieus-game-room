@@ -2909,3 +2909,118 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5.3 — standard palette correction + hybrid atmosphere authority
+   ========================================================================== */
+
+/* Keep the existing H geometry. Only the standard brand gold is corrected to
+ * the richer saturated amber approved from the earlier mobile icon reference. */
+:root {
+  --hgr-logo-bg: #e7a900;
+  --hgr-logo-ink: #000000;
+  --hgr-logo-border: #936600;
+}
+html[data-theme="light"],
+html[data-theme="dark"] {
+  --hgr-logo-bg: #e7a900;
+  --hgr-logo-ink: #000000;
+  --hgr-logo-border: #936600;
+}
+
+/* Standard Dark is neutral graphite. The former blue-black dark treatment is
+ * preserved as the explicit Blue theme instead of leaking into Dark. */
+html[data-theme="dark"] {
+  --hgr-page: #101114;
+  --hgr-surface: #17191d;
+  --hgr-surface-raised: #1d2025;
+  --hgr-surface-soft: #24272d;
+  --hgr-surface-strong: #2d3138;
+  --hgr-text: #f7f7f8;
+  --hgr-text-soft: #d7d9dd;
+  --hgr-muted: #a4a8b0;
+  --hgr-border: rgba(255,255,255,.10);
+  --hgr-border-strong: rgba(255,255,255,.18);
+  --mm-page: var(--hgr-page);
+  --mm-surface: var(--hgr-surface);
+  --mm-surface-1: var(--hgr-surface);
+  --mm-surface-2: var(--hgr-surface-soft);
+  --mm-input: #131519;
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+  --mm-border: #3a3e46;
+}
+html[data-theme="dark"] .halieus-create-panel.halieus-create-modal,
+html[data-theme="dark"] .halieus-join-modal {
+  background: #1d2025 !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+/* Blue now deliberately owns the old deep-navy aesthetic as a real theme. */
+html[data-theme="blue"] {
+  --hgr-page: #06111c;
+  --hgr-surface: #0b1826;
+  --hgr-surface-raised: #102338;
+  --hgr-surface-soft: #142b41;
+  --hgr-surface-strong: #1c3852;
+  --hgr-text: #f8fafc;
+  --hgr-text-soft: #d6deea;
+  --hgr-muted: #9eabba;
+  --hgr-border: rgba(255,255,255,.09);
+  --hgr-border-strong: rgba(255,255,255,.16);
+  --mm-page: var(--hgr-page);
+  --mm-surface: var(--hgr-surface);
+  --mm-surface-1: var(--hgr-surface);
+  --mm-surface-2: var(--hgr-surface-soft);
+  --mm-input: #081521;
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+  --mm-border: #29435c;
+}
+html[data-theme="blue"] .halieus-create-panel.halieus-create-modal,
+html[data-theme="blue"] .halieus-join-modal {
+  background: var(--hgr-surface-raised) !important;
+}
+
+/* Light mode type uses neutral charcoal rather than a navy-tinted hierarchy. */
+html[data-theme="light"] {
+  --hgr-text: #17191d;
+  --hgr-text-soft: #3f434a;
+  --hgr-muted: #6b717a;
+  --mm-text: var(--hgr-text);
+  --mm-muted: var(--hgr-muted);
+}
+
+/* Guilds must not paint a second page-sized slab behind its own cards. */
+.halieus-guilds-panel,
+html[data-theme="dark"] .halieus-guilds-panel {
+  background: transparent !important;
+}
+
+/* Standard System/Light/Dark uses the selected game's glyphs and accent. */
+.halieus-theme-atmosphere[data-atmosphere-source="game"] {
+  color: var(--selected-game-accent) !important;
+  background:
+    radial-gradient(circle at 76% 16%,color-mix(in srgb,var(--selected-game-accent) 13%,transparent),transparent 36%),
+    radial-gradient(circle at 18% 80%,color-mix(in srgb,var(--selected-game-accent) 7%,transparent),transparent 34%),
+    var(--hgr-page) !important;
+}
+.halieus-theme-atmosphere[data-atmosphere-source="game"]::after {
+  background:
+    radial-gradient(circle at 78% 18%,color-mix(in srgb,var(--selected-game-accent) 14%,transparent),transparent 40%),
+    radial-gradient(circle at 14% 82%,color-mix(in srgb,var(--selected-game-accent) 7%,transparent),transparent 35%),
+    linear-gradient(125deg,color-mix(in srgb,var(--selected-game-accent) 2%,transparent),transparent 46%) !important;
+}
+.halieus-theme-atmosphere[data-atmosphere-source="game"] > span,
+.halieus-theme-atmosphere[data-atmosphere-source="game"] > span:nth-child(3n+2),
+.halieus-theme-atmosphere[data-atmosphere-source="game"] > span:nth-child(3n) {
+  color: var(--selected-game-accent) !important;
+  text-shadow: 0 12px 38px color-mix(in srgb,var(--selected-game-accent) 14%,transparent) !important;
+}
+
+/* Every non-standard theme keeps one stable glyph family while colours continue
+ * to come from that theme. Changing games must not swap these glyphs. */
+.halieus-theme-atmosphere[data-atmosphere-source="theme"] {
+  color: var(--hgr-brand) !important;
+}
