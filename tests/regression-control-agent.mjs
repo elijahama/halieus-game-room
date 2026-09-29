@@ -85,6 +85,9 @@ assert.match(agent, /request\.method === "GET" && request\.url === "\/api\/statu
 assert.match(agent, /implemented: action\.id !== "open-site" && action\.id !== "open-github"/, "Implemented Control actions must include status/start/restart/close/update/logs while links remain staged");
 assert.match(agent, /execFileAsync\("git"/, "Foundation agent may use fixed read-only Git inspection");
 assert.match(agent, /gitValue\(\["status", "--porcelain", "--untracked-files=no"\], true\)/, "Clean git status output must be preserved as an empty string rather than null");
+assert.match(agent, /allowEmpty[\s\S]*?stdout\.replace\(\/\(\?:\\r\?\\n\)\+\$\/, ""\)/, "Git helper must preserve Git porcelain status columns when empty output is allowed");
+assert.match(agent, /line\.slice\(3\)\.trim\(\)/, "Remote Update must parse paths after the two status columns plus separator");
+assert.match(agent, /new Set\(\["RELEASE\.json", "shared\/release\.ts"\]\)/, "Remote Update must tolerate generated release identity drift");
 assert.match(agent, /dirty: porcelain === null \? null : porcelain\.length > 0/, "Repository dirty state must distinguish clean false from unavailable null");
 assert.doesNotMatch(agent, /\bexec\s*\(/, "Control agent must not use shell exec");
 assert.doesNotMatch(agent, /\bspawn\s*\(/, "Control agent foundation must not spawn arbitrary processes");
