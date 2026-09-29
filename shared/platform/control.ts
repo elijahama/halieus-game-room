@@ -57,7 +57,7 @@ export const HGR_CONTROL_ACTIONS = [
   {
     id: "update",
     label: "Update HGR",
-    description: "Run the approved HGR update/validation/deploy flow, then restart on success.",
+    description: "Run the approved HGR update/validation/deploy flow, then refresh the existing client or open HGR if it was closed.",
     kind: "local-process",
     confirmation: "confirm",
   },
