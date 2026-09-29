@@ -17,6 +17,7 @@ const controlStartHelper = read("scripts/windows/start-control-agent.ps1");
 const controlClientHelper = read("scripts/windows/hgr-control-client.ps1");
 const controlLauncher = read("Start HGR Control.cmd");
 const controlLauncherAlias = read("Start-HGR-Control.cmd");
+const controlClientEntry = read("HGR-Control.cmd");
 const gitignore = read(".gitignore");
 
 for (const id of [
@@ -120,7 +121,12 @@ assert.match(controlClientHelper, /"restart"[\s\S]*?\/api\/actions\/restart/s, "
 assert.doesNotMatch(controlClientHelper, /Invoke-Expression|Start-Process|cmd\.exe|powershell\.exe/i, "Local Control client must not become a general process runner");
 assert.match(controlLauncher, /start-control-agent\.ps1/i, "Stable HGR Control CMD entrypoint must delegate to the fixed PowerShell helper");
 assert.match(controlLauncherAlias, /call "%~dp0Start HGR Control\.cmd"/i, "PowerShell-safe HGR Control alias must delegate to the canonical spaced launcher");
+assert.match(controlClientEntry, /hgr-control-client\.ps1/i, "Stable HGR Control client entrypoint must delegate to the allow-listed PowerShell client");
+assert.match(controlStartHelper, /HGR-Control\.cmd' status/, "Running agent must print an absolute status client command");
+assert.match(controlStartHelper, /HGR-Control\.cmd' restart/, "Running agent must print an absolute restart client command");
+assert.match(controlStartHelper, /HGR-Control\.cmd' logs/, "Running agent must print an absolute logs client command");
 assert.match(controlDoc, /\.\\Start-HGR-Control\.cmd/, "PowerShell walkthrough must use the no-space launcher alias");
+assert.match(controlDoc, /\.\\HGR-Control\.cmd status/, "PowerShell walkthrough must use the stable root Control client");
 assert.match(gitignore, /server\/data\/runtime\//, "Temporary HGR Control token and audit files must remain ignored by Git");
 
 console.log("HGR Control foundation / Masterbook regression: PASS");

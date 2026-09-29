@@ -73,6 +73,7 @@ const singles = [
   'tests/regression-control-agent.mjs',
   'Start HGR Control.cmd',
   'Start-HGR-Control.cmd',
+  'HGR-Control.cmd',
   'scripts/windows/start-control-agent.ps1',
   'scripts/windows/hgr-control-client.ps1',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
