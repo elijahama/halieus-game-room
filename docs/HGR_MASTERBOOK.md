@@ -197,7 +197,13 @@ Standard HGR chrome uses one saturated gold family rather than scattered mustard
 
 ### Install identity
 
-Browser favicon, PWA install icon, Apple touch icon and social preview are separate consumers of the HGR identity pipeline. Historical reference artwork must not silently override the current install icon.
+Browser favicon, PWA install icon and launcher identities are separate consumers of the HGR identity pipeline. Historical reference artwork must not silently override the current install icon.
+
+### Canonical icon family
+
+The 4.5.3 icon pass uses one simple H geometry across the main app, HGR Control and owner utilities. Main Halieus is bright gold; utility meaning lives in a separate corner badge rather than being cut into the H. The functional vector family also includes full-colour, monochrome-gold, white-only, black-only, inverted, outline and H-only permutations.
+
+HGR Control is a separate app identity: its installed PWA, splash/header and Windows Control Mobile shortcut use the dedicated royal-blue Control mark rather than the main gold Halieus icon.
 
 See [Brand asset pipeline](BRAND_ASSET_PIPELINE.md), [Cosmetic theme system](COSMETIC_THEME_SYSTEM.md) and [Game visual identity system](GAME_VISUAL_IDENTITY_SYSTEM.md).
 
@@ -319,7 +325,7 @@ Production activation now participates in the player experience instead of behav
 
 When the server returns, the Socket.IO `server:ready` payload includes the exact release fingerprint. An older loaded client detects that the server is now a different release and refreshes the **same browser tab/window**. The owner-PC updater therefore no longer force-kills and reopens an existing dedicated HGR window after every successful deployment. A pre-feature window receives one bootstrap Restart so it can load the release-aware client and create a local capability marker; later updates preserve that window and let it refresh itself. HGR is opened only if the dedicated window was already closed. The hard Restart launcher remains the fallback for recovery.
 
-HGR Control also follows the established launcher action palette—Start green, Restart amber, Close red and Update blue—while the Control product chrome uses its own violet identity.
+HGR Control and the Windows launcher family now share one semantic icon system: Start green, Restart orange, Close red, Update light blue, PowerShell slate and OpenShard purple. HGR Control uses a separate royal blue so it cannot be confused with either Update or OpenShard. Every utility icon uses the same simple canonical H plus a small white corner badge; the H itself no longer contains the retired play-cut geometry.
 
 ## 12. Validation philosophy
 
