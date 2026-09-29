@@ -102,7 +102,7 @@ assert.match(html,/halieus-boot-mark[\s\S]*?M12 15H27L24 19V28H40V19L37 15H52L49
 assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-icon-set"`),"Platform tab identity must use the canonical icon-set web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
-assert.match(halieusAppIcon,/#daa017/i,"Installable app icon must preserve the approved default yellow brand");
+assert.match(halieusAppIcon,/#e7a900/i,"Installable app icon must preserve the approved saturated HGR gold");
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
 assert.match(launcherReferenceDoc,/Reference artwork beats generated interpretation/,"Launcher reference README must make approved artwork authoritative");
 assert.match(launcherReferenceDoc,/Every approved PNG stored directly in:/,"Launcher reference README must treat the current reference directory as authoritative rather than hard-coding an old reference count");
