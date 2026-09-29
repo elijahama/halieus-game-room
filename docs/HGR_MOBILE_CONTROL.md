@@ -439,7 +439,8 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 - [x] automatic session loss when the agent exits
 - [x] first real-phone end-to-end Restart verification
 - [x] installed-PWA session persistence after app close/reopen
-- [ ] session invalidation verified after Control Agent exit
+- [x] session invalidation verified after Control Agent exit
+- [ ] persistent trusted-device pairing across Control Agent restarts
 
 ### Phase 6 — hardening
 - [x] pairing failure cooldown
@@ -483,7 +484,7 @@ This test also verified:
 - the PWA install prompt is available on the real device;
 - the real phone can trigger the owner-PC Restart action successfully.
 
-Installed-PWA session persistence is verified: closing HGR Control from Android Recent Apps and reopening it returned directly to the connected dashboard without re-pairing. The remaining mobile-session check is deliberate invalidation when the Control Agent exits.
+Installed-PWA session persistence is verified: closing HGR Control from Android Recent Apps and reopening it returned directly to the connected dashboard without re-pairing. Deliberate invalidation is now verified: stopping the Control Agent and starting a new session forced the phone to pair again with the new short-lived code. This is the intended current security behaviour. A future trusted-device mode may persist a revocable device credential across agent restarts to reduce repeat pairing without weakening the control boundary.
 
 ## Implementation notes and troubleshooting history
 
@@ -572,6 +573,16 @@ A dedicated HTTPS port (`8443`) is used so HGR Control does not take over the no
 The long random bearer token remains local to the owner PC and continues to support the allow-listed PowerShell client. The phone enters a short-lived eight-digit code and receives a separate random session only as an HttpOnly secure cookie.
 
 **Lesson:** a human-friendly pairing secret and a machine credential have different jobs and should not be the same value.
+
+### Trusted-device convenience
+
+**Current behaviour:** mobile sessions are in-memory only. Stopping the Control Agent invalidates every paired phone immediately, and the next agent process requires a fresh pairing code.
+
+**Verified behaviour:** this was confirmed on the real owner phone and PC.
+
+**Future improvement:** add an optional trusted-device model using a revocable persistent device credential on the PC and a secure HttpOnly cookie on the phone. The PC should store only a hashed/derived device credential, with explicit revoke/expiry support. The 8-digit pairing code must remain short-lived and must not become the permanent device secret.
+
+This is a convenience improvement, not a blocker for the current verified mobile-control path.
 
 ### PWA cache boundary
 
