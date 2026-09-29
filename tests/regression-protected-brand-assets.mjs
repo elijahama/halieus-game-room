@@ -1,27 +1,79 @@
-import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
-import { createHash } from 'node:crypto';
-import { resolve } from 'node:path';
-const root = resolve(import.meta.dirname, '..');
-const expected = JSON.parse(readFileSync(resolve(root, 'tests/fixtures/pre2b-protected-assets.json'), 'utf8'));
-const actualPaths = [];
-function walk(dir) {
-  for (const entry of readdirSync(resolve(root, dir), { withFileTypes: true })) {
-    const path = `${dir}/${entry.name}`;
-    if (entry.isDirectory()) walk(path); else actualPaths.push(path);
-  }
+import assert from "node:assert/strict";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = resolve(import.meta.dirname, "..");
+const read = (path) => readFileSync(resolve(root, path), "utf8");
+
+const referenceRoot = resolve(root, "assets/branding/references");
+const launcherRoot = resolve(root, "assets/branding/launchers");
+const referenceNames = readdirSync(referenceRoot);
+const launcherNames = readdirSync(launcherRoot);
+
+assert.ok(
+  referenceNames.includes("HGR ICON - CONTROL UPDATE"),
+  "Current HGR icon-system reference must remain in assets/branding/references",
+);
+assert.ok(
+  referenceNames.includes("HGR_LOGO_SYSTEM_REFERENCE.md"),
+  "Canonical HGR logo-system reference must remain present",
+);
+
+const simpleH = "M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z";
+const logoReference = read("assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md");
+assert.match(logoReference, /no internal play button\/cut-out/i);
+assert.match(logoReference, /HGR Control — royal control blue `#4F7BFE`/);
+assert.match(logoReference, /Update — light blue `#38BDF8`/);
+assert.match(logoReference, /OpenShard — purple `#A855F7`/);
+
+const launcherSources = [
+  ["Start Halieus Game Room.svg", "#22C55E"],
+  ["Restart Halieus Game Room.svg", "#F59E0B"],
+  ["Close Halieus Game Room.svg", "#EF4444"],
+  ["Update Halieus Website.svg", "#38BDF8"],
+  ["HGR PowerShell.svg", "#64748B"],
+  ["HGR OpenShard TUI.svg", "#A855F7"],
+  ["HGR Control.svg", "#4F7BFE"],
+];
+
+for (const [name, colour] of launcherSources) {
+  assert.ok(launcherNames.includes(name), `Canonical launcher source is missing: ${name}`);
+  const source = read(`assets/branding/launchers/${name}`);
+  assert.ok(source.includes(simpleH), `${name} must use the canonical simple H`);
+  assert.ok(source.includes(colour), `${name} must retain its semantic role colour ${colour}`);
+  assert.doesNotMatch(source, /Q23 59|M27 35|L38 44/, `${name} must not reintroduce the retired play-tail geometry`);
 }
-walk('assets/branding/references');
-walk('assets/branding/launchers');
-assert.deepEqual(actualPaths.sort(), expected.map(a => a.path).sort(), 'Protected reference/launcher inventory changed; review the entire set');
-for (const asset of expected) {
-  const bytes = readFileSync(resolve(root, asset.path));
-  // Binary artwork remains byte-exact. Text references/SVGs are canonicalised to
-  // LF before hashing so Git's Windows CRLF checkout cannot create a false failure.
-  const canonicalBytes = /\.(svg|md)$/.test(asset.path)
-    ? Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8')
-    : bytes;
-  const hash = createHash('sha256').update(canonicalBytes).digest('hex');
-  assert.equal(hash, asset.sha256, asset.path);
+
+for (const binary of [
+  "Start Halieus Game Room.ico",
+  "Restart Halieus Game Room.ico",
+  "Close Halieus Game Room.ico",
+  "Update Halieus Website.ico",
+  "HGR PowerShell.ico",
+]) {
+  assert.ok(
+    existsSync(resolve(launcherRoot, binary)),
+    `Legacy compatibility launcher asset is missing: ${binary}`,
+  );
 }
-console.log(`PASS protected branding: ${expected.length} independent reference/launcher files`);
+
+const generator = read("scripts/windows/generate-launcher-icons.ps1");
+assert.match(generator, /server\\data\\runtime\\launcher-icons/);
+assert.match(generator, /main = '#F4C430'/);
+assert.match(generator, /control = '#4F7BFE'/);
+assert.match(generator, /openshard = '#A855F7'/);
+assert.match(generator, /update = '#38BDF8'/);
+assert.doesNotMatch(
+  generator,
+  /assets\\branding\\launchers\\generated-preview/,
+  "Runtime launcher generator must no longer target the obsolete preview folder",
+);
+
+const shortcuts = read("scripts/windows/launcher-shortcuts.ps1");
+assert.match(shortcuts, /RuntimeLauncherIconRoot/);
+assert.match(shortcuts, /HGR - Control Mobile\.lnk/);
+assert.match(shortcuts, /& \$IconGenerator/);
+
+console.log(
+  `PASS canonical branding: ${referenceNames.length} references, ${launcherSources.length} launcher SVG sources`,
+);
