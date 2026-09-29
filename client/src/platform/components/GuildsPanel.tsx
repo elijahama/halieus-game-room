@@ -468,6 +468,13 @@ export function GuildsPanel({
         </div>
       </header>
 
+      {guilds.length > 0 && <label className="halieus-guild-switcher">
+        <span>ACTIVE GUILD</span>
+        <select aria-label="Switch guild" value={selectedGuildId ?? ""} onChange={(event) => { setSelectedGuildId(event.target.value || null); setView("rooms"); }}>
+          {guilds.map((guild) => <option key={guild.id} value={guild.id}>{guild.name} · {guild.memberCount} members · {guild.roomCount} rooms</option>)}
+        </select>
+      </label>}
+
       {incomingInvitations.length > 0 && <section className="halieus-guild-incoming" aria-label="Guild invitations">
         <header><div><span>GUILD INVITATIONS</span><strong>You’ve been invited</strong></div><b>{incomingInvitations.length}</b></header>
         {incomingInvitations.map((invitation) => <article key={invitation.id}><GuildEmblem name={invitation.guildName} picture={invitation.guildPicture} /><div><strong>{invitation.guildName}</strong><small>{invitation.senderDisplayName} invited you</small></div><button type="button" className="button-primary" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "accept")}>Accept</button><button type="button" className="button-muted" disabled={busy} onClick={() => void respondGuildInvitation(invitation, "decline")}>Decline</button></article>)}
