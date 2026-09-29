@@ -53,11 +53,13 @@
   --hgr-danger: var(--hgr-coral);
   --hgr-warning: #f5a524;
   --hgr-offline: #8a98a8;
-  --hgr-start: var(--hgr-green);
-  --hgr-restart: #d59a33;
-  --hgr-close: var(--hgr-coral);
-  --hgr-update: #4e84d9;
+  --hgr-start: #22c55e;
+  --hgr-restart: #f59e0b;
+  --hgr-close: #ef4444;
+  --hgr-update: #38bdf8;
   --hgr-dev: #64748b;
+  --hgr-control: #4f7bfe;
+  --hgr-openshard: #a855f7;
 
   /* Geometry */
   --hgr-radius-xs: 8px;
