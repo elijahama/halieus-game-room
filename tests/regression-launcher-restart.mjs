@@ -19,6 +19,7 @@ assert.equal(existsSync(resolve(root, 'dev-tools/Local Development')), false, 'u
 const productionStart = read('Start Halieus Game Room.cmd');
 const productionRestart = read('Restart Halieus Game Room.cmd');
 const productionClose = read('Close Halieus Game Room.cmd');
+const updater = read('Update HGR GitHub.cmd');
 const shortcuts = read('launcher-shortcuts.ps1');
 
 for (const launcher of [productionStart, productionRestart]) {
@@ -29,6 +30,12 @@ for (const launcher of [productionStart, productionRestart]) {
 }
 assert.match(productionRestart, /refresh=/);
 assert.match(productionRestart, /Get-CimInstance Win32_Process/,'restart closes the dedicated site window before reopening');
+assert.doesNotMatch(productionRestart, /git\s+(fetch|pull|push|rebase|commit)/i,'standalone restart must never perform Git update work');
+assert.doesNotMatch(productionRestart, /npm\s+run/i,'standalone restart must never run build or release tasks');
+assert.doesNotMatch(productionRestart, /deploy-from-windows|update-website\.ps1/i,'standalone restart must never deploy production');
+assert.match(updater, /:RESTART_AFTER_UPDATE/,'updater must own a final restart stage');
+assert.match(updater, /call "%~dp0Restart Halieus Game Room\.cmd"/,'successful updater must reuse the dedicated restart launcher');
+assert.match(updater, /FINAL STEP - Restarting Halieus Game Room/,'updater must make automatic restart visible in its success flow');
 assert.match(productionClose, /Get-CimInstance Win32_Process/);
 assert.match(productionClose, /Halieus Game Room\\Website/);
 assert.doesNotMatch(productionClose, /localhost/i);
