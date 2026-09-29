@@ -1,5 +1,42 @@
 # HGR Mobile Control
 
+## HGR Control Lab
+
+The Tailscale implementation should be treated as a practical **control-plane networking and security lab**, not merely as a convenience feature.
+
+The lab demonstrates a deliberately constrained remote-control design:
+
+```text
+owner phone
+   ↓
+private tailnet + HTTPS
+   ↓
+Tailscale Serve
+   ↓
+loopback-only HGR Control Agent
+   ↓
+allow-listed HGR maintenance action
+   ↓
+owner Windows machine
+```
+
+The learning and validation goals are:
+
+- preserve a local trust boundary by keeping the privileged agent on `127.0.0.1`;
+- use a private overlay network rather than router port forwarding;
+- terminate phone access through private HTTPS;
+- separate human-friendly pairing from the machine bearer credential;
+- use secure HttpOnly sessions instead of exposing control secrets to browser JavaScript;
+- verify session persistence across PWA reopen and invalidation when the agent exits;
+- enforce an action allow-list so the controller cannot become an arbitrary remote shell;
+- keep one mutable operation at a time and retain an audit trail;
+- perform real-device validation from an Android phone to the owner Windows PC;
+- use the resulting private proof of concept as the architectural basis for a later Oracle-hosted control relay.
+
+This makes HGR Control suitable to discuss as lab work in a portfolio: it combines private networking, authentication, process control, secure API design, real-device QA and operational logging around a real application.
+
+
+
 ## Purpose
 
 HGR Mobile Control turns the existing Windows launcher ecosystem into a secure phone-accessible control plane.
