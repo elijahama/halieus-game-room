@@ -31,7 +31,7 @@ assert.doesNotMatch(primaryActionSection,/linear-gradient/,"Current primary acti
 assert.match(css,/\.halieus-feature-arrow[\s\S]*?place-items:\s*center !important/s,"Featured arrows must use layout centring");
 assert.match(css,/\.halieus-feature-card-stage > img,[\s\S]*?box-shadow:\s*none !important/s,"Featured artwork must not use a square glow");
 assert.match(css,/html\[data-theme="dark"\][\s\S]*?--hgr-page:\s*#101114[\s\S]*?--mm-page:\s*var\(--hgr-page\)/s,"Dark mode must bridge HGR and legacy surfaces to the same graphite canvas");
-assert.match(css,/html\[data-theme="light"\][\s\S]*?--hgr-action-bg:\s*#d6a11f/s,"Light mode must preserve the standard HGR yellow action colour");
+assert.match(css,/html\[data-theme="light"\][\s\S]*?--hgr-action-bg:\s*var\(--hgr-gold\)/s,"Light mode must preserve the canonical saturated HGR gold action colour");
 assert.match(css,/html\[data-theme="red"\][\s\S]*?--hgr-page:\s*#170d10/s,"Red profile must recolour the complete workspace");
 assert.match(css,/html\[data-theme="green"\][\s\S]*?--hgr-page:\s*#0d1712/s,"Green profile must recolour the complete workspace");
 assert.match(css,/\.halieus-avatar-media,[\s\S]*?overflow:\s*hidden !important[\s\S]*?aspect-ratio:\s*1 \/ 1/s,"Player pictures must use one clipped square frame");
