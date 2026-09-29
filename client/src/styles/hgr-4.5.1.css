@@ -3134,7 +3134,7 @@ html[data-theme="light"] .button-primary:not([data-game-accent]),
 html[data-theme="dark"] .button-primary:not([data-game-accent]),
 html[data-theme="light"] .halieus-join-primary,
 html[data-theme="dark"] .halieus-join-primary {
-  background: linear-gradient(180deg,var(--hgr-gold-strong),var(--hgr-gold)) !important;
+  background: var(--hgr-gold) !important;
   border-color: color-mix(in srgb,var(--hgr-gold-deep) 72%,transparent) !important;
   color: #17191d !important;
   box-shadow: 0 10px 26px color-mix(in srgb,var(--hgr-gold) 20%,transparent) !important;
@@ -3144,5 +3144,5 @@ html[data-theme="light"] .button-primary:not([data-game-accent]):hover,
 html[data-theme="dark"] .button-primary:not([data-game-accent]):hover,
 html[data-theme="light"] .halieus-join-primary:hover,
 html[data-theme="dark"] .halieus-join-primary:hover {
-  background: linear-gradient(180deg,#ffd044,var(--hgr-gold-strong)) !important;
+  background: var(--hgr-gold-strong) !important;
 }
