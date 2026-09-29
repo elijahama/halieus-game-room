@@ -39,6 +39,7 @@ const maintenanceBannerCss = read("client/src/platform/components/PlatformMainte
 const maintenanceContract = read("shared/platform/maintenance.ts");
 const oracleQuickInstall = read("tests/dev-tools/Oracle Quick Deploy/quick-install.sh");
 const postUpdateClient = read("scripts/windows/post-update-client.ps1");
+const websiteServiceWorker = read("client/public/sw.js");
 const releaseIntegrity = read("scripts/release-integrity.mjs");
 const oraclePacker = read("tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1");
 const oraclePackageRegression = read("tests/package-oracle-4.0.0.ps1");
@@ -251,9 +252,15 @@ assert.match(oracleQuickInstall, /Connected players notified of the incoming HGR
 assert.match(oracleQuickInstall, /sleep "\$MAINTENANCE_GRACE_SECONDS"[\s\S]*?systemctl stop halieus-game-room/s, "Oracle activation must provide a grace window before service stop");
 assert.match(maintenanceBanner, /socket\.on\("platform:maintenance"/, "Website must render server maintenance events");
 assert.match(maintenanceBanner, /ready\.releaseFingerprint !== RELEASE_FINGERPRINT/, "Website must compare reconnect release identity with its loaded bundle");
-assert.match(maintenanceBanner, /window\.location\.reload\(\)/, "An existing website tab must refresh itself when a new release reconnects");
+assert.match(maintenanceBanner, /readServerIdentity/, "Release refresh must poll the production health identity during maintenance");
+assert.match(maintenanceBanner, /cache:\s*"no-store"/, "Release identity checks must bypass browser caches");
+assert.match(maintenanceBanner, /window\.location\.replace\(releaseNavigationUrl\(ready\)\)/, "Existing tabs must use cache-busted same-tab navigation for a changed release");
+assert.match(maintenanceBanner, /HALIEUS_RELEASE_REFRESH/, "Client must ask the service worker to discard stale shell state before refresh");
+assert.doesNotMatch(maintenanceBanner, /window\.location\.reload\(\)/, "Release refresh must not rely on ordinary reload after it proved unreliable");
 assert.match(maintenanceBanner, /recovery key or room code/i, "Maintenance warning must remind live players about recovery information");
 assert.match(clientMain, /<PlatformMaintenanceBanner \/>/, "Maintenance UI must be mounted across the whole website");
+assert.match(websiteServiceWorker, /HALIEUS_RELEASE_REFRESH/, "Website service worker must accept the release-refresh cache clear signal");
+assert.match(serverIndex, /Cache-Control", "no-store, no-cache, must-revalidate"/, "Production release identity and HTML navigations must be non-cacheable");
 assert.match(maintenanceBannerCss, /z-index: 10000/, "Maintenance warning must stay above game surfaces");
 assert.match(postUpdateClient, /release-aware-refresh\.enabled/, "Post-update helper must persist the one-time release-aware capability marker");
 assert.match(postUpdateClient, /Existing release-aware HGR app window detected/, "Post-update helper must preserve an already-open release-aware HGR window");
