@@ -1,59 +1,75 @@
-# HGR Branding References — Source of Truth
+# HGR Branding References — Visual Direction
 
-This folder contains **approved visual source material**. Reference images are not mood boards to reinterpret.
+This folder contains approved visual source material for Halieus. References are evidence of the intended visual direction and must be reviewed before changing production branding.
+
+## Current icon-system reference
+
+The current utility/icon-family direction is recorded in:
+
+`HGR ICON - CONTROL UPDATE`
+
+The written geometry and palette contract is:
+
+`HGR_LOGO_SYSTEM_REFERENCE.md`
 
 ## Authority rule
 
-Every approved PNG stored directly in:
+Reference artwork establishes the intended look, but production identity is now implemented through the canonical icon system rather than by copying one historical rendered file verbatim.
+
+The active contract is:
 
 ```text
-assets/branding/references/
+approved visual reference
+        ↓
+canonical simple H geometry
+        ↓
+semantic role colours + separate corner badges
+        ↓
+reviewable SVG sources
+        ↓
+PWA/browser SVG identity or generated Windows runtime exports
 ```
 
-is part of the visual source of truth.
+A newly approved reference added to this folder must be reviewed and, when it changes the accepted direction, the canonical source contract and regressions must be updated deliberately.
 
-Do **not** assume a fixed number of reference PNGs. If another approved PNG is added to this folder, it joins the reference set automatically and must be reviewed before changing production artwork.
+## Canonical geometry
 
-The extensionless `web mock up` file is a website/layout reference and must not be treated as launcher-art authority unless explicitly documented for that purpose.
+All functional Halieus identities use the same simple H. The H has **no internal play-cut/tail**.
 
-## Approved launcher outputs
+Utility meaning is added as a separate corner badge. Do not redraw the H itself to encode Start, Restart, Close, Update, PowerShell, OpenShard or Control.
 
-Approved Windows launcher ICOs live under:
+## Windows launcher outputs
 
-```text
-assets/branding/launchers/
-```
+Reviewable launcher SVG sources live under:
 
-Those files are protected production assets. Existing accepted ICOs from the reference-led launcher work must not be redrawn, recoloured, deleted or replaced by a generator.
+`assets/branding/launchers/`
 
-## Non-negotiable rule
+Owner-machine PNG/ICO shortcut artwork is generated from the approved geometry/role system into ignored runtime state:
 
-**Reference artwork beats generated interpretation.**
+`server/data/runtime/launcher-icons/`
 
-Do not:
+This keeps the desktop family synchronized without making generated binaries the design authority.
 
-- redraw the launcher family from a textual description;
-- invent a new H silhouette;
-- recolour approved launcher artwork because a palette sounds reasonable;
-- replace approved ICOs with SVG/PNG exports from a generator;
-- treat a generated mockup as approved merely because it resembles the references;
-- let shortcut/update/start/restart scripts modify approved artwork.
+Legacy tracked ICOs may remain for compatibility with older packaging paths. They do not override the canonical SVG/runtime pipeline.
 
-If an approved asset needs changing:
+## Product separation
 
-1. inspect the complete current PNG reference set in this folder;
-2. start from the applicable approved reference;
-3. make only the requested targeted visual change;
-4. obtain human visual approval;
-5. replace the relevant production asset deliberately;
-6. update documentation/regression protection.
+- Main Halieus: gold
+- HGR Control: royal blue
+- OpenShard: purple
+- Update: light blue
 
-## Experimental output
+HGR Control must use its own Control icon in the installed app, splash/header and Control Mobile shortcut. It must not reuse the main gold Halieus icon.
 
-Generated or experimental launcher previews may only live under:
+## Change rule
 
-```text
-assets/branding/launchers/generated-preview/
-```
+If the icon family needs changing:
 
-They are never production replacements for the approved reference-based icons.
+1. inspect the complete current reference set;
+2. identify the applicable approved reference;
+3. update the canonical H / role contract only when the visual decision requires it;
+4. update the reviewable SVG sources and generator;
+5. visually inspect the resulting desktop/PWA icons;
+6. update regressions/documentation with the approved result.
+
+**Human-approved reference direction controls the canonical system; generated output must follow that system.**
