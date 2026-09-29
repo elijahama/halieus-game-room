@@ -265,7 +265,7 @@ HGR Control Agent on owner PC
        GitHub
 ```
 
-The foundation began read-only. Authentication, the operation lock, audit logging and the fixed Restart executor are now in place. The first phone-control slice is also implemented as a private installable PWA behind Tailscale Serve; Start, Close and Update remain staged rather than exposed prematurely.
+The foundation began read-only. Authentication, the operation lock, audit logging and the fixed Restart executor are now in place. The private installable phone PWA behind Tailscale Serve has now been verified on the real owner phone and PC for pairing, status, logs and Restart. Start, Close and Update remain staged rather than exposed prematurely.
 
 See [HGR Mobile Control](HGR_MOBILE_CONTROL.md).
 
@@ -335,8 +335,8 @@ Near-term work:
 1. HGR Control read-only foundation. **Complete.**
 2. Secure Windows action executor. Restart is authenticated, implemented and verified on the owner Windows machine; Start/Close/Update remain staged.
 3. Operation locking + audit log are implemented for Restart; structured live update progress remains.
-4. mobile HGR Control PWA first usable slice (status, Restart and logs). **Implemented; real-phone verification pending.**
-5. private Tailscale Serve + short-lived phone pairing path. **Implemented; real-phone verification pending.**
+4. mobile HGR Control PWA first usable slice (status, Restart and logs). **Implemented and real-device Restart verified.**
+5. private Tailscale Serve + short-lived phone pairing path. **Implemented and real-device pairing verified; persistence/invalidation QA remains.**
 6. themed atmosphere continuation for profile themes such as Brass & Coal.
 7. Light-mode contrast review for coloured fills and text.
 8. continued real-device mobile QA.
