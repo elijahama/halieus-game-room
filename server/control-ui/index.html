@@ -14,6 +14,17 @@
   <script src="/control.js" defer></script>
 </head>
 <body>
+  <section id="introSplash" class="intro-splash" aria-live="polite">
+    <div class="intro-mark" aria-hidden="true">
+      <span class="intro-ring intro-ring-one"></span>
+      <span class="intro-ring intro-ring-two"></span>
+      <img src="/icon-192.png" alt="" />
+    </div>
+    <p>HALIEUS GAME ROOM</p>
+    <h1>Control</h1>
+    <div class="intro-link-state"><span></span><strong id="introStatus">Connecting to owner PC…</strong></div>
+  </section>
+
   <main class="control-shell">
     <header class="control-header">
       <div class="brand-lockup">
@@ -51,22 +62,53 @@
       </section>
 
       <section class="action-card">
-        <div class="section-heading"><div><p>QUICK ACTIONS</p><h2>Owner controls</h2></div><button id="refreshButton" class="secondary-button compact" type="button">Refresh</button></div>
+        <div class="section-heading">
+          <div><p>QUICK ACTIONS</p><h2>Owner controls</h2></div>
+          <button id="refreshButton" class="secondary-button compact" type="button">Refresh</button>
+        </div>
+
         <button id="restartButton" class="action-button" type="button">
           <span class="action-glyph" aria-hidden="true">↻</span>
           <span><strong>Restart HGR</strong><small>Close and reopen the dedicated HGR app. No update or deploy.</small></span>
           <b>Run</b>
         </button>
-        <div class="staged-grid" aria-label="Staged controls">
-          <button type="button" disabled><strong>Start</strong><small>Staged</small></button>
-          <button type="button" disabled><strong>Close</strong><small>Staged</small></button>
-          <button type="button" disabled><strong>Update</strong><small>Staged</small></button>
+
+        <div class="secondary-actions">
+          <button id="startButton" class="small-action-button" type="button">
+            <strong>Start HGR</strong>
+            <small>Open the dedicated app</small>
+          </button>
+          <button id="closeButton" class="small-action-button is-danger" type="button">
+            <strong>Close HGR</strong>
+            <small>Confirmation required</small>
+          </button>
         </div>
+
+        <button id="updateButton" class="update-button" type="button">
+          <span>
+            <strong>Update HGR</strong>
+            <small>Sync · validate · build · regressions · Oracle deploy · restart</small>
+          </span>
+          <b>Confirm</b>
+        </button>
+
+        <section id="operationPanel" class="operation-panel" hidden aria-live="polite">
+          <div class="operation-heading">
+            <span id="operationAction">Operation</span>
+            <strong id="operationPercent">0%</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true"><span id="operationProgress"></span></div>
+          <p id="operationPhase">Starting…</p>
+        </section>
+
         <p id="actionMessage" class="inline-message" role="status" aria-live="polite"></p>
       </section>
 
       <section class="log-card">
-        <div class="section-heading"><div><p>AUDIT</p><h2>Recent operations</h2></div><button id="logsButton" class="secondary-button compact" type="button">Refresh logs</button></div>
+        <div class="section-heading">
+          <div><p>AUDIT</p><h2>Recent operations</h2></div>
+          <button id="logsButton" class="secondary-button compact" type="button">Refresh logs</button>
+        </div>
         <ol id="logsList" class="logs-list"><li class="empty-log">No operations loaded yet.</li></ol>
       </section>
 
@@ -76,5 +118,17 @@
       </footer>
     </section>
   </main>
+
+  <dialog id="confirmDialog" class="confirm-dialog">
+    <form method="dialog">
+      <div class="card-kicker">OWNER CONFIRMATION</div>
+      <h2 id="confirmTitle">Confirm action</h2>
+      <p id="confirmCopy"></p>
+      <div class="confirm-actions">
+        <button value="cancel" class="secondary-button" type="submit">Cancel</button>
+        <button id="confirmAcceptButton" value="confirm" class="primary-button confirm-accept" type="submit">Confirm</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>
