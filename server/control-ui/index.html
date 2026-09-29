@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111418" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="description" content="Private mobile control surface for Halieus Game Room." />
+  <title>HGR Control</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <link rel="stylesheet" href="/control.css" />
+  <script src="/control.js" defer></script>
+</head>
+<body>
+  <main class="control-shell">
+    <header class="control-header">
+      <div class="brand-lockup">
+        <img src="/icon-192.png" alt="" />
+        <div>
+          <p>HALIEUS GAME ROOM</p>
+          <h1>Control</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="connectionPill" class="status-pill is-checking">Checking</span>
+        <button id="installButton" class="icon-button" type="button" hidden aria-label="Install HGR Control">Install</button>
+      </div>
+    </header>
+
+    <section id="pairPanel" class="pair-card" aria-labelledby="pairTitle">
+      <div class="card-kicker">PRIVATE DEVICE PAIRING</div>
+      <h2 id="pairTitle">Connect this phone</h2>
+      <p>Enter the short-lived code shown by <strong>Start HGR Control Mobile</strong> on your PC. The full control credential is never shown in this browser.</p>
+      <form id="pairForm">
+        <label for="pairCode">Pairing code</label>
+        <input id="pairCode" name="pairCode" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" placeholder="00000000" required />
+        <button id="pairButton" class="primary-button" type="submit">Pair phone</button>
+      </form>
+      <p id="pairMessage" class="inline-message" role="status" aria-live="polite"></p>
+      <small>Both devices must be connected to the same Tailscale tailnet.</small>
+    </section>
+
+    <section id="dashboard" class="dashboard" hidden>
+      <section class="status-grid" aria-label="HGR status">
+        <article class="status-card"><span>HGR</span><strong id="versionValue">—</strong><small>Version</small></article>
+        <article class="status-card"><span>PC</span><strong id="machineValue">—</strong><small>Owner machine</small></article>
+        <article class="status-card"><span>Git</span><strong id="branchValue">—</strong><small id="commitValue">Repository</small></article>
+        <article class="status-card"><span>State</span><strong id="repoStateValue">—</strong><small>Working tree</small></article>
+      </section>
+
+      <section class="action-card">
+        <div class="section-heading"><div><p>QUICK ACTIONS</p><h2>Owner controls</h2></div><button id="refreshButton" class="secondary-button compact" type="button">Refresh</button></div>
+        <button id="restartButton" class="action-button" type="button">
+          <span class="action-glyph" aria-hidden="true">↻</span>
+          <span><strong>Restart HGR</strong><small>Close and reopen the dedicated HGR app. No update or deploy.</small></span>
+          <b>Run</b>
+        </button>
+        <div class="staged-grid" aria-label="Staged controls">
+          <button type="button" disabled><strong>Start</strong><small>Staged</small></button>
+          <button type="button" disabled><strong>Close</strong><small>Staged</small></button>
+          <button type="button" disabled><strong>Update</strong><small>Staged</small></button>
+        </div>
+        <p id="actionMessage" class="inline-message" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="log-card">
+        <div class="section-heading"><div><p>AUDIT</p><h2>Recent operations</h2></div><button id="logsButton" class="secondary-button compact" type="button">Refresh logs</button></div>
+        <ol id="logsList" class="logs-list"><li class="empty-log">No operations loaded yet.</li></ol>
+      </section>
+
+      <footer class="control-footer">
+        <button id="forgetButton" class="text-button" type="button">Forget this phone</button>
+        <small>Private tailnet access · no arbitrary shell commands</small>
+      </footer>
+    </section>
+  </main>
+</body>
+</html>

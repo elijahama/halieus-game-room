@@ -19,6 +19,13 @@ const controlLauncher = read("Start HGR Control.cmd");
 const controlLauncherAlias = read("Start-HGR-Control.cmd");
 const controlClientEntry = read("HGR-Control.cmd");
 const controlRestartBridge = read("scripts/windows/control-restart.ps1");
+const controlMobileHelper = read("scripts/windows/start-control-mobile.ps1");
+const controlMobileLauncher = read("Start HGR Control Mobile.cmd");
+const controlMobileLauncherAlias = read("Start-HGR-Control-Mobile.cmd");
+const controlUiHtml = read("server/control-ui/index.html");
+const controlUiJs = read("server/control-ui/control.js");
+const controlManifest = read("server/control-ui/manifest.webmanifest");
+const controlServiceWorker = read("server/control-ui/sw.js");
 const gitignore = read(".gitignore");
 
 for (const id of [
@@ -137,4 +144,33 @@ assert.match(controlRestartBridge, /Join-Path \$projectRoot "Restart Halieus Gam
 assert.match(controlRestartBridge, /& \$restartLauncher/, "Windows restart bridge must invoke the fixed launcher path directly");
 assert.doesNotMatch(controlRestartBridge, /param\([\s\S]*?Command|Invoke-Expression|Start-Process/i, "Windows restart bridge must not accept or evaluate arbitrary commands");
 
-console.log("HGR Control foundation / Masterbook regression: PASS");
+
+assert.match(agent, /HGR_CONTROL_PAIR_CODE/, "Mobile pairing must use a separate short-lived pairing secret");
+assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/pair"/, "Control agent must expose the fixed mobile pairing endpoint");
+assert.match(agent, /PAIR_FAILURE_LIMIT = 5/, "Mobile pairing must throttle repeated incorrect codes");
+assert.match(agent, /PAIR_BLOCK_MS = 60 \* 1000/, "Pairing throttling must impose a cooldown");
+assert.match(agent, /HttpOnly/, "Mobile Control sessions must use HttpOnly cookies");
+assert.match(agent, /Secure/, "Mobile Control session cookies must be Secure");
+assert.match(agent, /SameSite=Strict/, "Mobile Control session cookies must be SameSite=Strict");
+assert.match(agent, /controlUiDirectory/, "Control Agent must serve the dedicated mobile control UI");
+assert.doesNotMatch(agent, /Access-Control-Allow-Origin[^\n]*\*/, "Control Agent must not enable wildcard CORS for the owner control API");
+assert.match(controlMobileHelper, /HGR_CONTROL_HOST = "127\.0\.0\.1"/, "Mobile launcher must keep the Control Agent on loopback");
+assert.match(controlMobileHelper, /serve --bg "--https=\$HttpsPort" \$target/, "Mobile launcher must expose loopback through Tailscale Serve HTTPS");
+assert.match(controlMobileHelper, /\[int\]\$HttpsPort = 8443/, "Mobile Control must use a dedicated HTTPS port by default");
+assert.match(controlMobileHelper, /HGR_CONTROL_PAIR_EXPIRES_AT/, "Mobile launcher must provide a pairing expiry");
+assert.match(controlMobileHelper, /AddMinutes\(10\)/, "Mobile pairing code must be short lived");
+assert.doesNotMatch(controlMobileHelper, /Write-Host\s+"?\$token\b/i, "Mobile launcher must never print the bearer token");
+assert.match(controlMobileHelper, /serve "--https=\$HttpsPort" off/, "Mobile launcher must remove its Tailscale Serve route on exit");
+assert.match(controlMobileLauncher, /start-control-mobile\.ps1/i, "Stable mobile launcher must delegate to the fixed PowerShell helper");
+assert.match(controlMobileLauncherAlias, /call "%~dp0Start HGR Control Mobile\.cmd"/i, "PowerShell-safe mobile alias must delegate to the canonical launcher");
+assert.match(controlUiHtml, /manifest\.webmanifest/, "Mobile Control must be installable as a PWA");
+assert.match(controlUiHtml, /id="pairCode"/, "Mobile Control must provide an explicit device pairing surface");
+assert.match(controlUiJs, /credentials:\s*"include"/, "Mobile PWA API calls must use the HttpOnly session cookie");
+assert.doesNotMatch(controlUiJs, /localStorage|sessionStorage/, "Mobile Control must not persist control credentials in browser storage");
+assert.match(controlManifest, /"display": "standalone"/, "Mobile Control manifest must support standalone installation");
+assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
+assert.match(controlDoc, /Tailscale Serve/, "Control documentation must record the private HTTPS proxy design");
+assert.match(controlDoc, /HttpOnly; Secure; SameSite=Strict/, "Control documentation must record the mobile session boundary");
+assert.match(masterbook, /real-phone verification pending/i, "Masterbook must distinguish implementation from real-device verification");
+
+console.log("HGR Control foundation / mobile PWA / Masterbook regression: PASS");

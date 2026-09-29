@@ -210,6 +210,7 @@ Stable Windows entrypoints include:
 - `Close Halieus Game Room.cmd`
 - `Update HGR GitHub.cmd`
 - `Start HGR Control.cmd` / `Start-HGR-Control.cmd`
+- `Start HGR Control Mobile.cmd` / `Start-HGR-Control-Mobile.cmd` — private phone/PWA launcher through Tailscale Serve
 - `HGR-Control.cmd` — allow-listed local Control client (`status`, `restart`, `logs`)
 - `FIRST RUN - Refresh Halieus Launchers.cmd`
 
@@ -231,7 +232,7 @@ A failed update must stop rather than restart into an incomplete state.
 
 ### HGR Control
 
-`Start HGR Control.cmd` starts the local authenticated Control Agent development workflow. It generates a temporary local token, keeps it out of Git, and removes it when the agent exits. The companion PowerShell client only exposes the currently approved local actions.
+`Start HGR Control.cmd` starts the local authenticated Control Agent development workflow. `Start HGR Control Mobile.cmd` adds the private phone path: the agent still listens only on loopback, while Tailscale Serve provides a tailnet-only HTTPS endpoint and a short-lived pairing flow. The companion PowerShell client remains allow-listed to the approved local actions.
 
 See [Project structure and Windows commands](HGR_PROJECT_STRUCTURE_AND_WINDOWS_COMMANDS.md).
 
@@ -246,8 +247,10 @@ The intended architecture is:
 ```text
 Phone PWA
    |
-   | authenticated private connection
+   | Tailscale Serve · private HTTPS · :8443
+   | 8-digit pairing code → HttpOnly mobile session
    v
+127.0.0.1:43127
 HGR Control Agent on owner PC
    |
    +-- status
@@ -262,7 +265,7 @@ HGR Control Agent on owner PC
        GitHub
 ```
 
-The first foundation is intentionally read-only: a local status endpoint plus a shared action contract. Process execution is added only after authentication, operation locking and audit logging are in place.
+The foundation began read-only. Authentication, the operation lock, audit logging and the fixed Restart executor are now in place. The first phone-control slice is also implemented as a private installable PWA behind Tailscale Serve; Start, Close and Update remain staged rather than exposed prematurely.
 
 See [HGR Mobile Control](HGR_MOBILE_CONTROL.md).
 
@@ -332,8 +335,8 @@ Near-term work:
 1. HGR Control read-only foundation. **Complete.**
 2. Secure Windows action executor. Restart is authenticated, implemented and verified on the owner Windows machine; Start/Close/Update remain staged.
 3. Operation locking + audit log are implemented for Restart; structured live update progress remains.
-4. mobile HGR Control PWA.
-5. private Tailscale connection and device setup.
+4. mobile HGR Control PWA first usable slice (status, Restart and logs). **Implemented; real-phone verification pending.**
+5. private Tailscale Serve + short-lived phone pairing path. **Implemented; real-phone verification pending.**
 6. themed atmosphere continuation for profile themes such as Brass & Coal.
 7. Light-mode contrast review for coloured fills and text.
 8. continued real-device mobile QA.

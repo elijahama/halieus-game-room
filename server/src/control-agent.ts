@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { randomUUID, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
@@ -57,6 +57,11 @@ const projectRoot = findProjectRoot();
 const host = process.env.HGR_CONTROL_HOST?.trim() || "127.0.0.1";
 const port = Number.parseInt(process.env.HGR_CONTROL_PORT || "43127", 10);
 const token = process.env.HGR_CONTROL_TOKEN?.trim() || "";
+const pairCode = process.env.HGR_CONTROL_PAIR_CODE?.trim() || "";
+const pairExpiresAt = Number.parseInt(
+  process.env.HGR_CONTROL_PAIR_EXPIRES_AT?.trim() || "0",
+  10,
+);
 
 const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);
 const remoteBinding = !loopbackHosts.has(host);
@@ -73,33 +78,209 @@ const auditDirectory = resolve(projectRoot, "server", "data", "runtime");
 const auditFile = resolve(auditDirectory, "hgr-control-audit.ndjson");
 const restartScript = resolve(projectRoot, "Restart Halieus Game Room.cmd");
 const restartBridge = resolve(projectRoot, "scripts", "windows", "control-restart.ps1");
+const controlUiDirectory = resolve(projectRoot, "server", "control-ui");
+const appIcon192 = resolve(projectRoot, "client", "public", "app-icon-192.png");
+const appIcon512 = resolve(projectRoot, "client", "public", "app-icon-512.png");
+
+const MOBILE_SESSION_COOKIE = "hgr_control_session";
+const MOBILE_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const PAIR_FAILURE_LIMIT = 5;
+const PAIR_BLOCK_MS = 60 * 1000;
+const mobileSessions = new Map<string, number>();
+let pairFailureCount = 0;
+let pairBlockedUntil = 0;
 let activeOperation: HalieusControlActiveOperation | null = null;
 
+function setSecurityHeaders(response: ServerResponse): void {
+  response.setHeader("X-Content-Type-Options", "nosniff");
+  response.setHeader("Referrer-Policy", "no-referrer");
+  response.setHeader("X-Frame-Options", "DENY");
+  response.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  );
+}
+
 function sendJson(response: ServerResponse, status: number, body: unknown): void {
+  setSecurityHeaders(response);
   response.statusCode = status;
   response.setHeader("Content-Type", "application/json; charset=utf-8");
   response.setHeader("Cache-Control", "no-store");
   response.end(JSON.stringify(body));
 }
 
-function bearerTokenMatches(request: IncomingMessage): boolean {
-  if (!token) return false;
-  const provided = request.headers.authorization;
-  if (!provided) return false;
+function sendAsset(
+  response: ServerResponse,
+  status: number,
+  contentType: string,
+  body: string | Buffer,
+  cacheControl = "no-store",
+): void {
+  setSecurityHeaders(response);
+  response.statusCode = status;
+  response.setHeader("Content-Type", contentType);
+  response.setHeader("Cache-Control", cacheControl);
+  if (contentType.startsWith("text/html")) {
+    response.setHeader(
+      "Content-Security-Policy",
+      "default-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'",
+    );
+  }
+  response.end(body);
+}
 
-  const expectedBytes = Buffer.from(`Bearer ${token}`, "utf8");
+function timingSafeTextMatches(expected: string, provided: string): boolean {
+  if (!expected || !provided) return false;
+  const expectedBytes = Buffer.from(expected, "utf8");
   const providedBytes = Buffer.from(provided, "utf8");
   if (expectedBytes.length !== providedBytes.length) return false;
   return timingSafeEqual(expectedBytes, providedBytes);
 }
 
+function bearerTokenMatches(request: IncomingMessage): boolean {
+  if (!token) return false;
+  const provided = request.headers.authorization;
+  if (!provided) return false;
+  return timingSafeTextMatches(`Bearer ${token}`, provided);
+}
+
+function sessionDigest(value: string): string {
+  return createHash("sha256").update(value, "utf8").digest("hex");
+}
+
+function readCookie(request: IncomingMessage, name: string): string | null {
+  const source = request.headers.cookie;
+  if (!source) return null;
+
+  for (const part of source.split(";")) {
+    const [rawName, ...rawValue] = part.trim().split("=");
+    if (rawName !== name) continue;
+    try {
+      return decodeURIComponent(rawValue.join("="));
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function mobileSessionMatches(request: IncomingMessage): boolean {
+  const raw = readCookie(request, MOBILE_SESSION_COOKIE);
+  if (!raw) return false;
+  const digest = sessionDigest(raw);
+  const expiresAt = mobileSessions.get(digest);
+  if (!expiresAt) return false;
+  if (expiresAt <= Date.now()) {
+    mobileSessions.delete(digest);
+    return false;
+  }
+  return true;
+}
+
 function readRequestAuthorised(request: IncomingMessage): boolean {
-  if (!token) return true;
-  return bearerTokenMatches(request);
+  if (bearerTokenMatches(request) || mobileSessionMatches(request)) return true;
+  return !token;
 }
 
 function mutableRequestAuthorised(request: IncomingMessage): boolean {
-  return Boolean(token) && bearerTokenMatches(request);
+  return bearerTokenMatches(request) || mobileSessionMatches(request);
+}
+
+async function readJsonBody(request: IncomingMessage): Promise<Record<string, unknown>> {
+  const chunks: Buffer[] = [];
+  let size = 0;
+
+  for await (const chunk of request) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.length;
+    if (size > 4096) {
+      throw new Error("Request body is too large.");
+    }
+    chunks.push(buffer);
+  }
+
+  if (chunks.length === 0) return {};
+  const source = Buffer.concat(chunks).toString("utf8");
+  const parsed = JSON.parse(source) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Request body must be a JSON object.");
+  }
+  return parsed as Record<string, unknown>;
+}
+
+function mobileSessionCookie(value: string, maxAgeSeconds: number): string {
+  return [
+    `${MOBILE_SESSION_COOKIE}=${encodeURIComponent(value)}`,
+    "Path=/",
+    "HttpOnly",
+    "Secure",
+    "SameSite=Strict",
+    `Max-Age=${maxAgeSeconds}`,
+  ].join("; ");
+}
+
+async function handlePair(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  const now = Date.now();
+  if (!pairCode || !Number.isFinite(pairExpiresAt) || pairExpiresAt <= now) {
+    sendJson(response, 503, {
+      ok: false,
+      reason: "Mobile pairing is unavailable or the pairing code has expired. Restart HGR Control Mobile on the owner PC.",
+    });
+    return;
+  }
+
+  if (pairBlockedUntil > now) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((pairBlockedUntil - now) / 1000));
+    response.setHeader("Retry-After", String(retryAfterSeconds));
+    sendJson(response, 429, {
+      ok: false,
+      reason: "Too many incorrect pairing attempts. Try again shortly.",
+      retryAfterSeconds,
+    });
+    return;
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await readJsonBody(request);
+  } catch {
+    sendJson(response, 400, { ok: false, reason: "Invalid pairing request." });
+    return;
+  }
+
+  const providedCode = typeof body.code === "string" ? body.code.trim() : "";
+  if (!timingSafeTextMatches(pairCode, providedCode)) {
+    pairFailureCount += 1;
+    if (pairFailureCount >= PAIR_FAILURE_LIMIT) {
+      pairFailureCount = 0;
+      pairBlockedUntil = Date.now() + PAIR_BLOCK_MS;
+    }
+    sendJson(response, 401, { ok: false, reason: "Pairing code not accepted." });
+    return;
+  }
+
+  pairFailureCount = 0;
+  pairBlockedUntil = 0;
+  const sessionToken = randomBytes(32).toString("base64url");
+  const sessionExpiresAt = Date.now() + MOBILE_SESSION_TTL_MS;
+  mobileSessions.set(sessionDigest(sessionToken), sessionExpiresAt);
+
+  response.setHeader(
+    "Set-Cookie",
+    mobileSessionCookie(sessionToken, Math.floor(MOBILE_SESSION_TTL_MS / 1000)),
+  );
+  sendJson(response, 200, {
+    ok: true,
+    paired: true,
+    sessionExpiresAt: new Date(sessionExpiresAt).toISOString(),
+  });
+}
+
+function handleUnpair(request: IncomingMessage, response: ServerResponse): void {
+  const raw = readCookie(request, MOBILE_SESSION_COOKIE);
+  if (raw) mobileSessions.delete(sessionDigest(raw));
+  response.setHeader("Set-Cookie", mobileSessionCookie("", 0));
+  sendJson(response, 200, { ok: true, paired: false });
 }
 
 async function gitValue(args: string[], allowEmpty = false): Promise<string | null> {
@@ -288,8 +469,8 @@ async function runRestart(response: ServerResponse): Promise<void> {
         finishedAt,
         exitCode,
         reason: error instanceof Error
-        ? `Restart bridge failed: ${error.message}`
-        : "Restart bridge failed.",
+          ? `Restart bridge failed: ${error.message}`
+          : "Restart bridge failed.",
       });
     } catch (auditError) {
       console.error("HGR Control failure audit could not be written:", auditError);
@@ -306,7 +487,45 @@ async function runRestart(response: ServerResponse): Promise<void> {
   }
 }
 
+const staticAssets = new Map<string, { path: string; contentType: string; cacheControl: string }>([
+  ["/", { path: resolve(controlUiDirectory, "index.html"), contentType: "text/html; charset=utf-8", cacheControl: "no-store" }],
+  ["/control.css", { path: resolve(controlUiDirectory, "control.css"), contentType: "text/css; charset=utf-8", cacheControl: "no-cache" }],
+  ["/control.js", { path: resolve(controlUiDirectory, "control.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
+  ["/manifest.webmanifest", { path: resolve(controlUiDirectory, "manifest.webmanifest"), contentType: "application/manifest+json; charset=utf-8", cacheControl: "no-cache" }],
+  ["/sw.js", { path: resolve(controlUiDirectory, "sw.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
+  ["/icon-192.png", { path: appIcon192, contentType: "image/png", cacheControl: "public, max-age=86400" }],
+  ["/icon-512.png", { path: appIcon512, contentType: "image/png", cacheControl: "public, max-age=86400" }],
+]);
+
+async function serveStaticAsset(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
+  if (request.method !== "GET" && request.method !== "HEAD") return false;
+  const requestUrl = new URL(request.url || "/", "http://hgr-control.local");
+  const asset = staticAssets.get(requestUrl.pathname);
+  if (!asset) return false;
+
+  try {
+    const body = await readFile(asset.path);
+    sendAsset(response, 200, asset.contentType, request.method === "HEAD" ? "" : body, asset.cacheControl);
+  } catch (error) {
+    console.error("HGR Control UI asset failed:", error);
+    sendJson(response, 500, { ok: false, reason: "HGR Control UI is unavailable." });
+  }
+  return true;
+}
+
 const server = createServer(async (request, response) => {
+  if (await serveStaticAsset(request, response)) return;
+
+  if (request.method === "POST" && request.url === "/api/pair") {
+    await handlePair(request, response);
+    return;
+  }
+
+  if (request.method === "POST" && request.url === "/api/unpair") {
+    handleUnpair(request, response);
+    return;
+  }
+
   if (request.method === "GET" && request.url === "/api/status") {
     if (!readRequestAuthorised(request)) {
       sendJson(response, 401, { ok: false, reason: "HGR Control authentication required." });
@@ -364,5 +583,6 @@ server.listen(port, host, () => {
   console.log(`HGR Control listening on http://${host}:${port}`);
   console.log(`Project root: ${projectRoot}`);
   console.log(token ? "Bearer-token authentication: ON" : "Bearer-token authentication: OFF (status only)");
-  console.log("Mutable actions: Restart HGR is available only with HGR_CONTROL_TOKEN.");
+  console.log(pairCode ? "Mobile pairing: ON (short-lived code supplied by launcher)" : "Mobile pairing: OFF");
+  console.log("Mutable actions: Restart HGR is available only with authenticated Control access.");
 });

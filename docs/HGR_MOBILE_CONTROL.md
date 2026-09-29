@@ -8,15 +8,17 @@ The goal is not “remote command prompt from a phone.” The goal is:
 
 > **A small, auditable set of HGR actions that can be requested from a phone and executed safely by the owner PC.**
 
-The phone interface will eventually be installable as a PWA.
+The phone interface is now implemented as an installable PWA for the first usable remote-control slice: status, Restart HGR and recent audit logs.
 
 ## Architecture
 
 ```text
 HGR Control PWA (phone)
         |
-        | HTTPS/private network + bearer/session auth
+        | Tailscale Serve · tailnet-only HTTPS
+        | short-lived pairing code → HttpOnly session cookie
         v
+127.0.0.1:43127
 HGR Control Agent (owner PC)
         |
         +-- read status
@@ -40,7 +42,7 @@ Putting Windows process controls into the normal public game server would mix tw
 - player/game traffic;
 - owner machine administration.
 
-The control agent therefore runs as a separate entrypoint and should normally be reachable only over a private path such as Tailscale.
+The control agent therefore runs as a separate entrypoint. For phone access it remains bound to loopback and Tailscale Serve reverse-proxies a private HTTPS endpoint to it. The agent is not opened directly on the LAN or public internet.
 
 ## Shared action contract
 
@@ -148,7 +150,11 @@ The server maps a known action ID to a fixed implementation.
 
 ### 4. Private network
 
-The intended remote path is Tailscale between the phone and owner PC. HGR Control should not require public router port forwarding.
+The remote path is Tailscale between the phone and owner PC. HGR Control does not require public router port forwarding.
+
+The mobile launcher uses **Tailscale Serve** on a dedicated HTTPS port (default `8443`) and keeps the Node Control Agent on `127.0.0.1:43127`. Tailscale terminates HTTPS and proxies only through the private tailnet.
+
+This is intentionally safer than binding the Control Agent directly to a Tailscale/LAN interface.
 
 ### 5. Confirm sensitive actions
 
@@ -245,7 +251,7 @@ Authorization: Bearer <token>
 
 The local helper simply handles that secret safely for you while we are developing the system.
 
-We move the listener from loopback to the PC's Tailscale address only after local authenticated actions work.
+For mobile access, the listener stays on loopback. The phone reaches it through Tailscale Serve, so the backend does not need a direct non-loopback bind.
 
 ### Stage C — first process action
 
@@ -319,19 +325,55 @@ server/data/runtime/hgr-control-audit.ndjson
 
 The audit records action ID, running/succeeded/failed/rejected state, timestamps and exit status. It does not log bearer tokens.
 
-### Stage D — Update
+### Stage D — phone PWA and private Tailscale access
 
-Update uses the existing `Update HGR GitHub.cmd` contract. Its progress needs to be surfaced so the phone can distinguish:
+The first real phone-control slice is now implemented.
+
+From the repository root on the owner PC, start:
+
+```powershell
+.\Start-HGR-Control-Mobile.cmd
+```
+
+The spaced `Start HGR Control Mobile.cmd` entrypoint is also available for Explorer/shortcut use.
+
+The mobile launcher:
+
+1. confirms the Tailscale CLI is available and the PC is signed in;
+2. keeps the Control Agent bound to `127.0.0.1:43127`;
+3. generates the normal 32-byte local bearer token without printing it;
+4. generates a separate 8-digit pairing code that expires after 10 minutes;
+5. starts a tailnet-only Tailscale Serve HTTPS reverse proxy on port `8443`;
+6. prints the private `https://<pc>.<tailnet>.ts.net:8443/` URL and pairing code;
+7. removes the temporary credentials and the dedicated Serve route when the launcher exits.
+
+On the phone:
+
+1. connect Tailscale to the same tailnet;
+2. open the private URL printed by the PC;
+3. enter the 8-digit code;
+4. use Status, Restart HGR and Recent operations;
+5. install HGR Control from the browser if a dedicated app icon is wanted.
+
+The phone does **not** receive or store the local bearer token in JavaScript or local storage. Successful pairing creates a random in-memory mobile session and returns it only as a `HttpOnly; Secure; SameSite=Strict` cookie. Mobile sessions expire after 12 hours and disappear immediately when the Control Agent process exits.
+
+Pairing has a five-attempt failure threshold followed by a one-minute cooldown. The pairing code itself expires after ten minutes.
+
+The PWA service worker caches only the static shell. Requests under `/api/` are deliberately excluded from the service-worker cache.
+
+If Tailscale Serve has never been enabled for the tailnet, its first run may provide an HTTPS approval/consent link. Approve that once, then rerun the mobile launcher.
+
+The launcher refuses to replace an unrelated Tailscale Serve service already using the selected HTTPS port. If needed, a different port can be passed to the PowerShell helper.
+
+### Stage E — Update
+
+Update remains staged. It will use the existing `Update HGR GitHub.cmd` contract. Its progress needs to be surfaced so the phone can distinguish:
 
 ```text
 sync → validate → regressions → build → deploy → restart → complete
 ```
 
-### Stage E — phone PWA
-
-Only after the agent/authentication path works do we add the polished phone UI.
-
-That prevents a nice-looking interface from hiding an unsafe backend.
+Start, Close and Update are intentionally shown as disabled/staged controls in the phone UI until their fixed server-side executors and confirmation rules are implemented.
 
 ## Environment variables
 
@@ -339,11 +381,15 @@ Foundation:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `HGR_CONTROL_HOST` | `127.0.0.1` | listener address |
+| `HGR_CONTROL_HOST` | `127.0.0.1` | listener address; the mobile launcher keeps this on loopback |
 | `HGR_CONTROL_PORT` | `43127` | listener port |
-| `HGR_CONTROL_TOKEN` | empty | bearer token; required for non-loopback binding |
+| `HGR_CONTROL_TOKEN` | empty | local bearer token; required for mutable actions/non-loopback binding |
+| `HGR_CONTROL_PAIR_CODE` | empty | short-lived mobile pairing code supplied only by the mobile launcher |
+| `HGR_CONTROL_PAIR_EXPIRES_AT` | `0` | pairing-code expiry as Unix time in milliseconds |
 
-A real token belongs in local environment configuration, never in Git.
+The launcher-created token and pairing code are runtime credentials. They are never committed to Git.
+
+The mobile launcher also owns its Tailscale Serve route. The default public-facing tailnet port is `8443`; the Control Agent itself remains on loopback port `43127`.
 
 ## Roadmap
 
@@ -373,26 +419,32 @@ A real token belongs in local environment configuration, never in Git.
 - [ ] final automatic HGR restart
 
 ### Phase 4 — mobile PWA
-- [ ] HGR Control screen
-- [ ] status cards
-- [ ] touch-first action buttons
-- [ ] confirmations
-- [ ] live operation progress
-- [ ] Add to Home Screen support
+- [x] HGR Control screen
+- [x] status cards
+- [x] touch-first Restart action
+- [x] recent audit-log view
+- [x] installable manifest/service worker
+- [x] staged controls clearly disabled instead of faked
+- [ ] Close/Update confirmation UX when those executors ship
+- [ ] structured live update progress
 
 ### Phase 5 — private remote access
-- [ ] Tailscale device setup
-- [ ] bind agent to private Tailscale address
-- [ ] configure mobile origin
-- [ ] token/session provisioning
-- [ ] revoke/rotate workflow
+- [x] Tailscale Serve launcher path
+- [x] Control Agent remains loopback-only behind the proxy
+- [x] private HTTPS mobile URL
+- [x] 8-digit short-lived pairing code
+- [x] HttpOnly mobile session provisioning
+- [x] Forget this phone / session revoke
+- [x] automatic session loss when the agent exits
+- [ ] first real-phone end-to-end verification
 
 ### Phase 6 — hardening
-- [ ] rate limiting
-- [ ] short-lived action confirmations
-- [ ] automatic token rotation support
+- [x] pairing failure cooldown
+- [x] strict same-origin PWA API model (no wildcard CORS)
+- [x] API responses excluded from service-worker caching
+- [ ] short-lived action confirmations for Close/Update
 - [ ] recovery if an update/restart is interrupted
-- [ ] security regression tests
+- [ ] expanded runtime security regression tests
 
 ## Implementation notes and troubleshooting history
 
@@ -465,6 +517,26 @@ scripts/windows/control-restart.ps1
 The bridge resolves and runs only the canonical `Restart Halieus Game Room.cmd`. The API still never accepts a command path or shell string from the client.
 
 **Lesson:** keep the remote API allow-listed, and isolate Windows shell/quoting details inside a fixed local adapter.
+
+### Why Tailscale Serve, not a direct Tailscale bind
+
+**Decision:** the phone-facing controller uses Tailscale Serve as a private HTTPS reverse proxy while the Control Agent stays on `127.0.0.1`.
+
+**Reason:** the process with permission to restart/update HGR does not need to listen directly on the LAN or tailnet. Serve provides the private network path and TLS termination while preserving the agent's loopback boundary.
+
+A dedicated HTTPS port (`8443`) is used so HGR Control does not take over the normal `443` listener used by other web/Serve/Funnel configuration.
+
+### Mobile credential separation
+
+**Decision:** the phone pairing code is not the bearer token.
+
+The long random bearer token remains local to the owner PC and continues to support the allow-listed PowerShell client. The phone enters a short-lived eight-digit code and receives a separate random session only as an HttpOnly secure cookie.
+
+**Lesson:** a human-friendly pairing secret and a machine credential have different jobs and should not be the same value.
+
+### PWA cache boundary
+
+The service worker caches only the controller shell assets. It explicitly skips every `/api/` request so status, logs and action results are never replayed from an offline cache.
 
 ### Regression philosophy for Control
 
