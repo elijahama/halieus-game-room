@@ -10,14 +10,24 @@ $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 # IMPORTANT: shortcut refresh is non-destructive.
 # It must never generate, delete, recolour or overwrite launcher artwork.
 $GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
-$LauncherIconRoot = Join-Path $ProjectRoot 'assets\branding\launchers'
-$FallbackLauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
-$StartIconPath = Join-Path $LauncherIconRoot 'start.ico'
-$RestartIconPath = Join-Path $LauncherIconRoot 'restart.ico'
-$CloseIconPath = Join-Path $LauncherIconRoot 'close.ico'
-$UpdateIconPath = Join-Path $LauncherIconRoot 'update.ico'
-$PowerShellIconPath = Join-Path $LauncherIconRoot 'powershell.ico'
-$OpenShardIconPath = Join-Path $LauncherIconRoot 'openshard.ico'
+$RuntimeLauncherIconRoot = Join-Path $ProjectRoot 'server\data\runtime\launcher-icons'
+$TrackedLauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
+$IconGenerator = Join-Path $ProjectRoot 'scripts\windows\generate-launcher-icons.ps1'
+
+if (Test-Path -LiteralPath $IconGenerator) {
+    & $IconGenerator
+    if ($LASTEXITCODE -ne 0) {
+        throw "HGR launcher icon generation failed."
+    }
+}
+
+$StartIconPath = Join-Path $RuntimeLauncherIconRoot 'start.ico'
+$RestartIconPath = Join-Path $RuntimeLauncherIconRoot 'restart.ico'
+$CloseIconPath = Join-Path $RuntimeLauncherIconRoot 'close.ico'
+$UpdateIconPath = Join-Path $RuntimeLauncherIconRoot 'update.ico'
+$PowerShellIconPath = Join-Path $RuntimeLauncherIconRoot 'powershell.ico'
+$OpenShardIconPath = Join-Path $RuntimeLauncherIconRoot 'openshard.ico'
+$ControlIconPath = Join-Path $RuntimeLauncherIconRoot 'control.ico'
 $ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
 $StartMenuLauncherDirectory = Join-Path $ProgramsRoot 'Halieus Game Room'
 $ProjectLauncherDirectory = Join-Path $ProjectRoot 'HGR Launchers'
@@ -37,6 +47,7 @@ $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
 $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
+$ControlMobileScript = Join-Path $ProjectRoot 'Start HGR Control Mobile.cmd'
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
@@ -45,6 +56,7 @@ $LauncherNames = [ordered]@{
     Update = 'HGR - Update Site.lnk'
     PowerShell = 'HGR - PowerShell.lnk'
     OpenShard = 'HGR - OpenShard TUI.lnk'
+    ControlMobile = 'HGR - Control Mobile.lnk'
 }
 
 $ProjectStartShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Start
@@ -53,6 +65,7 @@ $ProjectCloseShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Close
 $ProjectUpdateShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Update
 $ProjectPowerShellShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.PowerShell
 $ProjectOpenShardShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.OpenShard
+$ProjectControlMobileShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlMobile
 
 $StartMenuStartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Start
 $StartMenuRestartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Restart
@@ -60,6 +73,7 @@ $StartMenuCloseShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.C
 $StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Update
 $StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
 $StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
+$StartMenuControlMobileShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlMobile
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -82,12 +96,13 @@ function Resolve-HalieusIconPath {
     return $Fallback
 }
 
-$StartIconPath = Resolve-HalieusIconPath -Preferred $StartIconPath -Fallback $GameRoomIconPath -Label 'Start'
-$RestartIconPath = Resolve-HalieusIconPath -Preferred $RestartIconPath -Fallback $GameRoomIconPath -Label 'Restart'
-$CloseIconPath = Resolve-HalieusIconPath -Preferred $CloseIconPath -Fallback $GameRoomIconPath -Label 'Close'
-$UpdateIconPath = Resolve-HalieusIconPath -Preferred $UpdateIconPath -Fallback $GameRoomIconPath -Label 'Update'
-$PowerShellIconPath = Resolve-HalieusIconPath -Preferred $PowerShellIconPath -Fallback $GameRoomIconPath -Label 'PowerShell'
-$OpenShardIconPath = Resolve-HalieusIconPath -Preferred $OpenShardIconPath -Fallback $PowerShellIconPath -Label 'OpenShard TUI'
+$StartIconPath = Resolve-HalieusIconPath -Preferred $StartIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'start.ico') -Label 'Start'
+$RestartIconPath = Resolve-HalieusIconPath -Preferred $RestartIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'restart.ico') -Label 'Restart'
+$CloseIconPath = Resolve-HalieusIconPath -Preferred $CloseIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'close.ico') -Label 'Close'
+$UpdateIconPath = Resolve-HalieusIconPath -Preferred $UpdateIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'update.ico') -Label 'Update'
+$PowerShellIconPath = Resolve-HalieusIconPath -Preferred $PowerShellIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'powershell.ico') -Label 'PowerShell'
+$OpenShardIconPath = Resolve-HalieusIconPath -Preferred $OpenShardIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'openshard.ico') -Label 'OpenShard TUI'
+$ControlIconPath = Resolve-HalieusIconPath -Preferred $ControlIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'control.ico') -Label 'Control'
 
 $folderIconConfig = @"
 [.ShellClassInfo]
@@ -160,6 +175,10 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
     $openShard.IconLocation = "$OpenShardIconPath,0"
     $openShard.WindowStyle = 1
     $openShard.Save()
+
+    if (Test-Path -LiteralPath $ControlMobileScript) {
+        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlMobile) -CommandScript $ControlMobileScript -Description 'Open the private HGR Control Mobile service for the owner phone' -IconPath $ControlIconPath
+    }
 }
 
 # Remove loose/legacy shortcuts so HGR launchers only live inside the two
@@ -200,6 +219,10 @@ $CreatedShortcuts = @(
     $StartMenuPowerShellShortcut,
     $StartMenuOpenShardShortcut
 )
+if (Test-Path -LiteralPath $ControlMobileScript) {
+    $CreatedShortcuts += $ProjectControlMobileShortcut
+    $CreatedShortcuts += $StartMenuControlMobileShortcut
+}
 if (Test-Path -LiteralPath $UpdateScript) {
     $CreatedShortcuts += $ProjectUpdateShortcut
     $CreatedShortcuts += $StartMenuUpdateShortcut
