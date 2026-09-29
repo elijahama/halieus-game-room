@@ -95,7 +95,7 @@ Current planned actions are:
 | start | start/open HGR locally | none |
 | restart | troubleshooting restart only | none |
 | close | close the local HGR app | yes |
-| update | full update/validation/deploy/restart path | yes |
+| update | full update/validation/deploy/server-restart/client-refresh path | yes |
 | logs | read recent operation output | none |
 | open-site | open HGR on the controller device | none |
 | open-github | open the repository on the controller device | none |
@@ -478,7 +478,7 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 - [x] Update action — implemented; real-device verification pending
 - [x] structured progress state from the approved updater
 - [x] failed-operation audit reporting
-- [x] existing updater retains final automatic HGR restart on success
+- [x] production deployment restarts the server on success; existing clients refresh in place and HGR opens only if it was closed
 
 ### Phase 4 — mobile PWA
 - [x] brief HGR Control intro/connection animation before dashboard or pairing state
