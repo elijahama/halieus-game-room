@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.3",
-  "fingerprint": "hgr-4.5.3-3538daee14099d71",
+  "fingerprint": "hgr-4.5.3-cd0b45aaddd6bc89",
   "algorithm": "sha256",
-  "sourceHash": "3538daee14099d714b5c8d4d871e1b73cf86cd5d4f830d0defe67286905d73ae",
-  "integrityFileCount": 431,
+  "sourceHash": "cd0b45aaddd6bc895a8bd07f161785b6d1b8f32ea7212ff21effe1f437108e0a",
+  "integrityFileCount": 436,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -222,6 +222,8 @@
     "docs/HGR_4.5.1_PART19_NAVIGATION.md",
     "docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md",
     "docs/HGR_DESIGN_SYSTEM_V1.md",
+    "docs/HGR_MASTERBOOK.md",
+    "docs/HGR_MOBILE_CONTROL.md",
     "docs/HGR_MODEL_SHEET_V1.md",
     "docs/VALIDATION_4.0.0.md",
     "docs/project/HGR_4.0.1_IMPLEMENTATION_LOG.md",
@@ -259,6 +261,7 @@
     "server/data/word-board/SCOWL-COPYRIGHT.txt",
     "server/data/word-board/scowl-en-us.dic",
     "server/package.json",
+    "server/src/control-agent.ts",
     "server/src/games/ayo/handlers.ts",
     "server/src/games/blackjack/README.md",
     "server/src/games/blackjack/handlers.ts",
@@ -365,6 +368,7 @@
     "shared/platform/README.md",
     "shared/platform/accounts.ts",
     "shared/platform/brand.ts",
+    "shared/platform/control.ts",
     "shared/platform/feedback.ts",
     "shared/platform/game-activity.ts",
     "shared/platform/guilds.ts",
@@ -426,6 +430,7 @@
     "tests/regression-4.1.1-video-polish.mjs",
     "tests/regression-4.1.1.mjs",
     "tests/regression-4.5-foundation.mjs",
+    "tests/regression-control-agent.mjs",
     "tests/regression-protected-brand-assets.mjs",
     "tests/regression-release-identity.mjs",
     "tests/regression-website-identity.mjs",
@@ -537,6 +542,7 @@
     "svg-platform-nav-icons-4.1.0",
     "hgr-project-history-4.1.0",
     "hgr-shared-game-shell-polish-4.1.0",
-    "matte-launcher-family-4.1.0"
+    "matte-launcher-family-4.1.0",
+    "hgr-control-readonly-foundation-4.5.3"
   ]
 }
