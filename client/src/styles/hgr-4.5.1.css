@@ -3089,3 +3089,60 @@ html[data-theme="dark"] .halieus-guilds-panel {
     max-height: calc(100dvh - 98px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
   }
 }
+
+
+/* ==========================================================================
+   HGR 4.5.3 — canonical site-wide gold authority
+   ========================================================================== */
+
+/* One saturated gold family owns standard HGR chrome. Explicit colour/profile
+   themes still override --hgr-brand with their own accent. */
+:root {
+  --hgr-gold: #e7a900;
+  --hgr-gold-strong: #ffc21a;
+  --hgr-gold-deep: #b87900;
+  --hgr-gold-soft: #ffe08a;
+  --hgr-gold-glow: rgba(231,169,0,.28);
+  --hgr-brand: var(--hgr-gold);
+  --hgr-brand-soft: var(--hgr-gold-soft);
+  --hgr-action-bg: var(--hgr-gold);
+  --hgr-action-ink: #17191d;
+  --hgr-logo-bg: var(--hgr-gold);
+  --hgr-logo-ink: #000;
+  --hgr-logo-border: var(--hgr-gold-deep);
+  --hgr-border-brand: color-mix(in srgb,var(--hgr-gold) 52%,transparent);
+  --hgr-shadow-brand: 0 16px 38px color-mix(in srgb,var(--hgr-gold) 26%,transparent);
+  --hgr-focus: 0 0 0 4px color-mix(in srgb,var(--hgr-gold) 30%,transparent);
+}
+
+html[data-theme="light"],
+html[data-theme="dark"] {
+  --hgr-brand: var(--hgr-gold);
+  --hgr-brand-soft: var(--hgr-gold-soft);
+  --hgr-action-bg: var(--hgr-gold);
+  --hgr-action-ink: #17191d;
+  --hgr-logo-bg: var(--hgr-gold);
+  --hgr-logo-ink: #000;
+  --hgr-logo-border: var(--hgr-gold-deep);
+  --hgr-border-brand: color-mix(in srgb,var(--hgr-gold) 52%,transparent);
+  --hgr-shadow-brand: 0 18px 46px color-mix(in srgb,var(--hgr-gold) 25%,transparent);
+  --hgr-focus: 0 0 0 4px color-mix(in srgb,var(--hgr-gold) 32%,transparent);
+}
+
+/* Standard primary actions should feel luminous rather than mustard/brown. */
+html[data-theme="light"] .button-primary:not([data-game-accent]),
+html[data-theme="dark"] .button-primary:not([data-game-accent]),
+html[data-theme="light"] .halieus-join-primary,
+html[data-theme="dark"] .halieus-join-primary {
+  background: linear-gradient(180deg,var(--hgr-gold-strong),var(--hgr-gold)) !important;
+  border-color: color-mix(in srgb,var(--hgr-gold-deep) 72%,transparent) !important;
+  color: #17191d !important;
+  box-shadow: 0 10px 26px color-mix(in srgb,var(--hgr-gold) 20%,transparent) !important;
+}
+
+html[data-theme="light"] .button-primary:not([data-game-accent]):hover,
+html[data-theme="dark"] .button-primary:not([data-game-accent]):hover,
+html[data-theme="light"] .halieus-join-primary:hover,
+html[data-theme="dark"] .halieus-join-primary:hover {
+  background: linear-gradient(180deg,#ffd044,var(--hgr-gold-strong)) !important;
+}

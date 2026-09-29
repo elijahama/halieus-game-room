@@ -10,9 +10,15 @@
 
 :root {
   /* Brand */
-  --hgr-yellow: #ffc200;
-  --hgr-yellow-strong: #e7a900;
-  --hgr-yellow-soft: #ffe08a;
+  --hgr-gold: #e7a900;
+  --hgr-gold-strong: #ffc21a;
+  --hgr-gold-deep: #b87900;
+  --hgr-gold-soft: #ffe08a;
+  --hgr-gold-glow: rgba(231, 169, 0, 0.28);
+  /* Compatibility aliases for pre-4.5 selectors. */
+  --hgr-yellow: var(--hgr-gold);
+  --hgr-yellow-strong: var(--hgr-gold-strong);
+  --hgr-yellow-soft: var(--hgr-gold-soft);
   --hgr-navy: #081b2b;
   --hgr-sky: #00aef0;
   --hgr-coral: #ff5b5b;
@@ -36,7 +42,7 @@
   /* Lines */
   --hgr-border: rgba(8, 27, 43, 0.10);
   --hgr-border-strong: rgba(8, 27, 43, 0.18);
-  --hgr-border-brand: rgba(255, 194, 0, 0.46);
+  --hgr-border-brand: color-mix(in srgb, var(--hgr-gold) 52%, transparent);
 
   /* Semantic aliases */
   --hgr-brand: var(--hgr-yellow);
@@ -83,8 +89,8 @@
   --hgr-shadow-soft: 0 8px 24px rgba(17, 24, 39, 0.08);
   --hgr-shadow-panel: 0 20px 54px rgba(17, 24, 39, 0.12);
   --hgr-shadow-float: 0 24px 80px rgba(17, 24, 39, 0.16);
-  --hgr-shadow-brand: 0 14px 32px rgba(255, 194, 0, 0.20);
-  --hgr-focus: 0 0 0 3px rgba(255, 194, 0, 0.28);
+  --hgr-shadow-brand: 0 14px 32px color-mix(in srgb, var(--hgr-gold) 24%, transparent);
+  --hgr-focus: 0 0 0 3px color-mix(in srgb, var(--hgr-gold) 30%, transparent);
 
   /* Motion */
   --hgr-motion-fast: 120ms;
@@ -2842,7 +2848,7 @@ html[data-theme="custom"] .account-admin-content-card {
 :root {
   --hgr-action-bg: var(--hgr-brand);
   --hgr-action-ink: var(--hgr-brand-ink);
-  --hgr-logo-bg: #f0b83f;
+  --hgr-logo-bg: var(--hgr-gold);
   --hgr-logo-ink: #000000;
   --hgr-logo-border: color-mix(in srgb, var(--hgr-logo-bg) 70%, #7a5600);
 }
@@ -2860,11 +2866,14 @@ html[data-theme="dark"] {
   --hgr-muted: #a4a8b0;
   --hgr-border: rgba(255,255,255,.10);
   --hgr-border-strong: rgba(255,255,255,.18);
-  --hgr-action-bg: #d6aa45;
+  --hgr-brand: var(--hgr-gold);
+  --hgr-brand-soft: var(--hgr-gold-soft);
+  --hgr-brand-ink: #17191d;
+  --hgr-action-bg: var(--hgr-gold);
   --hgr-action-ink: #17191d;
-  --hgr-logo-bg: #d6aa45;
+  --hgr-logo-bg: var(--hgr-gold);
   --hgr-logo-ink: #000000;
-  --hgr-logo-border: #8c6d28;
+  --hgr-logo-border: var(--hgr-gold-deep);
 
   --mm-page: var(--hgr-page);
   --mm-surface: var(--hgr-surface);
@@ -2887,7 +2896,7 @@ html[data-theme="blue"] {
 html[data-theme="light"] {
   --hgr-action-bg: #1f6fb2;
   --hgr-action-ink: #ffffff;
-  --hgr-logo-bg: #f0b83f;
+  --hgr-logo-bg: var(--hgr-gold);
   --hgr-logo-ink: #000000;
 }
 
@@ -3338,14 +3347,14 @@ html[data-theme="light"] {
   --hgr-muted: #68717c;
   --hgr-border: rgba(20,24,30,.12);
   --hgr-border-strong: rgba(20,24,30,.20);
-  --hgr-brand: #d6a11f;
-  --hgr-brand-soft: #f1d37b;
+  --hgr-brand: var(--hgr-gold);
+  --hgr-brand-soft: var(--hgr-gold-soft);
   --hgr-brand-ink: #181b20;
-  --hgr-action-bg: #d6a11f;
+  --hgr-action-bg: var(--hgr-gold);
   --hgr-action-ink: #181b20;
-  --hgr-logo-bg: #d6a11f;
+  --hgr-logo-bg: var(--hgr-gold);
   --hgr-logo-ink: #000000;
-  --hgr-logo-border: #9a7215;
+  --hgr-logo-border: var(--hgr-gold-deep);
   --hgr-info: #3979b8;
   --hgr-update: #3979b8;
   --mm-page: var(--hgr-page);

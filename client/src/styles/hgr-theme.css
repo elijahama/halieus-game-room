@@ -18,9 +18,16 @@
   --hgr-border: rgba(24, 32, 51, 0.14);
   --hgr-border-strong: rgba(24, 32, 51, 0.24);
 
-  --hgr-brand: #e5a721;
-  --hgr-brand-soft: #f6d77a;
-  --hgr-brand-ink: #18233c;
+  /* Canonical HGR gold system. Standard/System/Light/Dark all inherit this
+     saturated family; explicit colour themes may override --hgr-brand. */
+  --hgr-gold: #e7a900;
+  --hgr-gold-strong: #ffc21a;
+  --hgr-gold-deep: #b87900;
+  --hgr-gold-soft: #ffe08a;
+  --hgr-gold-glow: rgba(231, 169, 0, 0.28);
+  --hgr-brand: var(--hgr-gold);
+  --hgr-brand-soft: var(--hgr-gold-soft);
+  --hgr-brand-ink: #181b20;
   --hgr-start: #16884a;
   --hgr-restart: #c9821f;
   --hgr-close: #c8443d;
@@ -36,8 +43,8 @@
 
   --hgr-shadow-soft: 0 10px 28px rgba(30, 38, 51, 0.10);
   --hgr-shadow-panel: 0 22px 60px rgba(30, 38, 51, 0.14);
-  --hgr-shadow-brand: 0 16px 38px rgba(229, 167, 33, 0.20);
-  --hgr-focus: 0 0 0 4px rgba(229, 167, 33, 0.18);
+  --hgr-shadow-brand: 0 16px 38px color-mix(in srgb, var(--hgr-gold) 24%, transparent);
+  --hgr-focus: 0 0 0 4px color-mix(in srgb, var(--hgr-gold) 26%, transparent);
 
   --hgr-space-1: 6px;
   --hgr-space-2: 10px;
@@ -68,9 +75,9 @@ html[data-theme="dark"] {
   --hgr-border: rgba(255, 255, 255, 0.10);
   --hgr-border-strong: rgba(255, 255, 255, 0.18);
 
-  --hgr-brand: #e6b94f;
-  --hgr-brand-soft: #f1d786;
-  --hgr-brand-ink: #101722;
+  --hgr-brand: var(--hgr-gold);
+  --hgr-brand-soft: var(--hgr-gold-soft);
+  --hgr-brand-ink: #101114;
   --hgr-start: #34a36a;
   --hgr-restart: #d89a34;
   --hgr-close: #dd655f;
@@ -79,8 +86,8 @@ html[data-theme="dark"] {
 
   --hgr-shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.22);
   --hgr-shadow-panel: 0 24px 72px rgba(0, 0, 0, 0.30);
-  --hgr-shadow-brand: 0 18px 46px rgba(230, 185, 79, 0.12);
-  --hgr-focus: 0 0 0 4px rgba(230, 185, 79, 0.20);
+  --hgr-shadow-brand: 0 18px 46px color-mix(in srgb, var(--hgr-gold) 22%, transparent);
+  --hgr-focus: 0 0 0 4px color-mix(in srgb, var(--hgr-gold) 28%, transparent);
 }
 
 body,
