@@ -11,7 +11,7 @@ echo  Halieus Game Room %HGR_VERSION% - First Run
 echo  Folder: %CD%
 echo =============================================================
 echo.
-echo Refreshing shortcuts for THIS folder without changing icon files...
+echo Regenerating the current Halieus launcher icon family and refreshing shortcuts...
 powershell -NoProfile -ExecutionPolicy Bypass -File ".\scripts\windows\launcher-shortcuts.ps1" -UnhideScripts
 if errorlevel 1 (
   echo.
@@ -21,7 +21,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo Shortcuts refreshed successfully. Existing launcher icons were preserved.
+echo Shortcuts refreshed successfully with the current Halieus icon family.
 echo.
 echo Project launchers: "%CD%\HGR Launchers"
 echo Start Menu group:  Halieus Game Room
