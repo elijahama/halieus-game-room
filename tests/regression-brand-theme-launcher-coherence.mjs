@@ -12,6 +12,9 @@ const shortcuts=read("scripts/windows/launcher-shortcuts.ps1");
 const packagedShortcuts=read("server/launcher-shortcuts.ps1");
 const guilds=read("client/src/platform/components/GuildsPanel.tsx");
 const updater=read("Update HGR GitHub.cmd");
+const brandContract=read("shared/platform/brand.ts");
+const flatGenerator=read("scripts/generate-flat-brand.mjs");
+const logoReference=read("assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md");
 
 assert.match(home,/HalieusBrandMark/,"Home chrome must use the shared Halieus mark");
 assert.match(home,/HgrIcon name="chevron-left"/,"Featured previous control must use the shared SVG chevron");
@@ -20,6 +23,12 @@ assert.match(icons,/case "chevron-left"/,"Shared icon set must include a left ch
 assert.match(icons,/case "chevron-right"/,"Shared icon set must include a right chevron");
 assert.match(brand,/halieus-brand-mark-tile/,"Shared Halieus mark must expose a themeable tile");
 assert.match(brand,/halieus-brand-mark-h/,"Shared Halieus mark must expose a themeable H");
+assert.match(brandContract,/M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"Canonical H must use the approved simple geometry");
+assert.doesNotMatch(brandContract,/Q23 59|M27 35|L38 44/,"Canonical H must not contain the retired internal play/tail geometry");
+assert.match(flatGenerator,/control: '#4F7BFE'/,"Flat icon generator must reserve royal blue for HGR Control");
+assert.match(flatGenerator,/update: '#38BDF8'/,"Flat icon generator must keep Update light blue");
+assert.match(flatGenerator,/openshard: '#A855F7'/,"Flat icon generator must keep OpenShard purple");
+assert.match(logoReference,/no internal play button\/cut-out/i,"Brand reference must explicitly ban the retired internal play cut");
 
 assert.match(theme,/"--hgr-action-bg": action/,"Custom themes must derive a solid action colour");
 assert.match(theme,/"red" \\| "green" \\| (?:"profile" \\| )?"custom"/,"Theme contract must include dedicated Red/Green compatibility and the profile library");
