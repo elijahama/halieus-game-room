@@ -133,7 +133,8 @@ assert.match(hgrTheme,/--hgr-restart:/,'Shared HGR semantic Restart token missin
 assert.match(hgrTheme,/--hgr-close:/,'Shared HGR semantic Close token missing');
 assert.match(hgrTheme,/--hgr-update:/,'Shared HGR semantic Update token missing');
 assert.match(hgrTheme,/\.hgr-project-history/,'Project timeline design-system styling missing');
-assert.match(hgrDesignV1,/--hgr-yellow:\s*#ffc200/i,'HGR Design System v1 primary yellow token missing');
+assert.match(hgrDesignV1,/--hgr-gold:\s*#e7a900/i,'HGR canonical saturated gold token missing');
+assert.match(hgrDesignV1,/--hgr-yellow:\s*var\(--hgr-gold\)/i,'HGR legacy yellow alias must follow the canonical gold token');
 assert.match(hgrDesignV1,/--hgr-navy:\s*#081b2b/i,'HGR Design System v1 navy token missing');
 assert.match(hgrDesignV1,/html\[data-theme="dark"\][\s\S]*?--hgr-page:\s*#0f1012/s,'Dark mode must remain chromatic-neutral rather than blue');
 assert.match(hgrDesignV1,/html\[data-theme="blue"\]/,'Blue must be an explicit optional theme');
