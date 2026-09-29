@@ -2223,6 +2223,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
 
 
 /* HGR 4.5.3 — mobile app shell final authority */
+.halieus-mobile-fullscreen-emblem { display: none; }
 @media (max-width: 920px) {
   /* Mobile no longer inherits the desktop sidebar/drawer model. */
   .halieus-sidebar,
@@ -2235,20 +2236,35 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
   }
 
   .halieus-shell {
+    height: 100dvh !important;
     min-height: 100dvh !important;
+    overflow: hidden !important;
     padding-bottom: 0 !important;
+  }
+
+  /* A transformed app root changes the containing block for position:fixed.
+     Mobile owns a true viewport shell, so fixed chrome never joins page scroll. */
+  .halieus-shell.page-enter {
+    animation: none !important;
+    transform: none !important;
   }
 
   .halieus-main {
     margin-left: 0 !important;
-    min-height: 100dvh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch;
     padding:
       calc(72px + env(safe-area-inset-top))
       12px
-      calc(102px + env(safe-area-inset-bottom)) !important;
+      calc(106px + env(safe-area-inset-bottom)) !important;
+    box-sizing: border-box !important;
   }
 
-  /* Fixed top utility bar: brand left, Inbox + profile right. */
+  /* Fixed top utility bar: brand left, tools + Inbox + profile right. */
   .halieus-mobile-bar {
     display: grid !important;
     grid-template-columns: minmax(0,1fr) auto !important;
@@ -2305,14 +2321,15 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     min-width: 0 !important;
   }
 
+  .halieus-mobile-tools,
   .halieus-mobile-inbox,
   .halieus-mobile-account {
     position: relative !important;
-    flex: 0 0 42px !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 42px !important;
-    min-height: 42px !important;
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
     display: grid !important;
     place-items: center !important;
     padding: 3px !important;
@@ -2323,6 +2340,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     box-sizing: border-box !important;
   }
 
+  .halieus-mobile-tools.is-active,
   .halieus-mobile-inbox.is-active {
     border-color: color-mix(in srgb,var(--hgr-brand) 54%,var(--hgr-border)) !important;
     color: var(--hgr-brand) !important;
@@ -2365,7 +2383,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
   /* The five-slot bottom bar is the primary mobile navigation owner. */
   .halieus-mobile-nav {
     display: grid !important;
-    grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+    grid-template-columns: repeat(5,minmax(0,1fr)) !important;
     align-items: end !important;
     gap: 2px !important;
     position: fixed !important;
@@ -2386,12 +2404,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     backdrop-filter: none !important;
   }
 
-  .halieus-mobile-nav.has-account {
-    grid-template-columns: repeat(5,minmax(0,1fr)) !important;
-  }
-
-  .halieus-mobile-nav button,
-  .halieus-mobile-nav.has-account button {
+  .halieus-mobile-nav button {
     position: relative !important;
     min-width: 0 !important;
     min-height: 56px !important;
@@ -2408,7 +2421,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     font-weight: 850 !important;
   }
 
-  .halieus-mobile-nav button > span:not(.halieus-mobile-new-game-icon) {
+  .halieus-mobile-nav button > span:not(.halieus-mobile-join-game-icon) {
     max-width: 100% !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -2421,14 +2434,14 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     background: color-mix(in srgb,var(--hgr-brand) 10%,transparent) !important;
   }
 
-  .halieus-mobile-nav .halieus-mobile-new-game {
+  .halieus-mobile-nav .halieus-mobile-join-game {
     align-content: end !important;
     overflow: visible !important;
     color: var(--hgr-text) !important;
     background: transparent !important;
   }
 
-  .halieus-mobile-new-game-icon {
+  .halieus-mobile-join-game-icon {
     width: 48px !important;
     height: 48px !important;
     display: grid !important;
@@ -2441,11 +2454,33 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     box-shadow: 0 8px 20px color-mix(in srgb,var(--hgr-brand) 28%,transparent) !important;
   }
 
-  .halieus-mobile-nav .halieus-mobile-new-game.is-active .halieus-mobile-new-game-icon {
-    outline: 2px solid color-mix(in srgb,var(--hgr-brand) 45%,transparent) !important;
+  .halieus-mobile-nav .halieus-mobile-join-game:active .halieus-mobile-join-game-icon {
+    transform: scale(.96);
   }
 
-  /* More is a bottom sheet, never a side drawer. */
+  .halieus-mobile-fullscreen-emblem {
+    position: fixed !important;
+    right: 12px !important;
+    bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+    z-index: 740 !important;
+    width: 38px !important;
+    height: 38px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    border: 1px solid color-mix(in srgb,var(--hgr-border) 82%,var(--hgr-brand)) !important;
+    border-radius: 12px !important;
+    background: color-mix(in srgb,var(--hgr-surface-raised) 94%,transparent) !important;
+    color: var(--hgr-muted) !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,.16) !important;
+    opacity: .88 !important;
+  }
+
+  .halieus-mobile-fullscreen-emblem:disabled {
+    opacity: .38 !important;
+  }
+
+  /* More is a compact utility sheet, never the primary navigation. */
   .halieus-mobile-more-backdrop {
     display: block !important;
     position: fixed !important;
@@ -2560,18 +2595,6 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     margin: 0 !important;
   }
 
-  .halieus-mobile-more-fullscreen {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 7px !important;
-    border: 1px solid var(--hgr-border) !important;
-    border-radius: 12px !important;
-    background: var(--hgr-surface-raised) !important;
-    color: var(--hgr-text) !important;
-    font: inherit !important;
-    font-weight: 800 !important;
-  }
 }
 
 @media (max-width: 380px) {
@@ -2580,7 +2603,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     font-size: .72rem !important;
   }
 
-  .halieus-mobile-nav button > span:not(.halieus-mobile-new-game-icon) {
+  .halieus-mobile-nav button > span:not(.halieus-mobile-join-game-icon) {
     font-size: .56rem !important;
   }
 
