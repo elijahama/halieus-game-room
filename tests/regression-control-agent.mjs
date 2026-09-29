@@ -13,6 +13,10 @@ const masterbook = read("docs/HGR_MASTERBOOK.md");
 const controlDoc = read("docs/HGR_MOBILE_CONTROL.md");
 const docsIndex = read("docs/README.md");
 const projectReadme = read("README.md");
+const controlStartHelper = read("scripts/windows/start-control-agent.ps1");
+const controlClientHelper = read("scripts/windows/hgr-control-client.ps1");
+const controlLauncher = read("Start HGR Control.cmd");
+const gitignore = read(".gitignore");
 
 for (const id of [
   "status",
@@ -96,14 +100,24 @@ assert.match(controlDoc, /Loopback by default/, "Control documentation must expl
 assert.match(controlDoc, /Stage A — understand one GET endpoint/, "Control documentation must contain the guided implementation walkthrough");
 assert.match(controlDoc, /POST \/api\/actions\/restart/, "Control documentation must explain the authenticated restart endpoint");
 assert.match(controlDoc, /node -e "process\.stdout\.write\(require\('node:crypto'\)\.randomBytes\(32\)\.toString\('base64'\)\)"/, "Control token walkthrough must use HGR's Node runtime for cross-PowerShell cryptographic token generation");
-assert.match(controlDoc, /Set-Clipboard \$env:HGR_CONTROL_TOKEN/, "Control token walkthrough must hand off the token without printing it");
-assert.match(controlDoc, /\$token = Get-Clipboard/, "Second PowerShell must recover the HGR Control token from the clipboard");
-assert.doesNotMatch(controlDoc, /PASTE-THE-TOKEN-HERE/, "Control walkthrough must not encourage manually pasting a raw token into a command template");
+assert.match(controlDoc, /\.\\Start HGR Control\.cmd/, "Control walkthrough must use the stable local Control launcher");
+assert.match(controlDoc, /hgr-control-client\.ps1 status/, "Control walkthrough must use the allow-listed local client helper for status");
+assert.match(controlDoc, /hgr-control-client\.ps1 restart/, "Control walkthrough must use the allow-listed local client helper for restart");
+assert.doesNotMatch(controlDoc, /Set-Clipboard|Get-Clipboard|PASTE-THE-TOKEN-HERE/, "Control walkthrough must not depend on fragile clipboard/manual token handoff");
 assert.doesNotMatch(controlDoc, /RandomNumberGenerator\]::(?:Create|GetBytes)/, "Control docs must not depend on PowerShell/.NET RNG API differences");
 assert.match(controlDoc, /one mutable operation at a time/i, "Control documentation must explain the operation lock");
 assert.match(controlDoc, /hgr-control-audit\.ndjson/, "Control documentation must identify the local audit trail");
 assert.match(docsIndex, /HGR_MASTERBOOK\.md/, "Documentation index must expose the Masterbook");
 assert.match(docsIndex, /HGR_MOBILE_CONTROL\.md/, "Documentation index must expose HGR Mobile Control");
 assert.match(projectReadme, /docs\/HGR_MASTERBOOK\.md/, "Root README must link the Masterbook");
+assert.match(controlStartHelper, /randomBytes\(32\)\.toString\('base64'\)/, "Local Control launcher helper must generate a cryptographic token with Node");
+assert.match(controlStartHelper, /server\\data\\runtime/, "Local Control launcher helper must store transient state only in ignored runtime data");
+assert.match(controlStartHelper, /Remove-Item -LiteralPath \$tokenPath -Force/, "Local Control launcher helper must remove the temporary token when it exits");
+assert.doesNotMatch(controlStartHelper, /Write-Host\s+\$token|Write-Output\s+\$token/, "Local Control launcher must not print the bearer token");
+assert.match(controlClientHelper, /ValidateSet\("status", "restart", "logs"\)/, "Local Control client must expose only the approved development actions");
+assert.match(controlClientHelper, /"restart"[\s\S]*?\/api\/actions\/restart/s, "Local Control restart helper must target only the fixed restart endpoint");
+assert.doesNotMatch(controlClientHelper, /Invoke-Expression|Start-Process|cmd\.exe|powershell\.exe/i, "Local Control client must not become a general process runner");
+assert.match(controlLauncher, /start-control-agent\.ps1/i, "Stable HGR Control CMD entrypoint must delegate to the fixed PowerShell helper");
+assert.match(gitignore, /server\/data\/runtime\//, "Temporary HGR Control token and audit files must remain ignored by Git");
 
 console.log("HGR Control foundation / Masterbook regression: PASS");

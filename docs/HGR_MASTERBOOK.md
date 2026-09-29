@@ -209,6 +209,7 @@ Stable Windows entrypoints include:
 - `Restart Halieus Game Room.cmd`
 - `Close Halieus Game Room.cmd`
 - `Update HGR GitHub.cmd`
+- `Start HGR Control.cmd`
 - `FIRST RUN - Refresh Halieus Launchers.cmd`
 
 Their responsibilities are deliberately separated.
@@ -226,6 +227,10 @@ Troubleshooting action. It closes and reopens the dedicated HGR app window witho
 The full update path. It synchronises source, validates, builds, runs regressions, updates release identity, performs the configured deployment flow and restarts HGR only after success.
 
 A failed update must stop rather than restart into an incomplete state.
+
+### HGR Control
+
+`Start HGR Control.cmd` starts the local authenticated Control Agent development workflow. It generates a temporary local token, keeps it out of Git, and removes it when the agent exits. The companion PowerShell client only exposes the currently approved local actions.
 
 See [Project structure and Windows commands](HGR_PROJECT_STRUCTURE_AND_WINDOWS_COMMANDS.md).
 

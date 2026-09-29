@@ -203,78 +203,101 @@ That request/response cycle is the basis of the phone controller.
 
 ### Stage B — authentication
 
-Stage 2 requires a bearer token before any mutable action or audit-log read is allowed.
+For local development, HGR now owns the token handoff instead of asking you to copy a secret between shells manually.
 
-Generate a temporary token with Node, which HGR already requires. This avoids PowerShell/.NET-version differences entirely:
-
-```powershell
-$env:HGR_CONTROL_TOKEN = node -e "process.stdout.write(require('node:crypto').randomBytes(32).toString('base64'))"
-Set-Clipboard $env:HGR_CONTROL_TOKEN
-npm run control:dev
-```
-
-The token is created by Node's cryptographic random-number generator and placed only in the current PowerShell process environment. Closing that shell clears it unless you explicitly persist it elsewhere.
-
-Keep that token private. The first command copies it directly to the Windows clipboard without printing it.
-
-In a second PowerShell window, read it from the clipboard:
+Start the authenticated local agent from the repository root:
 
 ```powershell
-$token = Get-Clipboard
-$headers = @{ Authorization = "Bearer $token" }
+.\Start HGR Control.cmd
 ```
 
-Do not paste the raw token by itself at a PowerShell prompt; PowerShell will try to execute it as a command. Do not omit `$headers` from the second line.
+That launcher runs:
 
-The request header is then:
+```text
+scripts/windows/start-control-agent.ps1
+```
+
+The helper:
+
+1. generates a 32-byte cryptographic token with Node;
+2. stores it temporarily in the ignored runtime directory;
+3. sets `HGR_CONTROL_TOKEN` only for the Control Agent process;
+4. starts `npm run control:dev`;
+5. removes the temporary token when the agent exits.
+
+The temporary file is:
+
+```text
+server/data/runtime/.hgr-control-token
+```
+
+`server/data/runtime/` is already excluded from Git.
+
+The token is **not printed** and you do not need to copy it.
+
+The HTTP authentication model is still:
 
 ```text
 Authorization: Bearer <token>
 ```
 
-Status requests may remain unauthenticated only while the agent is loopback-only and no token is configured. Mutable actions never run without a token.
+The local helper simply handles that secret safely for you while we are developing the system.
 
 We move the listener from loopback to the PC's Tailscale address only after local authenticated actions work.
 
 ### Stage C — first process action
 
-Restart should be the first mutable action because its existing contract is simple:
+Open a second PowerShell in the HGR repository. Use the allow-listed local client helper:
+
+```powershell
+.\scripts\windows\hgr-control-client.ps1 status
+```
+
+That reads the temporary local token and makes the authenticated status request.
+
+Restart HGR with:
+
+```powershell
+.\scripts\windows\hgr-control-client.ps1 restart
+```
+
+Read recent audit entries with:
+
+```powershell
+.\scripts\windows\hgr-control-client.ps1 logs | ConvertTo-Json -Depth 6
+```
+
+The helper accepts only:
 
 ```text
-POST /api/actions/restart
-        ↓
+status
+restart
+logs
+```
+
+It is not a general command runner.
+
+The Restart path remains:
+
+```text
+restart
+   ↓
 authenticate
-        ↓
+   ↓
 check allow-list
-        ↓
+   ↓
 check operation lock
-        ↓
+   ↓
 run fixed Restart Halieus Game Room.cmd
-        ↓
+   ↓
 capture result
-        ↓
+   ↓
 write audit event
-        ↓
+   ↓
 return result
 ```
 
 The request does not contain the path to the CMD file.
-
-Stage 2 implements that endpoint:
-
-```http
-POST /api/actions/restart
-Authorization: Bearer <token>
-```
-
-PowerShell test:
-
-```powershell
-Invoke-RestMethod `
-  -Method Post `
-  -Uri http://127.0.0.1:43127/api/actions/restart `
-  -Headers $headers
-```
 
 Only one mutable HGR Control action may run at a time. A second request while one is active receives a conflict response instead of launching another process.
 
@@ -282,14 +305,6 @@ The audit trail is written locally to:
 
 ```text
 server/data/runtime/hgr-control-audit.ndjson
-```
-
-Recent audit entries can be read with:
-
-```powershell
-Invoke-RestMethod `
-  -Uri http://127.0.0.1:43127/api/logs `
-  -Headers $headers
 ```
 
 The audit records action ID, running/succeeded/failed/rejected state, timestamps and exit status. It does not log bearer tokens.
