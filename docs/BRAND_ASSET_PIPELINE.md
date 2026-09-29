@@ -1,73 +1,118 @@
 # HGR Brand Asset Policy
 
-Status: HGR 4.5 foundation
-
-The approved Windows launcher artwork is **not generated during normal HGR development or shortcut refresh**.
+Status: HGR 4.5.3 canonical icon system
 
 ## Visual source of truth
 
-All approved PNG files stored directly under:
+The visual reference folder remains:
 
 `assets/branding/references/`
 
-form the current visual reference set.
+References communicate approved direction, but runtime identity is no longer copied blindly from one historical PNG. The canonical functional identity is defined by:
 
-The reference set is intentionally directory-led rather than hard-coded to a fixed filename count. Before changing launcher artwork, inspect the complete current contents of that folder.
+1. the shared simple Halieus H geometry;
+2. the semantic role palette;
+3. separate utility corner badges;
+4. product-specific SVG sources for Halieus and HGR Control.
 
-Reference artwork outranks generated interpretations. A launcher asset must not be redrawn from a written palette/geometry description when an approved visual reference is available.
+The current icon-system reference is:
 
-## Protected approved assets
+`assets/branding/references/HGR ICON - CONTROL UPDATE`
 
-Approved launcher icons live in:
+and the written contract is:
 
-```text
-assets/branding/launchers/
-```
+`assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md`
 
-Those tracked `.ico` files are design assets. Scripts must not overwrite, recolour, delete or regenerate them.
+## Canonical H
 
-The base HGR Windows icon lives at:
+There is one H geometry. It contains no internal play button/tail.
 
-```text
-assets/branding/Halieus Game Room.ico
-```
+The canonical vector source is:
 
-## Shortcut refresh
+`assets/branding/icon-sets/glyphs/hgr-h.svg`
 
-`scripts/windows/launcher-shortcuts.ps1` only creates or refreshes Windows shortcuts.
+White, black, gold, inverted and outline treatments are permutations of that geometry, not independent logos.
 
-It may:
+## Product identities
 
-- point a shortcut at an existing approved icon;
-- fall back to the base HGR icon when an optional icon is unavailable;
-- refresh Windows' shortcut/icon cache.
+- **Halieus** — bright gold main-app identity.
+- **HGR Control** — royal-blue Control identity. It must never reuse the main gold app icon.
+- **OpenShard** — purple.
+- **Update** — light blue.
 
-It must never generate artwork.
+Installed PWA/browser identity uses canonical SVGs directly:
 
-## Generated previews
+- `client/public/halieus-app-icon.svg`
+- `server/control-ui/control-icon.svg`
 
-Any experimental/generated launcher artwork belongs only in:
+## Owner utility palette
 
-```text
-assets/branding/launchers/generated-preview/
-```
+- Start — `#22C55E`
+- Restart — `#F59E0B`
+- Close — `#EF4444`
+- Update — `#38BDF8`
+- PowerShell — `#64748B`
+- OpenShard — `#A855F7`
+- HGR Control — `#4F7BFE`
 
-That directory is intentionally separate from the approved launcher assets and is ignored by Git.
+Each utility uses the common H plus a small white role badge.
 
-The legacy preview generator `scripts/windows/generate-launcher-icons.ps1` is allowed to write only to `generated-preview`.
+## Windows launcher generation
 
-## Browser and PWA identity
+Tracked SVG files under:
 
-Browser/PWA assets under `client/public` are separate from the approved Windows launcher family. Updating them must not modify `assets/branding/launchers`.
+`assets/branding/launchers/`
+
+are reviewable source artwork.
+
+Windows PNG/ICO files used by owner shortcuts are generated at refresh time into ignored runtime state:
+
+`server/data/runtime/launcher-icons/`
+
+by:
+
+`scripts/windows/generate-launcher-icons.ps1`
+
+Then:
+
+`scripts/windows/launcher-shortcuts.ps1`
+
+rebuilds the HGR shortcut family against those generated runtime ICOs.
+
+This avoids binary Git churn while keeping every shortcut visually synchronized with the approved SVG/role contract.
+
+## Compatibility binaries
+
+Older tracked ICO/PNG assets may remain for compatibility with legacy packaging paths. They are not the current geometry authority and must not override a canonical SVG/runtime-generated icon where the new pipeline is available.
+
+## Protection model
+
+Brand regression no longer freezes the complete reference directory to historical byte hashes. That prevented intentional brand evolution.
+
+Instead, regression protects:
+
+- the canonical simple H geometry;
+- required product/launcher SVG sources;
+- semantic role colours;
+- Control-vs-main app separation;
+- absence of the retired play-tail geometry;
+- the runtime launcher generation path;
+- presence of the current reference material.
+
+Historical fixture hashes under `tests/fixtures/pre2b-protected-assets.json` remain as a record of the earlier Pre-2B asset set; they are not the active branding contract.
 
 ## Rule
 
 ```text
-approved launcher artwork
-        ↓
-tracked immutable project asset
-        ↓
-shortcut refresher references it
+visual reference
+      ↓
+canonical H + semantic role contract
+      ↓
+reviewable SVG source
+      ↓
+PWA/browser SVG identity
+      or
+runtime Windows PNG/ICO export
 ```
 
-There is no automatic path from theme generation, website assets or launcher refresh into the approved Windows icon files.
+One geometry, one role language, multiple delivery formats.
