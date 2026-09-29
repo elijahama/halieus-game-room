@@ -437,7 +437,7 @@
     void runConfirmedAction(
       "update",
       "Run the full HGR update?",
-      "This will sync GitHub, validate the release, build, run regressions, package, deploy to Oracle and restart HGR only if the update succeeds.",
+      "This will sync GitHub, validate the release, build, run regressions, package and deploy to Oracle. Connected HGR clients are warned before restart and refresh themselves onto the new release.",
       "Run update",
     ),
   );
