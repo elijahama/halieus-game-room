@@ -1,18 +1,23 @@
-import { copyFile, mkdir } from "node:fs/promises";
+import { access, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-
-// The installed-app icon intentionally uses approved rendered reference artwork.
-// Do not redraw, recolour or regenerate this source through the flat SVG system.
-const source = resolve(
-  root,
-  "assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png",
-);
 const publicDir = resolve(root, "client/public");
-const destination = resolve(publicDir, "app-icon-reference.png");
 
-await mkdir(publicDir, { recursive: true });
-await copyFile(source, destination);
+// Legacy filename retained so existing build hooks keep working. The old
+// rendered reference is deliberately no longer copied into public output:
+// Chromium/Brave must install the canonical HGR mark generated from the live
+// app-icon source, not a historical reference thumbnail.
+const staleReference = resolve(publicDir, "app-icon-reference.png");
+await rm(staleReference, { force: true });
 
-console.log("Copied approved HGR reference PNG to client/public/app-icon-reference.png.");
+for (const file of [
+  "app-icon-180.png",
+  "app-icon-192.png",
+  "app-icon-512.png",
+  "halieus-app-icon.svg",
+]) {
+  await access(resolve(publicDir, file));
+}
+
+console.log("Prepared canonical HGR PWA icons and removed stale install reference.");
