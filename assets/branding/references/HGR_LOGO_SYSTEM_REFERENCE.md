@@ -1,5 +1,5 @@
 # Halieus Game Room — Logo System Reference
-Version: 4.5.2
+Version: 4.5.3
 
 ## Core Rule
 
@@ -47,7 +47,7 @@ The website logo is built from reusable layers:
 Example tokens:
 
 ```css
---hgr-logo-bg: #DAA017;
+--hgr-logo-bg: #F4C430;
 --hgr-logo-fg: #000000;
 --hgr-logo-accent: #FFFFFF;
 ```
@@ -120,6 +120,7 @@ Launcher icons use the same H alignment and geometry.
 - Update Site
 - PowerShell
 - OpenShard TUI
+- HGR Control Mobile
 
 Their action motifs may differ, but the H must remain fixed.
 
