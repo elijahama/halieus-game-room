@@ -2223,7 +2223,6 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
 
 
 /* HGR 4.5.3 — mobile app shell final authority */
-.halieus-mobile-fullscreen-emblem { display: none; }
 @media (max-width: 920px) {
   /* Mobile no longer inherits the desktop sidebar/drawer model. */
   .halieus-sidebar,
@@ -2264,7 +2263,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     box-sizing: border-box !important;
   }
 
-  /* Fixed top utility bar: brand left, tools + Inbox + profile right. */
+  /* Fixed top utility bar: brand left, tools + Full Screen + Inbox + profile right. */
   .halieus-mobile-bar {
     display: grid !important;
     grid-template-columns: minmax(0,1fr) auto !important;
@@ -2322,6 +2321,7 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
   }
 
   .halieus-mobile-tools,
+  .halieus-mobile-top-fullscreen,
   .halieus-mobile-inbox,
   .halieus-mobile-account {
     position: relative !important;
@@ -2458,26 +2458,63 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     transform: scale(.96);
   }
 
-  .halieus-mobile-fullscreen-emblem {
-    position: fixed !important;
-    right: 12px !important;
-    bottom: calc(92px + env(safe-area-inset-bottom)) !important;
-    z-index: 740 !important;
-    width: 38px !important;
-    height: 38px !important;
-    display: grid !important;
-    place-items: center !important;
-    padding: 0 !important;
-    border: 1px solid color-mix(in srgb,var(--hgr-border) 82%,var(--hgr-brand)) !important;
-    border-radius: 12px !important;
-    background: color-mix(in srgb,var(--hgr-surface-raised) 94%,transparent) !important;
-    color: var(--hgr-muted) !important;
-    box-shadow: 0 8px 22px rgba(0,0,0,.16) !important;
-    opacity: .88 !important;
+  .halieus-mobile-top-fullscreen:disabled {
+    opacity: .38 !important;
   }
 
-  .halieus-mobile-fullscreen-emblem:disabled {
-    opacity: .38 !important;
+  /* Mobile Inbox is a compact top-right panel, not a full-height drawer. */
+  .halieus-inbox-backdrop {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1160 !important;
+    padding: 0 !important;
+    background: rgba(2,8,13,.32) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .halieus-inbox-panel {
+    position: absolute !important;
+    top: calc(68px + env(safe-area-inset-top)) !important;
+    right: 8px !important;
+    width: min(420px,calc(100vw - 16px)) !important;
+    height: auto !important;
+    max-height: min(58dvh,480px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    padding: 14px !important;
+    border: 1px solid var(--hgr-border-strong) !important;
+    border-radius: 18px !important;
+    background: var(--hgr-surface-raised) !important;
+    box-shadow: 0 18px 50px rgba(0,0,0,.28) !important;
+  }
+
+  .halieus-inbox-panel > header {
+    gap: 10px !important;
+    padding-bottom: 11px !important;
+  }
+
+  .halieus-inbox-panel > header h2 {
+    font-size: 1.05rem !important;
+  }
+
+  .halieus-inbox-panel > header span {
+    display: none !important;
+  }
+
+  .halieus-inbox-empty {
+    margin-top: 10px !important;
+    padding: 16px !important;
+  }
+
+  .halieus-inbox-group {
+    margin-top: 11px !important;
+  }
+
+  .halieus-inbox-item {
+    margin-bottom: 6px !important;
+    padding: 8px !important;
   }
 
   /* More is a compact utility sheet, never the primary navigation. */
@@ -2598,6 +2635,27 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
 }
 
 @media (max-width: 380px) {
+  .halieus-mobile-actions {
+    gap: 4px !important;
+  }
+
+  .halieus-mobile-tools,
+  .halieus-mobile-top-fullscreen,
+  .halieus-mobile-inbox,
+  .halieus-mobile-account {
+    flex-basis: 36px !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    border-radius: 12px !important;
+  }
+
+  .halieus-mobile-account > .halieus-avatar-media {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
   .halieus-mobile-brand strong {
     max-width: 112px !important;
     font-size: .72rem !important;
