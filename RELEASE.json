@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.3",
-  "fingerprint": "hgr-4.5.3-0c479bebf8d3d1d9",
+  "fingerprint": "hgr-4.5.3-cfa701c0c5e3c3de",
   "algorithm": "sha256",
-  "sourceHash": "0c479bebf8d3d1d9c8cb4eb5632d90e4ab5775206a38e0fa69f8d62ddcc08fa9",
-  "integrityFileCount": 450,
+  "sourceHash": "cfa701c0c5e3c3dea5e8da90db9ebaacff007a682c91c014a87d32a8eb846bbb",
+  "integrityFileCount": 453,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -255,7 +255,10 @@
     "scripts/release-integrity.mjs",
     "scripts/windows/HGR GitHub Sync.cmd",
     "scripts/windows/Install HGR GitHub Shortcut.cmd",
+    "scripts/windows/control-close.ps1",
     "scripts/windows/control-restart.ps1",
+    "scripts/windows/control-start.ps1",
+    "scripts/windows/control-update.ps1",
     "scripts/windows/generate-launcher-icons.ps1",
     "scripts/windows/hgr-control-client.ps1",
     "scripts/windows/launcher-shortcuts.ps1",
@@ -559,6 +562,8 @@
     "matte-launcher-family-4.1.0",
     "hgr-control-readonly-foundation-4.5.3",
     "hgr-control-authenticated-restart-4.5.3",
-    "hgr-control-private-mobile-pwa-4.5.3"
+    "hgr-control-private-mobile-pwa-4.5.3",
+    "hgr-control-start-close-update-4.5.3",
+    "hgr-control-confirmed-update-progress-4.5.3"
   ]
 }
