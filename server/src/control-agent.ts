@@ -733,7 +733,7 @@ const UPDATE_PROGRESS_MARKERS: Array<{
   { match: "STEP 8 - Regenerating final release identity", phase: "Final release identity", progress: 70 },
   { match: "STEP 8B - Final release check", phase: "Validating final release", progress: 78 },
   { match: "STEP 9 - Publishing the validated HGR release", phase: "Publishing to Oracle", progress: 88 },
-  { match: "FINAL STEP - Restarting Halieus Game Room", phase: "Restarting HGR", progress: 96 },
+  { match: "FINAL STEP - Refreshing the HGR client", phase: "Refreshing HGR client", progress: 96 },
 ];
 
 function updateOperationProgress(line: string): void {
