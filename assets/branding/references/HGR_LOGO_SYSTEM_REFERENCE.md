@@ -10,7 +10,8 @@ Every logo variation must use the exact same:
 - alignment
 - dimensions
 - padding
-- internal play-cut geometry
+
+The canonical H is now deliberately simple. It contains **no internal play button/cut-out**. Utility meaning is carried by a separate small corner badge instead of modifying the H itself.
 
 Do not redraw or resize the H independently between variants.
 
@@ -122,11 +123,22 @@ Launcher icons use the same H alignment and geometry.
 
 Their action motifs may differ, but the H must remain fixed.
 
-### Launcher colours
+### Launcher / utility colours
 
-Launcher PNG/ICO files are frozen branded assets.
+Role colours are semantic and fixed for the owner-tool family:
 
-The web/UI equivalents should be flat SVG-based icons whose colours may respond to the active HGR theme.
+- Halieus main app — bright gold `#F4C430`
+- HGR Control — royal control blue `#4F7BFE`
+- Start — green `#22C55E`
+- Restart — orange `#F59E0B`
+- Close — red `#EF4444`
+- Update — light blue `#38BDF8`
+- PowerShell — slate `#64748B`
+- OpenShard — purple `#A855F7`
+
+OpenShard owns purple. Update owns light blue. HGR Control must not reuse either role colour.
+
+Utility icons use the canonical H plus a separate bottom-right white role badge. The badge may identify Start, Restart, Close, Update, PowerShell, OpenShard or Control, but it must never distort the H geometry.
 
 ---
 
@@ -216,3 +228,28 @@ Examples:
 - Theme changes alter colour, not proportions.
 - Accessibility contrast may override a theme colour when required.
 - Detailed rendered icons are references, not the source of runtime geometry.
+
+
+## Permutation set
+
+The functional vector family includes these approved treatments:
+
+- Full colour — branded tile + black H
+- Monochrome gold — gold H only, transparent background
+- White only — white H only, transparent background
+- Black only — black H only, transparent background
+- Dark-on-light — white tile + black H
+- Inverted — dark tile + gold H
+- Outline — gold tile/H outline treatment
+- H-only glyphs — black, white and gold
+
+These permutations are delivery variants of the **same H geometry**, not separate logos.
+
+## HGR Control identity
+
+HGR Control is a separate application identity inside the Halieus family.
+
+- The installed HGR Control PWA uses the dedicated blue Control icon.
+- The Control splash/header uses that same icon.
+- The main Halieus gold icon must not be reused as the Control app icon.
+- Windows HGR Control launchers use the Control icon as well.
