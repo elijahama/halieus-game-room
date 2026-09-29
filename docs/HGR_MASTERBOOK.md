@@ -271,6 +271,16 @@ See [HGR Mobile Control](HGR_MOBILE_CONTROL.md).
 
 The Mobile Control document also keeps a troubleshooting history of real implementation failures and their fixes so future changes preserve the reasoning behind the architecture.
 
+### HGR Control Lab
+
+The Tailscale phase is also treated as a practical networking/security lab. The objective is not simply to demonstrate Tailscale itself, but to demonstrate the design and validation of a constrained control plane: loopback-only privileged service, private HTTPS exposure, device pairing, secure sessions, allow-listed commands, operation locking, audit logging and real-device testing.
+
+A portfolio-safe description is:
+
+> I built and tested a private mobile control plane for HGR as a networking/security lab. The Windows control agent remains bound to loopback, Tailscale Serve provides private HTTPS transport, the phone pairs through a short-lived code, and the agent accepts only predefined maintenance actions rather than arbitrary shell commands. I validated the design on a real Android phone and Windows PC, including session persistence, session invalidation and remote HGR restart.
+
+The lab is intentionally useful beyond Tailscale: the same action/authentication model can later be extended through an Oracle-hosted relay while retaining Tailscale as a private fallback.
+
 ## 11. Release engineering
 
 HGR uses candidate-first release/deployment thinking:
