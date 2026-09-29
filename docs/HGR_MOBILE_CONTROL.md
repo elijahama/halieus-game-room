@@ -514,13 +514,19 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 
 ### Control visual identity and action colours
 
-HGR Control now has its own violet/indigo identity so the controller itself is not visually confused with the red Close/danger language. Individual owner actions reuse the existing Windows launcher palette rather than inventing a second colour system:
+HGR Control now has its own royal-blue product identity, separate from both Update light blue and OpenShard purple. The owner-tool family uses one semantic palette:
 
-- Start — green `#258B58`
-- Restart — amber `#B97818`
-- Close — red `#BD4545`
-- Update — blue `#3475C5`
-- Control chrome — violet `#7667D8`
+- Start — green `#22C55E`
+- Restart — orange `#F59E0B`
+- Close — red `#EF4444`
+- Update — light blue `#38BDF8`
+- PowerShell — slate `#64748B`
+- OpenShard — purple `#A855F7`
+- HGR Control — royal blue `#4F7BFE`
+
+All launcher/app marks now use the same simple canonical H. Utility roles are identified by a small separate corner badge; the H itself has no internal play cut.
+
+The installed Control PWA, Control splash/header and Windows **HGR - Control Mobile** shortcut all use the dedicated Control mark. They must never fall back to the main gold Halieus app icon.
 
 The Update progress bar uses the Update blue and keeps a continuous shimmer/pulse animation while an operation is active. This means a long-running stage such as Oracle deployment still communicates activity even when the percentage remains unchanged for a while. Reduced-motion preferences suppress the decorative movement.
 
