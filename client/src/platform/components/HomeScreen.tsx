@@ -814,16 +814,13 @@ export function HomeScreen(props: HomeScreenProps) {
             <button type="button" className="halieus-mobile-more-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close More menu"><HgrIcon name="close" size={20} /></button>
           </header>
           <nav className="halieus-mobile-more-nav">
-            <button type="button" onClick={() => { setView("games"); setMobileMenuOpen(false); }}><HgrIcon name="games" size={20} /><span><strong>Games</strong><small>Browse every game</small></span></button>
             <button type="button" onClick={() => { setView("rankings"); setMobileMenuOpen(false); }}><HgrIcon name="leaderboard" size={20} /><span><strong>Rankings</strong><small>Global ladders</small></span></button>
-            <button type="button" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }}><HgrIcon name="plus" size={20} /><span><strong>Join Game</strong><small>Enter a room code</small></span></button>
             <button type="button" onClick={() => { openJoin("watch"); setMobileMenuOpen(false); }}><HgrIcon name="info" size={20} /><span><strong>Watch Game</strong><small>Spectate a live room</small></span></button>
           </nav>
           <div className="halieus-mobile-more-controls" aria-label="Display and app controls">
             <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
             <InstallAppButton />
             <NotificationPermissionButton />
-            <button type="button" className="halieus-mobile-more-fullscreen" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={20} /><span>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</span></button>
           </div>
           {fullscreenNotice && <small className="halieus-fullscreen-note" role="status">{fullscreenNotice}</small>}
           {betaMode && <div className="halieus-beta-badge"><strong>BETA TEST</strong><span>Stats excluded</span></div>}
@@ -858,6 +855,7 @@ export function HomeScreen(props: HomeScreenProps) {
         <header className="halieus-mobile-bar">
           <button type="button" className="halieus-mobile-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HalieusBrandMark /><strong>Halieus Game Room</strong></button>
           <div className="halieus-mobile-actions">
+            <button type="button" className={mobileMenuOpen ? "halieus-mobile-tools is-active" : "halieus-mobile-tools"} onClick={() => setMobileMenuOpen((open) => !open)} aria-expanded={mobileMenuOpen} aria-controls="halieus-mobile-more-sheet" aria-label="Open more tools"><HgrIcon name="menu" size={20} /></button>
             {account && <button type="button" className={inboxOpen ? "halieus-mobile-inbox is-active" : "halieus-mobile-inbox"} onClick={() => setInboxOpen(true)} aria-label="Open inbox"><HgrIcon name="inbox" size={20} />{inboxCount > 0 && <b className="halieus-mobile-top-badge">{inboxCount > 9 ? "9+" : inboxCount}</b>}</button>}
             {account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}
           </div>
@@ -1052,12 +1050,14 @@ export function HomeScreen(props: HomeScreenProps) {
         )}
       </section>
 
-      <nav className={`halieus-mobile-nav${account ? " has-account" : ""}`} aria-label="Mobile navigation">
+      {!mobileMenuOpen && <button type="button" className="halieus-mobile-fullscreen-emblem" onClick={() => void toggleFullscreen()} disabled={!fullscreenSupported} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"} title={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={19} /></button>}
+
+      <nav className="halieus-mobile-nav" aria-label="Mobile navigation">
         <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HgrIcon name="home" size={20} /><span>Home</span></button>
+        <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><HgrIcon name="games" size={20} /><span>Games</span></button>
+        <button type="button" className="halieus-mobile-join-game" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }} aria-label="Join Game"><span className="halieus-mobile-join-game-icon"><HgrIcon name="plus" size={24} /></span><span>Join</span></button>
         <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><HgrIcon name="players" size={20} /><span>Players</span></button>
-        <button type="button" className={view === "games" ? "is-active halieus-mobile-new-game" : "halieus-mobile-new-game"} onClick={() => { setView("games"); setMobileMenuOpen(false); }} aria-label="Start a new game"><span className="halieus-mobile-new-game-icon"><HgrIcon name="plus" size={24} /></span><span>New Game</span></button>
-        {account && <button type="button" className={view === "guilds" ? "is-active" : ""} onClick={() => { setView("guilds"); setMobileMenuOpen(false); }}><HgrIcon name="guilds" size={20} /><span>Guilds</span></button>}
-        <button type="button" className={mobileMenuOpen ? "is-active" : ""} onClick={() => setMobileMenuOpen((open) => !open)} aria-expanded={mobileMenuOpen} aria-controls="halieus-mobile-more-sheet"><HgrIcon name="menu" size={20} /><span>More</span></button>
+        <button type="button" className={view === "guilds" ? "is-active" : ""} disabled={!account} onClick={() => { if (account) setView("guilds"); setMobileMenuOpen(false); }}><HgrIcon name="guilds" size={20} /><span>Guilds</span></button>
       </nav>
 
       {inboxOverlay}

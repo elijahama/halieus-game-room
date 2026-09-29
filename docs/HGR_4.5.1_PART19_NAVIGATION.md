@@ -1,26 +1,38 @@
-# HGR 4.5.1 — Part 19 platform navigation parity
+# HGR platform navigation — Part 19 history and 4.5.3 mobile contract
 
-Date: 25 September 2026
+The original Part 19 navigation work was introduced in 4.5.1. Its desktop hierarchy remains useful history, but its mobile assumptions are **superseded by the 4.5.3 mobile app-shell contract below**.
 
-This follow-up closes the navigation backlog recorded at the end of the Part 18 implementation note. It is a platform-shell change only; game rules, room protocols, ranking calculations and progression ownership are unchanged.
+## Current 4.5.3 mobile navigation
 
-## Implemented
+Mobile deliberately does **not** mirror the desktop sidebar. It behaves like a native app shell:
 
-- Desktop and mobile now use the same destination hierarchy: **Home → Games → Players → Rankings → Guilds → Inbox**.
-- **Join Game** remains a global action rather than occupying a destination-tab slot. On mobile it lives in the fixed top bar and remains available in the navigation drawer.
-- Signed-in mobile navigation uses six equal-width destinations, including direct Rankings and Guilds access instead of routing both through Players.
-- Inbox remains an overlay rather than pretending to be a persistent page; its mobile destination displays the unread request/invitation count.
-- The old mobile CSS assumption that the third bottom-navigation button is always Join is explicitly neutralised, so Players only receives the theme accent when it is actually selected.
-- Narrow-phone rules reduce icon/label footprint without introducing horizontal scrolling or changing safe-area ownership.
+- the bottom bar is permanently visible and belongs to the viewport, not to page content;
+- only the central content pane scrolls;
+- the five bottom slots are **Home → Games → Join → Players → Guilds**;
+- the centre **Join** button opens the existing Join Game room-code flow; it does not route to Games or New Game;
+- Games is a normal destination in its own slot;
+- Rankings and Watch Game are secondary utilities available from the compact top tools control;
+- Inbox and the player profile remain in the top-right utility area;
+- Full Screen is a small direct emblem above the bottom bar so it stays reachable without consuming a primary navigation slot;
+- the desktop sidebar/hamburger is not part of the phone information architecture.
 
-## Regression contract
+The mobile shell owns exactly one `100dvh` viewport. `.halieus-main` is the scroll container, while the top bar and bottom navigation are fixed siblings. Mobile also disables the root `.page-enter` transform so a transformed ancestor cannot change the containing block used by `position: fixed`.
 
-The normal `npm run test:regression` chain now asserts:
+## Why the previous fixes kept producing the wrong result
 
-- all six signed-in mobile destinations exist;
-- Join is not rendered as a destination tab;
-- the fixed mobile header retains a global Join action;
-- six-column account navigation is present in the final 4.5.1 override layer;
-- legacy third-button Join styling cannot leak onto Players.
+The earlier regression contract explicitly asserted the wrong mobile hierarchy: **Home, Players, New Game, Guilds, More**. It also required Games and Join Game to live inside the More sheet. That meant a future change toward the requested app-style bar could be treated as a regression and pushed back toward the old structure.
 
-Release identity remains generated from `VERSION`. The release-identity workflow is expected to regenerate `RELEASE.json` and `shared/release.ts` after this source commit passes typecheck, regressions and browser release validation.
+The 4.5.3 regression now protects the actual contract instead:
+
+- exact primary labels and order: Home, Games, Join, Players, Guilds;
+- Join must call the real Join Game flow and must not call `setView("games")`;
+- Rankings/Watch Game stay outside the primary bar;
+- the mobile shell is a single fixed viewport with only `.halieus-main` scrolling;
+- the bottom bar must remain `position: fixed` at the viewport bottom;
+- a browser regression scrolls the phone content and verifies that the nav does not move.
+
+This is intentionally different from desktop. Desktop may continue to expose the fuller destination rail, including Rankings and Inbox.
+
+## Release safety
+
+This change is presentation/navigation only. Game rules, socket protocols, ranking calculations and progression ownership are unchanged. Release identity remains generated from `VERSION`.
