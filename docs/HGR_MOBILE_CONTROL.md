@@ -512,6 +512,42 @@ The mobile launcher also owns its Tailscale Serve route. The default public-faci
 - [ ] recovery if an update/restart is interrupted
 - [ ] expanded runtime security regression tests
 
+### Control visual identity and action colours
+
+HGR Control now has its own violet/indigo identity so the controller itself is not visually confused with the red Close/danger language. Individual owner actions reuse the existing Windows launcher palette rather than inventing a second colour system:
+
+- Start — green `#258B58`
+- Restart — amber `#B97818`
+- Close — red `#BD4545`
+- Update — blue `#3475C5`
+- Control chrome — violet `#7667D8`
+
+The Update progress bar uses the Update blue and keeps a continuous shimmer/pulse animation while an operation is active. This means a long-running stage such as Oracle deployment still communicates activity even when the percentage remains unchanged for a while. Reduced-motion preferences suppress the decorative movement.
+
+### Production maintenance and release-aware refresh
+
+Successful production updates now coordinate the player-facing site as part of the release lifecycle.
+
+The validated Oracle candidate does **not** warn players while it is still building. Immediately before production activation, `quick-install.sh` calls the currently running HGR server over Oracle loopback only:
+
+```text
+POST http://127.0.0.1:3000/internal/maintenance
+```
+
+That endpoint cannot be used from the public internet. The running server broadcasts a structured `platform:maintenance` event to connected Socket.IO clients and retains the notice so a player who connects during the grace period sees it too.
+
+Players receive a site-wide warning that the server is about to restart and are reminded to keep their recovery key or room code handy. The installer then gives a short grace period before stopping the service.
+
+On reconnect, `server:ready` now includes the exact active HGR version and release fingerprint. The loaded browser bundle compares the server fingerprint with the fingerprint compiled into that client. If they differ, the existing browser tab displays an “update complete” state and calls `window.location.reload()` to load the new release.
+
+This replaces the old successful-update behaviour that always killed and reopened the dedicated HGR Edge app. The Windows post-update helper now:
+
+1. detects an already-running dedicated HGR window;
+2. leaves it open so the release-aware client can refresh itself in place;
+3. opens HGR only if no dedicated HGR window is currently running.
+
+`Restart Halieus Game Room.cmd` remains available as the explicit recovery/troubleshooting fallback.
+
 ### Expanded action implementation verification
 
 **Implemented in source, not yet accepted as real-device action QA:** Start, Close and Update now have fixed Windows bridges, authenticated API routes, operation locking and audit integration. Close/Update also have 30-second one-time confirmations. Update runs asynchronously with stage progress and refuses to remotely stage or commit unexpected local source edits.
@@ -524,7 +560,7 @@ The next owner-PC/mobile QA sequence is deliberately incremental:
 4. verify Start after manually closing HGR;
 5. verify Close confirmation and remote close;
 6. verify Restart still behaves exactly as before;
-7. run Update last, observe progress stages, Oracle deployment and final automatic restart.
+7. run Update last, observe progress stages, player maintenance warning, Oracle deployment and release-aware client refresh.
 
 Do not mark Start, Close or Update as real-device verified until those checks are observed on the owner Windows PC and phone.
 
