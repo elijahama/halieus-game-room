@@ -385,7 +385,12 @@ async function gitValue(args: string[], allowEmpty = false): Promise<string | nu
       windowsHide: true,
       encoding: "utf8",
     });
-    const value = stdout.trim();
+    // Porcelain output uses leading columns to encode index/worktree state.
+    // Preserve those leading spaces when callers explicitly allow empty output;
+    // trimming them corrupts paths such as " M RELEASE.json".
+    const value = allowEmpty
+      ? stdout.replace(/(?:\r?\n)+$/, "")
+      : stdout.trim();
     return value || (allowEmpty ? "" : null);
   } catch {
     return null;
