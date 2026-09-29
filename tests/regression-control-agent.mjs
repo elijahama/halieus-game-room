@@ -95,6 +95,8 @@ assert.match(controlDoc, /The goal is not “remote command prompt from a phone\
 assert.match(controlDoc, /Loopback by default/, "Control documentation must explain the initial network boundary");
 assert.match(controlDoc, /Stage A — understand one GET endpoint/, "Control documentation must contain the guided implementation walkthrough");
 assert.match(controlDoc, /POST \/api\/actions\/restart/, "Control documentation must explain the authenticated restart endpoint");
+assert.match(controlDoc, /RandomNumberGenerator\]::Create\(\)/, "Control token walkthrough must use a PowerShell 5.1-compatible cryptographic RNG");
+assert.doesNotMatch(controlDoc, /RandomNumberGenerator\]::GetBytes\(32\)/, "Control docs must not depend on the newer static GetBytes overload");
 assert.match(controlDoc, /one mutable operation at a time/i, "Control documentation must explain the operation lock");
 assert.match(controlDoc, /hgr-control-audit\.ndjson/, "Control documentation must identify the local audit trail");
 assert.match(docsIndex, /HGR_MASTERBOOK\.md/, "Documentation index must expose the Masterbook");
