@@ -14,12 +14,10 @@ $RuntimeLauncherIconRoot = Join-Path $ProjectRoot 'server\data\runtime\launcher-
 $TrackedLauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
 $IconGenerator = Join-Path $ProjectRoot 'scripts\windows\generate-launcher-icons.ps1'
 
-if (Test-Path -LiteralPath $IconGenerator) {
-    & $IconGenerator
-    if ($LASTEXITCODE -ne 0) {
-        throw "HGR launcher icon generation failed."
-    }
+if (-not (Test-Path -LiteralPath $IconGenerator)) {
+    throw "HGR launcher icon generator is missing: $IconGenerator"
 }
+& $IconGenerator
 
 $StartIconPath = Join-Path $RuntimeLauncherIconRoot 'start.ico'
 $RestartIconPath = Join-Path $RuntimeLauncherIconRoot 'restart.ico'
