@@ -1,9 +1,9 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.3",
-  "fingerprint": "hgr-4.5.3-5548b75e3d0a4c56",
+  "fingerprint": "hgr-4.5.3-c350515f501696e6",
   "algorithm": "sha256",
-  "sourceHash": "5548b75e3d0a4c562b785edbc76677e2c51f5b3853fec9cc497a7eb5b4eb9454",
+  "sourceHash": "c350515f501696e6e263ff398823c13c3a3a3927b46b1d3e210cc5eb5640a448",
   "integrityFileCount": 436,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
@@ -543,6 +543,7 @@
     "hgr-project-history-4.1.0",
     "hgr-shared-game-shell-polish-4.1.0",
     "matte-launcher-family-4.1.0",
-    "hgr-control-readonly-foundation-4.5.3"
+    "hgr-control-readonly-foundation-4.5.3",
+    "hgr-control-authenticated-restart-4.5.3"
   ]
 }
