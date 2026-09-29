@@ -98,6 +98,34 @@ export interface HalieusControlActionStatus {
   implemented: boolean;
 }
 
+export type HalieusControlOperationState =
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "rejected";
+
+export interface HalieusControlActiveOperation {
+  id: string;
+  action: HalieusControlActionId;
+  startedAt: string;
+}
+
+export interface HalieusControlAuditEntry {
+  id: string;
+  action: HalieusControlActionId;
+  state: HalieusControlOperationState;
+  startedAt: string;
+  finishedAt: string | null;
+  exitCode: number | null;
+  reason: string | null;
+}
+
+export interface HalieusControlSecurityStatus {
+  tokenConfigured: boolean;
+  remoteBinding: boolean;
+  mutableActionsRequireAuthentication: true;
+}
+
 export interface HalieusControlStatus {
   ok: true;
   agent: "online";
@@ -107,6 +135,8 @@ export interface HalieusControlStatus {
     platform: string;
   };
   repository: HalieusControlRepositoryStatus;
+  security: HalieusControlSecurityStatus;
+  activeOperation: HalieusControlActiveOperation | null;
   actions: HalieusControlActionStatus[];
   timestamp: string;
 }
