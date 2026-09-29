@@ -5,6 +5,7 @@ import express, {
   type Request,
   type Response,
 } from "express";
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { networkInterfaces } from "node:os";
@@ -43,6 +44,7 @@ import { closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWh
 import { getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
+import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
@@ -393,6 +395,55 @@ const io = new Server(httpServer, {
   pingTimeout: 20000,
 });
 
+let activeMaintenanceNotice: HalieusMaintenanceNotice | null = null;
+
+function isLoopbackRequest(request: Request): boolean {
+  const address = request.socket.remoteAddress ?? "";
+  return address === "127.0.0.1" || address === "::1" || address === "::ffff:127.0.0.1";
+}
+
+app.post("/internal/maintenance", (request: Request, response: Response) => {
+  if (!isLoopbackRequest(request)) {
+    response.status(403).json({ ok: false, reason: "Maintenance control is loopback-only." });
+    return;
+  }
+
+  const body = request.body && typeof request.body === "object"
+    ? request.body as Record<string, unknown>
+    : {};
+
+  if (body.state === "clear") {
+    activeMaintenanceNotice = null;
+    io.emit("platform:maintenance-cleared", { at: Date.now() });
+    response.json({ ok: true, maintenance: null });
+    return;
+  }
+
+  const rawReason = typeof body.reason === "string" ? body.reason.trim() : "";
+  const reason = (rawReason || "HGR is preparing a server update. Keep your recovery key or room code handy.").slice(0, 220);
+  const targetVersion = typeof body.targetVersion === "string" && body.targetVersion.trim()
+    ? body.targetVersion.trim().slice(0, 40)
+    : null;
+  const requestedSeconds = typeof body.estimatedSeconds === "number"
+    ? Math.round(body.estimatedSeconds)
+    : 15;
+  const estimatedSeconds = Math.max(5, Math.min(300, requestedSeconds));
+  const announcedAt = Date.now();
+
+  activeMaintenanceNotice = {
+    id: randomUUID(),
+    state: "scheduled",
+    reason,
+    targetVersion,
+    announcedAt,
+    restartAt: announcedAt + (estimatedSeconds * 1000),
+    estimatedSeconds,
+  };
+
+  io.emit("platform:maintenance", activeMaintenanceNotice);
+  response.json({ ok: true, maintenance: activeMaintenanceNotice });
+});
+
 const getMegaBoardLiveRoomCount = () => [...rooms.values()].filter((room) => room.gameState?.phase !== "finished" && room.players.some((player) => !player.isAi && player.isConnected && !player.hasLeft)).length;
 const getMegaBoardLiveRoomSummaries = () => [...rooms.values()]
   .filter((room) => room.gameState?.phase !== "finished" && (room.players.some((player) => !player.isAi && player.isConnected && !player.hasLeft) || listSpectators(room.code).length > 0))
@@ -465,9 +516,13 @@ io.on(
   );
 
   socket.emit("server:ready", {
-    message:
-      "Connected to Halieus Game Room Server",
+    message: "Connected to Halieus Game Room Server",
+    version: APP_VERSION,
+    releaseFingerprint: RELEASE_FINGERPRINT,
   });
+  if (activeMaintenanceNotice) {
+    socket.emit("platform:maintenance", activeMaintenanceNotice);
+  }
 
   registerRoomChatHandlers(io, socket, {
     "mega-board": (code, socketId) => {
@@ -561,6 +616,26 @@ process.on("SIGINT", async () => {
 
 process.on("SIGTERM", async () => {
   clearInterval(aiCoordinator);
+  const now = Date.now();
+  const restartingNotice: HalieusMaintenanceNotice = activeMaintenanceNotice
+    ? {
+        ...activeMaintenanceNotice,
+        state: "restarting",
+        restartAt: now,
+        estimatedSeconds: 10,
+      }
+    : {
+        id: randomUUID(),
+        state: "restarting",
+        reason: "HGR is restarting. Keep your recovery key or room code handy while the server comes back online.",
+        targetVersion: null,
+        announcedAt: now,
+        restartAt: now,
+        estimatedSeconds: 10,
+      };
+  activeMaintenanceNotice = restartingNotice;
+  io.emit("platform:maintenance", restartingNotice);
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 750));
   await Promise.all([flushRoomSave(), flushRankingsSave()]);
   process.exit(0);
 });
