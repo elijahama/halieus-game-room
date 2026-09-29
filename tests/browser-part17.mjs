@@ -95,6 +95,9 @@ try{
   if(process.env.HGR_SCREENSHOTS)await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-part17-home.png`)});
   if(width<700){
     const avatar=await page.locator(".halieus-mobile-account").boundingBox();assert.ok(avatar.x>=0&&avatar.x+avatar.width<=width,"Home profile button clipped");
+    const topFullscreen=page.locator(".halieus-mobile-top-fullscreen");await topFullscreen.waitFor();const fullscreenBox=await topFullscreen.boundingBox();assert.ok(fullscreenBox&&fullscreenBox.y<80,"Full Screen must live in the mobile top bar");
+    assert.equal(await page.locator(".halieus-mobile-fullscreen-emblem").count(),0,"Floating Full Screen control must not overlap mobile content");
+    await page.locator(".halieus-mobile-inbox").click();const inbox=page.getByRole("dialog",{name:"Halieus inbox",exact:true});await inbox.waitFor();const inboxBox=await inbox.boundingBox();assert.ok(inboxBox&&inboxBox.height<=height*.65,`Mobile Inbox is too tall: ${inboxBox?.height}/${height}`);assert.ok(inboxBox&&inboxBox.y>50,"Mobile Inbox must sit below the top bar");await page.getByRole("button",{name:"Close inbox",exact:true}).click();await inbox.waitFor({state:"hidden"});
     const mobileNav=page.locator(".halieus-mobile-nav");await mobileNav.waitFor();
     assert.deepEqual((await mobileNav.locator("button").allTextContents()).map(text=>text.trim()),["Home","Games","Join","Players","Guilds"],"Mobile nav order/labels");
     assert.equal(await mobileNav.evaluate(el=>getComputedStyle(el).position),"fixed","Mobile nav must be viewport-fixed");

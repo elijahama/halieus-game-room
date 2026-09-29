@@ -856,6 +856,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <button type="button" className="halieus-mobile-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HalieusBrandMark /><strong>Halieus Game Room</strong></button>
           <div className="halieus-mobile-actions">
             <button type="button" className={mobileMenuOpen ? "halieus-mobile-tools is-active" : "halieus-mobile-tools"} onClick={() => setMobileMenuOpen((open) => !open)} aria-expanded={mobileMenuOpen} aria-controls="halieus-mobile-more-sheet" aria-label="Open more tools"><HgrIcon name="menu" size={20} /></button>
+            <button type="button" className="halieus-mobile-top-fullscreen" onClick={() => void toggleFullscreen()} disabled={!fullscreenSupported} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"} title={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={19} /></button>
             {account && <button type="button" className={inboxOpen ? "halieus-mobile-inbox is-active" : "halieus-mobile-inbox"} onClick={() => setInboxOpen(true)} aria-label="Open inbox"><HgrIcon name="inbox" size={20} />{inboxCount > 0 && <b className="halieus-mobile-top-badge">{inboxCount > 9 ? "9+" : inboxCount}</b>}</button>}
             {account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}
           </div>
@@ -1049,8 +1050,6 @@ export function HomeScreen(props: HomeScreenProps) {
           </section>
         )}
       </section>
-
-      {!mobileMenuOpen && <button type="button" className="halieus-mobile-fullscreen-emblem" onClick={() => void toggleFullscreen()} disabled={!fullscreenSupported} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"} title={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={19} /></button>}
 
       <nav className="halieus-mobile-nav" aria-label="Mobile navigation">
         <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HgrIcon name="home" size={20} /><span>Home</span></button>

@@ -13,7 +13,8 @@ Mobile deliberately does **not** mirror the desktop sidebar. It behaves like a n
 - Games is a normal destination in its own slot;
 - Rankings and Watch Game are secondary utilities available from the compact top tools control;
 - Inbox and the player profile remain in the top-right utility area;
-- Full Screen is a small direct emblem above the bottom bar so it stays reachable without consuming a primary navigation slot;
+- Full Screen also lives in that fixed top utility row, beside the tools and Inbox controls, so it never floats over game/page content;
+- on mobile, Inbox opens as a compact top-right panel below the header rather than a full-height drawer;
 - the desktop sidebar/hamburger is not part of the phone information architecture.
 
 The mobile shell owns exactly one `100dvh` viewport. `.halieus-main` is the scroll container, while the top bar and bottom navigation are fixed siblings. Mobile also disables the root `.page-enter` transform so a transformed ancestor cannot change the containing block used by `position: fixed`.
@@ -29,6 +30,8 @@ The 4.5.3 regression now protects the actual contract instead:
 - Rankings/Watch Game stay outside the primary bar;
 - the mobile shell is a single fixed viewport with only `.halieus-main` scrolling;
 - the bottom bar must remain `position: fixed` at the viewport bottom;
+- Full Screen must be rendered inside the top utility bar and the old floating emblem must be absent;
+- the mobile Inbox must stay below the header and below 65% of the phone viewport in browser validation;
 - a browser regression scrolls the phone content and verifies that the nav does not move.
 
 This is intentionally different from desktop. Desktop may continue to expose the fuller destination rail, including Rankings and Inbox.
