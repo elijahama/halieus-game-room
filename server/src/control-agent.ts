@@ -61,6 +61,7 @@ async function gitValue(args: string[]): Promise<string | null> {
       cwd: projectRoot,
       timeout: 2500,
       windowsHide: true,
+      encoding: "utf8",
     });
     return stdout.trim() || null;
   } catch {
