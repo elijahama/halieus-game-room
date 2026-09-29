@@ -226,9 +226,9 @@ Troubleshooting action. It closes and reopens the dedicated HGR app window witho
 
 ### Update
 
-The full update path. It synchronises source, validates, builds, runs regressions, updates release identity, performs the configured deployment flow and restarts HGR only after success.
+The full update path. It synchronises source, validates, builds, runs regressions, updates release identity, warns connected players before production activation, deploys the validated candidate, restarts the production server only after success, and lets existing HGR clients refresh themselves onto the new release.
 
-A failed update must stop rather than restart into an incomplete state.
+A failed update must stop rather than activate or refresh into an incomplete state.
 
 ### HGR Control
 
