@@ -105,7 +105,8 @@ assert.match(controlDoc, /The goal is not “remote command prompt from a phone\
 assert.match(controlDoc, /Loopback by default/, "Control documentation must explain the initial network boundary");
 assert.match(controlDoc, /Stage A — understand one GET endpoint/, "Control documentation must contain the guided implementation walkthrough");
 assert.match(controlDoc, /POST \/api\/actions\/restart/, "Control documentation must explain the authenticated restart endpoint");
-assert.match(controlDoc, /node -e "process\.stdout\.write\(require\('node:crypto'\)\.randomBytes\(32\)\.toString\('base64'\)\)"/, "Control token walkthrough must use HGR's Node runtime for cross-PowerShell cryptographic token generation");
+assert.match(controlStartHelper, /node -e "process\.stdout\.write\(require\('node:crypto'\)\.randomBytes\(32\)\.toString\('base64'\)\)"/, "Control launcher helper must use HGR's Node runtime for cryptographic token generation");
+assert.doesNotMatch(controlDoc, /node -e "process\.stdout\.write\(require\('node:crypto'\)\.randomBytes\(32\)/, "Operator docs must not require manual token generation now that the launcher owns it");
 assert.match(controlDoc, /\.\\Start HGR Control\.cmd/, "Control walkthrough must use the stable local Control launcher");
 assert.match(controlDoc, /hgr-control-client\.ps1 status/, "Control walkthrough must use the allow-listed local client helper for status");
 assert.match(controlDoc, /hgr-control-client\.ps1 restart/, "Control walkthrough must use the allow-listed local client helper for restart");
