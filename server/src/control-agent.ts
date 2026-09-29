@@ -86,8 +86,7 @@ const restartBridge = resolve(projectRoot, "scripts", "windows", "control-restar
 const closeBridge = resolve(projectRoot, "scripts", "windows", "control-close.ps1");
 const updateBridge = resolve(projectRoot, "scripts", "windows", "control-update.ps1");
 const controlUiDirectory = resolve(projectRoot, "server", "control-ui");
-const appIcon192 = resolve(projectRoot, "client", "public", "app-icon-192.png");
-const appIcon512 = resolve(projectRoot, "client", "public", "app-icon-512.png");
+const controlIconSvg = resolve(controlUiDirectory, "control-icon.svg");
 
 const MOBILE_SESSION_COOKIE = "hgr_control_session";
 const MOBILE_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
@@ -943,8 +942,7 @@ const staticAssets = new Map<string, { path: string; contentType: string; cacheC
   ["/control.js", { path: resolve(controlUiDirectory, "control.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
   ["/manifest.webmanifest", { path: resolve(controlUiDirectory, "manifest.webmanifest"), contentType: "application/manifest+json; charset=utf-8", cacheControl: "no-cache" }],
   ["/sw.js", { path: resolve(controlUiDirectory, "sw.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
-  ["/icon-192.png", { path: appIcon192, contentType: "image/png", cacheControl: "public, max-age=86400" }],
-  ["/icon-512.png", { path: appIcon512, contentType: "image/png", cacheControl: "public, max-age=86400" }],
+  ["/control-icon.svg", { path: controlIconSvg, contentType: "image/svg+xml; charset=utf-8", cacheControl: "no-cache" }],
 ]);
 
 async function serveStaticAsset(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
