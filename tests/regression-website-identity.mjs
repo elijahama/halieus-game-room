@@ -29,17 +29,18 @@ for (const [file, expected] of Object.entries(fixture)) {
 const manifest = JSON.parse(read('client/public/site.webmanifest'));
 assert.ok(manifest.icons.every(i => i.src.includes(`?v=${version}`)), `PWA identities must invalidate prior artwork URLs for ${version}`);
 assert.ok(manifest.icons.some(i => i.src.startsWith('/halieus-app-icon.svg')));
-assert.equal(manifest.icons[0]?.src.split("?")[0], '/app-icon-reference.png', 'Installed PWA must prefer the approved rendered reference PNG');
+assert.equal(manifest.icons[0]?.src.split("?")[0], '/app-icon-512.png', 'Installed PWA must prefer the current canonical 512px HGR icon');
+assert.ok(manifest.icons.every(i => !i.src.includes('app-icon-reference.png')), 'Historical reference thumbnail must never be exposed as a PWA install icon');
 const indexHtml = read('client/index.html');
 assert.match(indexHtml, new RegExp(`id="halieus-dynamic-favicon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-icon-set"`), 'Initial browser favicon must use the canonical icon-set web mark');
 assert.match(indexHtml, new RegExp(`rel="shortcut icon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-icon-set"`), 'Shortcut favicon must use the canonical icon-set web mark');
-assert.match(indexHtml, new RegExp(`rel="apple-touch-icon"[^>]*href="\\/app-icon-reference\\.png\\?v=${versionRe}-approved-reference"`), 'Installed Apple/PWA icon must keep the approved rendered reference artwork');
-assert.doesNotMatch(indexHtml, /favicon\.ico|favicon-32\.png|app-icon-180\.png/, 'Stale generated favicon fallbacks must not override the canonical icon-set favicon');
+assert.match(indexHtml, new RegExp(`rel="apple-touch-icon"[^>]*href="\\/app-icon-180\\.png\\?v=${versionRe}-install-h2"`), 'Apple install identity must use the current canonical HGR raster');
+assert.doesNotMatch(indexHtml, /app-icon-reference\.png/, 'Historical install reference must not remain in live HTML');
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
-assert.match(pwaCopy,/assets\/branding\/references\/ChatGPT Image 25 Sept 2026, 18_24_09\.png/,'PWA icon must come from the approved reference PNG');
-assert.match(pwaCopy,/copyFile\(source, destination\)/,'PWA icon source must be copied byte-for-byte rather than redrawn or recoloured');
+assert.match(pwaCopy,/rm\(staleReference, \{ force: true \}\)/,'Client prebuild must remove the stale historical install thumbnail');
+assert.match(pwaCopy,/app-icon-512\.png/,'Client prebuild must verify the current canonical install raster exists');
 const clientPackage = JSON.parse(read('client/package.json'));
-assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client build must materialise the approved PWA reference before Vite runs');
+assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client prebuild must prepare current PWA assets before Vite runs');
 
 const flatGenerator = read('scripts/generate-flat-brand.mjs');
 assert.match(flatGenerator,/assets\/branding\/icon-sets\/glyphs\/hgr-h\.svg/,'Web brand generator must source H geometry from icon sets');
