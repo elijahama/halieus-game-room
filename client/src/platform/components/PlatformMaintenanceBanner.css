@@ -1,0 +1,120 @@
+.halieus-maintenance-banner {
+  position: fixed;
+  z-index: 10000;
+  top: max(12px, env(safe-area-inset-top));
+  left: 50%;
+  width: min(760px, calc(100vw - 24px));
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid rgba(52, 117, 197, .55);
+  border-radius: 16px;
+  background: color-mix(in srgb, #111923 94%, transparent);
+  color: #f7fbff;
+  box-shadow: 0 18px 54px rgba(0, 0, 0, .34);
+  backdrop-filter: blur(18px);
+}
+
+.halieus-maintenance-banner.is-scheduled {
+  border-color: rgba(52, 117, 197, .62);
+  box-shadow: 0 18px 54px rgba(17, 56, 105, .28);
+}
+
+.halieus-maintenance-banner.is-restarting {
+  border-color: rgba(215, 154, 24, .62);
+  box-shadow: 0 18px 54px rgba(94, 65, 8, .28);
+}
+
+.halieus-maintenance-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(52, 117, 197, .16);
+  color: #7eb2ef;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+.is-restarting .halieus-maintenance-icon {
+  background: rgba(215, 154, 24, .16);
+  color: #efbd55;
+}
+
+.halieus-maintenance-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.halieus-maintenance-copy small {
+  color: #79ade9;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+
+.is-restarting .halieus-maintenance-copy small {
+  color: #efbd55;
+}
+
+.halieus-maintenance-copy strong {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.halieus-maintenance-copy p {
+  margin: 1px 0 0;
+  color: #b4bfcb;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.halieus-maintenance-timing {
+  min-width: max-content;
+  padding: 7px 9px;
+  border-radius: 999px;
+  background: rgba(52, 117, 197, .13);
+  color: #91bced;
+  font-size: 10px;
+}
+
+.is-restarting .halieus-maintenance-timing {
+  background: rgba(215, 154, 24, .12);
+  color: #efbd55;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .halieus-maintenance-banner {
+    animation: halieus-maintenance-enter 260ms ease-out both;
+  }
+
+  .halieus-maintenance-banner.is-restarting .halieus-maintenance-icon {
+    animation: halieus-maintenance-spin 1.2s linear infinite;
+  }
+
+  @keyframes halieus-maintenance-enter {
+    from { opacity: 0; transform: translate(-50%, -10px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+
+  @keyframes halieus-maintenance-spin {
+    to { transform: rotate(360deg); }
+  }
+}
+
+@media (max-width: 640px) {
+  .halieus-maintenance-banner {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .halieus-maintenance-timing {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
