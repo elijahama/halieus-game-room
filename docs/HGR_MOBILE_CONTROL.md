@@ -87,7 +87,7 @@ Default address:
 http://127.0.0.1:43127/api/status
 ```
 
-The foundation is intentionally **read-only**. Process actions report `implemented: false` until the execution layer is added.
+The foundation began read-only. Stage 2 now enables the first mutable action — **Restart HGR** — but only when `HGR_CONTROL_TOKEN` is configured and supplied as a bearer token. Start, Close and Update remain disabled.
 
 Example response shape:
 
@@ -203,13 +203,34 @@ That request/response cycle is the basis of the phone controller.
 
 ### Stage B — authentication
 
-Next we add a token and test:
+Stage 2 requires a bearer token before any mutable action or audit-log read is allowed.
+
+Generate a temporary token in PowerShell 7:
+
+```powershell
+$env:HGR_CONTROL_TOKEN = [Convert]::ToBase64String(
+  [System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32)
+)
+$env:HGR_CONTROL_TOKEN
+npm run control:dev
+```
+
+Keep that token private. In a second PowerShell window, copy it into a local variable:
+
+```powershell
+$token = "PASTE-THE-TOKEN-HERE"
+$headers = @{ Authorization = "Bearer $token" }
+```
+
+The request header is then:
 
 ```text
 Authorization: Bearer <token>
 ```
 
-We then move the listener from loopback to the PC's Tailscale address.
+Status requests may remain unauthenticated only while the agent is loopback-only and no token is configured. Mutable actions never run without a token.
+
+We move the listener from loopback to the PC's Tailscale address only after local authenticated actions work.
 
 ### Stage C — first process action
 
@@ -234,6 +255,40 @@ return result
 ```
 
 The request does not contain the path to the CMD file.
+
+Stage 2 implements that endpoint:
+
+```http
+POST /api/actions/restart
+Authorization: Bearer <token>
+```
+
+PowerShell test:
+
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -Uri http://127.0.0.1:43127/api/actions/restart `
+  -Headers $headers
+```
+
+Only one mutable HGR Control action may run at a time. A second request while one is active receives a conflict response instead of launching another process.
+
+The audit trail is written locally to:
+
+```text
+server/data/runtime/hgr-control-audit.ndjson
+```
+
+Recent audit entries can be read with:
+
+```powershell
+Invoke-RestMethod `
+  -Uri http://127.0.0.1:43127/api/logs `
+  -Headers $headers
+```
+
+The audit records action ID, running/succeeded/failed/rejected state, timestamps and exit status. It does not log bearer tokens.
 
 ### Stage D — Update
 
@@ -271,13 +326,14 @@ A real token belongs in local environment configuration, never in Git.
 - [x] token required before non-loopback bind
 
 ### Phase 2 — safe local execution
-- [ ] authentication middleware hardening
-- [ ] operation lock
-- [ ] audit log
+- [x] bearer-token protection for mutable actions
+- [x] timing-safe token comparison
+- [x] one-operation-at-a-time lock
+- [x] local audit log
 - [ ] Start action
-- [ ] Restart action
+- [x] Restart action
 - [ ] Close action
-- [ ] recent logs endpoint
+- [x] recent audit-log endpoint
 
 ### Phase 3 — update orchestration
 - [ ] Update action
