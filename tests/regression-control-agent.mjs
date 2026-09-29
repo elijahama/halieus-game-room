@@ -26,6 +26,9 @@ const controlUiHtml = read("server/control-ui/index.html");
 const controlUiJs = read("server/control-ui/control.js");
 const controlManifest = read("server/control-ui/manifest.webmanifest");
 const controlServiceWorker = read("server/control-ui/sw.js");
+const releaseIntegrity = read("scripts/release-integrity.mjs");
+const oraclePacker = read("tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1");
+const oraclePackageRegression = read("tests/package-oracle-4.0.0.ps1");
 const gitignore = read(".gitignore");
 
 for (const id of [
@@ -172,5 +175,51 @@ assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Co
 assert.match(controlDoc, /Tailscale Serve/, "Control documentation must record the private HTTPS proxy design");
 assert.match(controlDoc, /HttpOnly; Secure; SameSite=Strict/, "Control documentation must record the mobile session boundary");
 assert.match(masterbook, /real-phone verification pending/i, "Masterbook must distinguish implementation from real-device verification");
+
+for (const releasePath of [
+  "server/control-ui",
+  "Start HGR Control Mobile.cmd",
+  "Start-HGR-Control-Mobile.cmd",
+  "scripts/windows/start-control-mobile.ps1",
+]) {
+  assert.ok(
+    releaseIntegrity.includes(releasePath),
+    `HGR Mobile Control release identity must include ${releasePath}`,
+  );
+}
+for (const rootLauncher of [
+  "HGR-Control.cmd",
+  "Start HGR Control.cmd",
+  "Start-HGR-Control.cmd",
+  "Start HGR Control Mobile.cmd",
+  "Start-HGR-Control-Mobile.cmd",
+]) {
+  assert.ok(
+    oraclePacker.includes(`"${rootLauncher}"`),
+    `Oracle packer must include release-signed root launcher ${rootLauncher}`,
+  );
+  assert.ok(
+    oraclePackageRegression.includes(rootLauncher),
+    `Oracle package regression must verify ${rootLauncher}`,
+  );
+}
+for (const packagedControlFile of [
+  "scripts/windows/start-control-mobile.ps1",
+  "server/control-ui/index.html",
+  "server/control-ui/control.css",
+  "server/control-ui/control.js",
+  "server/control-ui/manifest.webmanifest",
+  "server/control-ui/sw.js",
+]) {
+  assert.ok(
+    oraclePackageRegression.includes(packagedControlFile),
+    `Oracle package regression must verify ${packagedControlFile}`,
+  );
+}
+assert.match(
+  releaseIntegrity,
+  /hgr-control-private-mobile-pwa-4\.5\.3/,
+  "Release feature inventory must record the private mobile Control PWA",
+);
 
 console.log("HGR Control foundation / mobile PWA / Masterbook regression: PASS");

@@ -538,6 +538,16 @@ The long random bearer token remains local to the owner PC and continues to supp
 
 The service worker caches only the controller shell assets. It explicitly skips every `/api/` request so status, logs and action results are never replayed from an offline cache.
 
+### Release packaging ownership
+
+**Observed failure:** Oracle package preflight stopped with the existing Control root launchers reported as missing, even though release integrity had already signed them.
+
+**Cause:** the release fingerprint inventory and the Windows Oracle packer's explicit root-file list had diverged. Root-level files such as `HGR-Control.cmd` do not live under one of the packer's recursively copied directories, so they must be named explicitly.
+
+**Fix:** the Oracle packer now includes the local and mobile Control root launchers. Release integrity also signs the complete mobile-control implementation: `server/control-ui/`, the mobile PowerShell launcher helper and both mobile CMD entrypoints. The real package-only regression verifies those files in the generated ZIP before any network deployment can begin.
+
+**Lesson:** every release-integrity input must have a deterministic route into the exact-release deployment archive. Adding a feature to the fingerprint without updating the packer—or adding packaged source without signing it—creates two different definitions of “the release.”
+
 ### Regression philosophy for Control
 
 Each bug above resulted in a regression or contract check. HGR Control regressions should protect:

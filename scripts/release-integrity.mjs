@@ -65,7 +65,7 @@ for (const workspace of ['', 'client', 'server', 'shared']) {
 }
 
 const roots = [
-  'client/src', 'client/public', 'server/src', 'server/data', 'shared', 'deploy',
+  'client/src', 'client/public', 'server/src', 'server/data', 'server/control-ui', 'shared', 'deploy',
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
@@ -74,7 +74,10 @@ const singles = [
   'Start HGR Control.cmd',
   'Start-HGR-Control.cmd',
   'HGR-Control.cmd',
+  'Start HGR Control Mobile.cmd',
+  'Start-HGR-Control-Mobile.cmd',
   'scripts/windows/start-control-agent.ps1',
+  'scripts/windows/start-control-mobile.ps1',
   'scripts/windows/hgr-control-client.ps1',
   'scripts/windows/control-restart.ps1',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
@@ -304,6 +307,7 @@ const manifest = {
     'matte-launcher-family-4.1.0',
     'hgr-control-readonly-foundation-4.5.3',
     'hgr-control-authenticated-restart-4.5.3',
+    'hgr-control-private-mobile-pwa-4.5.3',
   ],
 };
 
