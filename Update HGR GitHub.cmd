@@ -435,9 +435,9 @@ echo   5. Regression tests passed
 echo   6. Source changes committed/pushed when needed
 echo   7. Final release identity regenerated and re-verified
 echo   8. Website deployment completed
-echo   9. HGR app restart queued as the final successful step
+echo   9. Existing HGR app window refreshes itself; HGR opens only if it was closed
 echo.
-goto :RESTART_AFTER_UPDATE
+goto :REFRESH_AFTER_UPDATE
 
 :PAUSE_SUCCESS
 echo.
@@ -445,33 +445,34 @@ echo ============================================================
 echo                 HGR UPDATE COMPLETE
 echo ============================================================
 echo.
-goto :RESTART_AFTER_UPDATE
+goto :REFRESH_AFTER_UPDATE
 
-:RESTART_AFTER_UPDATE
+:REFRESH_AFTER_UPDATE
 echo.
-echo FINAL STEP - Restarting Halieus Game Room...
-echo This refreshes the dedicated HGR app window only.
+echo FINAL STEP - Refreshing the HGR client...
+echo Existing HGR windows now refresh themselves after the production release changes.
+echo A new HGR window is opened only when no dedicated HGR window is already running.
 echo.
-if not exist "%~dp0Restart Halieus Game Room.cmd" (
-    echo [STOPPED] Update completed, but the HGR restart launcher is missing:
-    echo   %~dp0Restart Halieus Game Room.cmd
-    echo Run Start Halieus Game Room.cmd manually after restoring the restart launcher.
+if not exist "%~dp0scripts\windows\post-update-client.ps1" (
+    echo [STOPPED] Update completed, but the post-update HGR client helper is missing:
+    echo   %~dp0scripts\windows\post-update-client.ps1
+    echo The website deployment is complete. Run Start Halieus Game Room.cmd manually if needed.
     popd
     endlocal
     exit /b 1
 )
 
-call "%~dp0Restart Halieus Game Room.cmd"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\post-update-client.ps1"
 if errorlevel 1 (
     echo.
-    echo [STOPPED] Update/deploy completed, but HGR could not restart automatically.
-    echo Run Restart Halieus Game Room.cmd manually.
+    echo [STOPPED] Update/deploy completed, but the HGR client could not be refreshed/opened cleanly.
+    echo The website deployment is complete. Use Restart Halieus Game Room.cmd as the recovery fallback.
     popd
     endlocal
     exit /b 1
 )
 
-echo [OK] Halieus Game Room restarted on the current website build.
+echo [OK] HGR client handoff completed without forcing a new window.
 echo.
 popd
 endlocal
