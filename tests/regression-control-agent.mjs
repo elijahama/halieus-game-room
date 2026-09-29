@@ -115,8 +115,8 @@ assert.match(controlDoc, /POST \/api\/actions\/restart/, "Control documentation 
 assert.match(controlStartHelper, /node -e "process\.stdout\.write\(require\('node:crypto'\)\.randomBytes\(32\)\.toString\('base64'\)\)"/, "Control launcher helper must use HGR's Node runtime for cryptographic token generation");
 assert.doesNotMatch(controlDoc, /node -e "process\.stdout\.write\(require\('node:crypto'\)\.randomBytes\(32\)/, "Operator docs must not require manual token generation now that the launcher owns it");
 assert.match(controlDoc, /\.\\Start HGR Control\.cmd/, "Control walkthrough must use the stable local Control launcher");
-assert.match(controlDoc, /hgr-control-client\.ps1 status/, "Control walkthrough must use the allow-listed local client helper for status");
-assert.match(controlDoc, /hgr-control-client\.ps1 restart/, "Control walkthrough must use the allow-listed local client helper for restart");
+assert.match(controlDoc, /\.\\HGR-Control\.cmd status/, "Control walkthrough must use the stable allow-listed root client for status");
+assert.match(controlDoc, /\.\\HGR-Control\.cmd restart/, "Control walkthrough must use the stable allow-listed root client for restart");
 assert.doesNotMatch(controlDoc, /Set-Clipboard|Get-Clipboard|PASTE-THE-TOKEN-HERE/, "Control walkthrough must not depend on fragile clipboard/manual token handoff");
 assert.doesNotMatch(controlDoc, /RandomNumberGenerator\]::(?:Create|GetBytes)/, "Control docs must not depend on PowerShell/.NET RNG API differences");
 assert.match(controlDoc, /one mutable operation at a time/i, "Control documentation must explain the operation lock");
