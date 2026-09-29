@@ -265,7 +265,7 @@ HGR Control Agent on owner PC
        GitHub
 ```
 
-The foundation began read-only. Authentication, the operation lock, audit logging and the fixed Restart executor are now in place. The private installable phone PWA behind Tailscale Serve has now been verified on the real owner phone and PC for pairing, status, logs and Restart. Start, Close and Update remain staged rather than exposed prematurely.
+The foundation began read-only. Authentication, operation locking, audit logging and fixed Windows executors now cover Start, Restart, Close and Update. The private installable phone PWA behind Tailscale Serve is real-device verified for pairing, status, logs, session persistence/invalidation and Restart. Start, Close and Update are implemented in source and awaiting the next real-device action QA pass. Close/Update use short-lived one-time confirmations, and Update exposes asynchronous release/deployment progress without accepting arbitrary shell input.
 
 See [HGR Mobile Control](HGR_MOBILE_CONTROL.md).
 
@@ -343,9 +343,9 @@ Important boundaries include:
 Near-term work:
 
 1. HGR Control read-only foundation. **Complete.**
-2. Secure Windows action executor. Restart is authenticated, implemented and verified on the owner Windows machine; Start/Close/Update remain staged.
-3. Operation locking + audit log are implemented for Restart; structured live update progress remains.
-4. mobile HGR Control PWA first usable slice (status, Restart and logs). **Implemented and real-device Restart verified.**
+2. Secure Windows action executor. **Start/Restart/Close/Update are implemented; Restart is real-device verified, while Start/Close/Update await real-device action QA.**
+3. Operation locking + audit logging cover mutable actions. **Short-lived Close/Update confirmations and asynchronous Update progress are implemented.**
+4. mobile HGR Control PWA control surface. **Status, Start, Restart, Close, Update progress and logs are implemented; Restart and the session lifecycle are real-device verified.**
 5. private Tailscale Serve + short-lived phone pairing path. **Implemented; real-device pairing, installed-PWA persistence and session invalidation verified. Persistent trusted-device pairing is a future convenience improvement.**
 6. themed atmosphere continuation for profile themes such as Brass & Coal.
 7. Light-mode contrast review for coloured fills and text.
