@@ -96,6 +96,10 @@ const RANKED_HUB_GAMES: GameId[] = [
 ];
 const EMPTY_STATS: HalieusPersonalStats = { played: 0, wins: 0, winRate: 0, byGame: GAMES.map((game) => ({ game: game.id, gameTitle: game.name, played: 0, wins: 0, winRate: 0 })), recent: [] };
 
+function isRawNetworkFetchError(value: string): boolean {
+  return /^(failed to fetch|load failed|networkerror when attempting to fetch resource\.?|network request failed)$/i.test(value.trim());
+}
+
 export function HomeScreen(props: HomeScreenProps) {
   const {
     connectionStatus, selectedGame, playerName, roomCode, ranked, blitz, freeParkingJackpotEnabled, message,
@@ -175,6 +179,8 @@ export function HomeScreen(props: HomeScreenProps) {
   const selectedPlayer = directory.find((entry) => entry.id === selectedPlayerId) ?? null;
   const gameAccent = selected.accent;
   const disabled = isCreating || isJoining || isRecovering || connectionStatus !== "Connected";
+  const visibleMessage = isRawNetworkFetchError(message) ? "" : message;
+  const visibleDataError = isRawNetworkFetchError(dataError) ? "" : dataError;
   const pokerSelected = selectedGame === "poker";
   const blackjackSelected = selectedGame === "blackjack";
   const whotSelected = selectedGame === "whot";
@@ -802,7 +808,7 @@ export function HomeScreen(props: HomeScreenProps) {
           </div>}
         </section>
 
-        {message && <p className="status-toast" role="status">{message}</p>}
+        {visibleMessage && <p className="status-toast" role="status">{visibleMessage}</p>}
       </section>
     </div>,
     overlayHost,
@@ -951,7 +957,7 @@ export function HomeScreen(props: HomeScreenProps) {
           </section>
           {savedSeats.length > 1 && <section className="halieus-section-card halieus-continue-home halieus-continue-secondary"><header><div><p>OTHER ROOMS</p><h2>Ready to rejoin</h2></div><span>{savedSeats.length - 1}</span></header><div className="halieus-continue-list">{savedSeats.slice(1).map((entry) => <div key={entry.id} className="halieus-continue-row"><button type="button" onClick={() => { selectGame(entry.id); entry.resume(); }} disabled={disabled}><GameBrandIcon game={entry.id} /><span><strong>{entry.game}</strong><small>Room {entry.session?.code}</small></span><b>Continue →</b></button><button type="button" onClick={entry.forget} aria-label={`Forget ${entry.game} room`}>×</button></div>)}</div></section>}
           {liveRooms.length > 0 && <section className="halieus-live-games"><header><div><p>ACTIVE GAMES</p><h2>Players are at the table</h2><span>Join an open lobby or watch a game already in progress.</span></div><b>{liveRooms.length} live</b></header><div className="halieus-live-games-strip">{liveRooms.slice(0, 8).map((room) => { const game = GAME_BY_ID[room.game]; const elapsed = room.startedAt ? Math.max(0, Date.now() - room.startedAt) : 0; const mins = Math.floor(elapsed / 60000); return <article key={`${room.game}-${room.code}`} className={`halieus-live-game-card tone-${game.tone}`} style={{ ["--game-card-accent" as string]: game.accent }}><div className="halieus-live-game-brand"><img src={game.icon} alt="" /><span><small>{room.started ? "LIVE NOW" : "OPEN LOBBY"}</small><strong>{game.name}</strong></span><i /></div><div className="halieus-live-game-people"><strong>{room.humanPlayers.length ? room.humanPlayers.join(", ") : `${room.aiCount} AI player${room.aiCount === 1 ? "" : "s"}`}</strong><small>Room {room.code} · {room.playerCount}/{room.maximumPlayers} players{room.started ? ` · ${mins}m` : ""}</small></div><div className="halieus-live-game-actions">{room.joinable && <button type="button" className="button-primary" onClick={() => openLiveRoom(room, "join")}>Join</button>}{room.spectatable && <button type="button" className="button-outline" onClick={() => openLiveRoom(room, "watch")}>Spectate</button>}</div></article>; })}</div></section>}
-          {dataError && <p className="halieus-data-note">{dataError}</p>}
+          {visibleDataError && <p className="halieus-data-note">{visibleDataError}</p>}
         </section>}
 
         {view === "games" && <section className="halieus-view view-games panel-enter">
