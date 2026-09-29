@@ -7,8 +7,13 @@
   --surface-2: #181d23;
   --border: #2a3038;
   --muted: #9aa4b2;
-  --accent: #d93b43;
-  --accent-2: #ff5a61;
+  --control: #7667d8;
+  --control-2: #9a8cff;
+  --control-soft: rgba(118,103,216,.14);
+  --start: #258B58;
+  --restart: #B97818;
+  --close: #BD4545;
+  --update: #3475C5;
   --good: #43d17c;
   --warn: #f2b84b;
   --danger: #ff646b;
@@ -18,13 +23,13 @@ html, body { margin: 0; min-height: 100%; background: #0b0d10; }
 body {
   min-height: 100dvh;
   background:
-    radial-gradient(circle at 15% -10%, rgba(217,59,67,.20), transparent 36%),
-    radial-gradient(circle at 90% 15%, rgba(88,101,242,.10), transparent 34%),
+    radial-gradient(circle at 15% -10%, rgba(118,103,216,.22), transparent 36%),
+    radial-gradient(circle at 90% 15%, rgba(154,140,255,.10), transparent 34%),
     #0b0d10;
 }
 button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.40); outline-offset: 2px; }
+button:focus-visible, input:focus-visible { outline: 3px solid rgba(154,140,255,.42); outline-offset: 2px; }
 [hidden] { display: none !important; }
 
 .intro-splash {
@@ -36,7 +41,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   justify-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 50% 35%, rgba(217,59,67,.16), transparent 24rem),
+    radial-gradient(circle at 50% 35%, rgba(118,103,216,.18), transparent 24rem),
     #090b0e;
   text-align: center;
   transition: opacity .34s ease, visibility .34s ease;
@@ -54,11 +59,11 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
 .intro-ring {
   position: absolute;
   inset: 8px;
-  border: 1px solid rgba(255,90,97,.28);
+  border: 1px solid rgba(154,140,255,.30);
   border-radius: 50%;
 }
 .intro-ring-two { inset: 0; opacity: .4; }
-.intro-splash > p { margin: 0; color: #ff777d; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
+.intro-splash > p { margin: 0; color: #9f93ff; font-size: 10px; font-weight: 900; letter-spacing: .18em; }
 .intro-splash > h1 { margin: 5px 0 19px; font-size: 31px; line-height: 1; }
 .intro-link-state { display: inline-flex; align-items: center; gap: 9px; color: #aab3bf; font-size: 11px; }
 .intro-link-state > span { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 5px rgba(242,184,75,.08); }
@@ -74,7 +79,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
 .brand-lockup img { width: 48px; height: 48px; border-radius: 13px; box-shadow: 0 8px 26px rgba(0,0,0,.3); }
 .brand-lockup p, .section-heading p, .card-kicker {
   margin: 0;
-  color: #ff777d;
+  color: #9f93ff;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: .13em;
@@ -136,7 +141,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   border: 0;
   border-radius: 14px;
   margin-top: 5px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: linear-gradient(135deg, var(--control), var(--control-2));
   color: #fff;
   font-weight: 900;
   cursor: pointer;
@@ -159,7 +164,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   border-radius: 17px;
   background: rgba(18,22,27,.88);
 }
-.status-card > span { display: block; color: #ff777d; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; }
+.status-card > span { display: block; color: #9f93ff; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; }
 .status-card > strong { display: block; margin: 18px 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 18px; }
 .status-card > small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
 
@@ -175,10 +180,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  border: 1px solid rgba(217,59,67,.45);
+  border: 1px solid rgba(185,120,24,.48);
   border-radius: 15px;
   padding: 13px;
-  background: rgba(217,59,67,.08);
+  background: rgba(185,120,24,.09);
   color: #fff;
   text-align: left;
   cursor: pointer;
@@ -189,15 +194,15 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(217,59,67,.16);
-  color: #ff777d;
+  background: rgba(185,120,24,.18);
+  color: #d99b39;
   font-size: 24px;
   font-weight: 900;
 }
 .action-button span:nth-child(2) { min-width: 0; display: grid; gap: 4px; }
 .action-button strong { font-size: 15px; }
 .action-button small { color: var(--muted); font-size: 10px; line-height: 1.35; }
-.action-button b { color: #ff777d; font-size: 11px; }
+.action-button b { color: #d99b39; font-size: 11px; }
 
 .secondary-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 10px; }
 .small-action-button {
@@ -214,9 +219,19 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   cursor: pointer;
 }
 .small-action-button strong { font-size: 12px; }
+#startButton {
+  border-color: rgba(37,139,88,.38);
+  background: rgba(37,139,88,.08);
+}
+#startButton strong { color: #56b77f; }
+#closeButton {
+  border-color: rgba(189,69,69,.40);
+  background: rgba(189,69,69,.08);
+}
+#closeButton strong { color: #dc7474; }
 .small-action-button small { color: var(--muted); font-size: 9px; line-height: 1.3; }
-.small-action-button.is-danger { border-color: rgba(255,100,107,.25); }
-.small-action-button.is-danger strong { color: #ff8b91; }
+.small-action-button.is-danger { border-color: rgba(189,69,69,.40); }
+.small-action-button.is-danger strong { color: #dc7474; }
 
 .update-button {
   width: 100%;
@@ -226,18 +241,18 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   gap: 12px;
   align-items: center;
   margin-top: 8px;
-  border: 1px solid rgba(242,184,75,.28);
+  border: 1px solid rgba(52,117,197,.40);
   border-radius: 13px;
   padding: 12px;
-  background: rgba(242,184,75,.06);
+  background: rgba(52,117,197,.08);
   color: #f7f8fa;
   text-align: left;
   cursor: pointer;
 }
 .update-button span { min-width: 0; display: grid; gap: 4px; }
-.update-button strong { font-size: 12px; color: #ffd178; }
+.update-button strong { font-size: 12px; color: #6fa7e7; }
 .update-button small { color: var(--muted); font-size: 9px; line-height: 1.35; }
-.update-button b { color: #ffd178; font-size: 10px; }
+.update-button b { color: #6fa7e7; font-size: 10px; }
 
 .operation-panel {
   margin-top: 12px;
@@ -248,9 +263,36 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
 }
 .operation-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .operation-heading span { color: #d9dee5; font-size: 11px; font-weight: 900; text-transform: capitalize; }
-.operation-heading strong { color: #ff777d; font-size: 11px; }
+.operation-heading strong { color: #6fa7e7; font-size: 11px; }
 .progress-track { height: 7px; margin-top: 10px; overflow: hidden; border-radius: 999px; background: #242a32; }
-.progress-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), #ff8a8f); transition: width .3s ease; }
+.progress-track span {
+  position: relative;
+  display: block;
+  width: 0;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2f67ad 0%, var(--update) 45%, #6fa7e7 100%);
+  background-size: 180% 100%;
+  box-shadow: 0 0 14px rgba(52,117,197,.28);
+  transition: width .3s ease;
+}
+.progress-track span::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 34%,
+    rgba(255,255,255,.13) 44%,
+    rgba(255,255,255,.48) 50%,
+    rgba(255,255,255,.13) 56%,
+    transparent 66%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+}
 .operation-panel p { margin: 8px 0 0; color: var(--muted); font-size: 10px; }
 
 .logs-list { list-style: none; display: grid; gap: 8px; margin: 0; padding: 0; }
@@ -277,7 +319,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
 
 .control-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 0; }
 .control-footer small { color: #66717e; font-size: 9px; text-align: right; }
-.text-button { min-height: 34px; border: 0; background: transparent; color: #ff777d; padding: 0; }
+.text-button { min-height: 34px; border: 0; background: transparent; color: #9f93ff; padding: 0; }
 
 .confirm-dialog {
   width: min(430px, calc(100% - 32px));
@@ -295,7 +337,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
 .confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }
 .confirm-actions .primary-button { margin: 0; min-height: 44px; }
 .confirm-actions .secondary-button { min-height: 44px; }
-.confirm-accept { background: linear-gradient(135deg, #c33139, #ef5058); }
+.confirm-accept { background: linear-gradient(135deg, var(--control), var(--control-2)); }
+.confirm-dialog.is-close .confirm-accept { background: linear-gradient(135deg, #a93838, var(--close)); }
+.confirm-dialog.is-update .confirm-accept { background: linear-gradient(135deg, #285f9f, var(--update)); }
 
 @media (min-width: 620px) {
   .control-shell { padding-inline: 24px; }
@@ -307,6 +351,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   .intro-ring-one { animation: ringPulse 1.6s ease-in-out infinite; }
   .intro-ring-two { animation: ringPulse 1.6s .28s ease-in-out infinite; }
   .intro-mark img { animation: markFloat 1.8s ease-in-out infinite; }
+  .operation-panel:not([hidden]) .progress-track span {
+    animation: progressFlow 1.7s linear infinite, progressPulse 1.15s ease-in-out infinite alternate;
+  }
+  .operation-panel:not([hidden]) .progress-track span::after {
+    animation: progressSheen 1.25s ease-in-out infinite;
+  }
   @keyframes enter {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: none; }
@@ -318,6 +368,20 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(255,90,97,.4
   @keyframes markFloat {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-3px); }
+  }
+  @keyframes progressFlow {
+    from { background-position: 0% 50%; }
+    to { background-position: 180% 50%; }
+  }
+  @keyframes progressPulse {
+    from { filter: brightness(.92); box-shadow: 0 0 8px rgba(52,117,197,.18); }
+    to { filter: brightness(1.16); box-shadow: 0 0 18px rgba(52,117,197,.46); }
+  }
+  @keyframes progressSheen {
+    0% { transform: translateX(-120%); opacity: 0; }
+    18% { opacity: .9; }
+    72% { opacity: .75; }
+    100% { transform: translateX(120%); opacity: 0; }
   }
 }
 @media (prefers-reduced-motion: reduce) {
