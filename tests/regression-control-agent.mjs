@@ -16,6 +16,7 @@ const projectReadme = read("README.md");
 const controlStartHelper = read("scripts/windows/start-control-agent.ps1");
 const controlClientHelper = read("scripts/windows/hgr-control-client.ps1");
 const controlLauncher = read("Start HGR Control.cmd");
+const controlLauncherAlias = read("Start-HGR-Control.cmd");
 const gitignore = read(".gitignore");
 
 for (const id of [
@@ -118,6 +119,8 @@ assert.match(controlClientHelper, /ValidateSet\("status", "restart", "logs"\)/, 
 assert.match(controlClientHelper, /"restart"[\s\S]*?\/api\/actions\/restart/s, "Local Control restart helper must target only the fixed restart endpoint");
 assert.doesNotMatch(controlClientHelper, /Invoke-Expression|Start-Process|cmd\.exe|powershell\.exe/i, "Local Control client must not become a general process runner");
 assert.match(controlLauncher, /start-control-agent\.ps1/i, "Stable HGR Control CMD entrypoint must delegate to the fixed PowerShell helper");
+assert.match(controlLauncherAlias, /call "%~dp0Start HGR Control\.cmd"/i, "PowerShell-safe HGR Control alias must delegate to the canonical spaced launcher");
+assert.match(controlDoc, /\.\\Start-HGR-Control\.cmd/, "PowerShell walkthrough must use the no-space launcher alias");
 assert.match(gitignore, /server\/data\/runtime\//, "Temporary HGR Control token and audit files must remain ignored by Git");
 
 console.log("HGR Control foundation / Masterbook regression: PASS");
