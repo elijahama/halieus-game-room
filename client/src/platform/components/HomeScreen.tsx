@@ -37,6 +37,7 @@ import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
+import { themeAtmosphereSymbols, type HalieusThemeMode, type HalieusThemeProfileId } from "../theme";
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
@@ -52,6 +53,7 @@ interface HomeScreenProps {
   pokerStartingChips: number; pokerSmallBlind: number; pokerBigBlind: number; pokerMatchMode: "casual" | "ranked"; pokerVariant: PokerVariant; whotMatchMode: WhotMatchMode; ludoMatchMode: LudoMatchMode; blackjackMatchMode: BlackjackMatchMode; connectFourMatchMode: ConnectFourMatchMode; connectFourBestOf: ConnectFourBestOf; ayoMatchMode: AyoMatchMode; hiddenDictatorMatchMode: HiddenDictatorMatchMode;
   isCreating: boolean; isJoining: boolean; isRecovering: boolean; darkMode: boolean; account: HalieusAccountSummary | null; betaMode: boolean; onOpenAccount: () => void;
   theme: { pageBackground: string; cardBackground: string; secondaryBackground: string; inputBackground: string; text: string; mutedText: string; border: string; };
+  themeMode: HalieusThemeMode; themeProfileId: HalieusThemeProfileId;
   onToggleDarkMode: () => void; onGameSelect: (game: GameSelection) => void; onPlayerNameChange: (value: string) => void; onRoomCodeChange: (value: string) => void;
   onRecoveryCodeChange: (value: string) => void; onPokerRecoveryCodeChange: (value: string) => void; onBlackjackRecoveryCodeChange: (value: string) => void; onWhotRecoveryCodeChange: (value: string) => void; onLudoRecoveryCodeChange: (value: string) => void; onConnectFourRecoveryCodeChange: (value: string) => void; onAyoRecoveryCodeChange: (value: string) => void; onWordBoardRecoveryCodeChange: (value: string) => void; onHiddenDictatorRecoveryCodeChange: (value: string) => void;
   onPokerStartingChipsChange: (value: number) => void; onPokerSmallBlindChange: (value: number) => void; onPokerBigBlindChange: (value: number) => void; onPokerMatchModeChange: (value: "casual" | "ranked") => void; onPokerVariantChange: (value: PokerVariant) => void; onWhotMatchModeChange: (value: WhotMatchMode) => void; onLudoMatchModeChange: (value: LudoMatchMode) => void; onBlackjackMatchModeChange: (value: BlackjackMatchMode) => void; onConnectFourMatchModeChange: (value: ConnectFourMatchMode) => void; onConnectFourBestOfChange: (value: ConnectFourBestOf) => void; onAyoMatchModeChange: (value: AyoMatchMode) => void; onHiddenDictatorMatchModeChange: (value: HiddenDictatorMatchMode) => void;
@@ -100,7 +102,7 @@ export function HomeScreen(props: HomeScreenProps) {
     recoveryCode, pokerRecoveryCode, blackjackRecoveryCode, whotRecoveryCode, ludoRecoveryCode, connectFourRecoveryCode, ayoRecoveryCode, wordBoardRecoveryCode, hiddenDictatorRecoveryCode,
     savedSession, pokerSavedSession, blackjackSavedSession, whotSavedSession, ludoSavedSession, connectFourSavedSession, ayoSavedSession, wordBoardSavedSession, hiddenDictatorSavedSession,
     pokerStartingChips, pokerSmallBlind, pokerBigBlind, pokerMatchMode, pokerVariant, whotMatchMode, ludoMatchMode, blackjackMatchMode, connectFourMatchMode, connectFourBestOf, ayoMatchMode, hiddenDictatorMatchMode,
-    isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, theme, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
+    isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, theme, themeMode, themeProfileId, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
     onRecoveryCodeChange, onPokerRecoveryCodeChange, onBlackjackRecoveryCodeChange, onWhotRecoveryCodeChange, onLudoRecoveryCodeChange, onConnectFourRecoveryCodeChange, onAyoRecoveryCodeChange, onWordBoardRecoveryCodeChange, onHiddenDictatorRecoveryCodeChange,
     onPokerStartingChipsChange, onPokerSmallBlindChange, onPokerBigBlindChange, onPokerMatchModeChange, onPokerVariantChange, onWhotMatchModeChange, onLudoMatchModeChange, onBlackjackMatchModeChange, onConnectFourMatchModeChange, onConnectFourBestOfChange, onAyoMatchModeChange, onHiddenDictatorMatchModeChange,
     onGenerateRoomCode, onOpenLeaderboard, onOpenPokerLeaderboard, onMatchModeChange, onFreeParkingJackpotChange,
@@ -148,6 +150,7 @@ export function HomeScreen(props: HomeScreenProps) {
   const [invitingPlayerId, setInvitingPlayerId] = useState<string | null>(null);
   const [inviteNotice, setInviteNotice] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const themeAtmosphere = useMemo(() => themeAtmosphereSymbols(themeMode, themeProfileId), [themeMode, themeProfileId]);
   const [playerSearch, setPlayerSearch] = useState("");
   const [playerFilter, setPlayerFilter] = useState<"all" | "online" | "in-game" | "offline">("all");
   const [wordArenaMatchMode, setWordArenaMatchMode] = useState<WordArenaMatchMode>("casual");
@@ -803,8 +806,8 @@ export function HomeScreen(props: HomeScreenProps) {
 
   return (
     <main className={`halieus-shell page-enter game-bg-${selectedGame}`} style={{ background: theme.pageBackground, color: theme.text, ["--selected-game-accent" as string]: gameAccent }}>
-      <div className={`halieus-game-atmosphere game-bg-${selectedGame}`} aria-hidden="true">
-        {selected.motifs.concat(selected.motifs.slice(0, 3)).map((motif, index) => <span key={`${motif}-${index}`} style={{ ["--float-index" as string]: index }}>{motif}</span>)}
+      <div className="halieus-game-atmosphere halieus-theme-atmosphere" data-theme-atmosphere={themeMode === "profile" ? themeProfileId : themeMode} aria-hidden="true">
+        {themeAtmosphere.map((symbol, index) => <span key={`${symbol}-${index}`} style={{ ["--float-index" as string]: index }}>{symbol}</span>)}
       </div>
       {mobileMenuOpen && <>
         <button type="button" className="halieus-mobile-more-backdrop" onClick={() => setMobileMenuOpen(false)} aria-label="Close More menu" />

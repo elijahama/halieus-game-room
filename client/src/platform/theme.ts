@@ -102,6 +102,35 @@ export const THEME_PROFILES: readonly HalieusThemeProfile[] = [
   { id: "neo-arcade", label: "Arcade Crimson", description: "Dark arcade hardware with vivid red, cool blue and crisp white instrumentation.", mood: "Arcade Hardware", motif: ["#d52e36","#4a87c4","#e7e9eb","#d1a63b"], theme: { page: "#090b0d", surface: "#171b20", accent: "#d52e36", secondary: "#4a87c4" } },
 ] as const;
 
+const ATMOSPHERE_MINIMAL = ["○","□","△","◇","◌","▢","✦","·","—"] as const;
+const ATMOSPHERE_TECH = ["⌁","◌","◇","▦","⊹","✦","○","◈","⌘"] as const;
+const ATMOSPHERE_ARCADE = ["★","●","◆","✚","◉","▦","✦","◇","○"] as const;
+const ATMOSPHERE_CONSOLE = ["△","○","×","□","◇","✦","◉","▣","⊹"] as const;
+const ATMOSPHERE_LUXE = ["✦","◇","◆","◌","✧","⊹","○","◈","✣"] as const;
+const ATMOSPHERE_SOFT = ["○","◇","✦","◌","□","⊹","△","✧","·"] as const;
+
+/**
+ * Theme atmosphere is platform decoration, not game state.
+ * These symbols are deliberately generic/restricted so changing a theme never
+ * implies a specific game's rules, cards, pieces or interactive affordances.
+ */
+export function themeAtmosphereSymbols(mode: HalieusThemeMode, profileId: HalieusThemeProfileId): readonly string[] {
+  if (mode !== "profile") {
+    if (mode === "blue" || mode === "green") return ATMOSPHERE_TECH;
+    if (mode === "red") return ATMOSPHERE_ARCADE;
+    if (mode === "light") return ATMOSPHERE_SOFT;
+    if (mode === "custom") return ATMOSPHERE_MINIMAL;
+    return ATMOSPHERE_LUXE;
+  }
+
+  if (profileId === "minimal-mono") return ATMOSPHERE_MINIMAL;
+  if (["blue-circuit","terminal","neon-grid","icebox","deep-ocean"].includes(profileId)) return ATMOSPHERE_TECH;
+  if (["arcade-cabinet","neo-arcade","redline"].includes(profileId)) return ATMOSPHERE_ARCADE;
+  if (["xbox-core","ps2-midnight","ps3-xmb","psp-silver","psp-go-pearl","vita-graphite","ps4-wave","dreamcast-white","cube-indigo","n64-fog","snes-colour","atari-woodgrain","c64-breadbox","ivory-8bit","lavender-16bit","black-drive","grey-disc"].includes(profileId)) return ATMOSPHERE_CONSOLE;
+  if (["cream-soda"].includes(profileId)) return ATMOSPHERE_SOFT;
+  return ATMOSPHERE_LUXE;
+}
+
 const HEX = /^#[0-9a-f]{6}$/i;
 const PROFILE_IDS = new Set<HalieusThemeProfileId>(THEME_PROFILES.map((profile) => profile.id));
 
