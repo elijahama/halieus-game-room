@@ -2,7 +2,7 @@
 
 ## Project status
 
-Current milestone: **4.5.2**
+Current milestone: **4.5.x** (`VERSION` is the authoritative release number)
 
 Halieus Game Room (HGR) is a private, real-time multiplayer platform for board, card, word and social games. It began as the property-trading game that became **Mega Board**, then evolved into a shared application with common accounts, rooms, invitations, recovery, spectators, responsive navigation, progression, social systems and deployment infrastructure.
 
@@ -63,7 +63,7 @@ HGR deliberately separates accomplishment from competitive skill.
 - **Gamer Score** is the account-wide total derived from verified completed achievement values.
 - **Competitive rating/standings** remain game-specific.
 
-The current 4.5.2 Ranked definitions include:
+The current 4.5 Ranked definitions include:
 
 - **Connect Four:** human-vs-human best-of-3 or best-of-5 Ranked series; best-of-1 is Casual.
 - **Ludo:** human-only placement-aware Ranked comparison.
@@ -109,7 +109,7 @@ A source commit or passing automated test is evidence of implementation, not aut
 
 ## Current acceptance work
 
-The current 4.5.2 source has automated validation coverage. Remaining real-device/user checks include:
+The current 4.5.x source has automated validation coverage. Remaining real-device/user checks include:
 
 - Brave/Chrome installed-app icon appearance;
 - iPad focus/select/fullscreen behaviour;
