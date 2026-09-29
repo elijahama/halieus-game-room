@@ -209,6 +209,7 @@ function New-HgrLauncherIcon {
 }
 
 $roles = [ordered]@{
+    main = '#F4C430'
     start = '#22C55E'
     restart = '#F59E0B'
     close = '#EF4444'
