@@ -37,6 +37,14 @@ assert.match(part19Css,/\.halieus-mobile-nav \{[\s\S]*?repeat\(5,minmax\(0,1fr\)
 assert.match(part19Css,/\.halieus-mobile-tools,[\s\S]*?\.halieus-mobile-top-fullscreen,[\s\S]*?\.halieus-mobile-inbox,[\s\S]*?\.halieus-mobile-account/s,"Top mobile utilities must own tools, Full Screen, Inbox and profile");
 assert.match(part19Css,/\.halieus-inbox-panel \{[\s\S]*?max-height:\s*min\(58dvh,480px\) !important;[\s\S]*?border-radius:\s*18px !important;/s,"Mobile Inbox must be a compact panel rather than a full-height drawer");
 assert.match(part19Css,/\.halieus-mobile-more-sheet[\s\S]*?bottom:\s*calc\(86px \+ env\(safe-area-inset-bottom\)\)/s,"Mobile tools sheet must open above the fixed navigation");
+assert.match(part19Css,/HGR 4\.5\.3 — mobile utility-sheet visibility \+ top-bar collision authority/,"Mobile utility-sheet final authority must exist");
+assert.match(part19Css,/\.halieus-mobile-more-backdrop \{[\s\S]*?z-index:\s*960 !important;/s,"Mobile utility backdrop must layer above persistent navigation");
+assert.match(part19Css,/\.halieus-mobile-more-sheet \{[\s\S]*?z-index:\s*980 !important;[\s\S]*?max-height:\s*calc\(100dvh - 112px/s,"Mobile utility sheet must stay inside the usable viewport and above nav");
+assert.match(part19Css,/\.halieus-mobile-more-controls > \.halieus-theme-trigger \{[\s\S]*?grid-column:\s*1 \/ -1 !important;/s,"Theme control must consume the full utility-sheet row");
+assert.match(part19Css,/@media \(max-width: 520px\)[\s\S]*?\.halieus-mobile-brand strong \{[\s\S]*?display:\s*none !important;/s,"Phone header must yield the long wordmark before utility controls can collide");
+assert.match(home,/function isRawNetworkFetchError\(/,"Home must recognise raw browser fetch failures");
+assert.match(home,/visibleMessage = isRawNetworkFetchError\(message\) \? "" : message/,"Raw fetch failures must not leak through the global player toast");
+assert.match(home,/visibleDataError = isRawNetworkFetchError\(dataError\) \? "" : dataError/,"Raw background fetch failures must not leak into Home data notes");
 assert.match(theme,/export function themeAtmosphereSymbols\(/,"Themes must own a dedicated ambient-symbol contract");
 assert.match(theme,/Theme atmosphere is platform decoration, not game state/,"Theme atmosphere must stay decorative rather than game state");
 assert.match(home,/halieus-game-atmosphere halieus-theme-atmosphere/,"Platform shell must render theme-owned ambient icons");
