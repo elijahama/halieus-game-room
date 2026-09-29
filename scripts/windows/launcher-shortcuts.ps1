@@ -9,7 +9,7 @@ $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 
 # Shortcut refresh regenerates runtime ICO/PNG artwork from the canonical
 # Halieus role palette. Tracked source artwork is never overwritten here.
-$GameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
+$TrackedGameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $RuntimeLauncherIconRoot = Join-Path $ProjectRoot 'server\data\runtime\launcher-icons'
 $TrackedLauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
 $IconGenerator = Join-Path $ProjectRoot 'scripts\windows\generate-launcher-icons.ps1'
@@ -28,6 +28,8 @@ $UpdateIconPath = Join-Path $RuntimeLauncherIconRoot 'update.ico'
 $PowerShellIconPath = Join-Path $RuntimeLauncherIconRoot 'powershell.ico'
 $OpenShardIconPath = Join-Path $RuntimeLauncherIconRoot 'openshard.ico'
 $ControlIconPath = Join-Path $RuntimeLauncherIconRoot 'control.ico'
+$GameRoomIconPath = Join-Path $RuntimeLauncherIconRoot 'main.ico'
+if (-not (Test-Path -LiteralPath $GameRoomIconPath)) { $GameRoomIconPath = $TrackedGameRoomIconPath }
 $ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
 $StartMenuLauncherDirectory = Join-Path $ProgramsRoot 'Halieus Game Room'
 $ProjectLauncherDirectory = Join-Path $ProjectRoot 'HGR Launchers'
@@ -106,8 +108,8 @@ $ControlIconPath = Resolve-HalieusIconPath -Preferred $ControlIconPath -Fallback
 
 $folderIconConfig = @"
 [.ShellClassInfo]
-IconResource=assets\branding\Halieus Game Room.ico,0
-IconFile=assets\branding\Halieus Game Room.ico
+IconResource=server\data\runtime\launcher-icons\main.ico,0
+IconFile=server\data\runtime\launcher-icons\main.ico
 IconIndex=0
 InfoTip=Halieus Game Room
 [ViewState]
