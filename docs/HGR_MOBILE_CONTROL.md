@@ -691,3 +691,14 @@ Each bug above resulted in a regression or contract check. HGR Control regressio
 - documented operator workflow;
 - fixed Windows action bridges.
 
+
+
+### Remote Update porcelain parsing
+
+**Observed failure:** the phone correctly refused a remote Update, but reported `ELEASE.json` as the blocking tracked file.
+
+**Cause:** the shared Git helper called `.trim()` on `git status --porcelain`. Porcelain format uses leading columns for index/worktree state, so trimming the leading space shifted the path left. The later `slice(3)` then removed the first real filename character.
+
+**Fix:** when the Git helper is used for porcelain/empty-output reads, it now removes trailing line endings only and preserves leading status columns. The remote Update filter can therefore recognize `RELEASE.json` and `shared/release.ts` as disposable generated release identity and allow the approved updater to regenerate them.
+
+**Lesson:** machine-readable Git formats are positional protocols. Do not normalize leading whitespace before parsing their columns.
