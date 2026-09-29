@@ -740,3 +740,21 @@ Each bug above resulted in a regression or contract check. HGR Control regressio
 **Fix:** when the Git helper is used for porcelain/empty-output reads, it now removes trailing line endings only and preserves leading status columns. The remote Update filter can therefore recognize `RELEASE.json` and `shared/release.ts` as disposable generated release identity and allow the approved updater to regenerate them.
 
 **Lesson:** machine-readable Git formats are positional protocols. Do not normalize leading whitespace before parsing their columns.
+
+
+### Release-aware refresh v2
+
+**Observed failure:** the maintenance/update flow completed successfully, but the already-open HGR client did not reliably refresh onto the new release.
+
+**Cause:** the first implementation depended on Socket.IO reconnect plus a normal `window.location.reload()`. That was too weak for an installed/browser client that can also be influenced by the HGR service-worker shell and cached SPA navigation.
+
+**Fix:** release refresh is now explicit and fingerprint-driven:
+
+1. once maintenance begins, the client polls the production `/health` endpoint with `cache: "no-store"`;
+2. a changed release fingerprint becomes the authoritative signal that the new Oracle release is online;
+3. the client tells the HGR service worker to discard stale `halieus-shell-*` caches and asks registrations to update;
+4. the current tab/window navigates in place with `window.location.replace()` to a cache-busted URL carrying the new version, fingerprint fragment and timestamp;
+5. production `/health` plus all HTML/SPA navigation responses are marked non-cacheable;
+6. if the automatic navigation does not leave the page, the maintenance surface exposes a manual **Refresh now** fallback.
+
+This deliberately avoids ordinary `window.location.reload()` for release transitions.
