@@ -20,7 +20,10 @@ Write-Host ""
 Write-Host "HGR Control local development agent" -ForegroundColor Yellow
 Write-Host "Token stored temporarily at:" -ForegroundColor DarkGray
 Write-Host "  $tokenPath" -ForegroundColor DarkGray
-Write-Host "Use scripts\windows\hgr-control-client.ps1 from another PowerShell." -ForegroundColor Cyan
+Write-Host "From another PowerShell, run the root client entrypoint:" -ForegroundColor Cyan
+Write-Host "  & '$projectRoot\HGR-Control.cmd' status" -ForegroundColor Cyan
+Write-Host "  & '$projectRoot\HGR-Control.cmd' restart" -ForegroundColor Cyan
+Write-Host "  & '$projectRoot\HGR-Control.cmd' logs" -ForegroundColor Cyan
 Write-Host ""
 
 Push-Location $projectRoot
