@@ -249,25 +249,33 @@ We move the listener from loopback to the PC's Tailscale address only after loca
 
 ### Stage C — first process action
 
-Open a second PowerShell in the HGR repository. Use the allow-listed local client helper:
+Open a second PowerShell. It does **not** need to start in the HGR folder.
 
-```powershell
-.\scripts\windows\hgr-control-client.ps1 status
+The agent window prints the exact absolute client commands for your repository location. The stable root client is:
+
+```text
+HGR-Control.cmd
 ```
 
-That reads the temporary local token and makes the authenticated status request.
+If the second PowerShell is already in the HGR repository, use:
+
+```powershell
+.\HGR-Control.cmd status
+```
 
 Restart HGR with:
 
 ```powershell
-.\scripts\windows\hgr-control-client.ps1 restart
+.\HGR-Control.cmd restart
 ```
 
 Read recent audit entries with:
 
 ```powershell
-.\scripts\windows\hgr-control-client.ps1 logs | ConvertTo-Json -Depth 6
+.\HGR-Control.cmd logs | ConvertTo-Json -Depth 6
 ```
+
+If the second PowerShell opens somewhere else, copy the **absolute command printed by the running Control Agent**. It uses PowerShell's call operator (`&`) and therefore works even though the HGR path contains spaces.
 
 The helper accepts only:
 
