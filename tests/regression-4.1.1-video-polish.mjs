@@ -66,7 +66,7 @@ assert.match(account,/adminTab !== "account"/,'Administration must not permanent
 assert.match(account,/← My profile/,'Owner tools must provide a clear route back to personal profile');
 assert.match(css,/\.account-panel \.account-owner-nav[\s\S]*?grid-template-columns:\s*repeat\(6,minmax\(0,1fr\)\)/s,'Owner tools must use the compact HGR segmented navigation');
 assert.match(css,/\.account-panel \.account-player-admin-row[\s\S]*?border-radius:\s*12px/s,'Player management rows must use the compact HGR identity-card presentation');
-assert.match(css,/html\[data-theme="light"\][\s\S]*?--hgr-action-bg:\s*#d6a11f/s,'Light mode must retain the standard yellow HGR primary action');
+assert.match(css,/html\[data-theme="light"\][\s\S]*?--hgr-action-bg:\s*var\(--hgr-gold\)/s,'Light mode must retain the canonical saturated HGR gold primary action');
 assert.match(css,/html\[data-theme="red"\][\s\S]*?--hgr-action-bg:\s*#c9444d/s,'Red must be a first-class coordinated colour profile');
 assert.match(css,/html\[data-theme="green"\][\s\S]*?--hgr-action-bg:\s*#428e59/s,'Green must be a first-class coordinated colour profile');
 assert.match(css,/\.modern-player-list-v2[\s\S]*?max-height:\s*348px !important;[\s\S]*?overflow-y:\s*auto !important/s,'Mega Board lobby roster must scroll internally instead of growing past room controls');
