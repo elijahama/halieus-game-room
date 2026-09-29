@@ -10,10 +10,10 @@
   --control: #4F7BFE;
   --control-2: #6E92FF;
   --control-soft: rgba(79,123,254,.14);
-  --start: #258B58;
-  --restart: #B97818;
-  --close: #BD4545;
-  --update: #3475C5;
+  --start: #22C55E;
+  --restart: #F59E0B;
+  --close: #EF4444;
+  --update: #38BDF8;
   --good: #43d17c;
   --warn: #f2b84b;
   --danger: #ff646b;
@@ -180,10 +180,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  border: 1px solid rgba(185,120,24,.48);
+  border: 1px solid rgba(245,158,11,.48);
   border-radius: 15px;
   padding: 13px;
-  background: rgba(185,120,24,.09);
+  background: rgba(245,158,11,.09);
   color: #fff;
   text-align: left;
   cursor: pointer;
@@ -194,15 +194,15 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(185,120,24,.18);
-  color: #d99b39;
+  background: rgba(245,158,11,.18);
+  color: #F5A623;
   font-size: 24px;
   font-weight: 900;
 }
 .action-button span:nth-child(2) { min-width: 0; display: grid; gap: 4px; }
 .action-button strong { font-size: 15px; }
 .action-button small { color: var(--muted); font-size: 10px; line-height: 1.35; }
-.action-button b { color: #d99b39; font-size: 11px; }
+.action-button b { color: #F5A623; font-size: 11px; }
 
 .secondary-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 10px; }
 .small-action-button {
@@ -220,18 +220,18 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
 }
 .small-action-button strong { font-size: 12px; }
 #startButton {
-  border-color: rgba(37,139,88,.38);
-  background: rgba(37,139,88,.08);
+  border-color: rgba(34,197,94,.38);
+  background: rgba(34,197,94,.08);
 }
-#startButton strong { color: #56b77f; }
+#startButton strong { color: #4ADE80; }
 #closeButton {
-  border-color: rgba(189,69,69,.40);
-  background: rgba(189,69,69,.08);
+  border-color: rgba(239,68,68,.40);
+  background: rgba(239,68,68,.08);
 }
-#closeButton strong { color: #dc7474; }
+#closeButton strong { color: #F87171; }
 .small-action-button small { color: var(--muted); font-size: 9px; line-height: 1.3; }
-.small-action-button.is-danger { border-color: rgba(189,69,69,.40); }
-.small-action-button.is-danger strong { color: #dc7474; }
+.small-action-button.is-danger { border-color: rgba(239,68,68,.40); }
+.small-action-button.is-danger strong { color: #F87171; }
 
 .update-button {
   width: 100%;
@@ -241,18 +241,18 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
   gap: 12px;
   align-items: center;
   margin-top: 8px;
-  border: 1px solid rgba(52,117,197,.40);
+  border: 1px solid rgba(56,189,248,.40);
   border-radius: 13px;
   padding: 12px;
-  background: rgba(52,117,197,.08);
+  background: rgba(56,189,248,.08);
   color: #f7f8fa;
   text-align: left;
   cursor: pointer;
 }
 .update-button span { min-width: 0; display: grid; gap: 4px; }
-.update-button strong { font-size: 12px; color: #6fa7e7; }
+.update-button strong { font-size: 12px; color: #7DD3FC; }
 .update-button small { color: var(--muted); font-size: 9px; line-height: 1.35; }
-.update-button b { color: #6fa7e7; font-size: 10px; }
+.update-button b { color: #7DD3FC; font-size: 10px; }
 
 .operation-panel {
   margin-top: 12px;
@@ -263,7 +263,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
 }
 .operation-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .operation-heading span { color: #d9dee5; font-size: 11px; font-weight: 900; text-transform: capitalize; }
-.operation-heading strong { color: #6fa7e7; font-size: 11px; }
+.operation-heading strong { color: #7DD3FC; font-size: 11px; }
 .progress-track { height: 7px; margin-top: 10px; overflow: hidden; border-radius: 999px; background: #242a32; }
 .progress-track span {
   position: relative;
@@ -272,9 +272,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
   height: 100%;
   overflow: hidden;
   border-radius: inherit;
-  background: linear-gradient(90deg, #2f67ad 0%, var(--update) 45%, #6fa7e7 100%);
+  background: linear-gradient(90deg, #0284C7 0%, var(--update) 45%, #7DD3FC 100%);
   background-size: 180% 100%;
-  box-shadow: 0 0 14px rgba(52,117,197,.28);
+  box-shadow: 0 0 14px rgba(56,189,248,.28);
   transition: width .3s ease;
 }
 .progress-track span::after {
@@ -374,8 +374,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
     to { background-position: 180% 50%; }
   }
   @keyframes progressPulse {
-    from { filter: brightness(.92); box-shadow: 0 0 8px rgba(52,117,197,.18); }
-    to { filter: brightness(1.16); box-shadow: 0 0 18px rgba(52,117,197,.46); }
+    from { filter: brightness(.92); box-shadow: 0 0 8px rgba(56,189,248,.18); }
+    to { filter: brightness(1.16); box-shadow: 0 0 18px rgba(56,189,248,.46); }
   }
   @keyframes progressSheen {
     0% { transform: translateX(-120%); opacity: 0; }
