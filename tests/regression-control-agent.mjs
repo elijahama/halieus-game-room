@@ -1,0 +1,82 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = resolve(import.meta.dirname, "..");
+const read = (path) => readFileSync(resolve(root, path), "utf8");
+
+const contract = read("shared/platform/control.ts");
+const agent = read("server/src/control-agent.ts");
+const rootPackage = JSON.parse(read("package.json"));
+const serverPackage = JSON.parse(read("server/package.json"));
+const masterbook = read("docs/HGR_MASTERBOOK.md");
+const controlDoc = read("docs/HGR_MOBILE_CONTROL.md");
+const docsIndex = read("docs/README.md");
+const projectReadme = read("README.md");
+
+for (const id of [
+  "status",
+  "start",
+  "restart",
+  "close",
+  "update",
+  "logs",
+  "open-site",
+  "open-github",
+]) {
+  assert.match(contract, new RegExp(`id: "${id}"`), `HGR Control contract must include ${id}`);
+}
+
+assert.doesNotMatch(
+  contract,
+  /(?:command|executable|shell|argv|args)\s*:/i,
+  "Phone-facing control contract must never expose arbitrary command/executable fields",
+);
+assert.match(
+  contract,
+  /id: "restart"[\s\S]*?without updating or deploying/s,
+  "Restart must remain troubleshooting-only in the shared control contract",
+);
+assert.match(
+  contract,
+  /id: "update"[\s\S]*?update\/validation\/deploy flow[\s\S]*?restart on success/s,
+  "Update must retain the full update/deploy/restart responsibility",
+);
+assert.match(
+  contract,
+  /id: "close"[\s\S]*?confirmation: "confirm"/s,
+  "Close must require confirmation",
+);
+assert.match(
+  contract,
+  /id: "update"[\s\S]*?confirmation: "confirm"/s,
+  "Update must require confirmation",
+);
+
+assert.match(agent, /HGR_CONTROL_HOST\?\.trim\(\) \|\| "127\.0\.0\.1"/, "Control agent must bind to loopback by default");
+assert.match(agent, /HGR_CONTROL_PORT \|\| "43127"/, "Control agent must keep one documented default port");
+assert.match(agent, /Refusing to expose HGR Control beyond loopback without HGR_CONTROL_TOKEN/, "Non-loopback control must require a token");
+assert.match(agent, /request\.method === "GET" && request\.url === "\/api\/status"/, "Foundation agent must expose a read-only status endpoint");
+assert.match(agent, /implemented: action\.id === "status"/, "Mutable process actions must remain disabled in the foundation stage");
+assert.match(agent, /execFileAsync\("git"/, "Foundation agent may use fixed read-only Git inspection");
+assert.doesNotMatch(agent, /\bexec\s*\(/, "Control agent must not use shell exec");
+assert.doesNotMatch(agent, /\bspawn\s*\(/, "Control agent foundation must not spawn arbitrary processes");
+assert.doesNotMatch(agent, /request\.(?:body|query)[\s\S]*?(?:command|exe|args)/i, "Control endpoint must not accept arbitrary execution input");
+
+assert.equal(rootPackage.scripts["control:dev"], "npm --workspace server run control:dev");
+assert.equal(rootPackage.scripts["control:start"], "npm --workspace server run control:start");
+assert.equal(serverPackage.scripts["control:dev"], "tsx src/control-agent.ts");
+assert.equal(serverPackage.scripts["control:start"], "node dist/server/src/control-agent.js");
+assert.match(rootPackage.scripts["test:regression"], /regression-control-agent\.mjs/, "Control regression must remain in the full regression chain");
+
+assert.match(masterbook, /Living project summary and engineering map/, "Masterbook must state its source-of-truth role");
+assert.match(masterbook, /human-directed, AI-assisted engineering/i, "Masterbook must document HGR's development model");
+assert.match(masterbook, /HGR Control — phone launcher\/control plane/, "Masterbook must include the mobile-control architecture");
+assert.match(controlDoc, /The goal is not “remote command prompt from a phone\.”/, "Control documentation must reject generic remote-shell design");
+assert.match(controlDoc, /Loopback by default/, "Control documentation must explain the initial network boundary");
+assert.match(controlDoc, /Stage A — understand one GET endpoint/, "Control documentation must contain the guided implementation walkthrough");
+assert.match(docsIndex, /HGR_MASTERBOOK\.md/, "Documentation index must expose the Masterbook");
+assert.match(docsIndex, /HGR_MOBILE_CONTROL\.md/, "Documentation index must expose HGR Mobile Control");
+assert.match(projectReadme, /docs\/HGR_MASTERBOOK\.md/, "Root README must link the Masterbook");
+
+console.log("HGR Control foundation / Masterbook regression: PASS");

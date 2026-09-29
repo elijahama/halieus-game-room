@@ -7,6 +7,7 @@ For the current project story, start with the root [README](../README.md).
 ## Current documentation
 
 ### Product and platform
+- [HGR Masterbook](HGR_MASTERBOOK.md) — living project summary and engineering map
 - [Project overview](PROJECT_OVERVIEW.md)
 - [Game catalogue](GAME_CATALOGUE.md)
 - [Game visual identity system](GAME_VISUAL_IDENTITY_SYSTEM.md)
@@ -30,6 +31,7 @@ For the current project story, start with the root [README](../README.md).
 - [Openshard development receipts](OPENSHARD.md)
 - [AI provenance architecture](project/HGR_AI_PROVENANCE_ARCHITECTURE.md)
 - [GitHub workflow](GITHUB_WORKFLOW.md)
+- [HGR Mobile Control](HGR_MOBILE_CONTROL.md) — phone control architecture, security model and guided build
 
 ### Quality and release
 - [Testing](TESTING.md)
@@ -59,7 +61,7 @@ Examples include:
 - `PATCH 3.5.* - READ ME.txt`
 - [Development timeline](DEVELOPMENT_TIMELINE.md)
 
-These files are **historical records**, not the current source of truth for 4.5.2 behaviour or validation.
+These files are **historical records**, not the current source of truth for 4.5.x behaviour or validation.
 
 ## Documentation principle
 

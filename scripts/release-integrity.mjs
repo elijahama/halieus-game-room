@@ -69,6 +69,8 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
+  'docs/HGR_MASTERBOOK.md', 'docs/HGR_MOBILE_CONTROL.md',
+  'tests/regression-control-agent.mjs',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
   'docs/HGR_4.5.1_PART19_NAVIGATION.md',
   'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',
@@ -294,6 +296,7 @@ const manifest = {
     'hgr-project-history-4.1.0',
     'hgr-shared-game-shell-polish-4.1.0',
     'matte-launcher-family-4.1.0',
+    'hgr-control-readonly-foundation-4.5.3',
   ],
 };
 
