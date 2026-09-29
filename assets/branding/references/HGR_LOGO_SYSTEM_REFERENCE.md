@@ -46,7 +46,7 @@ The website logo is built from reusable layers:
 Example tokens:
 
 ```css
---hgr-logo-bg: #E7A900;
+--hgr-logo-bg: #DAA017;
 --hgr-logo-fg: #000000;
 --hgr-logo-accent: #FFFFFF;
 ```
@@ -216,11 +216,3 @@ Examples:
 - Theme changes alter colour, not proportions.
 - Accessibility contrast may override a theme colour when required.
 - Detailed rendered icons are references, not the source of runtime geometry.
-
-
-## 4.5.3 Gold correction
-
-The canonical H geometry is unchanged. The standard brand tile now uses the richer,
-more saturated gold `#E7A900` instead of the earlier muted `#DAA017`.
-This is a colour correction only; proportions, padding, cut geometry and H alignment
-must remain identical.
