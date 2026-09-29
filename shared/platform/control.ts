@@ -108,6 +108,8 @@ export interface HalieusControlActiveOperation {
   id: string;
   action: HalieusControlActionId;
   startedAt: string;
+  phase?: string;
+  progress?: number;
 }
 
 export interface HalieusControlAuditEntry {
