@@ -92,20 +92,22 @@ assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-brid
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
-assert.match(halieusMark,/M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(halieusMark,/M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"Canonical public Halieus mark must use the approved H geometry");
 assert.match(
   html,
   /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg(?:\?[^"]+)?"/,
   "Initial browser identity must use the canonical Halieus mark",
 );
-assert.match(html,/halieus-boot-mark[\s\S]*?M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-icon-set"`),"Platform tab identity must use the canonical icon-set web mark");
+assert.match(html,/halieus-boot-mark[\s\S]*?M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"First-paint mark must reuse the approved H geometry");
+assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h3"`),"Platform tab identity must use the canonical simple-H web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
-assert.match(halieusAppIcon,/#e7a900/i,"Installable app icon must preserve the approved saturated HGR gold");
+assert.match(halieusAppIcon,/#FFD95A/i,"Installable app icon must preserve the bright Halieus gold highlight");
+assert.match(halieusAppIcon,/#E9A714/i,"Installable app icon must preserve the Halieus gold depth");
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
-assert.match(launcherReferenceDoc,/Reference artwork beats generated interpretation/,"Launcher reference README must make approved artwork authoritative");
-assert.match(launcherReferenceDoc,/Every approved PNG stored directly in:/,"Launcher reference README must treat the current reference directory as authoritative rather than hard-coding an old reference count");
+assert.match(launcherReferenceDoc,/Human-approved reference direction controls the canonical system/i,"Launcher reference README must keep human-approved visual direction authoritative");
+assert.match(launcherReferenceDoc,/HGR ICON - CONTROL UPDATE/,"Launcher reference README must identify the current icon-system reference");
+assert.match(launcherReferenceDoc,/no internal play-cut\/tail/i,"Launcher reference README must protect the simple H");
 
 const approvedReferenceBlobs = {
   "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_31 AM.png": "5f1a96cd93fd0d111ec1d22db3bed5aefe8d9283",
@@ -116,31 +118,32 @@ for (const [asset, expected] of Object.entries(approvedReferenceBlobs)) {
   assert.equal(gitBlobSha(asset), expected, `Approved launcher reference changed unexpectedly: ${asset}`);
 }
 
-const approvedLauncherBlobs = {
-  "assets/branding/Halieus Game Room.ico": "931715f70ef873c9becbc8809b4c06a1d72d3607",
-  "assets/branding/launchers/Start Halieus Game Room.ico": "baccee77f8607afa1f09deab7b620c34741b79a6",
-  "assets/branding/launchers/Restart Halieus Game Room.ico": "f38f0b7e715c39bea7efb2e5f6e0934ac38a4a61",
-  "assets/branding/launchers/Close Halieus Game Room.ico": "de74effa6decc942c41b2db3bef9b2e0dc8c732d",
-  "assets/branding/launchers/HGR PowerShell.ico": "01e56e9ab2d5d4d39b30ff7c0aa69e08468b3dcb",
-  "assets/branding/launchers/Update Halieus Website.ico": "a1d356a5eab7a9331e09e54620c11b6b83a415b8",
-  "assets/branding/launchers/Start Halieus Game Room.svg": "d7b6183d9ba2f1f3daf1d1123084df3621856dda",
-  "assets/branding/launchers/Restart Halieus Game Room.svg": "2c992549bea3db500afd7c35daadf48ae1fe79d2",
-  "assets/branding/launchers/Close Halieus Game Room.svg": "4f9b877a596d1dd3b3aceb061afc54b1f9d60411",
-  "assets/branding/launchers/HGR PowerShell.svg": "cc04e7d7eaed192085b6e5e184391ff91c44053d",
-  "assets/branding/launchers/HGR OpenShard TUI.svg": "2a27eeb76f3d99271ab8593ec1b61fcb7aa866c3",
-  "assets/branding/launchers/Update Halieus Website.svg": "30f3f2db624ab448e3fd015783e5b402d86a785d",
+const canonicalLauncherSources = {
+  "assets/branding/launchers/Start Halieus Game Room.svg": "#22C55E",
+  "assets/branding/launchers/Restart Halieus Game Room.svg": "#F59E0B",
+  "assets/branding/launchers/Close Halieus Game Room.svg": "#EF4444",
+  "assets/branding/launchers/Update Halieus Website.svg": "#38BDF8",
+  "assets/branding/launchers/HGR PowerShell.svg": "#64748B",
+  "assets/branding/launchers/HGR OpenShard TUI.svg": "#A855F7",
+  "assets/branding/launchers/HGR Control.svg": "#4F7BFE",
 };
-for (const [asset, expected] of Object.entries(approvedLauncherBlobs)) {
-  assert.equal(gitBlobSha(asset), expected, `Approved reference-based launcher icon changed unexpectedly: ${asset}`);
+for (const [asset, colour] of Object.entries(canonicalLauncherSources)) {
+  const source=read(asset);
+  assert.ok(source.includes("M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z"), `${asset}: canonical simple H required`);
+  assert.ok(source.includes(colour), `${asset}: semantic role colour ${colour} required`);
+  assert.doesNotMatch(source,/Q23 59|M27 35|L38 44/,`${asset}: retired play-tail geometry must not return`);
 }
 
-assert.match(previewGenerator,/generated-preview/,"Generated launcher experiments must stay quarantined from approved assets");
-assert.doesNotMatch(previewGenerator,/Remove-Item[\s\S]*?assets\\branding\\launchers(?!\\generated-preview)/s,"Preview generation must never delete approved launcher icons");
-assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must never invoke artwork generation");
-assert.doesNotMatch(launcherShortcuts,/launchers\\\\matte/,"Retired nested launcher folder must not return");
-for (const launcherName of ["start.ico","restart.ico","close.ico","update.ico","powershell.ico","openshard.ico"]) {
-  assert.ok(launcherShortcuts.includes(launcherName), "Shortcut generator must consume approved reference-based icon " + launcherName);
-}
+assert.match(previewGenerator,/server\\data\\runtime\\launcher-icons/,"Launcher generator must write only ignored runtime exports");
+assert.match(previewGenerator,/main = '#F4C430'/,"Main runtime launcher must use Halieus gold");
+assert.match(previewGenerator,/update = '#38BDF8'/,"Update launcher must remain light blue");
+assert.match(previewGenerator,/openshard = '#A855F7'/,"OpenShard launcher must remain purple");
+assert.match(previewGenerator,/control = '#4F7BFE'/,"HGR Control launcher must use dedicated control blue");
+assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must regenerate the approved runtime icon family");
+assert.match(launcherShortcuts,/HGR - Control Mobile\.lnk/,"Shortcut family must expose HGR Control Mobile");
+assert.match(launcherShortcuts,/ControlIconPath/,"Control Mobile shortcut must use its dedicated icon path");
+assert.doesNotMatch(launcherShortcuts,/launchers\\matte/,"Retired nested launcher folder must not return");
+
 assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");
 assert.match(css,/HGR 4\.5 shared website surface grammar/,"4.5 must implement a shared website surface layer");
 assert.match(css,/\.halieus-game-category \.halieus-library-art :is\(img,svg\)/,"Games-page normalisation must preserve existing artwork and only control its safe area");
