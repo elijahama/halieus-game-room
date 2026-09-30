@@ -86,7 +86,7 @@ const restartBridge = resolve(projectRoot, "scripts", "windows", "control-restar
 const closeBridge = resolve(projectRoot, "scripts", "windows", "control-close.ps1");
 const updateBridge = resolve(projectRoot, "scripts", "windows", "control-update.ps1");
 const controlUiDirectory = resolve(projectRoot, "server", "control-ui");
-const controlIconSvg = resolve(controlUiDirectory, "control-icon.svg");
+const controlIconPng = resolve(controlUiDirectory, "control-icon.png");
 
 const MOBILE_SESSION_COOKIE = "hgr_control_session";
 const MOBILE_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
@@ -967,7 +967,8 @@ const staticAssets = new Map<string, { path: string; contentType: string; cacheC
   ["/control.js", { path: resolve(controlUiDirectory, "control.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
   ["/manifest.webmanifest", { path: resolve(controlUiDirectory, "manifest.webmanifest"), contentType: "application/manifest+json; charset=utf-8", cacheControl: "no-cache" }],
   ["/sw.js", { path: resolve(controlUiDirectory, "sw.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
-  ["/control-icon.svg", { path: controlIconSvg, contentType: "image/svg+xml; charset=utf-8", cacheControl: "no-store" }],
+  ["/offline.html", { path: resolve(controlUiDirectory, "offline.html"), contentType: "text/html; charset=utf-8", cacheControl: "no-cache" }],
+  ["/control-icon.png", { path: controlIconPng, contentType: "image/png", cacheControl: "no-store" }],
 ]);
 
 async function serveStaticAsset(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
@@ -989,17 +990,33 @@ async function serveStaticAsset(request: IncomingMessage, response: ServerRespon
 const server = createServer(async (request, response) => {
   if (await serveStaticAsset(request, response)) return;
 
-  if (request.method === "POST" && request.url === "/api/pair") {
+  const requestPath = new URL(request.url || "/", "http://hgr-control.local").pathname;
+
+  if (request.method === "GET" && requestPath === "/api/ping") {
+    const now = Date.now();
+    sendJson(response, 200, {
+      ok: true,
+      service: "hgr-control",
+      pairingAvailable: Boolean(pairCode && Number.isFinite(pairExpiresAt) && pairExpiresAt > now),
+      pairingExpiresAt:
+        pairCode && Number.isFinite(pairExpiresAt) && pairExpiresAt > now
+          ? new Date(pairExpiresAt).toISOString()
+          : null,
+    });
+    return;
+  }
+
+  if (request.method === "POST" && requestPath === "/api/pair") {
     await handlePair(request, response);
     return;
   }
 
-  if (request.method === "POST" && request.url === "/api/unpair") {
+  if (request.method === "POST" && requestPath === "/api/unpair") {
     handleUnpair(request, response);
     return;
   }
 
-  if (request.method === "GET" && request.url === "/api/status") {
+  if (request.method === "GET" && requestPath === "/api/status") {
     if (!readRequestAuthorised(request)) {
       sendJson(response, 401, { ok: false, reason: "HGR Control authentication required." });
       return;
@@ -1013,12 +1030,12 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === "POST" && request.url === "/api/confirm") {
+  if (request.method === "POST" && requestPath === "/api/confirm") {
     await handleActionConfirmation(request, response);
     return;
   }
 
-  if (request.method === "POST" && request.url === "/api/actions/start") {
+  if (request.method === "POST" && requestPath === "/api/actions/start") {
     if (!mutableRequestAuthorised(request)) {
       sendJson(response, token ? 401 : 503, {
         ok: false,
@@ -1038,7 +1055,7 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === "GET" && request.url === "/api/logs") {
+  if (request.method === "GET" && requestPath === "/api/logs") {
     if (!mutableRequestAuthorised(request)) {
       sendJson(response, token ? 401 : 503, {
         ok: false,
@@ -1057,7 +1074,7 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === "POST" && request.url === "/api/actions/restart") {
+  if (request.method === "POST" && requestPath === "/api/actions/restart") {
     if (!mutableRequestAuthorised(request)) {
       sendJson(response, token ? 401 : 503, {
         ok: false,
@@ -1071,7 +1088,7 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === "POST" && request.url === "/api/actions/close") {
+  if (request.method === "POST" && requestPath === "/api/actions/close") {
     if (!mutableRequestAuthorised(request)) {
       sendJson(response, token ? 401 : 503, {
         ok: false,
@@ -1105,7 +1122,7 @@ const server = createServer(async (request, response) => {
     return;
   }
 
-  if (request.method === "POST" && request.url === "/api/actions/update") {
+  if (request.method === "POST" && requestPath === "/api/actions/update") {
     if (!mutableRequestAuthorised(request)) {
       sendJson(response, token ? 401 : 503, {
         ok: false,
