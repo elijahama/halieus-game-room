@@ -57,7 +57,8 @@ $LauncherNames = [ordered]@{
     Update = 'HGR - Update Site.lnk'
     PowerShell = 'HGR - PowerShell.lnk'
     OpenShard = 'HGR - OpenShard TUI.lnk'
-    ControlMobile = 'HGR - Control.lnk'
+    ControlMobile = 'HGR - Control Mobile.lnk'
+    Control = 'HGR - Control.lnk'
     ControlStop = 'HGR - Stop Control.lnk'
 }
 
@@ -68,6 +69,7 @@ $ProjectUpdateShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Upda
 $ProjectPowerShellShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.PowerShell
 $ProjectOpenShardShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.OpenShard
 $ProjectControlMobileShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlMobile
+$ProjectControlShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Control
 $ProjectControlStopShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlStop
 
 $StartMenuStartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Start
@@ -77,6 +79,7 @@ $StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.
 $StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
 $StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
 $StartMenuControlMobileShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlMobile
+$StartMenuControlShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Control
 $StartMenuControlStopShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlStop
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
@@ -182,6 +185,7 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
 
     if (Test-Path -LiteralPath $ControlMobileScript) {
         New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlMobile) -CommandScript $ControlMobileScript -Description 'Start HGR Control in the background and copy the owner phone link' -IconPath $ControlIconPath
+        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Control) -CommandScript $ControlMobileScript -Description 'Start HGR Control in the background and copy the owner phone link' -IconPath $ControlIconPath
     }
     if (Test-Path -LiteralPath $ControlStopScript) {
         New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlStop) -CommandScript $ControlStopScript -Description 'Stop the background HGR Control service and private phone route' -IconPath $ControlIconPath
@@ -229,6 +233,8 @@ $CreatedShortcuts = @(
 if (Test-Path -LiteralPath $ControlMobileScript) {
     $CreatedShortcuts += $ProjectControlMobileShortcut
     $CreatedShortcuts += $StartMenuControlMobileShortcut
+    $CreatedShortcuts += $ProjectControlShortcut
+    $CreatedShortcuts += $StartMenuControlShortcut
 }
 if (Test-Path -LiteralPath $ControlStopScript) {
     $CreatedShortcuts += $ProjectControlStopShortcut
