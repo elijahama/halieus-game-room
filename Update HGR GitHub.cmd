@@ -449,7 +449,28 @@ goto :REFRESH_AFTER_UPDATE
 
 :REFRESH_AFTER_UPDATE
 echo.
-echo FINAL STEP - Refreshing the HGR client...
+echo FINAL STEP 1 - Refreshing HGR Launchers...
+echo Rebuilding the project HGR Launchers folder and Start Menu group from the current source.
+echo.
+if not exist "%~dp0scripts\windows\launcher-shortcuts.ps1" (
+    echo [STOPPED] Update completed, but the HGR launcher refresh helper is missing:
+    echo   %~dp0scripts\windows\launcher-shortcuts.ps1
+    popd
+    endlocal
+    exit /b 1
+)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\launcher-shortcuts.ps1"
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Update/deploy completed, but HGR Launchers could not be refreshed.
+    echo Run "FIRST RUN - Refresh Halieus Launchers.cmd" as the recovery fallback.
+    popd
+    endlocal
+    exit /b 1
+)
+echo [OK] HGR Launchers refreshed, including HGR - Control, HGR - Control Mobile and HGR - Stop Control.
+echo.
+echo FINAL STEP 2 - Refreshing the HGR client...
 echo Existing HGR windows now refresh themselves after the production release changes.
 echo A new HGR window is opened only when no dedicated HGR window is already running.
 echo.
