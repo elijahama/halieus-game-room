@@ -65,7 +65,7 @@ assert.match(read('client/public/brand/glyphs/H-gold.svg'),/fill="#F4C430"/);
 for(const game of ['anagrams-race','ayo']) assert.equal(read(`client/public/game-icons/${game}.svg`),read(`client/src/assets/game-icons/${game}.svg`));
 
 
-assert.match(indexHtml, new RegExp(`property="og:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.svg\\?v=${versionRe}-brand-h4"`), 'Social share metadata must use the canonical HGR icon');
-assert.match(indexHtml, new RegExp(`property="og:image:secure_url" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.svg\\?v=${versionRe}-brand-h4"`), 'Social share image must expose a secure URL');
-assert.match(indexHtml, new RegExp(`name="twitter:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.svg\\?v=${versionRe}-brand-h4"`), 'Twitter/social fallback must use the canonical HGR icon');
+assert.match(indexHtml, new RegExp(`property="og:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Social share metadata must use the approved original HGR PNG');
+assert.match(indexHtml, new RegExp(`property="og:image:secure_url" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Social share image must expose the approved PNG over a secure URL');
+assert.match(indexHtml, new RegExp(`name="twitter:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Twitter/social fallback must use the approved original HGR PNG');
 assert.doesNotMatch(indexHtml, /(?:og:image|twitter:image)[^>]+app-icon-reference\.png/, 'Social previews must never use the installed-app reference sheet');
