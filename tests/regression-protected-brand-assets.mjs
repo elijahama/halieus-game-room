@@ -4,75 +4,48 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
-
 const referenceRoot = resolve(root, "assets/branding/references");
-const launcherRoot = resolve(root, "assets/branding/launchers");
 const referenceNames = readdirSync(referenceRoot);
-const launcherNames = readdirSync(launcherRoot);
 
-assert.ok(
-  referenceNames.includes("HGR ICON - CONTROL UPDATE"),
-  "Current HGR icon-system reference must remain in assets/branding/references",
-);
-assert.ok(
-  referenceNames.includes("HGR_LOGO_SYSTEM_REFERENCE.md"),
-  "Canonical HGR logo-system reference must remain present",
-);
-
-const referenceH = "M16 15H25V28H39V15H48V49H39V36H25V49H16Z";
-const logoReference = read("assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md");
-assert.match(logoReference,/HGR ICON - CONTROL UPDATE/i,"Brand reference must preserve the saved CONTROL UPDATE H");
-assert.match(logoReference, /HGR Control — royal control blue `#4F7BFE`/);
-assert.match(logoReference, /Update — light blue `#38BDF8`/);
-assert.match(logoReference, /OpenShard — purple `#A855F7`/);
-
-const launcherSources = [
-  ["Start Halieus Game Room.svg", "#22C55E"],
-  ["Restart Halieus Game Room.svg", "#F59E0B"],
-  ["Close Halieus Game Room.svg", "#EF4444"],
-  ["Update Halieus Website.svg", "#38BDF8"],
-  ["HGR PowerShell.svg", "#64748B"],
-  ["HGR OpenShard TUI.svg", "#A855F7"],
-  ["HGR Control.svg", "#4F7BFE"],
-];
-
-for (const [name, colour] of launcherSources) {
-  assert.ok(launcherNames.includes(name), `Canonical launcher source is missing: ${name}`);
-  const source = read(`assets/branding/launchers/${name}`);
-  assert.ok(source.includes(referenceH), `${name} must use the canonical CONTROL UPDATE reference-matched block H`);
-  assert.ok(source.includes(colour), `${name} must retain its semantic role colour ${colour}`);
+for (const name of [
+  "HGR Main.png",
+  "HGR Start.png",
+  "HGR Restart.png",
+  "HGR Close.png",
+  "HGR Update.png",
+  "HGR PowerShell.png",
+  "HGR OpenShard.png",
+  "HGR Control.png",
+  "HGR_ICON_PALETTE.md",
+  "HGR_LOGO_SYSTEM_REFERENCE.md",
+]) {
+  assert.ok(referenceNames.includes(name), `Approved branding reference is missing: ${name}`);
 }
 
-for (const binary of [
-  "Start Halieus Game Room.ico",
-  "Restart Halieus Game Room.ico",
-  "Close Halieus Game Room.ico",
-  "Update Halieus Website.ico",
-  "HGR PowerShell.ico",
+const palette = read("assets/branding/references/HGR_ICON_PALETTE.md");
+for (const [role, colour] of [
+  ["Main Halieus", "#F4C430"],
+  ["Start", "#22C55E"],
+  ["Restart", "#F59E0B"],
+  ["Close", "#EF4444"],
+  ["Update", "#38BDF8"],
+  ["PowerShell", "#64748B"],
+  ["OpenShard", "#A855F7"],
+  ["HGR Control", "#4F7BFE"],
 ]) {
-  assert.ok(
-    existsSync(resolve(launcherRoot, binary)),
-    `Legacy compatibility launcher asset is missing: ${binary}`,
-  );
+  assert.ok(palette.includes(role), `${role} must remain documented in the icon palette`);
+  assert.ok(palette.includes(colour), `${role} palette contract must retain ${colour}`);
 }
 
 const generator = read("scripts/windows/generate-launcher-icons.ps1");
-assert.match(generator, /server\\data\\runtime\\launcher-icons/);
-assert.match(generator, /main = '#F4C430'/);
-assert.match(generator, /control = '#4F7BFE'/);
-assert.match(generator, /openshard = '#A855F7'/);
-assert.match(generator, /update = '#38BDF8'/);
-assert.doesNotMatch(
-  generator,
-  /assets\\branding\\launchers\\generated-preview/,
-  "Runtime launcher generator must no longer target the obsolete preview folder",
-);
+assert.match(generator, /assets\\branding\\references/, "Launcher exporter must source approved reference PNGs");
+assert.match(generator, /HGR Start\.png/, "Launcher exporter must map Start to its approved PNG");
+assert.match(generator, /HGR Control\.png/, "Launcher exporter must map Control to its approved PNG");
+assert.doesNotMatch(generator, /Draw-HalieusH|Draw-HgrBadge|New-RoundedRectanglePath|Mix-HgrColour/i, "Launcher exporter must not redraw approved icon artwork");
 
-const shortcuts = read("scripts/windows/launcher-shortcuts.ps1");
-assert.match(shortcuts, /RuntimeLauncherIconRoot/);
-assert.match(shortcuts, /HGR - Control Mobile\.lnk/);
-assert.match(shortcuts, /& \$IconGenerator/);
+assert.ok(!existsSync(resolve(root, "assets/branding/icon-sets/reference-faithful")), "Deprecated reconstructed launcher family must stay removed");
+assert.ok(!existsSync(resolve(root, "assets/branding/icon-sets/alternate-work-generated")), "Deprecated work-generated launcher family must stay removed");
+assert.ok(!existsSync(resolve(root, "assets/branding/launchers")), "Duplicate tracked launcher-art folder must stay removed");
+assert.ok(!existsSync(resolve(root, "client/public/brand/launcher")), "Generated web launcher duplicate folder must stay removed");
 
-console.log(
-  `PASS canonical branding: ${referenceNames.length} references, ${launcherSources.length} launcher SVG sources`,
-);
+console.log(`PASS reference-PNG launcher authority: ${referenceNames.length} reference files`);
