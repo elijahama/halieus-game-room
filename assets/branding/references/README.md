@@ -14,21 +14,23 @@ The written geometry and palette contract is:
 
 ## Authority rule
 
-Reference artwork establishes the intended look, but production identity is now implemented through the canonical icon system rather than by copying one historical rendered file verbatim.
+For **launcher artwork**, approved reference PNGs are finished source artwork, not merely inspiration. Once a PNG is selected for a launcher role, production should use that artwork as-is and only convert/export it as needed.
 
-The active contract is:
+The launcher contract is:
 
 ```text
-approved visual reference: HGR ICON - CONTROL UPDATE
+approved PNG in assets/branding/references
         ↓
-canonical clean block H geometry
+role mapping
         ↓
-semantic role colours + separate corner badges
+lossless/resized PNG export when required
         ↓
-reviewable SVG sources
-        ↓
-PWA/browser SVG identity or generated Windows runtime exports
+ICO conversion for Windows shortcut use
 ```
+
+Do **not** redraw launcher H geometry, badges, gradients, sheen, rims or shadows in code.
+
+Themeable website glyphs may still use vectors where needed, but they do not override approved launcher PNG artwork.
 
 A newly approved reference added to this folder must be reviewed and, when it changes the accepted direction, the canonical source contract and regressions must be updated deliberately.
 
@@ -44,11 +46,11 @@ Reviewable launcher SVG sources live under:
 
 `assets/branding/launchers/`
 
-Owner-machine PNG/ICO shortcut artwork is generated from the approved geometry/role system into ignored runtime state:
+Owner-machine PNG/ICO shortcut artwork is exported from the approved reference PNG role mapping into ignored runtime state:
 
 `server/data/runtime/launcher-icons/`
 
-This keeps the desktop family synchronized without making generated binaries the design authority.
+The approved reference PNG is the design authority. Runtime PNG/ICO files are only delivery formats.
 
 Legacy tracked ICOs may remain for compatibility with older packaging paths. They do not override the canonical SVG/runtime pipeline.
 
@@ -67,9 +69,9 @@ If the icon family needs changing:
 
 1. inspect the complete current reference set;
 2. identify the applicable approved reference;
-3. update the canonical H / role contract only when the visual decision requires it;
-4. update the reviewable SVG sources and generator;
-5. visually inspect the resulting desktop/PWA icons;
+3. select or add the exact approved PNG for each changed launcher role;
+4. update the role mapping/export pipeline without redrawing the artwork;
+5. visually inspect the resulting desktop/PWA icons against the source PNG;
 6. update regressions/documentation with the approved result.
 
-**Human-approved reference direction controls the canonical system; generated output must follow that system.**
+**Human-approved reference PNG artwork controls launcher output; generated/exported files must reproduce it, not reinterpret it.**

@@ -112,7 +112,7 @@ Light platform themes.
 
 ## Launcher Family
 
-Launcher icons use the same H alignment and geometry.
+Launcher icons are sourced from the approved rendered PNG family in `assets/branding/references/`.
 
 - Start
 - Restart
@@ -122,7 +122,7 @@ Launcher icons use the same H alignment and geometry.
 - OpenShard TUI
 - HGR Control Mobile
 
-Their action motifs may differ, but the H must remain fixed.
+For launchers, the selected PNG is final artwork. Export tooling may convert PNG → ICO but must not independently redraw the H, badge, sheen, rim, shadow or colour treatment.
 
 ### Launcher / utility colours
 
@@ -139,7 +139,7 @@ Role colours are semantic and fixed for the owner-tool family:
 
 OpenShard owns purple. Update owns light blue. HGR Control must not reuse either role colour.
 
-Utility icons use the same clean block H plus the approved role motif. Control retains its separate white gear mark; role artwork must not distort, cap, taper or cut into the H geometry.
+Utility launcher icons use the approved rendered reference family. HGR Control retains its separate Control motif when the final Control reference PNG is approved.
 
 ---
 
@@ -171,7 +171,8 @@ Installed app identity now comes from the canonical vector family rather than a 
 - HGR Control installs from its separate `server/control-ui/control-icon.svg`.
 - The in-app Halieus mark still uses the canonical H geometry and may respond to the player's saved logo treatment.
 - Launcher/install icons use fixed product/role colours; runtime themes must not recolour an already-installed app identity.
-- PNG/ICO exports are compatibility outputs generated from the canonical SVG/role definitions, not independent artwork.
+- For website/PWA themeable identity, SVG remains appropriate.
+- For Windows launcher identity, PNG/ICO exports must come from approved reference PNG artwork rather than an independently redrawn SVG/role approximation.
 
 ---
 

@@ -1,19 +1,33 @@
 # HGR Icon Sets
 
-The runtime/default icon set is **Reference Faithful**.
+This folder contains runtime glyphs and historical icon material. It is **not** the launcher artwork authority.
 
-- `reference-faithful/` — approved current artwork and launcher vectors.
-- `alternate-work-generated/` — preserved Part 18 Work-generated variants. Kept as an option, not the default.
-- `legacy/` — historical HGR/game icon artwork kept for archive and future optional use.
-- `glyphs/` — canonical H geometry. Web logo variants reuse this exact geometry.
-- `../launchers/` — frozen Windows launcher exports (.ico) and their current source SVGs.
-- `../references/` — original visual reference boards and generated reference artwork. Keep this folder intact.
+## Current authority
+
+`../references/` contains the human-approved rendered icon artwork and palette contract.
+
+See:
+
+- `../references/HGR_ICON_PALETTE.md`
+- `../references/HGR_LOGO_SYSTEM_REFERENCE.md`
+
+## What remains here
+
+- `glyphs/` — functional/themeable H glyph assets used by website/runtime vector surfaces.
+- `legacy/` — historical game/brand assets retained only when an older runtime or archive still needs them.
+- `alternate-work-generated/` — deprecated experimental output; not approved for launcher use.
+- `reference-faithful/` — deprecated reconstructed launcher set; not approved for launcher use.
+
+The deprecated folders are candidates for removal after the final launcher PNG mapping is locked and regressions confirm no runtime dependency remains.
+
+## Launcher rule
+
+Do not source Windows launcher art from `alternate-work-generated/` or `reference-faithful/`.
+
+Approved launcher art comes from the PNGs in `../references/` and may be converted to ICO without visual reinterpretation.
 
 ## Colour contract
 
-Functional web/logo vectors use true black (`#000000`) or true white (`#FFFFFF`) for the H/foreground, never navy as a substitute.
-Theme changes recolour runtime logo layers; Windows launcher exports remain fixed branded assets.
+Semantic role base colours are defined in `../references/HGR_ICON_PALETTE.md`.
 
-## Theme contract
-
-**Mono Minimal** is a website theme, not an icon-style mode. Icon history remains organized here independently of website theme selection.
+Rendered reference PNGs intentionally contain lighter/darker pixels from sheen and shading. Do not flatten them to one solid hex value.
