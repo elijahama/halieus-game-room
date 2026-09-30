@@ -74,41 +74,11 @@ function Draw-HalieusH {
         [Parameter(Mandatory = $true)][System.Drawing.Brush]$Brush
     )
 
-    # Exact 4x rendering of the approved 64-unit Reference Faithful H.
-    # Alternate fill preserves the internal reference cut/tail.
-    $path = [System.Drawing.Drawing2D.GraphicsPath]::new([System.Drawing.Drawing2D.FillMode]::Alternate)
-    try {
-        $path.StartFigure()
-        $path.AddLine(48, 60, 108, 60)
-        $path.AddLine(108, 60, 96, 76)
-        $path.AddLine(96, 76, 96, 112)
-        $path.AddLine(96, 112, 160, 112)
-        $path.AddLine(160, 112, 160, 76)
-        $path.AddLine(160, 76, 148, 60)
-        $path.AddLine(148, 60, 208, 60)
-        $path.AddLine(208, 60, 196, 76)
-        $path.AddLine(196, 76, 196, 184)
-        $path.AddLine(196, 184, 208, 200)
-        $path.AddLine(208, 200, 148, 200)
-        $path.AddLine(148, 200, 124, 216)
-        $path.AddBezier(124, 216, 102.6667, 229.3333, 92, 224, 92, 200)
-        $path.AddLine(92, 200, 48, 200)
-        $path.AddLine(48, 200, 60, 184)
-        $path.AddLine(60, 184, 60, 76)
-        $path.CloseFigure()
-
-        $path.StartFigure()
-        $path.AddBezier(108, 140, 102.6667, 137.3333, 100, 140.6667, 100, 148)
-        $path.AddLine(100, 148, 100, 200)
-        $path.AddBezier(100, 200, 100, 208, 104, 209.3333, 112, 204)
-        $path.AddLine(112, 204, 152, 176)
-        $path.AddBezier(152, 176, 160, 170.6667, 160, 165.3333, 152, 160)
-        $path.CloseFigure()
-
-        $Graphics.FillPath($Brush, $path)
-    } finally {
-        $path.Dispose()
-    }
+    # Exact 4x rendering of the approved HGR ICON - CONTROL UPDATE H:
+    # straight block stems, flat ends and a centred bridge.
+    $Graphics.FillRectangle($Brush, 72, 60, 32, 136)
+    $Graphics.FillRectangle($Brush, 152, 60, 32, 136)
+    $Graphics.FillRectangle($Brush, 104, 112, 48, 32)
 }
 
 function Draw-HgrBadge {
