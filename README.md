@@ -683,7 +683,7 @@ A standalone 3.6.2 release note is not preserved in the current public archive; 
 | **4.1.0** | Added persistent private Guilds: roles, permissions, chat, guild-organised rooms, room history and internal leaderboards. |
 | **4.1.1** | Refined Game Room discovery, guild invitations, ranked presentation and the expanded Dark / Blue / Custom theme system while reducing nested UI scrolling. |
 | **4.5.0** | Consolidated shared theme ownership, Appearance and authentication UI, responsive shell behaviour, reusable pre-game/modal primitives, game-family layout refinement, recovery/lifecycle work and server-authoritative progression foundations. |
-| **4.5.1** | Introduced the Part 19 navigation foundation and the fuller desktop destination hierarchy. Its original mobile-parity model was later superseded by the dedicated 4.5.3 phone app-shell. |
+| **4.5.1** | Established the expanded desktop navigation hierarchy and shared platform destinations. The original mobile-parity approach was later replaced by the dedicated 4.5.3 phone app shell. |
 | **4.5.2** | Added quantified Achievements and Gamer Score, game-native Ranked formats and archive-derived standings for Connect Four, Ludo and Ayo, Join/recovery polish, iPad/touch stability work, theme/logo refinements and hardened browser/PWA identity handling. |
 | **4.5.3** | Reworked phone navigation into a true fixed app shell: **Home · Games · Join · Players · Guilds** on the permanent bottom bar, with Rankings/Watch Game moved to compact top utilities and Inbox/profile kept in the top-right utility area. |
 
