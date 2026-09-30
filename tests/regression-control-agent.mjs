@@ -322,7 +322,7 @@ assert.match(postUpdateClient, /Existing release-aware HGR app window detected/,
 assert.match(postUpdateClient, /Existing HGR window predates release-aware refresh/, "Pre-feature clients must receive one bootstrap restart");
 assert.match(postUpdateClient, /Restart Halieus Game Room\.cmd/, "One-time bootstrap may use the canonical hard Restart fallback");
 assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper may open HGR when no dedicated window is running");
-assert.match(updateLauncher, /FINAL STEP - Refreshing the HGR client/, "Updater must use release-aware client refresh as its final local step");
+assert.match(updateLauncher, /FINAL STEP 2 - Refreshing the HGR client/, "Updater must refresh generated HGR Launchers before the release-aware client handoff");
 
 for (const releasePath of [
   "server/control-ui",
