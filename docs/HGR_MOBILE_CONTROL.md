@@ -372,7 +372,7 @@ From the repository root on the owner PC, start:
 .\Start-HGR-Control-Mobile.cmd
 ```
 
-The spaced `Start HGR Control Mobile.cmd` entrypoint is also available for Explorer/shortcut use.
+The spaced `Start HGR Control.cmd` entrypoint is also available for Explorer/shortcut use.
 
 The mobile launcher:
 
@@ -530,7 +530,7 @@ HGR Control now has its own royal-blue product identity, separate from both Upda
 
 All launcher/app marks now use the same simple canonical H. Utility roles are identified by a small separate corner badge; the H itself has no internal play cut.
 
-The installed Control PWA, Control splash/header and Windows **HGR - Control Mobile** shortcut all use the dedicated Control mark. They must never fall back to the main gold Halieus app icon.
+The installed Control PWA, Control splash/header and Windows **HGR - Control** shortcut all use the dedicated Control mark. They must never fall back to the main gold Halieus app icon.
 
 The Update progress bar uses the Update blue and keeps a continuous shimmer/pulse animation while an operation is active. This means a long-running stage such as Oracle deployment still communicates activity even when the percentage remains unchanged for a while. Reduced-motion preferences suppress the decorative movement.
 
@@ -567,7 +567,7 @@ This bootstrap marker is local owner-machine state and is not committed to Git.
 The next owner-PC/mobile QA sequence is deliberately incremental:
 
 1. update the local repository and pass the normal release/regression/package pipeline;
-2. restart HGR Control Mobile so the new agent/UI source is active;
+2. restart HGR Control so the new agent/UI source is active;
 3. verify the intro resolves correctly;
 4. verify Start after manually closing HGR;
 5. verify Close confirmation and remote close;
