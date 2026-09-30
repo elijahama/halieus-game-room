@@ -253,6 +253,7 @@
           (entry.state === "succeeded"
             ? "Completed successfully"
             : "HGR Control operation");
+        detail.title = detail.textContent;
         time.dateTime = entry.finishedAt || entry.startedAt;
         time.textContent = formatTime(entry.finishedAt || entry.startedAt);
         copy.append(title, detail);
