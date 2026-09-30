@@ -25867,3 +25867,86 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     font-size: 7.5px !important;
   }
 }
+
+
+/* ========================================================================== */
+/* HGR 4.5.3 — polished action surfaces                                       */
+/* Coloured actions keep their semantic/theme colour but gain physical depth.  */
+/* ========================================================================== */
+.halieus-global-join,
+.halieus-continue-row button,
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
+.lobby-shell-v2 .lobby-start-game {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.12) 22%, rgba(255,255,255,0) 48%, rgba(0,0,0,.16) 100%) !important;
+  border-color: color-mix(in srgb,currentColor 18%,transparent) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.34),
+    inset 0 -2px 0 rgba(0,0,0,.16),
+    0 10px 24px rgba(0,0,0,.18) !important;
+  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease !important;
+}
+.halieus-global-join::after,
+.halieus-continue-row button::after,
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary::after,
+.lobby-shell-v2 .lobby-start-game::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 1px 8% auto;
+  height: 42%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0));
+  opacity: .62;
+}
+.halieus-global-join:hover,
+.halieus-continue-row button:hover,
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:hover,
+.lobby-shell-v2 .lobby-start-game:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06) saturate(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.4),
+    inset 0 -2px 0 rgba(0,0,0,.15),
+    0 13px 28px rgba(0,0,0,.22) !important;
+}
+.halieus-global-join:active,
+.halieus-continue-row button:active,
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:active,
+.lobby-shell-v2 .lobby-start-game:active {
+  transform: translateY(1px);
+  filter: brightness(.96);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 4px 10px rgba(0,0,0,.16) !important;
+}
+.halieus-side-nav button.is-active {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 50%, rgba(0,0,0,.07)) !important;
+  box-shadow:
+    inset 3px 0 0 var(--hgr-brand),
+    inset 0 1px 0 rgba(255,255,255,.09),
+    0 5px 14px color-mix(in srgb,var(--hgr-brand) 11%,transparent) !important;
+}
+.halieus-global-join:disabled,
+.halieus-continue-row button:disabled,
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:disabled,
+.lobby-shell-v2 .lobby-start-game:disabled {
+  filter: saturate(.55) brightness(.82);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.09) !important;
+}
+.halieus-global-join:disabled::after,
+.halieus-continue-row button:disabled::after,
+.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:disabled::after,
+.lobby-shell-v2 .lobby-start-game:disabled::after { opacity: .18; }
+
+@media (prefers-reduced-motion: reduce) {
+  .halieus-global-join,
+  .halieus-continue-row button,
+  .lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
+  .lobby-shell-v2 .lobby-start-game { transition: none !important; }
+}
