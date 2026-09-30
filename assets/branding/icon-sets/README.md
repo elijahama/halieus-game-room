@@ -14,11 +14,8 @@ See:
 ## What remains here
 
 - `glyphs/` — functional/themeable H glyph assets used by website/runtime vector surfaces.
-- `legacy/` — historical game/brand assets retained only when an older runtime or archive still needs them.
-- `alternate-work-generated/` — deprecated experimental output; not approved for launcher use.
-- `reference-faithful/` — deprecated reconstructed launcher set; not approved for launcher use.
-
-The deprecated folders are candidates for removal after the final launcher PNG mapping is locked and regressions confirm no runtime dependency remains.
+- `legacy/` — historical game/brand assets retained only as an archive.
+- The old `alternate-work-generated/` and `reference-faithful/` launcher families have been removed. They were duplicate reconstructed art and are no longer valid launcher sources.
 
 ## Launcher rule
 
