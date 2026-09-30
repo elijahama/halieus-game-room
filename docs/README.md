@@ -31,7 +31,8 @@ For the current project story, start with the root [README](../README.md).
 - [Openshard development receipts](OPENSHARD.md)
 - [AI provenance architecture](project/HGR_AI_PROVENANCE_ARCHITECTURE.md)
 - [GitHub workflow](GITHUB_WORKFLOW.md)
-- [HGR Mobile Control](HGR_MOBILE_CONTROL.md) — phone control architecture, security model and guided build
+- [HGR Mobile Control](HGR_MOBILE_CONTROL.md
+- [HGR Control Cloud Foundation](HGR_CONTROL_CLOUD.md)) — phone control architecture, security model and guided build
 
 ### Quality and release
 - [Testing](TESTING.md)
