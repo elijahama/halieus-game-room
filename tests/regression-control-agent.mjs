@@ -238,12 +238,12 @@ assert.match(controlUiJs, /classList\.toggle\("is-close", action === "close"\)/,
 assert.match(controlUiJs, /classList\.toggle\("is-update", action === "update"\)/, "Update confirmation must inherit Update action colour");
 assert.doesNotMatch(controlUiJs, /localStorage|sessionStorage/, "Mobile Control must not persist control credentials in browser storage");
 assert.match(controlManifest, /"display": "standalone"/, "Mobile Control manifest must support standalone installation");
-assert.match(controlManifest, /control-icon\.svg\?v=4\.5\.3-control-h1/, "Installed HGR Control must use the dedicated Control icon");
+assert.match(controlManifest, /control-icon\.svg\?v=4\.5\.3-control-ref1/, "Installed HGR Control must use the dedicated Control icon");
 assert.match(agent, /const controlIconSvg = resolve\(controlUiDirectory, "control-icon\.svg"\)/, "Control Agent must resolve the dedicated Control SVG");
 assert.match(agent, /"\/control-icon\.svg"/, "Control Agent must serve the dedicated Control SVG");
 assert.doesNotMatch(agent, /appIcon192|appIcon512|\/icon-192\.png|\/icon-512\.png/, "Control Agent must not serve the main Halieus app icon as Control identity");
 assert.doesNotMatch(controlManifest, /app-icon-192|app-icon-512/, "HGR Control must never reuse the main Halieus app icon");
-assert.match(controlUiHtml, /control-icon\.svg\?v=4\.5\.3-control-h1/, "Control splash/header must use the dedicated Control icon");
+assert.match(controlUiHtml, /control-icon\.svg\?v=4\.5\.3-control-ref1/, "Control splash/header must use the dedicated Control icon");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(launcherIconGenerator, /start = '#22C55E'/, "Launcher family must retain Start green");
 assert.match(launcherIconGenerator, /restart = '#F59E0B'/, "Launcher family must retain Restart orange");
