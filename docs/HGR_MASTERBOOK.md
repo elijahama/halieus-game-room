@@ -38,6 +38,10 @@ A portfolio-safe description is:
 
 See [AI-assisted development](AI_ASSISTED_DEVELOPMENT.md).
 
+## HGR Control Cloud Foundation
+
+HGR Control now has a documented cloud-relay foundation alongside the verified private Tailscale route. The cloud design keeps the owner PC as the executor, requires an outbound authenticated PC connection, and permits only the fixed HGR Control action set. See [HGR Control Cloud Foundation](HGR_CONTROL_CLOUD.md).
+
 ## 3. Runtime architecture
 
 HGR uses a server-authoritative multiplayer model.
