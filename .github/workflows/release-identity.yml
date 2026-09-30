@@ -59,6 +59,9 @@ jobs:
       - name: Run HGR regression chain
         run: npm run test:regression
 
+      - name: Enforce npm high/critical security gate
+        run: npm audit --audit-level=high
+
       - name: Generate exact HGR release identity
         run: npm run prepare:release
 
