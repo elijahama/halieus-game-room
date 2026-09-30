@@ -69,6 +69,7 @@ assert.ok(recoveryStart < updater.indexOf("STEP 2 - Preparing release identity")
 assert.match(updater,/for %%F in \("assets\/branding\/Halieus Game Room\.ico" "assets\/branding\/Halieus Game Room\.png"\) do \(/,"Updater must protect the canonical base brand assets");
 assert.match(updater,/git ls-tree -r --name-only HEAD -- "assets\/branding\/launchers" "assets\/branding\/references"/,"Updater must derive the protected launcher/reference inventory from the current tracked HEAD");
 assert.match(updater,/if not exist "%%F"[\s\S]*?git restore --source=HEAD --staged --worktree -- "%%F"/,"Updater must restore only missing tracked protected assets");
+assert.match(updater,/:PAUSE_EXIT[\s\S]*?git restore --staged --worktree -- RELEASE\.json shared\/release\.ts/s,"Failed update runs must clean generated release identity before exiting");
 
 assert.match(guilds,/id: "members", label: "Members", icon: "players"/,"Guild Members tab must use the shared HGR players SVG icon");
 assert.match(guilds,/<HgrIcon name=\{tab\.icon\} size=\{16\} \/>/,"Guild tabs must render through the shared HGR icon system");
