@@ -11,7 +11,7 @@ Every logo variation must use the exact same:
 - dimensions
 - padding
 
-The canonical H follows the approved **Reference Faithful** silhouette. Its distinctive internal play-cut/tail detail is part of the approved H and must not be simplified away. Utility roles may add their role motif without redrawing the underlying H.
+The canonical H follows the saved **`HGR ICON - CONTROL UPDATE`** reference: two straight block stems with flat ends and one centred horizontal bridge. It contains no play-cut/tail and no decorative serif/cap geometry. Utility roles add their role motif separately without redrawing the H.
 
 Do not redraw or resize the H independently between variants.
 
@@ -139,7 +139,7 @@ Role colours are semantic and fixed for the owner-tool family:
 
 OpenShard owns purple. Update owns light blue. HGR Control must not reuse either role colour.
 
-Utility icons use the canonical Reference Faithful H plus the approved role motif. Control retains its separate white gear mark; role artwork must not replace or simplify the H geometry.
+Utility icons use the same clean block H plus the approved role motif. Control retains its separate white gear mark; role artwork must not distort, cap, taper or cut into the H geometry.
 
 ---
 
@@ -227,7 +227,8 @@ Examples:
 - All H glyphs use one canonical geometry.
 - Theme changes alter colour, not proportions.
 - Accessibility contrast may override a theme colour when required.
-- Detailed rendered icons are references, not the source of runtime geometry.
+- `HGR ICON - CONTROL UPDATE` is the current human-approved geometry reference.
+- Detailed older rendered icons remain historical references and do not override it.
 
 
 ## Permutation set
