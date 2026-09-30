@@ -120,7 +120,7 @@ assert.match(agent, /request\.method === "POST" && requestPath === "\/api\/actio
 assert.match(agent, /request\.method === "POST" && requestPath === "\/api\/actions\/restart"/, "Restart must be exposed only through the fixed restart endpoint");
 assert.match(agent, /request\.method === "POST" && requestPath === "\/api\/actions\/close"/, "Close must use a fixed authenticated endpoint");
 assert.match(agent, /request\.method === "POST" && requestPath === "\/api\/actions\/update"/, "Update must use a fixed authenticated endpoint");
-assert.match(agent, /request\.method === "POST" && request\.url === "\/api\/confirm"/, "Confirmation actions must use a dedicated fixed confirmation endpoint");
+assert.match(agent, /request\.method === "POST" && requestPath === "\/api\/confirm"/, "Confirmation actions must use a dedicated fixed confirmation endpoint");
 assert.match(agent, /ACTION_CONFIRMATION_TTL_MS = 30 \* 1000/, "Close and Update confirmations must be short lived");
 assert.match(agent, /consumeActionConfirmation\(request, "close", body\)/, "Close must consume a one-time server confirmation");
 assert.match(agent, /consumeActionConfirmation\(request, "update", body\)/, "Update must consume a one-time server confirmation");
@@ -140,7 +140,7 @@ assert.match(agent, /hgr-control-audit\.ndjson/, "Mutable actions must write a d
 assert.match(agent, /state: "running"/, "Restart audit must record operation start");
 assert.match(agent, /state: "succeeded"/, "Restart audit must record success");
 assert.match(agent, /state: "failed"/, "Restart audit must record failure");
-assert.match(agent, /request\.method === "GET" && request\.url === "\/api\/logs"/, "Authenticated audit log endpoint must exist");
+assert.match(agent, /request\.method === "GET" && requestPath === "\/api\/logs"/, "Authenticated audit log endpoint must exist");
 assert.doesNotMatch(agent, /execFileAsync\([^,]+,\s*request\./s, "Request data must never become an executable or command path");
 assert.doesNotMatch(agent, /restartScript\s*=\s*request\./, "Restart script path must never come from the request");
 
@@ -383,7 +383,8 @@ for (const packagedControlFile of [
   "server/control-ui/control.js",
   "server/control-ui/manifest.webmanifest",
   "server/control-ui/sw.js",
-  "server/control-ui/control-icon.svg",
+  "server/control-ui/control-icon.png",
+  "server/control-ui/offline.html",
 ]) {
   assert.ok(
     oraclePackageRegression.includes(packagedControlFile),
