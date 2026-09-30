@@ -480,6 +480,9 @@ exit 0
 
 :PAUSE_EXIT
 echo.
+rem A failed validation/build must not leave generated release identity dirty.
+rem These files are regenerated from canonical source on every update attempt.
+git restore --staged --worktree -- RELEASE.json shared/release.ts >nul 2>&1
 if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
     popd
     endlocal
