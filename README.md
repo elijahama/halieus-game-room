@@ -6,7 +6,7 @@
 **Frontend:** React · TypeScript · Vite  
 **Backend:** Node.js · Express · Socket.IO  
 **Development model:** Human-directed, AI-assisted engineering  
-**Created and directed by Elijah Amadasun**
+**Created and directed by Elijah-Baptiste Amadasun**
 
 Halieus Game Room (HGR) began as one large property-trading board game and grew into a shared multiplayer platform. The project now focuses on the systems that make many different games feel like part of the same product: accounts, persistent guilds, rooms, invitations, reconnect/recovery, spectators, timers, results, responsive layouts, AI players and production deployment.
 
@@ -427,7 +427,7 @@ Many changes begin with an observed multiplayer problem, screenshot or rule inco
 
 ## My role
 
-My role in HGR covers **product direction, technical project development, systems specification, gameplay design and QA**. I am **Elijah Amadasun**, the creator and project owner of Halieus Game Room.
+My role in HGR covers **product direction, technical project development, systems specification, gameplay design and QA**. I am **Elijah-Baptiste Amadasun**, the creator and project owner of Halieus Game Room.
 
 I am responsible for:
 
