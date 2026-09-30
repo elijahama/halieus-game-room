@@ -222,7 +222,8 @@ assert.match(controlMobileHelper, /already listening on 127\.0\.0\.1:\$localPort
 assert.match(controlMobileHelper, /You can close this window\. HGR Control will keep running\./, "Mobile launcher must explicitly hand lifetime ownership to the background process");
 assert.match(controlMobileHelper, /function Copy-HgrControlLink/, "Mobile launcher must provide a stable phone-link clipboard helper");
 assert.match(controlMobileHelper, /Phone link copied to clipboard\./, "Mobile launcher must tell the owner when the phone URL is ready to paste");
-assert.match(launcherShortcuts, /ControlMobile = 'HGR - Control\.lnk'/, "Launcher refresh must create one obvious HGR Control start shortcut");
+assert.match(launcherShortcuts, /ControlMobile = 'HGR - Control Mobile\.lnk'/, "Launcher refresh must retain the established HGR Control Mobile shortcut");
+assert.match(launcherShortcuts, /Control = 'HGR - Control\.lnk'/, "Launcher refresh must also create one obvious short HGR Control alias");
 assert.match(launcherShortcuts, /ControlStop = 'HGR - Stop Control\.lnk'/, "Launcher refresh must create an explicit HGR Control stop shortcut");
 assert.match(launcherShortcuts, /Start HGR Control Mobile\.cmd/, "Control start shortcut must delegate to the stable background launcher");
 assert.match(launcherShortcuts, /Stop HGR Control Mobile\.cmd/, "Control stop shortcut must delegate to the stable background stop launcher");
