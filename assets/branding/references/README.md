@@ -19,9 +19,9 @@ Reference artwork establishes the intended look, but production identity is now 
 The active contract is:
 
 ```text
-approved visual reference
+approved visual reference: HGR ICON - CONTROL UPDATE
         ↓
-canonical Reference Faithful H geometry
+canonical clean block H geometry
         ↓
 semantic role colours + separate corner badges
         ↓
@@ -34,9 +34,9 @@ A newly approved reference added to this folder must be reviewed and, when it ch
 
 ## Canonical geometry
 
-All functional Halieus identities use the same **Reference Faithful** H taken from the approved icon set. Its internal play-cut/tail detail is intentional reference geometry and must be preserved.
+All functional Halieus identities use the same H shown by **`HGR ICON - CONTROL UPDATE`**: straight vertical stems, flat top/bottom ends and one centred horizontal bridge.
 
-Utility roles may add their approved motif, but must not simplify, replace or independently redraw the H.
+The old play-cut/tail H and the later pseudo-serif/capped H are not current geometry. Utility roles may add their approved motif, but must not alter the H itself.
 
 ## Windows launcher outputs
 
