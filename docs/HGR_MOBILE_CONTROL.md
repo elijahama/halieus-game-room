@@ -451,6 +451,8 @@ Foundation:
 
 The launcher-created token and pairing code are runtime credentials. They are never committed to Git.
 
+On a fresh Control start, the Windows launcher now also opens a local **pairing card** containing the private phone URL, a locally generated QR code and the short-lived pairing code. The QR is produced by HGR's already-installed local `qrcode` package; no URL or pairing data is sent to a third-party QR service. The phone URL is still copied to the Windows clipboard as a fallback.
+
 The mobile launcher configures its Tailscale Serve route, starts the Control Agent as a hidden Windows background process, records only local lifecycle metadata under the ignored `server/data/runtime/` directory, and then exits. Closing the launcher window therefore no longer disconnects HGR Control.
 
 The default public-facing tailnet port is `8443`; the Control Agent itself remains on loopback port `43127`. Use `.\Stop-HGR-Control-Mobile.cmd` to explicitly stop the recorded background agent, remove the private Serve route and delete the runtime bearer credential. Starting Control again creates a new short-lived pairing code; an already-running controller is left intact rather than silently replacing its sessions.

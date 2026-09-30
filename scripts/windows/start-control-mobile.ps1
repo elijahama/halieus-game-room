@@ -12,6 +12,8 @@ $tokenPath = Join-Path $runtimeDir ".hgr-control-token"
 $statePath = Join-Path $runtimeDir "hgr-control-mobile-state.json"
 $stdoutPath = Join-Path $runtimeDir "hgr-control-mobile.out.log"
 $stderrPath = Join-Path $runtimeDir "hgr-control-mobile.err.log"
+$pairingCardPath = Join-Path $runtimeDir "hgr-control-pairing.html"
+$pairingQrPath = Join-Path $runtimeDir "hgr-control-pairing.svg"
 $localPort = 43127
 $target = "http://127.0.0.1:$localPort"
 
@@ -66,6 +68,74 @@ function Copy-HgrControlLink {
     } catch {}
 
     return $false
+}
+
+function Show-HgrControlPairingCard {
+    param(
+        [Parameter(Mandatory = $true)][string]$Url,
+        [Parameter(Mandatory = $true)][string]$PairCode
+    )
+
+    try {
+        $qrcodeCandidates = @(
+            (Join-Path $projectRoot "node_modules\qrcode\bin\qrcode"),
+            (Join-Path $projectRoot "client\node_modules\qrcode\bin\qrcode")
+        )
+        $qrcodeCli = $qrcodeCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+        if (-not $qrcodeCli) {
+            return $false
+        }
+
+        & node $qrcodeCli -t svg -o $pairingQrPath $Url | Out-Null
+        if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $pairingQrPath)) {
+            return $false
+        }
+
+        $safeUrl = [System.Net.WebUtility]::HtmlEncode($Url)
+        $safeCode = [System.Net.WebUtility]::HtmlEncode($PairCode)
+        $html = @"
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HGR Control Pairing</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,Segoe UI,Arial,sans-serif;background:#080d18;color:#f5f7ff}
+body{min-height:100vh;margin:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 0,#18264d 0,#080d18 55%)}
+main{width:min(92vw,520px);padding:30px;border:1px solid #2b3a5c;border-radius:28px;background:linear-gradient(180deg,#121a2c,#0c121f);box-shadow:0 28px 80px #0008}
+.eyebrow{margin:0 0 6px;color:#82a2ff;font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+h1{margin:0 0 8px;font-size:32px}.muted{color:#aab4c8;line-height:1.5}
+.qr{display:grid;place-items:center;margin:22px auto;width:250px;height:250px;border-radius:22px;background:#fff;box-shadow:inset 0 1px #fff,0 12px 30px #0008}
+.qr img{width:220px;height:220px}.code{font-size:32px;font-weight:950;letter-spacing:.18em;text-align:center;color:#6fe29c}
+.url{margin:14px 0;padding:12px;border:1px solid #2b3a5c;border-radius:14px;background:#0a1020;word-break:break-all;color:#dce5ff}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{min-height:46px;border:1px solid #4168d8;border-radius:14px;background:linear-gradient(180deg,#5c82ff,#3559bf);color:#fff;font-weight:850;cursor:pointer;box-shadow:inset 0 1px #ffffff55,inset 0 -2px #0004,0 10px 20px #0005}
+button:active{transform:translateY(1px)}
+</style>
+</head>
+<body>
+<main>
+<p class="eyebrow">Halieus Game Room</p>
+<h1>HGR Control</h1>
+<p class="muted">Scan this QR with your phone while it is on the same tailnet, then enter the pairing code.</p>
+<div class="qr"><img src="hgr-control-pairing.svg" alt="QR code for HGR Control"></div>
+<div class="code">$safeCode</div>
+<div class="url" id="url">$safeUrl</div>
+<div class="actions">
+<button onclick="navigator.clipboard.writeText(document.getElementById('url').textContent)">Copy phone link</button>
+<button onclick="navigator.clipboard.writeText('$safeCode')">Copy pairing code</button>
+</div>
+</main>
+</body>
+</html>
+"@
+        Set-Content -LiteralPath $pairingCardPath -Value $html -Encoding UTF8
+        Start-Process -FilePath $pairingCardPath | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
 }
 
 New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
@@ -258,6 +328,11 @@ if (Copy-HgrControlLink -Url $mobileUrl) {
 Write-Host ""
 Write-Host "Pairing code (valid for 10 minutes):" -ForegroundColor DarkGray
 Write-Host "  $pairCode" -ForegroundColor Green
+if (Show-HgrControlPairingCard -Url $mobileUrl -PairCode $pairCode) {
+    Write-Host "  Pairing card opened with QR code and copy buttons." -ForegroundColor Green
+} else {
+    Write-Host "  QR card unavailable; use the copied link and pairing code above." -ForegroundColor DarkGray
+}
 Write-Host ""
 Write-Host "You can close this window. HGR Control will keep running." -ForegroundColor Green
 Write-Host "To stop the background controller explicitly:" -ForegroundColor DarkGray
