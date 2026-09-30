@@ -11,6 +11,8 @@ const rootPackage = JSON.parse(read("package.json"));
 const serverPackage = JSON.parse(read("server/package.json"));
 const masterbook = read("docs/HGR_MASTERBOOK.md");
 const controlDoc = read("docs/HGR_MOBILE_CONTROL.md");
+const controlCloudContract = read("shared/platform/control-cloud.ts");
+const controlCloudDoc = read("docs/HGR_CONTROL_CLOUD.md");
 const docsIndex = read("docs/README.md");
 const projectReadme = read("README.md");
 const controlStartHelper = read("scripts/windows/start-control-agent.ps1");
@@ -272,6 +274,13 @@ assert.match(controlCss, /--control: #4F7BFE/, "HGR Control must use dedicated c
 assert.match(controlCss, /progressSheen/, "Update progress must visibly animate while the percentage is unchanged");
 assert.match(controlDoc, /Tailscale Serve/, "Control documentation must record the private HTTPS proxy design");
 assert.match(controlDoc, /HttpOnly; Secure; SameSite=Strict/, "Control documentation must record the mobile session boundary");
+assert.match(controlCloudContract, /HGR_CONTROL_CLOUD_PROTOCOL = "hgr-control-cloud-v1"/, "Cloud Control must have a versioned shared protocol");
+for (const action of ["status","start","restart","close","update","logs"]) {
+  assert.match(controlCloudContract, new RegExp(`"${action}"`), `Cloud Control contract must retain allow-listed ${action}`);
+}
+assert.doesNotMatch(controlCloudContract, /(?:shell|executable|argv|args|command)\s*:/i, "Cloud Control contract must never expose arbitrary execution fields");
+assert.match(controlCloudDoc, /Owner PC Control Agent/, "Cloud Control docs must keep the owner PC as executor");
+assert.match(controlCloudDoc, /outbound authenticated channel/, "Cloud Control must use an outbound owner-PC relay connection");
 assert.match(masterbook, /real-device verified for pairing, status, logs, session persistence\/invalidation and Restart/i, "Masterbook must record the completed real-device mobile security QA milestone");
 
 assert.match(maintenanceContract, /HalieusMaintenanceNotice/, "Shared platform must define the maintenance-notice contract");
