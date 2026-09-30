@@ -19,9 +19,9 @@ assert.ok(
   "Canonical HGR logo-system reference must remain present",
 );
 
-const simpleH = "M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z";
+const referenceH = "M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z";
 const logoReference = read("assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md");
-assert.match(logoReference, /no internal play button\/cut-out/i);
+assert.match(logoReference, /Reference Faithful/i);
 assert.match(logoReference, /HGR Control — royal control blue `#4F7BFE`/);
 assert.match(logoReference, /Update — light blue `#38BDF8`/);
 assert.match(logoReference, /OpenShard — purple `#A855F7`/);
@@ -39,9 +39,8 @@ const launcherSources = [
 for (const [name, colour] of launcherSources) {
   assert.ok(launcherNames.includes(name), `Canonical launcher source is missing: ${name}`);
   const source = read(`assets/branding/launchers/${name}`);
-  assert.ok(source.includes(simpleH), `${name} must use the canonical simple H`);
+  assert.ok(source.includes(referenceH), `${name} must use the canonical Reference Faithful H`);
   assert.ok(source.includes(colour), `${name} must retain its semantic role colour ${colour}`);
-  assert.doesNotMatch(source, /Q23 59|M27 35|L38 44/, `${name} must not reintroduce the retired play-tail geometry`);
 }
 
 for (const binary of [
