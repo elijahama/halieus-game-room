@@ -42,6 +42,19 @@ function Get-HgrControlListener {
     }
 }
 
+function Test-HgrControlEndpoint {
+    param([Parameter(Mandatory = $true)][string]$Url)
+
+    try {
+        $response = Invoke-WebRequest -UseBasicParsing -Uri $Url -Method Get -TimeoutSec 4 -Headers @{
+            "Cache-Control" = "no-store"
+        }
+        return $response.StatusCode -eq 200
+    } catch {
+        return $false
+    }
+}
+
 function Remove-HgrControlEnvironment {
     Remove-Item Env:HGR_CONTROL_TOKEN -ErrorAction SilentlyContinue
     Remove-Item Env:HGR_CONTROL_PAIR_CODE -ErrorAction SilentlyContinue
@@ -143,7 +156,7 @@ New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
 if (-not (Test-Path -LiteralPath $statePath)) {
     $legacyListener = Get-HgrControlListener
     if ($legacyListener) {
-        throw "An HGR Control Agent is already listening on 127.0.0.1:$localPort without background lifecycle state. Close the previous foreground Control window, then run Start HGR Control Mobile again."
+        throw "An HGR Control Agent is already listening on 127.0.0.1:$localPort without background lifecycle state. Close the previous foreground Control window, then run Start HGR Control again."
     }
 }
 
@@ -155,7 +168,7 @@ if (Test-Path -LiteralPath $statePath) {
         $existingListener = Get-HgrControlListener
         if ($existingProcess -and $existingListener -and [int]$existingListener.OwningProcess -eq $existingPid) {
             Write-Host ""
-            Write-Host "HGR Control Mobile is already running in the background." -ForegroundColor Green
+            Write-Host "HGR Control is already running in the background." -ForegroundColor Green
             Write-Host "Private HTTPS URL (tailnet only):" -ForegroundColor DarkGray
             Write-Host "  $($existingState.mobileUrl)" -ForegroundColor Cyan
             if (Copy-HgrControlLink -Url ([string]$existingState.mobileUrl)) {
@@ -163,8 +176,8 @@ if (Test-Path -LiteralPath $statePath) {
             }
             Write-Host ""
             Write-Host "To create a fresh pairing code, stop Control first and start it again:" -ForegroundColor DarkGray
-            Write-Host "  .\Stop-HGR-Control-Mobile.cmd" -ForegroundColor DarkGray
-            Write-Host "  .\Start-HGR-Control-Mobile.cmd" -ForegroundColor DarkGray
+            Write-Host "  .\Stop HGR Control Mobile.cmd" -ForegroundColor DarkGray
+            Write-Host "  .\Start-HGR-Control.cmd" -ForegroundColor DarkGray
             exit 0
         }
     } catch {
@@ -181,13 +194,13 @@ if ($tailscaleCommand) {
 } else {
     $tailscale = Join-Path $env:ProgramFiles "Tailscale\tailscale.exe"
     if (-not (Test-Path -LiteralPath $tailscale)) {
-        throw "Tailscale CLI was not found. Install/start Tailscale on this PC before using HGR Control Mobile."
+        throw "Tailscale CLI was not found. Install/start Tailscale on this PC before using HGR Control."
     }
 }
 
 $statusRaw = & $tailscale status --json 2>&1 | Out-String
 if ($LASTEXITCODE -ne 0) {
-    throw "Tailscale is not ready. Open Tailscale, sign in, and try HGR Control Mobile again."
+    throw "Tailscale is not ready. Open Tailscale, sign in, and try HGR Control again."
 }
 try {
     $tailscaleStatus = $statusRaw | ConvertFrom-Json
@@ -197,7 +210,7 @@ try {
 
 $dnsName = [string]$tailscaleStatus.Self.DNSName
 if ([string]::IsNullOrWhiteSpace($dnsName)) {
-    throw "This Tailscale device has no MagicDNS name. HGR Control Mobile needs the private HTTPS Serve hostname."
+    throw "This Tailscale device has no MagicDNS name. HGR Control needs the private HTTPS Serve hostname."
 }
 $dnsName = $dnsName.Trim().TrimEnd('.')
 $mobileUrl = "https://" + $dnsName + ":" + $HttpsPort + "/"
@@ -260,7 +273,7 @@ if (-not $tsxCli) {
     & $tailscale serve "--https=$HttpsPort" off | Out-Null
     Remove-HgrControlEnvironment
     Remove-Item -LiteralPath $tokenPath -Force -ErrorAction SilentlyContinue
-    throw "The local tsx runtime is missing. Run npm install before starting HGR Control Mobile."
+    throw "The local tsx runtime is missing. Run npm install before starting HGR Control."
 }
 
 Remove-Item -LiteralPath $stdoutPath -Force -ErrorAction SilentlyContinue
@@ -297,6 +310,27 @@ try {
         throw "HGR Control Agent did not start listening on 127.0.0.1:$localPort."
     }
 
+    $localPingUrl = "$target/api/ping"
+    $mobilePingUrl = $mobileUrl + "api/ping"
+
+    $localReady = $false
+    for ($attempt = 0; $attempt -lt 8 -and -not $localReady; $attempt++) {
+        $localReady = Test-HgrControlEndpoint -Url $localPingUrl
+        if (-not $localReady) { Start-Sleep -Milliseconds 250 }
+    }
+    if (-not $localReady) {
+        throw "HGR Control Agent opened its listener but the local API health check failed."
+    }
+
+    $mobileReady = $false
+    for ($attempt = 0; $attempt -lt 12 -and -not $mobileReady; $attempt++) {
+        $mobileReady = Test-HgrControlEndpoint -Url $mobilePingUrl
+        if (-not $mobileReady) { Start-Sleep -Milliseconds 500 }
+    }
+    if (-not $mobileReady) {
+        throw "HGR Control started locally, but the private Tailscale HTTPS route could not reach /api/ping. The pairing QR was not opened because the phone route is not live."
+    }
+
     $state = [ordered]@{
         schema = 1
         startedAt = [DateTimeOffset]::UtcNow.ToString("o")
@@ -317,7 +351,7 @@ try {
 Remove-HgrControlEnvironment
 
 Write-Host ""
-Write-Host "HGR Control Mobile" -ForegroundColor Yellow
+Write-Host "HGR Control" -ForegroundColor Yellow
 Write-Host "Status:" -ForegroundColor DarkGray
 Write-Host "  Running in the background" -ForegroundColor Green
 Write-Host "Private HTTPS URL (tailnet only):" -ForegroundColor DarkGray
@@ -336,7 +370,7 @@ if (Show-HgrControlPairingCard -Url $mobileUrl -PairCode $pairCode) {
 Write-Host ""
 Write-Host "You can close this window. HGR Control will keep running." -ForegroundColor Green
 Write-Host "To stop the background controller explicitly:" -ForegroundColor DarkGray
-Write-Host "  .\Stop-HGR-Control-Mobile.cmd" -ForegroundColor DarkGray
+Write-Host "  .\Stop HGR Control Mobile.cmd" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "The bearer token is NOT printed. The phone receives only an HttpOnly session cookie after pairing." -ForegroundColor DarkGray
 exit 0
