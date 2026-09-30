@@ -1,4 +1,4 @@
-/** Canonical simple H geometry. All presets and launcher exports share this alignment; utility badges are separate corner marks. */
-export const HGR_H_PATH = "M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z";
+/** Canonical Reference Faithful H geometry. All presets and launcher exports reuse the approved reference silhouette. */
+export const HGR_H_PATH = "M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z";
 export const HGR_VIEWBOX = "0 0 64 64";
 export type HgrLogoPreset = "brand" | "mono-light" | "mono-dark" | "light";
