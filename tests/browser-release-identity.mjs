@@ -58,11 +58,11 @@ try {
   // must carry the current VERSION cache-busting prefix.
   assert.equal(
     await page.locator('#halieus-dynamic-favicon').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-ref1`,
+    `/halieus-mark.svg?v=${version}-brand-h4`,
   );
   assert.equal(
     await page.locator('link[rel="shortcut icon"]').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-ref1`,
+    `/halieus-mark.svg?v=${version}-brand-h4`,
   );
   assert.deepEqual(errors, []);
   console.log(`PASS: rendered Build ${label}; browser/server ${version}; ${release.fingerprint}; cache ${expectedCache}; favicon identity; no page errors`);
