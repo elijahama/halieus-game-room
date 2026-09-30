@@ -9,7 +9,7 @@ $tokenPath = Join-Path $runtimeDir ".hgr-control-token"
 $statePath = Join-Path $runtimeDir "hgr-control-mobile-state.json"
 
 if (-not (Test-Path -LiteralPath $statePath)) {
-    Write-Host "HGR Control Mobile background state was not found." -ForegroundColor Yellow
+    Write-Host "HGR Control background state was not found." -ForegroundColor Yellow
     Write-Host "Nothing was stopped." -ForegroundColor DarkGray
     exit 0
 }
@@ -17,7 +17,7 @@ if (-not (Test-Path -LiteralPath $statePath)) {
 try {
     $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
 } catch {
-    throw "HGR Control Mobile background state could not be read safely."
+    throw "HGR Control background state could not be read safely."
 }
 
 $localPort = [int]$state.localPort
@@ -58,5 +58,5 @@ Remove-Item -LiteralPath $tokenPath -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
-Write-Host "HGR Control Mobile stopped." -ForegroundColor Green
+Write-Host "HGR Control stopped." -ForegroundColor Green
 Write-Host "The background agent, private Serve route and runtime credential have been closed." -ForegroundColor DarkGray
