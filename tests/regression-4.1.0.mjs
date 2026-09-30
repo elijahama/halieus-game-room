@@ -166,10 +166,15 @@ assert.match(projectTimeline,/version: "4\.0\.2"/,'Timeline must include device-
 assert.match(projectTimeline,/version: "4\.1\.0"/,'Timeline must include the current Guilds milestone');
 assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.0\.0 repository import/,'Timeline must disclose the historical-source boundary');
 
-assert.match(launcherGenerator,/generated-preview/,'Optional generated launcher previews must be quarantined from approved icons');
-assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?\$LauncherRoot/s,'Launcher generator must never wipe the approved launcher root');
-assert.match(launcherShortcuts,/client\\public\\brand\\launcher'/,'Shortcut refresh must consume approved launcher assets from the flat launcher folder');
-assert.doesNotMatch(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must never invoke icon generation');
+// The 4.1 launcher safety rule survives the 4.5.3 icon-pipeline redesign:
+ // approved SVG/reference sources stay tracked, while generated Windows exports
+ // are written only to ignored runtime state and are regenerated deliberately.
+assert.match(launcherGenerator,/server\\data\\runtime\\launcher-icons/,'Generated launcher exports must stay in ignored runtime state');
+assert.doesNotMatch(launcherGenerator,/assets\\branding\\launchers\\generated-preview/,'Runtime launcher generation must not write into the approved launcher source tree');
+assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?assets\\branding\\launchers/s,'Launcher generator must never wipe the approved launcher source tree');
+assert.match(launcherShortcuts,/client\\public\\brand\\launcher'/,'Shortcut refresh must retain the tracked flat launcher fallback/source path');
+assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must invoke the canonical runtime icon generator');
+assert.match(launcherShortcuts,/& \$IconGenerator/,'Shortcut refresh must execute the fixed canonical icon generator');
 const launcherDeleteContexts = launcherShortcuts
   .split(/\r?\n/)
   .flatMap((line,index,lines)=>{
@@ -185,7 +190,7 @@ for (const deleteContext of launcherDeleteContexts) {
     'Shortcut refresh must never delete icon artwork',
   );
 }
-assert.match(launcherShortcuts,/without modifying any files/,'Missing launcher icons must fall back without regenerating artwork');
+assert.match(launcherShortcuts,/RuntimeLauncherIconRoot/,'Shortcut refresh must resolve generated launcher artwork from ignored runtime state');
 assert.doesNotMatch(startCmd,/launcher-shortcuts\.ps1/,'Start must never refresh or regenerate launcher assets');
 assert.doesNotMatch(restartCmd,/launcher-shortcuts\.ps1/,'Restart must never refresh or regenerate launcher assets');
 assert.doesNotMatch(closeCmd,/launcher-shortcuts\.ps1/,'Close must never refresh or regenerate launcher assets');
