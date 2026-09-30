@@ -43,5 +43,10 @@
   },
   "devDependencies": {
     "playwright": "^1.63.0"
+  },
+  "author": "Elijah Amadasun",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Laijee27/halieus-game-room.git"
   }
 }
