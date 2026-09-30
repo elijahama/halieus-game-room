@@ -176,7 +176,7 @@ assert.doesNotMatch(controlStartHelper, /Write-Host\s+\$token|Write-Output\s+\$t
 assert.match(controlClientHelper, /ValidateSet\("status", "restart", "logs"\)/, "Local Control client must expose only the approved development actions");
 assert.match(controlClientHelper, /"restart"[\s\S]*?\/api\/actions\/restart/s, "Local Control restart helper must target only the fixed restart endpoint");
 assert.doesNotMatch(controlClientHelper, /Invoke-Expression|Start-Process|cmd\.exe|powershell\.exe/i, "Local Control client must not become a general process runner");
-assert.match(controlLauncher, /start-control-agent\.ps1/i, "Stable HGR Control CMD entrypoint must delegate to the fixed PowerShell helper");
+assert.match(controlLauncher, /start-control-mobile\.ps1/i, "Stable HGR Control CMD entrypoint must start the background phone-capable Control service");
 assert.match(controlLauncherAlias, /call "%~dp0Start HGR Control\.cmd"/i, "PowerShell-safe HGR Control alias must delegate to the canonical spaced launcher");
 assert.match(controlClientEntry, /hgr-control-client\.ps1/i, "Stable HGR Control client entrypoint must delegate to the allow-listed PowerShell client");
 assert.match(controlStartHelper, /HGR-Control\.cmd' status/, "Running agent must print an absolute status client command");
