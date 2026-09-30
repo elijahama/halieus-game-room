@@ -7,11 +7,10 @@ $ErrorActionPreference = 'Stop'
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 
-# Shortcut refresh regenerates runtime ICO/PNG artwork from the canonical
-# Halieus role palette. Tracked source artwork is never overwritten here.
+# Shortcut refresh exports runtime ICO/PNG files directly from approved PNG
+# artwork in assets\branding\references. No launcher art is redrawn here.
 $TrackedGameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $RuntimeLauncherIconRoot = Join-Path $ProjectRoot 'server\data\runtime\launcher-icons'
-$TrackedLauncherIconRoot = Join-Path $ProjectRoot 'client\public\brand\launcher'
 $IconGenerator = Join-Path $ProjectRoot 'scripts\windows\generate-launcher-icons.ps1'
 
 if (-not (Test-Path -LiteralPath $IconGenerator)) {
@@ -47,7 +46,7 @@ $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
 $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
-$ControlMobileScript = Join-Path $ProjectRoot 'Start HGR Control Mobile.cmd'
+$ControlScript = Join-Path $ProjectRoot 'Start HGR Control.cmd'
 $ControlStopScript = Join-Path $ProjectRoot 'Stop HGR Control Mobile.cmd'
 
 $LauncherNames = [ordered]@{
@@ -57,7 +56,6 @@ $LauncherNames = [ordered]@{
     Update = 'HGR - Update Site.lnk'
     PowerShell = 'HGR - PowerShell.lnk'
     OpenShard = 'HGR - OpenShard TUI.lnk'
-    ControlMobile = 'HGR - Control Mobile.lnk'
     Control = 'HGR - Control.lnk'
     ControlStop = 'HGR - Stop Control.lnk'
 }
@@ -68,7 +66,6 @@ $ProjectCloseShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Close
 $ProjectUpdateShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Update
 $ProjectPowerShellShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.PowerShell
 $ProjectOpenShardShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.OpenShard
-$ProjectControlMobileShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlMobile
 $ProjectControlShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Control
 $ProjectControlStopShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlStop
 
@@ -78,7 +75,6 @@ $StartMenuCloseShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.C
 $StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Update
 $StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
 $StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
-$StartMenuControlMobileShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlMobile
 $StartMenuControlShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Control
 $StartMenuControlStopShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlStop
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
@@ -88,28 +84,20 @@ if (-not (Test-Path -LiteralPath $GameRoomIconPath)) {
     throw "Base Halieus icon is missing: $GameRoomIconPath"
 }
 
-function Resolve-HalieusIconPath {
-    param(
-        [Parameter(Mandatory = $true)][string]$Preferred,
-        [Parameter(Mandatory = $true)][string]$Fallback,
-        [Parameter(Mandatory = $true)][string]$Label
-    )
-
-    if (Test-Path -LiteralPath $Preferred) {
-        return $Preferred
+foreach ($requiredIcon in @(
+    $GameRoomIconPath,
+    $StartIconPath,
+    $RestartIconPath,
+    $CloseIconPath,
+    $UpdateIconPath,
+    $PowerShellIconPath,
+    $OpenShardIconPath,
+    $ControlIconPath
+)) {
+    if (-not (Test-Path -LiteralPath $requiredIcon)) {
+        throw "Approved HGR launcher export is missing: $requiredIcon"
     }
-
-    Write-Host "Custom $Label icon not found; using the base Halieus icon without modifying any files." -ForegroundColor DarkYellow
-    return $Fallback
 }
-
-$StartIconPath = Resolve-HalieusIconPath -Preferred $StartIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'start.ico') -Label 'Start'
-$RestartIconPath = Resolve-HalieusIconPath -Preferred $RestartIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'restart.ico') -Label 'Restart'
-$CloseIconPath = Resolve-HalieusIconPath -Preferred $CloseIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'close.ico') -Label 'Close'
-$UpdateIconPath = Resolve-HalieusIconPath -Preferred $UpdateIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'update.ico') -Label 'Update'
-$PowerShellIconPath = Resolve-HalieusIconPath -Preferred $PowerShellIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'powershell.ico') -Label 'PowerShell'
-$OpenShardIconPath = Resolve-HalieusIconPath -Preferred $OpenShardIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'openshard.ico') -Label 'OpenShard TUI'
-$ControlIconPath = Resolve-HalieusIconPath -Preferred $ControlIconPath -Fallback (Join-Path $TrackedLauncherIconRoot 'control.ico') -Label 'Control'
 
 $folderIconConfig = @"
 [.ShellClassInfo]
@@ -183,9 +171,8 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
     $openShard.WindowStyle = 1
     $openShard.Save()
 
-    if (Test-Path -LiteralPath $ControlMobileScript) {
-        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlMobile) -CommandScript $ControlMobileScript -Description 'Start HGR Control in the background and copy the owner phone link' -IconPath $ControlIconPath
-        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Control) -CommandScript $ControlMobileScript -Description 'Start HGR Control in the background and copy the owner phone link' -IconPath $ControlIconPath
+    if (Test-Path -LiteralPath $ControlScript) {
+        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Control) -CommandScript $ControlScript -Description 'Start HGR Control in the background and open the private phone pairing route' -IconPath $ControlIconPath
     }
     if (Test-Path -LiteralPath $ControlStopScript) {
         New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlStop) -CommandScript $ControlStopScript -Description 'Stop the background HGR Control service and private phone route' -IconPath $ControlIconPath
@@ -209,6 +196,7 @@ $LooseShortcutNames = @(
     'HGR PowerShell.lnk',
     'HGR - OpenShard.lnk',
     'HGR - OpenShard TUI.lnk',
+    'HGR - Control Mobile.lnk',
     'Start Mega Board.lnk',
     'Close Mega Board.lnk'
 )
@@ -230,9 +218,7 @@ $CreatedShortcuts = @(
     $StartMenuPowerShellShortcut,
     $StartMenuOpenShardShortcut
 )
-if (Test-Path -LiteralPath $ControlMobileScript) {
-    $CreatedShortcuts += $ProjectControlMobileShortcut
-    $CreatedShortcuts += $StartMenuControlMobileShortcut
+if (Test-Path -LiteralPath $ControlScript) {
     $CreatedShortcuts += $ProjectControlShortcut
     $CreatedShortcuts += $StartMenuControlShortcut
 }
