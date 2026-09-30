@@ -12,6 +12,14 @@ const read = (p) => readFileSync(resolve(root, p), 'utf8');
 // still fail this gate.
 const version = read('VERSION').trim();
 assert.match(version, /^4\.5\.\d+[a-z]?$/, `Approved HGR 4.5.x release intent (got ${version})`);
+
+const packageLockJson = JSON.parse(read('package-lock.json'));
+const engineIoVersion = packageLockJson.packages?.['node_modules/engine.io']?.version;
+assert.ok(engineIoVersion, 'package-lock must contain engine.io');
+assert.ok(
+  /^6\.6\.(?:1[0-9]|[2-9][0-9])$/.test(engineIoVersion),
+  `engine.io must stay on the patched 6.6.10+ line; found ${engineIoVersion}`,
+);
 const manifest = JSON.parse(read('RELEASE.json'));
 const approvedPwaSource = 'assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png';
 const generatedPwaCopy = 'client/public/app-icon-reference.png';
