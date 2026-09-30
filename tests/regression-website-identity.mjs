@@ -6,12 +6,12 @@ const root = resolve(import.meta.dirname, '..');
 const read = p => readFileSync(resolve(root, p), 'utf8');
 const version = read('VERSION').trim();
 const versionRe = version.replaceAll('.', '\\.');
-const path = 'M18 15H26V28H38V15H46V49H38V36H26V49H18Z';
+const path = 'M16 15H25V28H39V15H48V49H39V36H25V49H16Z';
 const iconSetGlyph = read('assets/branding/icon-sets/glyphs/hgr-h.svg');
 assert.ok(iconSetGlyph.includes(path), 'Canonical icon-set H glyph must contain the approved H geometry');
 const sources = ['shared/platform/brand.ts', 'client/index.html', 'client/public/halieus-mark.svg', 'client/public/halieus-app-icon.svg', 'client/public/app-icon.svg'];
 for (const file of sources) {
-  assert.ok(read(file).includes(path), `${file}: canonical CONTROL UPDATE block H required`);
+  assert.ok(read(file).includes(path), `${file}: canonical CONTROL UPDATE reference-matched block H required`);
 }
 for (const file of ['client/src/platform/components/HomeScreen.tsx', 'client/src/platform/accounts/AccountPortal.tsx', 'client/src/platform/components/HalieusIntro.tsx']) assert.match(read(file), /HalieusBrandMark/);
 const app = read('client/src/App.tsx');
@@ -50,12 +50,12 @@ console.log('PASS website reference-faithful H, boot/tab/PWA consumers, raster e
 
 for(const name of ['brand-default','mono-gold','mono-light','mono-dark','light-mode','inverted','outline']) {
  const svg=read(`client/public/brand/flat/${name}.svg`);
- assert.ok(svg.includes(path),`${name} must reuse canonical CONTROL UPDATE block geometry`);
+ assert.ok(svg.includes(path),`${name} must reuse canonical CONTROL UPDATE reference-matched block geometry`);
  assert.match(svg,/viewBox="0 0 64 64"/);
 }
 for(const name of ['start','restart','close','update','powershell','openshard','control']) {
  const svg=read(`client/public/brand/launcher/${name}.svg`);
- assert.ok(svg.includes(path),`${name} must reuse canonical CONTROL UPDATE block geometry`);
+ assert.ok(svg.includes(path),`${name} must reuse canonical CONTROL UPDATE reference-matched block geometry`);
  assert.match(svg,/viewBox="0 0 64 64"/);
 }
 assert.match(read('client/public/brand/glyphs/H.svg'),/fill="currentColor"/);

@@ -9,7 +9,7 @@ const root = resolve(import.meta.dirname, '..');
 const version = (await readFile(resolve(root, 'VERSION'), 'utf8')).trim();
 const data = await mkdtemp(resolve(tmpdir(), 'hgr-website-brand-'));
 const port = 39462, base = `http://127.0.0.1:${port}`;
-const shape = 'M18 15H26V28H38V15H46V49H38V36H26V49H18Z';
+const shape = 'M16 15H25V28H39V15H48V49H39V36H25V49H16Z';
 const server = spawn(process.execPath, [resolve(root, 'server/dist/server/src/index.js')], { cwd: resolve(root, 'server'), env: { ...process.env, PORT: String(port), SERVE_CLIENT: 'true', CLIENT_ORIGINS: base, HALIEUS_DATA_DIR: data, HALIEUS_OWNER_BOOTSTRAP_FILE: resolve(data, 'bootstrap.txt') }, stdio: 'pipe' });
 let output = '', browser;
 const sockets = [];

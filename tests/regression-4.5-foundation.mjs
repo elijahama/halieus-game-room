@@ -92,13 +92,13 @@ assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-brid
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
-assert.match(halieusMark,/M18 15H26V28H38V15H46V49H38V36H26V49H18Z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(halieusMark,/M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"Canonical public Halieus mark must use the approved H geometry");
 assert.match(
   html,
   /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg(?:\?[^"]+)?"/,
   "Initial browser identity must use the canonical Halieus mark",
 );
-assert.match(html,/halieus-boot-mark[\s\S]*?M18 15H26V28H38V15H46V49H38V36H26V49H18Z/,"First-paint mark must reuse the approved H geometry");
+assert.match(html,/halieus-boot-mark[\s\S]*?M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"First-paint mark must reuse the approved H geometry");
 assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h4"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
@@ -129,7 +129,7 @@ const canonicalLauncherSources = {
 };
 for (const [asset, colour] of Object.entries(canonicalLauncherSources)) {
   const source=read(asset);
-  assert.ok(source.includes("M18 15H26V28H38V15H46V49H38V36H26V49H18Z"), `${asset}: canonical CONTROL UPDATE block H required`);
+  assert.ok(source.includes("M16 15H25V28H39V15H48V49H39V36H25V49H16Z"), `${asset}: canonical CONTROL UPDATE reference-matched block H required`);
   assert.ok(source.includes(colour), `${asset}: semantic role colour ${colour} required`);
 }
 

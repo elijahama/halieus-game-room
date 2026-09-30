@@ -19,7 +19,7 @@ assert.ok(
   "Canonical HGR logo-system reference must remain present",
 );
 
-const referenceH = "M18 15H26V28H38V15H46V49H38V36H26V49H18Z";
+const referenceH = "M16 15H25V28H39V15H48V49H39V36H25V49H16Z";
 const logoReference = read("assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md");
 assert.match(logoReference,/HGR ICON - CONTROL UPDATE/i,"Brand reference must preserve the saved CONTROL UPDATE H");
 assert.match(logoReference, /HGR Control — royal control blue `#4F7BFE`/);
@@ -39,7 +39,7 @@ const launcherSources = [
 for (const [name, colour] of launcherSources) {
   assert.ok(launcherNames.includes(name), `Canonical launcher source is missing: ${name}`);
   const source = read(`assets/branding/launchers/${name}`);
-  assert.ok(source.includes(referenceH), `${name} must use the canonical CONTROL UPDATE block H`);
+  assert.ok(source.includes(referenceH), `${name} must use the canonical CONTROL UPDATE reference-matched block H`);
   assert.ok(source.includes(colour), `${name} must retain its semantic role colour ${colour}`);
 }
 

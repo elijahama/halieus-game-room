@@ -23,7 +23,7 @@ assert.match(icons,/case "chevron-left"/,"Shared icon set must include a left ch
 assert.match(icons,/case "chevron-right"/,"Shared icon set must include a right chevron");
 assert.match(brand,/halieus-brand-mark-tile/,"Shared Halieus mark must expose a themeable tile");
 assert.match(brand,/halieus-brand-mark-h/,"Shared Halieus mark must expose a themeable H");
-assert.match(brandContract,/M18 15H26V28H38V15H46V49H38V36H26V49H18Z/,"Canonical H must use the approved CONTROL UPDATE block geometry");
+assert.match(brandContract,/M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"Canonical H must use the approved CONTROL UPDATE reference-matched block geometry");
 assert.match(flatGenerator,/control: '#4F7BFE'/,"Flat icon generator must reserve royal blue for HGR Control");
 assert.match(flatGenerator,/update: '#38BDF8'/,"Flat icon generator must keep Update light blue");
 assert.match(flatGenerator,/openshard: '#A855F7'/,"Flat icon generator must keep OpenShard purple");
