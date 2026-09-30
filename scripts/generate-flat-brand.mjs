@@ -75,7 +75,7 @@ try {
 
   for (const [name, [bg, fg]] of Object.entries(flatPresets)) {
     const rect = bg === 'none' ? '' : `<rect x="3" y="3" width="58" height="58" rx="15" fill="${bg}"/>`;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${rect}<path d="${HGR_H_PATH}" fill="${fg}" fill-rule="evenodd"/></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">${rect}<path d="${HGR_H_PATH}" fill="${fg}"/></svg>`;
     await render(resolve(root, 'flat'), name, svg);
   }
 
@@ -83,13 +83,13 @@ try {
   await render(resolve(root, 'flat'), 'outline', outline);
 
   for (const [name, bg] of Object.entries(roleColours)) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="3" width="58" height="58" rx="15" fill="${bg}"/><path d="${HGR_H_PATH}" fill="#07090d" fill-rule="evenodd"/>${badgeSvg[name]}</svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="3" y="3" width="58" height="58" rx="15" fill="${bg}"/><path d="${HGR_H_PATH}" fill="#07090d"/>${badgeSvg[name]}</svg>`;
     await render(resolve(root, 'launcher'), name, svg, true);
   }
 
   const glyphs = resolve(root, 'glyphs');
   await mkdir(glyphs, { recursive: true });
-  await writeFile(resolve(glyphs, 'H.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="currentColor" fill-rule="evenodd" d="${HGR_H_PATH}"/></svg>\n`);
+  await writeFile(resolve(glyphs, 'H.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="currentColor" d="${HGR_H_PATH}"/></svg>\n`);
   await copyFile(resolve(root, 'flat/mono-light.png'), resolve(glyphs, 'H-white.png'));
   await copyFile(resolve(root, 'flat/mono-dark.png'), resolve(glyphs, 'H-black.png'));
   await copyFile(resolve(root, 'flat/mono-gold.png'), resolve(glyphs, 'H-gold.png'));
