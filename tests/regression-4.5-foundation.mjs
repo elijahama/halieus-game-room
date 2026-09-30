@@ -92,14 +92,14 @@ assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-brid
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
-assert.match(halieusMark,/M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(halieusMark,/M18 15H26V28H38V15H46V49H38V36H26V49H18Z/,"Canonical public Halieus mark must use the approved H geometry");
 assert.match(
   html,
   /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg(?:\?[^"]+)?"/,
   "Initial browser identity must use the canonical Halieus mark",
 );
-assert.match(html,/halieus-boot-mark[\s\S]*?M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-ref1"`),"Platform tab identity must use the canonical Reference Faithful web mark");
+assert.match(html,/halieus-boot-mark[\s\S]*?M18 15H26V28H38V15H46V49H38V36H26V49H18Z/,"First-paint mark must reuse the approved H geometry");
+assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h4"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
 assert.match(halieusAppIcon,/#FFD95A/i,"Installable app icon must preserve the bright Halieus gold highlight");
@@ -107,7 +107,7 @@ assert.match(halieusAppIcon,/#E9A714/i,"Installable app icon must preserve the H
 assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
 assert.match(launcherReferenceDoc,/Human-approved reference direction controls the canonical system/i,"Launcher reference README must keep human-approved visual direction authoritative");
 assert.match(launcherReferenceDoc,/HGR ICON - CONTROL UPDATE/,"Launcher reference README must identify the current icon-system reference");
-assert.match(launcherReferenceDoc,/Reference Faithful/i,"Launcher reference README must protect the approved Reference Faithful H");
+assert.match(launcherReferenceDoc,/HGR ICON - CONTROL UPDATE/i,"Launcher reference README must protect the saved CONTROL UPDATE H");
 
 const approvedReferenceBlobs = {
   "assets/branding/references/ChatGPT Image Sep 22, 2026, 08_26_31 AM.png": "5f1a96cd93fd0d111ec1d22db3bed5aefe8d9283",
@@ -129,7 +129,7 @@ const canonicalLauncherSources = {
 };
 for (const [asset, colour] of Object.entries(canonicalLauncherSources)) {
   const source=read(asset);
-  assert.ok(source.includes("M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z"), `${asset}: canonical Reference Faithful H required`);
+  assert.ok(source.includes("M18 15H26V28H38V15H46V49H38V36H26V49H18Z"), `${asset}: canonical CONTROL UPDATE block H required`);
   assert.ok(source.includes(colour), `${asset}: semantic role colour ${colour} required`);
 }
 
