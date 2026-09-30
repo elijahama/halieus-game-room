@@ -748,6 +748,33 @@ function updateOperationProgress(line: string): void {
   }
 }
 
+function summarizeUpdaterFailure(
+  stdout: string | Buffer | null | undefined,
+  stderr: string | Buffer | null | undefined,
+  error: unknown,
+): string {
+  const source = [stdout?.toString() || "", stderr?.toString() || ""]
+    .filter(Boolean)
+    .join("\n")
+    .replace(/\u001b\[[0-9;]*m/g, "");
+  const lines = source
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const important = lines.filter((line) =>
+    /\[STOPPED\]|\b(error|failed|failure|missing|refused|incomplete|could not|exit(ed)? with code)\b/i.test(line),
+  );
+  const selected = (important.length ? important : lines).slice(-4);
+  const detail = selected.join(" · ").slice(0, 900);
+  if (detail) return `Update failed: ${detail}`;
+
+  const message = error instanceof Error ? error.message.trim() : "";
+  return message
+    ? `Update failed: ${message.slice(0, 900)}`
+    : "Approved HGR update flow failed.";
+}
+
 async function blockingRemoteUpdateChanges(): Promise<string[] | null> {
   const porcelain = await gitValue(["status", "--porcelain", "--untracked-files=no"], true);
   if (porcelain === null) return null;
@@ -866,7 +893,7 @@ async function runUpdate(response: ServerResponse): Promise<void> {
         encoding: "utf8",
         maxBuffer: 20 * 1024 * 1024,
       },
-      (error) => {
+      (error, stdout, stderr) => {
         void (async () => {
           const finishedAt = new Date().toISOString();
           const exitCode =
@@ -883,14 +910,12 @@ async function runUpdate(response: ServerResponse): Promise<void> {
               startedAt: operation.startedAt,
               finishedAt,
               exitCode,
-              reason: error
-                ? "Approved HGR update flow failed. Review the updater output on the owner PC."
-                : null,
+              reason: error ? summarizeUpdaterFailure(stdout, stderr, error) : null,
             });
           } catch (auditError) {
             console.error("HGR Control update audit could not be written:", auditError);
           }
-          if (error) console.error("HGR Control update failed:", error);
+          if (error) console.error("HGR Control update failed:", summarizeUpdaterFailure(stdout, stderr, error));
           if (activeOperation?.id === operation.id) activeOperation = null;
         })();
       },
@@ -942,7 +967,7 @@ const staticAssets = new Map<string, { path: string; contentType: string; cacheC
   ["/control.js", { path: resolve(controlUiDirectory, "control.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
   ["/manifest.webmanifest", { path: resolve(controlUiDirectory, "manifest.webmanifest"), contentType: "application/manifest+json; charset=utf-8", cacheControl: "no-cache" }],
   ["/sw.js", { path: resolve(controlUiDirectory, "sw.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
-  ["/control-icon.svg", { path: controlIconSvg, contentType: "image/svg+xml; charset=utf-8", cacheControl: "no-cache" }],
+  ["/control-icon.svg", { path: controlIconSvg, contentType: "image/svg+xml; charset=utf-8", cacheControl: "no-store" }],
 ]);
 
 async function serveStaticAsset(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
