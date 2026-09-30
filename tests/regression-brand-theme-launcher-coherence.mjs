@@ -15,6 +15,7 @@ const updater=read("Update HGR GitHub.cmd");
 const brandContract=read("shared/platform/brand.ts");
 const flatGenerator=read("scripts/generate-flat-brand.mjs");
 const logoReference=read("assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md");
+const iconPalette=read("assets/branding/references/HGR_ICON_PALETTE.md");
 
 assert.match(home,/HalieusBrandMark/,"Home chrome must use the shared Halieus mark");
 assert.match(home,/HgrIcon name="chevron-left"/,"Featured previous control must use the shared SVG chevron");
@@ -24,9 +25,10 @@ assert.match(icons,/case "chevron-right"/,"Shared icon set must include a right 
 assert.match(brand,/halieus-brand-mark-tile/,"Shared Halieus mark must expose a themeable tile");
 assert.match(brand,/halieus-brand-mark-h/,"Shared Halieus mark must expose a themeable H");
 assert.match(brandContract,/M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"Canonical H must use the approved CONTROL UPDATE reference-matched block geometry");
-assert.match(flatGenerator,/control: '#4F7BFE'/,"Flat icon generator must reserve royal blue for HGR Control");
-assert.match(flatGenerator,/update: '#38BDF8'/,"Flat icon generator must keep Update light blue");
-assert.match(flatGenerator,/openshard: '#A855F7'/,"Flat icon generator must keep OpenShard purple");
+assert.match(iconPalette,/HGR Control[\s\S]*?#4F7BFE/,"Reference palette must reserve royal blue for HGR Control");
+assert.match(iconPalette,/Update[\s\S]*?#38BDF8/,"Reference palette must keep Update light blue");
+assert.match(iconPalette,/OpenShard[\s\S]*?#A855F7/,"Reference palette must keep OpenShard purple");
+assert.doesNotMatch(flatGenerator,/root, 'launcher'/,"Website flat-brand generator must not manufacture launcher artwork");
 assert.match(logoReference,/HGR ICON - CONTROL UPDATE/i,"Brand reference must preserve the saved CONTROL UPDATE H");
 
 assert.match(theme,/"--hgr-action-bg": action/,"Custom themes must derive a solid action colour");
@@ -46,28 +48,31 @@ assert.match(css,/\.halieus-avatar-media,[\s\S]*?overflow:\s*hidden !important[\
 assert.match(css,/\.halieus-avatar-media > img,[\s\S]*?object-fit:\s*cover !important[\s\S]*?object-position:\s*center !important/s,"Uploaded player pictures must use the same centred cover crop everywhere");
 assert.match(css,/\.halieus-side-account > \.halieus-avatar-media[\s\S]*?width:\s*40px !important[\s\S]*?border-radius:\s*12px !important/s,"Sidebar profile picture must stay compact and aligned with the platform identity system");
 
-for (const name of ["HGR - Start.lnk","HGR - Restart.lnk","HGR - Close.lnk","HGR - Update Site.lnk","HGR - PowerShell.lnk","HGR - OpenShard TUI.lnk","HGR - Control Mobile.lnk"]) {
+for (const name of ["HGR - Start.lnk","HGR - Restart.lnk","HGR - Close.lnk","HGR - Update Site.lnk","HGR - PowerShell.lnk","HGR - OpenShard TUI.lnk","HGR - Control.lnk","HGR - Stop Control.lnk"]) {
   assert.ok(shortcuts.includes(name),`Launcher shortcut family must include ${name}`);
 }
 assert.match(shortcuts,/Close the local Halieus Game Room desktop app window only/,"Close shortcut must state that it only closes the local app window");
 assert.match(shortcuts,/OpenShard-HGR\.cmd/,"OpenShard shortcut must route through the HGR helper rather than calling a global tool blindly");
 assert.match(shortcuts,/openshard\.ico/,"OpenShard must have its own dedicated launcher-art path");
-assert.match(shortcuts,/RuntimeLauncherIconRoot/,"Shortcut refresh must use generated runtime icon assets");
-assert.match(shortcuts,/ControlIconPath/,"HGR Control Mobile must have its own icon path");
-assert.match(shortcuts,/Start HGR Control Mobile\.cmd/,"HGR Control Mobile shortcut must route to the canonical mobile-control launcher");
+assert.match(shortcuts,/RuntimeLauncherIconRoot/,"Shortcut refresh must use runtime ICO exports from approved reference PNGs");
+assert.match(shortcuts,/ControlIconPath/,"HGR Control must have its own icon path");
+assert.match(shortcuts,/Start HGR Control\.cmd/,"HGR Control shortcut must route to the canonical background Control launcher");
+assert.doesNotMatch(shortcuts,/ControlMobile = 'HGR - Control Mobile\.lnk'/,"Launcher set must not duplicate HGR Control as Control Mobile");
 assert.match(shortcuts,/\$openShard\.IconLocation = "\$OpenShardIconPath,0"/,"OpenShard shortcut must use its dedicated resolved icon variable");
-assert.match(shortcuts,/HGR - Control Mobile\.lnk/,"Launcher family must expose HGR Control Mobile");
+assert.match(shortcuts,/HGR - Control\.lnk/,"Launcher family must expose one HGR Control launcher");
+assert.match(shortcuts,/HGR - Stop Control\.lnk/,"Launcher family must expose one Stop Control launcher");
 assert.match(shortcuts,/ProjectLauncherDirectory = Join-Path \$ProjectRoot 'HGR Launchers'/,"Developer shortcuts must share one HGR Launchers folder");
 assert.match(shortcuts,/StartMenuLauncherDirectory = Join-Path \$ProgramsRoot 'Halieus Game Room'/,"Start Menu shortcuts must share one Halieus Game Room folder");
 assert.match(shortcuts,/ tui`""/,"OpenShard shortcut must open the receipt dashboard/TUI");
 assert.match(packagedShortcuts,/Close HGR App\.lnk/,"Packaged launcher must use the same Close HGR App wording");
 assert.match(packagedShortcuts,/desktop app window only/,"Packaged Close shortcut must not imply cloud shutdown");
 
-const recoveryStart=updater.indexOf('for /f "delims=" %%F in (\'git ls-tree -r --name-only HEAD -- "assets/branding/launchers" "assets/branding/references"\') do (');
+const recoveryStart=updater.indexOf('for /f "delims=" %%F in (\'git ls-tree -r --name-only HEAD -- "assets/branding/references"\') do (');
 assert.ok(recoveryStart >= 0,"Updater must repair missing protected launcher/reference assets after autostash");
 assert.ok(recoveryStart < updater.indexOf("STEP 2 - Preparing release identity"),"Protected-brand recovery must run before release preparation");
 assert.match(updater,/for %%F in \("assets\/branding\/Halieus Game Room\.ico" "assets\/branding\/Halieus Game Room\.png"\) do \(/,"Updater must protect the canonical base brand assets");
-assert.match(updater,/git ls-tree -r --name-only HEAD -- "assets\/branding\/launchers" "assets\/branding\/references"/,"Updater must derive the protected launcher/reference inventory from the current tracked HEAD");
+assert.match(updater,/git ls-tree -r --name-only HEAD -- "assets\/branding\/references"/,"Updater must protect the approved reference PNG inventory from the current tracked HEAD");
+assert.doesNotMatch(updater,/assets\/branding\/launchers/,"Updater must not resurrect the removed duplicate launcher-art folder");
 assert.match(updater,/if not exist "%%F"[\s\S]*?git restore --source=HEAD --staged --worktree -- "%%F"/,"Updater must restore only missing tracked protected assets");
 assert.match(updater,/:PAUSE_EXIT[\s\S]*?git restore --staged --worktree -- RELEASE\.json shared\/release\.ts/s,"Failed update runs must clean generated release identity before exiting");
 
