@@ -48,6 +48,26 @@ function Remove-HgrControlEnvironment {
     Remove-Item Env:HGR_CONTROL_PORT -ErrorAction SilentlyContinue
 }
 
+function Copy-HgrControlLink {
+    param([Parameter(Mandatory = $true)][string]$Url)
+
+    try {
+        $setClipboard = Get-Command Set-Clipboard -ErrorAction SilentlyContinue
+        if ($setClipboard) {
+            Set-Clipboard -Value $Url
+            return $true
+        }
+
+        $clip = Get-Command clip.exe -ErrorAction SilentlyContinue
+        if ($clip) {
+            $Url | & $clip.Source
+            return $true
+        }
+    } catch {}
+
+    return $false
+}
+
 New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
 
 if (-not (Test-Path -LiteralPath $statePath)) {
@@ -68,6 +88,9 @@ if (Test-Path -LiteralPath $statePath) {
             Write-Host "HGR Control Mobile is already running in the background." -ForegroundColor Green
             Write-Host "Private HTTPS URL (tailnet only):" -ForegroundColor DarkGray
             Write-Host "  $($existingState.mobileUrl)" -ForegroundColor Cyan
+            if (Copy-HgrControlLink -Url ([string]$existingState.mobileUrl)) {
+                Write-Host "  Phone link copied to clipboard." -ForegroundColor Green
+            }
             Write-Host ""
             Write-Host "To create a fresh pairing code, stop Control first and start it again:" -ForegroundColor DarkGray
             Write-Host "  .\Stop-HGR-Control-Mobile.cmd" -ForegroundColor DarkGray
@@ -229,6 +252,9 @@ Write-Host "Status:" -ForegroundColor DarkGray
 Write-Host "  Running in the background" -ForegroundColor Green
 Write-Host "Private HTTPS URL (tailnet only):" -ForegroundColor DarkGray
 Write-Host "  $mobileUrl" -ForegroundColor Cyan
+if (Copy-HgrControlLink -Url $mobileUrl) {
+    Write-Host "  Phone link copied to clipboard." -ForegroundColor Green
+}
 Write-Host ""
 Write-Host "Pairing code (valid for 10 minutes):" -ForegroundColor DarkGray
 Write-Host "  $pairCode" -ForegroundColor Green
