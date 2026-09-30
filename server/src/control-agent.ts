@@ -253,7 +253,7 @@ async function handlePair(request: IncomingMessage, response: ServerResponse): P
   if (!pairCode || !Number.isFinite(pairExpiresAt) || pairExpiresAt <= now) {
     sendJson(response, 503, {
       ok: false,
-      reason: "Mobile pairing is unavailable or the pairing code has expired. Restart HGR Control Mobile on the owner PC.",
+      reason: "Mobile pairing is unavailable or the pairing code has expired. Restart HGR - Control on the owner PC.",
     });
     return;
   }
