@@ -167,12 +167,13 @@ assert.match(projectTimeline,/version: "4\.1\.0"/,'Timeline must include the cur
 assert.match(projectTimelineComponent,/GitHub source history begins with the 4\.0\.0 repository import/,'Timeline must disclose the historical-source boundary');
 
 // The 4.1 launcher safety rule survives the 4.5.3 icon-pipeline redesign:
- // approved SVG/reference sources stay tracked, while generated Windows exports
+ // approved rendered PNG references stay tracked, while Windows ICO exports
  // are written only to ignored runtime state and are regenerated deliberately.
+assert.match(launcherGenerator,/assets\\branding\\references/,'Launcher exporter must source approved rendered reference PNGs');
 assert.match(launcherGenerator,/server\\data\\runtime\\launcher-icons/,'Generated launcher exports must stay in ignored runtime state');
-assert.doesNotMatch(launcherGenerator,/assets\\branding\\launchers\\generated-preview/,'Runtime launcher generation must not write into the approved launcher source tree');
-assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?assets\\branding\\launchers/s,'Launcher generator must never wipe the approved launcher source tree');
-assert.match(launcherShortcuts,/client\\public\\brand\\launcher'/,'Shortcut refresh must retain the tracked flat launcher fallback/source path');
+assert.doesNotMatch(launcherGenerator,/assets\\branding\\launchers\\generated-preview/,'Runtime launcher generation must not write into a tracked launcher-art tree');
+assert.doesNotMatch(launcherGenerator,/Remove-Item[\s\S]*?assets\\branding\\references/s,'Launcher generator must never wipe the approved reference source tree');
+assert.doesNotMatch(launcherShortcuts,/client\\public\\brand\\launcher/,'Shortcut refresh must not restore the removed flat launcher fallback/source path');
 assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,'Shortcut refresh must invoke the canonical runtime icon generator');
 assert.match(launcherShortcuts,/& \$IconGenerator/,'Shortcut refresh must execute the fixed canonical icon generator');
 const launcherDeleteContexts = launcherShortcuts
