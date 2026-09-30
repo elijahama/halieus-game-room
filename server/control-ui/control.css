@@ -389,3 +389,84 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
   .intro-splash { transition-duration: .01ms; }
   .progress-track span { transition-duration: .01ms; }
 }
+
+
+/* HGR Control — semantic actions use polished, tactile button surfaces. */
+.primary-button,
+.action-button,
+.small-action-button,
+.update-button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -2px 0 rgba(0,0,0,.18),
+    0 9px 24px rgba(0,0,0,.16);
+  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+}
+.primary-button::after,
+.action-button::after,
+.small-action-button::after,
+.update-button::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 1px 7% auto;
+  height: 45%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
+  opacity: .72;
+}
+.action-button {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.11), transparent 43%, rgba(0,0,0,.12)),
+    color-mix(in srgb,var(--restart) 13%,#12161b);
+}
+#startButton {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), transparent 43%, rgba(0,0,0,.13)),
+    color-mix(in srgb,var(--start) 12%,#11181a);
+}
+#closeButton {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), transparent 43%, rgba(0,0,0,.13)),
+    color-mix(in srgb,var(--close) 12%,#181216);
+}
+.update-button {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), transparent 43%, rgba(0,0,0,.13)),
+    color-mix(in srgb,var(--update) 12%,#111820);
+}
+.primary-button:hover,
+.action-button:hover,
+.small-action-button:hover,
+.update-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.07) saturate(1.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.26),
+    inset 0 -2px 0 rgba(0,0,0,.15),
+    0 12px 28px rgba(0,0,0,.22);
+}
+.primary-button:active,
+.action-button:active,
+.small-action-button:active,
+.update-button:active {
+  transform: translateY(1px);
+  filter: brightness(.95);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.2),
+    0 4px 10px rgba(0,0,0,.16);
+}
+.primary-button:disabled::after,
+.action-button:disabled::after,
+.small-action-button:disabled::after,
+.update-button:disabled::after { opacity: .18; }
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button,
+  .action-button,
+  .small-action-button,
+  .update-button { transition: none; }
+}
