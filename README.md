@@ -25,6 +25,7 @@ Halieus Game Room (HGR) began as one large property-trading board game and grew 
 - [Mega Board as a case study](#mega-board-as-a-case-study)
 - [Engineering problems solved](#engineering-problems-solved)
 - [Production and release engineering](#production-and-release-engineering)
+- [HGR Control](#hgr-control)
 - [Testing and validation](#testing-and-validation)
 - [Development process](#development-process)
 - [My role](#my-role)
@@ -360,6 +361,50 @@ GitHub and Oracle also have intentionally different inclusion rules:
 - **Oracle deployment** receives only what is required to build and run production.
 
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/DEPLOYMENT_FIX_4.0.0.md](docs/DEPLOYMENT_FIX_4.0.0.md).
+
+---
+
+## HGR Control
+
+**HGR Control** is the owner-side administration surface for the Halieus Game Room instance. It is intentionally separate from normal player/game controls.
+
+Current private-control path:
+
+```text
+HGR - Control on the owner PC
+        ↓
+loopback-only Control Agent
+        ↓
+Tailscale Serve private HTTPS
+        ↓
+short-lived QR / 8-digit pairing
+        ↓
+HGR Control PWA on the owner's phone
+```
+
+The phone can access only an allow-listed set of operations:
+
+- status;
+- Start HGR;
+- Restart HGR;
+- Close HGR;
+- Update HGR;
+- recent Control audit logs.
+
+The API does **not** accept arbitrary shell commands, executable paths or free-form process arguments. Pairing provisions an HttpOnly, Secure, SameSite=Strict mobile session; the long random owner credential is not exposed in the browser.
+
+The Windows launcher set intentionally exposes only two Control entries:
+
+- **HGR - Control** — starts the background agent, verifies the private HTTPS route, copies the phone URL and opens the QR/pairing card;
+- **HGR - Stop Control** — closes the agent, its Tailscale Serve route and runtime credential.
+
+### Cloud status
+
+HGR Control is **not yet a fully deployed cloud service**.
+
+The working path is the private Tailscale-backed owner route above. A versioned cloud-relay protocol foundation exists in `shared/platform/control-cloud.ts` and is documented in [docs/HGR_CONTROL_CLOUD.md](docs/HGR_CONTROL_CLOUD.md), but the outbound PC relay client, hosted cloud Control PWA and live cloud device-registration service are still future delivery stages.
+
+The planned cloud model keeps the owner PC as the executor and uses an outbound authenticated connection; it does not expose a public Windows administration port or turn Control into a remote shell.
 
 ---
 
