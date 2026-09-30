@@ -18,7 +18,7 @@ The current release number is not hard-coded here. The repository file `VERSION`
 
 HGR is **human-directed, AI-assisted engineering**.
 
-The project owner is responsible for:
+The project owner, **Elijah Amadasun**, is responsible for:
 
 - product direction and priorities;
 - game rules and edge cases;
