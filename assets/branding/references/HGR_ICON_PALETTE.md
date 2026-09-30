@@ -60,3 +60,21 @@ A final Control launcher PNG must live in this reference folder and visually fol
 `assets/branding/references/` = human-approved source/reference artwork.
 
 Other icon folders are runtime/export/archive locations only. They must not override the reference artwork.
+
+
+## Canonical launcher PNG role map
+
+These friendly filenames are the only launcher-art inputs used by the Windows exporter:
+
+| Launcher role | Approved reference PNG |
+| --- | --- |
+| Main HGR | `HGR Main.png` |
+| Start | `HGR Start.png` |
+| Restart | `HGR Restart.png` |
+| Close | `HGR Close.png` |
+| Update Site | `HGR Update.png` |
+| PowerShell | `HGR PowerShell.png` |
+| OpenShard TUI | `HGR OpenShard.png` |
+| HGR Control | `HGR Control.png` |
+
+The friendly files are byte-identical aliases of the selected approved artwork. Windows may resize them for icon delivery and wrap them as ICO, but it must not redraw them.
