@@ -36,7 +36,7 @@ assert.match(indexHtml, new RegExp(`rel="shortcut icon"[^>]*href="\\/halieus-mar
 assert.doesNotMatch(indexHtml, /apple-touch-icon[^>]+app-icon-180\.png/, 'Legacy Apple-touch raster must not compete with the new install identity');
 assert.doesNotMatch(indexHtml, /app-icon-reference\.png/, 'Historical install reference must not remain in live HTML');
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
-assert.match(pwaCopy,/rm\(staleReference, \{ force: true \}\)/,'Client prebuild must remove the stale historical install thumbnail');
+assert.match(pwaCopy,/rm\(resolve\(publicDir, "app-icon-reference\.png"\), \{ force: true \}\)/,'Client prebuild must remove the stale historical install thumbnail');
 assert.match(pwaCopy,/halieus-app-icon\.svg/,'Client prebuild must verify the canonical install vector exists');
 const clientPackage = JSON.parse(read('client/package.json'));
 assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client prebuild must prepare current PWA assets before Vite runs');
@@ -46,7 +46,7 @@ assert.match(flatGenerator,/assets\/branding\/icon-sets\/glyphs\/hgr-h\.svg/,'We
 const generator = read('scripts/generate-platform-icons.mjs');
 assert.doesNotMatch(generator, /assets\/branding/, 'Website generator must be independent of launcher assets');
 assert.match(generator, /client\/public/);
-console.log('PASS website block H, boot/tab/PWA consumers, raster exports and separate M/P artwork');
+console.log('PASS website reference-faithful H, boot/tab/PWA consumers, raster exports and separate M/P artwork');
 
 for(const name of ['brand-default','mono-gold','mono-light','mono-dark','light-mode','inverted','outline']) {
  const svg=read(`client/public/brand/flat/${name}.svg`);
