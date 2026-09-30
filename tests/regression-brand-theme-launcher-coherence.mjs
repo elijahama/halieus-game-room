@@ -23,11 +23,11 @@ assert.match(icons,/case "chevron-left"/,"Shared icon set must include a left ch
 assert.match(icons,/case "chevron-right"/,"Shared icon set must include a right chevron");
 assert.match(brand,/halieus-brand-mark-tile/,"Shared Halieus mark must expose a themeable tile");
 assert.match(brand,/halieus-brand-mark-h/,"Shared Halieus mark must expose a themeable H");
-assert.match(brandContract,/M12 15H27L24 19V28H40V19L37 15H52L49 19V46L52 50H37L31 54Q23 59 23 50H12L15 46V19ZM27 35Q25 34 25 37V50Q25 53 28 51L38 44Q41 42 38 40Z/,"Canonical H must use the approved Reference Faithful geometry");
+assert.match(brandContract,/M18 15H26V28H38V15H46V49H38V36H26V49H18Z/,"Canonical H must use the approved CONTROL UPDATE block geometry");
 assert.match(flatGenerator,/control: '#4F7BFE'/,"Flat icon generator must reserve royal blue for HGR Control");
 assert.match(flatGenerator,/update: '#38BDF8'/,"Flat icon generator must keep Update light blue");
 assert.match(flatGenerator,/openshard: '#A855F7'/,"Flat icon generator must keep OpenShard purple");
-assert.match(logoReference,/Reference Faithful/i,"Brand reference must preserve the approved Reference Faithful H");
+assert.match(logoReference,/HGR ICON - CONTROL UPDATE/i,"Brand reference must preserve the saved CONTROL UPDATE H");
 
 assert.match(theme,/"--hgr-action-bg": action/,"Custom themes must derive a solid action colour");
 assert.match(theme,/"red" \\| "green" \\| (?:"profile" \\| )?"custom"/,"Theme contract must include dedicated Red/Green compatibility and the profile library");
