@@ -50,6 +50,13 @@ function Remove-HgrControlEnvironment {
 
 New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
 
+if (-not (Test-Path -LiteralPath $statePath)) {
+    $legacyListener = Get-HgrControlListener
+    if ($legacyListener) {
+        throw "An HGR Control Agent is already listening on 127.0.0.1:$localPort without background lifecycle state. Close the previous foreground Control window, then run Start HGR Control Mobile again."
+    }
+}
+
 if (Test-Path -LiteralPath $statePath) {
     try {
         $existingState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json

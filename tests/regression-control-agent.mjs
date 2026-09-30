@@ -212,6 +212,7 @@ assert.doesNotMatch(controlMobileHelper, /Write-Host\s+"?\$token\b/i, "Mobile la
 assert.match(controlMobileHelper, /Start-Process[\s\S]*?-WindowStyle Hidden/s, "Mobile launcher must detach the Control Agent into a hidden background process");
 assert.ok(controlMobileHelper.includes('ArgumentList @("`"$tsxCli`"", "`"$agentSource`"")'), "Background Control must quote project paths that contain spaces");
 assert.match(controlMobileHelper, /hgr-control-mobile-state\.json/, "Background Control must persist only ignored runtime lifecycle state");
+assert.match(controlMobileHelper, /already listening on 127\.0\.0\.1:\$localPort without background lifecycle state/, "Background migration must refuse to collide with an older foreground Control Agent");
 assert.match(controlMobileHelper, /You can close this window\. HGR Control will keep running\./, "Mobile launcher must explicitly hand lifetime ownership to the background process");
 assert.match(controlMobileStopHelper, /Stop-Process -Id \$listenerPid -Force/, "Explicit Stop Control must terminate the recorded listener process");
 assert.match(controlMobileStopHelper, /serve "--https=\$httpsPort" off/, "Explicit Stop Control must remove its Tailscale Serve route");
