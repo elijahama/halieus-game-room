@@ -76,6 +76,7 @@ const manifest=read("client/public/site.webmanifest");
 const launcherShortcuts=read("scripts/windows/launcher-shortcuts.ps1");
 const previewGenerator=read("scripts/windows/generate-launcher-icons.ps1");
 const launcherReferenceDoc=read("assets/branding/references/README.md");
+const iconPalette=read("assets/branding/references/HGR_ICON_PALETTE.md");
 
 assert.match(playerCard,/actions\?: PlayerIdentityAction\[\]/,"Player cards must expose real contextual actions");
 assert.match(playerCard,/aria-haspopup="menu"/,"Player overflow trigger must be an accessible menu control");
@@ -118,29 +119,35 @@ for (const [asset, expected] of Object.entries(approvedReferenceBlobs)) {
   assert.equal(gitBlobSha(asset), expected, `Approved launcher reference changed unexpectedly: ${asset}`);
 }
 
-const canonicalLauncherSources = {
-  "assets/branding/launchers/Start Halieus Game Room.svg": "#22C55E",
-  "assets/branding/launchers/Restart Halieus Game Room.svg": "#F59E0B",
-  "assets/branding/launchers/Close Halieus Game Room.svg": "#EF4444",
-  "assets/branding/launchers/Update Halieus Website.svg": "#38BDF8",
-  "assets/branding/launchers/HGR PowerShell.svg": "#64748B",
-  "assets/branding/launchers/HGR OpenShard TUI.svg": "#A855F7",
-  "assets/branding/launchers/HGR Control.svg": "#4F7BFE",
-};
-for (const [asset, colour] of Object.entries(canonicalLauncherSources)) {
-  const source=read(asset);
-  assert.ok(source.includes("M16 15H25V28H39V15H48V49H39V36H25V49H16Z"), `${asset}: canonical CONTROL UPDATE reference-matched block H required`);
-  assert.ok(source.includes(colour), `${asset}: semantic role colour ${colour} required`);
+const canonicalLauncherSources = [
+  "HGR Main.png",
+  "HGR Start.png",
+  "HGR Restart.png",
+  "HGR Close.png",
+  "HGR Update.png",
+  "HGR PowerShell.png",
+  "HGR OpenShard.png",
+  "HGR Control.png",
+];
+for (const name of canonicalLauncherSources) {
+  assert.ok(readBytes(`assets/branding/references/${name}`).length > 0, `${name}: approved rendered reference PNG required`);
+}
+for (const colour of ["#F4C430","#22C55E","#F59E0B","#EF4444","#38BDF8","#64748B","#A855F7","#4F7BFE"]) {
+  assert.ok(iconPalette.includes(colour), `semantic role colour ${colour} must remain documented`);
 }
 
-assert.match(previewGenerator,/server\\data\\runtime\\launcher-icons/,"Launcher generator must write only ignored runtime exports");
-assert.match(previewGenerator,/main = '#F4C430'/,"Main runtime launcher must use Halieus gold");
-assert.match(previewGenerator,/update = '#38BDF8'/,"Update launcher must remain light blue");
-assert.match(previewGenerator,/openshard = '#A855F7'/,"OpenShard launcher must remain purple");
-assert.match(previewGenerator,/control = '#4F7BFE'/,"HGR Control launcher must use dedicated control blue");
-assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must regenerate the approved runtime icon family");
-assert.match(launcherShortcuts,/HGR - Control Mobile\.lnk/,"Shortcut family must expose HGR Control Mobile");
-assert.match(launcherShortcuts,/ControlIconPath/,"Control Mobile shortcut must use its dedicated icon path");
+assert.match(previewGenerator,/assets\\branding\\references/,"Launcher exporter must source approved reference PNGs");
+assert.match(previewGenerator,/server\\data\\runtime\\launcher-icons/,"Launcher exporter must write only ignored runtime exports");
+assert.match(previewGenerator,/HGR Main\.png/,"Main launcher must use the approved HGR Main PNG");
+assert.match(previewGenerator,/HGR Update\.png/,"Update launcher must use the approved Update PNG");
+assert.match(previewGenerator,/HGR OpenShard\.png/,"OpenShard launcher must use the approved OpenShard PNG");
+assert.match(previewGenerator,/HGR Control\.png/,"HGR Control launcher must use the approved Control PNG");
+assert.doesNotMatch(previewGenerator,/Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/,"Launcher exporter must not redraw approved artwork");
+assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must regenerate runtime ICOs from approved PNGs");
+assert.match(launcherShortcuts,/HGR - Control\.lnk/,"Shortcut family must expose one HGR Control launcher");
+assert.match(launcherShortcuts,/HGR - Stop Control\.lnk/,"Shortcut family must expose one Stop Control launcher");
+assert.doesNotMatch(launcherShortcuts,/ControlMobile = 'HGR - Control Mobile\.lnk'/,"Redundant Control Mobile shortcut must stay removed");
+assert.match(launcherShortcuts,/ControlIconPath/,"Control shortcut must use its dedicated icon path");
 assert.doesNotMatch(launcherShortcuts,/launchers\\matte/,"Retired nested launcher folder must not return");
 
 assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");
