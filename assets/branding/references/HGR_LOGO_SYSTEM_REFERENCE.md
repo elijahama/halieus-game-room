@@ -11,7 +11,7 @@ Every logo variation must use the exact same:
 - dimensions
 - padding
 
-The canonical H is now deliberately simple. It contains **no internal play button/cut-out**. Utility meaning is carried by a separate small corner badge instead of modifying the H itself.
+The canonical H follows the approved **Reference Faithful** silhouette. Its distinctive internal play-cut/tail detail is part of the approved H and must not be simplified away. Utility roles may add their role motif without redrawing the underlying H.
 
 Do not redraw or resize the H independently between variants.
 
@@ -139,7 +139,7 @@ Role colours are semantic and fixed for the owner-tool family:
 
 OpenShard owns purple. Update owns light blue. HGR Control must not reuse either role colour.
 
-Utility icons use the canonical H plus a separate bottom-right white role badge. The badge may identify Start, Restart, Close, Update, PowerShell, OpenShard or Control, but it must never distort the H geometry.
+Utility icons use the canonical Reference Faithful H plus the approved role motif. Control retains its separate white gear mark; role artwork must not replace or simplify the H geometry.
 
 ---
 

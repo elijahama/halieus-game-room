@@ -21,7 +21,7 @@ The active contract is:
 ```text
 approved visual reference
         ↓
-canonical simple H geometry
+canonical Reference Faithful H geometry
         ↓
 semantic role colours + separate corner badges
         ↓
@@ -34,9 +34,9 @@ A newly approved reference added to this folder must be reviewed and, when it ch
 
 ## Canonical geometry
 
-All functional Halieus identities use the same simple H. The H has **no internal play-cut/tail**.
+All functional Halieus identities use the same **Reference Faithful** H taken from the approved icon set. Its internal play-cut/tail detail is intentional reference geometry and must be preserved.
 
-Utility meaning is added as a separate corner badge. Do not redraw the H itself to encode Start, Restart, Close, Update, PowerShell, OpenShard or Control.
+Utility roles may add their approved motif, but must not simplify, replace or independently redraw the H.
 
 ## Windows launcher outputs
 
