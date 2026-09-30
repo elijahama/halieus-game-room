@@ -125,7 +125,7 @@ for %%F in ("assets/branding/Halieus Game Room.ico" "assets/branding/Halieus Gam
     )
 )
 
-for /f "delims=" %%F in ('git ls-tree -r --name-only HEAD -- "assets/branding/launchers" "assets/branding/references"') do (
+for /f "delims=" %%F in ('git ls-tree -r --name-only HEAD -- "assets/branding/references"') do (
     if not exist "%%F" (
         echo [RECOVERY] Restoring missing protected branding asset from current HEAD:
         echo   %%F
@@ -468,7 +468,7 @@ if errorlevel 1 (
     endlocal
     exit /b 1
 )
-echo [OK] HGR Launchers refreshed, including HGR - Control, HGR - Control Mobile and HGR - Stop Control.
+echo [OK] HGR Launchers refreshed, including HGR - Control and HGR - Stop Control.
 echo.
 echo FINAL STEP 2 - Refreshing the HGR client...
 echo Existing HGR windows now refresh themselves after the production release changes.
