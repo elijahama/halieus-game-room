@@ -391,122 +391,96 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
 }
 
 
-/* HGR Control — semantic actions use polished, tactile button surfaces. */
+/* HGR Control — integrated physical surfaces.
+   Depth is part of the face; there is no separate glossy overlay panel. */
 .primary-button,
 .action-button,
 .small-action-button,
 .update-button {
   position: relative;
   overflow: hidden;
-  isolation: isolate;
+  border-radius: 15px;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -2px 0 rgba(0,0,0,.18),
-    0 9px 24px rgba(0,0,0,.16);
-  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+    inset 0 1px 0 rgba(255,255,255,.15),
+    inset 0 -3px 0 rgba(0,0,0,.24),
+    0 8px 18px rgba(0,0,0,.18);
+  transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
 }
+.primary-button::before,
 .primary-button::after,
+.action-button::before,
 .action-button::after,
+.small-action-button::before,
 .small-action-button::after,
+.update-button::before,
 .update-button::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  inset: 1px 7% auto;
-  height: 45%;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
-  opacity: .72;
+  content: none !important;
+  display: none !important;
 }
 .action-button {
   background:
-    linear-gradient(180deg, rgba(255,255,255,.11), transparent 43%, rgba(0,0,0,.12)),
-    color-mix(in srgb,var(--restart) 13%,#12161b);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb,var(--restart) 18%,#20201b) 0%,
+      color-mix(in srgb,var(--restart) 11%,#171819) 30%,
+      color-mix(in srgb,var(--restart) 8%,#131619) 72%,
+      color-mix(in srgb,var(--restart) 18%,#0e1012) 100%
+    );
 }
 #startButton {
   background:
-    linear-gradient(180deg, rgba(255,255,255,.12), transparent 43%, rgba(0,0,0,.13)),
-    color-mix(in srgb,var(--start) 12%,#11181a);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb,var(--start) 16%,#17201b) 0%,
+      color-mix(in srgb,var(--start) 9%,#121918) 32%,
+      color-mix(in srgb,var(--start) 7%,#101516) 74%,
+      color-mix(in srgb,var(--start) 16%,#0d1112) 100%
+    );
 }
 #closeButton {
   background:
-    linear-gradient(180deg, rgba(255,255,255,.12), transparent 43%, rgba(0,0,0,.13)),
-    color-mix(in srgb,var(--close) 12%,#181216);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb,var(--close) 16%,#21171a) 0%,
+      color-mix(in srgb,var(--close) 9%,#191317) 32%,
+      color-mix(in srgb,var(--close) 7%,#151116) 74%,
+      color-mix(in srgb,var(--close) 17%,#100d11) 100%
+    );
 }
 .update-button {
   background:
-    linear-gradient(180deg, rgba(255,255,255,.12), transparent 43%, rgba(0,0,0,.13)),
-    color-mix(in srgb,var(--update) 12%,#111820);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb,var(--update) 16%,#17202a) 0%,
+      color-mix(in srgb,var(--update) 9%,#121922) 32%,
+      color-mix(in srgb,var(--update) 7%,#10161d) 74%,
+      color-mix(in srgb,var(--update) 17%,#0c1117) 100%
+    );
 }
 .primary-button:hover,
 .action-button:hover,
 .small-action-button:hover,
 .update-button:hover {
   transform: translateY(-1px);
-  filter: brightness(1.07) saturate(1.04);
+  filter: brightness(1.045) saturate(1.025);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.26),
-    inset 0 -2px 0 rgba(0,0,0,.15),
-    0 12px 28px rgba(0,0,0,.22);
+    inset 0 1px 0 rgba(255,255,255,.19),
+    inset 0 -3px 0 rgba(0,0,0,.21),
+    0 11px 22px rgba(0,0,0,.22);
 }
 .primary-button:active,
 .action-button:active,
 .small-action-button:active,
 .update-button:active {
   transform: translateY(1px);
-  filter: brightness(.95);
+  filter: brightness(.96);
   box-shadow:
-    inset 0 2px 5px rgba(0,0,0,.2),
-    0 4px 10px rgba(0,0,0,.16);
+    inset 0 2px 5px rgba(0,0,0,.18),
+    0 4px 9px rgba(0,0,0,.16);
 }
-.primary-button:disabled::after,
-.action-button:disabled::after,
-.small-action-button:disabled::after,
-.update-button:disabled::after { opacity: .18; }
-
 @media (prefers-reduced-motion: reduce) {
   .primary-button,
   .action-button,
   .small-action-button,
   .update-button { transition: none; }
 }
-
-
-/* HGR Control — match the original Halieus branding icon's physical surface.
-   Authority: assets/branding/Halieus Game Room.png */
-.primary-button,
-.action-button,
-.small-action-button,
-.update-button {
-  border-radius: 16px;
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.13),
-    inset 0 3px 0 rgba(255,255,255,.14),
-    inset 0 -4px 0 rgba(0,0,0,.24),
-    0 10px 24px rgba(0,0,0,.21);
-}
-.primary-button::before,
-.action-button::before,
-.small-action-button::before,
-.update-button::before {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  pointer-events: none;
-  top: 3px;
-  left: 4px;
-  right: 4px;
-  height: 46%;
-  border-radius: 999px 999px 48% 48% / 100% 100% 38% 38%;
-  background:
-    radial-gradient(120% 100% at 50% 0%,
-      rgba(255,255,255,.36) 0%,
-      rgba(255,255,255,.22) 42%,
-      rgba(255,255,255,.07) 74%,
-      rgba(255,255,255,0) 100%);
-  opacity: .78;
-}
-.primary-button:disabled::before,
-.action-button:disabled::before,
-.small-action-button:disabled::before,
-.update-button:disabled::before { opacity: .14; }

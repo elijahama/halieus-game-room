@@ -25870,185 +25870,95 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 
 
 /* ========================================================================== */
-/* HGR 4.5.3 — polished action surfaces                                       */
-/* Coloured actions keep their semantic/theme colour but gain physical depth.  */
+/* HGR 4.5.3 — integrated physical button surfaces                            */
+/* Good-reference rule: depth lives in the face itself. No floating gloss     */
+/* panel, no thick luminous rim, no rectangular highlight band.               */
 /* ========================================================================== */
+
+/* Main HGR Join control: bright upper face, stable midtone, darker lower lip. */
 .halieus-global-join,
-.halieus-continue-row button,
-.lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
-.lobby-shell-v2 .lobby-start-game {
+.halieus-mobile-join-game {
   position: relative;
   overflow: hidden;
-  isolation: isolate;
-  background-image:
-    linear-gradient(180deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,.12) 22%, rgba(255,255,255,0) 48%, rgba(0,0,0,.16) 100%) !important;
-  border-color: color-mix(in srgb,currentColor 18%,transparent) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.34),
-    inset 0 -2px 0 rgba(0,0,0,.16),
-    0 10px 24px rgba(0,0,0,.18) !important;
-  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease !important;
-}
-.halieus-global-join::after,
-.halieus-continue-row button::after,
-.lobby-shell-v2 .lobby-ai-quick-controls .button-primary::after,
-.lobby-shell-v2 .lobby-start-game::after {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  inset: 1px 8% auto;
-  height: 42%;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0));
-  opacity: .62;
-}
-.halieus-global-join:hover,
-.halieus-continue-row button:hover,
-.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:hover,
-.lobby-shell-v2 .lobby-start-game:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.06) saturate(1.04);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.4),
-    inset 0 -2px 0 rgba(0,0,0,.15),
-    0 13px 28px rgba(0,0,0,.22) !important;
-}
-.halieus-global-join:active,
-.halieus-continue-row button:active,
-.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:active,
-.lobby-shell-v2 .lobby-start-game:active {
-  transform: translateY(1px);
-  filter: brightness(.96);
-  box-shadow:
-    inset 0 2px 5px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.14),
-    0 4px 10px rgba(0,0,0,.16) !important;
-}
-.halieus-side-nav button.is-active {
-  background-image:
-    linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 50%, rgba(0,0,0,.07)) !important;
-  box-shadow:
-    inset 3px 0 0 var(--hgr-brand),
-    inset 0 1px 0 rgba(255,255,255,.09),
-    0 5px 14px color-mix(in srgb,var(--hgr-brand) 11%,transparent) !important;
-}
-.halieus-global-join:disabled,
-.halieus-continue-row button:disabled,
-.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:disabled,
-.lobby-shell-v2 .lobby-start-game:disabled {
-  filter: saturate(.55) brightness(.82);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.09) !important;
-}
-.halieus-global-join:disabled::after,
-.halieus-continue-row button:disabled::after,
-.lobby-shell-v2 .lobby-ai-quick-controls .button-primary:disabled::after,
-.lobby-shell-v2 .lobby-start-game:disabled::after { opacity: .18; }
-
-@media (prefers-reduced-motion: reduce) {
-  .halieus-global-join,
-  .halieus-continue-row button,
-  .lobby-shell-v2 .lobby-ai-quick-controls .button-primary,
-  .lobby-shell-v2 .lobby-start-game { transition: none !important; }
-}
-
-
-/* ========================================================================== */
-/* HGR 4.5.3 — original-branding button standard                              */
-/* Visual authority: assets/branding/Halieus Game Room.png                    */
-/* Buttons inherit the icon's rounded shell, dark lower edge and broad         */
-/* convex top sheen instead of reading as flat colour blocks.                  */
-/* ========================================================================== */
-.button-primary,
-.halieus-global-join,
-.halieus-mobile-join-game,
-.halieus-showcase-actions .button-primary,
-.halieus-join-actions .button-primary,
-.halieus-create-form > .button-primary {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
+  border: 1px solid color-mix(in srgb,var(--hgr-brand) 74%,#6d4b00 26%) !important;
   border-radius: 16px;
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.16),
-    inset 0 3px 0 rgba(255,255,255,.18),
-    inset 0 -4px 0 rgba(0,0,0,.22),
-    0 10px 24px rgba(0,0,0,.20) !important;
-}
-.button-primary::before,
-.halieus-global-join::before,
-.halieus-mobile-join-game::before,
-.halieus-showcase-actions .button-primary::before,
-.halieus-join-actions .button-primary::before,
-.halieus-create-form > .button-primary::before {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  pointer-events: none;
-  top: 3px;
-  left: 4px;
-  right: 4px;
-  height: 47%;
-  border-radius: 999px 999px 48% 48% / 100% 100% 38% 38%;
   background:
-    radial-gradient(120% 100% at 50% 0%,
-      rgba(255,255,255,.48) 0%,
-      rgba(255,255,255,.31) 38%,
-      rgba(255,255,255,.12) 72%,
-      rgba(255,255,255,0) 100%);
-  opacity: .88;
+    linear-gradient(
+      180deg,
+      color-mix(in srgb,var(--hgr-brand) 70%,white 30%) 0%,
+      color-mix(in srgb,var(--hgr-brand) 82%,white 18%) 18%,
+      var(--hgr-brand) 48%,
+      color-mix(in srgb,var(--hgr-brand) 92%,black 8%) 82%,
+      color-mix(in srgb,var(--hgr-brand) 78%,black 22%) 100%
+    ) !important;
+  color: #151a22 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.42),
+    inset 0 -3px 0 rgba(69,45,0,.28),
+    0 9px 20px rgba(0,0,0,.18) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.15);
+  transition: transform .15s ease, filter .15s ease, box-shadow .15s ease !important;
 }
-.button-primary:not(:disabled):hover,
-.halieus-global-join:not(:disabled):hover,
-.halieus-mobile-join-game:not(:disabled):hover {
+.halieus-global-join::before,
+.halieus-global-join::after,
+.halieus-mobile-join-game::before,
+.halieus-mobile-join-game::after {
+  content: none !important;
+  display: none !important;
+}
+.halieus-global-join:hover:not(:disabled),
+.halieus-mobile-join-game:hover:not(:disabled) {
   transform: translateY(-1px);
-  filter: brightness(1.045) saturate(1.04);
+  filter: brightness(1.035) saturate(1.025);
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.20),
-    inset 0 3px 0 rgba(255,255,255,.22),
-    inset 0 -4px 0 rgba(0,0,0,.20),
-    0 14px 30px rgba(0,0,0,.24) !important;
+    inset 0 1px 0 rgba(255,255,255,.48),
+    inset 0 -3px 0 rgba(69,45,0,.25),
+    0 12px 24px rgba(0,0,0,.21) !important;
 }
-.button-primary:not(:disabled):active,
-.halieus-global-join:not(:disabled):active,
-.halieus-mobile-join-game:not(:disabled):active {
+.halieus-global-join:active:not(:disabled),
+.halieus-mobile-join-game:active:not(:disabled) {
   transform: translateY(1px);
-  filter: brightness(.96);
+  filter: brightness(.97);
   box-shadow:
-    inset 0 3px 6px rgba(0,0,0,.22),
-    inset 0 -1px 0 rgba(255,255,255,.11),
-    0 4px 10px rgba(0,0,0,.16) !important;
+    inset 0 2px 5px rgba(0,0,0,.13),
+    inset 0 -1px 0 rgba(255,255,255,.16),
+    0 4px 9px rgba(0,0,0,.16) !important;
 }
-.button-primary:disabled::before,
-.halieus-global-join:disabled::before,
-.halieus-mobile-join-game:disabled::before { opacity: .18; }
 
-/* Active navigation pills use the same physical language at lower intensity. */
+/* Desktop/mobile selected destinations stay dark and dimensional.
+   The brand colour is an edge/accent, not a giant glossy overlay. */
 .halieus-side-nav button.is-active,
 .halieus-mobile-nav button.is-active,
 .halieus-discovery-tabs button.is-active,
 .halieus-feature-rail button.is-active {
   position: relative;
   overflow: hidden;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb,var(--mm-surface-2) 91%,white 9%) 0%,
+      var(--mm-surface-2) 24%,
+      color-mix(in srgb,var(--mm-surface-2) 94%,black 6%) 72%,
+      color-mix(in srgb,var(--mm-surface-2) 82%,black 18%) 100%
+    ) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.16),
-    inset 0 -2px 0 rgba(0,0,0,.12),
-    0 6px 16px color-mix(in srgb,var(--hgr-brand) 12%,transparent) !important;
+    inset 3px 0 0 var(--hgr-brand),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -3px 0 color-mix(in srgb,var(--hgr-brand) 68%,#111 32%),
+    0 7px 16px rgba(0,0,0,.16) !important;
 }
 .halieus-side-nav button.is-active::before,
 .halieus-mobile-nav button.is-active::before,
 .halieus-discovery-tabs button.is-active::before,
 .halieus-feature-rail button.is-active::before {
-  content: "";
-  position: absolute;
-  pointer-events: none;
-  inset: 1px 7% auto;
-  height: 45%;
-  border-radius: 999px 999px 48% 48% / 100% 100% 38% 38%;
-  background: radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.24), rgba(255,255,255,0) 78%);
+  content: none !important;
+  display: none !important;
 }
 
+/* Do not globally restyle every .button-primary. Game-specific buttons such as
+   Start Poker already have an approved physical treatment and keep ownership. */
+
 @media (prefers-reduced-motion: reduce) {
-  .button-primary,
   .halieus-global-join,
   .halieus-mobile-join-game { transition: none !important; }
 }
