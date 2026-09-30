@@ -232,10 +232,10 @@ assert.match(updateLauncher, /FINAL STEP 1 - Refreshing HGR Launchers/, "Success
 assert.match(updateLauncher, /launcher-shortcuts\.ps1/, "Update HGR must invoke the canonical launcher shortcut generator");
 assert.match(updateLauncher, /HGR - Control and HGR - Stop Control/, "Updater must confirm the non-duplicated Control launcher pair");
 assert.doesNotMatch(updateLauncher, /Control Mobile and HGR - Stop Control/, "Updater must not advertise the removed duplicate Control Mobile shortcut");
-assert.match(clientCss, /original-branding button standard/, "HGR action surfaces must name the original branding icon as their visual standard");
-assert.match(clientCss, /assets\/branding\/Halieus Game Room\.png/, "HGR button surface contract must point at the original branding icon");
+assert.match(clientCss, /integrated physical button surfaces/, "HGR action surfaces must use the approved integrated physical button treatment");
+assert.match(clientCss, /assets\/branding\/references\/HGR Main\.png/, "HGR button surface contract must point at the approved original rendered icon");
 assert.ok(!clientCss.includes("radial-gradient(120% 100% at 50% 0%"), "HGR buttons must not use a floating radial gloss panel");
-assert.match(clientCss, /Depth lives in the face itself/, "HGR buttons must use integrated face depth rather than an overlay");
+assert.match(clientCss, /depth lives in the face itself/i, "HGR buttons must use integrated face depth rather than an overlay");
 assert.match(controlCss, /integrated physical surfaces/, "HGR Control buttons must use integrated physical depth");
 assert.ok(!controlCss.includes("height: 46%"), "HGR Control must not reintroduce the floating gloss panel");
 assert.match(controlMobileHelper, /function Show-HgrControlPairingCard/, "Mobile launcher must provide a QR pairing-card helper");
