@@ -70,7 +70,8 @@ const accountServer=read("server/src/platform/accounts.ts");
 const html=read("client/index.html");
 const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
-const halieusAppIcon=read("client/public/halieus-app-icon.svg");
+const halieusAppIcon=readBytes("client/public/halieus-app-icon.png");
+const approvedMainIcon=readBytes("assets/branding/references/HGR Main.png");
 const manifest=read("client/public/site.webmanifest");
 const launcherShortcuts=read("scripts/windows/launcher-shortcuts.ps1");
 const previewGenerator=read("scripts/windows/generate-launcher-icons.ps1");
@@ -102,10 +103,9 @@ assert.match(html,/halieus-boot-mark[\s\S]*?M16 15H25V28H39V15H48V49H39V36H25V49
 assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h4"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
-assert.match(halieusAppIcon,/#FFD95A/i,"Installable app icon must preserve the bright Halieus gold highlight");
-assert.match(halieusAppIcon,/#E9A714/i,"Installable app icon must preserve the Halieus gold depth");
-assert.match(manifest,/halieus-app-icon\.svg/,"PWA manifest must expose the canonical Halieus app icon");
-assert.match(launcherReferenceDoc,/Human-approved reference direction controls the canonical system/i,"Launcher reference README must keep human-approved visual direction authoritative");
+assert.equal(createHash("sha256").update(halieusAppIcon).digest("hex"),createHash("sha256").update(approvedMainIcon).digest("hex"),"Installable app icon must be byte-identical to the approved original HGR PNG");
+assert.match(manifest,/halieus-app-icon\.png/,"PWA manifest must expose the approved original Halieus PNG");
+assert.match(launcherReferenceDoc,/approved reference PNG artwork controls launcher output|reference PNGs are finished source artwork/i,"Launcher reference README must keep approved PNG artwork authoritative");
 assert.match(launcherReferenceDoc,/HGR ICON - CONTROL UPDATE/,"Launcher reference README must identify the current icon-system reference");
 assert.match(launcherReferenceDoc,/HGR ICON - CONTROL UPDATE/i,"Launcher reference README must protect the saved CONTROL UPDATE H");
 
