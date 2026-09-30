@@ -75,10 +75,10 @@ function Draw-HalieusH {
     )
 
     # Exact 4x rendering of the approved HGR ICON - CONTROL UPDATE H:
-    # straight block stems, flat ends and a centred bridge.
-    $Graphics.FillRectangle($Brush, 72, 60, 32, 136)
-    $Graphics.FillRectangle($Brush, 152, 60, 32, 136)
-    $Graphics.FillRectangle($Brush, 104, 112, 48, 32)
+    # reference-matched 32x34 block H with 9-unit stems and an 8-unit centred bridge.
+    $Graphics.FillRectangle($Brush, 64, 60, 36, 136)
+    $Graphics.FillRectangle($Brush, 156, 60, 36, 136)
+    $Graphics.FillRectangle($Brush, 100, 112, 56, 32)
 }
 
 function Draw-HgrBadge {
