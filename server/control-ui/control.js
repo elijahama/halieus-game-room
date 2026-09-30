@@ -69,7 +69,9 @@
   }
 
   async function api(path, options = {}) {
-    const response = await fetch(path, {
+    let response;
+    try {
+      response = await fetch(path, {
       credentials: "include",
       cache: "no-store",
       ...options,
@@ -77,7 +79,14 @@
         ...(options.body ? { "Content-Type": "application/json" } : {}),
         ...(options.headers || {}),
       },
-    });
+      });
+    } catch {
+      const error = new Error(
+        "Owner PC Control is unreachable. Start HGR - Control on the PC and make sure both devices are on the same Tailscale tailnet.",
+      );
+      error.status = 0;
+      throw error;
+    }
     let body = null;
     try {
       body = await response.json();
@@ -389,8 +398,13 @@
     }
 
     pairButton.disabled = true;
-    setMessage(pairMessage, "Pairing securely…");
+    setMessage(pairMessage, "Checking owner PC…");
     try {
+      const ping = await api("/api/ping");
+      if (!ping.pairingAvailable) {
+        throw new Error("The pairing code has expired. Restart HGR - Control on the PC to generate a fresh code.");
+      }
+      setMessage(pairMessage, "Pairing securely…");
       await api("/api/pair", {
         method: "POST",
         body: JSON.stringify({ code }),
