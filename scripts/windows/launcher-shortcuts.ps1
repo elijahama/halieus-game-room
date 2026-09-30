@@ -48,6 +48,7 @@ $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
 $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
 $ControlMobileScript = Join-Path $ProjectRoot 'Start HGR Control Mobile.cmd'
+$ControlStopScript = Join-Path $ProjectRoot 'Stop HGR Control Mobile.cmd'
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
@@ -56,7 +57,8 @@ $LauncherNames = [ordered]@{
     Update = 'HGR - Update Site.lnk'
     PowerShell = 'HGR - PowerShell.lnk'
     OpenShard = 'HGR - OpenShard TUI.lnk'
-    ControlMobile = 'HGR - Control Mobile.lnk'
+    ControlMobile = 'HGR - Control.lnk'
+    ControlStop = 'HGR - Stop Control.lnk'
 }
 
 $ProjectStartShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Start
@@ -66,6 +68,7 @@ $ProjectUpdateShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Upda
 $ProjectPowerShellShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.PowerShell
 $ProjectOpenShardShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.OpenShard
 $ProjectControlMobileShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlMobile
+$ProjectControlStopShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlStop
 
 $StartMenuStartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Start
 $StartMenuRestartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Restart
@@ -74,6 +77,7 @@ $StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.
 $StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
 $StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
 $StartMenuControlMobileShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlMobile
+$StartMenuControlStopShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlStop
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -177,7 +181,10 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
     $openShard.Save()
 
     if (Test-Path -LiteralPath $ControlMobileScript) {
-        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlMobile) -CommandScript $ControlMobileScript -Description 'Open the private HGR Control Mobile service for the owner phone' -IconPath $ControlIconPath
+        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlMobile) -CommandScript $ControlMobileScript -Description 'Start HGR Control in the background and copy the owner phone link' -IconPath $ControlIconPath
+    }
+    if (Test-Path -LiteralPath $ControlStopScript) {
+        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlStop) -CommandScript $ControlStopScript -Description 'Stop the background HGR Control service and private phone route' -IconPath $ControlIconPath
     }
 }
 
@@ -222,6 +229,10 @@ $CreatedShortcuts = @(
 if (Test-Path -LiteralPath $ControlMobileScript) {
     $CreatedShortcuts += $ProjectControlMobileShortcut
     $CreatedShortcuts += $StartMenuControlMobileShortcut
+}
+if (Test-Path -LiteralPath $ControlStopScript) {
+    $CreatedShortcuts += $ProjectControlStopShortcut
+    $CreatedShortcuts += $StartMenuControlStopShortcut
 }
 if (Test-Path -LiteralPath $UpdateScript) {
     $CreatedShortcuts += $ProjectUpdateShortcut
