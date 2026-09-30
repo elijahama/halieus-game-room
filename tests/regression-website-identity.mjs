@@ -9,7 +9,7 @@ const versionRe = version.replaceAll('.', '\\.');
 const path = 'M16 15H25V28H39V15H48V49H39V36H25V49H16Z';
 const iconSetGlyph = read('assets/branding/icon-sets/glyphs/hgr-h.svg');
 assert.ok(iconSetGlyph.includes(path), 'Canonical icon-set H glyph must contain the approved H geometry');
-const sources = ['shared/platform/brand.ts', 'client/index.html', 'client/public/halieus-mark.svg', 'client/public/halieus-app-icon.svg', 'client/public/app-icon.svg'];
+const sources = ['shared/platform/brand.ts', 'client/index.html', 'client/public/halieus-mark.svg', 'client/public/app-icon.svg'];
 for (const file of sources) {
   assert.ok(read(file).includes(path), `${file}: canonical CONTROL UPDATE reference-matched block H required`);
 }
@@ -27,9 +27,13 @@ for (const [file, expected] of Object.entries(fixture)) {
 }
 const manifest = JSON.parse(read('client/public/site.webmanifest'));
 assert.ok(manifest.icons.every(i => i.src.includes(`?v=${version}`)), `PWA identities must invalidate prior artwork URLs for ${version}`);
-assert.deepEqual(manifest.icons.map(i => i.src.split("?")[0]), ['/halieus-app-icon.svg'], 'Installed Halieus PWA must have one canonical SVG identity');
-assert.ok(manifest.icons.every(i => i.type === 'image/svg+xml'), 'Installed Halieus identity must be SVG-first');
-assert.ok(manifest.icons.every(i => !/app-icon-reference|app-icon-(?:192|512)\.png/.test(i.src)), 'Historical/raster thumbnails must not override the canonical install identity');
+assert.deepEqual(manifest.icons.map(i => i.src.split("?")[0]), ['/halieus-app-icon.png'], 'Installed Halieus PWA must use the original approved PNG');
+assert.ok(manifest.icons.every(i => i.type === 'image/png'), 'Installed Halieus identity must use the rendered PNG artwork');
+assert.ok(manifest.icons.every(i => i.sizes === '1024x1024'), 'Installed Halieus PNG must declare its original square size');
+assert.ok(manifest.icons.every(i => !/app-icon-reference|app-icon-(?:192|512)\.png/.test(i.src)), 'Historical raster thumbnails must not override the approved install identity');
+const approvedPwaBytes = readFileSync(resolve(root, 'assets/branding/references/HGR Main.png'));
+const installedPwaBytes = readFileSync(resolve(root, 'client/public/halieus-app-icon.png'));
+assert.equal(createHash('sha256').update(installedPwaBytes).digest('hex'), createHash('sha256').update(approvedPwaBytes).digest('hex'), 'Installed PWA icon must be byte-identical to the approved HGR Main reference PNG');
 const indexHtml = read('client/index.html');
 assert.match(indexHtml, new RegExp(`id="halieus-dynamic-favicon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h4"`), 'Initial browser favicon must use the canonical CONTROL UPDATE web mark');
 assert.match(indexHtml, new RegExp(`rel="shortcut icon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h4"`), 'Shortcut favicon must use the canonical CONTROL UPDATE web mark');
@@ -37,7 +41,7 @@ assert.doesNotMatch(indexHtml, /apple-touch-icon[^>]+app-icon-180\.png/, 'Legacy
 assert.doesNotMatch(indexHtml, /app-icon-reference\.png/, 'Historical install reference must not remain in live HTML');
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
 assert.match(pwaCopy,/rm\(resolve\(publicDir, "app-icon-reference\.png"\), \{ force: true \}\)/,'Client prebuild must remove the stale historical install thumbnail');
-assert.match(pwaCopy,/halieus-app-icon\.svg/,'Client prebuild must verify the canonical install vector exists');
+assert.match(pwaCopy,/copyFile\(approvedMainIcon, installedMainIcon\)/,'Client prebuild must copy the approved rendered PNG without redrawing it');
 const clientPackage = JSON.parse(read('client/package.json'));
 assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client prebuild must prepare current PWA assets before Vite runs');
 
@@ -53,11 +57,7 @@ for(const name of ['brand-default','mono-gold','mono-light','mono-dark','light-m
  assert.ok(svg.includes(path),`${name} must reuse canonical CONTROL UPDATE reference-matched block geometry`);
  assert.match(svg,/viewBox="0 0 64 64"/);
 }
-for(const name of ['start','restart','close','update','powershell','openshard','control']) {
- const svg=read(`client/public/brand/launcher/${name}.svg`);
- assert.ok(svg.includes(path),`${name} must reuse canonical CONTROL UPDATE reference-matched block geometry`);
- assert.match(svg,/viewBox="0 0 64 64"/);
-}
+assert.doesNotMatch(flatGenerator,/brand\/launcher|root, 'launcher'/,'Website flat-brand generation must not manufacture launcher artwork');
 assert.match(read('client/public/brand/glyphs/H.svg'),/fill="currentColor"/);
 assert.match(read('client/public/brand/glyphs/H-black.svg'),/fill="#000000"/);
 assert.match(read('client/public/brand/glyphs/H-white.svg'),/fill="#FFFFFF"/);

@@ -15,9 +15,9 @@
   "theme_color": "#F4C430",
   "icons": [
     {
-      "src": "/halieus-app-icon.svg?v=4.5.3-brand-h4",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/halieus-app-icon.png?v=4.5.3-original-png1",
+      "sizes": "1024x1024",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
