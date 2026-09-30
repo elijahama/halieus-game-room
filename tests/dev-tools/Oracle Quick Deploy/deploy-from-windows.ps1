@@ -163,6 +163,8 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
             "Start-HGR-Control.cmd",
             "Start HGR Control Mobile.cmd",
             "Start-HGR-Control-Mobile.cmd",
+            "Stop HGR Control Mobile.cmd",
+            "Stop-HGR-Control-Mobile.cmd",
             "FIRST RUN - Refresh Halieus Launchers.cmd",
             "Update HGR GitHub.cmd"
         )

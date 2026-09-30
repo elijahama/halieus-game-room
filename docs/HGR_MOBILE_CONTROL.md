@@ -381,8 +381,8 @@ The mobile launcher:
 3. generates the normal 32-byte local bearer token without printing it;
 4. generates a separate 8-digit pairing code that expires after 10 minutes;
 5. starts a tailnet-only Tailscale Serve HTTPS reverse proxy on port `8443`;
-6. prints the private `https://<pc>.<tailnet>.ts.net:8443/` URL and pairing code;
-7. removes the temporary credentials and the dedicated Serve route when the launcher exits.
+6. starts the Control Agent as a hidden Windows background process;
+7. prints the private `https://<pc>.<tailnet>.ts.net:8443/` URL and pairing code, then exits while Control keeps running.
 
 On the phone:
 
@@ -451,7 +451,9 @@ Foundation:
 
 The launcher-created token and pairing code are runtime credentials. They are never committed to Git.
 
-The mobile launcher also owns its Tailscale Serve route. The default public-facing tailnet port is `8443`; the Control Agent itself remains on loopback port `43127`.
+The mobile launcher configures its Tailscale Serve route, starts the Control Agent as a hidden Windows background process, records only local lifecycle metadata under the ignored `server/data/runtime/` directory, and then exits. Closing the launcher window therefore no longer disconnects HGR Control.
+
+The default public-facing tailnet port is `8443`; the Control Agent itself remains on loopback port `43127`. Use `.\Stop-HGR-Control-Mobile.cmd` to explicitly stop the recorded background agent, remove the private Serve route and delete the runtime bearer credential. Starting Control again creates a new short-lived pairing code; an already-running controller is left intact rather than silently replacing its sessions.
 
 ## Roadmap
 

@@ -24,8 +24,11 @@ const controlCloseBridge = read("scripts/windows/control-close.ps1");
 const controlUpdateBridge = read("scripts/windows/control-update.ps1");
 const updateLauncher = read("Update HGR GitHub.cmd");
 const controlMobileHelper = read("scripts/windows/start-control-mobile.ps1");
+const controlMobileStopHelper = read("scripts/windows/stop-control-mobile.ps1");
 const controlMobileLauncher = read("Start HGR Control Mobile.cmd");
 const controlMobileLauncherAlias = read("Start-HGR-Control-Mobile.cmd");
+const controlMobileStopLauncher = read("Stop HGR Control Mobile.cmd");
+const controlMobileStopLauncherAlias = read("Stop-HGR-Control-Mobile.cmd");
 const controlUiHtml = read("server/control-ui/index.html");
 const controlUiJs = read("server/control-ui/control.js");
 const controlManifest = read("server/control-ui/manifest.webmanifest");
@@ -206,9 +209,16 @@ assert.match(controlMobileHelper, /\[int\]\$HttpsPort = 8443/, "Mobile Control m
 assert.match(controlMobileHelper, /HGR_CONTROL_PAIR_EXPIRES_AT/, "Mobile launcher must provide a pairing expiry");
 assert.match(controlMobileHelper, /AddMinutes\(10\)/, "Mobile pairing code must be short lived");
 assert.doesNotMatch(controlMobileHelper, /Write-Host\s+"?\$token\b/i, "Mobile launcher must never print the bearer token");
-assert.match(controlMobileHelper, /serve "--https=\$HttpsPort" off/, "Mobile launcher must remove its Tailscale Serve route on exit");
+assert.match(controlMobileHelper, /Start-Process[\s\S]*?-WindowStyle Hidden/s, "Mobile launcher must detach the Control Agent into a hidden background process");
+assert.match(controlMobileHelper, /hgr-control-mobile-state\.json/, "Background Control must persist only ignored runtime lifecycle state");
+assert.match(controlMobileHelper, /You can close this window\. HGR Control will keep running\./, "Mobile launcher must explicitly hand lifetime ownership to the background process");
+assert.match(controlMobileStopHelper, /Stop-Process -Id \$listenerPid -Force/, "Explicit Stop Control must terminate the recorded listener process");
+assert.match(controlMobileStopHelper, /serve "--https=\$httpsPort" off/, "Explicit Stop Control must remove its Tailscale Serve route");
+assert.match(controlMobileStopHelper, /Remove-Item -LiteralPath \$tokenPath -Force/, "Explicit Stop Control must remove the runtime bearer credential");
 assert.match(controlMobileLauncher, /start-control-mobile\.ps1/i, "Stable mobile launcher must delegate to the fixed PowerShell helper");
 assert.match(controlMobileLauncherAlias, /call "%~dp0Start HGR Control Mobile\.cmd"/i, "PowerShell-safe mobile alias must delegate to the canonical launcher");
+assert.match(controlMobileStopLauncher, /stop-control-mobile\.ps1/i, "Stable Stop Control launcher must delegate to the fixed stop helper");
+assert.match(controlMobileStopLauncherAlias, /call "%~dp0Stop HGR Control Mobile\.cmd"/i, "PowerShell-safe Stop Control alias must delegate to the canonical launcher");
 assert.match(controlUiHtml, /manifest\.webmanifest/, "Mobile Control must be installable as a PWA");
 assert.match(controlUiHtml, /id="pairCode"/, "Mobile Control must provide an explicit device pairing surface");
 assert.match(controlUiHtml, /id="introSplash"/, "Mobile Control must provide the requested intro/connection surface");
@@ -281,7 +291,10 @@ for (const releasePath of [
   "server/control-ui",
   "Start HGR Control Mobile.cmd",
   "Start-HGR-Control-Mobile.cmd",
+  "Stop HGR Control Mobile.cmd",
+  "Stop-HGR-Control-Mobile.cmd",
   "scripts/windows/start-control-mobile.ps1",
+  "scripts/windows/stop-control-mobile.ps1",
   "scripts/windows/control-start.ps1",
   "scripts/windows/control-restart.ps1",
   "scripts/windows/control-close.ps1",
@@ -299,6 +312,8 @@ for (const rootLauncher of [
   "Start-HGR-Control.cmd",
   "Start HGR Control Mobile.cmd",
   "Start-HGR-Control-Mobile.cmd",
+  "Stop HGR Control Mobile.cmd",
+  "Stop-HGR-Control-Mobile.cmd",
 ]) {
   assert.ok(
     oraclePacker.includes(`"${rootLauncher}"`),
@@ -311,6 +326,7 @@ for (const rootLauncher of [
 }
 for (const packagedControlFile of [
   "scripts/windows/start-control-mobile.ps1",
+  "scripts/windows/stop-control-mobile.ps1",
   "scripts/windows/control-start.ps1",
   "scripts/windows/control-restart.ps1",
   "scripts/windows/control-close.ps1",
