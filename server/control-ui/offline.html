@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>HGR Control — Owner PC offline</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,Segoe UI,Arial,sans-serif;background:#080b10;color:#f7f8fb}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 0,#172348,#080b10 55%)}
+main{width:min(100%,520px);box-sizing:border-box;padding:28px;border:1px solid #293245;border-radius:26px;background:#11161f;box-shadow:0 24px 70px #0008}
+img{width:74px;height:74px;border-radius:20px;display:block;margin-bottom:18px}
+p{color:#aeb7c8;line-height:1.55}.status{color:#ff7d88;font-weight:900}.steps{padding-left:20px}
+button{width:100%;min-height:50px;border:1px solid #4f7bfe;border-radius:15px;background:linear-gradient(#6a90ff,#4168d8);color:#fff;font-weight:900;font-size:16px;cursor:pointer;box-shadow:inset 0 1px #ffffff55,inset 0 -3px #0004}
+</style>
+</head>
+<body>
+<main>
+<img src="/control-icon.png" alt="">
+<div class="status">Owner PC offline</div>
+<h1>HGR Control cannot reach the agent</h1>
+<p>This screen replaces the cached pairing form when the private Control service is unavailable.</p>
+<ol class="steps">
+<li>On the owner PC, open <strong>HGR - Control</strong>.</li>
+<li>Make sure the PC and phone are on the same Tailscale tailnet.</li>
+<li>Use the fresh QR and pairing code shown on the PC.</li>
+</ol>
+<button onclick="location.reload()">Try again</button>
+</main>
+</body>
+</html>
