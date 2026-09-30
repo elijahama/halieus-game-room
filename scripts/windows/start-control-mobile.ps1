@@ -169,7 +169,7 @@ Remove-Item -LiteralPath $stderrPath -Force -ErrorAction SilentlyContinue
 $agentSource = Join-Path $projectRoot "server\src\control-agent.ts"
 $background = $null
 try {
-    $background = Start-Process -FilePath $nodeCommand.Source -ArgumentList @($tsxCli, $agentSource) -WorkingDirectory $projectRoot -WindowStyle Hidden -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru
+    $background = Start-Process -FilePath $nodeCommand.Source -ArgumentList @("`"$tsxCli`"", "`"$agentSource`"") -WorkingDirectory $projectRoot -WindowStyle Hidden -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru
 
     $listener = $null
     $deadline = [DateTime]::UtcNow.AddSeconds(12)

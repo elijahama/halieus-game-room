@@ -210,6 +210,7 @@ assert.match(controlMobileHelper, /HGR_CONTROL_PAIR_EXPIRES_AT/, "Mobile launche
 assert.match(controlMobileHelper, /AddMinutes\(10\)/, "Mobile pairing code must be short lived");
 assert.doesNotMatch(controlMobileHelper, /Write-Host\s+"?\$token\b/i, "Mobile launcher must never print the bearer token");
 assert.match(controlMobileHelper, /Start-Process[\s\S]*?-WindowStyle Hidden/s, "Mobile launcher must detach the Control Agent into a hidden background process");
+assert.match(controlMobileHelper, /ArgumentList @\("\\"`"\$tsxCli`"\\", "\\"`"\$agentSource`"\\"\)/, "Background Control must quote project paths that contain spaces");
 assert.match(controlMobileHelper, /hgr-control-mobile-state\.json/, "Background Control must persist only ignored runtime lifecycle state");
 assert.match(controlMobileHelper, /You can close this window\. HGR Control will keep running\./, "Mobile launcher must explicitly hand lifetime ownership to the background process");
 assert.match(controlMobileStopHelper, /Stop-Process -Id \$listenerPid -Force/, "Explicit Stop Control must terminate the recorded listener process");
