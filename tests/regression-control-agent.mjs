@@ -228,10 +228,10 @@ assert.match(updateLauncher, /launcher-shortcuts\.ps1/, "Update HGR must invoke 
 assert.match(updateLauncher, /HGR - Control, HGR - Control Mobile and HGR - Stop Control/, "Updater must explicitly confirm the new Control launcher family");
 assert.match(clientCss, /original-branding button standard/, "HGR action surfaces must name the original branding icon as their visual standard");
 assert.match(clientCss, /assets\/branding\/Halieus Game Room\.png/, "HGR button surface contract must point at the original branding icon");
-assert.doesNotMatch(clientCss, /radial-gradient\\(120% 100% at 50% 0%/, "HGR buttons must not use a floating radial gloss panel");
+assert.ok(!clientCss.includes("radial-gradient(120% 100% at 50% 0%"), "HGR buttons must not use a floating radial gloss panel");
 assert.match(clientCss, /Depth lives in the face itself/, "HGR buttons must use integrated face depth rather than an overlay");
 assert.match(controlCss, /integrated physical surfaces/, "HGR Control buttons must use integrated physical depth");
-assert.doesNotMatch(controlCss, /height: 46%;[\\s\\S]*radial-gradient\\(120% 100% at 50% 0%/s, "HGR Control must not reintroduce the floating gloss panel");
+assert.ok(!controlCss.includes("height: 46%"), "HGR Control must not reintroduce the floating gloss panel");
 assert.match(controlMobileHelper, /function Show-HgrControlPairingCard/, "Mobile launcher must provide a QR pairing-card helper");
 assert.match(controlMobileHelper, /node_modules\\qrcode\\bin\\qrcode/, "Mobile launcher must use the existing local qrcode dependency rather than an external QR service");
 assert.match(controlMobileHelper, /Pairing card opened with QR code and copy buttons\./, "Fresh pairing must open a scannable owner pairing card");
