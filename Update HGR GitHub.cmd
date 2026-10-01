@@ -435,7 +435,9 @@ echo   5. Regression tests passed
 echo   6. Source changes committed/pushed when needed
 echo   7. Final release identity regenerated and re-verified
 echo   8. Website deployment completed
-echo   9. Existing HGR app window refreshes itself; HGR opens only if it was closed
+echo   9. HGR Launchers refreshed and verified
+echo  10. A running HGR Control restarts from the updated source with fresh pairing state
+echo  11. Existing HGR app window refreshes itself; HGR opens only if it was closed
 echo.
 goto :REFRESH_AFTER_UPDATE
 
@@ -470,7 +472,30 @@ if errorlevel 1 (
 )
 echo [OK] HGR Launchers refreshed, including HGR - Control and HGR - Stop Control.
 echo.
-echo FINAL STEP 2 - Refreshing the HGR client...
+echo FINAL STEP 2 - Refreshing HGR Control if it was already running...
+echo This restarts only an existing live Control Agent, using the newly updated source
+echo and fresh credentials. A stopped Control service stays stopped.
+echo.
+if not exist "%~dp0scripts\windows\refresh-control-after-update.ps1" (
+    echo [STOPPED] Update completed, but the HGR Control refresh helper is missing:
+    echo   %~dp0scripts\windows\refresh-control-after-update.ps1
+    echo The website deployment is complete. Start HGR - Control manually if needed.
+    popd
+    endlocal
+    exit /b 1
+)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\refresh-control-after-update.ps1"
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Update/deploy completed, but a running HGR Control could not be refreshed.
+    echo The website deployment is complete. Use HGR - Stop Control, then HGR - Control.
+    popd
+    endlocal
+    exit /b 1
+)
+echo [OK] HGR Control post-update handoff completed.
+echo.
+echo FINAL STEP 3 - Refreshing the HGR client...
 echo Existing HGR windows now refresh themselves after the production release changes.
 echo A new HGR window is opened only when no dedicated HGR window is already running.
 echo.
