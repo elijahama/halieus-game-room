@@ -101,6 +101,9 @@ for (const group of ["Core styles","Launcher styles","Additional options"]) {
   assert.ok(display.includes(group), `Personal logo panel must group choices under ${group}`);
 }
 assert.match(release451Css,/halieus-logo-preset-section\.is-additional/,"Logo panel must use the lower space for explicit additional options rather than leave a large empty region");
+const releaseIntegritySource=read("scripts/release-integrity.mjs");
+assert.match(releaseIntegritySource,/hgr-launcher-family-h-alignment-4\.5\.3/,"Release inventory must record the owner-approved launcher-family H alignment");
+assert.match(releaseIntegritySource,/hgr-logo-personalization-expanded-4\.5\.3/,"Release inventory must record the expanded personal logo panel");
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
