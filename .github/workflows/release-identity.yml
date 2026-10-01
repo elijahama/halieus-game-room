@@ -31,21 +31,30 @@ jobs:
         with:
           node-version: 22
 
-      - name: Parse Oracle deployment helper
+      - name: Parse deployment and Windows launcher helpers
         shell: pwsh
         run: |
-          $tokens = $null
-          $errors = $null
-          [void][System.Management.Automation.Language.Parser]::ParseFile(
-            (Resolve-Path './tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1'),
-            [ref]$tokens,
-            [ref]$errors
+          $scripts = @(
+            './tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1',
+            './scripts/windows/generate-launcher-icons.ps1',
+            './scripts/windows/launcher-shortcuts.ps1',
+            './scripts/windows/refresh-control-after-update.ps1'
           )
-          if ($errors.Count -gt 0) {
-            $errors | ForEach-Object { Write-Error $_.Message }
-            exit 1
+          foreach ($script in $scripts) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $script),
+              [ref]$tokens,
+              [ref]$errors
+            )
+            if ($errors.Count -gt 0) {
+              Write-Error "PowerShell syntax failed: $script"
+              $errors | ForEach-Object { Write-Error $_.Message }
+              exit 1
+            }
+            Write-Host "PowerShell syntax PASS: $script"
           }
-          Write-Host 'Oracle deployment helper PowerShell syntax: PASS'
 
       - name: Generate canonical version artifacts before checks
         run: npm run prepare:release
