@@ -21,9 +21,9 @@ assert.ok(
   `engine.io must stay on the patched 6.6.10+ line; found ${engineIoVersion}`,
 );
 const manifest = JSON.parse(read('RELEASE.json'));
-const approvedPwaSource = 'assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png';
+const approvedPwaSource = 'assets/branding/references/HGR Main.png';
 const generatedPwaCopy = 'client/public/app-icon-reference.png';
-assert.ok(manifest.integrityFiles.includes(approvedPwaSource), 'Release identity must hash the approved PWA reference source');
+assert.ok(manifest.integrityFiles.includes(approvedPwaSource), 'Release identity must hash HGR Main.png because client prebuild consumes it on Oracle');
 assert.ok(!manifest.integrityFiles.includes(generatedPwaCopy), 'Generated PWA public copy must not become a release-identity input');
 const run = (cwd, mode) => spawnSync(process.execPath, ['scripts/release-integrity.mjs', mode], { cwd, encoding: 'utf8' });
 const good = run(root, '--verify');

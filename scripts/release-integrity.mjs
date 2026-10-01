@@ -94,7 +94,7 @@ const singles = [
   'assets/branding/icon-sets/glyphs/hgr-h-black.svg',
   'assets/branding/icon-sets/glyphs/hgr-h-white.svg',
   'assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md',
-  'assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png', 'tests/regression-protected-brand-assets.mjs',
+  'assets/branding/references/HGR Main.png', 'tests/regression-protected-brand-assets.mjs',
   'tests/regression-website-identity.mjs', 'tests/browser-website-identity.mjs',
   'tests/fixtures/pre2b-protected-assets.json', 'tests/fixtures/pre2b-website-assets.json',
   'docs/project/PART17_PRE2B_INSPECTION.md', 'docs/project/PART17_PRE2B_SCREENSHOT_MATRIX.md',

@@ -61,6 +61,41 @@ Owner-PC acceptance for Batch 1:
 
 Do not evaluate icon artwork in this batch; launcher artwork is Batch 3.
 
+## Batch 1.1 — Oracle package repair after launcher/PWA authority change
+
+**Goal:** keep the approved `HGR Main.png` available inside the exact Oracle deployment source archive.
+
+Status: **source fix in progress; CI verification required before owner retries Update HGR**
+
+Observed owner-PC failure:
+
+```text
+ENOENT: assets/branding/references/HGR Main.png
+client prebuild -> scripts/copy-approved-pwa-icon.mjs
+Oracle candidate build aborted; live production remained untouched
+```
+
+Root cause:
+
+- `scripts/copy-approved-pwa-icon.mjs` correctly changed to consume `assets/branding/references/HGR Main.png`;
+- release integrity still signed the old timestamped reference PNG;
+- the Oracle packer deliberately excludes unsigned `assets/branding/*` files;
+- therefore `HGR Main.png` existed in GitHub/owner source but was absent from the Oracle ZIP.
+
+Repair contract:
+
+- `HGR Main.png` is a signed release-integrity input;
+- the Oracle package regression explicitly requires `assets/branding/references/HGR Main.png`;
+- the old timestamped PNG is no longer the PWA/install source authority;
+- no production data is replaced when candidate packaging/build fails.
+
+Acceptance:
+
+1. GitHub release workflow green;
+2. real package-only regression confirms `HGR Main.png` is inside the ZIP;
+3. owner retries Update HGR;
+4. Oracle candidate passes the client prebuild instead of failing with ENOENT.
+
 ## Batch 2 — Pairing/API reliability
 
 **Goal:** fix the phone state where the Control shell loads but pairing reports `Failed to fetch`.
