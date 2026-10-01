@@ -11,7 +11,7 @@ const iconSetGlyph = read('assets/branding/icon-sets/glyphs/hgr-h.svg');
 assert.ok(iconSetGlyph.includes(path), 'Canonical icon-set H glyph must contain the approved H geometry');
 const sources = ['shared/platform/brand.ts', 'client/index.html', 'client/public/halieus-mark.svg', 'client/public/app-icon.svg'];
 for (const file of sources) {
-  assert.ok(read(file).includes(path), `${file}: canonical CONTROL UPDATE reference-matched block H required`);
+  assert.ok(read(file).includes(path), `${file}: canonical launcher-family H required`);
 }
 for (const file of ['client/src/platform/components/HomeScreen.tsx', 'client/src/platform/accounts/AccountPortal.tsx', 'client/src/platform/components/HalieusIntro.tsx']) assert.match(read(file), /HalieusBrandMark/);
 const app = read('client/src/App.tsx');
@@ -50,11 +50,11 @@ assert.match(flatGenerator,/assets\/branding\/icon-sets\/glyphs\/hgr-h\.svg/,'We
 const generator = read('scripts/generate-platform-icons.mjs');
 assert.doesNotMatch(generator, /assets\/branding/, 'Website generator must be independent of launcher assets');
 assert.match(generator, /client\/public/);
-console.log('PASS website reference-faithful H, boot/tab/PWA consumers, raster exports and separate M/P artwork');
+console.log('PASS website launcher-family H, boot/tab/PWA consumers, raster exports and separate M/P artwork');
 
 for(const name of ['brand-default','mono-gold','mono-light','mono-dark','light-mode','inverted','outline']) {
  const svg=read(`client/public/brand/flat/${name}.svg`);
- assert.ok(svg.includes(path),`${name} must reuse canonical CONTROL UPDATE reference-matched block geometry`);
+ assert.ok(svg.includes(path),`${name} must reuse canonical launcher-family geometry`);
  assert.match(svg,/viewBox="0 0 64 64"/);
 }
 assert.doesNotMatch(flatGenerator,/brand\/launcher|root, 'launcher'/,'Website flat-brand generation must not manufacture launcher artwork');
