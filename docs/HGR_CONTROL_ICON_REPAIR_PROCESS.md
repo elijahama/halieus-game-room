@@ -102,18 +102,28 @@ Acceptance:
 
 **Goal:** fix the phone state where the Control shell loads but pairing reports `Failed to fetch`.
 
-Planned checks:
+Status: **source repair implemented on `fix/control-pairing-offline-state`; CI and real-device acceptance pending**
 
-1. prove the live Agent is reachable through the exact Tailscale URL;
-2. add an unauthenticated health/pair-capability endpoint if needed;
-3. make the UI distinguish:
-   - cached shell/offline owner PC;
-   - live Control Agent awaiting pairing;
-   - expired pairing code;
-   - real API/network failure;
-4. verify `POST /api/pair` from the phone;
-5. verify session cookie + `GET /api/status`;
-6. preserve no-cache/no-store API behaviour.
+Implementation contract:
+
+1. the pairing form stays hidden until the live Control Agent answers the unauthenticated `GET /api/ping` capability check;
+2. an unreachable owner PC renders a dedicated **Owner PC unavailable** state instead of a usable-looking pairing form;
+3. the offline state has an explicit **Retry connection** action;
+4. an expired pairing code leaves the Agent reachable but disables code entry until **HGR - Control** creates a fresh code;
+5. authenticated `GET /api/status` still selects the dashboard directly;
+6. network loss during status/log/action requests moves the PWA into the same explicit offline state;
+7. player-facing copy uses the canonical **HGR - Control** name rather than the retired **Start HGR Control Mobile** wording;
+8. Control shell assets are revisioned and the service-worker cache is bumped so a newly activated worker reloads stale Control UI;
+9. API traffic remains outside the service-worker cache and keeps `no-store` behaviour.
+
+Real-device acceptance:
+
+1. stop HGR Control and open the previously installed PWA — it must show **Owner PC unavailable**, not the pairing form;
+2. start **HGR - Control** and tap **Retry connection** — pairing should become available without clearing browser data;
+3. pair with the fresh eight-digit code and confirm the dashboard loads;
+4. stop Control again and confirm the paired dashboard transitions to the offline state on the next API check;
+5. restart Control after the ten-minute code expires and verify stale codes cannot be submitted;
+6. verify the old **Start HGR Control Mobile** wording no longer appears in the live PWA.
 
 No icon/folder cleanup belongs in this batch.
 
