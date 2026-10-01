@@ -1,0 +1,139 @@
+# HGR Control + Launcher/Icon Repair Process
+Version line: 4.5.3
+
+This document records the repair in deliberately small batches so launcher, Control, pairing and branding changes are not mixed together.
+
+## Rules
+
+- Complete one batch before starting the next.
+- Run HGR validation/CI after each batch.
+- Do not tell the owner to run Update HGR until the relevant GitHub workflow is green.
+- `assets/branding/references/` is the launcher-art authority.
+- Approved launcher PNGs are used as artwork, not redrawn.
+- HGR Control runs in the background.
+- The generated launcher set exposes one Control start entry and one explicit Stop entry.
+- HGR Control cloud status must be stated accurately: private/Tailscale path is current; cloud relay is not yet a live deployment.
+
+## Batch 1 — Control launcher simplification and documentation
+
+**Goal:** remove launcher ambiguity before touching networking or artwork.
+
+Status: **implemented in source; CI verification required**
+
+Expected launcher set:
+
+- `HGR - Control`
+- `HGR - Stop Control`
+
+Required behaviour:
+
+- `HGR - Control` starts `scripts/windows/start-control-mobile.ps1`.
+- Control Agent runs hidden/in the background.
+- private Tailscale HTTPS route is created;
+- phone URL is copied;
+- pairing card/QR is opened;
+- closing the launcher/pairing card does not stop Control;
+- `HGR - Stop Control` explicitly stops the agent and Tailscale route;
+- `HGR - Control Mobile` is removed from generated launcher folders as redundant.
+
+Documentation:
+
+- root README contains a dedicated HGR Control section;
+- README distinguishes private Control from future cloud Control.
+
+## Batch 2 — Pairing/API reliability
+
+**Goal:** fix the phone state where the Control shell loads but pairing reports `Failed to fetch`.
+
+Planned checks:
+
+1. prove the live Agent is reachable through the exact Tailscale URL;
+2. add an unauthenticated health/pair-capability endpoint if needed;
+3. make the UI distinguish:
+   - cached shell/offline owner PC;
+   - live Control Agent awaiting pairing;
+   - expired pairing code;
+   - real API/network failure;
+4. verify `POST /api/pair` from the phone;
+5. verify session cookie + `GET /api/status`;
+6. preserve no-cache/no-store API behaviour.
+
+No icon/folder cleanup belongs in this batch.
+
+## Batch 3 — Reference-PNG launcher artwork
+
+**Goal:** stop all launcher redraw drift.
+
+Authority:
+
+`assets/branding/references/`
+
+Rules:
+
+- map approved PNGs directly to launcher roles;
+- only resize/export/convert PNG → ICO;
+- never redraw H geometry, action badges, sheen, shadows or rims;
+- role base colours remain documented in `HGR_ICON_PALETTE.md`.
+
+Required roles:
+
+- Main HGR
+- Start
+- Restart
+- Close
+- Update
+- PowerShell
+- OpenShard
+- Control
+
+Control uses royal blue `#4F7BFE`.
+
+## Batch 4 — Icon-folder cleanup
+
+**Goal:** remove duplicate/obsolete icon families only after Batch 3 has proven the live launcher pipeline.
+
+Candidates to review/remove:
+
+- `assets/branding/icon-sets/alternate-work-generated/`
+- `assets/branding/icon-sets/reference-faithful/`
+- obsolete launcher copies in legacy/runtime source locations
+
+Keep:
+
+- approved references;
+- functional website glyphs actually used at runtime;
+- any legacy assets still required by packaging/regressions.
+
+No folder is deleted until code search/regressions prove it is unused.
+
+## Batch 5 — Control cloud implementation
+
+Current status: **not deployed**
+
+Already present:
+
+- private Tailscale-backed PWA;
+- allow-listed Control actions;
+- cloud protocol foundation/documentation.
+
+Still required for real cloud Control:
+
+- owner-PC outbound relay client;
+- cloud device registration/revocation;
+- relay presence/status;
+- hosted Control PWA;
+- authenticated routing of allow-listed actions;
+- real-device QA.
+
+Private/Tailscale Control remains the fallback even after cloud mode exists.
+
+## Acceptance record
+
+For each batch record:
+
+- commit SHA;
+- workflow result;
+- owner-PC result;
+- phone result where applicable;
+- screenshots/observations;
+- any follow-up regression created from failures.
