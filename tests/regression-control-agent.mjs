@@ -255,8 +255,12 @@ assert.match(controlMobileLauncherAlias, /call "%~dp0Start HGR Control Mobile\.c
 assert.match(controlMobileStopLauncher, /stop-control-mobile\.ps1/i, "Stable Stop Control launcher must delegate to the fixed stop helper");
 assert.match(controlMobileStopLauncherAlias, /call "%~dp0Stop HGR Control Mobile\.cmd"/i, "PowerShell-safe Stop Control alias must delegate to the canonical launcher");
 assert.match(controlUiHtml, /manifest\.webmanifest/, "Mobile Control must be installable as a PWA");
+assert.match(controlUiHtml, /id="pairPanel" class="pair-card" hidden/, "Mobile Control must not show pairing until the owner API is proven reachable");
+assert.match(controlUiHtml, /id="offlinePanel" class="offline-card" hidden/, "Mobile Control must provide a distinct owner-PC-offline surface");
+assert.match(controlUiHtml, /id="retryConnectionButton"/, "Offline Control must offer an explicit reconnect action");
 assert.match(controlUiHtml, /id="pairCode"/, "Mobile Control must provide an explicit device pairing surface");
 assert.match(controlUiHtml, /id="introSplash"/, "Mobile Control must provide the requested intro/connection surface");
+assert.doesNotMatch(controlUiHtml, /Start HGR Control Mobile/i, "Player-facing Control UI must use the canonical HGR - Control name");
 assert.match(controlUiHtml, /id="startButton"/, "Mobile Control must expose Start");
 assert.match(controlUiHtml, /id="closeButton"/, "Mobile Control must expose Close");
 assert.match(controlUiHtml, /id="updateButton"/, "Mobile Control must expose Update");
@@ -264,6 +268,11 @@ assert.match(controlUiHtml, /id="operationPanel"/, "Mobile Control must expose l
 assert.match(controlUiHtml, /id="confirmDialog"/, "Mobile Control must provide confirmation UX for destructive/expensive actions");
 assert.match(controlUiJs, /credentials:\s*"include"/, "Mobile PWA API calls must use the HttpOnly session cookie");
 assert.match(controlUiJs, /await api\("\/api\/ping"\)/, "Pairing UI must verify the owner agent is live before submitting the code");
+assert.match(controlUiJs, /function showOffline\(/, "Control UI must render API unreachability as an offline state rather than a pairing failure");
+assert.match(controlUiJs, /async function loadPairingAvailability\(/, "Control UI must probe unauthenticated pairing availability before exposing the form");
+assert.match(controlUiJs, /pairInput\.disabled = !pairingAvailable/, "Expired pairing must disable code entry until HGR - Control issues a fresh code");
+assert.match(controlUiJs, /retryConnectionButton\.addEventListener/, "Offline Control must retry the owner API without requiring a manual browser refresh");
+assert.match(controlUiJs, /navigator\.serviceWorker\.addEventListener\("controllerchange"/, "Control PWA must reload when a newly activated service worker takes control");
 assert.match(controlUiJs, /Owner PC Control is unreachable/, "Network failures must explain that the owner Control agent is unreachable");
 assert.match(controlUiJs, /\/api\/confirm/, "Mobile PWA must request server-side one-time confirmations");
 assert.match(controlUiJs, /\/api\/actions\/\$\{action\}/, "Mobile PWA must call only fixed action routes");
@@ -282,6 +291,8 @@ assert.match(agent, /reason: error \? summarizeUpdaterFailure\(stdout, stderr, e
 assert.doesNotMatch(agent, /appIcon192|appIcon512|\/icon-192\.png|\/icon-512\.png/, "Control Agent must not serve the main Halieus app icon as Control identity");
 assert.doesNotMatch(controlManifest, /app-icon-192|app-icon-512/, "HGR Control must never reuse the main Halieus app icon");
 assert.match(controlUiHtml, /control-icon\.png\?v=4\.5\.3-reference-png1/, "Control splash/header must use the approved reference Control PNG");
+assert.match(controlServiceWorker, /hgr-control-shell-v7/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
+assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b2/, "Control shell cache must pin the Batch-2 JavaScript revision");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(launcherIconGenerator, /HGR Start\.png/, "Launcher exporter must use approved Start PNG");
 assert.match(launcherIconGenerator, /HGR Update\.png/, "Launcher exporter must use approved Update PNG");
