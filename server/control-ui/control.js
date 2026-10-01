@@ -318,7 +318,11 @@
       return entries;
     } catch (error) {
       if (error.status === 401) {
-        showPairing("Your phone session expired. Pair again.");
+        await loadPairingAvailability("Your phone session expired. Pair again.");
+        return [];
+      }
+      if (error.status === 0) {
+        showOffline(error.message);
         return [];
       }
       logsList.textContent = "";
@@ -365,7 +369,11 @@
       await Promise.all([loadStatus({ quiet: true }), loadLogs()]);
     } catch (error) {
       if (error.status === 401) {
-        showPairing("Your phone session expired. Pair again.");
+        await loadPairingAvailability("Your phone session expired. Pair again.");
+        return;
+      }
+      if (error.status === 0) {
+        showOffline(error.message);
         return;
       }
       setMessage(
@@ -413,7 +421,11 @@
       }
     } catch (error) {
       if (error.status === 401) {
-        showPairing("Your phone session expired. Pair again.");
+        await loadPairingAvailability("Your phone session expired. Pair again.");
+        return;
+      }
+      if (error.status === 0) {
+        showOffline(error.message);
         return;
       }
       const files =
@@ -515,9 +527,17 @@
   forgetButton.addEventListener("click", async () => {
     try {
       await api("/api/unpair", { method: "POST" });
-    } catch {}
-    showPairing();
-    setMessage(pairMessage, "This phone was unpaired.", "success");
+      const ping = await loadPairingAvailability();
+      if (ping) {
+        setMessage(pairMessage, "This phone was unpaired.", "success");
+      }
+    } catch (error) {
+      if (error.status === 0) {
+        showOffline(error.message);
+      } else {
+        showPairing("This phone could not be unpaired cleanly. Try again.");
+      }
+    }
   });
 
   window.addEventListener("beforeinstallprompt", (event) => {
