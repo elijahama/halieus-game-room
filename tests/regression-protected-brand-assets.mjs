@@ -38,10 +38,19 @@ for (const [role, colour] of [
 }
 
 const generator = read("scripts/windows/generate-launcher-icons.ps1");
+const controlIcon = readFileSync(resolve(root, "server/control-ui/control-icon.png"));
+const legacyControlSheet = readFileSync(resolve(root, "assets/branding/references/HGR Control.png"));
+const controlWidth = controlIcon.readUInt32BE(16);
+const controlHeight = controlIcon.readUInt32BE(20);
 assert.match(generator, /assets\\branding\\references/, "Launcher exporter must source approved reference PNGs");
 assert.match(generator, /HGR Start\.png/, "Launcher exporter must map Start to its approved PNG");
-assert.match(generator, /HGR Control\.png/, "Launcher exporter must map Control to its approved PNG");
-assert.doesNotMatch(generator, /Draw-HalieusH|Draw-HgrBadge|New-RoundedRectanglePath|Mix-HgrColour/i, "Launcher exporter must not redraw approved icon artwork");
+assert.match(generator, /server\\control-ui\\control-icon\.png/, "Launcher exporter must map Control to the dedicated approved Control PNG");
+assert.doesNotMatch(generator, /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/, "Legacy Control model/reference sheet must never be a launcher source");
+assert.equal(controlWidth, controlHeight, "Approved Control launcher PNG must be square rather than a full model sheet");
+assert.ok(controlWidth >= 256, "Approved Control launcher PNG must be large enough for Windows export");
+assert.notDeepEqual(controlIcon, legacyControlSheet, "Dedicated Control launcher PNG must not be the legacy full reference sheet");
+assert.match(generator, /control-stop\.ico/, "Stop Control must have a distinct exported icon");
+assert.doesNotMatch(generator, /Draw-HalieusH|Draw-HgrBadge|New-RoundedRectanglePath|Mix-HgrColour/i, "Launcher exporter must not redraw approved H artwork");
 
 assert.ok(!existsSync(resolve(root, "assets/branding/icon-sets/reference-faithful")), "Deprecated reconstructed launcher family must stay removed");
 assert.ok(!existsSync(resolve(root, "assets/branding/icon-sets/alternate-work-generated")), "Deprecated work-generated launcher family must stay removed");
