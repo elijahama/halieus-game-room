@@ -89,19 +89,19 @@ assert.match(home,/Spectate/,"Player menu must expose real spectate where availa
 assert.match(home,/Invite to my room/,"Player menu must expose active-room invitation where available");
 assert.match(home,/Copy username/,"Player menu must expose a useful identity action");
 
-assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved website block silhouette");
+assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved launcher-family silhouette");
 assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-bridge/,"Retired faceted H geometry must not return");
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
-assert.match(halieusMark,/M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(halieusMark,/M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"Canonical public Halieus mark must use the approved H geometry");
 assert.match(
   html,
   /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg(?:\?[^"]+)?"/,
   "Initial browser identity must use the canonical Halieus mark",
 );
-assert.match(html,/halieus-boot-mark[\s\S]*?M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h4"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
+assert.match(html,/halieus-boot-mark[\s\S]*?M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"First-paint mark must reuse the approved H geometry");
+assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h5"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
 assert.equal(createHash("sha256").update(halieusAppIcon).digest("hex"),createHash("sha256").update(approvedMainIcon).digest("hex"),"Installable app icon must be byte-identical to the approved original HGR PNG");
