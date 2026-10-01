@@ -51,6 +51,7 @@ const maintenanceBannerCss = read("client/src/platform/components/PlatformMainte
 const maintenanceContract = read("shared/platform/maintenance.ts");
 const oracleQuickInstall = read("tests/dev-tools/Oracle Quick Deploy/quick-install.sh");
 const postUpdateClient = read("scripts/windows/post-update-client.ps1");
+const refreshControlAfterUpdate = read("scripts/windows/refresh-control-after-update.ps1");
 const websiteServiceWorker = read("client/public/sw.js");
 const releaseIntegrity = read("scripts/release-integrity.mjs");
 const oraclePacker = read("tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1");
@@ -342,7 +343,13 @@ assert.match(postUpdateClient, /Existing release-aware HGR app window detected/,
 assert.match(postUpdateClient, /Existing HGR window predates release-aware refresh/, "Pre-feature clients must receive one bootstrap restart");
 assert.match(postUpdateClient, /Restart Halieus Game Room\.cmd/, "One-time bootstrap may use the canonical hard Restart fallback");
 assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper may open HGR when no dedicated window is running");
-assert.match(updateLauncher, /FINAL STEP 2 - Refreshing the HGR client/, "Updater must refresh generated HGR Launchers before the release-aware client handoff");
+assert.match(updateLauncher, /FINAL STEP 2 - Refreshing HGR Control if it was already running/, "Updater must refresh a live Control Agent after pulling the updated source");
+assert.match(updateLauncher, /refresh-control-after-update\.ps1/, "Updater must invoke the guarded Control post-update handoff");
+assert.match(updateLauncher, /FINAL STEP 3 - Refreshing the HGR client/, "Updater must refresh Control before the release-aware client handoff");
+assert.match(refreshControlAfterUpdate, /hgr-control-mobile-state\.json/, "Control post-update handoff must use recorded background lifecycle state rather than guessing");
+assert.match(refreshControlAfterUpdate, /stop-control-mobile\.ps1/, "Control post-update handoff must stop the previous live agent cleanly");
+assert.match(refreshControlAfterUpdate, /start-control-mobile\.ps1/, "Control post-update handoff must restart from the newly updated source");
+assert.match(refreshControlAfterUpdate, /fresh credentials/i, "Control post-update restart must establish a fresh credential boundary");
 
 for (const releasePath of [
   "server/control-ui",
@@ -357,6 +364,7 @@ for (const releasePath of [
   "scripts/windows/control-close.ps1",
   "scripts/windows/control-update.ps1",
   "scripts/windows/post-update-client.ps1",
+  "scripts/windows/refresh-control-after-update.ps1",
 ]) {
   assert.ok(
     releaseIntegrity.includes(releasePath),
@@ -389,6 +397,7 @@ for (const packagedControlFile of [
   "scripts/windows/control-close.ps1",
   "scripts/windows/control-update.ps1",
   "scripts/windows/post-update-client.ps1",
+  "scripts/windows/refresh-control-after-update.ps1",
   "server/control-ui/index.html",
   "server/control-ui/control.css",
   "server/control-ui/control.js",
