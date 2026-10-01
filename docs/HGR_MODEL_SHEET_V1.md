@@ -210,7 +210,7 @@ A new game should start from the nearest established HGR family and current webs
 
 Windows launcher artwork is reference-led, not generator-led.
 
-The approved launcher reference images under `assets/branding/references/` are the source of truth for Windows launcher visuals. Existing approved ICOs under `assets/branding/launchers/` must remain untouched unless a targeted replacement is visually approved against those references.
+Approved rendered launcher sources remain reference-led. Standard launcher roles use the approved images under `assets/branding/references/`; HGR Control uses its dedicated square `server/control-ui/control-icon.png`. Windows PNG/ICO delivery files are regenerated into ignored runtime state under `server/data/runtime/launcher-icons/` and are not a second artwork authority.
 
 The shared H geometry is used for in-product browser identity and personal logo treatments, but Windows launcher artwork remains reference-led: the website geometry must never be used to automatically redraw or replace approved rendered launcher artwork.
 
