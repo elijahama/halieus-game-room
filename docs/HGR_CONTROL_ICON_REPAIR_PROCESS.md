@@ -65,7 +65,7 @@ Do not evaluate icon artwork in this batch; launcher artwork is Batch 3.
 
 **Goal:** keep the approved `HGR Main.png` available inside the exact Oracle deployment source archive.
 
-Status: **source fix in progress; CI verification required before owner retries Update HGR**
+Status: **source complete and CI-verified; owner Oracle retry pending**
 
 Observed owner-PC failure:
 
@@ -91,10 +91,12 @@ Repair contract:
 
 Acceptance:
 
-1. GitHub release workflow green;
-2. real package-only regression confirms `HGR Main.png` is inside the ZIP;
-3. owner retries Update HGR;
-4. Oracle candidate passes the client prebuild instead of failing with ENOENT.
+1. GitHub release workflow green — **verified** on workflow run `36860697887`;
+2. real package-only regression confirms `HGR Main.png` is inside the ZIP — **verified by the regression chain**;
+3. exact fix commit: `7733de1a29` — `fix: include approved HGR Main PNG in Oracle release package`;
+4. generated release identity: `8bcd0451bb`;
+5. owner retries Update HGR — **pending**;
+6. Oracle candidate must pass the client prebuild instead of failing with ENOENT.
 
 ## Batch 2 — Pairing/API reliability
 
