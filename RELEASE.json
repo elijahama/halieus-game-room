@@ -1,9 +1,9 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.3",
-  "fingerprint": "hgr-4.5.3-193bed857003772b",
+  "fingerprint": "hgr-4.5.3-104d70405da05817",
   "algorithm": "sha256",
-  "sourceHash": "193bed857003772b64dbabffec7d9901ded481a688e439e0c5c06b062ee8272b",
+  "sourceHash": "104d70405da05817ad59b82dca8b052d91d21328f101d6af68d0697d44a948e9",
   "integrityFileCount": 456,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
@@ -30,7 +30,7 @@
     "assets/branding/icon-sets/glyphs/hgr-h-black.svg",
     "assets/branding/icon-sets/glyphs/hgr-h-white.svg",
     "assets/branding/icon-sets/glyphs/hgr-h.svg",
-    "assets/branding/references/ChatGPT Image 25 Sept 2026, 18_24_09.png",
+    "assets/branding/references/HGR Main.png",
     "assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md",
     "client/index.html",
     "client/package.json",
