@@ -94,6 +94,13 @@ assert.match(home,/Copy username/,"Player menu must expose a useful identity act
 
 assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved launcher-family silhouette");
 assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-bridge/,"Retired faceted H geometry must not return");
+for (const preset of ["brand","gold","mono-light","mono-dark","white-glyph","black-glyph","light","blue","adaptive","launcher-default"]) {
+  assert.ok(display.includes(`["${preset}"`), `Personal logo panel must expose ${preset}`);
+}
+for (const group of ["Core styles","Launcher styles","Additional options"]) {
+  assert.ok(display.includes(group), `Personal logo panel must group choices under ${group}`);
+}
+assert.match(release451Css,/halieus-logo-preset-section\.is-additional/,"Logo panel must use the lower space for explicit additional options rather than leave a large empty region");
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
