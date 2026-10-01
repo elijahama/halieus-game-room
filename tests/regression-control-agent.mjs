@@ -445,5 +445,7 @@ assert.match(
   /hgr-maintenance-release-aware-refresh-4\.5\.3/,
   "Release feature inventory must record player maintenance and in-place release refresh",
 );
+assert.match(releaseIntegrity,/hgr-control-post-update-refresh-4\.5\.3/,"Release feature inventory must record live Control post-update restart");
+assert.match(releaseIntegrity,/hgr-control-launcher-source-repair-4\.5\.3/,"Release feature inventory must record Control launcher source repair");
 
 console.log("HGR Control foundation / mobile PWA / Masterbook regression: PASS");
