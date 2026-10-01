@@ -72,6 +72,9 @@ const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
 const halieusAppIcon=readBytes("client/public/halieus-app-icon.png");
 const approvedMainIcon=readBytes("assets/branding/references/HGR Main.png");
+const approvedControlIcon=readBytes("server/control-ui/control-icon.png");
+const legacyControlSheet=readBytes("assets/branding/references/HGR Control.png");
+const pngDimensions=(bytes)=>({width:bytes.readUInt32BE(16),height:bytes.readUInt32BE(20)});
 const manifest=read("client/public/site.webmanifest");
 const launcherShortcuts=read("scripts/windows/launcher-shortcuts.ps1");
 const previewGenerator=read("scripts/windows/generate-launcher-icons.ps1");
@@ -127,7 +130,6 @@ const canonicalLauncherSources = [
   "HGR Update.png",
   "HGR PowerShell.png",
   "HGR OpenShard.png",
-  "HGR Control.png",
 ];
 for (const name of canonicalLauncherSources) {
   assert.ok(readBytes(`assets/branding/references/${name}`).length > 0, `${name}: approved rendered reference PNG required`);
@@ -141,13 +143,21 @@ assert.match(previewGenerator,/server\\data\\runtime\\launcher-icons/,"Launcher 
 assert.match(previewGenerator,/HGR Main\.png/,"Main launcher must use the approved HGR Main PNG");
 assert.match(previewGenerator,/HGR Update\.png/,"Update launcher must use the approved Update PNG");
 assert.match(previewGenerator,/HGR OpenShard\.png/,"OpenShard launcher must use the approved OpenShard PNG");
-assert.match(previewGenerator,/HGR Control\.png/,"HGR Control launcher must use the approved Control PNG");
-assert.doesNotMatch(previewGenerator,/Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/,"Launcher exporter must not redraw approved artwork");
+const controlDimensions=pngDimensions(approvedControlIcon);
+assert.equal(controlDimensions.width,controlDimensions.height,"Approved HGR Control launcher source must be square, not a model/reference sheet");
+assert.ok(controlDimensions.width>=256,"Approved HGR Control launcher source must have enough resolution for Windows export");
+assert.notEqual(createHash("sha256").update(approvedControlIcon).digest("hex"),createHash("sha256").update(legacyControlSheet).digest("hex"),"HGR Control launcher source must not fall back to the legacy full reference sheet");
+assert.match(previewGenerator,/server\\control-ui\\control-icon\.png/,"HGR Control launcher must use the dedicated approved Control PWA PNG");
+assert.doesNotMatch(previewGenerator,/control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/,"Legacy full Control reference sheet must never be mapped directly to a Windows launcher");
+assert.match(previewGenerator,/control-stop\.ico/,"Stop Control must receive a distinct runtime icon");
+assert.doesNotMatch(previewGenerator,/Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/,"Launcher exporter must not redraw approved H geometry");
 assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must regenerate runtime ICOs from approved PNGs");
 assert.match(launcherShortcuts,/HGR - Control\.lnk/,"Shortcut family must expose one HGR Control launcher");
 assert.match(launcherShortcuts,/HGR - Stop Control\.lnk/,"Shortcut family must expose one Stop Control launcher");
 assert.doesNotMatch(launcherShortcuts,/ControlMobile = 'HGR - Control Mobile\.lnk'/,"Redundant Control Mobile shortcut must stay removed");
 assert.match(launcherShortcuts,/ControlIconPath/,"Control shortcut must use its dedicated icon path");
+assert.match(launcherShortcuts,/ControlStopIconPath/,"Stop Control shortcut must use a distinct stop icon path");
+assert.match(launcherShortcuts,/Assert-HalieusShortcutIcon/,"Launcher refresh must verify actual .lnk icon metadata instead of only checking shortcut existence");
 assert.doesNotMatch(launcherShortcuts,/launchers\\matte/,"Retired nested launcher folder must not return");
 
 assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");
