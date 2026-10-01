@@ -182,8 +182,20 @@ export function saveDensity(value: HalieusDensity): void {
 }
 
 export function readLogoPreset(): HgrLogoPreset {
-  const value = localStorage.getItem(LOGO_PRESET_KEY);
-  return value === "mono-light" || value === "mono-dark" || value === "light" ? value : "brand";
+  const value = localStorage.getItem(LOGO_PRESET_KEY) as HgrLogoPreset | null;
+  const presets = new Set<HgrLogoPreset>([
+    "brand",
+    "gold",
+    "mono-light",
+    "mono-dark",
+    "white-glyph",
+    "black-glyph",
+    "light",
+    "blue",
+    "adaptive",
+    "launcher-default",
+  ]);
+  return value && presets.has(value) ? value : "brand";
 }
 
 export function saveLogoPreset(value: HgrLogoPreset): void {

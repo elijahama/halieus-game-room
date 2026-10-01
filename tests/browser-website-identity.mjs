@@ -9,7 +9,7 @@ const root = resolve(import.meta.dirname, '..');
 const version = (await readFile(resolve(root, 'VERSION'), 'utf8')).trim();
 const data = await mkdtemp(resolve(tmpdir(), 'hgr-website-brand-'));
 const port = 39462, base = `http://127.0.0.1:${port}`;
-const shape = 'M16 15H25V28H39V15H48V49H39V36H25V49H16Z';
+const shape = 'M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z';
 const server = spawn(process.execPath, [resolve(root, 'server/dist/server/src/index.js')], { cwd: resolve(root, 'server'), env: { ...process.env, PORT: String(port), SERVE_CLIENT: 'true', CLIENT_ORIGINS: base, HALIEUS_DATA_DIR: data, HALIEUS_OWNER_BOOTSTRAP_FILE: resolve(data, 'bootstrap.txt') }, stdio: 'pipe' });
 let output = '', browser;
 const sockets = [];
@@ -45,7 +45,7 @@ try {
       signedIn = true;
       await page.reload(); await page.locator('.halieus-shell').waitFor();
       for (const d of await page.locator('.halieus-brand-mark-h-shape').evaluateAll(paths => paths.map(p => p.getAttribute('d')))) assert.equal(d, shape);
-      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), `/halieus-mark.svg?v=${version}-brand-h4`);
+      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), `/halieus-mark.svg?v=${version}-brand-h5`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${device} home overflow`);
       if (process.env.HGR_SCREENSHOTS) await page.screenshot({ path: resolve(process.env.HGR_SCREENSHOTS, `${device}-${theme}-home.png`) });
 

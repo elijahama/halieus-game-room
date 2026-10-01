@@ -569,14 +569,18 @@
 
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("/sw.js")
+        .register("/sw.js", { updateViaCache: "none" })
         .then((registration) => registration.update())
         .catch(() => undefined);
     });
   }
 
+  window.addEventListener("online", () => {
+    void loadStatus({ quiet: true });
+  });
+
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && !dashboard.hidden) {
+    if (!document.hidden) {
       void loadStatus({ quiet: true });
     }
   });

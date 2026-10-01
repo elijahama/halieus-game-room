@@ -72,6 +72,9 @@ const modelSheet=read("docs/HGR_MODEL_SHEET_V1.md");
 const halieusMark=read("client/public/halieus-mark.svg");
 const halieusAppIcon=readBytes("client/public/halieus-app-icon.png");
 const approvedMainIcon=readBytes("assets/branding/references/HGR Main.png");
+const approvedControlIcon=readBytes("server/control-ui/control-icon.png");
+const legacyControlSheet=readBytes("assets/branding/references/HGR Control.png");
+const pngDimensions=(bytes)=>({width:bytes.readUInt32BE(16),height:bytes.readUInt32BE(20)});
 const manifest=read("client/public/site.webmanifest");
 const launcherShortcuts=read("scripts/windows/launcher-shortcuts.ps1");
 const previewGenerator=read("scripts/windows/generate-launcher-icons.ps1");
@@ -89,19 +92,29 @@ assert.match(home,/Spectate/,"Player menu must expose real spectate where availa
 assert.match(home,/Invite to my room/,"Player menu must expose active-room invitation where available");
 assert.match(home,/Copy username/,"Player menu must expose a useful identity action");
 
-assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved website block silhouette");
+assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved launcher-family silhouette");
 assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-bridge/,"Retired faceted H geometry must not return");
+for (const preset of ["brand","gold","mono-light","mono-dark","white-glyph","black-glyph","light","blue","adaptive","launcher-default"]) {
+  assert.ok(display.includes(`["${preset}"`), `Personal logo panel must expose ${preset}`);
+}
+for (const group of ["Core styles","Launcher styles","Additional options"]) {
+  assert.ok(display.includes(group), `Personal logo panel must group choices under ${group}`);
+}
+assert.match(release451Css,/halieus-logo-preset-section\.is-additional/,"Logo panel must use the lower space for explicit additional options rather than leave a large empty region");
+const releaseIntegritySource=read("scripts/release-integrity.mjs");
+assert.match(releaseIntegritySource,/hgr-launcher-family-h-alignment-4\.5\.3/,"Release inventory must record the owner-approved launcher-family H alignment");
+assert.match(releaseIntegritySource,/hgr-logo-personalization-expanded-4\.5\.3/,"Release inventory must record the expanded personal logo panel");
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
-assert.match(halieusMark,/M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(halieusMark,/M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"Canonical public Halieus mark must use the approved H geometry");
 assert.match(
   html,
   /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg(?:\?[^"]+)?"/,
   "Initial browser identity must use the canonical Halieus mark",
 );
-assert.match(html,/halieus-boot-mark[\s\S]*?M16 15H25V28H39V15H48V49H39V36H25V49H16Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h4"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
+assert.match(html,/halieus-boot-mark[\s\S]*?M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"First-paint mark must reuse the approved H geometry");
+assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h5"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
 assert.equal(createHash("sha256").update(halieusAppIcon).digest("hex"),createHash("sha256").update(approvedMainIcon).digest("hex"),"Installable app icon must be byte-identical to the approved original HGR PNG");
@@ -127,7 +140,6 @@ const canonicalLauncherSources = [
   "HGR Update.png",
   "HGR PowerShell.png",
   "HGR OpenShard.png",
-  "HGR Control.png",
 ];
 for (const name of canonicalLauncherSources) {
   assert.ok(readBytes(`assets/branding/references/${name}`).length > 0, `${name}: approved rendered reference PNG required`);
@@ -141,13 +153,21 @@ assert.match(previewGenerator,/server\\data\\runtime\\launcher-icons/,"Launcher 
 assert.match(previewGenerator,/HGR Main\.png/,"Main launcher must use the approved HGR Main PNG");
 assert.match(previewGenerator,/HGR Update\.png/,"Update launcher must use the approved Update PNG");
 assert.match(previewGenerator,/HGR OpenShard\.png/,"OpenShard launcher must use the approved OpenShard PNG");
-assert.match(previewGenerator,/HGR Control\.png/,"HGR Control launcher must use the approved Control PNG");
-assert.doesNotMatch(previewGenerator,/Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/,"Launcher exporter must not redraw approved artwork");
+const controlDimensions=pngDimensions(approvedControlIcon);
+assert.equal(controlDimensions.width,controlDimensions.height,"Approved HGR Control launcher source must be square, not a model/reference sheet");
+assert.ok(controlDimensions.width>=256,"Approved HGR Control launcher source must have enough resolution for Windows export");
+assert.notEqual(createHash("sha256").update(approvedControlIcon).digest("hex"),createHash("sha256").update(legacyControlSheet).digest("hex"),"HGR Control launcher source must not fall back to the legacy full reference sheet");
+assert.match(previewGenerator,/server\\control-ui\\control-icon\.png/,"HGR Control launcher must use the dedicated approved Control PWA PNG");
+assert.doesNotMatch(previewGenerator,/control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/,"Legacy full Control reference sheet must never be mapped directly to a Windows launcher");
+assert.match(previewGenerator,/control-stop\.ico/,"Stop Control must receive a distinct runtime icon");
+assert.doesNotMatch(previewGenerator,/Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/,"Launcher exporter must not redraw approved H geometry");
 assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must regenerate runtime ICOs from approved PNGs");
 assert.match(launcherShortcuts,/HGR - Control\.lnk/,"Shortcut family must expose one HGR Control launcher");
 assert.match(launcherShortcuts,/HGR - Stop Control\.lnk/,"Shortcut family must expose one Stop Control launcher");
 assert.doesNotMatch(launcherShortcuts,/ControlMobile = 'HGR - Control Mobile\.lnk'/,"Redundant Control Mobile shortcut must stay removed");
 assert.match(launcherShortcuts,/ControlIconPath/,"Control shortcut must use its dedicated icon path");
+assert.match(launcherShortcuts,/ControlStopIconPath/,"Stop Control shortcut must use a distinct stop icon path");
+assert.match(launcherShortcuts,/Assert-HalieusShortcutIcon/,"Launcher refresh must verify actual .lnk icon metadata instead of only checking shortcut existence");
 assert.doesNotMatch(launcherShortcuts,/launchers\\matte/,"Retired nested launcher folder must not return");
 
 assert.match(modelSheet,/Shared website surface grammar/,"Model sheet must define the reusable website shell before game-level exceptions");

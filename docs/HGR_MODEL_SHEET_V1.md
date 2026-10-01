@@ -7,11 +7,11 @@ This model sheet defines the shared visual language for Halieus Game Room. Indiv
 
 ## 1. Halieus H
 
-The platform has **separate website and launcher identities**. The website uses the simple block H shown in the approved website concept (ChatGPT Image Sep 22, 2026, 08_26_37 AM.png). The historical website path at 477d352 matches that reference: `M17 15h10v12h10V15h10v34H37V36H27v13H17z` in a 64 × 64 viewBox.
+The platform has **separate website and launcher identities**, but Dev 24 deliberately unifies their H geometry. The website now uses the same restrained flared-end launcher-family H approved by the owner, while colour/tile treatment may still differ between themeable website surfaces and fixed installed launcher artwork.
 
 Preserve yellow/gold as the default Halieus brand colour and theme-aware contrast. The shared React mark, boot mark, platform tab glyph, web favicons and installable-site icons use this website silhouette. Retain their existing compact sizing and theme tokens.
 
-The serif/slab H belongs to the protected Windows launcher artwork. It must not be propagated into website icons. Website asset generation must never write to assets/branding/launchers or assets/branding/references. Portal uses H; Mega Board uses M; Poker uses P; other games retain contextual identities.
+The launcher-family H is now the shared Halieus geometry across website and launcher surfaces. Website asset generation may reproduce that geometry in themeable vectors, but it must never rewrite the human-approved rendered launcher references. Portal uses H; Mega Board uses M; Poker uses P; other games retain contextual identities.
 
 ### Approved contrast variants
 
@@ -210,9 +210,9 @@ A new game should start from the nearest established HGR family and current webs
 
 Windows launcher artwork is reference-led, not generator-led.
 
-The approved launcher reference images under `assets/branding/references/` are the source of truth for Windows launcher visuals. Existing approved ICOs under `assets/branding/launchers/` must remain untouched unless a targeted replacement is visually approved against those references.
+Approved rendered launcher sources remain reference-led. Standard launcher roles use the approved images under `assets/branding/references/`; HGR Control uses its dedicated square `server/control-ui/control-icon.png`. Windows PNG/ICO delivery files are regenerated into ignored runtime state under `server/data/runtime/launcher-icons/` and are not a second artwork authority.
 
-The shared H geometry may guide in-product browser/PWA identity where documented, but it must not be used to automatically redraw or replace the approved Windows launcher family.
+The shared H geometry is used for in-product browser identity and personal logo treatments, but Windows launcher artwork remains reference-led: the website geometry must never be used to automatically redraw or replace approved rendered launcher artwork.
 
 When documentation and an exploratory generator disagree, the approved reference artwork and protected production assets win.
 

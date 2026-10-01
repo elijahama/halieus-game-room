@@ -79,19 +79,51 @@ export function DisplaySettingsPanel({
           <div><strong>Halieus logo</strong><small>Choose the H treatment independently from your colour theme.</small></div>
           <span>Personal</span>
         </header>
-        <div className="halieus-logo-preset-grid" role="group" aria-label="Halieus logo style">
-          {([
-            ["brand", "Theme", "Theme-aware tile"],
-            ["mono-light", "White H", "White glyph only"],
-            ["mono-dark", "Black H", "Black glyph only"],
-            ["light", "Light tile", "Theme-safe light mark"],
-          ] as Array<[HgrLogoPreset,string,string]>).map(([value,label,description]) => (
-            <button type="button" key={value} className={logoPreset === value ? "is-active" : ""} aria-pressed={logoPreset === value} onClick={() => changeLogoPreset(value)}>
-              <HalieusBrandMark preset={value} className="halieus-logo-preset-preview" />
-              <span><strong>{label}</strong><small>{description}</small></span>
-            </button>
-          ))}
-        </div>
+        {([
+          {
+            id: "core",
+            label: "Core styles",
+            options: [
+              ["brand", "Theme", "Theme-aware tile"],
+              ["mono-light", "Mono light", "Dark H on a light tile"],
+              ["mono-dark", "Mono dark", "Light H on a dark tile"],
+              ["white-glyph", "White glyph", "White H with no tile"],
+            ],
+          },
+          {
+            id: "launcher",
+            label: "Launcher styles",
+            options: [
+              ["black-glyph", "Black glyph", "Black H with no tile"],
+              ["light", "Light tile", "Theme-safe light mark"],
+              ["blue", "Blue tile", "Royal-blue launcher treatment"],
+              ["gold", "Gold launcher", "Signature gold launcher mark"],
+            ],
+          },
+          {
+            id: "additional",
+            label: "Additional options",
+            options: [
+              ["adaptive", "Adaptive", "Follows this device light/dark state"],
+              ["launcher-default", "Launcher default", "Use the standard HGR launcher treatment"],
+            ],
+          },
+        ] as Array<{ id: string; label: string; options: Array<[HgrLogoPreset,string,string]> }>).map((group) => (
+          <section className={`halieus-logo-preset-section is-${group.id}`} key={group.id} aria-labelledby={`halieus-logo-${group.id}`}>
+            <div className="halieus-logo-preset-section-heading">
+              <span id={`halieus-logo-${group.id}`}>{group.label}</span>
+              <i aria-hidden="true" />
+            </div>
+            <div className="halieus-logo-preset-grid" role="group" aria-label={group.label}>
+              {group.options.map(([value,label,description]) => (
+                <button type="button" key={value} className={logoPreset === value ? "is-active" : ""} aria-pressed={logoPreset === value} onClick={() => changeLogoPreset(value)}>
+                  <HalieusBrandMark preset={value} className="halieus-logo-preset-preview" />
+                  <span><strong>{label}</strong><small>{description}</small></span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
 
       <div className="halieus-display-group halieus-display-group-readability">

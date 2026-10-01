@@ -986,9 +986,57 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 .halieus-brand-mark { --logo-bg: var(--hgr-logo-bg); --logo-glyph: var(--hgr-logo-ink); --logo-accent: var(--hgr-logo-border); }
 .halieus-brand-mark .halieus-brand-mark-tile { fill: var(--logo-bg); stroke: var(--logo-accent); }
 .halieus-brand-mark .halieus-brand-mark-h-shape { fill: var(--logo-glyph); }
-.halieus-brand-mark[data-logo-preset="mono-light"] { --logo-bg: transparent; --logo-glyph: #ffffff; --logo-accent: transparent; }
-.halieus-brand-mark[data-logo-preset="mono-dark"] { --logo-bg: transparent; --logo-glyph: #000000; --logo-accent: transparent; }
-.halieus-brand-mark[data-logo-preset="light"] { --logo-bg: var(--hgr-surface); --logo-glyph: var(--hgr-logo-light-ink, #000000); }
+
+/* Personal logo choices all use the launcher-family H geometry. Only the
+ * treatment changes: tile/glyph colour and whether a tile is present. */
+.halieus-brand-mark[data-logo-preset="gold"],
+.halieus-brand-mark[data-logo-preset="launcher-default"] {
+  --logo-bg: #F4C430;
+  --logo-glyph: #090b0f;
+  --logo-accent: #d59d18;
+}
+.halieus-brand-mark[data-logo-preset="mono-light"] {
+  --logo-bg: #f7f8fa;
+  --logo-glyph: #101318;
+  --logo-accent: #d7dbe0;
+}
+.halieus-brand-mark[data-logo-preset="mono-dark"] {
+  --logo-bg: #101318;
+  --logo-glyph: #f7f8fa;
+  --logo-accent: #343a44;
+}
+.halieus-brand-mark[data-logo-preset="white-glyph"] {
+  --logo-bg: transparent;
+  --logo-glyph: #ffffff;
+  --logo-accent: transparent;
+}
+.halieus-brand-mark[data-logo-preset="black-glyph"] {
+  --logo-bg: transparent;
+  --logo-glyph: #000000;
+  --logo-accent: transparent;
+}
+.halieus-brand-mark[data-logo-preset="light"] {
+  --logo-bg: #eef1f4;
+  --logo-glyph: #171b21;
+  --logo-accent: #cbd1d8;
+}
+.halieus-brand-mark[data-logo-preset="blue"] {
+  --logo-bg: #4F7BFE;
+  --logo-glyph: #071227;
+  --logo-accent: #7898ff;
+}
+.halieus-brand-mark[data-logo-preset="adaptive"] {
+  --logo-bg: #11151b;
+  --logo-glyph: #f7f8fa;
+  --logo-accent: #39424d;
+}
+@media (prefers-color-scheme: light) {
+  .halieus-brand-mark[data-logo-preset="adaptive"] {
+    --logo-bg: #f7f8fa;
+    --logo-glyph: #11151b;
+    --logo-accent: #ccd2d9;
+  }
+}
 @media (max-width: 540px) {
  .halieus-theme-library-grid { grid-template-columns: minmax(0,1fr) !important; }
 }
@@ -1617,80 +1665,126 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 }
 
 /* Logo style is personal and independent from theme colour. */
+.halieus-display-group-logo {
+  gap: 14px;
+}
 .halieus-display-group-logo > header {
   grid-template-columns: minmax(0,1fr) auto;
   align-items: start;
+  margin-bottom: 0;
 }
 .halieus-display-group-logo > header > div {
   display: grid;
-  gap: 2px;
+  gap: 3px;
 }
 .halieus-display-group-logo > header > div > small {
   color: var(--hgr-muted);
-  font-size: 8px;
+  font-size: 10px;
 }
 .halieus-display-group-logo > header > span {
   color: var(--hgr-muted);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 850;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .09em;
+}
+.halieus-logo-preset-section {
+  display: grid;
+  gap: 8px;
+}
+.halieus-logo-preset-section + .halieus-logo-preset-section {
+  margin-top: 3px;
+}
+.halieus-logo-preset-section-heading {
+  display: grid;
+  grid-template-columns: auto minmax(18px,1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--hgr-muted);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.halieus-logo-preset-section-heading i {
+  height: 1px;
+  background: var(--hgr-border);
 }
 .halieus-logo-preset-grid {
   display: grid;
   grid-template-columns: repeat(4,minmax(0,1fr));
-  gap: 7px;
+  gap: 9px;
+}
+.halieus-logo-preset-section.is-additional .halieus-logo-preset-grid {
+  grid-template-columns: repeat(2,minmax(0,1fr));
 }
 .halieus-logo-preset-grid > button {
   min-width: 0;
-  min-height: 72px;
+  min-height: 84px;
   display: grid;
-  grid-template-columns: 42px minmax(0,1fr);
+  grid-template-columns: 48px minmax(0,1fr);
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 10px;
+  padding: 10px;
   border: 1px solid var(--hgr-border);
-  border-radius: 11px;
+  border-radius: 12px;
   background: var(--hgr-surface-raised);
   color: var(--hgr-text);
   text-align: left;
   cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.halieus-logo-preset-grid > button:hover {
+  border-color: var(--hgr-border-strong);
+  transform: translateY(-1px);
 }
 .halieus-logo-preset-grid > button.is-active {
-  border-color: color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-border));
-  background: color-mix(in srgb,var(--hgr-brand) 8%,var(--hgr-surface-raised));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--hgr-brand) 14%,transparent);
+  border-color: color-mix(in srgb,var(--hgr-brand) 66%,var(--hgr-border));
+  background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface-raised));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--hgr-brand) 18%,transparent);
 }
 .halieus-logo-preset-preview {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   display: block;
 }
 .halieus-logo-preset-preview svg {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   display: block;
 }
 .halieus-logo-preset-grid > button > span {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 3px;
 }
 .halieus-logo-preset-grid strong {
-  font-size: 9px;
+  font-size: 11px;
+  line-height: 1.2;
 }
 .halieus-logo-preset-grid small {
   color: var(--hgr-muted);
-  font-size: 7px;
-  line-height: 1.3;
+  font-size: 9px;
+  line-height: 1.35;
 }
 
+@media (max-width: 900px) {
+  .halieus-logo-preset-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
 @media (max-width: 760px) {
   .halieus-theme-library-grid {
     grid-template-columns: repeat(2,minmax(0,1fr)) !important;
   }
-  .halieus-logo-preset-grid {
-    grid-template-columns: repeat(2,minmax(0,1fr));
+}
+@media (max-width: 520px) {
+  .halieus-logo-preset-grid,
+  .halieus-logo-preset-section.is-additional .halieus-logo-preset-grid {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .halieus-logo-preset-grid > button {
+    min-height: 72px;
   }
 }
 @media (max-width: 460px) {

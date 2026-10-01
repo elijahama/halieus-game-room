@@ -51,6 +51,7 @@ const maintenanceBannerCss = read("client/src/platform/components/PlatformMainte
 const maintenanceContract = read("shared/platform/maintenance.ts");
 const oracleQuickInstall = read("tests/dev-tools/Oracle Quick Deploy/quick-install.sh");
 const postUpdateClient = read("scripts/windows/post-update-client.ps1");
+const refreshControlAfterUpdate = read("scripts/windows/refresh-control-after-update.ps1");
 const websiteServiceWorker = read("client/public/sw.js");
 const releaseIntegrity = read("scripts/release-integrity.mjs");
 const oraclePacker = read("tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1");
@@ -273,6 +274,10 @@ assert.match(controlUiJs, /async function loadPairingAvailability\(/, "Control U
 assert.match(controlUiJs, /pairInput\.disabled = !pairingAvailable/, "Expired pairing must disable code entry until HGR - Control issues a fresh code");
 assert.match(controlUiJs, /retryConnectionButton\.addEventListener/, "Offline Control must retry the owner API without requiring a manual browser refresh");
 assert.match(controlUiJs, /navigator\.serviceWorker\.addEventListener\("controllerchange"/, "Control PWA must reload when a newly activated service worker takes control");
+assert.match(controlUiJs, /updateViaCache:\s*"none"/, "Control PWA service-worker updates must bypass the browser HTTP cache");
+assert.match(controlUiJs, /window\.addEventListener\("online"/, "Control PWA must retry the owner API when network connectivity returns");
+assert.match(agent, /"\/control\.js"[\s\S]*?cacheControl: "no-store"/s, "Control JS must be served no-store so owner updates become visible immediately");
+assert.match(agent, /"\/sw\.js"[\s\S]*?cacheControl: "no-store"/s, "Control service worker must be served no-store");
 assert.match(controlUiJs, /Owner PC Control is unreachable/, "Network failures must explain that the owner Control agent is unreachable");
 assert.match(controlUiJs, /\/api\/confirm/, "Mobile PWA must request server-side one-time confirmations");
 assert.match(controlUiJs, /\/api\/actions\/\$\{action\}/, "Mobile PWA must call only fixed action routes");
@@ -291,14 +296,19 @@ assert.match(agent, /reason: error \? summarizeUpdaterFailure\(stdout, stderr, e
 assert.doesNotMatch(agent, /appIcon192|appIcon512|\/icon-192\.png|\/icon-512\.png/, "Control Agent must not serve the main Halieus app icon as Control identity");
 assert.doesNotMatch(controlManifest, /app-icon-192|app-icon-512/, "HGR Control must never reuse the main Halieus app icon");
 assert.match(controlUiHtml, /control-icon\.png\?v=4\.5\.3-reference-png1/, "Control splash/header must use the approved reference Control PNG");
-assert.match(controlServiceWorker, /hgr-control-shell-v7/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
-assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b2/, "Control shell cache must pin the Batch-2 JavaScript revision");
+assert.match(controlServiceWorker, /hgr-control-shell-v8/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
+assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b3/, "Control shell cache must pin the Batch-2 JavaScript revision");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(launcherIconGenerator, /HGR Start\.png/, "Launcher exporter must use approved Start PNG");
 assert.match(launcherIconGenerator, /HGR Update\.png/, "Launcher exporter must use approved Update PNG");
 assert.match(launcherIconGenerator, /HGR OpenShard\.png/, "Launcher exporter must use approved OpenShard PNG");
-assert.match(launcherIconGenerator, /HGR Control\.png/, "Launcher exporter must use approved Control PNG");
-assert.doesNotMatch(launcherIconGenerator, /Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/, "Launcher exporter must not redraw reference artwork");
+assert.match(launcherIconGenerator, /server\\control-ui\\control-icon\.png/, "Launcher exporter must use the dedicated approved Control PNG");
+assert.doesNotMatch(launcherIconGenerator, /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/, "Launcher exporter must not map the legacy full Control sheet");
+assert.match(launcherIconGenerator, /control-stop\.ico/, "Launcher exporter must produce a distinct Stop Control icon");
+assert.match(launcherShortcuts, /ControlStopIconPath/, "Stop Control shortcut must point at its distinct stop artwork");
+assert.match(launcherShortcuts, /Assert-HalieusShortcutIcon/, "Launcher refresh must verify actual Control .lnk icon metadata");
+assert.match(launcherShortcuts, /-ClearIconCache/, "Launcher refresh must clear stale Windows icon cache state");
+assert.doesNotMatch(launcherIconGenerator, /Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/, "Launcher exporter must not redraw approved H geometry");
 assert.match(controlCss, /--start: #22C55E/, "Control UI must reuse Start green");
 assert.match(controlCss, /--restart: #F59E0B/, "Control UI must reuse Restart orange");
 assert.match(controlCss, /--close: #EF4444/, "Control UI must reuse Close red");
@@ -342,7 +352,13 @@ assert.match(postUpdateClient, /Existing release-aware HGR app window detected/,
 assert.match(postUpdateClient, /Existing HGR window predates release-aware refresh/, "Pre-feature clients must receive one bootstrap restart");
 assert.match(postUpdateClient, /Restart Halieus Game Room\.cmd/, "One-time bootstrap may use the canonical hard Restart fallback");
 assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper may open HGR when no dedicated window is running");
-assert.match(updateLauncher, /FINAL STEP 2 - Refreshing the HGR client/, "Updater must refresh generated HGR Launchers before the release-aware client handoff");
+assert.match(updateLauncher, /FINAL STEP 2 - Refreshing HGR Control if it was already running/, "Updater must refresh a live Control Agent after pulling the updated source");
+assert.match(updateLauncher, /refresh-control-after-update\.ps1/, "Updater must invoke the guarded Control post-update handoff");
+assert.match(updateLauncher, /FINAL STEP 3 - Refreshing the HGR client/, "Updater must refresh Control before the release-aware client handoff");
+assert.match(refreshControlAfterUpdate, /hgr-control-mobile-state\.json/, "Control post-update handoff must use recorded background lifecycle state rather than guessing");
+assert.match(refreshControlAfterUpdate, /stop-control-mobile\.ps1/, "Control post-update handoff must stop the previous live agent cleanly");
+assert.match(refreshControlAfterUpdate, /start-control-mobile\.ps1/, "Control post-update handoff must restart from the newly updated source");
+assert.match(refreshControlAfterUpdate, /fresh credentials/i, "Control post-update restart must establish a fresh credential boundary");
 
 for (const releasePath of [
   "server/control-ui",
@@ -357,6 +373,7 @@ for (const releasePath of [
   "scripts/windows/control-close.ps1",
   "scripts/windows/control-update.ps1",
   "scripts/windows/post-update-client.ps1",
+  "scripts/windows/refresh-control-after-update.ps1",
 ]) {
   assert.ok(
     releaseIntegrity.includes(releasePath),
@@ -389,6 +406,7 @@ for (const packagedControlFile of [
   "scripts/windows/control-close.ps1",
   "scripts/windows/control-update.ps1",
   "scripts/windows/post-update-client.ps1",
+  "scripts/windows/refresh-control-after-update.ps1",
   "server/control-ui/index.html",
   "server/control-ui/control.css",
   "server/control-ui/control.js",
@@ -427,5 +445,7 @@ assert.match(
   /hgr-maintenance-release-aware-refresh-4\.5\.3/,
   "Release feature inventory must record player maintenance and in-place release refresh",
 );
+assert.match(releaseIntegrity,/hgr-control-post-update-refresh-4\.5\.3/,"Release feature inventory must record live Control post-update restart");
+assert.match(releaseIntegrity,/hgr-control-launcher-source-repair-4\.5\.3/,"Release feature inventory must record Control launcher source repair");
 
 console.log("HGR Control foundation / mobile PWA / Masterbook regression: PASS");

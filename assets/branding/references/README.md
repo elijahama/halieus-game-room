@@ -36,17 +36,13 @@ A newly approved reference added to this folder must be reviewed and, when it ch
 
 ## Canonical geometry
 
-All functional Halieus identities use the same H shown by **`HGR ICON - CONTROL UPDATE`**: straight vertical stems, flat top/bottom ends and one centred horizontal bridge.
+All functional Halieus identities now use the owner-approved launcher-family H: straight stems, one centred bridge and restrained flared end caps. Dev 24 intentionally aligns the website H with the launcher family.
 
-The old play-cut/tail H and the later pseudo-serif/capped H are not current geometry. Utility roles may add their approved motif, but must not alter the H itself.
+The old play-cut/tail H and the temporary block-only website H are retired. Utility roles may add their approved motif, but must not alter the shared H itself.
 
 ## Windows launcher outputs
 
-Reviewable launcher SVG sources live under:
-
-`assets/branding/launchers/`
-
-Owner-machine PNG/ICO shortcut artwork is exported from the approved reference PNG role mapping into ignored runtime state:
+Owner-machine PNG/ICO shortcut artwork is exported from approved source artwork into ignored runtime state:
 
 `server/data/runtime/launcher-icons/`
 
@@ -61,7 +57,7 @@ Legacy tracked ICOs may remain for compatibility with older packaging paths. The
 - OpenShard: purple
 - Update: light blue
 
-HGR Control must use its own Control icon in the installed app, splash/header and Control Mobile shortcut. It must not reuse the main gold Halieus icon.
+HGR Control uses the dedicated square `server/control-ui/control-icon.png` for its installed app and Windows Control launcher. The historical `HGR Control.png` full reference sheet is retained only as reference material and must never be mapped directly to a shortcut. HGR Control must not reuse the main gold Halieus icon.
 
 ## Change rule
 

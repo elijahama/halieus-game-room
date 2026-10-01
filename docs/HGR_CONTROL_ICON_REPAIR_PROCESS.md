@@ -102,7 +102,7 @@ Acceptance:
 
 **Goal:** fix the phone state where the Control shell loads but pairing reports `Failed to fetch`.
 
-Status: **source repair implemented on `fix/control-pairing-offline-state`; CI and real-device acceptance pending**
+Status: **Batch 2 source landed and workflow #758 passed; owner update still showed stale visible behaviour, so Dev 24 adds an explicit post-update Control restart/cache handoff before real-device acceptance**
 
 Implementation contract:
 
@@ -127,19 +127,41 @@ Real-device acceptance:
 
 No icon/folder cleanup belongs in this batch.
 
+### Dev 24 visible-handoff correction
+
+The first Batch 2 update proved an important process gap: **green GitHub validation did not guarantee the already-running owner Control Agent or installed Control PWA had moved onto the new source**. The owner could complete Update HGR successfully and still see the old phone state.
+
+Dev 24 therefore adds these acceptance-critical handoffs:
+
+- if HGR Control is genuinely running when Update HGR completes, stop it cleanly and restart it from the newly pulled source;
+- reuse the same private HTTPS port but issue fresh runtime credentials and a fresh pairing code;
+- serve Control shell JS/CSS/service-worker assets with `no-store`;
+- register the service worker with `updateViaCache: "none"`;
+- retry the API when the phone comes back online;
+- advance the Control shell/service-worker revision so a stale installed PWA cannot silently remain on the previous shell.
+
+A stopped Control service must remain stopped after Update HGR.
+
 ## Batch 3 — Reference-PNG launcher artwork
 
 **Goal:** stop all launcher redraw drift.
 
 Authority:
 
-`assets/branding/references/`
+- normal launcher roles: approved rendered PNGs in `assets/branding/references/`;
+- HGR Control: dedicated square `server/control-ui/control-icon.png`.
+
+The tracked `assets/branding/references/HGR Control.png` is a full reference/model sheet and is **not** a shortcut source. That incorrect mapping caused the owner-visible Control icon failure.
 
 Rules:
 
-- map approved PNGs directly to launcher roles;
-- only resize/export/convert PNG → ICO;
-- never redraw H geometry, action badges, sheen, shadows or rims;
+- map approved square artwork directly to launcher roles;
+- only resize/export/convert source artwork to Windows delivery formats;
+- never redraw the approved H geometry, sheen, shadows or rims;
+- Stop Control may add only its explicit stop badge to the approved Control source so Start/Stop are visually distinguishable;
+- clear stale runtime PNG/ICO exports before regeneration;
+- verify the actual `.lnk` `IconLocation` for Control and Stop Control after shortcut creation;
+- refresh the Windows icon cache;
 - role base colours remain documented in `HGR_ICON_PALETTE.md`.
 
 Required roles:
@@ -154,6 +176,18 @@ Required roles:
 - Control
 
 Control uses royal blue `#4F7BFE`.
+
+### Dev 24 website-logo alignment
+
+Owner visual QA also selected the launcher-family H over the temporary block-only website H. The website now uses the same straight-stem, centred-bridge H with restrained flared end caps, while preserving separate themeable website treatments and fixed launcher artwork.
+
+The Personal logo panel is expanded into three groups so the large empty area is used meaningfully:
+
+- Core styles: Theme, Mono light, Mono dark, White glyph;
+- Launcher styles: Black glyph, Light tile, Blue tile, Gold launcher;
+- Additional options: Adaptive, Launcher default.
+
+Visible acceptance requires checking the website panel itself; CI alone does not close this batch.
 
 ## Batch 4 — Icon-folder cleanup
 
