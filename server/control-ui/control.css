@@ -111,16 +111,30 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(110,146,255,
   font-weight: 800;
   cursor: pointer;
 }
-.pair-card, .action-card, .log-card {
+.pair-card, .offline-card, .action-card, .log-card {
   border: 1px solid var(--border);
   border-radius: 22px;
   background: linear-gradient(160deg, rgba(24,29,35,.96), rgba(15,18,22,.96));
   box-shadow: 0 22px 70px rgba(0,0,0,.26);
 }
-.pair-card { padding: 24px; }
-.pair-card h2 { margin: 6px 0 8px; font-size: clamp(24px, 7vw, 34px); }
-.pair-card > p { margin: 0; color: var(--muted); line-height: 1.55; }
-.pair-card > small { display: block; margin-top: 16px; color: #75808e; }
+.pair-card, .offline-card { padding: 24px; }
+.pair-card h2, .offline-card h2 { margin: 6px 0 8px; font-size: clamp(24px, 7vw, 34px); }
+.pair-card > p, .offline-card > p { margin: 0; color: var(--muted); line-height: 1.55; }
+.pair-card > small, .offline-card > small { display: block; margin-top: 16px; color: #75808e; }
+.offline-card { border-color: rgba(255,100,107,.28); }
+.offline-card .card-kicker { color: #ff8d96; }
+.offline-steps {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 22px;
+  padding-left: 22px;
+  color: #c7ced8;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.offline-steps strong { color: #f7f8fa; }
+.offline-card .primary-button { width: 100%; margin-top: 0; }
+#pairCode:disabled { opacity: .52; cursor: not-allowed; }
 #pairForm { display: grid; gap: 8px; margin-top: 24px; }
 #pairForm label { color: #c6ccd4; font-size: 12px; font-weight: 800; }
 #pairCode {
