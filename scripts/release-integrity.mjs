@@ -327,6 +327,10 @@ const manifest = {
     'hgr-control-dedicated-app-icon-4.5.3',
     'hgr-owner-launcher-role-badges-4.5.3',
     'hgr-maintenance-release-aware-refresh-4.5.3',
+    'hgr-control-post-update-refresh-4.5.3',
+    'hgr-control-launcher-source-repair-4.5.3',
+    'hgr-launcher-family-h-alignment-4.5.3',
+    'hgr-logo-personalization-expanded-4.5.3',
   ],
 };
 
