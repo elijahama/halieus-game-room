@@ -274,6 +274,10 @@ assert.match(controlUiJs, /async function loadPairingAvailability\(/, "Control U
 assert.match(controlUiJs, /pairInput\.disabled = !pairingAvailable/, "Expired pairing must disable code entry until HGR - Control issues a fresh code");
 assert.match(controlUiJs, /retryConnectionButton\.addEventListener/, "Offline Control must retry the owner API without requiring a manual browser refresh");
 assert.match(controlUiJs, /navigator\.serviceWorker\.addEventListener\("controllerchange"/, "Control PWA must reload when a newly activated service worker takes control");
+assert.match(controlUiJs, /updateViaCache:\s*"none"/, "Control PWA service-worker updates must bypass the browser HTTP cache");
+assert.match(controlUiJs, /window\.addEventListener\("online"/, "Control PWA must retry the owner API when network connectivity returns");
+assert.match(agent, /"\/control\.js"[\s\S]*?cacheControl: "no-store"/s, "Control JS must be served no-store so owner updates become visible immediately");
+assert.match(agent, /"\/sw\.js"[\s\S]*?cacheControl: "no-store"/s, "Control service worker must be served no-store");
 assert.match(controlUiJs, /Owner PC Control is unreachable/, "Network failures must explain that the owner Control agent is unreachable");
 assert.match(controlUiJs, /\/api\/confirm/, "Mobile PWA must request server-side one-time confirmations");
 assert.match(controlUiJs, /\/api\/actions\/\$\{action\}/, "Mobile PWA must call only fixed action routes");
@@ -292,8 +296,8 @@ assert.match(agent, /reason: error \? summarizeUpdaterFailure\(stdout, stderr, e
 assert.doesNotMatch(agent, /appIcon192|appIcon512|\/icon-192\.png|\/icon-512\.png/, "Control Agent must not serve the main Halieus app icon as Control identity");
 assert.doesNotMatch(controlManifest, /app-icon-192|app-icon-512/, "HGR Control must never reuse the main Halieus app icon");
 assert.match(controlUiHtml, /control-icon\.png\?v=4\.5\.3-reference-png1/, "Control splash/header must use the approved reference Control PNG");
-assert.match(controlServiceWorker, /hgr-control-shell-v7/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
-assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b2/, "Control shell cache must pin the Batch-2 JavaScript revision");
+assert.match(controlServiceWorker, /hgr-control-shell-v8/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
+assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b3/, "Control shell cache must pin the Batch-2 JavaScript revision");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(launcherIconGenerator, /HGR Start\.png/, "Launcher exporter must use approved Start PNG");
 assert.match(launcherIconGenerator, /HGR Update\.png/, "Launcher exporter must use approved Update PNG");
