@@ -18,7 +18,7 @@ This document records the repair in deliberately small batches so launcher, Cont
 
 **Goal:** remove launcher ambiguity before touching networking or artwork.
 
-Status: **implemented in source; CI verification required**
+Status: **source complete and CI-verified; owner-PC acceptance pending**
 
 Expected launcher set:
 
@@ -40,6 +40,26 @@ Documentation:
 
 - root README contains a dedicated HGR Control section;
 - README distinguishes private Control from future cloud Control.
+
+Implementation record:
+
+- `740d159e0d` — collapsed the generated launcher set to one Control entry;
+- `92900b32b0` — made the canonical HGR Control launcher start the background phone-capable service;
+- `d644dbb102` — added the first-class HGR Control section to the public GitHub README;
+- `47203440fb` — unified HGR Control product naming;
+- `64fd1edbe4` and follow-up regressions — protected background-capable canonical launcher behaviour;
+- latest documented repository workflow before this acceptance update: **green**.
+
+Owner-PC acceptance for Batch 1:
+
+1. run Update HGR once after this batch is green;
+2. open `HGR Launchers`;
+3. confirm there is **no** `HGR - Control Mobile`;
+4. confirm `HGR - Control` and `HGR - Stop Control` both exist;
+5. click `HGR - Control`, close the visible pairing card/launcher window, and confirm Control remains running in the background;
+6. use `HGR - Stop Control` to stop it.
+
+Do not evaluate icon artwork in this batch; launcher artwork is Batch 3.
 
 ## Batch 2 — Pairing/API reliability
 
