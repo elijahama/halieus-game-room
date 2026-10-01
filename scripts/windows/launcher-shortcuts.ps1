@@ -25,6 +25,7 @@ $UpdateIconPath = Join-Path $RuntimeLauncherIconRoot 'update.ico'
 $PowerShellIconPath = Join-Path $RuntimeLauncherIconRoot 'powershell.ico'
 $OpenShardIconPath = Join-Path $RuntimeLauncherIconRoot 'openshard.ico'
 $ControlIconPath = Join-Path $RuntimeLauncherIconRoot 'control.ico'
+$ControlStopIconPath = Join-Path $RuntimeLauncherIconRoot 'control-stop.ico'
 $GameRoomIconPath = Join-Path $RuntimeLauncherIconRoot 'main.ico'
 if (-not (Test-Path -LiteralPath $GameRoomIconPath)) { $GameRoomIconPath = $TrackedGameRoomIconPath }
 $ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
@@ -92,7 +93,8 @@ foreach ($requiredIcon in @(
     $UpdateIconPath,
     $PowerShellIconPath,
     $OpenShardIconPath,
-    $ControlIconPath
+    $ControlIconPath,
+    $ControlStopIconPath
 )) {
     if (-not (Test-Path -LiteralPath $requiredIcon)) {
         throw "Approved HGR launcher export is missing: $requiredIcon"
@@ -135,6 +137,26 @@ function New-HalieusShortcut {
     $shortcut.Save()
 }
 
+function Assert-HalieusShortcutIcon {
+    param(
+        [Parameter(Mandatory = $true)][string]$ShortcutPath,
+        [Parameter(Mandatory = $true)][string]$ExpectedIconPath
+    )
+
+    if (-not (Test-Path -LiteralPath $ShortcutPath)) {
+        throw "Halieus shortcut is missing during icon verification: $ShortcutPath"
+    }
+
+    $check = $wsh.CreateShortcut($ShortcutPath)
+    $actualRaw = [string]$check.IconLocation
+    $actualPath = ($actualRaw -split ',', 2)[0].Trim().Trim('"')
+    $expectedFull = [System.IO.Path]::GetFullPath($ExpectedIconPath)
+    $actualFull = [System.IO.Path]::GetFullPath($actualPath)
+    if (-not $actualFull.Equals($expectedFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Halieus shortcut icon mismatch: $ShortcutPath expected $expectedFull but found $actualFull"
+    }
+}
+
 foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
     New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Start) -CommandScript $StartScript -Description 'Open the Halieus Game Room desktop app window' -IconPath $StartIconPath
     New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Restart) -CommandScript $RestartScript -Description 'Close and reopen the Halieus Game Room desktop app window' -IconPath $RestartIconPath
@@ -175,7 +197,7 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
         New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Control) -CommandScript $ControlScript -Description 'Start HGR Control in the background and open the private phone pairing route' -IconPath $ControlIconPath
     }
     if (Test-Path -LiteralPath $ControlStopScript) {
-        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlStop) -CommandScript $ControlStopScript -Description 'Stop the background HGR Control service and private phone route' -IconPath $ControlIconPath
+        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlStop) -CommandScript $ControlStopScript -Description 'Stop the background HGR Control service and private phone route' -IconPath $ControlStopIconPath
     }
 }
 
@@ -236,9 +258,22 @@ foreach ($shortcutPath in $CreatedShortcuts) {
     }
 }
 
+# Verify the two Control roles against the actual .lnk metadata. This catches
+# the exact Dev 24 failure where the shortcut existed but Windows was pointed at
+# a full reference/model sheet instead of the intended launcher icon.
+if (Test-Path -LiteralPath $ControlScript) {
+    Assert-HalieusShortcutIcon -ShortcutPath $ProjectControlShortcut -ExpectedIconPath $ControlIconPath
+    Assert-HalieusShortcutIcon -ShortcutPath $StartMenuControlShortcut -ExpectedIconPath $ControlIconPath
+}
+if (Test-Path -LiteralPath $ControlStopScript) {
+    Assert-HalieusShortcutIcon -ShortcutPath $ProjectControlStopShortcut -ExpectedIconPath $ControlStopIconPath
+    Assert-HalieusShortcutIcon -ShortcutPath $StartMenuControlStopShortcut -ExpectedIconPath $ControlStopIconPath
+}
+
 # Nudge Windows to re-read shortcut artwork after the icon paths change.
 $IconRefresh = Join-Path $env:SystemRoot 'System32\ie4uinit.exe'
 if (Test-Path -LiteralPath $IconRefresh) {
+    try { Start-Process -FilePath $IconRefresh -ArgumentList '-ClearIconCache' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
     try { Start-Process -FilePath $IconRefresh -ArgumentList '-show' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
 }
 
