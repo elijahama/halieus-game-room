@@ -2,6 +2,9 @@
   "use strict";
 
   const byId = (id) => document.getElementById(id);
+  const offlinePanel = byId("offlinePanel");
+  const offlineMessage = byId("offlineMessage");
+  const retryConnectionButton = byId("retryConnectionButton");
   const pairPanel = byId("pairPanel");
   const dashboard = byId("dashboard");
   const pairForm = byId("pairForm");
@@ -104,18 +107,61 @@
     return body;
   }
 
-  function showPairing(message = "") {
+  function showOffline(message = "") {
+    offlinePanel.hidden = false;
+    pairPanel.hidden = true;
+    dashboard.hidden = true;
+    setConnection("offline", "Offline");
+    offlineMessage.textContent =
+      message ||
+      "HGR Control cannot currently reach the Control Agent on your PC.";
+  }
+
+  function showPairing(message = "", pairingAvailable = true) {
+    offlinePanel.hidden = true;
     pairPanel.hidden = false;
     dashboard.hidden = true;
-    setConnection("offline", "Pair phone");
-    if (message) setMessage(pairMessage, message, "error");
-    window.setTimeout(() => pairInput.focus(), 50);
+    pairInput.disabled = !pairingAvailable;
+    pairButton.disabled = !pairingAvailable;
+    setConnection(
+      pairingAvailable ? "online" : "offline",
+      pairingAvailable ? "Ready to pair" : "Pairing expired",
+    );
+    if (message) {
+      setMessage(pairMessage, message, "error");
+    } else if (!pairingAvailable) {
+      setMessage(
+        pairMessage,
+        "The pairing code has expired. Restart HGR - Control on the PC to create a fresh code.",
+        "error",
+      );
+    } else {
+      setMessage(pairMessage, "");
+    }
+    if (pairingAvailable) {
+      window.setTimeout(() => pairInput.focus(), 50);
+    }
   }
 
   function showDashboard() {
+    offlinePanel.hidden = true;
     pairPanel.hidden = true;
     dashboard.hidden = false;
     setConnection("online", "Connected");
+  }
+
+  async function loadPairingAvailability(message = "") {
+    try {
+      const ping = await api("/api/ping");
+      showPairing(message, Boolean(ping.pairingAvailable));
+      return ping;
+    } catch (error) {
+      showOffline(
+        error.message ||
+          "Owner PC Control is unreachable. Start HGR - Control on the PC and try again.",
+      );
+      return null;
+    }
   }
 
   function renderOperation(activeOperation) {
@@ -183,7 +229,11 @@
         }
       } catch (error) {
         if (error.status === 401) {
-          showPairing("Your phone session expired. Pair again.");
+          await loadPairingAvailability("Your phone session expired. Pair again.");
+          return;
+        }
+        if (error.status === 0) {
+          showOffline(error.message);
           return;
         }
         setConnection("offline", "Offline");
@@ -206,17 +256,13 @@
       return status;
     } catch (error) {
       if (error.status === 401) {
-        showPairing();
+        await loadPairingAvailability();
         return null;
       }
-      setConnection("offline", "Offline");
-      if (!quiet) {
-        setMessage(
-          pairMessage,
-          error.message || "Unable to reach HGR Control.",
-          "error",
-        );
-      }
+      showOffline(
+        error.message ||
+          "Owner PC Control is unreachable. Start HGR - Control on the PC and try again.",
+      );
       return null;
     }
   }
@@ -402,7 +448,8 @@
     try {
       const ping = await api("/api/ping");
       if (!ping.pairingAvailable) {
-        throw new Error("The pairing code has expired. Restart HGR - Control on the PC to generate a fresh code.");
+        showPairing("", false);
+        return;
       }
       setMessage(pairMessage, "Pairing securely…");
       await api("/api/pair", {
@@ -421,13 +468,17 @@
         await loadLogs();
       }
     } catch (error) {
-      setMessage(
-        pairMessage,
-        error.message || "Pairing failed.",
-        "error",
-      );
+      if (error.status === 0) {
+        showOffline(error.message);
+      } else {
+        setMessage(
+          pairMessage,
+          error.message || "Pairing failed.",
+          "error",
+        );
+      }
     } finally {
-      pairButton.disabled = false;
+      if (!pairInput.disabled) pairButton.disabled = false;
     }
   });
 
@@ -458,6 +509,7 @@
   );
 
   refreshButton.addEventListener("click", () => void loadStatus());
+  retryConnectionButton.addEventListener("click", () => void loadStatus());
   logsButton.addEventListener("click", () => void loadLogs());
 
   forgetButton.addEventListener("click", async () => {
@@ -488,8 +540,18 @@
   });
 
   if ("serviceWorker" in navigator) {
+    let serviceWorkerReloadPending = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (serviceWorkerReloadPending) return;
+      serviceWorkerReloadPending = true;
+      window.location.reload();
+    });
+
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => registration.update())
+        .catch(() => undefined);
     });
   }
 
@@ -508,7 +570,7 @@
     }
 
     finishIntro(
-      connectionPill.textContent === "Pair phone"
+      offlinePanel.hidden
         ? "Pairing required"
         : "Owner PC unavailable",
     );
