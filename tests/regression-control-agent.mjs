@@ -302,8 +302,13 @@ assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Co
 assert.match(launcherIconGenerator, /HGR Start\.png/, "Launcher exporter must use approved Start PNG");
 assert.match(launcherIconGenerator, /HGR Update\.png/, "Launcher exporter must use approved Update PNG");
 assert.match(launcherIconGenerator, /HGR OpenShard\.png/, "Launcher exporter must use approved OpenShard PNG");
-assert.match(launcherIconGenerator, /HGR Control\.png/, "Launcher exporter must use approved Control PNG");
-assert.doesNotMatch(launcherIconGenerator, /Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/, "Launcher exporter must not redraw reference artwork");
+assert.match(launcherIconGenerator, /server\\control-ui\\control-icon\.png/, "Launcher exporter must use the dedicated approved Control PNG");
+assert.doesNotMatch(launcherIconGenerator, /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/, "Launcher exporter must not map the legacy full Control sheet");
+assert.match(launcherIconGenerator, /control-stop\.ico/, "Launcher exporter must produce a distinct Stop Control icon");
+assert.match(launcherShortcuts, /ControlStopIconPath/, "Stop Control shortcut must point at its distinct stop artwork");
+assert.match(launcherShortcuts, /Assert-HalieusShortcutIcon/, "Launcher refresh must verify actual Control .lnk icon metadata");
+assert.match(launcherShortcuts, /-ClearIconCache/, "Launcher refresh must clear stale Windows icon cache state");
+assert.doesNotMatch(launcherIconGenerator, /Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/, "Launcher exporter must not redraw approved H geometry");
 assert.match(controlCss, /--start: #22C55E/, "Control UI must reuse Start green");
 assert.match(controlCss, /--restart: #F59E0B/, "Control UI must reuse Restart orange");
 assert.match(controlCss, /--close: #EF4444/, "Control UI must reuse Close red");
