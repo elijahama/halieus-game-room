@@ -11,7 +11,7 @@ Every logo variation must use the exact same:
 - dimensions
 - padding
 
-The canonical H follows the saved **`HGR ICON - CONTROL UPDATE`** reference: two straight block stems with flat ends and one centred horizontal bridge. It contains no play-cut/tail and no decorative serif/cap geometry. Utility roles add their role motif separately without redrawing the H.
+The canonical H now follows the owner-approved launcher-family treatment: two straight stems, one centred bridge and restrained flared end caps. Dev 24 deliberately replaces the temporary block-only website H so website personalization and launcher-family geometry read as one Halieus system. Utility roles add their role motif separately without changing that H.
 
 Do not redraw or resize the H independently between variants.
 
@@ -120,7 +120,7 @@ Launcher icons are sourced from the approved rendered PNG family in `assets/bran
 - Update Site
 - PowerShell
 - OpenShard TUI
-- HGR Control Mobile
+- HGR Control
 
 For launchers, the selected PNG is final artwork. Export tooling may convert PNG → ICO but must not independently redraw the H, badge, sheen, rim, shadow or colour treatment.
 
@@ -139,7 +139,7 @@ Role colours are semantic and fixed for the owner-tool family:
 
 OpenShard owns purple. Update owns light blue. HGR Control must not reuse either role colour.
 
-Utility launcher icons use the approved rendered reference family. HGR Control retains its separate Control motif when the final Control reference PNG is approved.
+Utility launcher icons use approved rendered source artwork. HGR Control uses the dedicated square `server/control-ui/control-icon.png`; the historical `assets/branding/references/HGR Control.png` full sheet is not a launcher source.
 
 ---
 
@@ -168,7 +168,7 @@ This guarantees that all themes keep identical logo geometry.
 Installed app identity now comes from the canonical vector family rather than a historical rendered thumbnail.
 
 - The main Halieus PWA installs from `client/public/halieus-app-icon.svg`.
-- HGR Control installs from its separate `server/control-ui/control-icon.svg`.
+- HGR Control installs from its separate square `server/control-ui/control-icon.png`.
 - The in-app Halieus mark still uses the canonical H geometry and may respond to the player's saved logo treatment.
 - Launcher/install icons use fixed product/role colours; runtime themes must not recolour an already-installed app identity.
 - For website/PWA themeable identity, SVG remains appropriate.
