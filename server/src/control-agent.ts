@@ -963,11 +963,11 @@ async function runUpdate(response: ServerResponse): Promise<void> {
 
 const staticAssets = new Map<string, { path: string; contentType: string; cacheControl: string }>([
   ["/", { path: resolve(controlUiDirectory, "index.html"), contentType: "text/html; charset=utf-8", cacheControl: "no-store" }],
-  ["/control.css", { path: resolve(controlUiDirectory, "control.css"), contentType: "text/css; charset=utf-8", cacheControl: "no-cache" }],
-  ["/control.js", { path: resolve(controlUiDirectory, "control.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
-  ["/manifest.webmanifest", { path: resolve(controlUiDirectory, "manifest.webmanifest"), contentType: "application/manifest+json; charset=utf-8", cacheControl: "no-cache" }],
-  ["/sw.js", { path: resolve(controlUiDirectory, "sw.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-cache" }],
-  ["/offline.html", { path: resolve(controlUiDirectory, "offline.html"), contentType: "text/html; charset=utf-8", cacheControl: "no-cache" }],
+  ["/control.css", { path: resolve(controlUiDirectory, "control.css"), contentType: "text/css; charset=utf-8", cacheControl: "no-store" }],
+  ["/control.js", { path: resolve(controlUiDirectory, "control.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-store" }],
+  ["/manifest.webmanifest", { path: resolve(controlUiDirectory, "manifest.webmanifest"), contentType: "application/manifest+json; charset=utf-8", cacheControl: "no-store" }],
+  ["/sw.js", { path: resolve(controlUiDirectory, "sw.js"), contentType: "text/javascript; charset=utf-8", cacheControl: "no-store" }],
+  ["/offline.html", { path: resolve(controlUiDirectory, "offline.html"), contentType: "text/html; charset=utf-8", cacheControl: "no-store" }],
   ["/control-icon.png", { path: controlIconPng, contentType: "image/png", cacheControl: "no-store" }],
 ]);
 
