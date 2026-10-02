@@ -7,8 +7,8 @@ $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $runtimeDir = Join-Path $projectRoot "server\data\runtime"
 $statePath = Join-Path $runtimeDir "hgr-control-mobile-state.json"
 $tokenPath = Join-Path $runtimeDir ".hgr-control-token"
-$stopHelper = Join-Path $PSScriptRoot "stop-control-mobile.ps1"
-$startHelper = Join-Path $PSScriptRoot "start-control-mobile.ps1"
+$stopHelper = Join-Path $PSScriptRoot "stop-control.ps1"
+$startHelper = Join-Path $PSScriptRoot "start-control.ps1"
 
 $snapshotPath = Join-Path $runtimeDir "hgr-control-update-snapshot.json"
 if ($Capture) {

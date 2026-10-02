@@ -1,6 +1,6 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\start-control-mobile.ps1" %*
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\start-control.ps1" %*
 set "HGR_EXIT=%ERRORLEVEL%"
 endlocal & exit /b %HGR_EXIT%

@@ -27,7 +27,7 @@ Expected launcher set:
 
 Required behaviour:
 
-- `HGR - Control` starts `scripts/windows/start-control-mobile.ps1`.
+- `HGR - Control` starts `scripts/windows/start-control.ps1`.
 - Control Agent runs hidden/in the background.
 - private Tailscale HTTPS route is created;
 - phone URL is copied;
@@ -262,3 +262,8 @@ Batch 2 passed CI 37066007790 after process identity was made independent of Pow
 ## Part 26 Batch 4 — launcher-family website H and compact appearance
 
 Batch 3 commit 3fe28ef1e8e01e5eafb606abb931bde26b464963 passed CI 37067888616. Website H now traces the wide, angled caps and proportions of the approved no-badge launcher glyph (ChatGPT Image 25 Sept 2026, 18_26_58-6.png); the narrow slab-serif reconstruction was rejected by the owner. All SVG consumers and flat exports share this path, with a new favicon revision. Launcher raster masters are preserved. Personal tiles use an integrated face gradient and the existing palette; glyph-only choices remain tile-free. Ten independent logo choices stay grouped. Theme is a compact full-width row, avoiding the stretched empty column. Desktop navigation has a neutral raised active face, a restrained brand edge and a compact Join action with physical depth; mobile navigation structure and game buttons are unchanged.
+
+
+## Part 26 Batch 5 — canonical lifecycle helpers
+
+Canonical CMD launchers and updater now call start-control.ps1 / stop-control.ps1. Old Mobile-named scripts are compatibility shims only, with no duplicated implementation or generated user-facing shortcut. The ignored hgr-control-mobile-state.json filename is deliberately retained to let the updated stop/update helpers recognise an agent launched before this change; renaming live state would strand that process. Release integrity and Oracle package checks require both new canonical helpers and legacy compatibility entry points.

@@ -10,8 +10,8 @@ $global:controlTestPid = 101
 $global:controlTestKeepToken = $false
 function global:Get-NetTCPConnection { [pscustomobject]@{ OwningProcess=$global:controlTestPid } }
 function global:Get-Process { [pscustomobject]@{ StartTime=[datetime]'2026-10-02T10:00:00Z' } }
-Set-Content (Join-Path $helpers 'stop-control-mobile.ps1') '$global:controlTestCalls++; $global:LASTEXITCODE=0'
-Set-Content (Join-Path $helpers 'start-control-mobile.ps1') @'
+Set-Content (Join-Path $helpers 'stop-control.ps1') '$global:controlTestCalls++; $global:LASTEXITCODE=0'
+Set-Content (Join-Path $helpers 'start-control.ps1') @'
 param([int]$HttpsPort)
 $global:controlTestCalls++
 if ($HttpsPort -ne 9443) { throw 'Saved Serve port was not preserved' }

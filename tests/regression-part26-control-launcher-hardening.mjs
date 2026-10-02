@@ -66,7 +66,7 @@ assert.match(shortcuts, /ClearIconCache/, "Launcher refresh must explicitly clea
 // The canonical public wrapper may still call the legacy-named internal helper
 // while that helper remains part of the implementation. The obsolete wording
 // must not be the generated shortcut target.
-assert.match(stopControl, /scripts\\windows\\stop-control-mobile\.ps1/, "Canonical Stop Control wrapper must preserve the existing internal stop implementation");
+assert.match(stopControl, /scripts\\windows\\stop-control\.ps1/, "Canonical Stop Control wrapper must preserve the existing internal stop implementation");
 
 console.log("HGR Part 26 Control launcher hardening regression: PASS");
 

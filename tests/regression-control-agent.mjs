@@ -25,8 +25,8 @@ const controlRestartBridge = read("scripts/windows/control-restart.ps1");
 const controlCloseBridge = read("scripts/windows/control-close.ps1");
 const controlUpdateBridge = read("scripts/windows/control-update.ps1");
 const updateLauncher = read("Update HGR GitHub.cmd");
-const controlMobileHelper = read("scripts/windows/start-control-mobile.ps1");
-const controlMobileStopHelper = read("scripts/windows/stop-control-mobile.ps1");
+const controlMobileHelper = read("scripts/windows/start-control.ps1");
+const controlMobileStopHelper = read("scripts/windows/stop-control.ps1");
 const controlMobileLauncher = read("Start HGR Control Mobile.cmd");
 const controlMobileLauncherAlias = read("Start-HGR-Control-Mobile.cmd");
 const controlMobileStopLauncher = read("Stop HGR Control Mobile.cmd");
@@ -177,7 +177,7 @@ assert.doesNotMatch(controlStartHelper, /Write-Host\s+\$token|Write-Output\s+\$t
 assert.match(controlClientHelper, /ValidateSet\("status", "restart", "logs"\)/, "Local Control client must expose only the approved development actions");
 assert.match(controlClientHelper, /"restart"[\s\S]*?\/api\/actions\/restart/s, "Local Control restart helper must target only the fixed restart endpoint");
 assert.doesNotMatch(controlClientHelper, /Invoke-Expression|Start-Process|cmd\.exe|powershell\.exe/i, "Local Control client must not become a general process runner");
-assert.match(controlLauncher, /start-control-mobile\.ps1/i, "Stable HGR Control CMD entrypoint must start the background phone-capable Control service");
+assert.match(controlLauncher, /start-control\.ps1/i, "Stable HGR Control CMD entrypoint must start the background phone-capable Control service");
 assert.match(controlLauncherAlias, /call "%~dp0Start HGR Control\.cmd"/i, "PowerShell-safe HGR Control alias must delegate to the canonical spaced launcher");
 assert.match(controlClientEntry, /hgr-control-client\.ps1/i, "Stable HGR Control client entrypoint must delegate to the allow-listed PowerShell client");
 assert.match(controlStartHelper, /HGR-Control\.cmd' status/, "Running agent must print an absolute status client command");
@@ -251,9 +251,9 @@ assert.match(launcherShortcuts, /Stop HGR Control Mobile\.cmd/, "Control stop sh
 assert.match(controlMobileStopHelper, /Stop-Process -Id \$listenerPid -Force/, "Explicit Stop Control must terminate the recorded listener process");
 assert.match(controlMobileStopHelper, /serve "--https=\$httpsPort" off/, "Explicit Stop Control must remove its Tailscale Serve route");
 assert.match(controlMobileStopHelper, /Remove-Item -LiteralPath \$tokenPath -Force/, "Explicit Stop Control must remove the runtime bearer credential");
-assert.match(controlMobileLauncher, /start-control-mobile\.ps1/i, "Stable mobile launcher must delegate to the fixed PowerShell helper");
+assert.match(controlMobileLauncher, /start-control\.ps1/i, "Stable mobile launcher must delegate to the fixed PowerShell helper");
 assert.match(controlMobileLauncherAlias, /call "%~dp0Start HGR Control Mobile\.cmd"/i, "PowerShell-safe mobile alias must delegate to the canonical launcher");
-assert.match(controlMobileStopLauncher, /stop-control-mobile\.ps1/i, "Stable Stop Control launcher must delegate to the fixed stop helper");
+assert.match(controlMobileStopLauncher, /stop-control\.ps1/i, "Stable Stop Control launcher must delegate to the fixed stop helper");
 assert.match(controlMobileStopLauncherAlias, /call "%~dp0Stop HGR Control Mobile\.cmd"/i, "PowerShell-safe Stop Control alias must delegate to the canonical launcher");
 assert.match(controlUiHtml, /manifest\.webmanifest/, "Mobile Control must be installable as a PWA");
 assert.match(controlUiHtml, /id="pairPanel" class="pair-card" hidden/, "Mobile Control must not show pairing until the owner API is proven reachable");
@@ -356,8 +356,8 @@ assert.match(updateLauncher, /FINAL STEP 2 - Refreshing HGR Control if it was al
 assert.match(updateLauncher, /refresh-control-after-update\.ps1/, "Updater must invoke the guarded Control post-update handoff");
 assert.match(updateLauncher, /FINAL STEP 3 - Refreshing the HGR client/, "Updater must refresh Control before the release-aware client handoff");
 assert.match(refreshControlAfterUpdate, /hgr-control-mobile-state\.json/, "Control post-update handoff must use recorded background lifecycle state rather than guessing");
-assert.match(refreshControlAfterUpdate, /stop-control-mobile\.ps1/, "Control post-update handoff must stop the previous live agent cleanly");
-assert.match(refreshControlAfterUpdate, /start-control-mobile\.ps1/, "Control post-update handoff must restart from the newly updated source");
+assert.match(refreshControlAfterUpdate, /stop-control\.ps1/, "Control post-update handoff must stop the previous live agent cleanly");
+assert.match(refreshControlAfterUpdate, /start-control\.ps1/, "Control post-update handoff must restart from the newly updated source");
 assert.match(refreshControlAfterUpdate, /fresh credentials/i, "Control post-update restart must establish a fresh credential boundary");
 
 for (const releasePath of [
@@ -366,8 +366,8 @@ for (const releasePath of [
   "Start-HGR-Control-Mobile.cmd",
   "Stop HGR Control Mobile.cmd",
   "Stop-HGR-Control-Mobile.cmd",
-  "scripts/windows/start-control-mobile.ps1",
-  "scripts/windows/stop-control-mobile.ps1",
+  "scripts/windows/start-control.ps1",
+  "scripts/windows/stop-control.ps1",
   "scripts/windows/control-start.ps1",
   "scripts/windows/control-restart.ps1",
   "scripts/windows/control-close.ps1",
@@ -399,8 +399,8 @@ for (const rootLauncher of [
   );
 }
 for (const packagedControlFile of [
-  "scripts/windows/start-control-mobile.ps1",
-  "scripts/windows/stop-control-mobile.ps1",
+  "scripts/windows/start-control.ps1",
+  "scripts/windows/stop-control.ps1",
   "scripts/windows/control-start.ps1",
   "scripts/windows/control-restart.ps1",
   "scripts/windows/control-close.ps1",
@@ -449,3 +449,12 @@ assert.match(releaseIntegrity,/hgr-control-post-update-refresh-4\.5\.3/,"Release
 assert.match(releaseIntegrity,/hgr-control-launcher-source-repair-4\.5\.3/,"Release feature inventory must record Control launcher source repair");
 
 console.log("HGR Control foundation / mobile PWA / Masterbook regression: PASS");
+
+// Old integrations delegate to the single canonical lifecycle implementation.
+for (const role of ['start','stop']) {
+ const shim=read(`scripts/windows/${role}-control-mobile.ps1`);
+ assert.ok(shim.includes(`${role}-control.ps1`));
+ assert.ok(!shim.includes('tailscale') && !shim.includes('Get-NetTCPConnection'));
+ assert.ok(releaseIntegrity.includes(`scripts/windows/${role}-control-mobile.ps1`));
+}
+assert.ok(read('scripts/windows/start-control-mobile.ps1').includes('-HttpsPort $HttpsPort'));

@@ -79,6 +79,8 @@ const singles = [
   'Stop HGR Control Mobile.cmd',
   'Stop-HGR-Control-Mobile.cmd',
   'scripts/windows/start-control-agent.ps1',
+  'scripts/windows/start-control.ps1',
+  'scripts/windows/stop-control.ps1',
   'scripts/windows/start-control-mobile.ps1',
   'scripts/windows/stop-control-mobile.ps1',
   'scripts/windows/refresh-control-after-update.ps1',
