@@ -4,6 +4,10 @@
 >
 > This document is the high-level source of truth for understanding Halieus Game Room (HGR). It does not replace detailed implementation docs; it connects them.
 
+## Current Part 26 checkpoint
+
+[Part 26 acceptance record](HGR_PART26_ACCEPTANCE.md) records the Control lifecycle/PWA/launcher repairs, launcher-derived website H, compact appearance and desktop sidebar changes, Parts 20–26/Drive reference decisions, exact commits and outstanding real-device acceptance. Keep source validation separate from owner acceptance.
+
 ## 1. What HGR is
 
 Halieus Game Room is a private, real-time multiplayer platform for board, card, word and social games. It began as the property-trading game that became **Mega Board** and evolved into one shared application with accounts, rooms, invitations, reconnect/recovery, spectators, guilds, progression, themes, responsive navigation and release/deployment tooling.

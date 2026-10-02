@@ -1,6 +1,8 @@
 # HGR Control + Launcher/Icon Repair Process
 Version line: 4.5.3
 
+Current repair status, exact commits, reference decisions and owner acceptance: [Part 26 acceptance record](HGR_PART26_ACCEPTANCE.md). Earlier sections below retain historical batch numbering; use the acceptance record for the current seven-batch repair.
+
 This document records the repair in deliberately small batches so launcher, Control, pairing and branding changes are not mixed together.
 
 ## Rules
