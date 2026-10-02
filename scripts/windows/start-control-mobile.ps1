@@ -161,26 +161,29 @@ if (-not (Test-Path -LiteralPath $statePath)) {
 }
 
 if (Test-Path -LiteralPath $statePath) {
+    $verifiedLiveAgent = $false
     try {
         $existingState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
         $existingPid = [int]$existingState.listenerPid
         $existingProcess = Get-Process -Id $existingPid -ErrorAction SilentlyContinue
         $existingListener = Get-HgrControlListener
         if ($existingProcess -and $existingListener -and [int]$existingListener.OwningProcess -eq $existingPid) {
-            Write-Host ""
-            Write-Host "HGR Control is already running in the background." -ForegroundColor Green
-            Write-Host "Private HTTPS URL (tailnet only):" -ForegroundColor DarkGray
-            Write-Host "  $($existingState.mobileUrl)" -ForegroundColor Cyan
-            if (Copy-HgrControlLink -Url ([string]$existingState.mobileUrl)) {
-                Write-Host "  Phone link copied to clipboard." -ForegroundColor Green
+            $verifiedLiveAgent = $true
+            $availability = Invoke-RestMethod -Uri "$target/api/ping" -TimeoutSec 4
+            if ($availability.service -ne "hgr-control") { throw "The existing listener did not identify itself as HGR Control." }
+            if ($availability.pairingAvailable) {
+                Write-Host "HGR Control is already running. Use the current pairing card, or HGR - Stop Control to end it."
+                [void](Copy-HgrControlLink -Url ([string]$existingState.mobileUrl))
+                if (Test-Path -LiteralPath $pairingCardPath) { Start-Process -FilePath $pairingCardPath | Out-Null }
+                exit 0
             }
-            Write-Host ""
-            Write-Host "To create a fresh pairing code, stop Control first and start it again:" -ForegroundColor DarkGray
-            Write-Host "  .\Stop HGR Control Mobile.cmd" -ForegroundColor DarkGray
-            Write-Host "  .\Start-HGR-Control.cmd" -ForegroundColor DarkGray
-            exit 0
+            Write-Host "The previous pairing code expired. Renewing Control with fresh pairing state."
+            & (Join-Path $PSScriptRoot "stop-control-mobile.ps1")
+            if (Get-HgrControlListener) { throw "Unable to renew expired Control pairing: the previous listener is still running." }
+
         }
     } catch {
+        if ($verifiedLiveAgent) { throw }
         # Stale/partial runtime state is safe to replace below.
     }
 
@@ -370,7 +373,7 @@ if (Show-HgrControlPairingCard -Url $mobileUrl -PairCode $pairCode) {
 Write-Host ""
 Write-Host "You can close this window. HGR Control will keep running." -ForegroundColor Green
 Write-Host "To stop the background controller explicitly:" -ForegroundColor DarkGray
-Write-Host "  .\Stop HGR Control Mobile.cmd" -ForegroundColor DarkGray
+Write-Host "  HGR - Stop Control" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "The bearer token is NOT printed. The phone receives only an HttpOnly session cookie after pairing." -ForegroundColor DarkGray
 exit 0

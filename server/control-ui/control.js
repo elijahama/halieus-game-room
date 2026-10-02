@@ -39,6 +39,7 @@
   let introFinished = false;
   let deferredInstallPrompt = null;
   let operationPollTimer = null;
+  let pairingExpiryTimer = null;
 
   function setMessage(element, text, tone = "") {
     element.textContent = text || "";
@@ -77,6 +78,7 @@
       response = await fetch(path, {
       credentials: "include",
       cache: "no-store",
+      signal: AbortSignal.timeout(8000),
       ...options,
       headers: {
         ...(options.body ? { "Content-Type": "application/json" } : {}),
@@ -108,6 +110,7 @@
   }
 
   function showOffline(message = "") {
+    window.clearTimeout(pairingExpiryTimer);
     offlinePanel.hidden = false;
     pairPanel.hidden = true;
     dashboard.hidden = true;
@@ -118,6 +121,7 @@
   }
 
   function showPairing(message = "", pairingAvailable = true) {
+    const wasHidden = pairPanel.hidden;
     offlinePanel.hidden = true;
     pairPanel.hidden = false;
     dashboard.hidden = true;
@@ -132,18 +136,19 @@
     } else if (!pairingAvailable) {
       setMessage(
         pairMessage,
-        "The pairing code has expired. Restart HGR - Control on the PC to create a fresh code.",
+        "The pairing code has expired. Open HGR - Control on the PC for a fresh code, then retry connection.",
         "error",
       );
     } else {
       setMessage(pairMessage, "");
     }
-    if (pairingAvailable) {
+    if (pairingAvailable && wasHidden) {
       window.setTimeout(() => pairInput.focus(), 50);
     }
   }
 
   function showDashboard() {
+    window.clearTimeout(pairingExpiryTimer);
     offlinePanel.hidden = true;
     pairPanel.hidden = true;
     dashboard.hidden = false;
@@ -153,7 +158,12 @@
   async function loadPairingAvailability(message = "") {
     try {
       const ping = await api("/api/ping");
+      if (ping.service !== "hgr-control") throw new Error("Owner PC Control did not answer. Retry connection.");
+      window.clearTimeout(pairingExpiryTimer);
       showPairing(message, Boolean(ping.pairingAvailable));
+      if (ping.pairingAvailable && ping.pairingExpiresAt) {
+        pairingExpiryTimer = window.setTimeout(() => showPairing("", false), Math.max(0, Date.parse(ping.pairingExpiresAt) - Date.now()));
+      }
       return ping;
     } catch (error) {
       showOffline(
@@ -521,6 +531,7 @@
   );
 
   refreshButton.addEventListener("click", () => void loadStatus());
+  byId("retryPairingButton").addEventListener("click", () => void loadStatus());
   retryConnectionButton.addEventListener("click", () => void loadStatus());
   logsButton.addEventListener("click", () => void loadLogs());
 
@@ -578,6 +589,11 @@
   window.addEventListener("online", () => {
     void loadStatus({ quiet: true });
   });
+
+  // Detect an owner PC going away even when no operation is running.
+  window.setInterval(() => {
+    if (!document.hidden && !operationPollTimer) void loadStatus({ quiet: true });
+  }, 5000);
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {

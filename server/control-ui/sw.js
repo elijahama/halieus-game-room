@@ -1,5 +1,5 @@
-const CACHE_NAME = "hgr-control-shell-v8";
-const SHELL = ["/control.css?v=4.5.3-control-b3", "/control.js?v=4.5.3-control-b3", "/manifest.webmanifest?v=4.5.3-control-h3", "/offline.html"];
+const CACHE_NAME = "hgr-control-shell-v9";
+const SHELL = ["/control.css?v=4.5.3-control-b4", "/control.js?v=4.5.3-control-b4", "/manifest.webmanifest?v=4.5.3-control-h4", "/offline.html"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL)));
@@ -8,11 +8,18 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
-    ),
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((key) => key.startsWith("hgr-control-") && key !== CACHE_NAME).map((key) => caches.delete(key)));
+      await self.clients.claim();
+      // Older installed shells have no controllerchange handler. Navigate them
+      // from the worker itself so the new state machine actually reaches users.
+      const windows = await self.clients.matchAll({ type: "window" });
+      // Do not hold activation open while awaiting navigation: the navigation's
+      // fetch waits for this worker to finish activating.
+      for (const client of windows) client.navigate(client.url).catch(() => undefined);
+    })(),
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {

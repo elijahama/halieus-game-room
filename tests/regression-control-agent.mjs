@@ -296,8 +296,8 @@ assert.match(agent, /reason: error \? summarizeUpdaterFailure\(stdout, stderr, e
 assert.doesNotMatch(agent, /appIcon192|appIcon512|\/icon-192\.png|\/icon-512\.png/, "Control Agent must not serve the main Halieus app icon as Control identity");
 assert.doesNotMatch(controlManifest, /app-icon-192|app-icon-512/, "HGR Control must never reuse the main Halieus app icon");
 assert.match(controlUiHtml, /control-icon\.png\?v=4\.5\.3-reference-png1/, "Control splash/header must use the approved reference Control PNG");
-assert.match(controlServiceWorker, /hgr-control-shell-v8/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
-assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b3/, "Control shell cache must pin the Batch-2 JavaScript revision");
+assert.match(controlServiceWorker, /hgr-control-shell-v9/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
+assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b4/, "Control shell cache must pin the Batch-2 JavaScript revision");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(launcherIconGenerator, /HGR Start\.png/, "Launcher exporter must use approved Start PNG");
 assert.match(launcherIconGenerator, /HGR Update\.png/, "Launcher exporter must use approved Update PNG");

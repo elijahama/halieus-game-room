@@ -10,7 +10,7 @@
   "icons": [
     {
       "src": "/control-icon.png?v=4.5.3-reference-png1",
-      "sizes": "1024x1024",
+      "sizes": "256x256",
       "type": "image/png",
       "purpose": "any maskable"
     }
