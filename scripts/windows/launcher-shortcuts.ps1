@@ -49,6 +49,8 @@ $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
 $ControlScript = Join-Path $ProjectRoot 'Start HGR Control.cmd'
 $ControlStopScript = Join-Path $ProjectRoot 'Stop HGR Control.cmd'
+# Compatibility only: Stop HGR Control Mobile.cmd may remain as an internal legacy wrapper,
+# but generated shortcuts must target the canonical Stop HGR Control.cmd entry point above.
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
