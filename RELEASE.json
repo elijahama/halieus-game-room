@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.3",
-  "fingerprint": "hgr-4.5.3-e06a7dc90d22a00e",
+  "fingerprint": "hgr-4.5.3-c86f9c6a8b7f7fbf",
   "algorithm": "sha256",
-  "sourceHash": "e06a7dc90d22a00e976b789463a98640c28320dfadff43cb9b876146ff65ad39",
-  "integrityFileCount": 456,
+  "sourceHash": "c86f9c6a8b7f7fbf30258c1fc497a1e0558106e68b5ce07cde57d6c4a8c983cd",
+  "integrityFileCount": 457,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -260,6 +260,7 @@
     "scripts/windows/hgr-control-client.ps1",
     "scripts/windows/launcher-shortcuts.ps1",
     "scripts/windows/post-update-client.ps1",
+    "scripts/windows/refresh-control-after-update.ps1",
     "scripts/windows/restart-background.ps1",
     "scripts/windows/show-feedback.ps1",
     "scripts/windows/start-background.ps1",
@@ -572,6 +573,10 @@
     "hgr-canonical-simple-h-icon-family-4.5.3",
     "hgr-control-dedicated-app-icon-4.5.3",
     "hgr-owner-launcher-role-badges-4.5.3",
-    "hgr-maintenance-release-aware-refresh-4.5.3"
+    "hgr-maintenance-release-aware-refresh-4.5.3",
+    "hgr-control-post-update-refresh-4.5.3",
+    "hgr-control-launcher-source-repair-4.5.3",
+    "hgr-launcher-family-h-alignment-4.5.3",
+    "hgr-logo-personalization-expanded-4.5.3"
   ]
 }
