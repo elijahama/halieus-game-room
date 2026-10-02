@@ -32,11 +32,27 @@ try {
 } catch {}
 
 if ($listener -and [int]$listener.OwningProcess -eq $listenerPid) {
-    Stop-Process -Id $listenerPid -Force -ErrorAction SilentlyContinue
+    # Current agents shut down gracefully; old implementations use the bounded fallback.
+    if (Test-Path -LiteralPath $tokenPath) {
+        try {
+            $credential = (Get-Content -LiteralPath $tokenPath -Raw).Trim()
+            Invoke-RestMethod -Uri "http://127.0.0.1:$localPort/api/lifecycle/stop" -Method Post -Headers @{ Authorization="Bearer $credential" } -TimeoutSec 3 | Out-Null
+        } catch { Write-Host "Using compatibility stop for the previous Control implementation." }
+    }
+    $deadline = [DateTime]::UtcNow.AddSeconds(3)
+    do {
+        Start-Sleep -Milliseconds 100
+        $remaining = Get-NetTCPConnection -LocalAddress "127.0.0.1" -LocalPort $localPort -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    } while ($remaining -and [int]$remaining.OwningProcess -eq $listenerPid -and [DateTime]::UtcNow -lt $deadline)
+    if ($remaining -and [int]$remaining.OwningProcess -eq $listenerPid) { Stop-Process -Id $listenerPid -Force -ErrorAction Stop }
 }
 
 if ($processPid -ne $listenerPid) {
-    Stop-Process -Id $processPid -Force -ErrorAction SilentlyContinue
+    # A PID from stale state can belong to another application. Check ownership.
+    $wrapper = Get-CimInstance Win32_Process -Filter "ProcessId=$processPid" -ErrorAction SilentlyContinue
+    if ($wrapper -and $wrapper.CommandLine -and $wrapper.CommandLine.Contains($projectRoot) -and $wrapper.CommandLine -match 'control') {
+        Stop-Process -Id $processPid -Force -ErrorAction SilentlyContinue
+    }
 }
 
 $tailscaleCommand = Get-Command tailscale.exe -ErrorAction SilentlyContinue

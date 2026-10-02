@@ -1,4 +1,4 @@
-param()
+param([switch]$Capture)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -9,6 +9,34 @@ $statePath = Join-Path $runtimeDir "hgr-control-mobile-state.json"
 $tokenPath = Join-Path $runtimeDir ".hgr-control-token"
 $stopHelper = Join-Path $PSScriptRoot "stop-control-mobile.ps1"
 $startHelper = Join-Path $PSScriptRoot "start-control-mobile.ps1"
+
+$snapshotPath = Join-Path $runtimeDir "hgr-control-update-snapshot.json"
+if ($Capture) {
+    New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
+    $running = $false
+    $capturedState = $null
+    if (Test-Path -LiteralPath $statePath) {
+        try {
+            $capturedState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+            $capturedListener = Get-NetTCPConnection -LocalAddress "127.0.0.1" -LocalPort ([int]$capturedState.localPort) -State Listen -ErrorAction Stop | Select-Object -First 1
+            $running = [int]$capturedListener.OwningProcess -eq [int]$capturedState.listenerPid
+            if ($running) {
+                $started = (Get-Process -Id ([int]$capturedState.listenerPid) -ErrorAction Stop).StartTime.ToUniversalTime().ToString("o")
+                $capturedState | Add-Member -NotePropertyName processStarted -NotePropertyValue $started -Force
+            }
+        } catch { $running = $false }
+    }
+    @{ running=$running; state=$capturedState } | ConvertTo-Json | Set-Content -LiteralPath $snapshotPath -Encoding UTF8
+    Write-Host "Recorded Control state before updating source."
+    exit 0
+}
+if (-not (Test-Path -LiteralPath $snapshotPath)) { throw "Control pre-update snapshot is missing; refusing to guess whether it should be started." }
+$snapshot = Get-Content -LiteralPath $snapshotPath -Raw | ConvertFrom-Json
+Remove-Item -LiteralPath $snapshotPath -Force
+if (-not $snapshot.running) {
+    Write-Host "HGR Control was stopped before the update; it remains stopped."
+    exit 0
+}
 
 if (-not (Test-Path -LiteralPath $statePath)) {
     Write-Host "HGR Control was not running before the update; no Control restart is required." -ForegroundColor DarkGray
@@ -35,15 +63,20 @@ try {
 
 if (-not $listener -or [int]$listener.OwningProcess -ne $listenerPid) {
     Write-Host "HGR Control runtime state existed, but no matching live Control listener was found." -ForegroundColor Yellow
-    Write-Host "Stale runtime state will be cleared; Control will remain stopped." -ForegroundColor DarkGray
-    Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
-    Remove-Item -LiteralPath $tokenPath -Force -ErrorAction SilentlyContinue
+    Write-Host "Leaving runtime state untouched: another process may now own this port." -ForegroundColor DarkGray
     exit 0
 }
 
 if (-not (Test-Path -LiteralPath $stopHelper) -or -not (Test-Path -LiteralPath $startHelper)) {
     throw "HGR Control post-update restart helpers are missing."
 }
+
+$currentStart = (Get-Process -Id $listenerPid -ErrorAction Stop).StartTime.ToUniversalTime().ToString("o")
+if ($listenerPid -ne [int]$snapshot.state.listenerPid -or $currentStart -ne $snapshot.state.processStarted) {
+    Write-Host "Control was replaced during the update; preserving the owner's newer process."
+    exit 0
+}
+$oldToken = if (Test-Path -LiteralPath $tokenPath) { Get-Content -LiteralPath $tokenPath -Raw } else { "" }
 
 Write-Host ""
 Write-Host "HGR Control was running before this update." -ForegroundColor Cyan
@@ -66,6 +99,8 @@ if (-not (Test-Path -LiteralPath $statePath)) {
 }
 
 $newState = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+$newToken = Get-Content -LiteralPath $tokenPath -Raw
+if ([string]::IsNullOrWhiteSpace($newToken) -or $newToken -eq $oldToken) { throw "Control restart did not rotate its runtime credential." }
 $newListenerPid = [int]$newState.listenerPid
 $newLocalPort = [int]$newState.localPort
 $newListener = $null

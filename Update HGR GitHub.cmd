@@ -79,6 +79,10 @@ git status -sb
 echo ------------------------------------------------------------
 echo.
 
+rem Capture running/stopped state before any source changes.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\refresh-control-after-update.ps1" -Capture
+if errorlevel 1 goto :PAUSE_EXIT
+
 echo STEP 1 - Updating LOCAL files from GitHub...
 echo.
 git fetch %REMOTE% %BRANCH%

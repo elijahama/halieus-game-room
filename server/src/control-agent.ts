@@ -992,6 +992,20 @@ const server = createServer(async (request, response) => {
 
   const requestPath = new URL(request.url || "/", "http://hgr-control.local").pathname;
 
+  // Local lifecycle control requires the owner credential; a phone cookie is insufficient.
+  if (request.method === "POST" && requestPath === "/api/lifecycle/stop") {
+    const local = ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(request.socket.remoteAddress || "");
+    if (!local || !bearerTokenMatches(request)) {
+      sendJson(response, 403, { ok: false, reason: "Local owner credential required." });
+      return;
+    }
+    sendJson(response, 200, { ok: true });
+    server.close(() => process.exit(0));
+    server.closeIdleConnections();
+    setTimeout(() => process.exit(0), 1500).unref();
+    return;
+  }
+
   if (request.method === "GET" && requestPath === "/api/ping") {
     const now = Date.now();
     sendJson(response, 200, {
