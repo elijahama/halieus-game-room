@@ -58,14 +58,67 @@ function Write-PngIconContainer {
     }
 }
 
+function Assert-HgrLauncherSource {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string]$SourcePath
+    )
+
+    if (-not (Test-Path -LiteralPath $SourcePath)) {
+        throw "Approved HGR launcher source is missing: $SourcePath"
+    }
+
+    $probe = [System.Drawing.Image]::FromFile($SourcePath)
+    try {
+        if ($probe.Width -ne $probe.Height -or $probe.Width -lt 64) {
+            throw "Approved HGR launcher source '$Name' must be a square icon image, not a model/reference sheet: $SourcePath ($($probe.Width)x$($probe.Height))"
+        }
+    } finally {
+        $probe.Dispose()
+    }
+}
+
+function Assert-HgrRuntimeIconExport {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [Parameter(Mandatory = $true)][string]$PngPath,
+        [Parameter(Mandatory = $true)][string]$IcoPath
+    )
+
+    foreach ($path in @($PngPath, $IcoPath)) {
+        if (-not (Test-Path -LiteralPath $path)) {
+            throw "HGR launcher export '$Name' is missing after generation: $path"
+        }
+        if ((Get-Item -LiteralPath $path).Length -le 22) {
+            throw "HGR launcher export '$Name' is unexpectedly small or empty: $path"
+        }
+    }
+
+    $png = [System.Drawing.Image]::FromFile($PngPath)
+    try {
+        if ($png.Width -ne 256 -or $png.Height -ne 256) {
+            throw "HGR launcher PNG '$Name' must export at 256x256: $PngPath ($($png.Width)x$($png.Height))"
+        }
+    } finally {
+        $png.Dispose()
+    }
+
+    $icoBytes = [System.IO.File]::ReadAllBytes($IcoPath)
+    $reserved = [System.BitConverter]::ToUInt16($icoBytes, 0)
+    $kind = [System.BitConverter]::ToUInt16($icoBytes, 2)
+    $count = [System.BitConverter]::ToUInt16($icoBytes, 4)
+    if ($reserved -ne 0 -or $kind -ne 1 -or $count -lt 1) {
+        throw "HGR launcher ICO '$Name' has an invalid icon header: $IcoPath"
+    }
+}
+
 function Export-HgrReferenceIcon {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
         [Parameter(Mandatory = $true)][string]$SourcePath
     )
-    if (-not (Test-Path -LiteralPath $SourcePath)) {
-        throw "Approved HGR launcher source is missing: $SourcePath"
-    }
+
+    Assert-HgrLauncherSource -Name $Name -SourcePath $SourcePath
 
     $source = [System.Drawing.Image]::FromFile($SourcePath)
     $bitmap = [System.Drawing.Bitmap]::new(256, 256, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
@@ -83,6 +136,7 @@ function Export-HgrReferenceIcon {
         $icoPath = Join-Path $RuntimeRoot "$Name.ico"
         $bitmap.Save($pngPath, [System.Drawing.Imaging.ImageFormat]::Png)
         Write-PngIconContainer -PngBytes ([System.IO.File]::ReadAllBytes($pngPath)) -Path $icoPath
+        Assert-HgrRuntimeIconExport -Name $Name -PngPath $pngPath -IcoPath $icoPath
     } finally {
         $graphics.Dispose()
         $bitmap.Dispose()
@@ -101,16 +155,9 @@ foreach ($entry in $SourceMap.GetEnumerator()) {
 function Export-HgrStopControlIcon {
     param([Parameter(Mandatory = $true)][string]$SourcePath)
 
-    if (-not (Test-Path -LiteralPath $SourcePath)) {
-        throw "Approved HGR Control PNG is missing: $SourcePath"
-    }
+    Assert-HgrLauncherSource -Name 'control-stop' -SourcePath $SourcePath
 
     $source = [System.Drawing.Image]::FromFile($SourcePath)
-    if ($source.Width -ne $source.Height -or $source.Width -lt 64) {
-        $source.Dispose()
-        throw "Approved HGR Control PNG must be a square launcher image: $SourcePath"
-    }
-
     $bitmap = [System.Drawing.Bitmap]::new(256, 256, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
     $badgeBrush = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(235, 183, 47, 55))
@@ -136,6 +183,7 @@ function Export-HgrStopControlIcon {
         $icoPath = Join-Path $RuntimeRoot 'control-stop.ico'
         $bitmap.Save($pngPath, [System.Drawing.Imaging.ImageFormat]::Png)
         Write-PngIconContainer -PngBytes ([System.IO.File]::ReadAllBytes($pngPath)) -Path $icoPath
+        Assert-HgrRuntimeIconExport -Name 'control-stop' -PngPath $pngPath -IcoPath $icoPath
     } finally {
         $xPen.Dispose()
         $badgeBorder.Dispose()
@@ -148,4 +196,4 @@ function Export-HgrStopControlIcon {
 
 Export-HgrStopControlIcon -SourcePath $ControlReferencePath
 
-Write-Host "HGR launcher icons exported from approved PNG artwork; Stop Control adds only its explicit stop badge: $RuntimeRoot" -ForegroundColor Green
+Write-Host "HGR launcher icons exported from approved square PNG artwork; Stop Control adds only its explicit stop badge: $RuntimeRoot" -ForegroundColor Green
