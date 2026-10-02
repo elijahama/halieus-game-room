@@ -160,6 +160,7 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
             "Close Halieus Game Room.cmd",
             "HGR-Control.cmd",
             "Start HGR Control.cmd",
+            "Stop HGR Control.cmd",
             "Start-HGR-Control.cmd",
             "Start HGR Control Mobile.cmd",
             "Start-HGR-Control-Mobile.cmd",

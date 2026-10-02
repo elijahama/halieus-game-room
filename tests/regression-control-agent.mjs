@@ -383,6 +383,7 @@ for (const releasePath of [
 for (const rootLauncher of [
   "HGR-Control.cmd",
   "Start HGR Control.cmd",
+  "Stop HGR Control.cmd",
   "Start-HGR-Control.cmd",
   "Start HGR Control Mobile.cmd",
   "Start-HGR-Control-Mobile.cmd",
@@ -458,3 +459,8 @@ for (const role of ['start','stop']) {
  assert.ok(releaseIntegrity.includes(`scripts/windows/${role}-control-mobile.ps1`));
 }
 assert.ok(read('scripts/windows/start-control-mobile.ps1').includes('-HttpsPort $HttpsPort'));
+
+for (const required of ['Stop HGR Control.cmd','assets/branding/references/HGR Control Launcher.png','assets/branding/references/control-artwork.json']) {
+ assert.ok(releaseIntegrity.includes(required),`Release identity must sign ${required}`);
+ assert.ok(oraclePackageRegression.includes(required),`Archive must verify ${required}`);
+}

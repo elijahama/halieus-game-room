@@ -40,7 +40,9 @@ Artwork authorities: `assets/branding/references/HGR_CONTROL_LAUNCHER_SOURCE.md`
 | 5 | `dcfb93461a970a296b564a9659fab155d030a30f` | [CI run 37069142632](https://github.com/elijahama/halieus-game-room/actions/runs/37069142632) |
 | 6 | `a20efad5c9b6121d0e8522a4df3d0962a13e7ce2` | [CI run 37069915267](https://github.com/elijahama/halieus-game-room/actions/runs/37069915267) |
 
-Batches 1–6: linked workflows green. The separate Batch 7 documentation commit is identifiable by `part26 batch7` in Git history; its workflow verifies the final release identity.
+| 7 | `65de3b24d80cec8e0293a459d95aee11a0a2e665` | [CI run 37070261258](https://github.com/elijahama/halieus-game-room/actions/runs/37070261258) |
+
+Batches 1–7: linked workflows green. The package follow-up is identifiable by `part26: include canonical Stop and artwork approval in verified packages` in Git history; its workflow verifies the final release identity.
 
 Automated/local evidence:
 
@@ -180,3 +182,23 @@ Live Tailscale connectivity, actual installed phone behaviour and final artwork 
 - `scripts/windows/launcher-shortcuts.ps1`
 - `tests/regression-part26-control-launcher-hardening.mjs`
 - `tests/runtime-launcher-exports.ps1`
+
+## Final package integration check
+
+The real archive inventory exposed one inherited gap after the canonical-helper cleanup: Stop HGR Control.cmd was not among root package files, though the legacy Mobile wrapper was. The packer and release manifest now require the canonical Stop entry point, the approved Control authority PNG and approval record. Acceptance/process docs are also signed. The package regression checks these files and verifies an extracted archive with SSH/SCP blocked. This packaging follow-up does not change gameplay or version.
+
+### Batch 7: 65de3b2
+
+- `docs/HGR_PART26_ACCEPTANCE.md`
+- `docs/HGR_CONTROL_ICON_REPAIR_PROCESS.md`
+- `docs/HGR_MASTERBOOK.md`
+
+### Package follow-up
+
+- `scripts/release-integrity.mjs`
+- `tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1`
+- `tests/package-oracle-4.0.0.ps1`
+- `tests/regression-control-agent.mjs`
+- `docs/HGR_PART26_ACCEPTANCE.md`
+
+Local package-only validation passed: extracted archive verified every signed release input, including `.gitignore`, `SECURITY.md`, canonical Control/Stop and artwork approval. SSH/SCP were blocked by the test. Typecheck, the full regression chain and production build also passed for this follow-up.
