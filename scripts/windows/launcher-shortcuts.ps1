@@ -172,7 +172,7 @@ function Assert-HalieusShortcutCommandScript {
 
     $check = $wsh.CreateShortcut($ShortcutPath)
     $arguments = [string]$check.Arguments
-    if (-not $arguments.Contains($ExpectedCommandScript, [System.StringComparison]::OrdinalIgnoreCase)) {
+    if ($arguments.IndexOf($ExpectedCommandScript, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "Halieus shortcut target mismatch: $ShortcutPath must route through $ExpectedCommandScript"
     }
 }
