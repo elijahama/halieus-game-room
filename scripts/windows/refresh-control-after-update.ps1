@@ -21,7 +21,7 @@ if ($Capture) {
             $capturedListener = Get-NetTCPConnection -LocalAddress "127.0.0.1" -LocalPort ([int]$capturedState.localPort) -State Listen -ErrorAction Stop | Select-Object -First 1
             $running = [int]$capturedListener.OwningProcess -eq [int]$capturedState.listenerPid
             if ($running) {
-                $started = (Get-Process -Id ([int]$capturedState.listenerPid) -ErrorAction Stop).StartTime.ToUniversalTime().ToString("o")
+                $started = (Get-Process -Id ([int]$capturedState.listenerPid) -ErrorAction Stop).StartTime.ToUniversalTime().Ticks.ToString()
                 $capturedState | Add-Member -NotePropertyName processStarted -NotePropertyValue $started -Force
             }
         } catch { $running = $false }
@@ -71,7 +71,7 @@ if (-not (Test-Path -LiteralPath $stopHelper) -or -not (Test-Path -LiteralPath $
     throw "HGR Control post-update restart helpers are missing."
 }
 
-$currentStart = (Get-Process -Id $listenerPid -ErrorAction Stop).StartTime.ToUniversalTime().ToString("o")
+$currentStart = (Get-Process -Id $listenerPid -ErrorAction Stop).StartTime.ToUniversalTime().Ticks.ToString()
 if ($listenerPid -ne [int]$snapshot.state.listenerPid -or $currentStart -ne $snapshot.state.processStarted) {
     Write-Host "Control was replaced during the update; preserving the owner's newer process."
     exit 0
