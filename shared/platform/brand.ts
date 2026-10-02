@@ -1,5 +1,5 @@
-/** Canonical H matched to the approved launcher family: straight stems, centred bridge and restrained flared end caps. */
-export const HGR_H_PATH = "M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z";
+/** Web trace of the approved no-badge launcher H (18_26_58-6): wide stems, centred bridge and angled end caps. Raster launcher masters remain unchanged. */
+export const HGR_H_PATH = "M13 16H28L25 20V30H39V20L36 16H51L48 20V44L51 48H36L39 44V35H25V44L28 48H13L16 44V20Z";
 export const HGR_VIEWBOX = "0 0 64 64";
 export type HgrLogoPreset =
   | "brand"

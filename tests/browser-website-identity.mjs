@@ -9,7 +9,7 @@ const root = resolve(import.meta.dirname, '..');
 const version = (await readFile(resolve(root, 'VERSION'), 'utf8')).trim();
 const data = await mkdtemp(resolve(tmpdir(), 'hgr-website-brand-'));
 const port = 39462, base = `http://127.0.0.1:${port}`;
-const shape = 'M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z';
+const shape = 'M13 16H28L25 20V30H39V20L36 16H51L48 20V44L51 48H36L39 44V35H25V44L28 48H13L16 44V20Z';
 const server = spawn(process.execPath, [resolve(root, 'server/dist/server/src/index.js')], { cwd: resolve(root, 'server'), env: { ...process.env, PORT: String(port), SERVE_CLIENT: 'true', CLIENT_ORIGINS: base, HALIEUS_DATA_DIR: data, HALIEUS_OWNER_BOOTSTRAP_FILE: resolve(data, 'bootstrap.txt') }, stdio: 'pipe' });
 let output = '', browser;
 const sockets = [];
@@ -23,7 +23,7 @@ try {
   }
   browser = await chromium.launch({ headless: true, executablePath: process.env.HGR_BROWSER_EXECUTABLE || undefined });
   if (process.env.HGR_SCREENSHOTS) await mkdir(process.env.HGR_SCREENSHOTS, { recursive: true });
-  for (const [device, width, height] of [['desktop', 1440, 900], ['phone', 390, 844], ['tablet', 820, 1180]]) {
+  for (const [device, width, height] of [['desktop', 1440, 900], ['short', 1280, 600], ['phone', 390, 844], ['tablet', 820, 1180]]) {
     for (const theme of ['light', 'dark']) {
       const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
       await context.addInitScript(theme => { localStorage.setItem('halieus-game-room-theme', theme); sessionStorage.setItem('halieus-intro-seen-v4', '1'); }, theme);
@@ -45,9 +45,25 @@ try {
       signedIn = true;
       await page.reload(); await page.locator('.halieus-shell').waitFor();
       for (const d of await page.locator('.halieus-brand-mark-h-shape').evaluateAll(paths => paths.map(p => p.getAttribute('d')))) assert.equal(d, shape);
-      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), `/halieus-mark.svg?v=${version}-brand-h5`);
+      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), `/halieus-mark.svg?v=${version}-brand-h6`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${device} home overflow`);
       if (process.env.HGR_SCREENSHOTS) await page.screenshot({ path: resolve(process.env.HGR_SCREENSHOTS, `${device}-${theme}-home.png`) });
+
+      await page.locator('.halieus-side-account-top:visible, .halieus-mobile-account:visible').first().click();
+      const appearance = page.locator('.account-appearance-card');
+      await appearance.scrollIntoViewIfNeeded();
+      assert.equal(await appearance.locator('.halieus-logo-preset-grid button').count(),10);
+      const themeBox = await appearance.locator('.halieus-display-group-theme').boundingBox();
+      assert.ok(themeBox.height < 190, `${device}: theme row must not stretch into a blank column (${themeBox.height})`);
+      assert.equal(await appearance.evaluate(e=>e.scrollWidth<=e.clientWidth),true,`${device}: appearance overflow`);
+      await appearance.getByRole('button',{name:'Blue tile Royal-blue launcher treatment'}).click();
+      assert.equal(await appearance.getByRole('button',{name:'Blue tile Royal-blue launcher treatment'}).getAttribute('aria-pressed'),'true');
+      assert.equal(await page.locator('html').getAttribute('data-theme'),theme,'Logo selection must not change the theme');
+      if (process.env.HGR_SCREENSHOTS) await appearance.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-${theme}-appearance.png`)});
+      if (process.env.HGR_SCREENSHOTS) { await appearance.locator('.halieus-display-group-theme').scrollIntoViewIfNeeded(); await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-${theme}-appearance-viewport.png`)}); }
+      await page.getByRole('button',{name:'Close account panel'}).click();
+      await page.locator('.halieus-brand-mark[data-logo-preset="blue"]:visible').first().waitFor();
+      await page.evaluate(()=>window.dispatchEvent(new CustomEvent('halieus-logo-preset',{detail:'brand'})));
 
       const previousFavicon=await page.locator('#halieus-dynamic-favicon').getAttribute('href');
       for(const accent of ['#ffff00','#000033','#777777']) {

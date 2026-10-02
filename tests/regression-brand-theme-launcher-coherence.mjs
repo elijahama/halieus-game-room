@@ -24,7 +24,7 @@ assert.match(icons,/case "chevron-left"/,"Shared icon set must include a left ch
 assert.match(icons,/case "chevron-right"/,"Shared icon set must include a right chevron");
 assert.match(brand,/halieus-brand-mark-tile/,"Shared Halieus mark must expose a themeable tile");
 assert.match(brand,/halieus-brand-mark-h/,"Shared Halieus mark must expose a themeable H");
-assert.match(brandContract,/M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"Canonical H must use the approved launcher-family flared geometry");
+assert.match(brandContract,/M13 16H28L25 20V30H39V20L36 16H51L48 20V44L51 48H36L39 44V35H25V44L28 48H13L16 44V20Z/,"Canonical H must use the approved launcher-family flared geometry");
 assert.match(iconPalette,/HGR Control[\s\S]*?#4F7BFE/,"Reference palette must reserve royal blue for HGR Control");
 assert.match(iconPalette,/Update[\s\S]*?#38BDF8/,"Reference palette must keep Update light blue");
 assert.match(iconPalette,/OpenShard[\s\S]*?#A855F7/,"Reference palette must keep OpenShard purple");

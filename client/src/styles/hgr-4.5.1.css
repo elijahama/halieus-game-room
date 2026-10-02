@@ -986,6 +986,8 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 .halieus-brand-mark { --logo-bg: var(--hgr-logo-bg); --logo-glyph: var(--hgr-logo-ink); --logo-accent: var(--hgr-logo-border); }
 .halieus-brand-mark .halieus-brand-mark-tile { fill: var(--logo-bg); stroke: var(--logo-accent); }
 .halieus-brand-mark .halieus-brand-mark-h-shape { fill: var(--logo-glyph); }
+.halieus-brand-mark[data-logo-preset="white-glyph"] .halieus-brand-mark-tile,
+.halieus-brand-mark[data-logo-preset="black-glyph"] .halieus-brand-mark-tile { display: none; }
 
 /* Personal logo choices all use the launcher-family H geometry. Only the
  * treatment changes: tile/glyph colour and whether a tile is present. */
@@ -1666,7 +1668,18 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 
 /* Logo style is personal and independent from theme colour. */
 .halieus-display-group-logo {
-  gap: 14px;
+  gap: 10px;
+  align-content: start;
+}
+.halieus-display-group-theme {
+  grid-template-columns: minmax(0,1fr) minmax(150px,220px);
+  align-items: center;
+  align-content: start;
+}
+.halieus-display-group-theme > .halieus-theme-trigger {
+  align-self: center;
+  min-height: 44px;
+  height: auto;
 }
 .halieus-display-group-logo > header {
   grid-template-columns: minmax(0,1fr) auto;
@@ -1720,7 +1733,7 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 }
 .halieus-logo-preset-grid > button {
   min-width: 0;
-  min-height: 84px;
+  min-height: 72px;
   display: grid;
   grid-template-columns: 48px minmax(0,1fr);
   align-items: center;
@@ -1753,6 +1766,16 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
   height: 46px;
   display: block;
 }
+/* Preview backdrops keep bare glyph choices visible in both themes; these
+ * are sample swatches, not part of the selected/exported glyph artwork. */
+.halieus-logo-preset-preview[data-logo-preset="white-glyph"] {
+  background: #26303a;
+  border-radius: 8px;
+}
+.halieus-logo-preset-preview[data-logo-preset="black-glyph"] {
+  background: #eef1f4;
+  border-radius: 8px;
+}
 .halieus-logo-preset-grid > button > span {
   min-width: 0;
   display: grid;
@@ -1779,6 +1802,7 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
   }
 }
 @media (max-width: 520px) {
+  .halieus-display-group-theme { grid-template-columns: minmax(0,1fr); }
   .halieus-logo-preset-grid,
   .halieus-logo-preset-section.is-additional .halieus-logo-preset-grid {
     grid-template-columns: minmax(0,1fr);

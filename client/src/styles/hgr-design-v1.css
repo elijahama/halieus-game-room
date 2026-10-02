@@ -250,10 +250,16 @@ button:focus-visible,
 
 .halieus-side-nav button.is-active {
   border-color: var(--hgr-border-brand) !important;
-  background: color-mix(in srgb, var(--hgr-brand) 14%, var(--hgr-surface)) !important;
+  background: linear-gradient(180deg, var(--hgr-surface-raised), var(--hgr-surface)) !important;
   color: var(--hgr-text) !important;
-  box-shadow: inset 3px 0 0 var(--hgr-brand);
+  box-shadow: inset 3px 0 0 var(--hgr-brand), inset 0 1px 0 color-mix(in srgb, var(--hgr-text) 8%, transparent), inset 0 -1px 0 var(--hgr-border) !important;
 }
+.halieus-side-nav { gap: 4px; }
+.halieus-side-nav button {
+  min-height: 44px !important;
+  padding: 8px 12px;
+}
+.halieus-side-nav button b { font-weight: 750; }
 
 .halieus-side-nav button.is-active svg,
 .halieus-side-nav button.is-active span:first-child {
@@ -262,9 +268,11 @@ button:focus-visible,
 
 .halieus-global-join {
   border-radius: var(--hgr-radius-sm) !important;
-  background: var(--hgr-action-bg) !important;
+  min-height: 44px !important;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--hgr-action-bg) 86%, white), var(--hgr-action-bg) 45%, color-mix(in srgb, var(--hgr-action-bg) 88%, black)) !important;
   color: var(--hgr-action-ink) !important;
-  box-shadow: var(--hgr-shadow-brand);
+  box-shadow: inset 0 1px 0 #ffffff55, inset 0 -2px 0 #00000030, 0 3px 8px #00000020 !important;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -2960,8 +2968,7 @@ html[data-theme="light"] {
 
 /* Primary actions are flat theme actions. No FF-style banding/gradient. */
 .button-primary,
-.hgr-button--primary,
-.halieus-global-join {
+.hgr-button--primary {
   border-color: color-mix(in srgb, var(--hgr-action-bg) 72%, #000 28%) !important;
   background: var(--hgr-action-bg) !important;
   color: var(--hgr-action-ink) !important;
@@ -2969,8 +2976,7 @@ html[data-theme="light"] {
   text-shadow: none !important;
 }
 .button-primary:hover,
-.hgr-button--primary:hover,
-.halieus-global-join:hover {
+.hgr-button--primary:hover {
   background: color-mix(in srgb, var(--hgr-action-bg) 90%, white 10%) !important;
 }
 .halieus-global-join::before,
@@ -6377,8 +6383,8 @@ html[data-skin-poker-table="grey-disc-table"] .poker-table {
 }
 .account-appearance-card .halieus-display-settings {
   display: grid !important;
-  grid-template-columns: minmax(240px,.72fr) minmax(420px,1.28fr);
-  align-items: stretch;
+  grid-template-columns: minmax(0,1fr);
+  align-items: start;
   gap: 10px !important;
   margin: 0 !important;
 }

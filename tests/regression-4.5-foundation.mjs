@@ -107,14 +107,14 @@ assert.match(releaseIntegritySource,/hgr-logo-personalization-expanded-4\.5\.3/,
 assert.match(modelSheet,/Platform first; games inherit/,"Model sheet must formalise platform-first inheritance");
 assert.match(modelSheet,/separate website and launcher identities/,"Model sheet must document the approved H construction");
 assert.match(modelSheet,/yellow\/gold as the default Halieus brand colour/,"Model sheet must preserve yellow/gold as the standard Halieus identity");
-assert.match(halieusMark,/M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"Canonical public Halieus mark must use the approved H geometry");
+assert.match(halieusMark,/M13 16H28L25 20V30H39V20L36 16H51L48 20V44L51 48H36L39 44V35H25V44L28 48H13L16 44V20Z/,"Canonical public Halieus mark must use the approved H geometry");
 assert.match(
   html,
   /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg(?:\?[^"]+)?"/,
   "Initial browser identity must use the canonical Halieus mark",
 );
-assert.match(html,/halieus-boot-mark[\s\S]*?M14 12H31V17H27V28H37V17H33V12H50V17H45V47H50V52H33V47H37V36H27V47H31V52H14V47H19V17H14Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h5"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
+assert.match(html,/halieus-boot-mark[\s\S]*?M13 16H28L25 20V30H39V20L36 16H51L48 20V44L51 48H36L39 44V35H25V44L28 48H13L16 44V20Z/,"First-paint mark must reuse the approved H geometry");
+assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h6"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
 assert.equal(createHash("sha256").update(halieusAppIcon).digest("hex"),createHash("sha256").update(approvedMainIcon).digest("hex"),"Installable app icon must be byte-identical to the approved original HGR PNG");
