@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { inflateSync } from "node:zlib";
 import { readFileSync } from "node:fs";
 
 const url = (path) => new URL(`../${path}`, import.meta.url);
@@ -67,3 +69,36 @@ assert.match(shortcuts, /ClearIconCache/, "Launcher refresh must explicitly clea
 assert.match(stopControl, /scripts\\windows\\stop-control-mobile\.ps1/, "Canonical Stop Control wrapper must preserve the existing internal stop implementation");
 
 console.log("HGR Part 26 Control launcher hardening regression: PASS");
+
+// A correct IHDR size alone did not catch the corrupt replacement on main.
+function verifyPng(bytes) {
+  assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  const idat = [];
+  let ended = false;
+  for (let pos = 8; pos < bytes.length;) {
+    const size = bytes.readUInt32BE(pos);
+    assert.ok(pos + size + 12 <= bytes.length, 'Truncated PNG chunk');
+    const chunk = bytes.subarray(pos + 4, pos + 8 + size);
+    let crc = 0xffffffff;
+    for (const byte of chunk) {
+      crc ^= byte;
+      for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+    }
+    assert.equal((crc ^ 0xffffffff) >>> 0, bytes.readUInt32BE(pos + 8 + size), 'PNG chunk checksum must be valid');
+    const type = chunk.subarray(0, 4).toString();
+    if (type === 'IDAT') idat.push(chunk.subarray(4));
+    if (type === 'IEND') ended = true;
+    pos += size + 12;
+  }
+  assert.ok(ended && idat.length, 'PNG must contain image data and end marker');
+  assert.equal(bytes[24], 8);
+  assert.equal(bytes[25], 6, 'Approved export uses RGBA');
+  assert.equal(inflateSync(Buffer.concat(idat)).length, (256 * 4 + 1) * 256);
+}
+verifyPng(controlAuthority);
+verifyPng(controlPwa);
+const corrupt = Buffer.from(controlAuthority);
+corrupt[45] ^= 1;
+assert.throws(() => verifyPng(corrupt), 'Corrupt PNG must fail even with a square IHDR');
+assert.equal(createHash('sha256').update(controlAuthority).digest('hex'), 'fa6cb650f4e60b171607bfb8fb4c3e7bf00d683d0a3dbd38bd87ed65d6a9fbe2', 'Control must retain the owner-approved lower-row gear artwork');
+console.log('PASS Control approved artwork, PNG checksums and decompression');

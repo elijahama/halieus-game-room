@@ -1,12 +1,11 @@
 # HGR Control launcher source
 
-This vector construction record exists only to make the approved square Control PNG reproducible and reviewable. The rendered PNG remains the launcher/PWA artwork authority.
+Owner confirmed the lower-row blue Control icon with the gear on 2 October 2026.
 
-- PNG authority: `assets/branding/references/HGR Control Launcher.png`
-- Control PWA copy: `server/control-ui/control-icon.png`
-- Base colour: Control blue gradient `#6E92FF` → `#3B63DD`
-- H geometry: current launcher-family H, unchanged from the canonical Halieus glyph
-- Utility motif: white Control gear only; it does not redraw or cut the H
-- Delivery outputs (`control.png`, `control.ico`, `control-stop.*`) are generated from the PNG authority.
+Source: `HGR Control.png` (identical to `HGR ICON - CONTROL UPDATE`), 1672x941.
+Extraction rectangle: x=776, y=470, width=140, height=140. This excludes labels and neighbouring artwork. The selected pixels are resized to 256x256 with System.Drawing HighQualityBicubic. No H, gear, colour, rim or sheen is redrawn. The source sheet has limited resolution; the export preserves its existing detail rather than inventing extra detail.
 
-The historical `HGR Control.png` / `HGR ICON - CONTROL UPDATE` image is a full model/reference sheet. It is retained only as design history and must never be used directly as launcher or PWA artwork.
+Authority: `HGR Control Launcher.png`; identical delivery copy: `server/control-ui/control-icon.png`.
+SHA256: `fa6cb650f4e60b171607bfb8fb4c3e7bf00d683d0a3dbd38bd87ed65d6a9fbe2`.
+
+The former vector reconstruction was removed because it did not reproduce the selected source. Runtime Control PNG/ICO exports consume this approved PNG; Stop Control adds its separate red stop badge. The full reference sheet must never be mapped directly to a launcher.
