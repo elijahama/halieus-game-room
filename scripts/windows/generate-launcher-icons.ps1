@@ -15,10 +15,9 @@ Get-ChildItem -LiteralPath $RuntimeRoot -File -ErrorAction SilentlyContinue |
     Remove-Item -Force -ErrorAction SilentlyContinue
 
 # Approved launcher PNGs are pixel-authoritative. Standard launchers source the
-# human-approved reference PNGs. HGR Control deliberately uses the dedicated
-# approved Control PWA PNG because the old references/HGR Control.png file was
-# accidentally a full model sheet rather than a square launcher icon.
-$ControlReferencePath = Join-Path $ProjectRoot 'server\control-ui\control-icon.png'
+# human-approved reference PNGs. HGR Control uses its dedicated square launcher
+# PNG; the historical references/HGR Control.png remains a model sheet only.
+$ControlReferencePath = Join-Path $ReferenceRoot 'HGR Control Launcher.png'
 $SourceMap = [ordered]@{
     main       = Join-Path $ReferenceRoot 'HGR Main.png'
     start      = Join-Path $ReferenceRoot 'HGR Start.png'
