@@ -1,11 +1,17 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const url = (path) => new URL(`../${path}`, import.meta.url);
+const read = (path) => readFileSync(url(path), "utf8");
+const readBinary = (path) => readFileSync(url(path));
+const pngSize = (buffer) => ({ width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) });
 
 const generator = read("scripts/windows/generate-launcher-icons.ps1");
 const shortcuts = read("scripts/windows/launcher-shortcuts.ps1");
 const stopControl = read("Stop HGR Control.cmd");
+const controlAuthority = readBinary("assets/branding/references/HGR Control Launcher.png");
+const controlPwa = readBinary("server/control-ui/control-icon.png");
+const historicalControlSheet = readBinary("assets/branding/references/HGR Control.png");
 
 // Source artwork protection: a launcher export must be square before it is ever
 // resized. This prevents a reference/model sheet from silently becoming a .lnk icon.
@@ -17,8 +23,8 @@ assert.match(
 );
 assert.match(
   generator,
-  /server\\control-ui\\control-icon\.png/,
-  "HGR Control must use the dedicated approved square Control source",
+  /HGR Control Launcher\.png/,
+  "HGR Control must map to its dedicated approved square launcher PNG",
 );
 assert.doesNotMatch(
   generator,
@@ -26,6 +32,12 @@ assert.doesNotMatch(
   "Legacy HGR Control reference sheet must never be mapped to a launcher",
 );
 assert.match(generator, /Remove-Item -Force -ErrorAction SilentlyContinue/, "Stale runtime launcher exports must be removed before rebuild");
+
+const authoritySize = pngSize(controlAuthority);
+assert.equal(authoritySize.width, authoritySize.height, "Approved HGR Control launcher source must be square");
+assert.ok(authoritySize.width >= 256, "Approved HGR Control launcher source must be at least 256px");
+assert.deepEqual(controlPwa, controlAuthority, "Control PWA icon must use the same approved square PNG as the Windows launcher");
+assert.notDeepEqual(controlAuthority, historicalControlSheet, "Approved square Control artwork must not be the historical model/reference sheet");
 
 // Export validation: generated files are checked, not merely assumed to exist.
 assert.match(generator, /function Assert-HgrRuntimeIconExport/, "Launcher generator must validate generated PNG and ICO files");
