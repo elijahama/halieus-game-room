@@ -39,7 +39,7 @@ New-Item -ItemType Directory -Force -Path $ProjectLauncherDirectory | Out-Null
 # so renames cannot leave stale duplicates behind.
 foreach ($LauncherDirectory in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
     Get-ChildItem -LiteralPath $LauncherDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
-        Remove-Item -Force -ErrorAction SilentlyContinue
+        Remove-Item -Force -ErrorAction Stop
 }
 
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
@@ -154,7 +154,11 @@ function Assert-HalieusShortcutIcon {
 
     $check = $wsh.CreateShortcut($ShortcutPath)
     $actualRaw = [string]$check.IconLocation
-    $actualPath = ($actualRaw -split ',', 2)[0].Trim().Trim('"')
+    $iconParts = $actualRaw -split ',(?=[^,]*$)', 2
+    $actualPath = $iconParts[0].Trim().Trim('"')
+    if ($iconParts.Count -ne 2 -or $iconParts[1].Trim() -ne '0') {
+        throw "Halieus shortcut must select icon index zero: $ShortcutPath"
+    }
     $expectedFull = [System.IO.Path]::GetFullPath($ExpectedIconPath)
     $actualFull = [System.IO.Path]::GetFullPath($actualPath)
     if (-not $actualFull.Equals($expectedFull, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -173,6 +177,10 @@ function Assert-HalieusShortcutCommandScript {
     }
 
     $check = $wsh.CreateShortcut($ShortcutPath)
+    if (-not ([string]$check.TargetPath).Equals($cmd, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not ([string]$check.WorkingDirectory).Equals($ProjectRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Halieus shortcut executable or working directory mismatch: $ShortcutPath"
+    }
     $arguments = [string]$check.Arguments
     if ($arguments.IndexOf($ExpectedCommandScript, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "Halieus shortcut target mismatch: $ShortcutPath must route through $ExpectedCommandScript"
@@ -324,9 +332,10 @@ if (Test-Path -LiteralPath $ControlStopScript) {
 
 # Nudge Windows to re-read shortcut artwork after the icon paths change.
 $IconRefresh = Join-Path $env:SystemRoot 'System32\ie4uinit.exe'
-if (Test-Path -LiteralPath $IconRefresh) {
-    try { Start-Process -FilePath $IconRefresh -ArgumentList '-ClearIconCache' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
-    try { Start-Process -FilePath $IconRefresh -ArgumentList '-show' -WindowStyle Hidden -Wait -ErrorAction Stop } catch {}
+if (-not (Test-Path -LiteralPath $IconRefresh)) { throw 'Windows icon-cache refresh tool is unavailable.' }
+foreach ($cacheAction in @('-ClearIconCache', '-show')) {
+    $cacheProcess = Start-Process -FilePath $IconRefresh -ArgumentList $cacheAction -WindowStyle Hidden -Wait -PassThru -ErrorAction Stop
+    if ($cacheProcess.ExitCode -ne 0) { throw "Windows icon-cache refresh failed ($cacheAction, exit $($cacheProcess.ExitCode))." }
 }
 
 Write-Host ''

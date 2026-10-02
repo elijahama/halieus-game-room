@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { inflateSync } from "node:zlib";
 import { readFileSync } from "node:fs";
@@ -33,7 +34,7 @@ assert.doesNotMatch(
   /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/,
   "Legacy HGR Control reference sheet must never be mapped to a launcher",
 );
-assert.match(generator, /Remove-Item -Force -ErrorAction SilentlyContinue/, "Stale runtime launcher exports must be removed before rebuild");
+assert.match(generator, /Remove-Item -Force -ErrorAction Stop/, "Stale runtime launcher exports must be removed before rebuild");
 
 const authoritySize = pngSize(controlAuthority);
 assert.equal(authoritySize.width, authoritySize.height, "Approved HGR Control launcher source must be square");
@@ -102,3 +103,16 @@ corrupt[45] ^= 1;
 assert.throws(() => verifyPng(corrupt), 'Corrupt PNG must fail even with a square IHDR');
 assert.equal(createHash('sha256').update(controlAuthority).digest('hex'), 'fa6cb650f4e60b171607bfb8fb4c3e7bf00d683d0a3dbd38bd87ed65d6a9fbe2', 'Control must retain the owner-approved lower-row gear artwork');
 console.log('PASS Control approved artwork, PNG checksums and decompression');
+
+const approval=JSON.parse(read('assets/branding/references/control-artwork.json'));
+assert.equal(approval.sha256,createHash('sha256').update(controlAuthority).digest('hex'));
+assert.match(generator,/controlAuthorityHash -ne \$approvedControl.sha256/);
+assert.match(shortcuts,/cacheProcess.ExitCode -ne 0/);
+if(process.platform === 'win32') {
+ // PowerShell 7's inherited module path hides Windows PowerShell 5 modules
+ // when launched through Node. Let the tested shell build its own defaults.
+ const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>key.toLowerCase()!=='psmodulepath'));
+ const result=spawnSync('powershell.exe',['-NoProfile','-File','tests/runtime-launcher-exports.ps1'],{encoding:'utf8',env});
+ assert.equal(result.status,0,result.stdout+result.stderr);
+ console.log(result.stdout.trim());
+} else console.log('Windows COM/cache runtime acceptance requires Windows; source contracts validated here.');

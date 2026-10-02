@@ -267,3 +267,8 @@ Batch 3 commit 3fe28ef1e8e01e5eafb606abb931bde26b464963 passed CI 37067888616. W
 ## Part 26 Batch 5 — canonical lifecycle helpers
 
 Canonical CMD launchers and updater now call start-control.ps1 / stop-control.ps1. Old Mobile-named scripts are compatibility shims only, with no duplicated implementation or generated user-facing shortcut. The ignored hgr-control-mobile-state.json filename is deliberately retained to let the updated stop/update helpers recognise an agent launched before this change; renaming live state would strand that process. Release integrity and Oracle package checks require both new canonical helpers and legacy compatibility entry points.
+
+
+## Part 26 Batch 6 — verified launcher refresh
+
+Control generation rejects even matching square authority/delivery PNGs when their hash is not the approved artwork. ICO validation checks its directory, dimensions, bit depth, byte length and exact embedded PNG. Stale generated-file removal and Windows cache refresh failures now stop the stage. Shortcut validation also checks icon index, executable and working directory; paths containing commas are supported. Windows runtime regression uses a disposable project and fake Start Menu, verifies all sixteen shortcuts, and rejects corrupted ICOs, wrong icon indices/targets, cache failure and unapproved artwork. It does not launch the desktop app, Control or an update/deployment.

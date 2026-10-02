@@ -12,7 +12,7 @@ New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
 # Windows cannot keep showing an icon file left behind by an older mapping.
 Get-ChildItem -LiteralPath $RuntimeRoot -File -ErrorAction SilentlyContinue |
     Where-Object { $_.Extension -in '.png', '.ico' } |
-    Remove-Item -Force -ErrorAction SilentlyContinue
+    Remove-Item -Force -ErrorAction Stop
 
 # Approved launcher PNGs are pixel-authoritative. Standard launchers source the
 # human-approved reference PNGs. HGR Control keeps one design-authority PNG in
@@ -112,6 +112,16 @@ function Assert-HgrRuntimeIconExport {
     if ($reserved -ne 0 -or $kind -ne 1 -or $count -lt 1) {
         throw "HGR launcher ICO '$Name' has an invalid icon header: $IcoPath"
     }
+    $pngBytes = [System.IO.File]::ReadAllBytes($PngPath)
+    if ($count -ne 1 -or $icoBytes[6] -ne 0 -or $icoBytes[7] -ne 0 -or
+        [System.BitConverter]::ToUInt16($icoBytes, 10) -ne 1 -or
+        [System.BitConverter]::ToUInt16($icoBytes, 12) -ne 32 -or
+        [System.BitConverter]::ToUInt32($icoBytes, 14) -ne $pngBytes.Length -or
+        [System.BitConverter]::ToUInt32($icoBytes, 18) -ne 22 -or
+        $icoBytes.Length -ne (22 + $pngBytes.Length) -or
+        [Convert]::ToBase64String($icoBytes, 22, $icoBytes.Length - 22) -ne [Convert]::ToBase64String($pngBytes)) {
+        throw "HGR launcher ICO '$Name' must contain the verified 256px PNG exactly: $IcoPath"
+    }
 }
 
 function Export-HgrReferenceIcon {
@@ -152,6 +162,10 @@ Assert-HgrLauncherSource -Name 'control-authority' -SourcePath $ControlAuthority
 Assert-HgrLauncherSource -Name 'control-delivery' -SourcePath $ControlReferencePath
 $controlAuthorityHash = (Get-FileHash -LiteralPath $ControlAuthorityPath -Algorithm SHA256).Hash
 $controlDeliveryHash = (Get-FileHash -LiteralPath $ControlReferencePath -Algorithm SHA256).Hash
+$approvedControl = Get-Content -LiteralPath (Join-Path $ReferenceRoot 'control-artwork.json') -Raw | ConvertFrom-Json
+if ($controlAuthorityHash -ne $approvedControl.sha256) {
+    throw "HGR Control artwork is not the owner-approved source. Refusing to refresh launcher icons."
+}
 if ($controlAuthorityHash -ne $controlDeliveryHash) {
     throw "HGR Control launcher authority and PWA delivery copy differ. Refresh server/control-ui/control-icon.png from the approved HGR Control Launcher.png before exporting shortcuts."
 }
