@@ -54,15 +54,15 @@ try {
   await page.waitForFunction(async (expected) => (await caches.keys()).includes(expected), expectedCache);
   const activeWorker = await page.evaluate(async () => (await navigator.serviceWorker.ready).active.scriptURL);
   assert.equal(new URL(activeWorker).searchParams.get('release'), release.fingerprint);
-  // Home browser identity uses the canonical HGR mark; both initial icon links
-  // must carry the current VERSION cache-busting prefix.
+  // Home browser identity uses the approved launcher-family H; both initial icon
+  // links must carry the current VERSION cache-busting prefix and h5 revision.
   assert.equal(
     await page.locator('#halieus-dynamic-favicon').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-h4`,
+    `/halieus-mark.svg?v=${version}-brand-h5`,
   );
   assert.equal(
     await page.locator('link[rel="shortcut icon"]').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-h4`,
+    `/halieus-mark.svg?v=${version}-brand-h5`,
   );
   assert.deepEqual(errors, []);
   console.log(`PASS: rendered Build ${label}; browser/server ${version}; ${release.fingerprint}; cache ${expectedCache}; favicon identity; no page errors`);
