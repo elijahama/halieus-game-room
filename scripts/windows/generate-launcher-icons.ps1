@@ -15,9 +15,12 @@ Get-ChildItem -LiteralPath $RuntimeRoot -File -ErrorAction SilentlyContinue |
     Remove-Item -Force -ErrorAction SilentlyContinue
 
 # Approved launcher PNGs are pixel-authoritative. Standard launchers source the
-# human-approved reference PNGs. HGR Control uses its dedicated square launcher
-# PNG; the historical references/HGR Control.png remains a model sheet only.
-$ControlReferencePath = Join-Path $ReferenceRoot 'HGR Control Launcher.png'
+# human-approved reference PNGs. HGR Control keeps one design-authority PNG in
+# references and one byte-identical PWA/delivery copy. Windows consumes the
+# delivery copy so the existing PWA + launcher contract remains intact.
+# The historical references/HGR Control.png remains a model sheet only.
+$ControlAuthorityPath = Join-Path $ReferenceRoot 'HGR Control Launcher.png'
+$ControlReferencePath = Join-Path $ProjectRoot 'server\control-ui\control-icon.png'
 $SourceMap = [ordered]@{
     main       = Join-Path $ReferenceRoot 'HGR Main.png'
     start      = Join-Path $ReferenceRoot 'HGR Start.png'
@@ -141,6 +144,16 @@ function Export-HgrReferenceIcon {
         $bitmap.Dispose()
         $source.Dispose()
     }
+}
+
+# Protect the split authority/delivery arrangement itself. A future edit cannot
+# silently replace the Control PWA copy with another reference/model sheet.
+Assert-HgrLauncherSource -Name 'control-authority' -SourcePath $ControlAuthorityPath
+Assert-HgrLauncherSource -Name 'control-delivery' -SourcePath $ControlReferencePath
+$controlAuthorityHash = (Get-FileHash -LiteralPath $ControlAuthorityPath -Algorithm SHA256).Hash
+$controlDeliveryHash = (Get-FileHash -LiteralPath $ControlReferencePath -Algorithm SHA256).Hash
+if ($controlAuthorityHash -ne $controlDeliveryHash) {
+    throw "HGR Control launcher authority and PWA delivery copy differ. Refresh server/control-ui/control-icon.png from the approved HGR Control Launcher.png before exporting shortcuts."
 }
 
 foreach ($entry in $SourceMap.GetEnumerator()) {
