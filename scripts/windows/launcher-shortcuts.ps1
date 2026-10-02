@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 
 # Shortcut refresh exports runtime ICO/PNG files directly from approved PNG
-# artwork in assets\branding\references. No launcher art is redrawn here.
+# artwork. No launcher art is redrawn here.
 $TrackedGameRoomIconPath = Join-Path $ProjectRoot 'assets\branding\Halieus Game Room.ico'
 $RuntimeLauncherIconRoot = Join-Path $ProjectRoot 'server\data\runtime\launcher-icons'
 $IconGenerator = Join-Path $ProjectRoot 'scripts\windows\generate-launcher-icons.ps1'
@@ -48,7 +48,7 @@ $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
 $UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
 $ControlScript = Join-Path $ProjectRoot 'Start HGR Control.cmd'
-$ControlStopScript = Join-Path $ProjectRoot 'Stop HGR Control Mobile.cmd'
+$ControlStopScript = Join-Path $ProjectRoot 'Stop HGR Control.cmd'
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
@@ -98,6 +98,9 @@ foreach ($requiredIcon in @(
 )) {
     if (-not (Test-Path -LiteralPath $requiredIcon)) {
         throw "Approved HGR launcher export is missing: $requiredIcon"
+    }
+    if ((Get-Item -LiteralPath $requiredIcon).Length -le 22) {
+        throw "Approved HGR launcher export is empty or invalid: $requiredIcon"
     }
 }
 
@@ -154,6 +157,23 @@ function Assert-HalieusShortcutIcon {
     $actualFull = [System.IO.Path]::GetFullPath($actualPath)
     if (-not $actualFull.Equals($expectedFull, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "Halieus shortcut icon mismatch: $ShortcutPath expected $expectedFull but found $actualFull"
+    }
+}
+
+function Assert-HalieusShortcutCommandScript {
+    param(
+        [Parameter(Mandatory = $true)][string]$ShortcutPath,
+        [Parameter(Mandatory = $true)][string]$ExpectedCommandScript
+    )
+
+    if (-not (Test-Path -LiteralPath $ShortcutPath)) {
+        throw "Halieus shortcut is missing during target verification: $ShortcutPath"
+    }
+
+    $check = $wsh.CreateShortcut($ShortcutPath)
+    $arguments = [string]$check.Arguments
+    if (-not $arguments.Contains($ExpectedCommandScript, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Halieus shortcut target mismatch: $ShortcutPath must route through $ExpectedCommandScript"
     }
 }
 
@@ -227,7 +247,7 @@ foreach ($name in $LooseShortcutNames) {
     Remove-Item -LiteralPath (Join-Path $ProgramsRoot $name) -Force -ErrorAction SilentlyContinue
 }
 
-# Verify every Start Menu entry exists before reporting success.
+# Verify every generated shortcut exists before reporting success.
 $CreatedShortcuts = @(
     $ProjectStartShortcut,
     $ProjectRestartShortcut,
@@ -258,16 +278,46 @@ foreach ($shortcutPath in $CreatedShortcuts) {
     }
 }
 
-# Verify the two Control roles against the actual .lnk metadata. This catches
-# the exact Dev 24 failure where the shortcut existed but Windows was pointed at
-# a full reference/model sheet instead of the intended launcher icon.
+# Verify the actual .lnk icon metadata for every generated role, not just that
+# the shortcut exists. This catches stale or incorrectly mapped Windows icons.
+$ShortcutIconChecks = @(
+    [pscustomobject]@{ Shortcut = $ProjectStartShortcut; Icon = $StartIconPath },
+    [pscustomobject]@{ Shortcut = $ProjectRestartShortcut; Icon = $RestartIconPath },
+    [pscustomobject]@{ Shortcut = $ProjectCloseShortcut; Icon = $CloseIconPath },
+    [pscustomobject]@{ Shortcut = $ProjectPowerShellShortcut; Icon = $PowerShellIconPath },
+    [pscustomobject]@{ Shortcut = $ProjectOpenShardShortcut; Icon = $OpenShardIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuStartShortcut; Icon = $StartIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuRestartShortcut; Icon = $RestartIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuCloseShortcut; Icon = $CloseIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuPowerShellShortcut; Icon = $PowerShellIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuOpenShardShortcut; Icon = $OpenShardIconPath }
+)
 if (Test-Path -LiteralPath $ControlScript) {
-    Assert-HalieusShortcutIcon -ShortcutPath $ProjectControlShortcut -ExpectedIconPath $ControlIconPath
-    Assert-HalieusShortcutIcon -ShortcutPath $StartMenuControlShortcut -ExpectedIconPath $ControlIconPath
+    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $ProjectControlShortcut; Icon = $ControlIconPath }
+    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $StartMenuControlShortcut; Icon = $ControlIconPath }
 }
 if (Test-Path -LiteralPath $ControlStopScript) {
-    Assert-HalieusShortcutIcon -ShortcutPath $ProjectControlStopShortcut -ExpectedIconPath $ControlStopIconPath
-    Assert-HalieusShortcutIcon -ShortcutPath $StartMenuControlStopShortcut -ExpectedIconPath $ControlStopIconPath
+    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $ProjectControlStopShortcut; Icon = $ControlStopIconPath }
+    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $StartMenuControlStopShortcut; Icon = $ControlStopIconPath }
+}
+if (Test-Path -LiteralPath $UpdateScript) {
+    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $ProjectUpdateShortcut; Icon = $UpdateIconPath }
+    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $StartMenuUpdateShortcut; Icon = $UpdateIconPath }
+}
+foreach ($check in $ShortcutIconChecks) {
+    Assert-HalieusShortcutIcon -ShortcutPath $check.Shortcut -ExpectedIconPath $check.Icon
+}
+
+# Control launchers must point at canonical user-facing entry points. Legacy
+# *Control Mobile* wrappers may remain internally for compatibility, but they
+# are not allowed to leak into generated shortcut targets.
+if (Test-Path -LiteralPath $ControlScript) {
+    Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectControlShortcut -ExpectedCommandScript $ControlScript
+    Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuControlShortcut -ExpectedCommandScript $ControlScript
+}
+if (Test-Path -LiteralPath $ControlStopScript) {
+    Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectControlStopShortcut -ExpectedCommandScript $ControlStopScript
+    Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuControlStopShortcut -ExpectedCommandScript $ControlStopScript
 }
 
 # Nudge Windows to re-read shortcut artwork after the icon paths change.
@@ -278,11 +328,11 @@ if (Test-Path -LiteralPath $IconRefresh) {
 }
 
 Write-Host ''
-Write-Host 'HGR launcher family refreshed without touching launcher artwork:' -ForegroundColor Cyan
+Write-Host 'HGR launcher family refreshed and verified against generated icon metadata:' -ForegroundColor Cyan
 Write-Host "  Project:    $ProjectLauncherDirectory" -ForegroundColor DarkGray
 Write-Host "  Start Menu: $StartMenuLauncherDirectory" -ForegroundColor DarkGray
 Write-Host ''
-Write-Host 'All HGR shortcuts now use the same grouped layout and naming.' -ForegroundColor Green
+Write-Host 'All HGR shortcuts now use the same grouped layout and canonical naming.' -ForegroundColor Green
 
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null
