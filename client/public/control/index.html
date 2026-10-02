@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0d14" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="Halieus Game Room administrative control and live operations hub." />
+  <title>HGR Control</title>
+  <link rel="stylesheet" href="/control/control.css?v=part26-cloud-b1" />
+  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/control/control.js?v=part26-cloud-b1" defer></script>
+</head>
+<body>
+  <div class="control-bg" aria-hidden="true"></div>
+
+  <aside class="control-rail" aria-label="Control sections">
+    <a class="control-brand" href="/" aria-label="Return to Halieus Game Room">
+      <span class="control-brand-mark">H</span>
+      <span><small>HALIEUS</small><strong>CONTROL</strong></span>
+    </a>
+    <nav>
+      <button class="rail-item is-active" data-section="overview"><span>⌂</span><b>Overview</b></button>
+      <button class="rail-item" data-section="live"><span>◉</span><b>Live</b></button>
+      <button class="rail-item" data-section="games"><span>▣</span><b>Games</b></button>
+      <button class="rail-item" data-section="players"><span>♟</span><b>Players</b></button>
+      <button class="rail-item" data-section="performance"><span>⌁</span><b>Performance</b></button>
+      <button class="rail-item" data-section="operations"><span>↻</span><b>Operations</b></button>
+      <button class="rail-item" data-section="audit"><span>≡</span><b>Audit</b></button>
+    </nav>
+    <div class="rail-spacer"></div>
+    <a class="rail-return" href="/"><span>←</span><b>Game Room</b></a>
+  </aside>
+
+  <main class="control-main">
+    <header class="control-topbar">
+      <div>
+        <p class="eyebrow">ADMINISTRATION · LIVE OPERATIONS</p>
+        <h1 id="sectionTitle">Control overview</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="cloud-state" id="cloudState"><span></span><b>Checking HGR Cloud…</b></div>
+        <button class="profile-chip" id="profileChip" type="button" aria-label="Signed-in administrator">
+          <span id="profileAvatar">?</span>
+          <span><strong id="profileName">Loading…</strong><small id="profileRole">Administrator</small></span>
+        </button>
+      </div>
+    </header>
+
+    <section class="access-state" id="accessState" hidden>
+      <div class="access-card">
+        <span class="access-icon">H</span>
+        <p class="eyebrow">HGR CONTROL</p>
+        <h2 id="accessTitle">Checking administrative access…</h2>
+        <p id="accessCopy">Control uses your normal Halieus account. Owner or administrator access is required.</p>
+        <a class="primary-action" href="/">Open Halieus Game Room</a>
+      </div>
+    </section>
+
+    <section class="control-section is-active" data-panel="overview">
+      <section class="hero-grid">
+        <article class="now-playing-card" id="nowPlayingCard">
+          <div class="card-heading">
+            <div><p class="eyebrow">NOW PLAYING</p><h2 id="nowPlayingTitle">No active game</h2></div>
+            <span class="live-badge" id="nowPlayingBadge">IDLE</span>
+          </div>
+          <div id="nowPlayingBody" class="now-playing-body">
+            <p>Your active HGR game will appear here automatically when this account is seated in a live room.</p>
+          </div>
+          <div class="card-actions" id="nowPlayingActions" hidden>
+            <a class="primary-action" id="openGameAction" href="/">Open game</a>
+            <a class="secondary-action" id="spectateGameAction" href="/">Spectate view</a>
+          </div>
+        </article>
+
+        <article class="status-card infrastructure-card">
+          <div class="card-heading"><div><p class="eyebrow">INFRASTRUCTURE</p><h2>HGR network</h2></div><span class="status-dot is-live"></span></div>
+          <div class="infrastructure-list">
+            <div><span>☁</span><p><strong>HGR Cloud</strong><small id="cloudDetail">Checking…</small></p><b id="cloudBadge">—</b></div>
+            <div><span>🖥</span><p><strong>Owner PC</strong><small id="ownerPcDetail">Cloud agent enrollment comes next</small></p><b class="muted">Not linked</b></div>
+            <div><span>🌐</span><p><strong>Public Game Room</strong><small id="serverVersion">Version —</small></p><b id="serverBadge">Checking</b></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="metric-grid" aria-label="Live HGR metrics">
+        <article><small>Players online</small><strong id="metricPlayers">—</strong><span id="metricPlayersSub">Signed-in accounts</span></article>
+        <article><small>Live rooms</small><strong id="metricRooms">—</strong><span>Across every game</span></article>
+        <article><small>Socket clients</small><strong id="metricClients">—</strong><span>Live HGR connections</span></article>
+        <article><small>Spectators</small><strong id="metricSpectators">—</strong><span>Watching live games</span></article>
+      </section>
+
+      <section class="overview-grid">
+        <article class="panel-card chart-card">
+          <div class="card-heading"><div><p class="eyebrow">LIVE TRAFFIC</p><h2>HGR activity</h2></div><small>Rolling 60 seconds</small></div>
+          <div class="chart-legend"><span><i class="legend-a"></i>Connections</span><span><i class="legend-b"></i>Players</span><span><i class="legend-c"></i>Rooms</span></div>
+          <svg id="activityChart" class="line-chart" viewBox="0 0 720 220" role="img" aria-label="Live HGR activity chart"></svg>
+        </article>
+
+        <article class="panel-card live-summary-card">
+          <div class="card-heading"><div><p class="eyebrow">LIVE HGR</p><h2>Active games</h2></div><button class="text-action" type="button" data-jump="live">View all</button></div>
+          <div id="overviewLiveGames" class="compact-game-list"><div class="empty-state">Loading live rooms…</div></div>
+        </article>
+      </section>
+
+      <section class="performance-strip">
+        <article><span>CPU</span><strong>—</strong><small>Owner agent required</small><div class="empty-meter"><i></i></div></article>
+        <article><span>Memory</span><strong>—</strong><small>Owner agent required</small><div class="empty-meter"><i></i></div></article>
+        <article><span>Network ↓ / ↑</span><strong>—</strong><small>Bandwidth telemetry pending</small><div class="empty-meter"><i></i></div></article>
+        <article><span>Server uptime</span><strong id="metricUptime">—</strong><small>Current cloud process</small><div class="empty-meter is-ready"><i></i></div></article>
+      </section>
+    </section>
+
+    <section class="control-section" data-panel="live">
+      <div class="section-heading-large"><div><p class="eyebrow">LIVE HGR</p><h2>Everything happening now</h2><p>Rooms, players and spectators across the entire Game Room.</p></div><button class="secondary-action" id="refreshLive" type="button">Refresh</button></div>
+      <div id="liveRoomGrid" class="room-grid"><div class="empty-state">Loading rooms…</div></div>
+    </section>
+
+    <section class="control-section" data-panel="games">
+      <div class="section-heading-large"><div><p class="eyebrow">GAME HUB</p><h2>Your games & HGR activity</h2><p>Your current game, personal record and recently played titles.</p></div></div>
+      <div class="games-layout">
+        <article class="panel-card" id="gamesCurrent"></article>
+        <article class="panel-card"><div class="card-heading"><div><p class="eyebrow">YOUR RECORD</p><h2>Personal activity</h2></div></div><div id="personalStats" class="personal-stats"><div class="empty-state">Loading your game record…</div></div></article>
+      </div>
+      <article class="panel-card recent-results-card"><div class="card-heading"><div><p class="eyebrow">RECENT</p><h2>Recent results</h2></div></div><div id="recentResults" class="recent-results"><div class="empty-state">No recent results loaded.</div></div></article>
+    </section>
+
+    <section class="control-section" data-panel="players">
+      <div class="section-heading-large"><div><p class="eyebrow">PEOPLE</p><h2>Players</h2><p>Signed-in Halieus accounts and current online state.</p></div></div>
+      <div id="playerGrid" class="player-grid"><div class="empty-state">Loading players…</div></div>
+    </section>
+
+    <section class="control-section" data-panel="performance">
+      <div class="section-heading-large"><div><p class="eyebrow">PERFORMANCE</p><h2>HGR performance centre</h2><p>Live cloud metrics now; owner-PC CPU, memory, storage and bandwidth arrive through the secure Control Agent.</p></div></div>
+      <div class="metric-grid performance-metrics">
+        <article><small>Connections</small><strong id="perfClients">—</strong><span>Socket clients</span></article>
+        <article><small>Online accounts</small><strong id="perfPlayers">—</strong><span>Authenticated players</span></article>
+        <article><small>Rooms</small><strong id="perfRooms">—</strong><span>Live game sessions</span></article>
+        <article><small>Cloud uptime</small><strong id="perfUptime">—</strong><span>Current process</span></article>
+      </div>
+      <article class="panel-card chart-card performance-chart"><div class="card-heading"><div><p class="eyebrow">ROLLING SAMPLE</p><h2>Cloud activity timeline</h2></div><small>Updates every 2 seconds</small></div><div class="chart-legend"><span><i class="legend-a"></i>Connections</span><span><i class="legend-b"></i>Players</span><span><i class="legend-c"></i>Rooms</span></div><svg id="performanceChart" class="line-chart" viewBox="0 0 960 280" role="img" aria-label="HGR cloud performance chart"></svg></article>
+      <div class="agent-coming-grid">
+        <article><span>CPU</span><strong>Owner PC telemetry</strong><p>Per-machine CPU and HGR process load will stream through the outbound Control Agent connection.</p></article>
+        <article><span>RAM</span><strong>Memory telemetry</strong><p>System memory plus HGR and Control Agent working sets, without exposing arbitrary process data.</p></article>
+        <article><span>NET</span><strong>Bandwidth telemetry</strong><p>Live download/upload rate and HGR traffic will appear here when the owner machine is enrolled.</p></article>
+        <article><span>SSD</span><strong>Storage health</strong><p>Relevant HGR data usage and free space only; Control will not become a general file browser.</p></article>
+      </div>
+    </section>
+
+    <section class="control-section" data-panel="operations">
+      <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Control operations</h2><p>Remote machine actions will remain allow-listed and administrator authenticated.</p></div></div>
+      <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Cloud action relay not enabled yet</strong><small>Batch 1 is read-only. Remote Start, Restart, Update and Close are enabled only after secure owner-PC enrollment.</small></p></div></article>
+      <div class="operation-grid">
+        <button disabled><span>↻</span><strong>Restart HGR</strong><small>Owner agent required</small></button>
+        <button disabled><span>▶</span><strong>Start HGR</strong><small>Owner agent required</small></button>
+        <button disabled><span>■</span><strong>Close HGR</strong><small>Confirmation required</small></button>
+        <button disabled><span>⇧</span><strong>Update HGR</strong><small>Progress appears globally</small></button>
+      </div>
+      <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent update progress</h2><p>When remote updates are enabled, the operation remains visible while you move around Control. On phones it drops down from the top with percentage, current phase and an expandable details view.</p></article>
+    </section>
+
+    <section class="control-section" data-panel="audit">
+      <div class="section-heading-large"><div><p class="eyebrow">AUDIT</p><h2>Administrative activity</h2><p>Recent account and platform administration events.</p></div><button class="secondary-action" id="refreshAudit" type="button">Refresh</button></div>
+      <div id="auditList" class="audit-list"><div class="empty-state">Loading audit history…</div></div>
+    </section>
+  </main>
+
+  <aside class="operation-toast" id="operationToast" hidden aria-live="polite">
+    <button class="operation-toast-summary" id="operationToastToggle" type="button" aria-expanded="false">
+      <span class="operation-icon">⇧</span>
+      <span class="operation-copy"><strong id="operationTitle">Updating HGR</strong><small id="operationPhase">Preparing…</small></span>
+      <b id="operationPercent">0%</b>
+      <span class="operation-chevron">⌄</span>
+    </button>
+    <div class="operation-progress" aria-hidden="true"><i id="operationProgressBar"></i></div>
+    <div class="operation-toast-details" id="operationDetails" hidden>
+      <div><span>Operation</span><strong id="operationDetailAction">Update HGR</strong></div>
+      <div><span>Started</span><strong id="operationStarted">—</strong></div>
+      <div><span>State</span><strong id="operationState">Running</strong></div>
+      <button class="text-action" id="operationDismiss" type="button">Dismiss completed operation</button>
+    </div>
+  </aside>
+
+  <nav class="control-mobile-nav" aria-label="Control mobile sections">
+    <button class="is-active" data-section="overview"><span>⌂</span><b>Home</b></button>
+    <button data-section="live"><span>◉</span><b>Live</b></button>
+    <button data-section="games"><span>▣</span><b>Games</b></button>
+    <button data-section="performance"><span>⌁</span><b>Stats</b></button>
+    <button data-section="operations"><span>↻</span><b>Ops</b></button>
+  </nav>
+</body>
+</html>
