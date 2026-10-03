@@ -1,4 +1,4 @@
-// Website-only raster exports. Never consumes or writes Windows launcher artwork.
+// Website-only favicon/install exports. Never consumes or writes Windows launcher artwork.
 import { chromium } from 'playwright';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -18,7 +18,6 @@ try {
   for (const size of [180, 192, 512]) {
     await writeFile(resolve(output, `app-icon-${size}.png`), await render(size));
   }
-  await writeFile(resolve(output, 'halieus-app-icon.png'), await render(1024));
   await writeFile(resolve(output, 'favicon-32.png'), await render(32));
 
   const sizes = [16, 32, 48, 64];
@@ -38,5 +37,5 @@ try {
     offset += png.length;
   });
   await writeFile(resolve(output, 'favicon.ico'), Buffer.concat([directory, ...pngs]));
-  console.log('Generated current Halieus favicon and PWA PNG/ICO exports from halieus-app-icon.svg.');
+  console.log('Generated current Halieus favicon and install PNG/ICO exports from halieus-app-icon.svg.');
 } finally { await browser.close(); }
