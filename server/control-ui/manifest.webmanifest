@@ -9,10 +9,10 @@
   "theme_color": "#4F7BFE",
   "icons": [
     {
-      "src": "/control-icon.png?v=4.5.3-control-approved2",
+      "src": "/control-icon.png?v=4.5.4-control-approved3",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
