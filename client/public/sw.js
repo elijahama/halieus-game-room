@@ -1,5 +1,5 @@
-const CACHE = 'halieus-shell-v4-5-3-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
-const SHELL = ['/', '/site.webmanifest?identity=install-h2', '/app-icon-192.png?identity=install-h2', '/app-icon-512.png?identity=install-h2'];
+const CACHE = 'halieus-shell-v4-5-4-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
+const SHELL = ['/', '/site.webmanifest?identity=install-h3', '/app-icon-192.png?identity=install-h3', '/app-icon-512.png?identity=install-h3', '/favicon-32.png?identity=brand-h7'];
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).catch(() => undefined));
   self.skipWaiting();
@@ -29,8 +29,8 @@ self.addEventListener('push', (event) => {
   try { payload = { ...payload, ...(event.data?.json() || {}) }; } catch {}
   event.waitUntil(self.registration.showNotification(payload.title, {
     body: payload.body,
-    icon: '/app-icon-192.png?v=4.5.3-install-h2',
-    badge: '/favicon-32.png?identity=install-h2',
+    icon: '/app-icon-192.png?v=4.5.4-install-h3',
+    badge: '/favicon-32.png?v=4.5.4-brand-h7',
     data: { url: payload.url || '/' },
     tag: payload.tag || 'halieus-notification',
   }));
@@ -44,7 +44,6 @@ self.addEventListener('notificationclick', (event) => {
     return self.clients.openWindow(target);
   }));
 });
-
 
 self.addEventListener('message', (event) => {
   if (event.data?.type !== 'HALIEUS_RELEASE_REFRESH') return;
