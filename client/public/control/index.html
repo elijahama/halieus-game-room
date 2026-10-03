@@ -7,8 +7,10 @@
   <meta name="color-scheme" content="dark" />
   <meta name="description" content="Halieus Game Room administrative control and live operations hub." />
   <title>HGR Control</title>
-  <link rel="icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
+  <link rel="manifest" href="/control/manifest.webmanifest?v=4.5.4-control-approved3" />
+  <link rel="icon" href="/control/control-icon.png?v=4.5.4-control-approved3" />
+  <link rel="shortcut icon" href="/control/control-icon.png?v=4.5.4-control-approved3" />
+  <link rel="apple-touch-icon" href="/control/control-icon.png?v=4.5.4-control-approved3" />
   <link rel="stylesheet" href="/control/control.css?v=part26-control-approved2" />
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/control/control.js?v=part26-cloud-b1" defer></script>
@@ -18,7 +20,7 @@
 
   <aside class="control-rail" aria-label="Control sections">
     <a class="control-brand" href="/" aria-label="Return to Halieus Game Room">
-      <img class="control-brand-mark" src="/control/control-icon.png?v=part26-control-approved2" alt="" aria-hidden="true" />
+      <img class="control-brand-mark" src="/control/control-icon.png?v=4.5.4-control-approved3" alt="" aria-hidden="true" />
       <span><small>HALIEUS</small><strong>CONTROL</strong></span>
     </a>
     <nav>
@@ -51,7 +53,7 @@
 
     <section class="access-state" id="accessState" hidden>
       <div class="access-card">
-        <img class="access-icon" src="/control/control-icon.png?v=part26-control-approved2" alt="" aria-hidden="true" />
+        <img class="access-icon" src="/control/control-icon.png?v=4.5.4-control-approved3" alt="" aria-hidden="true" />
         <p class="eyebrow">HGR CONTROL</p>
         <h2 id="accessTitle">Checking administrative access…</h2>
         <p id="accessCopy">Control uses your normal Halieus account. Owner or administrator access is required.</p>
@@ -190,5 +192,15 @@
     <button data-section="performance"><span>⌁</span><b>Stats</b></button>
     <button data-section="operations"><span>↻</span><b>Ops</b></button>
   </nav>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/control/sw.js?v=4.5.4-control-pwa1", { scope: "/control/", updateViaCache: "none" })
+          .then((registration) => registration.update())
+          .catch(() => undefined);
+      });
+    }
+  </script>
 </body>
 </html>
