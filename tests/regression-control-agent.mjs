@@ -287,7 +287,7 @@ assert.match(controlUiJs, /classList\.toggle\("is-close", action === "close"\)/,
 assert.match(controlUiJs, /classList\.toggle\("is-update", action === "update"\)/, "Update confirmation must inherit Update action colour");
 assert.doesNotMatch(controlUiJs, /localStorage|sessionStorage/, "Mobile Control must not persist control credentials in browser storage");
 assert.match(controlManifest, /"display": "standalone"/, "Mobile Control manifest must support standalone installation");
-assert.match(controlManifest, /control-icon\.png\?v=4\.5\.3-reference-png1/, "Installed HGR Control must use the approved reference PNG");
+assert.match(controlManifest, /control-icon\.png\?v=4\.5\.3-control-approved2/, "Installed HGR Control must use the approved reference PNG");
 assert.match(agent, /const controlIconPng = resolve\(controlUiDirectory, "control-icon\.png"\)/, "Control Agent must resolve the approved Control PNG");
 assert.match(agent, /"\/control-icon\.png"/, "Control Agent must serve the dedicated Control PNG");
 assert.match(agent, /controlIconPng[\s\S]*?cacheControl: "no-store"/s, "Control PNG response must never be browser-cached by the Agent");
@@ -295,8 +295,8 @@ assert.match(agent, /function summarizeUpdaterFailure\(/, "Control Agent must pr
 assert.match(agent, /reason: error \? summarizeUpdaterFailure\(stdout, stderr, error\) : null/, "Update audit must record the captured updater failure rather than a generic message");
 assert.doesNotMatch(agent, /appIcon192|appIcon512|\/icon-192\.png|\/icon-512\.png/, "Control Agent must not serve the main Halieus app icon as Control identity");
 assert.doesNotMatch(controlManifest, /app-icon-192|app-icon-512/, "HGR Control must never reuse the main Halieus app icon");
-assert.match(controlUiHtml, /control-icon\.png\?v=4\.5\.3-reference-png1/, "Control splash/header must use the approved reference Control PNG");
-assert.match(controlServiceWorker, /hgr-control-shell-v9/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
+assert.match(controlUiHtml, /control-icon\.png\?v=4\.5\.3-control-approved2/, "Control splash/header must use the approved reference Control PNG");
+assert.match(controlServiceWorker, /hgr-control-shell-v10/, "Control service worker cache revision must invalidate the pre-Batch-2 pairing shell");
 assert.match(controlServiceWorker, /control\.js\?v=4\.5\.3-control-b4/, "Control shell cache must pin the Batch-2 JavaScript revision");
 assert.match(controlServiceWorker, /url\.pathname\.startsWith\("\/api\/"\)/, "Control service worker must never cache API traffic");
 assert.match(launcherIconGenerator, /HGR Start\.png/, "Launcher exporter must use approved Start PNG");

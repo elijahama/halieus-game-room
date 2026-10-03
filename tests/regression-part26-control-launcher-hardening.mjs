@@ -14,7 +14,11 @@ const shortcuts = read("scripts/windows/launcher-shortcuts.ps1");
 const stopControl = read("Stop HGR Control.cmd");
 const controlAuthority = readBinary("assets/branding/references/HGR Control Launcher.png");
 const controlPwa = readBinary("server/control-ui/control-icon.png");
+const controlCloud = readBinary("client/public/control/control-icon.png");
 const historicalControlSheet = readBinary("assets/branding/references/HGR Control.png");
+const controlSourceRecord = read("assets/branding/references/HGR_CONTROL_LAUNCHER_SOURCE.md");
+const cloudControlHtml = read("client/public/control/index.html");
+const adminControlLauncher = read("client/src/platform/control/AdminControlLauncher.tsx");
 
 // Source artwork protection: a launcher export must be square before it is ever
 // resized. This prevents a reference/model sheet from silently becoming a .lnk icon.
@@ -38,9 +42,16 @@ assert.match(generator, /Remove-Item -Force -ErrorAction Stop/, "Stale runtime l
 
 const authoritySize = pngSize(controlAuthority);
 assert.equal(authoritySize.width, authoritySize.height, "Approved HGR Control launcher source must be square");
-assert.ok(authoritySize.width >= 256, "Approved HGR Control launcher source must be at least 256px");
-assert.deepEqual(controlPwa, controlAuthority, "Control PWA icon must use the same approved square PNG as the Windows launcher");
+assert.ok(authoritySize.width >= 192, "Approved HGR Control launcher source must be at least 192px for PWA/install delivery");
+assert.deepEqual(controlPwa, controlAuthority, "Private Control PWA icon must use the approved launcher authority exactly");
+assert.deepEqual(controlCloud, controlAuthority, "Cloud Control hub icon must use the approved launcher authority exactly");
 assert.notDeepEqual(controlAuthority, historicalControlSheet, "Approved square Control artwork must not be the historical model/reference sheet");
+assert.match(controlSourceRecord, /generic\/slab-serif H[^\n]*prohibited/i, "Control source record must explicitly prohibit the rejected generic/slab-serif H");
+assert.match(controlSourceRecord, /integrated blue cog outline/i, "Control source record must preserve the owner-approved integrated cog treatment");
+assert.match(cloudControlHtml, /\/control\/control-icon\.png\?v=part26-control-approved2/, "Cloud Control hub must render the approved Control artwork");
+assert.doesNotMatch(cloudControlHtml, /<span class="control-brand-mark">H<\/span>/, "Cloud Control must not synthesize a replacement H in its brand mark");
+assert.doesNotMatch(cloudControlHtml, /<span class="access-icon">H<\/span>/, "Cloud Control access state must not synthesize a replacement H");
+assert.match(adminControlLauncher, /<img className="hgr-admin-control-mark" src="\/control\/control-icon\.png\?v=part26-control-approved2"/, "Admin Control launcher must use the approved image instead of a text H");
 
 // Export validation: generated files are checked, not merely assumed to exist.
 assert.match(generator, /function Assert-HgrRuntimeIconExport/, "Launcher generator must validate generated PNG and ICO files");
@@ -71,48 +82,67 @@ assert.match(stopControl, /scripts\\windows\\stop-control\.ps1/, "Canonical Stop
 
 console.log("HGR Part 26 Control launcher hardening regression: PASS");
 
-// A correct IHDR size alone did not catch the corrupt replacement on main.
+// A correct IHDR size alone did not catch a corrupt replacement previously.
+// Validate chunk CRCs and decompression for both RGBA and indexed-alpha exports.
 function verifyPng(bytes) {
-  assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  const { width, height } = pngSize(bytes);
   const idat = [];
   let ended = false;
+  let hasPalette = false;
+  let hasTransparency = false;
   for (let pos = 8; pos < bytes.length;) {
     const size = bytes.readUInt32BE(pos);
-    assert.ok(pos + size + 12 <= bytes.length, 'Truncated PNG chunk');
+    assert.ok(pos + size + 12 <= bytes.length, "Truncated PNG chunk");
     const chunk = bytes.subarray(pos + 4, pos + 8 + size);
     let crc = 0xffffffff;
     for (const byte of chunk) {
       crc ^= byte;
       for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
     }
-    assert.equal((crc ^ 0xffffffff) >>> 0, bytes.readUInt32BE(pos + 8 + size), 'PNG chunk checksum must be valid');
+    assert.equal((crc ^ 0xffffffff) >>> 0, bytes.readUInt32BE(pos + 8 + size), "PNG chunk checksum must be valid");
     const type = chunk.subarray(0, 4).toString();
-    if (type === 'IDAT') idat.push(chunk.subarray(4));
-    if (type === 'IEND') ended = true;
+    if (type === "IDAT") idat.push(chunk.subarray(4));
+    if (type === "PLTE") hasPalette = true;
+    if (type === "tRNS") hasTransparency = true;
+    if (type === "IEND") ended = true;
     pos += size + 12;
   }
-  assert.ok(ended && idat.length, 'PNG must contain image data and end marker');
-  assert.equal(bytes[24], 8);
-  assert.equal(bytes[25], 6, 'Approved export uses RGBA');
-  assert.equal(inflateSync(Buffer.concat(idat)).length, (256 * 4 + 1) * 256);
+  assert.ok(ended && idat.length, "PNG must contain image data and end marker");
+  assert.equal(bytes[24], 8, "Approved export uses 8-bit channels/indexes");
+  const colorType = bytes[25];
+  assert.ok(colorType === 3 || colorType === 6, `Unsupported approved Control PNG color type: ${colorType}`);
+  if (colorType === 3) {
+    assert.ok(hasPalette, "Indexed approved Control PNG must include a palette");
+    assert.ok(hasTransparency, "Indexed approved Control PNG must preserve transparent exterior pixels");
+  }
+  const rowBytes = colorType === 6 ? width * 4 : width;
+  assert.equal(inflateSync(Buffer.concat(idat)).length, (rowBytes + 1) * height, "PNG image data must decompress to the expected scanline size");
 }
 verifyPng(controlAuthority);
 verifyPng(controlPwa);
+verifyPng(controlCloud);
 const corrupt = Buffer.from(controlAuthority);
 corrupt[45] ^= 1;
-assert.throws(() => verifyPng(corrupt), 'Corrupt PNG must fail even with a square IHDR');
-assert.equal(createHash('sha256').update(controlAuthority).digest('hex'), 'fa6cb650f4e60b171607bfb8fb4c3e7bf00d683d0a3dbd38bd87ed65d6a9fbe2', 'Control must retain the owner-approved lower-row gear artwork');
-console.log('PASS Control approved artwork, PNG checksums and decompression');
+assert.throws(() => verifyPng(corrupt), "Corrupt PNG must fail even with a square IHDR");
+assert.equal(
+  createHash("sha256").update(controlAuthority).digest("hex"),
+  "90fb5be18b805841df83ef8e0b2c62ce59184336de1876befab48edf2a076ff4",
+  "Control must retain the owner-approved 3 October integrated-cog artwork",
+);
+console.log("PASS Control approved artwork, PNG checksums, transparency and decompression");
 
-const approval=JSON.parse(read('assets/branding/references/control-artwork.json'));
-assert.equal(approval.sha256,createHash('sha256').update(controlAuthority).digest('hex'));
-assert.match(generator,/controlAuthorityHash -ne \$approvedControl.sha256/);
-assert.match(shortcuts,/cacheProcess.ExitCode -ne 0/);
-if(process.platform === 'win32') {
- // PowerShell 7's inherited module path hides Windows PowerShell 5 modules
- // when launched through Node. Let the tested shell build its own defaults.
- const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>key.toLowerCase()!=='psmodulepath'));
- const result=spawnSync('powershell.exe',['-NoProfile','-File','tests/runtime-launcher-exports.ps1'],{encoding:'utf8',env});
- assert.equal(result.status,0,result.stdout+result.stderr);
- console.log(result.stdout.trim());
-} else console.log('Windows COM/cache runtime acceptance requires Windows; source contracts validated here.');
+const approval = JSON.parse(read("assets/branding/references/control-artwork.json"));
+assert.equal(approval.sha256, createHash("sha256").update(controlAuthority).digest("hex"));
+assert.match(generator, /controlAuthorityHash -ne \$approvedControl.sha256/);
+assert.match(shortcuts, /cacheProcess.ExitCode -ne 0/);
+if (process.platform === "win32") {
+  // PowerShell 7's inherited module path hides Windows PowerShell 5 modules
+  // when launched through Node. Let the tested shell build its own defaults.
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "psmodulepath"));
+  const result = spawnSync("powershell.exe", ["-NoProfile", "-File", "tests/runtime-launcher-exports.ps1"], { encoding: "utf8", env });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  console.log(result.stdout.trim());
+} else {
+  console.log("Windows COM/cache runtime acceptance requires Windows; source contracts validated here.");
+}

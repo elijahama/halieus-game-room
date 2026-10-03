@@ -439,3 +439,12 @@ Canonical CMD launchers and updater now call start-control.ps1 / stop-control.ps
 ## Part 26 Batch 6 — verified launcher refresh
 
 Control generation rejects even matching square authority/delivery PNGs when their hash is not the approved artwork. ICO validation checks its directory, dimensions, bit depth, byte length and exact embedded PNG. Stale generated-file removal and Windows cache refresh failures now stop the stage. Shortcut validation also checks icon index, executable and working directory; paths containing commas are supported. Windows runtime regression uses a disposable project and fake Start Menu, verifies all sixteen shortcuts, and rejects corrupted ICOs, wrong icon indices/targets, cache failure and unapproved artwork. It does not launch the desktop app, Control or an update/deployment.
+
+
+## 3 October 2026 — approved Control icon integration
+
+The owner-approved integrated blue cog artwork supersedes the 2 October model-sheet crop. The canonical H itself is not redrawn. Authority: `assets/branding/references/HGR Control Launcher.png`, transparent indexed 192×192 PNG, SHA256 `90fb5be18b805841df83ef8e0b2c62ce59184336de1876befab48edf2a076ff4`. Byte-identical copies serve the private Control PWA and Cloud Control `/control/`; the in-site admin launcher uses the Cloud Control image. Splash/header, favicon, Apple-touch and manifest references use the approved artwork revision. The manifest describes an ordinary icon rather than claiming mask-safe artwork.
+
+Windows exports remain verified 256px PNG/ICO derivatives. Stop Control adds only the existing explicit red stop treatment. Other launcher masters are unchanged. Model-sheet exclusion, pinned approval hash, PNG decode checks, stale export cleanup, actual shortcut icon/target validation and cache-refresh failure checks remain enforced. Private shell cache v10 replaces v9; Cloud Control stylesheet and image URLs are revised. Browser coverage verifies rendered image decoding and approved URLs after stale-shell takeover and on cloud/admin surfaces.
+
+This batch changes branding only: no relay, telemetry, cancellation, enrollment or remote-action implementation. Source checks/CI do not establish installed-device acceptance. After the normal updater, the owner must check actual Windows Control/Stop icons and existing Chrome/Brave installed PWA artwork, then compare `/control/` and the in-site admin launcher. Mobile OS launcher refresh timing must be verified on-device.

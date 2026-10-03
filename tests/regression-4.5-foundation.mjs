@@ -155,7 +155,7 @@ assert.match(previewGenerator,/HGR Update\.png/,"Update launcher must use the ap
 assert.match(previewGenerator,/HGR OpenShard\.png/,"OpenShard launcher must use the approved OpenShard PNG");
 const controlDimensions=pngDimensions(approvedControlIcon);
 assert.equal(controlDimensions.width,controlDimensions.height,"Approved HGR Control launcher source must be square, not a model/reference sheet");
-assert.ok(controlDimensions.width>=256,"Approved HGR Control launcher source must have enough resolution for Windows export");
+assert.ok(controlDimensions.width===192,"Approved Control authority is the pinned 192px source; Windows export remains verified at 256px");
 assert.notEqual(createHash("sha256").update(approvedControlIcon).digest("hex"),createHash("sha256").update(legacyControlSheet).digest("hex"),"HGR Control launcher source must not fall back to the legacy full reference sheet");
 assert.match(previewGenerator,/server\\control-ui\\control-icon\.png/,"HGR Control launcher must use the dedicated approved Control PWA PNG");
 assert.doesNotMatch(previewGenerator,/control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/,"Legacy full Control reference sheet must never be mapped directly to a Windows launcher");

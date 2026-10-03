@@ -22,7 +22,7 @@ export function AdminControlLauncher() {
 
   return (
     <a className="hgr-admin-control-launcher" href="/control/" aria-label="Open HGR Control administration hub">
-      <span className="hgr-admin-control-mark" aria-hidden="true">H</span>
+      <img className="hgr-admin-control-mark" src="/control/control-icon.png?v=part26-control-approved2" alt="" aria-hidden="true" />
       <span><small>ADMIN</small><strong>Control</strong></span>
     </a>
   );

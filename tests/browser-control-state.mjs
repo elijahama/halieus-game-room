@@ -35,6 +35,14 @@ try {
  await page.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();await reg.update()});
  await page.locator('#offlinePanel:visible').waitFor();
  assert.equal(await page.locator('#pairPanel').isVisible(),false);
+ for(const selector of ['#introSplash img','.brand-lockup img']) {
+   await page.waitForFunction(s=>{const i=document.querySelector(s);return i.complete&&i.naturalWidth===192},selector);
+   assert.match(await page.locator(selector).getAttribute('src'),/control-approved2/);
+ }
+ const manifest=await page.evaluate(async()=>await(await fetch(document.querySelector('link[rel="manifest"]').href)).json());
+ assert.equal(manifest.icons[0].sizes,'192x192');
+ assert.match(manifest.icons[0].src,/control-approved2/);
+
  mode='fresh';expires=Date.now()+3000;
  await page.locator('#retryConnectionButton').click(); await page.locator('#pairPanel:visible').waitFor();
  assert.equal(await page.locator('#pairCode').isEnabled(),true);
@@ -49,8 +57,8 @@ try {
  await page.locator('#dashboard:visible').waitFor();
  mode='offline'; await page.locator('#offlinePanel:visible').waitFor({timeout:12000});
  assert.equal(await page.locator('#dashboard').isVisible(),false);
- const keys=await page.evaluate(()=>caches.keys());assert.ok(!keys.includes('hgr-control-shell-v1'));
- const requests=await page.evaluate(async()=>{const c=await caches.open('hgr-control-shell-v9');return(await c.keys()).map(r=>r.url)});
+ const keys=await page.evaluate(()=>caches.keys());assert.ok(!keys.includes('hgr-control-shell-v1'));assert.ok(keys.includes('hgr-control-shell-v10'));
+ const requests=await page.evaluate(async()=>{const c=await caches.open('hgr-control-shell-v10');return(await c.keys()).map(r=>r.url)});
  assert.ok(requests.every(u=>!u.includes('/api/')));
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  console.log('PASS stale installed PWA takeover, offline/retry/fresh/expired/paired/disconnected states and uncached API');
