@@ -18,6 +18,10 @@ const controlCloud = readBinary("client/public/control/control-icon.png");
 const historicalControlSheet = readBinary("assets/branding/references/HGR Control.png");
 const controlSourceRecord = read("assets/branding/references/HGR_CONTROL_LAUNCHER_SOURCE.md");
 const cloudControlHtml = read("client/public/control/index.html");
+const cloudControlManifest = read("client/public/control/manifest.webmanifest");
+const cloudControlWorker = read("client/public/control/sw.js");
+const privateControlHtml = read("server/control-ui/index.html");
+const privateControlManifest = read("server/control-ui/manifest.webmanifest");
 const adminControlLauncher = read("client/src/platform/control/AdminControlLauncher.tsx");
 
 // Source artwork protection: a launcher export must be square before it is ever
@@ -28,16 +32,8 @@ assert.match(
   /\$probe\.Width -ne \$probe\.Height -or \$probe\.Width -lt 64/,
   "Launcher source guard must reject non-square/model-sheet artwork",
 );
-assert.match(
-  generator,
-  /HGR Control Launcher\.png/,
-  "HGR Control must map to its dedicated approved square launcher PNG",
-);
-assert.doesNotMatch(
-  generator,
-  /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/,
-  "Legacy HGR Control reference sheet must never be mapped to a launcher",
-);
+assert.match(generator, /HGR Control Launcher\.png/, "HGR Control must map to its dedicated approved square launcher PNG");
+assert.doesNotMatch(generator, /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/, "Legacy HGR Control reference sheet must never be mapped to a launcher");
 assert.match(generator, /Remove-Item -Force -ErrorAction Stop/, "Stale runtime launcher exports must be removed before rebuild");
 
 const authoritySize = pngSize(controlAuthority);
@@ -48,9 +44,25 @@ assert.deepEqual(controlCloud, controlAuthority, "Cloud Control hub icon must us
 assert.notDeepEqual(controlAuthority, historicalControlSheet, "Approved square Control artwork must not be the historical model/reference sheet");
 assert.match(controlSourceRecord, /generic\/slab-serif H[^\n]*prohibited/i, "Control source record must explicitly prohibit the rejected generic/slab-serif H");
 assert.match(controlSourceRecord, /integrated blue cog outline/i, "Control source record must preserve the owner-approved integrated cog treatment");
-assert.match(cloudControlHtml, /\/control\/control-icon\.png\?v=part26-control-approved2/, "Cloud Control hub must render the approved Control artwork");
+
+// 4.5.4 identity: private and cloud Control both advertise the approved blue
+// Control artwork, with a new URL revision so stale installed icons cannot win.
+assert.match(cloudControlHtml, /rel="manifest" href="\/control\/manifest\.webmanifest\?v=4\.5\.4-control-approved3"/, "Cloud Control must expose its own install manifest");
+assert.match(cloudControlHtml, /\/control\/control-icon\.png\?v=4\.5\.4-control-approved3/, "Cloud Control favicon/brand must render the current approved Control artwork revision");
+assert.match(cloudControlHtml, /serviceWorker\.register\("\/control\/sw\.js\?v=4\.5\.4-control-pwa1"/, "Cloud Control must register its scoped PWA worker");
 assert.doesNotMatch(cloudControlHtml, /<span class="control-brand-mark">H<\/span>/, "Cloud Control must not synthesize a replacement H in its brand mark");
 assert.doesNotMatch(cloudControlHtml, /<span class="access-icon">H<\/span>/, "Cloud Control access state must not synthesize a replacement H");
+const cloudManifest = JSON.parse(cloudControlManifest);
+assert.equal(cloudManifest.id, "/control/");
+assert.equal(cloudManifest.start_url, "/control/");
+assert.equal(cloudManifest.scope, "/control/");
+assert.equal(cloudManifest.icons?.[0]?.src, "/control/control-icon.png?v=4.5.4-control-approved3");
+assert.match(cloudControlWorker, /hgr-cloud-control-shell-v1/);
+assert.match(cloudControlWorker, /\/control\/control-icon\.png\?v=4\.5\.4-control-approved3/);
+
+assert.match(privateControlHtml, /\/control-icon\.png\?v=4\.5\.4-control-approved3/, "Private Control favicon/brand must use the new approved revision");
+const privateManifest = JSON.parse(privateControlManifest);
+assert.equal(privateManifest.icons?.[0]?.src, "/control-icon.png?v=4.5.4-control-approved3");
 assert.match(adminControlLauncher, /<img className="hgr-admin-control-mark" src="\/control\/control-icon\.png\?v=part26-control-approved2"/, "Admin Control launcher must use the approved image instead of a text H");
 
 // Export validation: generated files are checked, not merely assumed to exist.
@@ -82,8 +94,6 @@ assert.match(stopControl, /scripts\\windows\\stop-control\.ps1/, "Canonical Stop
 
 console.log("HGR Part 26 Control launcher hardening regression: PASS");
 
-// A correct IHDR size alone did not catch a corrupt replacement previously.
-// Validate chunk CRCs and decompression for both RGBA and indexed-alpha exports.
 function verifyPng(bytes) {
   assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
   const { width, height } = pngSize(bytes);
@@ -137,8 +147,6 @@ assert.equal(approval.sha256, createHash("sha256").update(controlAuthority).dige
 assert.match(generator, /controlAuthorityHash -ne \$approvedControl.sha256/);
 assert.match(shortcuts, /cacheProcess.ExitCode -ne 0/);
 if (process.platform === "win32") {
-  // PowerShell 7's inherited module path hides Windows PowerShell 5 modules
-  // when launched through Node. Let the tested shell build its own defaults.
   const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.toLowerCase() !== "psmodulepath"));
   const result = spawnSync("powershell.exe", ["-NoProfile", "-File", "tests/runtime-launcher-exports.ps1"], { encoding: "utf8", env });
   assert.equal(result.status, 0, result.stdout + result.stderr);
