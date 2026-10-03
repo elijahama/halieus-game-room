@@ -1,5 +1,5 @@
 # Halieus Game Room — Logo System Reference
-Version: 4.5.3
+Version: 4.5.4
 
 ## Core Rule
 
@@ -163,16 +163,19 @@ Example:
 
 This guarantees that all themes keep identical logo geometry.
 
-### Installed app / PWA identity
+### Installed app / PWA identity — 4.5.4
 
-Installed app identity now comes from the canonical vector family rather than a historical rendered thumbnail.
+Browser and installed-app identity must now match the current website H rather than the retired HGR Main thumbnail.
 
-- The main Halieus PWA installs from `client/public/halieus-app-icon.svg`.
-- HGR Control installs from its separate square `server/control-ui/control-icon.png`.
-- The in-app Halieus mark still uses the canonical H geometry and may respond to the player's saved logo treatment.
-- Launcher/install icons use fixed product/role colours; runtime themes must not recolour an already-installed app identity.
-- For website/PWA themeable identity, SVG remains appropriate.
-- For Windows launcher identity, PNG/ICO exports must come from approved reference PNG artwork rather than an independently redrawn SVG/role approximation.
+- `client/public/halieus-app-icon.svg` is the main website/PWA source geometry.
+- `scripts/generate-platform-icons.mjs` exports the tracked 180, 192, 512 and 1024 PNGs plus favicon PNG/ICO from that exact SVG; it must not read launcher artwork.
+- `client/public/site.webmanifest` installs from the current 192/512 PNG exports and uses versioned URLs so Android/Chrome/Brave cannot silently retain the retired icon URL.
+- `client/public/halieus-app-icon.png` remains the large social/fallback raster, but it is now a generated current-H export rather than a copy of `assets/branding/references/HGR Main.png`.
+- `scripts/copy-approved-pwa-icon.mjs` verifies the current exports during prebuild and must never restore `HGR Main.png` as the website install identity.
+- HGR Control remains a separate product identity: private Control and cloud `/control/` use the approved blue integrated-cog `HGR Control Launcher.png` artwork, not the gold main H.
+- Cloud Control owns a `/control/`-scoped manifest/service worker so installing Control does not inherit or masquerade as the main HGR PWA.
+- Runtime themes may change the in-app Halieus mark treatment, but favicon/PWA install identity uses fixed product colours.
+- Windows launchers remain governed by approved rendered PNG authority and are not redrawn by the web/PWA exporter.
 
 ---
 
@@ -230,6 +233,7 @@ Examples:
 - Accessibility contrast may override a theme colour when required.
 - `HGR ICON - CONTROL UPDATE` is the current human-approved geometry reference.
 - Detailed older rendered icons remain historical references and do not override it.
+- The retired HGR Main rendered thumbnail must not be copied back over the current website favicon/PWA install exports.
 
 
 ## Permutation set
