@@ -1,5 +1,5 @@
-const CACHE_NAME = "hgr-control-shell-v9";
-const SHELL = ["/control.css?v=4.5.3-control-b4", "/control.js?v=4.5.3-control-b4", "/manifest.webmanifest?v=4.5.3-control-h4", "/offline.html"];
+const CACHE_NAME = "hgr-control-shell-v10";
+const SHELL = ["/control.css?v=4.5.3-control-b4", "/control.js?v=4.5.3-control-b4", "/manifest.webmanifest?v=4.5.3-control-approved2", "/offline.html"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL)));
