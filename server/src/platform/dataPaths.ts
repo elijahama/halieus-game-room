@@ -29,6 +29,12 @@ export function getGuildDataDirectory(): string {
   return root ? resolve(root, "guilds") : resolve(process.cwd(), "data", "guilds");
 }
 
+export function getControlCloudDataDirectory(): string {
+  const controlOverride = process.env.HALIEUS_CONTROL_CLOUD_DATA_DIR?.trim();
+  if (controlOverride) return resolve(controlOverride);
+  const root = configuredDataRoot();
+  return root ? resolve(root, "control-cloud") : resolve(process.cwd(), "data", "runtime", "control-cloud");
+}
 
 export function getFeedbackDataDirectory(): string {
   const root = configuredDataRoot();
