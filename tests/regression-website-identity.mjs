@@ -24,8 +24,8 @@ assert.match(app, /document\.title = `\$\{game\.name\} · Halieus Game Room`/);
 assert.match(app, new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h6"`), 'HGR home/tab favicon must use the canonical current web mark');
 assert.doesNotMatch(app, /makeHalieusTabGlyph/, 'Runtime must not redraw the HGR favicon');
 
-// Current tracked browser/PWA rasters are deliberately rebaselined from the
-// canonical web H. Contextual game art remains protected by the same fixture.
+// Current tracked browser/PWA install rasters are deliberately rebaselined from
+// the canonical web H. Contextual game art remains protected by the same fixture.
 const fixture = JSON.parse(read('tests/fixtures/pre2b-website-assets.json'));
 for (const [file, expected] of Object.entries(fixture)) {
   let value = bytes(file);
@@ -43,17 +43,18 @@ assert.deepEqual(
 assert.deepEqual(manifest.icons.map(i => i.sizes), ['192x192', '512x512']);
 assert.ok(manifest.icons.every(i => i.type === 'image/png'));
 assert.ok(manifest.icons.some(i => String(i.purpose).includes('maskable')), 'Main PWA must provide a maskable install icon');
-assert.ok(manifest.icons.every(i => !/app-icon-reference|HGR Main/i.test(i.src)), 'Retired install thumbnails must not return');
+assert.ok(manifest.icons.every(i => !/halieus-app-icon|app-icon-reference|HGR Main/i.test(i.src)), 'Legacy/social artwork must not be an install icon source');
+assert.equal(manifest._legacy_social_asset, '/halieus-app-icon.png', 'Legacy 1024px raster may remain only as an explicitly non-install social asset');
 
 const retiredMain = bytes('assets/branding/references/HGR Main.png');
-const currentInstall = bytes('client/public/halieus-app-icon.png');
-assert.notEqual(
-  createHash('sha256').update(currentInstall).digest('hex'),
+const legacySocial = bytes('client/public/halieus-app-icon.png');
+assert.equal(
+  createHash('sha256').update(legacySocial).digest('hex'),
   createHash('sha256').update(retiredMain).digest('hex'),
-  '4.5.4 install identity must not silently copy the retired HGR Main thumbnail',
+  'Legacy social raster remains pinned for backwards compatibility and must not be confused with the new install assets',
 );
 const pngSize = buffer => ({ width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) });
-assert.deepEqual(pngSize(currentInstall), { width: 1024, height: 1024 }, 'Canonical social/install export must remain 1024px square');
+assert.deepEqual(pngSize(legacySocial), { width: 1024, height: 1024 }, 'Legacy social raster remains 1024px square');
 assert.deepEqual(pngSize(bytes('client/public/app-icon-192.png')), { width: 192, height: 192 });
 assert.deepEqual(pngSize(bytes('client/public/app-icon-512.png')), { width: 512, height: 512 });
 assert.deepEqual(pngSize(bytes('client/public/app-icon-180.png')), { width: 180, height: 180 });
@@ -62,16 +63,15 @@ assert.deepEqual(pngSize(bytes('client/public/favicon-32.png')), { width: 32, he
 const indexHtml = read('client/index.html');
 assert.match(indexHtml, new RegExp(`id="halieus-dynamic-favicon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h6"`), 'Initial browser favicon must use the canonical current H mark');
 assert.match(indexHtml, new RegExp(`rel="shortcut icon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h6"`), 'Shortcut favicon must use the canonical current H mark');
-assert.match(indexHtml, new RegExp(`rel="icon"[^>]*href="\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'PNG favicon fallback must use the refreshed current-H export');
-assert.match(indexHtml, new RegExp(`rel="apple-touch-icon"[^>]*href="\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Apple touch identity must use the refreshed current-H export');
 assert.doesNotMatch(indexHtml, /app-icon-reference\.png/, 'Historical install reference must not remain in live HTML');
 
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
 assert.match(pwaCopy, /rm\(resolve\(publicDir, "app-icon-reference\.png"\), \{ force: true \}\)/, 'Client prebuild must remove the stale historical install thumbnail');
 assert.doesNotMatch(pwaCopy, /HGR Main\.png|copyFile\(approvedMainIcon/, 'Client prebuild must never restore the retired main install thumbnail');
-for (const file of ['halieus-app-icon.svg', 'halieus-app-icon.png', 'app-icon-180.png', 'app-icon-192.png', 'app-icon-512.png', 'favicon-32.png', 'favicon.ico']) {
+for (const file of ['halieus-app-icon.svg', 'app-icon-180.png', 'app-icon-192.png', 'app-icon-512.png', 'favicon-32.png', 'favicon.ico']) {
   assert.ok(pwaCopy.includes(`"${file}"`), `Client prebuild must verify ${file}`);
 }
+assert.match(pwaCopy, /halieus-app-icon\.png remains only as a legacy social\/reference asset/, 'Prebuild must document that the 1024px legacy raster is not an install source');
 const clientPackage = JSON.parse(read('client/package.json'));
 assert.equal(clientPackage.scripts.prebuild, 'node ../scripts/copy-approved-pwa-icon.mjs', 'Client prebuild must verify current PWA assets before Vite runs');
 
@@ -80,7 +80,7 @@ assert.match(flatGenerator, /assets\/branding\/icon-sets\/glyphs\/hgr-h\.svg/, '
 const generator = read('scripts/generate-platform-icons.mjs');
 assert.doesNotMatch(generator, /assets\/branding/, 'Website raster generator must remain independent of launcher image assets');
 assert.match(generator, /halieus-app-icon\.svg/, 'Platform raster generator must source the canonical current web icon SVG');
-assert.match(generator, /halieus-app-icon\.png/);
+assert.doesNotMatch(generator, /writeFile\(resolve\(output, 'halieus-app-icon\.png'/, 'Install raster generator must not overwrite the pinned legacy social asset');
 for (const size of [180, 192, 512]) assert.ok(generator.includes(`app-icon-${size}.png`));
 assert.match(generator, /favicon-32\.png/);
 assert.match(generator, /favicon\.ico/);
@@ -97,9 +97,9 @@ assert.match(read('client/public/brand/glyphs/H-white.svg'), /fill="#FFFFFF"/);
 assert.match(read('client/public/brand/glyphs/H-gold.svg'), /fill="#F4C430"/);
 for (const game of ['anagrams-race', 'ayo']) assert.equal(read(`client/public/game-icons/${game}.svg`), read(`client/src/assets/game-icons/${game}.svg`));
 
-assert.match(indexHtml, new RegExp(`property="og:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Social share metadata must use the refreshed current-H PNG');
-assert.match(indexHtml, new RegExp(`property="og:image:secure_url" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Social share image must expose the refreshed PNG over a secure URL');
-assert.match(indexHtml, new RegExp(`name="twitter:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Twitter/social fallback must use the refreshed current-H PNG');
+assert.match(indexHtml, new RegExp(`property="og:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Existing social share metadata remains on the pinned legacy social PNG');
+assert.match(indexHtml, new RegExp(`property="og:image:secure_url" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Existing secure social share image remains stable');
+assert.match(indexHtml, new RegExp(`name="twitter:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-original-png1"`), 'Twitter/social fallback remains stable while install identity moves independently');
 assert.doesNotMatch(indexHtml, /(?:og:image|twitter:image)[^>]+app-icon-reference\.png/, 'Social previews must never use the retired install reference');
 
-console.log('PASS current launcher-family H across website favicon, PWA install and raster exports');
+console.log('PASS current launcher-family H across website favicon and PWA install exports; legacy social raster isolated');
