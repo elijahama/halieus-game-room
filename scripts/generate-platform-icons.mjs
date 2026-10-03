@@ -14,8 +14,13 @@ try {
     await page.setContent(`<style>html,body{margin:0;background:transparent}svg{display:block;width:100vw;height:100vh}</style>${svg}`);
     return page.screenshot({ omitBackground: true });
   }
-  for (const size of [180, 192, 512]) await writeFile(resolve(output, `app-icon-${size}.png`), await render(size));
+
+  for (const size of [180, 192, 512]) {
+    await writeFile(resolve(output, `app-icon-${size}.png`), await render(size));
+  }
+  await writeFile(resolve(output, 'halieus-app-icon.png'), await render(1024));
   await writeFile(resolve(output, 'favicon-32.png'), await render(32));
+
   const sizes = [16, 32, 48, 64];
   const pngs = [];
   for (const size of sizes) pngs.push(await render(size));
@@ -33,5 +38,5 @@ try {
     offset += png.length;
   });
   await writeFile(resolve(output, 'favicon.ico'), Buffer.concat([directory, ...pngs]));
-  console.log('Generated website PNG/ICO exports from halieus-app-icon.svg.');
+  console.log('Generated current Halieus favicon and PWA PNG/ICO exports from halieus-app-icon.svg.');
 } finally { await browser.close(); }
