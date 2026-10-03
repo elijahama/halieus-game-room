@@ -202,3 +202,12 @@ The real archive inventory exposed one inherited gap after the canonical-helper 
 - `docs/HGR_PART26_ACCEPTANCE.md`
 
 Local package-only validation passed: extracted archive verified every signed release input, including `.gitignore`, `SECURITY.md`, canonical Control/Stop and artwork approval. SSH/SCP were blocked by the test. Typecheck, the full regression chain and production build also passed for this follow-up.
+
+
+## 3 October 2026 — approved Control icon integration
+
+The owner-approved integrated blue cog artwork supersedes the 2 October model-sheet crop. The canonical H itself is not redrawn. Authority: `assets/branding/references/HGR Control Launcher.png`, transparent indexed 192×192 PNG, SHA256 `90fb5be18b805841df83ef8e0b2c62ce59184336de1876befab48edf2a076ff4`. Byte-identical copies serve the private Control PWA and Cloud Control `/control/`; the in-site admin launcher uses the Cloud Control image. Splash/header, favicon, Apple-touch and manifest references use the approved artwork revision. The manifest describes an ordinary icon rather than claiming mask-safe artwork.
+
+Windows exports remain verified 256px PNG/ICO derivatives. Stop Control adds only the existing explicit red stop treatment. Other launcher masters are unchanged. Model-sheet exclusion, pinned approval hash, PNG decode checks, stale export cleanup, actual shortcut icon/target validation and cache-refresh failure checks remain enforced. Private shell cache v10 replaces v9; Cloud Control stylesheet and image URLs are revised. Browser coverage verifies rendered image decoding and approved URLs after stale-shell takeover and on cloud/admin surfaces.
+
+This batch changes branding only: no relay, telemetry, cancellation, enrollment or remote-action implementation. Source checks/CI do not establish installed-device acceptance. After the normal updater, the owner must check actual Windows Control/Stop icons and existing Chrome/Brave installed PWA artwork, then compare `/control/` and the in-site admin launcher. Mobile OS launcher refresh timing must be verified on-device.

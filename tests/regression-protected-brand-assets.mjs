@@ -47,7 +47,7 @@ assert.match(generator, /HGR Start\.png/, "Launcher exporter must map Start to i
 assert.match(generator, /server\\control-ui\\control-icon\.png/, "Launcher exporter must map Control to the dedicated approved Control PNG");
 assert.doesNotMatch(generator, /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/, "Legacy Control model/reference sheet must never be a launcher source");
 assert.equal(controlWidth, controlHeight, "Approved Control launcher PNG must be square rather than a full model sheet");
-assert.ok(controlWidth >= 256, "Approved Control launcher PNG must be large enough for Windows export");
+assert.equal(controlWidth, 192, "Approved 3 October source is 192px; runtime export is independently validated at 256px");
 assert.notDeepEqual(controlIcon, legacyControlSheet, "Dedicated Control launcher PNG must not be the legacy full reference sheet");
 assert.match(generator, /control-stop\.ico/, "Stop Control must have a distinct exported icon");
 assert.doesNotMatch(generator, /Draw-HalieusH|Draw-HgrBadge|New-RoundedRectanglePath|Mix-HgrColour/i, "Launcher exporter must not redraw approved H artwork");

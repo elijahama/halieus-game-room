@@ -84,6 +84,7 @@ jobs:
           npx playwright install --with-deps chromium
           npm run test:release:browser
           node tests/browser-control-state.mjs
+          node tests/browser-control-branding.mjs
 
       - name: Commit generated release identity when changed
         shell: bash

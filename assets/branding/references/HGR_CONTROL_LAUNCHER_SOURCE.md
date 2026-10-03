@@ -2,7 +2,7 @@
 
 ## Current authority — owner approved 3 October 2026
 
-The owner approved the blue HGR Control artwork developed against the established launcher family on 3 October 2026. The approved treatment uses the canonical HGR launcher-family H, a royal/electric-blue launcher tile, a dark H core, and a blue cog outline integrated into the lower centre of the H. The cog outline follows the actual tooth/groove shape rather than floating as a separate white badge or sitting inside a generic rounded/arched container.
+The owner approved the blue HGR Control artwork developed against the established launcher family on 3 October 2026. The approved treatment uses the canonical HGR launcher-family H, a royal/electric-blue launcher tile, a dark H core, and an integrated blue cog outline in the lower centre of the H. The cog outline follows the actual tooth/groove shape rather than floating as a separate white badge or sitting inside a generic rounded/arched container.
 
 The generic/slab-serif H seen in rejected Control iterations is explicitly prohibited. It must never be regenerated or substituted for the canonical launcher-family H. The full `HGR Control.png` / `HGR ICON - CONTROL UPDATE` model sheet is historical reference material only and must never be used directly as a launcher source.
 
