@@ -1,25 +1,27 @@
-import { access, copyFile, rm } from "node:fs/promises";
+import { access, rm } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const publicDir = resolve(root, "client/public");
-const approvedMainIcon = resolve(root, "assets/branding/references/HGR Main.png");
-const installedMainIcon = resolve(publicDir, "halieus-app-icon.png");
 
-// Old experimental install thumbnail must never compete with the approved icon.
+// Old experimental install thumbnail must never compete with the current icon.
 await rm(resolve(publicDir, "app-icon-reference.png"), { force: true });
 
-// PWA/install identity is the approved rendered reference PNG byte-for-byte.
-// This step copies; it does not redraw, recolour, crop or regenerate the H.
-await access(approvedMainIcon);
-await copyFile(approvedMainIcon, installedMainIcon);
-
-// Themeable browser glyphs remain separate website assets.
+// 4.5.4 install/browser identity follows the same canonical launcher-family H
+// used by the live Halieus website. These tracked exports are generated from
+// halieus-app-icon.svg by scripts/generate-platform-icons.mjs; prebuild only
+// verifies them and never substitutes the retired HGR Main rendered thumbnail.
 for (const file of [
   "halieus-mark.svg",
-  "app-icon.svg",
+  "halieus-app-icon.svg",
+  "halieus-app-icon.png",
+  "app-icon-180.png",
+  "app-icon-192.png",
+  "app-icon-512.png",
+  "favicon-32.png",
+  "favicon.ico",
 ]) {
   await access(resolve(publicDir, file));
 }
 
-console.log("Prepared original approved Halieus PNG as PWA/install identity.");
+console.log("Verified current canonical Halieus favicon/PWA install identity exports.");
