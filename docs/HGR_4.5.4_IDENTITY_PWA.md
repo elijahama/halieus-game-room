@@ -2,7 +2,7 @@
 
 ## Owner decision
 
-The main Halieus website favicon and phone-installed HGR app must use the same current launcher-family H visible in the live website. The retired rendered `HGR Main.png` thumbnail is no longer the website/PWA install authority.
+The main Halieus website favicon and phone-installed HGR app must use the same current launcher-family H visible in the live website. The retired rendered `HGR Main.png` treatment is no longer the website/PWA install authority.
 
 HGR Control remains a separate product identity and must use the owner-approved blue integrated-cog Control artwork everywhere it is installed or shown as a browser icon. The rejected generic/slab-serif H remains prohibited.
 
@@ -10,9 +10,10 @@ HGR Control remains a separate product identity and must use the owner-approved 
 
 - Canonical web geometry: `client/public/halieus-app-icon.svg` / `client/public/halieus-mark.svg`.
 - Raster exporter: `scripts/generate-platform-icons.mjs`.
-- Tracked install/browser exports: `app-icon-180.png`, `app-icon-192.png`, `app-icon-512.png`, `halieus-app-icon.png`, `favicon-32.png`, `favicon.ico`.
-- `site.webmanifest` installs from the versioned 192/512 current-H exports.
-- Prebuild verifies these files; it must not copy `assets/branding/references/HGR Main.png` over them.
+- Tracked install/browser exports: `app-icon-180.png`, `app-icon-192.png`, `app-icon-512.png`, `favicon-32.png`, `favicon.ico`.
+- `site.webmanifest` installs from the versioned 192/512 current-H exports only.
+- `client/public/halieus-app-icon.png` stays pinned as the existing 1024px social/backwards-compatibility raster; it is explicitly not a favicon or install source in 4.5.4.
+- Prebuild verifies current favicon/install exports and must not copy `assets/branding/references/HGR Main.png` over an install path.
 
 ## Control authority
 
