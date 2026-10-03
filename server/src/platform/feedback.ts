@@ -10,6 +10,7 @@ import type {
   HalieusFeedbackSummary,
 } from "../../../shared/platform/feedback.js";
 import { APP_VERSION } from "../../../shared/version.js";
+import { registerControlCloudRoutes } from "./controlCloud.js";
 import { getFeedbackDataDirectory, getFeedbackFilePath } from "./dataPaths.js";
 
 interface FeedbackStore {
@@ -150,6 +151,11 @@ function requireAdmin(request: Request, response: Response, hasAdmin: AdminResol
 }
 
 export function registerFeedbackRoutes(app: Express, getAccount: AccountResolver, hasAdmin: AdminResolver): void {
+  // Control Cloud reuses the canonical HGR account/admin authentication boundary.
+  // It is registered alongside the existing platform admin routes so it does not
+  // duplicate or re-parse private session cookies.
+  registerControlCloudRoutes(app, getAccount, hasAdmin);
+
   app.post("/feedback", async (request, response) => {
     const account = getAccount(request);
     const details = cleanString(request.body?.details, 4000);
