@@ -39,7 +39,7 @@ try {
   const response=await context.request.get(base+imageUrl);
   assert.equal(createHash('sha256').update(await response.body()).digest('hex'),expectedHash);
   const box=await image.boundingBox();assert.ok(box.width>=30&&box.height>=30);
-  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y+box.height<=height);
+  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y>=0&&box.y+box.height<=height);
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-admin-control.png`)});
   role='player';await page.reload();await page.locator('.halieus-shell').waitFor();
   assert.equal(await page.locator('.hgr-admin-control-launcher').count(),0,'Player must not gain an admin launcher');
@@ -49,13 +49,22 @@ try {
    const mark=page.locator(selector);await mark.evaluate(i=>i.decode());
    assert.equal(await mark.evaluate(i=>i.tagName),'IMG');
    assert.equal(await mark.evaluate(i=>i.naturalWidth),192);
-   assert.match(await mark.getAttribute('src'),/control-approved2/);
+   assert.match(await mark.getAttribute('src'),/4\.5\.4-control-approved3/);
+   const markResponse=await context.request.get(base+(await mark.getAttribute('src')));
+   assert.equal(createHash('sha256').update(await markResponse.body()).digest('hex'),expectedHash);
    assert.equal(await mark.evaluate(i=>getComputedStyle(i).backgroundImage),'none','Artwork must not gain a synthetic tile');
   }
+  const manifestHref=await page.locator('link[rel="manifest"]').getAttribute('href');
+  assert.equal(manifestHref,'/control/manifest.webmanifest?v=4.5.4-control-approved3');
+  const manifestResponse=await context.request.get(base+manifestHref);
+  assert.equal(manifestResponse.ok(),true);
+  const manifest=await manifestResponse.json();
+  assert.equal(manifest.id,'/control/');assert.equal(manifest.start_url,'/control/');assert.equal(manifest.scope,'/control/');
+  assert.equal(manifest.icons[0].src,'/control/control-icon.png?v=4.5.4-control-approved3');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${device}: cloud overflow`);
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-cloud-control.png`)});
   assert.deepEqual(errors,[]);await context.close();
-  console.log(`PASS ${device}: approved cloud/admin image bytes, rendering, role visibility and containment`);
+  console.log(`PASS ${device}: approved cloud/admin image bytes, PWA manifest, role visibility and containment`);
  }
 } finally {
  await browser?.close();server.kill();
