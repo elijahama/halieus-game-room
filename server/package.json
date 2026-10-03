@@ -10,7 +10,9 @@
     "build": "npm run clean && tsc",
     "start": "node dist/server/src/index.js",
     "control:dev": "tsx src/control-agent.ts",
-    "control:start": "node dist/server/src/control-agent.js"
+    "control:start": "node dist/server/src/control-agent.js",
+    "control:cloud:dev": "tsx src/control-cloud-agent.ts",
+    "control:cloud:start": "node dist/server/src/control-cloud-agent.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
