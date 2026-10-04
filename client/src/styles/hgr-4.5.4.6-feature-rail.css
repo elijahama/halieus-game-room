@@ -1,0 +1,11 @@
+/* HGR 4.5.4.6 — featured-game rail selection cleanup.
+   The shared selected-destination rule adds brand-colour left/bottom inset
+   shadows. On the rounded featured-game tile those shadows read as a curved
+   yellow banner. Keep the same dark raised selection, but make its depth
+   neutral and uniform. */
+.halieus-feature-rail button.is-active {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.20),
+    0 7px 16px rgba(0,0,0,.16) !important;
+}
