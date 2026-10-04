@@ -121,6 +121,10 @@ Both sides keep auditable event identity:
 
 4.5.4.9 makes the already-persisted Control operation diagnostics visible to authenticated owner/admin users. The expanded operation card now shows the phase, cloud request ID, local operation ID when present, and the bounded failure reason. The Audit screen keeps the existing account/platform administration history and adds a separate **Control operations** history sourced from the cloud request store. That history is a sanitized projection only: it does not expose the device credential, credential hash, bearer token, shell command, path or arbitrary local log content.
 
+Real-device acceptance of 4.5.4.9 confirmed that the new Audit surface works, but two fresh owner-PC updates still terminated at 38% with only the generic `Update HGR GitHub.cmd exited with code 1.` marker. That exposed a second diagnostic gap: the terminal result marker could be written before the matching local audit detail was available, and the result marker itself did not preserve a bounded updater-output reason.
+
+4.5.4.10 closes that gap at the owner-PC execution boundary. `control-update.ps1` now tees the live updater output into ignored local runtime state while continuing to stream the same output for progress parsing. On non-zero exit it reduces only the last bounded failure-significant lines, redacts the HGR root and obvious token/secret/credential forms, caps the reason at 900 characters, and writes that reason directly into the terminal update marker. The outbound bridge also gives the authenticated loopback audit a longer bounded retry window before falling back to the marker. The cloud still receives only the reduced failure reason, never the unrestricted transcript.
+
 Enrollment records also retain their approval/revocation state and timestamps. No bearer credential or device secret is written into the public operation status or audit response.
 
 ## Delivery stages
@@ -175,7 +179,19 @@ Real-device acceptance requires one fresh Cloud Update to progress through the f
 - show cloud/local operation identifiers and failure reason in the expanded operation card;
 - never expose enrollment secrets, credential hashes, bearer tokens, arbitrary command data or unrestricted local logs in the diagnostic surface.
 
-Real-device acceptance is to reopen the failed 38% Update and confirm its actual failure reason is visible in both the expanded operation card and Audit → Control operations before another remote Update is attempted.
+Real-device acceptance confirmed that the operation-history UI is present and correctly separates Control operations from the existing administrative audit. The latest real failures were visible at 38%, but their reason was still generic, which led directly to Stage 6.
+
+### Stage 6 — 4.5.4.10 bounded updater failure capture
+
+- keep live updater stdout/stderr flowing through the existing Control progress parser;
+- tee the same output into ignored owner-PC runtime state for failure reduction only;
+- on non-zero exit, extract only bounded failure-significant lines instead of returning only exit code 1;
+- redact the HGR repository root plus obvious bearer/token/secret/credential forms before the reason can leave the owner PC;
+- cap the cloud-visible reason at 900 characters;
+- extend the local-audit lookup retry window to bridge the marker/audit write race;
+- continue to expose only the reduced reason, not unrestricted local updater logs.
+
+Real-device acceptance requires one fresh Cloud Update after installing this batch. If the update still fails around validation, Audit → Owner-PC operation history must show the specific stopped/typecheck/build/regression failure rather than only `exited with code 1`.
 
 ### Later audited stages
 
