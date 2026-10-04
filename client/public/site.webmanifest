@@ -15,10 +15,17 @@
   "theme_color": "#F4C430",
   "icons": [
     {
-      "src": "/halieus-app-icon.png?v=4.5.3-original-png1",
-      "sizes": "1024x1024",
+      "src": "/app-icon-192.png?identity=install-h3",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon-512.png?identity=install-h3",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "x_hgr_legacy_reference": "/halieus-app-icon.png"
 }

@@ -1,0 +1,22 @@
+/* HGR 4.5.4 identity / PWA Batch 1.
+ * Keep the full Halieus Game Room lockup visible in portrait instead of
+ * collapsing the mobile header to an icon-only mark. */
+@media (max-width: 520px) {
+  .halieus-mobile-brand {
+    width: auto !important;
+    max-width: 154px !important;
+    gap: 8px !important;
+    overflow: hidden !important;
+  }
+
+  .halieus-mobile-brand strong {
+    display: block !important;
+    min-width: 0 !important;
+    max-width: 112px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: .70rem !important;
+    line-height: 1.05 !important;
+  }
+}

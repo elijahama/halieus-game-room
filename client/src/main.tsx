@@ -5,6 +5,7 @@ import { ErrorBoundary } from "./platform/components/ErrorBoundary";
 import { GlobalGameActivity } from "./platform/components/GlobalGameActivity";
 import { PlatformMaintenanceBanner } from "./platform/components/PlatformMaintenanceBanner";
 import { AdminControlLauncher } from "./platform/control/AdminControlLauncher";
+import { IdentityAssetGuard } from "./platform/identity/IdentityAssetGuard";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "./version";
 import "./index.css";
 import "./styles/hgr-theme.css";
@@ -12,6 +13,7 @@ import "./styles/hgr-design-v1.css";
 import "./styles/hgr-game-surfaces-v45.css";
 import "./styles/hgr-part17.css";
 import "./styles/hgr-4.5.1.css";
+import "./styles/hgr-4.5.4-identity.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.
@@ -27,6 +29,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
+      <IdentityAssetGuard />
       <PlatformMaintenanceBanner />
       <App />
       <GlobalGameActivity />
