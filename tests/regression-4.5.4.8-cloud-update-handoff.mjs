@@ -10,8 +10,8 @@ const [bridge, finalizer, refresh] = await Promise.all([
 ]);
 
 assert.match(bridge, /HGR_CONTROL_DEFER_REFRESH\s*=\s*"1"/, "Cloud Update must defer the in-process Control restart");
-assert.match(bridge, /control-update-finalize\.ps1/, "Cloud Update must launch an independent final handoff process");
-assert.match(bridge, /Start-Process[\s\S]*?control-update-finalize/s, "Final Control restart must run outside the Control Agent process that is about to restart");
+assert.match(bridge, /control-update-finalize\.ps1/, "Cloud Update must define the independent final handoff script");
+assert.match(bridge, /Start-Process[\s\S]*?\$finalizerPath/s, "Final Control restart must run outside the Control Agent process that is about to restart");
 assert.match(bridge, /leave hgr-control-update-result\.json in the running state/i, "Bridge must not claim success before the independent finalizer finishes");
 assert.doesNotMatch(bridge, /state\s*=\s*"succeeded"/, "The parent Control update wrapper must never authoritatively mark the cloud operation succeeded");
 
