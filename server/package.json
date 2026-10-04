@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "npm run clean && tsc",
-    "start": "node dist/server/src/index.js",
+    "start": "node --import dist/server/src/platform/control-cloud-server-preload.js dist/server/src/index.js",
     "control:dev": "tsx src/control-agent.ts",
     "control:start": "node dist/server/src/control-agent.js"
   },
@@ -18,7 +18,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
+    "@types/cors": "^5.0.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
     "tsx": "^4.19.2",
