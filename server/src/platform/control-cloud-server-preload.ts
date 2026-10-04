@@ -24,6 +24,7 @@ interface StoredDevice {
   hgrVersion: string | null;
   createdAt: string;
   approvedAt: string | null;
+  revokedAt?: string | null;
   lastSeenAt: string;
   localControlOnline: boolean;
 }
@@ -265,6 +266,7 @@ async function handleHeartbeat(request: IncomingMessage, response: ServerRespons
         hgrVersion,
         createdAt: now,
         approvedAt: null,
+        revokedAt: null,
         lastSeenAt: now,
         localControlOnline,
       };
@@ -378,9 +380,10 @@ async function handleStatus(request: IncomingMessage, response: ServerResponse):
       machineName: device.machineName,
       hgrVersion: device.hgrVersion,
       approval: device.approval,
-      online: deviceOnline(device),
+      online: device.approval !== "revoked" && deviceOnline(device),
       lastSeenAt: device.lastSeenAt,
-      localControlOnline: device.localControlOnline,
+      revokedAt: device.revokedAt ?? null,
+      localControlOnline: device.approval !== "revoked" && device.localControlOnline,
     })),
     activeOperation: publicOperation(active),
   });
@@ -394,10 +397,34 @@ async function handleApprove(request: IncomingMessage, response: ServerResponse,
     if (!device || device.approval === "revoked") return false;
     device.approval = "approved";
     device.approvedAt = new Date().toISOString();
+    device.revokedAt = null;
     return true;
   });
   if (!approved) { sendJson(response, 404, { ok: false, reason: "Pending owner PC was not found." }); return; }
   sendJson(response, 200, { ok: true, deviceId, approvedBy: actor.id });
+}
+
+async function handleRevoke(request: IncomingMessage, response: ServerResponse, deviceId: string): Promise<void> {
+  const actor = requireAdmin(request, response);
+  if (!actor) return;
+  const result = await mutateStore((store) => {
+    const device = store.devices.find((candidate) => candidate.deviceId === deviceId);
+    if (!device || device.approval === "revoked") {
+      return { status: 404, body: { ok: false, reason: "Active owner-PC enrollment was not found." } };
+    }
+    const active = store.requests.find((entry) => entry.deviceId === deviceId && (entry.state === "queued" || entry.state === "running"));
+    if (active) {
+      return { status: 409, body: { ok: false, reason: "Finish the active owner-PC Control operation before revoking this enrollment." } };
+    }
+    device.approval = "revoked";
+    device.revokedAt = new Date().toISOString();
+    device.localControlOnline = false;
+    for (const [key, confirmation] of confirmations) {
+      if (confirmation.deviceId === deviceId) confirmations.delete(key);
+    }
+    return { status: 200, body: { ok: true, deviceId, revokedBy: actor.id, revokedAt: device.revokedAt } };
+  });
+  sendJson(response, result.status, result.body);
 }
 
 async function ensureUpdateReady(deviceId: string): Promise<{ ok: true; device: StoredDevice } | { ok: false; status: number; reason: string }> {
@@ -487,6 +514,8 @@ async function handleCloudRoute(request: IncomingMessage, response: ServerRespon
   if (request.method === "GET" && path === "/control/cloud/status") return handleStatus(request, response);
   const approve = path.match(/^\/control\/cloud\/devices\/([A-Za-z0-9._-]{8,96})\/approve$/);
   if (request.method === "POST" && approve) return handleApprove(request, response, approve[1]);
+  const revoke = path.match(/^\/control\/cloud\/devices\/([A-Za-z0-9._-]{8,96})\/revoke$/);
+  if (request.method === "POST" && revoke) return handleRevoke(request, response, revoke[1]);
   if (request.method === "POST" && path === "/control/cloud/actions/update/confirm") return handleConfirmUpdate(request, response);
   if (request.method === "POST" && path === "/control/cloud/actions/update") return handleQueueUpdate(request, response);
   sendJson(response, 404, { ok: false, reason: "Unknown HGR Control Cloud endpoint." });

@@ -75,9 +75,11 @@ The outbound owner-PC bridge creates a persistent random device ID and credentia
 
 A new device first appears as **pending**. An already authenticated HGR owner or administrator must explicitly approve it in Cloud Control before it can poll for Update work. Approval is not inferred merely from knowing the website address or opening a connection.
 
+4.5.4.7 adds the matching negative control: an owner/admin can explicitly reject a pending enrollment or revoke an approved enrollment. Revocation permanently marks that credential as `revoked`; heartbeat, polling and progress requests from it are rejected, it no longer presents as online, and outstanding one-time Update confirmations tied to it are invalidated. Revocation is refused while that device has a queued or running Control operation so the relay cannot orphan an in-flight Update. A revoked credential is not silently restored or re-approved in place; a **fresh owner-PC enrollment** is required before cloud operations can be used from that machine again.
+
 The cloud status surface reports:
 
-- pending / approved state;
+- pending / approved / revoked state;
 - owner-PC online/offline state;
 - local Control Agent availability;
 - machine name;
@@ -92,7 +94,7 @@ Update keeps two confirmation boundaries:
 1. the Cloud Control browser obtains a short-lived, actor/device-bound one-time confirmation before queueing Update;
 2. the owner-PC bridge obtains the existing short-lived local Control confirmation before calling the fixed local Update action.
 
-Both confirmations are single-use. A stale, wrong-device or wrong-account cloud confirmation is rejected.
+Both confirmations are single-use. A stale, wrong-device or wrong-account cloud confirmation is rejected. Revoking an enrollment also invalidates any still-pending cloud confirmation for that device.
 
 ## Update execution and progress
 
@@ -113,7 +115,7 @@ Both sides keep auditable event identity:
 - final state;
 - bounded failure reason.
 
-No bearer credential or device secret is written into the public operation status or audit response.
+Enrollment records also retain their approval/revocation state and timestamps. No bearer credential or device secret is written into the public operation status or audit response.
 
 ## Delivery stages
 
@@ -137,11 +139,22 @@ No bearer credential or device secret is written into the public operation statu
 
 Real owner-PC/phone acceptance remains required after deployment. Source/CI completion does not prove the owner's Windows bridge is online or that a real remote update completed.
 
+### Stage 3 — 4.5.4.7 complete in source
+
+- explicit pending-enrollment rejection;
+- explicit approved-enrollment revocation UI;
+- revoked credential rejection at heartbeat/poll/progress boundaries;
+- invalidation of outstanding Update confirmations;
+- active-operation guard so revocation cannot orphan a queued/running Update;
+- persistent revoked state in Cloud Control until a fresh owner-PC enrollment is created and approved.
+
+Real-device revocation acceptance remains required after deployment.
+
 ### Later audited stages
 
-- explicit enrollment revocation UI;
 - Start and Restart;
 - confirmed Close;
-- richer telemetry, cancellation/stall handling and recovery UX.
+- richer telemetry, cancellation/stall handling and recovery UX;
+- guided local identity reset/re-enrollment recovery.
 
 The private Tailscale route remains available as the recovery/fallback path while cloud capabilities are introduced incrementally.

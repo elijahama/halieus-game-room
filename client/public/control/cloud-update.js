@@ -50,8 +50,9 @@
     if (small) small.textContent = copy;
   }
 
-  function removeApproveButton() {
+  function removeEnrollmentButtons() {
     $("approveCloudOwnerPc")?.remove();
+    $("revokeCloudOwnerPc")?.remove();
   }
 
   function showApproveButton(device) {
@@ -76,6 +77,34 @@
     container.appendChild(button);
   }
 
+  function showRevokeButton(device, pending = false) {
+    const container = readiness();
+    if (!container || $("revokeCloudOwnerPc")) return;
+    const button = document.createElement("button");
+    button.id = "revokeCloudOwnerPc";
+    button.type = "button";
+    button.className = "secondary-action";
+    button.textContent = pending ? "Reject enrollment" : "Revoke cloud access";
+    button.addEventListener("click", async () => {
+      const accepted = window.confirm(
+        pending
+          ? `Reject the pending Cloud Control enrollment for ${device.machineName || "this owner PC"}? This credential will be permanently blocked.`
+          : `Revoke Cloud Control access for ${device.machineName || "this owner PC"}? Future cloud requests from this enrollment will be blocked and a fresh enrollment will be required before using Cloud Control again.`,
+      );
+      if (!accepted) return;
+      button.disabled = true;
+      try {
+        await request(`/control/cloud/devices/${encodeURIComponent(device.deviceId)}/revoke`, { method: "POST", body: "{}" });
+        await refreshCloudControl();
+      } catch (error) {
+        setReadiness("Owner-PC revocation failed", error instanceof Error ? error.message : "Unable to revoke this owner-PC enrollment.", false);
+      } finally {
+        button.disabled = false;
+      }
+    });
+    container.appendChild(button);
+  }
+
   function renderDevice(device) {
     const row = ownerRow();
     const detail = $("ownerPcDetail");
@@ -84,7 +113,7 @@
     selectedDevice = device || null;
 
     if (!device) {
-      removeApproveButton();
+      removeEnrollmentButtons();
       if (detail) detail.textContent = "Start HGR Control on the owner PC to enroll it";
       if (badge) { badge.textContent = "Not linked"; badge.classList.add("muted"); }
       if (button) button.disabled = true;
@@ -96,14 +125,33 @@
     if (badge) badge.classList.remove("muted");
 
     if (device.approval === "pending") {
+      removeEnrollmentButtons();
       if (badge) badge.textContent = "Approve";
       if (button) button.disabled = true;
       setReadiness("Owner PC awaiting approval", "Approve this machine once from an owner/admin session before Cloud Update can dispatch anything.", false);
       showApproveButton(device);
+      showRevokeButton(device, true);
       return;
     }
 
-    removeApproveButton();
+    if (device.approval === "revoked") {
+      removeEnrollmentButtons();
+      if (badge) { badge.textContent = "Revoked"; badge.classList.add("muted"); }
+      if (button) {
+        button.disabled = true;
+        const copy = button.querySelector("small");
+        if (copy) copy.textContent = "Owner-PC enrollment revoked";
+      }
+      setReadiness(
+        "Owner-PC enrollment revoked",
+        "This credential is blocked from Cloud Control. A fresh owner-PC enrollment must be approved before cloud operations can be used again.",
+        false,
+      );
+      return;
+    }
+
+    removeEnrollmentButtons();
+    showRevokeButton(device);
     const ready = device.approval === "approved" && device.online && device.localControlOnline;
     if (badge) badge.textContent = device.online ? (device.localControlOnline ? "Online" : "Agent offline") : "Offline";
     if (button) {
@@ -123,7 +171,8 @@
   function chooseDevice(devices) {
     const approved = devices.find((device) => device.approval === "approved" && device.online)
       || devices.find((device) => device.approval === "approved")
-      || devices.find((device) => device.approval === "pending");
+      || devices.find((device) => device.approval === "pending")
+      || devices.find((device) => device.approval === "revoked");
     return approved || null;
   }
 
