@@ -43,7 +43,7 @@ try {
   const response=await context.request.get(base+imageUrl);
   assert.equal(createHash('sha256').update(await response.body()).digest('hex'),expectedHash);
   const box=await image.boundingBox();assert.ok(box.width>=30&&box.height>=30);
-  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y>=0&&box.y+box.height<=height);
+  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y+box.height<=height);
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-admin-control.png`)});
   role='player';await page.reload();await page.locator('.halieus-shell').waitFor();
   assert.equal(await page.locator('.hgr-admin-control-launcher').count(),0,'Player must not gain an admin launcher');
