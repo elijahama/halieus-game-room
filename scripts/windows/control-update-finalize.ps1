@@ -70,11 +70,12 @@ if ($exitCode -eq 0 -and [string]::IsNullOrWhiteSpace($failureReason)) {
     exit 0
 }
 
+$finalReason = if (-not [string]::IsNullOrWhiteSpace($failureReason)) { $failureReason } else { "HGR Control post-update finalization failed." }
 Write-HgrUpdateResult -Value @{
     state = "failed"
     startedAt = $startedAt
     finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
     exitCode = $exitCode
-    reason = if ($failureReason) { $failureReason } else { "HGR Control post-update finalization failed." }
+    reason = $finalReason
 }
-throw (if ($failureReason) { $failureReason } else { "HGR Control post-update finalization failed." })
+throw $finalReason
