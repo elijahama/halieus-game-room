@@ -5,10 +5,11 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFile(resolve(root, path), "utf8");
 
-const [uiRelay, cloudUi, baseUi] = await Promise.all([
+const [uiRelay, cloudUi, baseUi, ownerBridge] = await Promise.all([
   read("server/src/platform/control-cloud-ui-preload.ts"),
   read("client/public/control/cloud-update.js"),
   read("client/public/control/control.js"),
+  read("server/src/control-cloud-agent.ts"),
 ]);
 
 assert.match(uiRelay, /\/control\/operation-history/);
@@ -29,6 +30,12 @@ assert.match(cloudUi, /Reason: \$\{reasonText\}/);
 assert.match(cloudUi, /operation\.localOperationId/);
 assert.match(cloudUi, /renderOperationDiagnostics\(operation\)/);
 assert.match(cloudUi, /renderOperationHistory\(operationHistory\.operations\)/);
+
+assert.match(ownerBridge, /localAuditFailureReason/);
+assert.match(ownerBridge, /localRequest\("\/api\/logs"\)/);
+assert.match(ownerBridge, /candidate\.id === localOperationId/);
+assert.match(ownerBridge, /detailedReason \|\| marker\.reason/);
+assert.match(ownerBridge, /slice\(0, 900\)/);
 
 assert.match(baseUi, /state\.snapshot\?\.audit \|\| \[\]/, "Existing administrative audit history must remain intact");
 
