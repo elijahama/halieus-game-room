@@ -39,6 +39,14 @@
     return date.toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
   }
 
+  function styleDiagnosticRow(row) {
+    row.style.display = "flex";
+    row.style.justifyContent = "space-between";
+    row.style.alignItems = "flex-start";
+    row.style.gap = "12px";
+    row.style.padding = "5px 0";
+  }
+
   function ensureOperationDiagnostics() {
     const details = $("operationDetails");
     const dismiss = $("operationDismiss");
@@ -49,12 +57,17 @@
     group = document.createElement("div");
     group.id = "controlOperationDiagnostics";
     group.className = "control-operation-diagnostics";
+    group.style.display = "block";
+    group.style.padding = "0";
 
     const phaseRow = document.createElement("div");
+    styleDiagnosticRow(phaseRow);
     phaseRow.innerHTML = '<span>Phase</span><strong id="controlOperationPhaseDetail">—</strong>';
     const idRow = document.createElement("div");
+    styleDiagnosticRow(idRow);
     idRow.innerHTML = '<span>Operation ID</span><strong id="controlOperationId">—</strong>';
     const reasonRow = document.createElement("div");
+    styleDiagnosticRow(reasonRow);
     reasonRow.id = "controlOperationReasonRow";
     reasonRow.hidden = true;
     reasonRow.innerHTML = '<span>Failure reason</span><strong id="controlOperationReason">—</strong>';
@@ -75,11 +88,18 @@
     if (id) {
       const ids = [operation.id ? `Cloud ${operation.id}` : null, operation.localOperationId ? `Local ${operation.localOperationId}` : null].filter(Boolean);
       id.textContent = ids.join(" · ") || "—";
+      id.style.maxWidth = "72%";
+      id.style.textAlign = "right";
+      id.style.overflowWrap = "anywhere";
     }
     if (reasonRow && reason) {
       const failureReason = String(operation.reason || "").trim();
       reasonRow.hidden = !failureReason;
       reason.textContent = failureReason || "—";
+      reason.style.maxWidth = "72%";
+      reason.style.textAlign = "right";
+      reason.style.overflowWrap = "anywhere";
+      reason.style.lineHeight = "1.45";
     }
   }
 
@@ -149,6 +169,7 @@
       phase.textContent = `${operation.phase || "Unknown phase"} · ${Math.round(Number(operation.progress) || 0)}%`;
       const identity = document.createElement("small");
       identity.textContent = `Operation ${operation.id || "—"}${operation.localOperationId ? ` · Local ${operation.localOperationId}` : ""}`;
+      identity.style.overflowWrap = "anywhere";
       copy.append(strong, phase, identity);
       const reasonText = String(operation.reason || "").trim();
       if (reasonText) {
@@ -157,6 +178,7 @@
         reason.style.color = state === "failed" || state === "rejected" ? "#f0a2a2" : "#9aa9c1";
         reason.style.marginTop = "6px";
         reason.style.lineHeight = "1.5";
+        reason.style.overflowWrap = "anywhere";
         copy.appendChild(reason);
       }
       row.append(time, copy);
