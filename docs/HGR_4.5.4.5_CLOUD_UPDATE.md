@@ -15,12 +15,13 @@ Scope: enable **Update HGR** from the HGR Control page on the public HGR website
 - The same approved Windows updater performs Git sync, release preparation, validation, build, regressions, Oracle preflight/deployment and client refresh.
 - Update progress is reflected through the existing HGR Control operation toast.
 - `control-update.ps1` writes a runtime completion marker so final success/failure can still be reported when the local Control Agent restarts during a successful update.
+- When private Control was already running before an ordinary update, the existing post-update Control refresh now also starts the cloud bridge if it is not already running. An existing cloud bridge is deliberately preserved so a cloud-triggered update cannot kill its own progress reporter mid-deployment.
 - Cloud relay state lives under the normal durable HGR data root in production.
 - The existing Tailscale route remains available as a fallback.
 
 ## Bootstrap / real-device acceptance
 
-The cloud relay becomes active on Oracle after this batch is deployed once through the existing updater. On the owner PC, run the normal **HGR - Control** launcher once after receiving this batch so the new outbound bridge starts and creates its persistent device identity.
+The cloud relay becomes active on Oracle after this batch is deployed once through the existing updater. If **HGR Control was already running** during that update, the post-update refresh automatically starts the new outbound cloud bridge. If Control was stopped, it deliberately stays stopped; run the normal **HGR - Control** launcher once when you want cloud access enabled.
 
 Then:
 
