@@ -13,6 +13,7 @@ const [
   startCmd,
   stopCmd,
   updateBridge,
+  refreshControl,
   service,
   contract,
 ] = await Promise.all([
@@ -23,6 +24,7 @@ const [
   read("Start HGR Control.cmd"),
   read("Stop HGR Control.cmd"),
   read("scripts/windows/control-update.ps1"),
+  read("scripts/windows/refresh-control-after-update.ps1"),
   read("deploy/oracle/halieus-game-room.service"),
   read("shared/platform/control-cloud.ts"),
 ]);
@@ -49,6 +51,8 @@ assert.match(stopCmd, /stop-control-cloud\.ps1/);
 assert.match(stopCmd, /stop-control\.ps1/);
 assert.match(updateBridge, /hgr-control-update-result\.json/);
 assert.match(updateBridge, /HGR_UPDATE_NONINTERACTIVE/);
+assert.match(refreshControl, /start-control-cloud\.ps1/);
+assert.match(refreshControl, /in-flight cloud Update is not killed/);
 
 assert.match(service, /--import \/opt\/halieus-game-room\/server\/dist\/server\/src\/platform\/control-cloud-server-preload\.js/);
 assert.match(service, /--import \/opt\/halieus-game-room\/server\/dist\/server\/src\/platform\/control-cloud-ui-preload\.js/);
