@@ -17,6 +17,7 @@ interface StoredRequest {
   phase: string;
   progress: number;
   reason: string | null;
+  localOperationId?: string | null;
 }
 
 interface CloudStore {
@@ -59,8 +60,19 @@ function publicOperation(entry: StoredRequest | null) {
     progress: entry.progress,
     state: entry.state === "queued" ? "running" : entry.state,
     startedAt: entry.requestedAt,
+    updatedAt: entry.updatedAt,
+    localOperationId: entry.localOperationId || null,
     reason: entry.reason,
   };
+}
+
+async function readOperationHistory(): Promise<StoredRequest[]> {
+  if (!existsSync(statePath)) return [];
+  const store = JSON.parse(await readFile(statePath, "utf8")) as CloudStore;
+  return (Array.isArray(store.requests) ? store.requests : [])
+    .slice()
+    .sort((left, right) => right.requestedAt.localeCompare(left.requestedAt))
+    .slice(0, 40);
 }
 
 async function serveOperationStatus(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -68,19 +80,29 @@ async function serveOperationStatus(request: IncomingMessage, response: ServerRe
     sendJson(response, 403, { ok: false, reason: "Owner or administrator access is required." });
     return;
   }
-  if (!existsSync(statePath)) {
-    sendJson(response, 200, { ok: true, operation: null });
-    return;
-  }
   try {
-    const store = JSON.parse(await readFile(statePath, "utf8")) as CloudStore;
-    const latest = (Array.isArray(store.requests) ? store.requests : [])
-      .slice()
-      .sort((left, right) => right.requestedAt.localeCompare(left.requestedAt))[0] ?? null;
-    sendJson(response, 200, { ok: true, operation: publicOperation(latest) });
+    const history = await readOperationHistory();
+    sendJson(response, 200, { ok: true, operation: publicOperation(history[0] ?? null) });
   } catch (error) {
     console.error("HGR Control latest operation could not be read:", error);
     sendJson(response, 500, { ok: false, reason: "Cloud operation status is unavailable." });
+  }
+}
+
+async function serveOperationHistory(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  if (!hasAdmin(request)) {
+    sendJson(response, 403, { ok: false, reason: "Owner or administrator access is required." });
+    return;
+  }
+  try {
+    const history = await readOperationHistory();
+    sendJson(response, 200, {
+      ok: true,
+      operations: history.map((entry) => publicOperation(entry)),
+    });
+  } catch (error) {
+    console.error("HGR Control operation history could not be read:", error);
+    sendJson(response, 500, { ok: false, reason: "Cloud operation history is unavailable." });
   }
 }
 
@@ -93,7 +115,7 @@ async function serveCombinedControlScript(response: ServerResponse): Promise<voi
     security(response);
     response.statusCode = 200;
     response.setHeader("Content-Type", "text/javascript; charset=utf-8");
-    response.end(`${base}\n\n/* HGR 4.5.4.5 Cloud Update */\n${cloud}\n`);
+    response.end(`${base}\n\n/* HGR 4.5.4.9 Control operation diagnostics */\n${cloud}\n`);
   } catch (error) {
     console.error("HGR Control combined script could not be served:", error);
     sendJson(response, 500, { ok: false, reason: "HGR Control client script is unavailable." });
@@ -108,6 +130,10 @@ function wrapListener(listener: RequestListener): RequestListener {
     })();
     if (request.method === "GET" && path === "/control/operation-status") {
       void serveOperationStatus(request, response);
+      return;
+    }
+    if (request.method === "GET" && path === "/control/operation-history") {
+      void serveOperationHistory(request, response);
       return;
     }
     if (request.method === "GET" && path === "/control/control.js") {

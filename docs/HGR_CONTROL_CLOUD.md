@@ -119,6 +119,8 @@ Both sides keep auditable event identity:
 - final state;
 - bounded failure reason.
 
+4.5.4.9 makes the already-persisted Control operation diagnostics visible to authenticated owner/admin users. The expanded operation card now shows the phase, cloud request ID, local operation ID when present, and the bounded failure reason. The Audit screen keeps the existing account/platform administration history and adds a separate **Control operations** history sourced from the cloud request store. That history is a sanitized projection only: it does not expose the device credential, credential hash, bearer token, shell command, path or arbitrary local log content.
+
 Enrollment records also retain their approval/revocation state and timestamps. No bearer credential or device secret is written into the public operation status or audit response.
 
 ## Delivery stages
@@ -164,6 +166,16 @@ Real-device revocation acceptance remains required after deployment.
 - allow a later successful local update to release an older orphaned 88% operation as failed/retryable rather than leaving it permanently running.
 
 Real-device acceptance requires one fresh Cloud Update to progress through the final Control restart and reach **100% · Update complete** without returning to the laptop.
+
+### Stage 5 — 4.5.4.9 Control operation diagnostics
+
+- expose a read-only owner/admin operation-history endpoint from the persisted Control cloud request store;
+- keep the existing administrative/account audit history intact;
+- add a separate Control operations history with timestamp, phase, progress, final state and bounded reason;
+- show cloud/local operation identifiers and failure reason in the expanded operation card;
+- never expose enrollment secrets, credential hashes, bearer tokens, arbitrary command data or unrestricted local logs in the diagnostic surface.
+
+Real-device acceptance is to reopen the failed 38% Update and confirm its actual failure reason is visible in both the expanded operation card and Audit → Control operations before another remote Update is attempted.
 
 ### Later audited stages
 

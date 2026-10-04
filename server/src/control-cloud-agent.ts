@@ -29,6 +29,13 @@ interface LocalControlStatus {
   } | null;
 }
 
+interface LocalControlAuditEntry {
+  id?: string;
+  action?: string;
+  state?: string;
+  reason?: string | null;
+}
+
 interface UpdateResultMarker {
   state?: "running" | "succeeded" | "failed";
   startedAt?: string;
@@ -131,6 +138,26 @@ async function localStatus(): Promise<LocalControlStatus | null> {
   }
 }
 
+async function localAuditFailureReason(localOperationId: string): Promise<string | null> {
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    try {
+      const response = await localRequest("/api/logs");
+      if (response.ok) {
+        const body = await response.json() as { entries?: LocalControlAuditEntry[] };
+        const entry = (Array.isArray(body.entries) ? body.entries : []).find((candidate) =>
+          candidate.id === localOperationId
+          && candidate.action === "update"
+          && (candidate.state === "failed" || candidate.state === "rejected"),
+        );
+        const reason = typeof entry?.reason === "string" ? entry.reason.trim().slice(0, 900) : "";
+        if (reason) return reason;
+      }
+    } catch { /* The local agent may be rotating credentials; retry briefly. */ }
+    if (attempt < 5) await delay(250);
+  }
+  return null;
+}
+
 async function cloudRequest(path: string, body: Record<string, unknown>): Promise<Response> {
   return fetch(`${cloudBase}${path}`, {
     method: "POST",
@@ -188,7 +215,16 @@ async function waitForUpdateResult(
       return;
     }
     if (markerIsCurrent && marker?.state === "failed") {
-      await reportProgress(identity, requestId, "failed", lastProgress, "Update failed", marker.reason || "Approved HGR updater failed on the owner PC.", localOperationId);
+      const detailedReason = await localAuditFailureReason(localOperationId);
+      await reportProgress(
+        identity,
+        requestId,
+        "failed",
+        lastProgress,
+        "Update failed",
+        detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.",
+        localOperationId,
+      );
       return;
     }
 
