@@ -37,8 +37,13 @@ $failureReason = $null
 try {
     $env:HGR_CONTROL_UPDATE_FINALIZER = "1"
     Remove-Item Env:HGR_CONTROL_DEFER_REFRESH -ErrorAction SilentlyContinue
-    & $refreshHelper
-    $exitCode = $LASTEXITCODE
+    $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
+    $refresh = Start-Process -FilePath $powershell -ArgumentList @(
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", "`"$refreshHelper`""
+    ) -WorkingDirectory $projectRoot -WindowStyle Hidden -Wait -PassThru
+    $exitCode = $refresh.ExitCode
     if ($exitCode -ne 0) {
         $failureReason = "HGR Control post-update restart exited with code $exitCode."
     }
