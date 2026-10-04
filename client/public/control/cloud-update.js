@@ -33,10 +33,142 @@
     return body;
   }
 
+  function formatWhen(value) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return "—";
+    return date.toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function ensureOperationDiagnostics() {
+    const details = $("operationDetails");
+    const dismiss = $("operationDismiss");
+    if (!details || !dismiss) return null;
+    let group = $("controlOperationDiagnostics");
+    if (group) return group;
+
+    group = document.createElement("div");
+    group.id = "controlOperationDiagnostics";
+    group.className = "control-operation-diagnostics";
+
+    const phaseRow = document.createElement("div");
+    phaseRow.innerHTML = '<span>Phase</span><strong id="controlOperationPhaseDetail">—</strong>';
+    const idRow = document.createElement("div");
+    idRow.innerHTML = '<span>Operation ID</span><strong id="controlOperationId">—</strong>';
+    const reasonRow = document.createElement("div");
+    reasonRow.id = "controlOperationReasonRow";
+    reasonRow.hidden = true;
+    reasonRow.innerHTML = '<span>Failure reason</span><strong id="controlOperationReason">—</strong>';
+
+    group.append(phaseRow, idRow, reasonRow);
+    details.insertBefore(group, dismiss);
+    return group;
+  }
+
+  function renderOperationDiagnostics(operation) {
+    if (!operation) return;
+    ensureOperationDiagnostics();
+    const phase = $("controlOperationPhaseDetail");
+    const id = $("controlOperationId");
+    const reason = $("controlOperationReason");
+    const reasonRow = $("controlOperationReasonRow");
+    if (phase) phase.textContent = operation.phase || "—";
+    if (id) {
+      const ids = [operation.id ? `Cloud ${operation.id}` : null, operation.localOperationId ? `Local ${operation.localOperationId}` : null].filter(Boolean);
+      id.textContent = ids.join(" · ") || "—";
+    }
+    if (reasonRow && reason) {
+      const failureReason = String(operation.reason || "").trim();
+      reasonRow.hidden = !failureReason;
+      reason.textContent = failureReason || "—";
+    }
+  }
+
+  function ensureOperationAuditPanel() {
+    const adminList = $("auditList");
+    if (!adminList) return null;
+    let panel = $("controlOperationAuditPanel");
+    if (panel) return $("controlOperationAuditList");
+
+    panel = document.createElement("section");
+    panel.id = "controlOperationAuditPanel";
+    panel.className = "panel-card";
+    panel.style.marginBottom = "16px";
+
+    const heading = document.createElement("div");
+    heading.className = "card-heading";
+    const copy = document.createElement("div");
+    const eyebrow = document.createElement("p");
+    eyebrow.className = "eyebrow";
+    eyebrow.textContent = "CONTROL OPERATIONS";
+    const title = document.createElement("h2");
+    title.textContent = "Owner-PC operation history";
+    copy.append(eyebrow, title);
+    heading.appendChild(copy);
+
+    const intro = document.createElement("p");
+    intro.style.color = "#78869e";
+    intro.style.fontSize = "11px";
+    intro.style.lineHeight = "1.55";
+    intro.textContent = "Cloud Update attempts, final state, phase and bounded failure diagnostics. Credentials and device secrets are never shown here.";
+
+    const list = document.createElement("div");
+    list.id = "controlOperationAuditList";
+    list.className = "audit-list";
+    list.style.marginTop = "14px";
+    list.innerHTML = '<div class="empty-state">Loading Control operation history…</div>';
+
+    panel.append(heading, intro, list);
+    adminList.parentNode?.insertBefore(panel, adminList);
+    return list;
+  }
+
+  function renderOperationHistory(operations) {
+    const list = ensureOperationAuditPanel();
+    if (!list) return;
+    list.textContent = "";
+    const entries = Array.isArray(operations) ? operations : [];
+    if (!entries.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "No Control operations recorded yet.";
+      list.appendChild(empty);
+      return;
+    }
+
+    entries.slice(0, 40).forEach((operation) => {
+      const row = document.createElement("article");
+      row.className = "audit-entry control-operation-entry";
+      const time = document.createElement("time");
+      time.textContent = formatWhen(operation.startedAt);
+      const copy = document.createElement("div");
+      const state = String(operation.state || "running");
+      const stateLabel = state[0]?.toUpperCase() + state.slice(1);
+      const strong = document.createElement("strong");
+      strong.textContent = `Update HGR · ${stateLabel}`;
+      const phase = document.createElement("small");
+      phase.textContent = `${operation.phase || "Unknown phase"} · ${Math.round(Number(operation.progress) || 0)}%`;
+      const identity = document.createElement("small");
+      identity.textContent = `Operation ${operation.id || "—"}${operation.localOperationId ? ` · Local ${operation.localOperationId}` : ""}`;
+      copy.append(strong, phase, identity);
+      const reasonText = String(operation.reason || "").trim();
+      if (reasonText) {
+        const reason = document.createElement("small");
+        reason.textContent = `Reason: ${reasonText}`;
+        reason.style.color = state === "failed" || state === "rejected" ? "#f0a2a2" : "#9aa9c1";
+        reason.style.marginTop = "6px";
+        reason.style.lineHeight = "1.5";
+        copy.appendChild(reason);
+      }
+      row.append(time, copy);
+      list.appendChild(row);
+    });
+  }
+
   function dispatchOperation(operation) {
     if (!operation || operation.id === dismissedOperationId) return;
     lastOperation = operation;
     window.dispatchEvent(new CustomEvent("hgr-control-operation", { detail: operation }));
+    renderOperationDiagnostics(operation);
   }
 
   function setReadiness(title, copy, live = false) {
@@ -178,11 +310,13 @@
 
   async function refreshCloudControl() {
     try {
-      const [status, operationStatus] = await Promise.all([
+      const [status, operationStatus, operationHistory] = await Promise.all([
         request("/control/cloud/status"),
         request("/control/operation-status").catch(() => ({ operation: null })),
+        request("/control/operation-history").catch(() => ({ operations: [] })),
       ]);
       renderDevice(chooseDevice(Array.isArray(status.devices) ? status.devices : []));
+      renderOperationHistory(operationHistory.operations);
       const operation = operationStatus.operation || status.activeOperation || null;
       if (operation) dispatchOperation(operation);
     } catch (error) {
@@ -220,6 +354,8 @@
   }
 
   function bind() {
+    ensureOperationDiagnostics();
+    ensureOperationAuditPanel();
     const button = updateButton();
     if (button) {
       button.disabled = true;
