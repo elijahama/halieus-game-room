@@ -19,7 +19,7 @@ function applyIdentityAssets(): void {
     } else {
       setHref(link, withIdentity("/favicon-32.png"));
       link.type = "image/png";
-      link.sizes = "32x32";
+      link.setAttribute("sizes", "32x32");
     }
   }
 
