@@ -139,7 +139,10 @@ async function localStatus(): Promise<LocalControlStatus | null> {
 }
 
 async function localAuditFailureReason(localOperationId: string): Promise<string | null> {
-  for (let attempt = 0; attempt < 6; attempt += 1) {
+  // The update result marker can become terminal a moment before the local
+  // Control Agent appends its matching failed audit entry. Retry long enough to
+  // bridge that write race, but only on a failed operation and only on loopback.
+  for (let attempt = 0; attempt < 16; attempt += 1) {
     try {
       const response = await localRequest("/api/logs");
       if (response.ok) {
@@ -153,7 +156,7 @@ async function localAuditFailureReason(localOperationId: string): Promise<string
         if (reason) return reason;
       }
     } catch { /* The local agent may be rotating credentials; retry briefly. */ }
-    if (attempt < 5) await delay(250);
+    if (attempt < 15) await delay(300);
   }
   return null;
 }
