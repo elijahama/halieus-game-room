@@ -1,5 +1,6 @@
 const CACHE = 'halieus-shell-v4-5-3-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
-const SHELL = ['/', '/site.webmanifest?identity=install-h2', '/app-icon-192.png?identity=install-h2', '/app-icon-512.png?identity=install-h2'];
+const SHELL = ['/', '/site.webmanifest?identity=install-h3', '/app-icon-192.png?identity=install-h3', '/app-icon-512.png?identity=install-h3'];
+const IDENTITY_PATHS = new Set(['/site.webmanifest', '/halieus-mark.svg', '/halieus-app-icon.png', '/app-icon-180.png', '/app-icon-192.png', '/app-icon-512.png', '/favicon-32.png', '/favicon.ico']);
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).catch(() => undefined));
   self.skipWaiting();
@@ -13,6 +14,13 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/socket.io/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/accounts/') || url.pathname.startsWith('/admin/') || url.pathname === '/health') return;
+  if (IDENTITY_PATHS.has(url.pathname)) {
+    event.respondWith(fetch(event.request, { cache: 'reload' }).then((response) => {
+      if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()));
+      return response;
+    }).catch(() => caches.match(event.request)));
+    return;
+  }
   if (event.request.mode === 'navigate') {
     event.respondWith(fetch(event.request).then((response) => {
       const copy = response.clone(); caches.open(CACHE).then((cache) => cache.put('/', copy)); return response;
@@ -29,8 +37,8 @@ self.addEventListener('push', (event) => {
   try { payload = { ...payload, ...(event.data?.json() || {}) }; } catch {}
   event.waitUntil(self.registration.showNotification(payload.title, {
     body: payload.body,
-    icon: '/app-icon-192.png?v=4.5.3-install-h2',
-    badge: '/favicon-32.png?identity=install-h2',
+    icon: '/app-icon-192.png?identity=install-h3',
+    badge: '/favicon-32.png?identity=install-h3',
     data: { url: payload.url || '/' },
     tag: payload.tag || 'halieus-notification',
   }));
