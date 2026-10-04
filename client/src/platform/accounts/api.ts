@@ -1,6 +1,6 @@
 const configuredServerUrl = import.meta.env.VITE_SERVER_URL?.trim();
 const apiBase = configuredServerUrl || "";
-const DEFAULT_ACCOUNT_TIMEOUT_MS = 10_000;
+const AUTH_BOOTSTRAP_TIMEOUT_MS = 10_000;
 
 function combineAbortSignals(external: AbortSignal | null | undefined, controller: AbortController): () => void {
   if (!external) return () => undefined;
@@ -14,17 +14,20 @@ function combineAbortSignals(external: AbortSignal | null | undefined, controlle
 }
 
 export async function accountApi<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const controller = new AbortController();
-  const detachExternalSignal = combineAbortSignals(init.signal, controller);
-  const timeout = globalThis.setTimeout(() => controller.abort("account-timeout"), DEFAULT_ACCOUNT_TIMEOUT_MS);
   const method = (init.method || "GET").toUpperCase();
+  const boundedBootstrap = method === "GET" && path === "/auth/status";
+  const controller = boundedBootstrap ? new AbortController() : null;
+  const detachExternalSignal = controller ? combineAbortSignals(init.signal, controller) : () => undefined;
+  const timeout = controller
+    ? globalThis.setTimeout(() => controller.abort("account-timeout"), AUTH_BOOTSTRAP_TIMEOUT_MS)
+    : null;
 
   try {
     const response = await fetch(`${apiBase}${path}`, {
       ...init,
-      signal: controller.signal,
+      signal: controller?.signal ?? init.signal,
       credentials: "include",
-      cache: init.cache ?? (method === "GET" ? "no-store" : "default"),
+      cache: init.cache ?? (boundedBootstrap ? "no-store" : "default"),
       headers: {
         "Content-Type": "application/json",
         ...(init.headers ?? {}),
@@ -37,12 +40,12 @@ export async function accountApi<T>(path: string, init: RequestInit = {}): Promi
     }
     return body as T;
   } catch (error) {
-    if (controller.signal.aborted && !init.signal?.aborted) {
+    if (controller?.signal.aborted && !init.signal?.aborted) {
       throw new Error("HGR could not finish checking your account. Check the connection and retry.");
     }
     throw error;
   } finally {
-    globalThis.clearTimeout(timeout);
+    if (timeout !== null) globalThis.clearTimeout(timeout);
     detachExternalSignal();
   }
 }
