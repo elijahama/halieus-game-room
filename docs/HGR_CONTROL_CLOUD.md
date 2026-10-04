@@ -102,6 +102,10 @@ The owner PC runs the same approved updater used by normal HGR Control. The brid
 
 `control-update.ps1` writes a bounded runtime result marker so the independent outbound bridge can report a final succeeded/failed result even when the local Control Agent is intentionally restarted by the updater. While the local agent is present, its existing progress phases are forwarded to Cloud Control. Cloud state is persisted under the normal HGR production data root so an Oracle service restart does not erase the operation record.
 
+4.5.4.8 fixes the real-device 88% handoff failure. A cloud-triggered update no longer lets the updater stop the Control Agent process that owns the update wrapper. Instead, the in-process Control restart is deferred until the update/deploy core and client handoff have returned successfully. `control-update.ps1` then launches an independent `control-update-finalize.ps1` process. That finalizer performs the verified Control restart with fresh credentials and is the only process allowed to write the final `succeeded` result marker. If the restart fails it writes a terminal `failed` marker instead, so Cloud Control cannot remain indefinitely at 88% waiting for a parent process that was intentionally stopped.
+
+A later normal/local update can also reconcile an older orphaned `running` result marker after a successful Control refresh. That old cloud operation is marked failed/retryable rather than silently reported as success. This is the recovery path for the first real-device 88% failure observed before 4.5.4.8.
+
 The Cloud Control Operations panel enables only **Update HGR** when an approved owner PC and its local Control Agent are both online. The existing persistent operation toast displays update phase/progress on desktop and mobile.
 
 ## Audit and state
@@ -149,6 +153,17 @@ Real owner-PC/phone acceptance remains required after deployment. Source/CI comp
 - persistent revoked state in Cloud Control until a fresh owner-PC enrollment is created and approved.
 
 Real-device revocation acceptance remains required after deployment.
+
+### Stage 4 — 4.5.4.8 final-handoff repair
+
+- reproduce the real Cloud Update failure at 88% during owner-Control restart;
+- defer that restart while the current Control Agent still owns the update wrapper;
+- run the restart from an independent finalizer process;
+- write 100% success only after the verified Control restart completes;
+- persist a terminal failure if the final restart fails;
+- allow a later successful local update to release an older orphaned 88% operation as failed/retryable rather than leaving it permanently running.
+
+Real-device acceptance requires one fresh Cloud Update to progress through the final Control restart and reach **100% · Update complete** without returning to the laptop.
 
 ### Later audited stages
 

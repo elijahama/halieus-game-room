@@ -10,6 +10,39 @@ $tokenPath = Join-Path $runtimeDir ".hgr-control-token"
 $stopHelper = Join-Path $PSScriptRoot "stop-control.ps1"
 $startHelper = Join-Path $PSScriptRoot "start-control.ps1"
 $startCloudHelper = Join-Path $PSScriptRoot "start-control-cloud.ps1"
+$resultPath = Join-Path $runtimeDir "hgr-control-update-result.json"
+$staleCloudUpdateMinutes = 5
+
+function Write-HgrUpdateResult {
+    param([Parameter(Mandatory = $true)][hashtable]$Value)
+    $json = $Value | ConvertTo-Json
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($resultPath, $json, $utf8)
+}
+
+function Resolve-InterruptedCloudUpdateAfterManualRecovery {
+    # The dedicated cloud-update finalizer owns its own result marker. Only a
+    # later normal/local Update may convert an old orphaned "running" marker
+    # into a failed/retryable state so the cloud relay is not blocked forever.
+    if ($env:HGR_CONTROL_UPDATE_FINALIZER -eq "1") { return }
+    if (-not (Test-Path -LiteralPath $resultPath)) { return }
+    try {
+        $marker = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
+        if ([string]$marker.state -ne "running" -or [string]::IsNullOrWhiteSpace([string]$marker.startedAt)) { return }
+        $started = [DateTimeOffset]::Parse([string]$marker.startedAt)
+        if ([DateTimeOffset]::UtcNow -lt $started.AddMinutes($staleCloudUpdateMinutes)) { return }
+        Write-HgrUpdateResult -Value @{
+            state = "failed"
+            startedAt = [string]$marker.startedAt
+            finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
+            exitCode = 1
+            reason = "Previous Cloud Update completion handoff was interrupted. A later local update refreshed HGR Control successfully; retry Cloud Update from the website."
+        }
+        Write-Host "Recovered an older interrupted Cloud Update marker so the website can offer a clean retry." -ForegroundColor Yellow
+    } catch {
+        Write-Warning "Could not reconcile an older Cloud Update result marker: $($_.Exception.Message)"
+    }
+}
 
 $snapshotPath = Join-Path $runtimeDir "hgr-control-update-snapshot.json"
 if ($Capture) {
@@ -31,16 +64,28 @@ if ($Capture) {
     Write-Host "Recorded Control state before updating source."
     exit 0
 }
+
+if ($env:HGR_CONTROL_DEFER_REFRESH -eq "1") {
+    # Cloud Update is still running inside the current Control Agent. Stopping
+    # that process here used to strand the cloud operation at 88%. Keep the
+    # snapshot intact; an independent finalizer will consume it after the core
+    # updater and HGR client handoff have returned successfully.
+    Write-Host "Cloud Update: Control restart deferred to the independent final handoff process." -ForegroundColor Cyan
+    exit 0
+}
+
 if (-not (Test-Path -LiteralPath $snapshotPath)) { throw "Control pre-update snapshot is missing; refusing to guess whether it should be started." }
 $snapshot = Get-Content -LiteralPath $snapshotPath -Raw | ConvertFrom-Json
 Remove-Item -LiteralPath $snapshotPath -Force
 if (-not $snapshot.running) {
     Write-Host "HGR Control was stopped before the update; it remains stopped."
+    Resolve-InterruptedCloudUpdateAfterManualRecovery
     exit 0
 }
 
 if (-not (Test-Path -LiteralPath $statePath)) {
     Write-Host "HGR Control was not running before the update; no Control restart is required." -ForegroundColor DarkGray
+    Resolve-InterruptedCloudUpdateAfterManualRecovery
     exit 0
 }
 
@@ -53,6 +98,7 @@ try {
     Write-Warning "HGR Control state was stale or unreadable. Clearing stale runtime state without starting Control."
     Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $tokenPath -Force -ErrorAction SilentlyContinue
+    Resolve-InterruptedCloudUpdateAfterManualRecovery
     exit 0
 }
 
@@ -65,6 +111,7 @@ try {
 if (-not $listener -or [int]$listener.OwningProcess -ne $listenerPid) {
     Write-Host "HGR Control runtime state existed, but no matching live Control listener was found." -ForegroundColor Yellow
     Write-Host "Leaving runtime state untouched: another process may now own this port." -ForegroundColor DarkGray
+    Resolve-InterruptedCloudUpdateAfterManualRecovery
     exit 0
 }
 
@@ -75,6 +122,7 @@ if (-not (Test-Path -LiteralPath $stopHelper) -or -not (Test-Path -LiteralPath $
 $currentStart = (Get-Process -Id $listenerPid -ErrorAction Stop).StartTime.ToUniversalTime().Ticks.ToString()
 if ($listenerPid -ne [int]$snapshot.state.listenerPid -or $currentStart -ne $snapshot.state.processStarted) {
     Write-Host "Control was replaced during the update; preserving the owner's newer process."
+    Resolve-InterruptedCloudUpdateAfterManualRecovery
     exit 0
 }
 $oldToken = if (Test-Path -LiteralPath $tokenPath) { Get-Content -LiteralPath $tokenPath -Raw } else { "" }
@@ -132,4 +180,5 @@ if (Test-Path -LiteralPath $startCloudHelper) {
     }
 }
 
+Resolve-InterruptedCloudUpdateAfterManualRecovery
 exit 0
