@@ -27,23 +27,26 @@ for (const [file, expected] of Object.entries(fixture)) {
 }
 const manifest = JSON.parse(read('client/public/site.webmanifest'));
 assert.ok(manifest.icons.every(i => i.src.includes(`?v=${version}`)), `PWA identities must invalidate prior artwork URLs for ${version}`);
-assert.deepEqual(manifest.icons.map(i => i.src.split("?")[0]), ['/halieus-app-icon.png'], 'Installed Halieus PWA must use the original approved PNG');
-assert.ok(manifest.icons.every(i => i.type === 'image/png'), 'Installed Halieus identity must use the rendered PNG artwork');
-assert.ok(manifest.icons.every(i => i.sizes === '1024x1024'), 'Installed Halieus PNG must declare its original square size');
-assert.ok(manifest.icons.every(i => !/app-icon-reference|app-icon-(?:192|512)\.png/.test(i.src)), 'Historical raster thumbnails must not override the approved install identity');
+assert.deepEqual(manifest.icons.map(i => i.src.split("?")[0]), ['/app-icon-192.png', '/app-icon-512.png'], 'Installed Halieus PWA must use the canonical generated H icon sizes');
+assert.ok(manifest.icons.every(i => i.type === 'image/png'), 'Installed Halieus identity must use PNG raster exports of the canonical web mark');
+assert.deepEqual(manifest.icons.map(i => i.sizes), ['192x192', '512x512'], 'Installed Halieus PNGs must declare their generated square sizes');
+assert.ok(manifest.icons.every(i => !/app-icon-reference|halieus-app-icon\.png/.test(i.src)), 'Historical rendered install thumbnails must not override the canonical generated PWA identity');
+for (const file of ['client/public/app-icon-192.png', 'client/public/app-icon-512.png']) {
+  const bytes = readFileSync(resolve(root, file));
+  assert.ok(bytes.length > 0, `${file}: canonical PWA raster export must exist`);
+}
 const approvedPwaBytes = readFileSync(resolve(root, 'assets/branding/references/HGR Main.png'));
-const installedPwaBytes = readFileSync(resolve(root, 'client/public/halieus-app-icon.png'));
-assert.equal(createHash('sha256').update(installedPwaBytes).digest('hex'), createHash('sha256').update(approvedPwaBytes).digest('hex'), 'Installed PWA icon must be byte-identical to the approved HGR Main reference PNG');
+const compatibilityPwaBytes = readFileSync(resolve(root, 'client/public/halieus-app-icon.png'));
+assert.equal(createHash('sha256').update(compatibilityPwaBytes).digest('hex'), createHash('sha256').update(approvedPwaBytes).digest('hex'), 'Compatibility/social HGR PNG must remain byte-identical to the approved HGR Main reference PNG');
 const indexHtml = read('client/index.html');
 assert.match(indexHtml, new RegExp(`id="halieus-dynamic-favicon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h6"`), 'Initial browser favicon must use the canonical CONTROL UPDATE web mark');
 assert.match(indexHtml, new RegExp(`rel="shortcut icon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h6"`), 'Shortcut favicon must use the canonical CONTROL UPDATE web mark');
-assert.doesNotMatch(indexHtml, /apple-touch-icon[^>]+app-icon-180\.png/, 'Legacy Apple-touch raster must not compete with the new install identity');
 assert.doesNotMatch(indexHtml, /app-icon-reference\.png/, 'Historical install reference must not remain in live HTML');
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
 assert.match(pwaCopy,/rm\(resolve\(publicDir, "app-icon-reference\.png"\), \{ force: true \}\)/,'Client prebuild must remove the stale historical install thumbnail');
-assert.match(pwaCopy,/copyFile\(approvedMainIcon, installedMainIcon\)/,'Client prebuild must copy the approved rendered PNG without redrawing it');
+assert.match(pwaCopy,/copyFile\(approvedMainIcon, installedMainIcon\)/,'Client prebuild must preserve the approved rendered PNG compatibility/social asset without redrawing it');
 const clientPackage = JSON.parse(read('client/package.json'));
-assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client prebuild must prepare current PWA assets before Vite runs');
+assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client prebuild must preserve the compatibility/social PNG before Vite runs');
 
 const flatGenerator = read('scripts/generate-flat-brand.mjs');
 assert.match(flatGenerator,/assets\/branding\/icon-sets\/glyphs\/hgr-h\.svg/,'Web brand generator must source H geometry from icon sets');
