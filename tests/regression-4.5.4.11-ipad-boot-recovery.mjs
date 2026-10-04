@@ -6,9 +6,10 @@ const recovery = await readFile(new URL("../client/src/platform/network/WebKitCo
 const main = await readFile(new URL("../client/src/main.tsx", import.meta.url), "utf8");
 const app = await readFile(new URL("../client/src/App.tsx", import.meta.url), "utf8");
 
-assert.match(accountApi, /DEFAULT_ACCOUNT_TIMEOUT_MS\s*=\s*10_000/, "account bootstrap must have a bounded timeout");
-assert.match(accountApi, /controller\.abort\("account-timeout"\)/, "account timeout must actively abort a hung WebKit fetch");
-assert.match(accountApi, /cache:\s*init\.cache\s*\?\?\s*\(method === "GET" \? "no-store" : "default"\)/, "GET account bootstrap requests must bypass stale browser caches");
+assert.match(accountApi, /AUTH_BOOTSTRAP_TIMEOUT_MS\s*=\s*10_000/, "auth bootstrap must have a bounded timeout");
+assert.match(accountApi, /path === "\/auth\/status"/, "the timeout must stay scoped to initial auth status rather than unrelated account mutations");
+assert.match(accountApi, /controller\.abort\("account-timeout"\)/, "auth timeout must actively abort a hung WebKit fetch");
+assert.match(accountApi, /cache:\s*init\.cache\s*\?\?\s*\(boundedBootstrap \? "no-store" : "default"\)/, "auth bootstrap must bypass stale browser caches");
 assert.match(accountApi, /HGR could not finish checking your account/, "timed-out auth bootstrap must become a visible recoverable error");
 
 assert.match(recovery, /iPad\|iPhone\|iPod/, "classic iPad/iOS WebKit must be detected");
