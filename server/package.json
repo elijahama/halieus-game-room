@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
     "build": "npm run clean && tsc",
-    "start": "node dist/server/src/index.js",
+    "start": "node --import dist/server/src/platform/control-cloud-server-preload.js --import dist/server/src/platform/control-cloud-ui-preload.js dist/server/src/index.js",
     "control:dev": "tsx src/control-agent.ts",
     "control:start": "node dist/server/src/control-agent.js"
   },
