@@ -9,6 +9,7 @@ $statePath = Join-Path $runtimeDir "hgr-control-mobile-state.json"
 $tokenPath = Join-Path $runtimeDir ".hgr-control-token"
 $stopHelper = Join-Path $PSScriptRoot "stop-control.ps1"
 $startHelper = Join-Path $PSScriptRoot "start-control.ps1"
+$startCloudHelper = Join-Path $PSScriptRoot "start-control-cloud.ps1"
 
 $snapshotPath = Join-Path $runtimeDir "hgr-control-update-snapshot.json"
 if ($Capture) {
@@ -115,4 +116,20 @@ if (-not $newListener -or [int]$newListener.OwningProcess -ne $newListenerPid) {
 
 Write-Host "HGR Control restarted from the updated source." -ForegroundColor Green
 Write-Host "A fresh private pairing code/session boundary is now active." -ForegroundColor DarkGray
+
+# Cloud Control is deliberately a separate outbound process. Starting it here
+# bootstraps the first cloud-capable release automatically when private Control
+# was already running. An existing bridge is preserved by its idempotent start
+# helper so an in-flight cloud Update is not killed during its own deployment.
+if (Test-Path -LiteralPath $startCloudHelper) {
+    try {
+        & $startCloudHelper
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "HGR Control restarted, but the outbound Cloud bridge did not start. Private/Tailscale Control remains available."
+        }
+    } catch {
+        Write-Warning "HGR Control restarted, but the outbound Cloud bridge could not start: $($_.Exception.Message)"
+    }
+}
+
 exit 0
