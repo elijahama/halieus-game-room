@@ -16,7 +16,7 @@ assert.match(bridge, /leave hgr-control-update-result\.json in the running state
 assert.doesNotMatch(bridge, /state\s*=\s*"succeeded"/, "The parent Control update wrapper must never authoritatively mark the cloud operation succeeded");
 
 assert.match(finalizer, /HGR_CONTROL_UPDATE_FINALIZER\s*=\s*"1"/, "Finalizer must identify its authoritative restart context");
-assert.match(finalizer, /& \$refreshHelper/, "Finalizer must run the normal verified Control refresh helper");
+assert.match(finalizer, /Start-Process[\s\S]*?\$refreshHelper[\s\S]*?-Wait[\s\S]*?-PassThru/s, "Finalizer must run the verified Control refresh in its own PowerShell process and wait for its exit code");
 assert.match(finalizer, /state\s*=\s*"succeeded"[\s\S]*?exitCode\s*=\s*0/s, "Only a successful final Control handoff may write the succeeded marker");
 assert.match(finalizer, /state\s*=\s*"failed"/, "Finalizer failures must be persisted for Cloud Control instead of hanging indefinitely");
 
