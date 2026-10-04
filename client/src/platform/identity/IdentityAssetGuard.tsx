@@ -6,32 +6,33 @@ function withIdentity(path: string): string {
   return `${path}?identity=${IDENTITY_REVISION}`;
 }
 
+function setHref(link: HTMLLinkElement | null, target: string): void {
+  if (!link) return;
+  if (link.getAttribute("href") !== target) link.setAttribute("href", target);
+}
+
 function applyIdentityAssets(): void {
   const iconLinks = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="icon"], link[rel="shortcut icon"]'));
   for (const link of iconLinks) {
     if (link.id === "halieus-dynamic-favicon" || link.type === "image/svg+xml") {
-      link.href = withIdentity("/halieus-mark.svg");
+      setHref(link, withIdentity("/halieus-mark.svg"));
     } else {
-      link.href = withIdentity("/favicon-32.png");
+      setHref(link, withIdentity("/favicon-32.png"));
       link.type = "image/png";
       link.sizes = "32x32";
     }
   }
 
-  const appleTouch = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
-  if (appleTouch) appleTouch.href = withIdentity("/app-icon-180.png");
-
-  const manifest = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
-  if (manifest) manifest.href = withIdentity("/site.webmanifest");
+  setHref(document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]'), withIdentity("/app-icon-180.png"));
+  setHref(document.querySelector<HTMLLinkElement>('link[rel="manifest"]'), withIdentity("/site.webmanifest"));
 }
 
 export function IdentityAssetGuard() {
   useEffect(() => {
     applyIdentityAssets();
 
-    const head = document.head;
     const observer = new MutationObserver(() => applyIdentityAssets());
-    observer.observe(head, { attributes: true, childList: true, subtree: true, attributeFilter: ["href"] });
+    observer.observe(document.head, { attributes: true, childList: true, subtree: true, attributeFilter: ["href"] });
 
     return () => observer.disconnect();
   }, []);
