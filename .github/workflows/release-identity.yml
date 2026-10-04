@@ -40,6 +40,7 @@ jobs:
             './scripts/windows/launcher-shortcuts.ps1',
             './scripts/windows/refresh-control-after-update.ps1',
             './scripts/windows/control-update.ps1',
+            './scripts/windows/control-update-finalize.ps1',
             './scripts/windows/start-control.ps1',
             './scripts/windows/stop-control.ps1',
             './scripts/windows/start-control-cloud.ps1',
