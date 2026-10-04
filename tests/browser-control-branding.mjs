@@ -10,6 +10,10 @@ const root=resolve(import.meta.dirname,'..');
 const data=await mkdtemp(resolve(tmpdir(),'hgr-control-branding-'));
 const base='http://127.0.0.1:39467';
 const expectedHash=JSON.parse(await readFile(resolve(root,'assets/branding/references/control-artwork.json'),'utf8')).sha256;
+const cloudControlHtml=await readFile(resolve(root,'client/public/control/index.html'),'utf8');
+const privateControlHtml=await readFile(resolve(root,'server/control-ui/index.html'),'utf8');
+assert.match(cloudControlHtml,/<link rel="icon" href="\/control\/control-icon\.png\?v=4\.5\.4\.4-control-favicon1" \/>/,'Cloud Control favicon must use the fresh approved Control identity revision');
+assert.match(privateControlHtml,/<link rel="icon" href="\/control-icon\.png\?v=4\.5\.4\.4-control-favicon1" \/>/,'Private Control favicon must use the fresh approved Control identity revision');
 const server=spawn(process.execPath,[resolve(root,'server/dist/server/src/index.js')],{
  cwd:resolve(root,'server'),env:{...process.env,PORT:'39467',SERVE_CLIENT:'true',CLIENT_ORIGINS:base,HALIEUS_DATA_DIR:data,HALIEUS_OWNER_BOOTSTRAP_FILE:resolve(data,'bootstrap.txt')},stdio:'pipe'
 });
@@ -39,12 +43,16 @@ try {
   const response=await context.request.get(base+imageUrl);
   assert.equal(createHash('sha256').update(await response.body()).digest('hex'),expectedHash);
   const box=await image.boundingBox();assert.ok(box.width>=30&&box.height>=30);
-  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y+box.height<=height);
+  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y>=0&&box.y+box.height<=height);
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-admin-control.png`)});
   role='player';await page.reload();await page.locator('.halieus-shell').waitFor();
   assert.equal(await page.locator('.hgr-admin-control-launcher').count(),0,'Player must not gain an admin launcher');
   role='guest';await page.goto(`${base}/control/`);
   await page.getByText('Sign in to use HGR Control',{exact:true}).waitFor();
+  const faviconHref=await page.locator('link[rel="icon"]').getAttribute('href');
+  assert.equal(faviconHref,'/control/control-icon.png?v=4.5.4.4-control-favicon1');
+  const faviconResponse=await context.request.get(base+faviconHref);
+  assert.equal(createHash('sha256').update(await faviconResponse.body()).digest('hex'),expectedHash,'Control favicon bytes must match approved Control artwork');
   for(const selector of ['.control-brand-mark','.access-icon']) {
    const mark=page.locator(selector);await mark.evaluate(i=>i.decode());
    assert.equal(await mark.evaluate(i=>i.tagName),'IMG');
@@ -55,7 +63,7 @@ try {
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${device}: cloud overflow`);
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-cloud-control.png`)});
   assert.deepEqual(errors,[]);await context.close();
-  console.log(`PASS ${device}: approved cloud/admin image bytes, rendering, role visibility and containment`);
+  console.log(`PASS ${device}: approved cloud/admin image bytes, favicon, rendering, role visibility and containment`);
  }
 } finally {
  await browser?.close();server.kill();
