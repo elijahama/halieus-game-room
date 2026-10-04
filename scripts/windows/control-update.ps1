@@ -7,6 +7,7 @@ $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $updateLauncher = Join-Path $projectRoot "Update HGR GitHub.cmd"
 $runtimeDir = Join-Path $projectRoot "server\data\runtime"
 $resultPath = Join-Path $runtimeDir "hgr-control-update-result.json"
+$updateOutputLog = Join-Path $runtimeDir "hgr-control-update.out.log"
 $finalizerPath = Join-Path $PSScriptRoot "control-update-finalize.ps1"
 $finalizerStdout = Join-Path $runtimeDir "hgr-control-update-finalize.out.log"
 $finalizerStderr = Join-Path $runtimeDir "hgr-control-update-finalize.err.log"
@@ -16,6 +17,60 @@ function Write-HgrUpdateResult {
     $json = $Value | ConvertTo-Json
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($resultPath, $json, $utf8)
+}
+
+function Get-HgrUpdateFailureReason {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][int]$ExitCode
+    )
+
+    $fallback = "Update HGR GitHub.cmd exited with code $ExitCode."
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $fallback
+    }
+
+    try {
+        $lines = @(
+            Get-Content -LiteralPath $Path -Tail 120 -ErrorAction Stop |
+                ForEach-Object { ([string]$_).Trim() } |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        )
+        if ($lines.Count -eq 0) {
+            return $fallback
+        }
+
+        $important = @(
+            $lines | Where-Object {
+                $_ -match '\[STOPPED\]|\[ERROR\]|npm ERR!|\bFAIL\b|\bAssertionError\b|\bTS\d{4}\b|\b(error|failed|failure|missing|refused|incomplete|could not|exit(ed)? with code)\b'
+            }
+        )
+        $selected = if ($important.Count -gt 0) {
+            @($important | Select-Object -Last 6)
+        } else {
+            @($lines | Select-Object -Last 6)
+        }
+
+        $sanitized = @(
+            $selected | ForEach-Object {
+                $line = [string]$_
+                $line = $line -replace [regex]::Escape($projectRoot), "<HGR_ROOT>"
+                $line = $line -replace '(?i)(authorization:\s*bearer\s+)\S+', '$1<redacted>'
+                $line = $line -replace '(?i)\b(token|secret|credential)\s*[:=]\s*\S+', '$1=<redacted>'
+                $line
+            }
+        )
+        $detail = ($sanitized -join " · ").Trim()
+        if ([string]::IsNullOrWhiteSpace($detail)) {
+            return $fallback
+        }
+        if ($detail.Length -gt 900) {
+            $detail = $detail.Substring(0, 900)
+        }
+        return "Update failed: $detail"
+    } catch {
+        return $fallback
+    }
 }
 
 if (-not (Test-Path -LiteralPath $updateLauncher)) {
@@ -46,10 +101,14 @@ try {
     # Agent that owns this wrapper. The normal final Control refresh is deferred
     # to an independent PowerShell finalizer after deploy/client handoff succeeds.
     $env:HGR_CONTROL_DEFER_REFRESH = "1"
-    & $updateLauncher
+    Remove-Item -LiteralPath $updateOutputLog -Force -ErrorAction SilentlyContinue
+    # Stream the updater output exactly as before so Control can keep deriving
+    # live progress, while also keeping a bounded local transcript that can be
+    # reduced to a safe failure reason if the CMD exits non-zero.
+    & $updateLauncher 2>&1 | Tee-Object -FilePath $updateOutputLog
     $exitCode = $LASTEXITCODE
     if ($exitCode -ne 0) {
-        $failureReason = "Update HGR GitHub.cmd exited with code $exitCode."
+        $failureReason = Get-HgrUpdateFailureReason -Path $updateOutputLog -ExitCode $exitCode
     } else {
         Remove-Item -LiteralPath $finalizerStdout -Force -ErrorAction SilentlyContinue
         Remove-Item -LiteralPath $finalizerStderr -Force -ErrorAction SilentlyContinue
