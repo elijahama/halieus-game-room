@@ -9,7 +9,7 @@ The cloud design does **not** turn HGR Control into a remote shell.
 
 ## Security boundary
 
-The owner PC remains the executor. The cloud relay is constrained to the fixed HGR Control action family already approved by the local agent:
+The **Owner PC Control Agent** remains the executor. The cloud relay is constrained to the fixed HGR Control action family already approved by the local agent:
 
 - Status
 - Start HGR
@@ -22,7 +22,7 @@ The owner PC remains the executor. The cloud relay is constrained to the fixed H
 
 There is no free-form process, executable, shell, argument or path field in the cloud protocol. Cloud Update queues one fixed `update` action; the outbound PC bridge then asks the existing loopback Control Agent for its normal one-time Update confirmation and calls the existing `/api/actions/update` endpoint. The cloud service never executes Windows commands itself.
 
-The PC agent opens the connection **outbound** to the cloud. The owner machine does not expose an administrative Windows port to the public internet.
+The PC agent uses an **outbound authenticated channel** to the cloud, implemented as bounded HTTPS heartbeat/poll/progress requests with a registered device credential. The owner machine does not expose an administrative Windows port to the public internet.
 
 ## Protocol foundation
 
