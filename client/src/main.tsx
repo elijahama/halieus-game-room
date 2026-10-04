@@ -6,6 +6,7 @@ import { GlobalGameActivity } from "./platform/components/GlobalGameActivity";
 import { PlatformMaintenanceBanner } from "./platform/components/PlatformMaintenanceBanner";
 import { AdminControlLauncher } from "./platform/control/AdminControlLauncher";
 import { IdentityAssetGuard } from "./platform/identity/IdentityAssetGuard";
+import { WebKitConnectionRecovery } from "./platform/network/WebKitConnectionRecovery";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "./version";
 import "./index.css";
 import "./styles/hgr-theme.css";
@@ -31,6 +32,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <IdentityAssetGuard />
+      <WebKitConnectionRecovery />
       <PlatformMaintenanceBanner />
       <App />
       <GlobalGameActivity />
