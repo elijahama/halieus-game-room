@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const version = read("VERSION").trim();
 
 const manifest = JSON.parse(read("client/public/site.webmanifest"));
 const iconSources = (manifest.icons || []).map((icon) => icon.src);
 assert.deepEqual(iconSources, [
-  "/app-icon-192.png?identity=install-h3",
-  "/app-icon-512.png?identity=install-h3",
-], "Main HGR PWA must install from the canonical generated H icon sizes");
+  `/app-icon-192.png?v=${version}-install-h3`,
+  `/app-icon-512.png?v=${version}-install-h3`,
+], "Main HGR PWA must install from the canonical generated H icon sizes with release-versioned cache busting");
 assert.equal(manifest.x_hgr_legacy_reference, "/halieus-app-icon.png", "Legacy rendered icon may remain reference-only, never install authority");
 
 for (const file of ["client/public/app-icon-180.png", "client/public/app-icon-192.png", "client/public/app-icon-512.png", "client/public/favicon-32.png"]) {
