@@ -21,3 +21,6 @@
 .operation-toast[data-state="failed"] .operation-progress i,.operation-toast[data-state="rejected"] .operation-progress i{background:#df7373}
 @keyframes control-progress-pulse{to{background-position:200% 0}}
 @media(prefers-reduced-motion:reduce){.operation-toast[data-state="running"] .operation-progress i{animation:none}}
+
+#profileAvatar,.player-avatar{overflow:hidden;flex-shrink:0}
+#profileAvatar img,.player-avatar img{display:block;width:100%;height:100%;object-fit:cover}

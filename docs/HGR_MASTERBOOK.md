@@ -477,3 +477,8 @@ Control prominently displays the real reported updater phase and last update tim
 ## 4.5.4.16 — fullscreen across Control navigation
 
 HGR and /control/ are separate documents. Cross-document browser navigation may exit native fullscreen; neither destination requests fullscreen without a user gesture. A shared navigation helper remembers fullscreen intent for same-tab HGR ↔ Control links and offers Resume fullscreen or Stay in window after navigation/history return. Installed standalone windows avoid redundant prompts. iPad/iPhone keep the existing native-input safety restriction. Actual OS/PWA acceptance remains separate from browser tests.
+
+
+## 4.5.4.17 — Control account pictures
+
+Control header and player-list avatars consume the canonical account profilePicture field, with the existing avatar/initials fallback for absent or failed images. Image fitting is contained within the existing avatar shape. No identity, permission or account-storage changes.

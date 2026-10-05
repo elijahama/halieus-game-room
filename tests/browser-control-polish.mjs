@@ -7,13 +7,14 @@ import { chromium } from 'playwright';
 const root=resolve(import.meta.dirname,'..');
 let operation=null, online=true;
 const account={id:'owner',username:'owner',displayName:'Owner Test',role:'owner',avatar:'OT',playerColor:'#3475c5',profilePicture:null};
+account.profilePicture='data:image/png;base64,'+(await readFile(resolve(root,'client/public/control/control-icon.png'))).toString('base64');
 const device={deviceId:'fixture',machineName:'Test PC',approval:'approved',online:true,localControlOnline:true};
 const server=createServer(async(req,res)=>{
   const path=new URL(req.url,'http://localhost').pathname;
   if(req.method!=='GET'){res.writeHead(405);res.end();return;}
   const fixtures={
     '/auth/status':{authenticated:true,account},
-    '/admin/snapshot':{accounts:[account],onlineAccountIds:['owner'],audit:[]},
+    '/admin/snapshot':{accounts:[account,{...account,id:'none',displayName:'No Photo',profilePicture:null},{...account,id:'broken',displayName:'Broken Photo',profilePicture:'data:image/png;base64,bm90LXBuZw=='}],onlineAccountIds:['owner'],audit:[]},
     '/accounts/live-games':{rooms:[]},'/accounts/me/stats':{stats:{played:0,wins:0,recent:[]}},
     '/health':{status:'online',version:'fixture',uptimeSeconds:1},
     '/control/cloud/status':{devices:[{...device,online}],activeOperation:operation},
@@ -56,6 +57,11 @@ try{
   operation=null;online=true;
   const page=await browser.newPage({viewport:{width,height}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/control/');await page.locator('#accessState').waitFor({state:'hidden'});
+  await page.locator('#profileAvatar img').evaluate(i=>i.decode());
+  assert.equal(await page.locator('#profileAvatar img').evaluate(i=>i.naturalWidth),192);
+  await page.waitForFunction(()=>document.querySelectorAll('#playerGrid .player-card').length===3);
+  assert.equal(await page.locator('#playerGrid img').count(),1,'missing/broken photos use initials fallback');
+  assert.equal(await page.locator('#playerGrid .player-avatar').nth(1).textContent(),'OT');
   await page.locator('[data-section="operations"]:visible').first().click();
   const update=page.getByRole('button',{name:/Update HGR/});
   await page.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button')].find(b=>b.textContent.includes('Update HGR'))?.disabled===false);
