@@ -409,7 +409,8 @@
       phase: String(value.phase || "Working…"),
       progress,
       state: stateValue,
-      startedAt: value.startedAt || new Date().toISOString(),
+      startedAt: value.startedAt || null,
+      updatedAt: value.updatedAt || null,
     };
   }
 
@@ -421,12 +422,15 @@
       return;
     }
     $("operationToast").hidden = false;
-    $("operationTitle").textContent = operation.title;
+    $("operationToast").dataset.state = operation.state;
+    $("operationTitle").textContent = operation.state === "succeeded" ? "Update complete" : operation.state === "failed" ? "Update failed" : operation.state === "rejected" ? "Update not started" : operation.title;
     $("operationPhase").textContent = operation.phase;
     $("operationPercent").textContent = `${Math.round(operation.progress)}%`;
     $("operationProgressBar").style.width = `${operation.progress}%`;
     $("operationDetailAction").textContent = operation.title;
-    $("operationStarted").textContent = formatWhen(operation.startedAt);
+    $("operationStarted").textContent = operation.startedAt ? formatWhen(operation.startedAt) : "Unavailable";
+    $("operationUpdated").textContent = operation.updatedAt ? `Last update: ${formatWhen(operation.updatedAt)}` : "Awaiting progress timestamp";
+    $("operationUpdated").dateTime = operation.updatedAt || "";
     $("operationState").textContent = operation.state[0].toUpperCase() + operation.state.slice(1);
     $("operationDismiss").hidden = operation.state === "running";
   }

@@ -467,3 +467,8 @@ Mega Board lobby summaries consume the existing canonical cosmetic catalog label
 ## 4.5.4.14 — Control action states
 
 Cloud Update appearance follows the real disabled attribute. Approved/online/idle makes Update interactive; active updates and dispatch disable both Update and Revoke cloud access. Unimplemented Start/Restart/Close stay disabled. Backend permissions and revocation enforcement are unchanged.
+
+
+## 4.5.4.15 — truthful Cloud Update progress
+
+Control prominently displays the real reported updater phase and last update timestamp. Progress percentages and width remain server-owned; a running-only subtle animation indicates activity without incrementing progress. Reduced-motion preferences disable animation. Terminal success/failure/rejection have distinct titles and colours while failure diagnostics remain available. Missing timestamps are shown as unavailable, never invented.
