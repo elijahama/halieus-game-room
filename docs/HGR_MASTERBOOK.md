@@ -487,3 +487,10 @@ Control header and player-list avatars consume the canonical account profilePict
 ## 4.5.4.18 — portrait Control containment
 
 Portrait Control has an explicit Game Room link in its top utility row. Mobile cards share a single border/radius/surface treatment, profile frames avoid duplicate shadowing, enrollment controls wrap, and main content owns bottom dock clearance. Operation progress sits above the mobile dock so it does not cover the header return action. Keyboard focus outlines remain visible and Control retains its blue identity.
+
+
+## 4.5.4.19 — separately scoped Cloud Control install identity
+
+Cloud Control has its own /control/ manifest identity, standalone start URL, Apple-touch reference and scoped worker. The 192px icon remains byte-identical to approved Control artwork; the 512px export is a documented raster resize only, with source/export hashes pinned. The H and cog are not redrawn and launcher masters are unchanged. Browser install prompts are offered only when the browser supplies them; iOS uses Share → Add to Home Screen.
+
+The Control worker caches only a public offline page and approved artwork; administrative responses/actions never enter its cache. Main HGR bypasses /control/ and deletes only its own shell caches. Control likewise deletes only its own caches. Offline Control cannot show stale account/operation data and offers Retry connection. OS-installed icon appearance and standalone behavior still require owner-device acceptance separately from browser/CI checks.
