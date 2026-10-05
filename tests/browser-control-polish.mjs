@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
 
@@ -59,6 +59,12 @@ try{
   operation=null;online=true;
   const page=await browser.newPage({viewport:{width,height}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/control/');await page.locator('#accessState').waitFor({state:'hidden'});
+  if(width<=720){
+    const back=page.getByRole('link',{name:'← Game Room',exact:true});
+    assert.equal(await back.isVisible(),true);assert.equal(await back.getAttribute('href'),'/');
+    assert.equal(await page.locator('.panel-card').first().evaluate(e=>getComputedStyle(e).boxShadow),'none');
+  }
+  if(process.env.HGR_SCREENSHOTS){await mkdir(process.env.HGR_SCREENSHOTS,{recursive:true});await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`control-${width}.png`),fullPage:true});}
   await page.locator('#profileAvatar img').evaluate(i=>i.decode());
   assert.equal(await page.locator('#profileAvatar img').evaluate(i=>i.naturalWidth),192);
   await page.waitForFunction(()=>document.querySelectorAll('#playerGrid .player-card').length===3);
@@ -91,6 +97,7 @@ try{
   assert.match(await page.locator('#controlOperationReason').textContent(),/verification failed/);
   online=false;
   await page.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button')].find(b=>b.textContent.includes('Update HGR'))?.disabled===true);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Control content stays within viewport');
   assert.deepEqual(errors,[]);
   await page.close();console.log(`PASS ${width}x${height}: available/running/complete/offline operation states`);
  }

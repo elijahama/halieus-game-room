@@ -9,7 +9,7 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.5.4.17" />
+  <link rel="stylesheet" href="/control/control.css?v=4.5.4.18" />
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/control/control.js?v=4.5.4.17" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.4.16" />
@@ -33,7 +33,7 @@
       <button class="rail-item" data-section="audit"><span>≡</span><b>Audit</b></button>
     </nav>
     <div class="rail-spacer"></div>
-    <a class="rail-return" href="/"><span>←</span><b>Game Room</b></a>
+    <a class="rail-return" href="/" aria-label="Back to Game Room"><span>←</span><b>Game Room</b></a>
   </aside>
 
   <main class="control-main">
@@ -43,6 +43,7 @@
         <h1 id="sectionTitle">Control overview</h1>
       </div>
       <div class="topbar-actions">
+        <a class="control-game-room-return" href="/">← Game Room</a>
         <div class="cloud-state" id="cloudState"><span></span><b>Checking HGR Cloud…</b></div>
         <button class="profile-chip" id="profileChip" type="button" aria-label="Signed-in administrator">
           <span id="profileAvatar">?</span>

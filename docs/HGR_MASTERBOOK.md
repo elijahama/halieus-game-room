@@ -482,3 +482,8 @@ HGR and /control/ are separate documents. Cross-document browser navigation may 
 ## 4.5.4.17 — Control account pictures
 
 Control header and player-list avatars consume the canonical account profilePicture field, with the existing avatar/initials fallback for absent or failed images. Image fitting is contained within the existing avatar shape. No identity, permission or account-storage changes.
+
+
+## 4.5.4.18 — portrait Control containment
+
+Portrait Control has an explicit Game Room link in its top utility row. Mobile cards share a single border/radius/surface treatment, profile frames avoid duplicate shadowing, enrollment controls wrap, and main content owns bottom dock clearance. Operation progress sits above the mobile dock so it does not cover the header return action. Keyboard focus outlines remain visible and Control retains its blue identity.
