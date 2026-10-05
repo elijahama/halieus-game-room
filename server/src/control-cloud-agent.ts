@@ -1,6 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { hostname } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,6 +69,13 @@ const runtimeDirectory = resolve(projectRoot, "server", "data", "runtime");
 const identityPath = resolve(runtimeDirectory, ".hgr-control-cloud-device.json");
 const localTokenPath = resolve(runtimeDirectory, ".hgr-control-token");
 const updateResultPath = resolve(runtimeDirectory, "hgr-control-update-result.json");
+const pendingPath = resolve(runtimeDirectory, "hgr-control-cloud-pending.json");
+interface PendingUpdate {
+  requestId: string;
+  localOperationId: string;
+  markerStartedBefore: string | null;
+  deadline: number;
+}
 const localBase = "http://127.0.0.1:43127";
 const cloudBase = (process.env.HGR_CONTROL_CLOUD_URL?.trim() || "https://halieus.remotewire.net").replace(/\/+$/, "");
 const pollDelayMs = 2_500;
@@ -178,9 +185,9 @@ async function reportProgress(
   phase: string,
   reason: string | null,
   localOperationId: string | null,
-): Promise<void> {
+): Promise<boolean> {
   try {
-    await cloudRequest("/control/cloud/agent/progress", {
+    const response = await cloudRequest("/control/cloud/agent/progress", {
       protocol: HGR_CONTROL_CLOUD_PROTOCOL,
       deviceId: identity.deviceId,
       secret: identity.secret,
@@ -191,8 +198,11 @@ async function reportProgress(
       reason,
       localOperationId,
     });
+    if (!response.ok) throw new Error(`Progress report returned HTTP ${response.status}`);
+    return true;
   } catch (error) {
     console.error("HGR Control Cloud progress report failed:", error instanceof Error ? error.message : error);
+    return false;
   }
 }
 
@@ -206,20 +216,19 @@ async function waitForUpdateResult(
   requestId: string,
   localOperationId: string,
   markerStartedBefore: string | null,
-): Promise<void> {
+  deadline: number,
+): Promise<boolean> {
   let lastProgress = 3;
   let lastPhase = "Starting approved updater";
-  const deadline = Date.now() + 50 * 60 * 1000;
-  while (!stopping && Date.now() < deadline) {
+  while (!stopping) {
     const marker = await readUpdateMarker();
     const markerIsCurrent = Boolean(marker?.startedAt && marker.startedAt !== markerStartedBefore);
     if (markerIsCurrent && marker?.state === "succeeded") {
-      await reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId);
-      return;
+      return reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId);
     }
     if (markerIsCurrent && marker?.state === "failed") {
       const detailedReason = await localAuditFailureReason(localOperationId);
-      await reportProgress(
+      return reportProgress(
         identity,
         requestId,
         "failed",
@@ -228,9 +237,9 @@ async function waitForUpdateResult(
         detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.",
         localOperationId,
       );
-      return;
     }
 
+    if (Date.now() >= deadline) break;
     const status = await localStatus();
     if (status?.activeOperation?.id === localOperationId) {
       const progress = Math.max(lastProgress, Math.min(99, Number(status.activeOperation.progress) || lastProgress));
@@ -246,7 +255,8 @@ async function waitForUpdateResult(
     }
     await delay(2_000);
   }
-  await reportProgress(identity, requestId, "failed", lastProgress, "Update status timed out", "The cloud bridge stopped receiving a final result from the approved owner-PC updater.", localOperationId);
+  if (stopping) return false;
+  return reportProgress(identity, requestId, "failed", lastProgress, "Update status timed out", "The cloud bridge stopped receiving a final result from the approved owner-PC updater.", localOperationId);
 }
 
 async function executeUpdate(identity: DeviceIdentity, request: HalieusCloudControlRequest): Promise<void> {
@@ -285,8 +295,10 @@ async function executeUpdate(identity: DeviceIdentity, request: HalieusCloudCont
       return;
     }
     localOperationId = updateBody.operationId;
+    const pending: PendingUpdate = { requestId: request.requestId, localOperationId, markerStartedBefore, deadline: Date.now() + 50 * 60 * 1000 };
+    await atomicJson(pendingPath, pending);
     await reportProgress(identity, request.requestId, "running", 3, "Starting approved updater", null, localOperationId);
-    await waitForUpdateResult(identity, request.requestId, localOperationId, markerStartedBefore);
+    if (await waitForUpdateResult(identity, request.requestId, localOperationId, markerStartedBefore, pending.deadline)) await rm(pendingPath, { force: true });
   } catch (error) {
     await reportProgress(
       identity,
@@ -302,7 +314,22 @@ async function executeUpdate(identity: DeviceIdentity, request: HalieusCloudCont
   }
 }
 
+async function resumePendingUpdate(identity: DeviceIdentity): Promise<void> {
+  if (inFlightRequestId) return;
+  let pending: PendingUpdate;
+  try { pending = JSON.parse(await readFile(pendingPath, "utf8")) as PendingUpdate; }
+  catch { return; }
+  if (!pending.requestId || !pending.localOperationId || !Number.isFinite(pending.deadline)) return;
+  inFlightRequestId = pending.requestId;
+  // Resume observation only. Never repeat the destructive Update action.
+  void waitForUpdateResult(identity, pending.requestId, pending.localOperationId, pending.markerStartedBefore, pending.deadline)
+    .then(async (delivered) => { if (delivered) await rm(pendingPath, { force: true }); })
+    .catch((error) => console.error("Cloud Update recovery failed:", error instanceof Error ? error.message : error))
+    .finally(() => { inFlightRequestId = null; });
+}
+
 async function cycle(identity: DeviceIdentity): Promise<void> {
+  await resumePendingUpdate(identity);
   const status = await localStatus();
   let heartbeatResponse: Response;
   try {

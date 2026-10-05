@@ -11,6 +11,7 @@ import {
 } from "../../../shared/platform/control-cloud.js";
 import type { Request as ExpressRequest } from "express";
 import { getAuthenticatedAccount } from "./accounts.js";
+import { expireUnreportedUpdates } from "./control-operation-recovery.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
 
 type DeviceApproval = "pending" | "approved" | "revoked";
@@ -283,6 +284,7 @@ async function handleHeartbeat(request: IncomingMessage, response: ServerRespons
     device.hgrVersion = hgrVersion;
     device.lastSeenAt = now;
     device.localControlOnline = localControlOnline;
+    expireUnreportedUpdates(store.requests, Date.now());
     return { status: 200, body: { ok: true, approved: device.approval === "approved", enrollment: device.approval } };
   });
   sendJson(response, result.status, result.body);
@@ -354,6 +356,8 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
   const found = await mutateStore((store) => {
     const operation = store.requests.find((entry) => entry.requestId === requestId && entry.deviceId === auth.device.deviceId && entry.action === "update");
     if (!operation) return false;
+    // Late bridge reports must never reopen a completed or timed-out request.
+    if (operation.state !== "running" && operation.state !== "queued") return true;
     operation.state = state;
     operation.progress = state === "succeeded" ? 100 : Math.max(operation.progress, progress);
     operation.phase = phase;
@@ -370,7 +374,7 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
 
 async function handleStatus(request: IncomingMessage, response: ServerResponse): Promise<void> {
   if (!requireAdmin(request, response)) return;
-  const store = await readStore();
+  const store = await mutateStore((store) => { expireUnreportedUpdates(store.requests, Date.now()); return store; });
   const active = latestLiveRequest(store);
   sendJson(response, 200, {
     ok: true,

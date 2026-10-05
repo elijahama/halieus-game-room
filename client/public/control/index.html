@@ -161,10 +161,10 @@
       <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Control operations</h2><p>Remote machine actions will remain allow-listed and administrator authenticated.</p></div></div>
       <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Cloud action relay not enabled yet</strong><small>Batch 1 is read-only. Remote Start, Restart, Update and Close are enabled only after secure owner-PC enrollment.</small></p></div></article>
       <div class="operation-grid">
-        <button disabled><span>↻</span><strong>Restart HGR</strong><small>Owner agent required</small></button>
-        <button disabled><span>▶</span><strong>Start HGR</strong><small>Owner agent required</small></button>
-        <button disabled><span>■</span><strong>Close HGR</strong><small>Confirmation required</small></button>
-        <button disabled><span>⇧</span><strong>Update HGR</strong><small>Progress appears globally</small></button>
+        <button data-operation="restart" disabled><span>↻</span><strong>Restart HGR</strong><small>Use owner-PC Control · cloud action not enabled</small></button>
+        <button data-operation="start" disabled><span>▶</span><strong>Start HGR</strong><small>Use owner-PC Control · cloud action not enabled</small></button>
+        <button data-operation="close" disabled><span>■</span><strong>Close HGR</strong><small>Use owner-PC Control · cloud action not enabled</small></button>
+        <button data-operation="update" disabled><span>⇧</span><strong>Update HGR</strong><small>Progress appears globally</small></button>
       </div>
       <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent update progress</h2><p>When remote updates are enabled, the operation remains visible while you move around Control. On phones it drops down from the top with percentage, current phase and an expandable details view.</p></article>
     </section>

@@ -37,3 +37,16 @@ Change only canonical VERSION to 4.5.5 and run canonical preparation. Re-run typ
 ## Deferred to 4.5.5.x
 
 Cloud Start/Restart/Close (fixed allow-listed actions and appropriate confirmation); owner-PC telemetry; advanced heartbeat/stall/retry/cancellation recovery; expanded player administration; broader Control visual unification; measured bundle/code-splitting work; Tailscale retirement only after proven cloud parity/reliability. Do not suppress chunk-size warnings merely by raising their threshold.
+
+
+## 5 October 2026 — stranded Control update correction
+
+Owner confirms new rooms can be created and the earlier room remains active. Apple-device sign-in/boot acceptance is still pending; no release version bump.
+
+The 4 October 23:57 Cloud Update remained at 3% after its bridge restarted: the cloud retained Running, but the local marker already recorded a failed interrupted handoff. The bridge previously retained its request association only in memory. Persist the request/local-operation/baseline/deadline while observing an update, resume observation after restart without repeating Update, and retain the journal until a terminal report is acknowledged. Cloud operations with no report for 55 minutes become explicitly unconfirmed failures; this never kills an updater or claims success. Late reports cannot reopen terminal operations. Local Control still enforces its active-operation guard on retries.
+
+Operation cards retain role colour (blue Update, green Start, orange Restart, red Close) and readable unavailable reasons. Only Update is presently supported by the cloud bridge. Start/Restart/Close remain owner-PC actions, explicitly labelled rather than misleadingly enabled. A running Update explains its busy state.
+
+Source validation is separate from production acceptance. A fresh cloud update reaching a verified terminal result and owner-PC/phone visual checks remain required.
+
+Live correction: the existing approved bridge credential successfully reported the exact stranded cloud request `6e60d251-4adb-4cf1-b2ac-23011f05cefa` / local request `354a30fa-ee1b-42b0-9cef-77668737cc57` as failed using its recorded interrupted-handoff reason (HTTP 200, accepted). Before reporting, local authenticated status confirmed no active operation and the marker start matched 4 October 22:57:11 UTC. No update, restart, room mutation or success claim was made. New recovery code/button styling still require rollout and device acceptance.

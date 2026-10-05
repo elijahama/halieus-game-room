@@ -45,3 +45,14 @@
   .operation-toast-details{max-height:40dvh;overflow:auto}
   .control-mobile-nav{border-color:var(--control-card-border);box-shadow:0 6px 18px rgba(0,0,0,.2)}
 }
+
+/* Preserve role identity even when an action is unavailable; labels explain why. */
+.operation-grid button[data-operation]{--action-color:#83b1ff;border-top:3px solid var(--action-color);opacity:1}
+.operation-grid button[data-operation="restart"]{--action-color:#ffae55}
+.operation-grid button[data-operation="start"]{--action-color:#63d394}
+.operation-grid button[data-operation="close"]{--action-color:#ff858b}
+.operation-grid button[data-operation] span{color:var(--action-color)}
+.operation-grid button[data-operation]:disabled{background:#131b28;color:#cbd5e5;border-color:#344052;border-top-color:var(--action-color);cursor:not-allowed}
+.operation-grid button[data-operation] small{color:#b0bed3;white-space:normal;line-height:1.5}
+.operation-grid button[data-operation]:not(:disabled){background:#204779;border-color:#83b1ff;color:#fff;box-shadow:0 0 0 1px #83b1ff33}
+.operation-grid button[data-operation]:not(:disabled):hover{background:#295c99}

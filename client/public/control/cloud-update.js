@@ -191,7 +191,12 @@
     const busy = updateInFlight || lastOperation?.state === "running";
     const ready = selectedDevice?.approval === "approved" && selectedDevice.online && selectedDevice.localControlOnline;
     const update = updateButton();
-    if (update) update.disabled = !ready || busy;
+    if (update) {
+      update.disabled = !ready || busy;
+      const copy = update.querySelector("small");
+      if (copy && ready) copy.textContent = busy ? "Update in progress · awaiting owner PC" : "Ready · run the approved updater";
+      update.title = busy ? "An update is already being tracked. See its progress above." : ready ? "Update HGR on the owner PC" : "Approve enrollment and connect owner-PC Control first.";
+    }
     const revoke = $("revokeCloudOwnerPc");
     if (revoke) {
       revoke.disabled = busy;

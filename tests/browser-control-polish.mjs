@@ -94,6 +94,16 @@ try{
   const update=page.getByRole('button',{name:/Update HGR/});
   await page.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button')].find(b=>b.textContent.includes('Update HGR'))?.disabled===false);
   assert.equal(await update.evaluate(b=>getComputedStyle(b).opacity),'1');
+  if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`operations-${width}.png`),fullPage:true});
+  const roleColors=await page.locator('.operation-grid button[data-operation] span').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).color));
+  assert.equal(new Set(roleColors).size,4,'Four operation roles retain distinct colours');
+  for(const action of ['start','restart','close']){
+    const unavailable=page.locator(`[data-operation="${action}"]`);
+    assert.equal(await unavailable.isDisabled(),true);
+    assert.match(await unavailable.textContent(),/cloud action not enabled/);
+    assert.equal(await unavailable.evaluate(b=>getComputedStyle(b).opacity),'1');
+  }
+
   assert.equal(await page.getByRole('button',{name:/Start HGR/}).isDisabled(),true);
   operation={id:'run1',action:'update',state:'running',title:'Updating HGR',phase:'Building client',progress:38,startedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
   await page.waitForFunction(()=>document.getElementById('revokeCloudOwnerPc')?.disabled===true);
