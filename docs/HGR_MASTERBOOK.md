@@ -457,3 +457,8 @@ This batch changes branding only: no relay, telemetry, cancellation, enrollment 
 The client waits at most ten seconds for acknowledgement, clears Creating on error/disconnection, and asks the player to retry the same code. Repeating creation on the same connected host socket returns the existing lobby and recovery key without creating another seat. Other sockets still receive the occupied-code error and never receive that key. This is not cross-connection recovery without a saved key. Invalid payloads receive a failure acknowledgement.
 
 Focused regression exercises the real handler over Socket.IO and the actual App submit handler: successful room/session/navigation, stalled/rejected cosmetics, late-result isolation, lost acknowledgement, retry, disconnect, duplicate host/foreign socket and malformed payload. Full typecheck, regression, release integrity and production build are required before merge. This change does not alter game rules, branding or Control operations.
+
+
+## 4.5.4.13 — board-name casing (5 October 2026)
+
+Mega Board lobby summaries consume the existing canonical cosmetic catalog label (Classic Board, etc.), rather than deriving lowercase text from the stored slug. IDs, unlocks, Beta rules and labels themselves are unchanged. Canonical VERSION remains 4.5.3 until the 4.5.5 acceptance gate.
