@@ -444,3 +444,5 @@ assert.match(release451Css,/board-deck-chance[\s\S]*?board-deck-community[\s\S]*
 assert.match(release451Css,/body:has\(\.room-chat-shell\.is-floating\)/,"Floating Room activity must reserve shared layout clearance instead of colliding with game content");
 
 console.log("HGR 4.5 platform identity/theme/skins foundation regression: PASS");
+
+assert.match(read("client/src/games/mega-board/components/LobbyScreen.tsx"), /SKIN_CATALOG.find[\s\S]*?\?\.label/, "Lobby board names use canonical cosmetic labels, not lowercase slug formatting");

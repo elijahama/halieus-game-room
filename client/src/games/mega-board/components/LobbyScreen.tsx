@@ -1,3 +1,4 @@
+import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES } from "../../../../../shared/platform/skins";
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import { useEffect, useState } from "react";
 
@@ -150,7 +151,7 @@ export function LobbyScreen({
               </dd>
             </div>
             <div><dt>Host</dt><dd>{host?.name ?? "—"}</dd></div>
-            <div><dt>Board</dt><dd>{(lobby.boardStyle ?? "classic-board").replaceAll("-", " ")}</dd></div>
+            <div><dt>Board</dt><dd>{SKIN_CATALOG.find(skin => skin.slot === "mega-board" && skin.id === (lobby.boardStyle ?? DEFAULT_SKIN_PREFERENCES["mega-board"]))?.label ?? "Classic Board"}</dd></div>
           </dl>
 
           {blitz && (
