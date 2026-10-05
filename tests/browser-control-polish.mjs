@@ -32,15 +32,17 @@ const server=createServer(async(req,res)=>{
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const base=`http://127.0.0.1:${server.address().port}`;
-const browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
+const browser=await chromium.launch({channel:'chromium',headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try{
  const navigation=await browser.newPage();
  await navigation.goto(base+'/');await navigation.locator('#enter').click();
+ await navigation.waitForFunction(()=>!!document.fullscreenElement);
  assert.equal(await navigation.evaluate(()=>!!document.fullscreenElement),true);
  await navigation.getByRole('link',{name:'Control',exact:true}).click();
  await navigation.getByRole('button',{name:'Resume fullscreen'}).waitFor();
  assert.equal(await navigation.evaluate(()=>!!document.fullscreenElement),false,'no automatic fullscreen request after navigation');
  await navigation.getByRole('button',{name:'Resume fullscreen'}).click();
+ await navigation.waitForFunction(()=>!!document.fullscreenElement);
  assert.equal(await navigation.evaluate(()=>!!document.fullscreenElement),true);
  await navigation.locator('.rail-return').click();
  await navigation.getByRole('button',{name:'Resume fullscreen'}).waitFor();
