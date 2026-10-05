@@ -1,6 +1,6 @@
 const CACHE = 'halieus-shell-v4-5-3-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
-const SHELL = ['/', '/site.webmanifest?identity=install-h3', '/app-icon-192.png?identity=install-h3', '/app-icon-512.png?identity=install-h3'];
-const IDENTITY_PATHS = new Set(['/site.webmanifest', '/halieus-mark.svg', '/halieus-app-icon.png', '/app-icon-180.png', '/app-icon-192.png', '/app-icon-512.png', '/favicon-32.png', '/favicon.ico']);
+const SHELL = ['/', '/site.webmanifest?identity=install-h4', '/app-icon-192.png?identity=install-h4', '/app-icon-512.png?identity=install-h4'];
+const IDENTITY_PATHS = new Set(['/site.webmanifest', '/halieus-mark.svg', '/halieus-app-icon.svg', '/halieus-app-icon.png', '/app-icon.svg', '/app-icon-180.png', '/app-icon-192.png', '/app-icon-512.png', '/favicon-32.png', '/favicon.ico']);
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).catch(() => undefined));
   self.skipWaiting();
@@ -38,8 +38,8 @@ self.addEventListener('push', (event) => {
   try { payload = { ...payload, ...(event.data?.json() || {}) }; } catch {}
   event.waitUntil(self.registration.showNotification(payload.title, {
     body: payload.body,
-    icon: '/app-icon-192.png?identity=install-h3',
-    badge: '/favicon-32.png?identity=install-h3',
+    icon: '/app-icon-192.png?identity=install-h4',
+    badge: '/favicon-32.png?identity=install-h4',
     data: { url: payload.url || '/' },
     tag: payload.tag || 'halieus-notification',
   }));
