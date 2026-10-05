@@ -472,3 +472,8 @@ Cloud Update appearance follows the real disabled attribute. Approved/online/idl
 ## 4.5.4.15 — truthful Cloud Update progress
 
 Control prominently displays the real reported updater phase and last update timestamp. Progress percentages and width remain server-owned; a running-only subtle animation indicates activity without incrementing progress. Reduced-motion preferences disable animation. Terminal success/failure/rejection have distinct titles and colours while failure diagnostics remain available. Missing timestamps are shown as unavailable, never invented.
+
+
+## 4.5.4.16 — fullscreen across Control navigation
+
+HGR and /control/ are separate documents. Cross-document browser navigation may exit native fullscreen; neither destination requests fullscreen without a user gesture. A shared navigation helper remembers fullscreen intent for same-tab HGR ↔ Control links and offers Resume fullscreen or Stay in window after navigation/history return. Installed standalone windows avoid redundant prompts. iPad/iPhone keep the existing native-input safety restriction. Actual OS/PWA acceptance remains separate from browser tests.
