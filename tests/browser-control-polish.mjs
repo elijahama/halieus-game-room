@@ -21,8 +21,9 @@ const server=createServer(async(req,res)=>{
   };
   if(path in fixtures){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(fixtures[path]));return;}
   try{
+    if(path==='/'){res.setHeader('Content-Type','text/html');res.end('<script src="/control-navigation.js" defer></script><button id="enter" onclick="document.documentElement.requestFullscreen()">Enter fullscreen</button><a href="/control/">Control</a>');return;}
     const file=path==='/control/'?'/control/index.html':path;
-    if(!/^\/control\/[a-z0-9.-]+$/.test(file))throw Error('not found');
+    if(!/^\/control\/[a-z0-9.-]+$/.test(file)&&!/^\/control-navigation\.(js|css)$/.test(file))throw Error('not found');
     let body=await readFile(resolve(root,'client/public'+file));
     if(file==='/control/control.js') body=Buffer.concat([body,Buffer.from('\n'),await readFile(resolve(root,'client/public/control/cloud-update.js'))]);
     res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':file.endsWith('.webmanifest')?'application/manifest+json':'text/html');
@@ -33,6 +34,24 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const base=`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try{
+ const navigation=await browser.newPage();
+ await navigation.goto(base+'/');await navigation.locator('#enter').click();
+ assert.equal(await navigation.evaluate(()=>!!document.fullscreenElement),true);
+ await navigation.getByRole('link',{name:'Control',exact:true}).click();
+ await navigation.getByRole('button',{name:'Resume fullscreen'}).waitFor();
+ assert.equal(await navigation.evaluate(()=>!!document.fullscreenElement),false,'no automatic fullscreen request after navigation');
+ await navigation.getByRole('button',{name:'Resume fullscreen'}).click();
+ assert.equal(await navigation.evaluate(()=>!!document.fullscreenElement),true);
+ await navigation.locator('.rail-return').click();
+ await navigation.getByRole('button',{name:'Resume fullscreen'}).waitFor();
+ await navigation.getByRole('button',{name:'Stay in window'}).click();
+ assert.equal(await navigation.evaluate(()=>sessionStorage.getItem('hgr-fullscreen-navigation')),null);
+ await navigation.addInitScript(()=>{Object.defineProperty(navigator,'platform',{value:'MacIntel'});Object.defineProperty(navigator,'maxTouchPoints',{value:5});sessionStorage.setItem('hgr-fullscreen-navigation','1');});
+ await navigation.goto(base+'/control/');
+ await navigation.getByText('Continue in this responsive view.',{exact:false}).waitFor();
+ assert.equal(await navigation.getByRole('button',{name:'Resume fullscreen'}).count(),0,'Apple touch safety guard remains');
+ await navigation.close();
+ console.log('PASS fullscreen intent, explicit resume, return, dismissal and Apple touch safety');
  for(const [width,height] of [[1440,900],[1280,600],[820,1180],[390,844]]){
   operation=null;online=true;
   const page=await browser.newPage({viewport:{width,height}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
