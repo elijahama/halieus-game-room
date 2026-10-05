@@ -1,0 +1,7 @@
+{
+  "source": "HGR Control Launcher.png",
+  "sourceSha256": "90fb5be18b805841df83ef8e0b2c62ce59184336de1876befab48edf2a076ff4",
+  "export": "client/public/control/control-icon-512.png",
+  "sha256": "1693a42cbd905ff019d95cbdf9dfe0b1c2202847f0638d010ec62cfc3b5745a7",
+  "method": "512x512 raster resize only; scripts/windows/generate-control-pwa-icon.ps1; no H/cog redraw"
+}

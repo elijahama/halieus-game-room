@@ -6,7 +6,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('halieus-shell-') && key !== CACHE).map((key) => caches.delete(key)))));
   self.clients.claim();
 });
 self.addEventListener('fetch', (event) => {
@@ -14,6 +14,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/socket.io/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/accounts/') || url.pathname.startsWith('/admin/') || url.pathname === '/health') return;
+  if (url.pathname === '/control' || url.pathname.startsWith('/control/')) return;
   if (IDENTITY_PATHS.has(url.pathname)) {
     event.respondWith(fetch(event.request, { cache: 'reload' }).then((response) => {
       if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()));

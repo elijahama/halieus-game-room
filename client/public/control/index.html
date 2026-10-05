@@ -14,6 +14,10 @@
   <script src="/control/control.js?v=4.5.4.17" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.4.16" />
   <script src="/control-navigation.js?v=4.5.4.16" defer></script>
+  <link rel="manifest" href="/control/manifest.webmanifest?v=4.5.4.19" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="HGR Control" />
+  <script src="/control/install.js?v=4.5.4.19" defer></script>
 </head>
 <body>
   <div class="control-bg" aria-hidden="true"></div>
@@ -43,6 +47,7 @@
         <h1 id="sectionTitle">Control overview</h1>
       </div>
       <div class="topbar-actions">
+        <button id="installControl" type="button" class="secondary-action" hidden>Install Control</button>
         <a class="control-game-room-return" href="/">← Game Room</a>
         <div class="cloud-state" id="cloudState"><span></span><b>Checking HGR Cloud…</b></div>
         <button class="profile-chip" id="profileChip" type="button" aria-label="Signed-in administrator">

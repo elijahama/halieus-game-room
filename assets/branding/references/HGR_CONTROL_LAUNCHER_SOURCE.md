@@ -18,3 +18,6 @@ Windows launcher export may resize this approved square source to the verified 2
 The previous authority was a 256x256 crop taken from the lower-row blue Control icon in the 1672x941 model sheet (`HGR Control.png`, identical to `HGR ICON - CONTROL UPDATE`). Its extraction rectangle was x=776, y=470, width=140, height=140, with SHA256 `fa6cb650f4e60b171607bfb8fb4c3e7bf00d683d0a3dbd38bd87ed65d6a9fbe2` after resize. That crop is retained here only as provenance history and is superseded by the 3 October owner-approved integrated-cog artwork above.
 
 Runtime and launcher consumers must follow the current authority/hash, not this historical crop.
+
+
+Cloud Control 4.5.4.19 adds a 512px PNG export by raster resizing this approved source only. `control-pwa-export.json` pins both source and export hashes; `scripts/windows/generate-control-pwa-icon.ps1` reproduces the export. No H/cog geometry or existing launcher source is changed.

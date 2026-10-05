@@ -1,0 +1,25 @@
+{
+  "id": "/control/",
+  "name": "HGR Control",
+  "short_name": "Control",
+  "description": "Halieus Game Room owner and administrator Control",
+  "start_url": "/control/?installed=1",
+  "scope": "/control/",
+  "display": "standalone",
+  "background_color": "#080b11",
+  "theme_color": "#0a0d14",
+  "icons": [
+    {
+      "src": "/control/control-icon.png?v=part26-control-approved2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/control/control-icon-512.png?v=4.5.4.19",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
