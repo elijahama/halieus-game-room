@@ -57,6 +57,7 @@ interface SpectatePayload extends RoomCodePayload {
 export function registerLobbyHandlers(
   io: Server,
   socket: Socket,
+  loadCosmetics = roomCosmeticState,
 ): void {
   socket.on("game:set-board-style", async (payload: { code: string; style: string }, acknowledge: (response: GameResponse) => void) => {
     if (typeof acknowledge !== "function") return;
@@ -156,42 +157,48 @@ export function registerLobbyHandlers(
       payload: CreateGamePayload,
       acknowledge: (response: GameResponse) => void,
     ) => {
-      const playerName = payload.playerName?.trim();
-      const code = payload.code?.trim().toUpperCase();
+      if (typeof acknowledge !== "function") return;
+      const playerName = typeof payload?.playerName === "string" ? payload.playerName.trim() : "";
+      const code = typeof payload?.code === "string" ? payload.code.trim().toUpperCase() : "";
+      if (!playerName || !code) {
+        acknowledge({ ok: false, reason: !playerName ? "Player name is required." : "Game code is required." });
+        return;
+      }
       const blitz = Boolean(payload.blitz);
       const ranked = Boolean(payload.ranked) && !blitz;
-      const freeParkingJackpotEnabled =
-        ranked
-          ? false
-          : payload.freeParkingJackpotEnabled ?? false;
+      const freeParkingJackpotEnabled = ranked ? false : payload.freeParkingJackpotEnabled ?? false;
 
-      if (!playerName || !code) {
-        acknowledge({
-          ok: false,
-          reason: !playerName
-            ? "Player name is required."
-            : "Game code is required.",
-        });
-        return;
-      }
+      // Recover a lost acknowledgement only for this socket's existing host seat.
+      const acknowledgeExisting = () => {
+        const existing = rooms.get(code);
+        if (!existing) return false;
+        const host = existing.players.find(player => player.id === socket.id && player.isHost && !player.hasLeft);
+        if (existing.hostId === socket.id && host && !existing.started) {
+          acknowledge({ ok: true, code, playerId: host.id, reconnectToken: host.reconnectToken, room: toPublicGameRoom(existing) });
+        } else {
+          acknowledge({ ok: false, reason: "That room code is already in use." });
+        }
+        return true;
+      };
+      if (acknowledgeExisting()) return;
 
-      if (rooms.has(code)) {
-        acknowledge({
-          ok: false,
-          reason: "That room code is already in use.",
-        });
-        return;
-      }
-
+      // Cosmetics must never block gameplay or withhold the creation acknowledgement.
+      // A late lookup cannot overwrite the room's chosen style after the deadline.
       let boardStyle = "classic-board";
+      let cosmeticDeadline: ReturnType<typeof setTimeout> | undefined;
       try {
-        boardStyle = (await roomCosmeticState(socket.request as Request)).preferences["mega-board"] ?? "classic-board";
+        const cosmetics = await Promise.race([
+          loadCosmetics(socket.request as Request),
+          new Promise<null>(resolve => { cosmeticDeadline = setTimeout(() => resolve(null), 2000); }),
+        ]);
+        boardStyle = cosmetics?.preferences["mega-board"] ?? "classic-board";
       } catch {
-        // Cosmetics must never block gameplay. If account/progression storage is
-        // temporarily unavailable, create the room with the starter board.
-        boardStyle = "classic-board";
+        // Unavailable account storage uses the starter board.
+      } finally {
+        clearTimeout(cosmeticDeadline);
       }
-      if (rooms.has(code) || socket.connected === false) { acknowledge({ ok: false, reason: "Room creation changed. Try again." }); return; }
+      if (socket.connected === false) { acknowledge({ ok: false, reason: "Connection lost. Reconnect and try again." }); return; }
+      if (acknowledgeExisting()) return;
       const reconnectToken = createRecoveryKey();
       const now = Date.now();
       const hostPlayer: RoomPlayer = {

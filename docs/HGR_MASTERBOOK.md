@@ -448,3 +448,12 @@ The owner-approved integrated blue cog artwork supersedes the 2 October model-sh
 Windows exports remain verified 256px PNG/ICO derivatives. Stop Control adds only the existing explicit red stop treatment. Other launcher masters are unchanged. Model-sheet exclusion, pinned approval hash, PNG decode checks, stale export cleanup, actual shortcut icon/target validation and cache-refresh failure checks remain enforced. Private shell cache v10 replaces v9; Cloud Control stylesheet and image URLs are revised. Browser coverage verifies rendered image decoding and approved URLs after stale-shell takeover and on cloud/admin surfaces.
 
 This batch changes branding only: no relay, telemetry, cancellation, enrollment or remote-action implementation. Source checks/CI do not establish installed-device acceptance. After the normal updater, the owner must check actual Windows Control/Stop icons and existing Chrome/Brave installed PWA artwork, then compare `/control/` and the in-site admin launcher. Mobile OS launcher refresh timing must be verified on-device.
+
+
+## 5 October 2026 — bounded Mega Board creation acknowledgement
+
+`game:create` previously awaited account cosmetic/progression storage without a deadline before acknowledging; the client likewise waited indefinitely. Cosmetic lookup now has a two-second deadline with the existing starter-board fallback, including rejected lookups. Late cosmetic results do not change an already-created room. Normal successful preference selection and ranked/blitz creation rules are preserved.
+
+The client waits at most ten seconds for acknowledgement, clears Creating on error/disconnection, and asks the player to retry the same code. Repeating creation on the same connected host socket returns the existing lobby and recovery key without creating another seat. Other sockets still receive the occupied-code error and never receive that key. This is not cross-connection recovery without a saved key. Invalid payloads receive a failure acknowledgement.
+
+Focused regression exercises the real handler over Socket.IO and the actual App submit handler: successful room/session/navigation, stalled/rejected cosmetics, late-result isolation, lost acknowledgement, retry, disconnect, duplicate host/foreign socket and malformed payload. Full typecheck, regression, release integrity and production build are required before merge. This change does not alter game rules, branding or Control operations.

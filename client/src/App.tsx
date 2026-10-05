@@ -1430,6 +1430,7 @@ function handleLeaveSpectator() {
 
   function handleCreateGame(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isCreating) return;
 
     const trimmedName = playerName.trim();
     const trimmedCode = roomCode.trim().toUpperCase();
@@ -1452,7 +1453,7 @@ function handleLeaveSpectator() {
     setIsCreating(true);
     setMessage("Creating game...");
 
-    socket.emit(
+    socket.timeout(10000).emit(
       "game:create",
       {
         playerName: trimmedName,
@@ -1461,8 +1462,13 @@ function handleLeaveSpectator() {
         code: trimmedCode,
         freeParkingJackpotEnabled,
       },
-      (response: GameResponse) => {
+      (error: Error | null, response?: GameResponse) => {
         setIsCreating(false);
+
+        if (error || !response) {
+          setMessage("Room creation was not confirmed. Check your connection, then retry with the same room code to recover it.");
+          return;
+        }
 
         if (
           !response.ok ||
