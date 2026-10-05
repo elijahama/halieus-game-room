@@ -1,10 +1,14 @@
 (() => {
   "use strict";
 
+  const REQUEST_TIMEOUT_MS = 10_000;
+  const REFRESH_INTERVAL_MS = 2_500;
+
   let selectedDevice = null;
   let lastOperation = null;
   let dismissedOperationId = null;
   let refreshTimer = null;
+  let refreshInFlight = null;
   let updateInFlight = false;
 
   const $ = (id) => document.getElementById(id);
@@ -14,24 +18,36 @@
   const readiness = () => document.querySelector(".operation-readiness > div");
 
   async function request(path, init = {}) {
-    const response = await fetch(path, {
-      ...init,
-      credentials: "include",
-      cache: "no-store",
-      headers: {
-        Accept: "application/json",
-        ...(init.body ? { "Content-Type": "application/json" } : {}),
-        ...(init.headers || {}),
-      },
-    });
-    let body = null;
-    try { body = await response.json(); } catch { body = null; }
-    if (!response.ok) {
-      const error = new Error(body?.reason || `Control request failed (${response.status}).`);
-      error.status = response.status;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetch(path, {
+        ...init,
+        signal: init.signal || controller.signal,
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          ...(init.body ? { "Content-Type": "application/json" } : {}),
+          ...(init.headers || {}),
+        },
+      });
+      let body = null;
+      try { body = await response.json(); } catch { body = null; }
+      if (!response.ok) {
+        const error = new Error(body?.reason || `Control request failed (${response.status}).`);
+        error.status = response.status;
+        throw error;
+      }
+      return body;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        throw new Error("Control status request timed out. Reconnecting…");
+      }
       throw error;
+    } finally {
+      window.clearTimeout(timeout);
     }
-    return body;
   }
 
   function formatWhen(value) {
@@ -349,7 +365,7 @@
     return approved || null;
   }
 
-  async function refreshCloudControl() {
+  async function doRefreshCloudControl() {
     try {
       const [status, operationStatus, operationHistory] = await Promise.all([
         request("/control/cloud/status"),
@@ -363,8 +379,33 @@
     } catch (error) {
       const button = updateButton();
       if (button) button.disabled = true;
-      setReadiness("Cloud Update unavailable", error instanceof Error ? error.message : "Unable to reach the HGR Control relay.", false);
+      const running = lastOperation?.state === "running";
+      setReadiness(
+        running ? "Cloud Update reconnecting" : "Cloud Update unavailable",
+        error instanceof Error ? error.message : "Unable to reach the HGR Control relay.",
+        false,
+      );
     }
+  }
+
+  function refreshCloudControl() {
+    if (refreshInFlight) return refreshInFlight;
+    refreshInFlight = doRefreshCloudControl().finally(() => {
+      refreshInFlight = null;
+    });
+    return refreshInFlight;
+  }
+
+  function stopRefreshLoop() {
+    if (!refreshTimer) return;
+    window.clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+
+  function startRefreshLoop(immediate = true) {
+    stopRefreshLoop();
+    if (immediate) void refreshCloudControl();
+    refreshTimer = window.setInterval(() => void refreshCloudControl(), REFRESH_INTERVAL_MS);
   }
 
   async function startUpdate() {
@@ -407,13 +448,16 @@
     $("operationDismiss")?.addEventListener("click", () => {
       if (lastOperation && lastOperation.state !== "running") dismissedOperationId = lastOperation.id;
     });
-    void refreshCloudControl();
-    refreshTimer = window.setInterval(() => void refreshCloudControl(), 2_500);
+    startRefreshLoop(true);
   }
 
-  window.addEventListener("pagehide", () => {
-    if (refreshTimer) window.clearInterval(refreshTimer);
-  }, { once: true });
+  window.addEventListener("pagehide", stopRefreshLoop);
+  window.addEventListener("pageshow", () => startRefreshLoop(true));
+  window.addEventListener("online", () => startRefreshLoop(true));
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") startRefreshLoop(true);
+    else stopRefreshLoop();
+  });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
   else bind();
