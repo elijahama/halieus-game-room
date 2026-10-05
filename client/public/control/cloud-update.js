@@ -5,6 +5,7 @@
   let lastOperation = null;
   let dismissedOperationId = null;
   let refreshTimer = null;
+  let updateInFlight = false;
 
   const $ = (id) => document.getElementById(id);
   const operationButtons = () => Array.from(document.querySelectorAll(".operation-grid button"));
@@ -186,9 +187,22 @@
     });
   }
 
+  function syncActionAvailability() {
+    const busy = updateInFlight || lastOperation?.state === "running";
+    const ready = selectedDevice?.approval === "approved" && selectedDevice.online && selectedDevice.localControlOnline;
+    const update = updateButton();
+    if (update) update.disabled = !ready || busy;
+    const revoke = $("revokeCloudOwnerPc");
+    if (revoke) {
+      revoke.disabled = busy;
+      revoke.title = busy ? "Wait for the active update to finish before revoking access." : "";
+    }
+  }
+
   function dispatchOperation(operation) {
-    if (!operation || operation.id === dismissedOperationId) return;
     lastOperation = operation;
+    syncActionAvailability();
+    if (!operation || operation.id === dismissedOperationId) return;
     window.dispatchEvent(new CustomEvent("hgr-control-operation", { detail: operation }));
     renderOperationDiagnostics(operation);
   }
@@ -340,7 +354,7 @@
       renderDevice(chooseDevice(Array.isArray(status.devices) ? status.devices : []));
       renderOperationHistory(operationHistory.operations);
       const operation = operationStatus.operation || status.activeOperation || null;
-      if (operation) dispatchOperation(operation);
+      dispatchOperation(operation);
     } catch (error) {
       const button = updateButton();
       if (button) button.disabled = true;
@@ -351,11 +365,12 @@
   async function startUpdate() {
     const button = updateButton();
     const device = selectedDevice;
-    if (!button || !device || device.approval !== "approved" || !device.online || !device.localControlOnline) return;
+    if (updateInFlight || lastOperation?.state === "running" || !button || !device || device.approval !== "approved" || !device.online || !device.localControlOnline) return;
     const accepted = window.confirm("Update HGR from this owner PC now? This runs the normal validated HGR update + website deployment flow and may briefly restart the live site.");
     if (!accepted) return;
 
-    button.disabled = true;
+    updateInFlight = true;
+    syncActionAvailability();
     try {
       const confirmation = await request("/control/cloud/actions/update/confirm", {
         method: "POST",
@@ -371,6 +386,7 @@
     } catch (error) {
       setReadiness("Update was not started", error instanceof Error ? error.message : "Cloud Update request failed.", false);
     } finally {
+      updateInFlight = false;
       await refreshCloudControl();
     }
   }
