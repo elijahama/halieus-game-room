@@ -494,3 +494,10 @@ Portrait Control has an explicit Game Room link in its top utility row. Mobile c
 Cloud Control has its own /control/ manifest identity, standalone start URL, Apple-touch reference and scoped worker. The 192px icon remains byte-identical to approved Control artwork; the 512px export is a documented raster resize only, with source/export hashes pinned. The H and cog are not redrawn and launcher masters are unchanged. Browser install prompts are offered only when the browser supplies them; iOS uses Share → Add to Home Screen.
 
 The Control worker caches only a public offline page and approved artwork; administrative responses/actions never enter its cache. Main HGR bypasses /control/ and deletes only its own shell caches. Control likewise deletes only its own caches. Offline Control cannot show stale account/operation data and offers Retry connection. OS-installed icon appearance and standalone behavior still require owner-device acceptance separately from browser/CI checks.
+
+
+## 4.5.4.20 — integrated admin Control access
+
+Control access is an in-flow Home navigation utility on desktop and an item in the mobile top-bar More tools panel. It no longer floats over page/game content. Visibility derives from the existing authenticated account state and remains owner/admin-only; backend permissions remain authoritative. The approved artwork is unchanged. From game screens, the existing Game Room return leads to these utilities.
+
+The source stabilisation list .13–.20 is now implemented. Release 4.5.5 remains gated on the owner-device sweep recorded in HGR_4.5.5_ACCEPTANCE.md; canonical VERSION stays 4.5.3 until that evidence exists. Tailscale remains available.

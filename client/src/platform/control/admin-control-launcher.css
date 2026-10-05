@@ -1,1 +1,9 @@
-.hgr-admin-control-launcher{position:fixed;z-index:84;right:18px;bottom:18px;display:flex;align-items:center;gap:9px;padding:7px 11px 7px 7px;border:1px solid rgba(126,153,255,.28);border-radius:14px;background:rgba(10,14,22,.94);box-shadow:0 16px 42px rgba(0,0,0,.34);backdrop-filter:blur(16px);color:#edf3ff;text-decoration:none;transition:transform .16s ease,border-color .16s ease}.hgr-admin-control-launcher:hover{transform:translateY(-2px);border-color:rgba(126,153,255,.52)}.hgr-admin-control-mark{width:34px;height:34px;border-radius:10px;display:block;object-fit:contain;background:transparent;box-shadow:none}.hgr-admin-control-launcher small,.hgr-admin-control-launcher strong{display:block}.hgr-admin-control-launcher small{font-size:8px;line-height:1;letter-spacing:.14em;color:#8295c2}.hgr-admin-control-launcher strong{margin-top:2px;font-size:11px;line-height:1.1}@media(max-width:720px){.hgr-admin-control-launcher{right:12px;bottom:82px;padding-right:8px}.hgr-admin-control-launcher>span:last-child{display:none}}
+.hgr-admin-control-launcher{position:static;display:flex;align-items:center;gap:9px;width:100%;padding:7px 10px;border:1px solid var(--hgr-border,rgba(126,153,255,.28));border-radius:12px;background:var(--hgr-surface-raised,#151d2a);color:var(--hgr-text,#edf3ff);text-decoration:none;box-sizing:border-box}
+.hgr-admin-control-launcher:hover{border-color:#7498d4;background:var(--hgr-surface-soft,#20314a)}
+.hgr-admin-control-launcher:focus-visible{outline:2px solid #8eaeed;outline-offset:2px}
+.hgr-admin-control-mark{width:32px;height:32px;flex:0 0 32px;border-radius:9px;display:block;object-fit:contain;background:transparent;box-shadow:none}
+.hgr-admin-control-launcher small,.hgr-admin-control-launcher strong{display:block}
+.hgr-admin-control-launcher small{font-size:9px;line-height:1;letter-spacing:.12em;color:var(--hgr-muted,#a5b9dd)}
+.hgr-admin-control-launcher strong{margin-top:3px;font-size:13px;line-height:1.1}
+.halieus-admin-utility:has(.hgr-admin-control-launcher){margin-top:10px;flex-shrink:0}
+.halieus-mobile-admin-utility:has(.hgr-admin-control-launcher){margin:12px 0}

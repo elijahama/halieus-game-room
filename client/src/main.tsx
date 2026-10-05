@@ -4,7 +4,6 @@ import App from "./App";
 import { ErrorBoundary } from "./platform/components/ErrorBoundary";
 import { GlobalGameActivity } from "./platform/components/GlobalGameActivity";
 import { PlatformMaintenanceBanner } from "./platform/components/PlatformMaintenanceBanner";
-import { AdminControlLauncher } from "./platform/control/AdminControlLauncher";
 import { IdentityAssetGuard } from "./platform/identity/IdentityAssetGuard";
 import { WebKitConnectionRecovery } from "./platform/network/WebKitConnectionRecovery";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "./version";
@@ -36,7 +35,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <PlatformMaintenanceBanner />
       <App />
       <GlobalGameActivity />
-      <AdminControlLauncher />
     </ErrorBoundary>
   </React.StrictMode>,
 );
