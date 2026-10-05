@@ -115,13 +115,24 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function renderAvatar(container, account) {
+    clear(container);
+    const fallback = account.avatar || account.displayName?.slice(0, 2).toUpperCase() || "?";
+    if (account.playerColor) container.style.background = account.playerColor;
+    if (!account.profilePicture) { container.textContent = fallback; return; }
+    const image = document.createElement("img");
+    image.alt = "";
+    image.src = account.profilePicture;
+    image.addEventListener("error", () => { container.textContent = fallback; }, { once: true });
+    container.appendChild(image);
+  }
+
   function renderIdentity() {
     const account = state.account;
     if (!account) return;
     $("profileName").textContent = account.displayName;
     $("profileRole").textContent = account.role === "owner" ? "Halieus owner" : "Administrator";
-    $("profileAvatar").textContent = account.avatar || account.displayName?.slice(0, 2).toUpperCase() || "H";
-    if (account.playerColor) $("profileAvatar").style.background = account.playerColor;
+    renderAvatar($("profileAvatar"), account);
   }
 
   function renderNowPlaying() {
@@ -224,8 +235,8 @@
       .sort((a, b) => Number(online.has(b.id)) - Number(online.has(a.id)) || a.displayName.localeCompare(b.displayName))
       .forEach((player) => {
         const card = element("article", "player-card");
-        const avatar = element("span", "player-avatar", player.avatar || player.displayName?.slice(0, 2).toUpperCase() || "?");
-        if (player.playerColor) avatar.style.background = player.playerColor;
+        const avatar = element("span", "player-avatar");
+        renderAvatar(avatar, player);
         const copy = element("div");
         copy.append(element("strong", "", player.displayName), element("small", "", `@${player.username} · ${player.role}`));
         card.append(avatar, copy);
