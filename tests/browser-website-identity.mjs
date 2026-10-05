@@ -45,7 +45,7 @@ try {
       signedIn = true;
       await page.reload(); await page.locator('.halieus-shell').waitFor();
       for (const d of await page.locator('.halieus-brand-mark-h-shape').evaluateAll(paths => paths.map(p => p.getAttribute('d')))) assert.equal(d, shape);
-      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), `/halieus-mark.svg?v=${version}-brand-h6`);
+      assert.equal(await page.locator('#halieus-dynamic-favicon').getAttribute('href'), `/halieus-mark.svg?v=${version}-brand-h8`);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${device} home overflow`);
       if (process.env.HGR_SCREENSHOTS) await page.screenshot({ path: resolve(process.env.HGR_SCREENSHOTS, `${device}-${theme}-home.png`) });
 

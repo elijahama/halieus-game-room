@@ -55,14 +55,14 @@ try {
   const activeWorker = await page.evaluate(async () => (await navigator.serviceWorker.ready).active.scriptURL);
   assert.equal(new URL(activeWorker).searchParams.get('release'), release.fingerprint);
   // Runtime identity guard moves both favicon links to a fresh, release-aware
-  // revision so Chrome/Brave cannot keep the pre-4.5.4 cached H.
+  // revision so Chrome/Brave cannot keep the superseded H.
   assert.equal(
     await page.locator('#halieus-dynamic-favicon').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-h7`,
+    `/halieus-mark.svg?v=${version}-brand-h8`,
   );
   assert.equal(
     await page.locator('link[rel="shortcut icon"]').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-h7`,
+    `/halieus-mark.svg?v=${version}-brand-h8`,
   );
   assert.deepEqual(errors, []);
   console.log(`PASS: rendered Build ${label}; browser/server ${version}; ${release.fingerprint}; cache ${expectedCache}; favicon identity; no page errors`);
