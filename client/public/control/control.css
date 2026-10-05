@@ -24,3 +24,24 @@
 
 #profileAvatar,.player-avatar{overflow:hidden;flex-shrink:0}
 #profileAvatar img,.player-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+
+.control-game-room-return{display:none}
+@media(max-width:720px){
+  :root{--control-card-border:rgba(171,193,225,.18);--control-card-radius:16px;--control-card-surface:#111823}
+  body{padding-bottom:0}
+  .control-main{padding:16px 14px calc(100px + env(safe-area-inset-bottom))}
+  .control-topbar{flex-wrap:wrap;gap:12px}
+  .topbar-actions{width:100%;justify-content:space-between}
+  .control-game-room-return{display:inline-flex;align-items:center;min-height:42px;padding:8px 12px;border:1px solid var(--control-card-border);border-radius:10px;background:var(--control-card-surface);color:#dce9ff;text-decoration:none;font-size:14px;font-weight:600}
+  .control-game-room-return:focus-visible{outline:2px solid #90b5ff;outline-offset:2px}
+  .now-playing-card,.status-card,.panel-card,.room-card,.player-card{border:1px solid var(--control-card-border);border-radius:var(--control-card-radius);background:var(--control-card-surface);box-shadow:none}
+  .now-playing-card,.status-card,.panel-card{padding:16px}
+  .profile-chip{box-shadow:none;border-color:var(--control-card-border)}
+  .operation-readiness>div{flex-wrap:wrap}
+  .operation-readiness p{flex:1 1 180px;min-width:0}
+  .operation-readiness button{max-width:100%;white-space:normal}
+  .player-card strong{font-size:13px}.player-card small,.operation-grid button small{font-size:11px}
+  .operation-toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom));border-radius:var(--control-card-radius)}
+  .operation-toast-details{max-height:40dvh;overflow:auto}
+  .control-mobile-nav{border-color:var(--control-card-border);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+}
