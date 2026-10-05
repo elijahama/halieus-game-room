@@ -21,10 +21,17 @@ assert.ok(
   `engine.io must stay on the patched 6.6.10+ line; found ${engineIoVersion}`,
 );
 const manifest = JSON.parse(read('RELEASE.json'));
-const approvedPwaSource = 'assets/branding/references/HGR Main.png';
-const generatedPwaCopy = 'client/public/app-icon-reference.png';
-assert.ok(manifest.integrityFiles.includes(approvedPwaSource), 'Release identity must hash HGR Main.png because client prebuild consumes it on Oracle');
-assert.ok(!manifest.integrityFiles.includes(generatedPwaCopy), 'Generated PWA public copy must not become a release-identity input');
+const canonicalPwaSource = 'client/public/app-icon-512.png';
+const compatibilityPwaCopy = 'client/public/halieus-app-icon.png';
+const removedHistoricalGeneratedCopy = 'client/public/app-icon-reference.png';
+assert.ok(manifest.integrityFiles.includes(canonicalPwaSource), 'Release identity must hash the canonical 512px HGR install raster consumed by client prebuild');
+assert.ok(manifest.integrityFiles.includes(compatibilityPwaCopy), 'Release identity must hash the committed compatibility/social PNG alias');
+assert.ok(!manifest.integrityFiles.includes(removedHistoricalGeneratedCopy), 'Removed historical install thumbnail must not become a release-identity input');
+assert.equal(
+  readFileSync(resolve(root, compatibilityPwaCopy)).equals(readFileSync(resolve(root, canonicalPwaSource))),
+  true,
+  'Compatibility/social HGR PNG must remain byte-identical to the canonical install raster',
+);
 const run = (cwd, mode) => spawnSync(process.execPath, ['scripts/release-integrity.mjs', mode], { cwd, encoding: 'utf8' });
 const good = run(root, '--verify');
 assert.equal(good.status, 0, good.stderr);
@@ -49,11 +56,6 @@ try {
     copyFileSync(resolve(root, file), resolve(fixture, file));
   }
   assert.equal(run(fixture, '--verify').status, 0, 'Untouched deployment fixture');
-  // Client prebuild materialises this byte-for-byte copy after release preparation.
-  // Its presence must not invalidate an otherwise identical release fingerprint.
-  mkdirSync(dirname(resolve(fixture, generatedPwaCopy)), { recursive: true });
-  copyFileSync(resolve(root, approvedPwaSource), resolve(fixture, generatedPwaCopy));
-  assert.equal(run(fixture, '--verify').status, 0, 'Materialised PWA icon copy must not change release identity');
   const corruptions = [
     ['shared/version.ts', (s) => s.replace(version, '4.1.1')],
     ['package.json', (s) => s.replace(version, '4.1.1')],
@@ -87,7 +89,7 @@ try {
   const stable = readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8');
   assert.equal(run(fixture, '--write').status, 0);
   assert.equal(readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8'), stable, 'Generation must be idempotent');
-  console.log(`PASS: canonical ${version} intent on approved 4.5.x release family, ${corruptions.length} corrupted-consumer rejections, same-version identity and idempotent generation`);
+  console.log(`PASS: canonical ${version} intent on approved 4.5.x release family, canonical HGR install identity, ${corruptions.length} corrupted-consumer rejections, same-version identity and idempotent generation`);
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
