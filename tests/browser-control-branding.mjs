@@ -35,8 +35,12 @@ try {
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   let role='owner';
   await page.route('**/auth/status',route=>route.fulfill({json:{ok:true,setupRequired:false,authenticated:role!=='guest',registration:'invite-only',account:role==='guest'?null:{id:'branding-owner',username:'tester',displayName:'Brand Test',role,status:'active',avatar:'H',playerColor:'#3475c5',createdAt:0,lastLoginAt:null}}}));
-  await page.goto(base);await page.locator('.hgr-admin-control-launcher').waitFor();
-  const image=page.locator('.hgr-admin-control-mark');
+  await page.goto(base);await page.locator('.halieus-shell').waitFor();
+  const tools=page.getByRole('button',{name:'Open more tools',exact:true});
+  if(await tools.isVisible()) await tools.click();
+  const launcher=page.locator('.hgr-admin-control-launcher:visible');await launcher.waitFor();
+  assert.equal(await launcher.evaluate(e=>getComputedStyle(e).position),'static','Admin launcher participates in layout, never floats over content');
+  const image=launcher.locator('.hgr-admin-control-mark');
   await image.evaluate(i=>i.decode());assert.equal(await image.evaluate(i=>i.naturalWidth),192);
   assert.equal(await image.evaluate(i=>i.tagName),'IMG');
   const imageUrl=await image.getAttribute('src');assert.match(imageUrl,/control-approved2/);
@@ -45,6 +49,9 @@ try {
   const box=await image.boundingBox();assert.ok(box.width>=30&&box.height>=30);
   assert.ok(box.x>=0&&box.x+box.width<=width&&box.y+box.height<=height);
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-admin-control.png`)});
+  role='admin';await page.reload();await page.locator('.halieus-shell').waitFor();
+  if(await tools.isVisible()) await tools.click();
+  await page.locator('.hgr-admin-control-launcher:visible').waitFor();
   role='player';await page.reload();await page.locator('.halieus-shell').waitFor();
   assert.equal(await page.locator('.hgr-admin-control-launcher').count(),0,'Player must not gain an admin launcher');
   role='guest';await page.goto(`${base}/control/`);

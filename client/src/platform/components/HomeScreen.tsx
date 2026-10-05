@@ -1,3 +1,4 @@
+import { AdminControlLauncher } from "../control/AdminControlLauncher";
 import { PreGameShell } from "./PreGameShell";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -835,6 +836,7 @@ export function HomeScreen(props: HomeScreenProps) {
             <button type="button" onClick={() => { setView("rankings"); setMobileMenuOpen(false); }}><HgrIcon name="leaderboard" size={20} /><span><strong>Rankings</strong><small>Global ladders</small></span></button>
             <button type="button" onClick={() => { openJoin("watch"); setMobileMenuOpen(false); }}><HgrIcon name="info" size={20} /><span><strong>Watch Game</strong><small>Spectate a live room</small></span></button>
           </nav>
+          <div className="halieus-mobile-admin-utility"><AdminControlLauncher account={account} /></div>
           <div className="halieus-mobile-more-controls" aria-label="Display and app controls">
             <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
             <InstallAppButton />
@@ -858,6 +860,7 @@ export function HomeScreen(props: HomeScreenProps) {
           {account && <button type="button" className={inboxOpen ? "is-active halieus-inbox-nav" : "halieus-inbox-nav"} onClick={() => { setInboxOpen(true); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="inbox" /></span><b>Inbox</b>{inboxCount > 0 && <span className="halieus-inbox-badge">{inboxCount > 99 ? "99+" : inboxCount}</span>}</button>}
         </nav>
         <button type="button" className="halieus-global-join" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="plus" /></span><b>Join Game</b></button>
+        <div className="halieus-admin-utility"><AdminControlLauncher account={account} /></div>
         <div className="halieus-side-spacer" />
         {betaMode && <div className="halieus-beta-badge"><strong>BETA TEST</strong><span>Stats excluded</span></div>}
         <div className="halieus-side-display-controls" aria-label="Display controls">
