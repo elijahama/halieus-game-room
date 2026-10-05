@@ -89,6 +89,7 @@ jobs:
           npm run test:release:browser
           node tests/browser-control-state.mjs
           node tests/browser-control-branding.mjs
+          node tests/browser-control-polish.mjs
 
       - name: Commit generated release identity when changed
         shell: bash

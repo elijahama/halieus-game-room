@@ -2,3 +2,10 @@
 
 /* Part 26 approved Control artwork: the image owns the H/cog/tile treatment. */
 .control-brand-mark,.access-icon{display:block;object-fit:contain;background:transparent!important;box-shadow:none!important;color:transparent!important;font-size:0!important;padding:0!important}.control-brand-mark{flex:0 0 auto}.access-icon{margin-left:auto;margin-right:auto}
+
+/* Action appearance follows the actual disabled state, never the operation label. */
+.operation-grid button:not(:disabled){opacity:1;color:#eef4ff;background:#182b50;border-color:#547fcd;cursor:pointer}
+.operation-grid button:not(:disabled) small{color:#c0d1eb}
+.operation-grid button:not(:disabled):hover{background:#203b68;border-color:#82aaff}
+.operation-grid button:disabled,.operation-readiness button:disabled{opacity:.48;cursor:not-allowed}
+.operation-grid button:focus-visible,.operation-readiness button:focus-visible{outline:2px solid #90b5ff;outline-offset:3px}

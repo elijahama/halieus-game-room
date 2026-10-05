@@ -462,3 +462,8 @@ Focused regression exercises the real handler over Socket.IO and the actual App 
 ## 4.5.4.13 — board-name casing (5 October 2026)
 
 Mega Board lobby summaries consume the existing canonical cosmetic catalog label (Classic Board, etc.), rather than deriving lowercase text from the stored slug. IDs, unlocks, Beta rules and labels themselves are unchanged. Canonical VERSION remains 4.5.3 until the 4.5.5 acceptance gate.
+
+
+## 4.5.4.14 — Control action states
+
+Cloud Update appearance follows the real disabled attribute. Approved/online/idle makes Update interactive; active updates and dispatch disable both Update and Revoke cloud access. Unimplemented Start/Restart/Close stay disabled. Backend permissions and revocation enforcement are unchanged.
