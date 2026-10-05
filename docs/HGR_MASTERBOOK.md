@@ -501,3 +501,14 @@ The Control worker caches only a public offline page and approved artwork; admin
 Control access is an in-flow Home navigation utility on desktop and an item in the mobile top-bar More tools panel. It no longer floats over page/game content. Visibility derives from the existing authenticated account state and remains owner/admin-only; backend permissions remain authoritative. The approved artwork is unchanged. From game screens, the existing Game Room return leads to these utilities.
 
 The source stabilisation list .13–.20 is now implemented. Release 4.5.5 remains gated on the owner-device sweep recorded in HGR_4.5.5_ACCEPTANCE.md; canonical VERSION stays 4.5.3 until that evidence exists. Tailscale remains available.
+
+
+## 5 October 2026 — stranded Control update correction
+
+Owner confirms new rooms can be created and the earlier room remains active. Apple-device sign-in/boot acceptance is still pending; no release version bump.
+
+The 4 October 23:57 Cloud Update remained at 3% after its bridge restarted: the cloud retained Running, but the local marker already recorded a failed interrupted handoff. The bridge previously retained its request association only in memory. Persist the request/local-operation/baseline/deadline while observing an update, resume observation after restart without repeating Update, and retain the journal until a terminal report is acknowledged. Cloud operations with no report for 55 minutes become explicitly unconfirmed failures; this never kills an updater or claims success. Late reports cannot reopen terminal operations. Local Control still enforces its active-operation guard on retries.
+
+Operation cards retain role colour (blue Update, green Start, orange Restart, red Close) and readable unavailable reasons. Only Update is presently supported by the cloud bridge. Start/Restart/Close remain owner-PC actions, explicitly labelled rather than misleadingly enabled. A running Update explains its busy state.
+
+Source validation is separate from production acceptance. A fresh cloud update reaching a verified terminal result and owner-PC/phone visual checks remain required.
