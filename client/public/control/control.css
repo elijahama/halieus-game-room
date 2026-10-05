@@ -9,3 +9,15 @@
 .operation-grid button:not(:disabled):hover{background:#203b68;border-color:#82aaff}
 .operation-grid button:disabled,.operation-readiness button:disabled{opacity:.48;cursor:not-allowed}
 .operation-grid button:focus-visible,.operation-readiness button:focus-visible{outline:2px solid #90b5ff;outline-offset:3px}
+
+/* Motion indicates a running operation; only server reports change progress width. */
+.operation-copy #operationPhase{font-size:14px;line-height:1.4;color:#eef4ff;overflow-wrap:anywhere}
+.operation-copy #operationTitle{font-size:11px;color:#b6c8e8}
+.operation-updated{display:block;padding:0 14px 10px;color:#a8b7cf;font-size:10px}
+.operation-toast[data-state="running"] .operation-progress i{background-image:linear-gradient(90deg,#6287ff,#b0c5ff,#6287ff);background-size:200% 100%;animation:control-progress-pulse 1.8s linear infinite}
+.operation-toast[data-state="succeeded"]{border-color:#45b778}
+.operation-toast[data-state="succeeded"] .operation-progress i{background:#45b778}
+.operation-toast[data-state="failed"],.operation-toast[data-state="rejected"]{border-color:#df7373}
+.operation-toast[data-state="failed"] .operation-progress i,.operation-toast[data-state="rejected"] .operation-progress i{background:#df7373}
+@keyframes control-progress-pulse{to{background-position:200% 0}}
+@media(prefers-reduced-motion:reduce){.operation-toast[data-state="running"] .operation-progress i{animation:none}}
