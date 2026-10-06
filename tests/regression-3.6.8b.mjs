@@ -18,6 +18,8 @@ assert.deepEqual(rootPackage.overrides, {
   picomatch: '4.0.7',
   esbuild: '0.28.1',
   qs: '6.16.0',
+  'proxy-addr': '2.0.8',
+  'source-map-js': '1.2.2',
 }, 'security overrides must stay pinned');
 assert.equal(rootPackage.engines?.node, '>=20.19.0', 'Vite 7 Node floor must be enforced');
 
@@ -31,6 +33,8 @@ for (const [name, version] of Object.entries({
   nanoid: '3.3.18',
   picomatch: '4.0.7',
   esbuild: '0.28.1',
+  'proxy-addr': '2.0.8',
+  'source-map-js': '1.2.2',
   vite: '7.3.6',
   '@vitejs/plugin-react': '5.2.0',
   '@rolldown/pluginutils': '1.0.0-rc.3',
