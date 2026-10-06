@@ -27,9 +27,9 @@ jobs:
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Refresh lockfile only
+      - name: Apply npm audit fixes to lockfile
         if: steps.gate.outputs.ready == 'true'
-        run: npm install --package-lock-only --ignore-scripts
+        run: npm audit fix --package-lock-only --ignore-scripts
       - name: Validate clean install
         if: steps.gate.outputs.ready == 'true'
         run: npm ci --ignore-scripts
@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           if git diff --quiet -- package-lock.json; then
-            echo "package-lock.json already matches the audited overrides."
+            echo "package-lock.json already matches the audited fixes."
             exit 0
           fi
           git config user.name "github-actions[bot]"
