@@ -2,7 +2,7 @@
 
 **A private, real-time multiplayer game platform for board, card, word and social games.**
 
-**Current milestone:** 4.5.3  
+**Current milestone:** 4.5.4  
 **Frontend:** React · TypeScript · Vite  
 **Backend:** Node.js · Express · Socket.IO  
 **Development model:** Human-directed, AI-assisted engineering  
