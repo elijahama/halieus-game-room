@@ -1,0 +1,67 @@
+name: Temporary Oracle fix full validation
+
+on:
+  push:
+    branches:
+      - fix/oracle-audit-gate-2026-10-06
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/oracle-audit-gate-2026-10-06
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Parse deployment and Windows launcher helpers
+        shell: pwsh
+        run: |
+          $scripts = @(
+            './tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1',
+            './scripts/windows/generate-launcher-icons.ps1',
+            './scripts/windows/launcher-shortcuts.ps1',
+            './scripts/windows/refresh-control-after-update.ps1',
+            './scripts/windows/control-update.ps1',
+            './scripts/windows/control-update-finalize.ps1',
+            './scripts/windows/start-control.ps1',
+            './scripts/windows/stop-control.ps1',
+            './scripts/windows/start-control-cloud.ps1',
+            './scripts/windows/stop-control-cloud.ps1'
+          )
+          foreach ($script in $scripts) {
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script), [ref]$tokens, [ref]$errors)
+            if ($errors.Count -gt 0) {
+              Write-Error "PowerShell syntax failed: $script"
+              $errors | ForEach-Object { Write-Error $_.Message }
+              exit 1
+            }
+          }
+      - name: Prepare release identity
+        run: npm run prepare:release
+      - name: Install dependencies cleanly
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Run regression chain
+        run: npm run test:regression
+      - name: Enforce high/critical security gate
+        run: npm audit --audit-level=high
+      - name: Refresh exact release identity for build
+        run: npm run prepare:release
+      - name: Build
+        run: npm run build
+      - name: Validate built release and Control browser surfaces
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:release:browser
+          node tests/browser-control-state.mjs
+          node tests/browser-control-branding.mjs
+          node tests/browser-control-polish.mjs
