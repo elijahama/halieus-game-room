@@ -329,6 +329,12 @@ Historical documentation may refer to the patch in which a feature was introduce
 
 Production deployment and release CI intentionally share the high/critical npm audit gate. A high or critical advisory blocks activation by design; remediation is to patch or override the affected dependency and refresh the lockfile, never to bypass or lower the gate. Operational recovery details live in [Deployment](DEPLOYMENT.md).
 
+### Oracle deploy helper ownership
+
+The version-controlled Oracle deployment authority is `tests/dev-tools/Oracle Quick Deploy/`. Its deploy wrapper, remote installer and provisioning/diagnostic helpers are tracked so release checks can inspect the actual deployment logic. The owner-PC `dev-tools/Oracle Quick Deploy/` directory is an intentionally ignored/private working mirror, not a second source of truth.
+
+STEP 9 of `Update HGR GitHub.cmd` refreshes `deploy-from-windows.ps1` and `quick-install.sh` from the tracked canonical copies immediately before deployment. Private `update-website.ps1`, SSH keys and production credentials stay local and must never enter Git. A PowerShell failure at the wrapper's final `throw` means the remote installer returned non-zero; diagnose the preceding Oracle output first rather than treating the guard line as the defect.
+
 See [Deployment](DEPLOYMENT.md), [Testing](TESTING.md) and [GitHub workflow](GITHUB_WORKFLOW.md).
 
 ### Player-safe update handoff
