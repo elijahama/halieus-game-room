@@ -24,6 +24,12 @@ The manifest includes a SHA-256 release fingerprint. The same fingerprint is com
 
 The public `https://halieus.remotewire.net/health` request is useful diagnostics, but Oracle-local exact verification is the deployment authority. This avoids a Windows TLS/proxy/DNS problem falsely reporting a successful application update as failed.
 
+## Security gate
+
+The release CI and Oracle quick installer both enforce `npm audit --audit-level=high`. A high or critical npm advisory is therefore a deployment blocker by design, and a non-zero remote installer exit can surface at the Windows deploy wrapper as an Oracle installation failure.
+
+Do not disable, bypass, or lower this gate to get a release out. Patch or override the affected dependency, refresh `package-lock.json`, verify a clean `npm ci` and a passing high/critical audit, then run the normal regression/CI path before attempting the Oracle deployment again.
+
 ## Routine Update deliberately does not
 
 - run `apt`, `apt-get`, `dnf`, or package-manager provisioning;
