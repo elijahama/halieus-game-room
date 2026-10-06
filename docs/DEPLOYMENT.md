@@ -17,6 +17,8 @@ The version-controlled Oracle deployment authority lives under `tests/dev-tools/
 
 The owner-PC working mirror at `dev-tools/Oracle Quick Deploy/` is intentionally ignored/private. STEP 9 of `Update HGR GitHub.cmd` refreshes `deploy-from-windows.ps1` and `quick-install.sh` from the tracked canonical copies immediately before website deployment. The local mirror is therefore not a second source of truth and should not be hand-edited as the durable fix location.
 
+Release validation now hardens that handoff through `scripts/sync-oracle-helper.mjs`. On Windows it validates that both canonical helper files exist before changing the local mirror, copies the complete pair, and SHA-256 verifies the resulting local files. A missing canonical file, copy failure or hash mismatch stops validation before deployment. On CI/Linux/Oracle it verifies that the canonical pair exists but does not create the private Windows mirror. This keeps non-Windows builds clean while ensuring the owner PC cannot silently deploy with a stale helper.
+
 Private `update-website.ps1`, SSH keys and production credentials remain local and must never be committed. If the private owner wrapper is absent, the updater can fall back to the refreshed Oracle deployment helper using the machine's existing SSH authentication.
 
 A final `throw` in `deploy-from-windows.ps1` reports a non-zero remote installer result; it is not by itself the root cause. Diagnose the Oracle installer output immediately above it first. For example, an npm security-gate failure is fixed in dependencies and the lockfile, not by weakening the wrapper or suppressing the error.
