@@ -325,6 +325,10 @@ existing clients reload onto the new fingerprint
 
 Historical documentation may refer to the patch in which a feature was introduced. Executable “current version” assumptions should not.
 
+### Deployment security gate
+
+Production deployment and release CI intentionally share the high/critical npm audit gate. A high or critical advisory blocks activation by design; remediation is to patch or override the affected dependency and refresh the lockfile, never to bypass or lower the gate. Operational recovery details live in [Deployment](DEPLOYMENT.md).
+
 See [Deployment](DEPLOYMENT.md), [Testing](TESTING.md) and [GitHub workflow](GITHUB_WORKFLOW.md).
 
 ### Player-safe update handoff

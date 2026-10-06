@@ -18,6 +18,8 @@ assert.deepEqual(rootPackage.overrides, {
   picomatch: '4.0.7',
   esbuild: '0.28.1',
   qs: '6.16.0',
+  'proxy-addr': '2.0.8',
+  'source-map-js': '1.2.2',
 }, '3.6.8b dependency security floors must remain pinned');
 
 const clientPackage = json('client/package.json');
