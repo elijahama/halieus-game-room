@@ -2820,19 +2820,19 @@ button.halieus-player-identity {
 
 /* Custom palettes now behave like DAW/editor themes: the workspace and its
  * surface hierarchy change together; per-game atmosphere remains an overlay. */
-html[data-theme="custom"] .halieus-home-discovery,
-html[data-theme="custom"] .halieus-section-card,
-html[data-theme="custom"] .halieus-live-games,
-html[data-theme="custom"] .halieus-player-tools,
-html[data-theme="custom"] .halieus-guilds-panel,
-html[data-theme="custom"] .account-panel {
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-home-discovery,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-section-card,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-live-games,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-player-tools,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-guilds-panel,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .account-panel {
   background-color: var(--hgr-surface) !important;
 }
-html[data-theme="custom"] .halieus-discovery-tabs,
-html[data-theme="custom"] .halieus-theme-trigger,
-html[data-theme="custom"] .halieus-player-identity,
-html[data-theme="custom"] .halieus-guild-actions,
-html[data-theme="custom"] .account-admin-content-card {
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-discovery-tabs,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-theme-trigger,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-player-identity,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .halieus-guild-actions,
+:is(html[data-theme="custom"], html[data-theme="profile"]) .account-admin-content-card {
   background-color: var(--hgr-surface-soft) !important;
 }
 
