@@ -7441,3 +7441,83 @@ html[data-theme="dark"] .mega-create-cosmetics p {
 ) .halieus-skin-preview.halieus-skin-palette > i:nth-child(4) {
   background: color-mix(in srgb, var(--skin-source-colour) 48%, var(--hgr-info, var(--hgr-brand-soft)) 52%) !important;
 }
+
+
+/* HGR Part 28 — slider-only custom palette editor. */
+.halieus-custom-colour-main{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+.halieus-custom-colour-main small{
+  color:var(--hgr-muted);
+  font-size:9px;
+  font-weight:800;
+}
+.halieus-custom-colour-swatch{
+  width:36px;
+  height:24px;
+  flex:0 0 auto;
+  border:1px solid var(--hgr-border);
+  border-radius:8px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.halieus-custom-colour-card .halieus-rgb-fields{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:7px;
+}
+.halieus-custom-colour-card .halieus-rgb-fields label{
+  display:grid;
+  grid-template-columns:18px minmax(0,1fr) 34px;
+  align-items:center;
+  gap:8px;
+}
+.halieus-custom-colour-card .halieus-rgb-fields input[type="range"]{
+  width:100%;
+  min-width:0;
+  height:20px;
+  padding:0;
+  border:0;
+  background:transparent;
+  accent-color:var(--hgr-brand);
+  cursor:pointer;
+}
+.halieus-custom-colour-card .halieus-rgb-fields output{
+  color:var(--hgr-text);
+  font:800 9px/1 ui-monospace,SFMono-Regular,Consolas,monospace;
+  text-align:right;
+}
+.halieus-custom-preview-legend{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  align-content:center;
+}
+.halieus-custom-preview-legend>span{
+  min-width:0;
+  display:grid;
+  grid-template-columns:18px minmax(0,1fr);
+  align-items:center;
+  gap:6px;
+}
+.halieus-custom-preview-legend i{
+  width:18px;
+  height:18px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:6px;
+}
+.halieus-custom-preview-legend b{
+  min-width:0;
+  overflow:hidden;
+  color:inherit;
+  font-size:8px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media(max-width:680px){
+  .halieus-custom-preview-legend{grid-template-columns:repeat(4,minmax(0,1fr));width:100%}
+  .halieus-custom-preview-legend>span{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .halieus-custom-theme-dialog .halieus-custom-theme-preview{grid-template-columns:minmax(0,1fr)}
+}

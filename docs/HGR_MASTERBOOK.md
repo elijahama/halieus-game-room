@@ -565,3 +565,14 @@ Player colour is identity fallback data only. It may fill an initials/avatar til
 Control Update state icons are semantic and consistent. Idle may show the static Update glyph. Running uses a CSS activity ring; no arrow/image/tick is rotated as a fake spinner. Succeeded uses a static tick, failed a static failure mark and rejected a static neutral mark. The global update toast and the Operations Update tile use the same state vocabulary.
 
 These are 4.5.5 acceptance rules. Canonical VERSION remains 4.5.4 until real-device validation confirms the mobile carousel, Control update completion path, theme rendering and player-colour isolation.
+
+
+## 7 October 2026 — Part 28 theme-control simplification
+
+Theme selection is deliberately simpler. **System, Light and Dark** remain the immediate base appearance modes. The Theme Library now exposes **progression Unlockables only**; the Core palette gallery, editable Starting/custom preset gallery and duplicate saved Workspace-palette tile are removed from the selection surface.
+
+**Custom** is now one direct four-part editor for **Workspace, Panels, Primary UI and Secondary UI**. Each colour is adjusted with RGB sliders, while the current hexadecimal value remains visible for reference. A compact main-site preview and four-part legend sit below the controls so the player can understand which part of the HGR shell each colour owns without browsing duplicate preset cards.
+
+Existing theme/profile data and entitlement rules are not deleted by this UI simplification. Previously stored profile identifiers remain readable for compatibility, Beta/Test Lab still exposes genuine progression-gated themes for testing, and game-surface cosmetics remain independent from platform chrome. This is a presentation/selection decision, not a game-rule or progression rewrite.
+
+Source regression must protect the absence of the retired Core/Starting/Workspace galleries and the presence of the RGB-slider editor. Real-device visual acceptance remains separate from CI.
