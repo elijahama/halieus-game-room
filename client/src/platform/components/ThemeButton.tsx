@@ -2,7 +2,7 @@ import { CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../
 import { accountApi } from "../accounts/api";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -55,9 +55,20 @@ const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; la
   { mode: "dark", icon: "●", label: "Dark", description: "Standard graphite HGR" },
 ];
 
+function paletteMatches(left: HalieusCustomTheme, right: HalieusCustomTheme): boolean {
+  return left.page === right.page
+    && left.surface === right.surface
+    && left.accent === right.accent
+    && left.secondary === right.secondary;
+}
+
+const CUSTOM_LIBRARY_PRESETS = CUSTOM_PRESETS.filter(
+  (preset) => !THEME_PROFILES.some((profile) => paletteMatches(profile.theme, preset.theme)),
+);
+
 const THEME_PROFILE_GROUPS = [
-  { id: "core", label: "Core", description: "Always available · custom themes and accessibility stay free", profiles: THEME_PROFILES.filter(p=>CORE_THEME_IDS.includes(p.id)) },
-  { id: "unlockable", label: "Unlockable", description: "Earned through verified play and achievements", profiles: THEME_PROFILES.filter(p=>!CORE_THEME_IDS.includes(p.id)) },
+  { id: "unlockable", label: "Unlockables", description: "Earned through verified play and achievements", profiles: THEME_PROFILES.filter(p=>!CORE_THEME_IDS.includes(p.id)) },
+  { id: "core", label: "Core", description: "Always available HGR palettes", profiles: THEME_PROFILES.filter(p=>CORE_THEME_IDS.includes(p.id)) },
 ];
 
 
@@ -107,6 +118,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const previewSurfaceMuted = readableInk([draft.surface], "#4b5563");
   const previewPageInk = readableInk([draft.page], "#101318");
   const previewPageMuted = readableInk([draft.page], "#4b5563");
+  const workspacePalette = committedTheme().custom;
 
   useEffect(() => {
     const handleMode = (event: Event) => setMode((event as CustomEvent<HalieusThemeMode>).detail);
@@ -165,8 +177,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     preview({ ...committedTheme(), mode: "profile", profile: id });
   }
 
+  function selectCustomPalette(theme: HalieusCustomTheme) {
+    preview({ ...committedTheme(), mode: "custom", custom: { ...theme } });
+  }
+
   function openCustom() {
-    setDraft(custom);
+    setDraft({ ...committedTheme().custom });
     setLibraryOpen(false);
     setMenuOpen(false);
     setEditorOpen(true);
@@ -185,7 +201,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   function applyCustom() { commitTheme({ ...committedTheme(), mode: "custom", custom: draft }); pending.current = null; setEditorOpen(false); }
 
   function cancelCustom() {
-    setDraft(custom);
+    setDraft({ ...committedTheme().custom });
     setEditorOpen(false);
   }
 
@@ -219,7 +235,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             aria-label={libraryOpen ? "Theme Library" : "Appearance"}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <header><span>{libraryOpen ? "Theme Library" : "Appearance"}</span><small>{libraryOpen ? "Go further than a colour swap" : "Fast defaults, library or your own palette"}</small><button type="button" className="appearance-close" aria-label="Close appearance" onClick={() => { cancelPreview(); setMenuOpen(false); }}>×</button></header>
+            <header><span>{libraryOpen ? "Theme Library" : "Appearance"}</span><small>{libraryOpen ? "One palette engine · starting, unlockable, core and workspace palettes" : "Fast defaults, library or your own palette"}</small><button type="button" className="appearance-close" aria-label="Close appearance" onClick={() => { cancelPreview(); setMenuOpen(false); }}>×</button></header>
 
             {!libraryOpen ? <>
               <div className="halieus-theme-quick-grid">
@@ -237,9 +253,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                   </button>
                 ))}
               </div>
-              <button type="button" className={`halieus-theme-library-launch ${mode === "profile" || mode === "blue" || mode === "red" || mode === "green" ? "is-active" : ""}`} onClick={() => setLibraryOpen(true)}>
+              <button type="button" className={`halieus-theme-library-launch ${mode === "profile" || mode === "custom" || mode === "blue" || mode === "red" || mode === "green" ? "is-active" : ""}`} onClick={() => setLibraryOpen(true)}>
                 <span className="halieus-theme-library-art" aria-hidden="true"><i /><i /><i /><i /></span>
-                <span><strong>Theme Library</strong><small>{THEME_PROFILES.length} coordinated profiles</small></span>
+                <span><strong>Theme Library</strong><small>{CUSTOM_LIBRARY_PRESETS.length + THEME_PROFILES.length + 1} coordinated palettes</small></span>
                 <b aria-hidden="true">→</b>
               </button>
               <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
@@ -249,10 +265,29 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </button>
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
-              <button type="button" className="theme-custom-always" onClick={openCustom}>Create custom theme · always available</button>
+              <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HEX</button>
               <div className="halieus-theme-library-grid">
+                <div className="halieus-theme-library-group">
+                  <strong>Starting palettes</strong>
+                  <small>Always available · the same editable four-colour palettes used by Custom</small>
+                </div>
+                {CUSTOM_LIBRARY_PRESETS.map((preset) => (
+                  <button type="button" key={`starting-${preset.id}`} className={mode === "custom" && paletteMatches(custom, preset.theme) ? "is-active" : ""} onClick={() => selectCustomPalette(preset.theme)}>
+                    <span className="halieus-theme-profile-visual" aria-hidden="true">
+                      <span className="halieus-theme-profile-swatch">
+                        <i style={{ background: preset.theme.page }} />
+                        <i style={{ background: preset.theme.surface }} />
+                        <i style={{ background: preset.theme.accent }} />
+                        <i style={{ background: preset.theme.secondary }} />
+                      </span>
+                    </span>
+                    <span><em>Starting palette</em><strong>{preset.label}</strong><small>{preset.description}</small><small className="theme-unlock-condition">Always available · editable</small></span>
+                    {mode === "custom" && paletteMatches(custom, preset.theme) && <b aria-hidden="true">✓</b>}
+                  </button>
+                ))}
+
                 {THEME_PROFILE_GROUPS.map((group) => (
-                  <Fragment key={group.id}>
+                  <div className="halieus-theme-library-category" key={group.id}>
                     <div className="halieus-theme-library-group">
                       <strong>{group.label}</strong>
                       <small>{group.description}</small>
@@ -272,8 +307,25 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                         {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
                       </button>
                     ))}
-                  </Fragment>
+                  </div>
                 ))}
+
+                <div className="halieus-theme-library-group">
+                  <strong>Workspace palette</strong>
+                  <small>Your saved personal palette · always available and editable</small>
+                </div>
+                <button type="button" className={mode === "custom" && paletteMatches(custom, workspacePalette) ? "is-active" : ""} onClick={() => selectCustomPalette(workspacePalette)}>
+                  <span className="halieus-theme-profile-visual" aria-hidden="true">
+                    <span className="halieus-theme-profile-swatch">
+                      <i style={{ background: workspacePalette.page }} />
+                      <i style={{ background: workspacePalette.surface }} />
+                      <i style={{ background: workspacePalette.accent }} />
+                      <i style={{ background: workspacePalette.secondary }} />
+                    </span>
+                  </span>
+                  <span><em>Personal</em><strong>Workspace palette</strong><small>Your current RGB / HEX custom palette.</small><small className="theme-unlock-condition">Personal · always available</small></span>
+                  {mode === "custom" && paletteMatches(custom, workspacePalette) && <b aria-hidden="true">✓</b>}
+                </button>
               </div>
             </>}
             {themeError && <p role="status">{themeError}</p>}
