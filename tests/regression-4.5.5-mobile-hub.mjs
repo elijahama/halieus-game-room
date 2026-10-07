@@ -5,11 +5,17 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFile(resolve(root, path), "utf8");
 
-const [main, css, home, player] = await Promise.all([
+const [main, css, home, player, themeButton, themeCore, designCss, accountPanel, guilds, megaLeaderboard] = await Promise.all([
   read("client/src/main.tsx"),
   read("client/src/styles/hgr-4.5.5-mobile-hub.css"),
   read("client/src/platform/components/HomeScreen.tsx"),
   read("client/src/platform/components/PlayerIdentityCard.tsx"),
+  read("client/src/platform/components/ThemeButton.tsx"),
+  read("client/src/platform/theme.ts"),
+  read("client/src/styles/hgr-design-v1.css"),
+  read("client/src/platform/accounts/AccountPanel.tsx"),
+  read("client/src/platform/components/GuildsPanel.tsx"),
+  read("client/src/games/mega-board/components/LeaderboardModal.tsx"),
 ]);
 
 assert.match(main, /hgr-4\.5\.5-mobile-hub\.css/);
@@ -28,5 +34,19 @@ assert.match(css, /\.halieus-mobile-nav[\s\S]*repeat\(5, minmax\(0, 1fr\)\) !imp
 assert.match(home, /className="halieus-feature-rail"/);
 assert.match(home, /className="halieus-mobile-nav"/);
 assert.match(player, /className="halieus-player-action-trigger"/);
+assert.match(themeCore, /export function themeProfileVariables\(profile: HalieusThemeProfile\)[\s\S]*return customThemeVariables\(profile\.theme\)/);
+assert.match(themeButton, /<strong>Starting palettes<\/strong>/);
+assert.match(themeButton, /label: "Unlockables"/);
+assert.match(themeButton, /label: "Core"/);
+assert.match(themeButton, /<strong>Workspace palette<\/strong>/);
+assert.match(themeButton, /function selectCustomPalette\(theme: HalieusCustomTheme\)[\s\S]*mode: "custom", custom: \{ \.\.\.theme \}/);
+assert.match(designCss, /:is\(html\[data-theme="custom"\], html\[data-theme="profile"\]\) \.halieus-home-discovery/);
+assert.match(designCss, /:is\(html\[data-theme="custom"\], html\[data-theme="profile"\]\) \.account-admin-content-card/);
+assert.match(home, /style=\{account\.profilePicture \? undefined : \{ background: account\.playerColor \}\}/);
+assert.match(player, /style=\{player\.profilePicture \? undefined : \{ background: player\.playerColor \}\}/);
+assert.match(accountPanel, /style=\{profilePicture \? undefined : \{ background: playerColor \}\}/);
+assert.doesNotMatch(guilds, /style=\{\{ background: entry\.playerColor \}\}/);
+assert.match(megaLeaderboard, /style=\{entry\.profilePicture \? undefined : \{ background: entry\.playerColor \?\? "#64748b" \}\}/);
 
-console.log("PASS 4.5.5 Batch 2: mobile featured card and rail occupy one full-width column with flat centred controls");
+
+console.log("PASS 4.5.5 Batch 2/3: mobile geometry, unified palette rendering and avatar-only player colour ownership are locked");
