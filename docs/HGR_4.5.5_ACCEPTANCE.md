@@ -1,6 +1,6 @@
 # HGR 4.5.5 release gate
 
-Canonical VERSION remains 4.5.3. The 4.5.4.13–20 labels identify stabilisation batches, not shipped version changes. Do not mark device checks passed from CI alone.
+Canonical VERSION remains 4.5.4. The 4.5.4.13–20 labels identify stabilisation batches, not shipped version changes. Do not mark device checks passed from CI alone.
 
 ## Source batches
 
@@ -50,3 +50,10 @@ Operation cards retain role colour (blue Update, green Start, orange Restart, re
 Source validation is separate from production acceptance. A fresh cloud update reaching a verified terminal result and owner-PC/phone visual checks remain required.
 
 Live correction: the existing approved bridge credential successfully reported the exact stranded cloud request `6e60d251-4adb-4cf1-b2ac-23011f05cefa` / local request `354a30fa-ee1b-42b0-9cef-77668737cc57` as failed using its recorded interrupted-handoff reason (HTTP 200, accepted). Before reporting, local authenticated status confirmed no active operation and the marker start matched 4 October 22:57:11 UTC. No update, restart, room mutation or success claim was made. New recovery code/button styling still require rollout and device acceptance.
+
+
+## 7 October 2026 — Control Update operation-identity hardening
+
+A new Cloud Update must carry the local Control operation ID into the durable owner-PC update marker. The PowerShell bridge writes that ID with every running/failed checkpoint; the detached finalizer preserves it through the Control restart and terminal 100%/failed marker. The cloud bridge accepts a marker as authoritative when its operation ID matches the local operation it dispatched, with the older started-at comparison retained only as backward compatibility for pre-hardening markers.
+
+This closes a remaining ambiguity where a stale runtime marker could be mistaken for the current update after a Control process replacement. The release gate is unchanged: one fresh phone → cloud → owner-PC update must visibly advance beyond 3%, survive the Control handoff, and finish at an explicit terminal result before 4.5.5 is released.
