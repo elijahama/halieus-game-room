@@ -44,6 +44,7 @@ interface UpdateResultMarker {
   reason?: string | null;
   progress?: number;
   phase?: string;
+  operationId?: string;
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -224,7 +225,10 @@ async function waitForUpdateResult(
   let lastPhase = "Starting approved updater";
   while (!stopping) {
     const marker = await readUpdateMarker();
-    const markerIsCurrent = Boolean(marker?.startedAt && marker.startedAt !== markerStartedBefore);
+    const markerHasOperationId = typeof marker?.operationId === "string" && marker.operationId.trim().length > 0;
+    const markerIsCurrent = markerHasOperationId
+      ? marker?.operationId === localOperationId
+      : Boolean(marker?.startedAt && marker.startedAt !== markerStartedBefore);
     if (markerIsCurrent) {
       const markerLimit = marker?.state === "succeeded" ? 100 : 99;
       const markerProgress = Math.max(lastProgress, Math.min(markerLimit, Number(marker?.progress) || lastProgress));
