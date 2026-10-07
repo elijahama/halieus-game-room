@@ -35,9 +35,10 @@ assert.match(home, /className="halieus-feature-rail"/);
 assert.match(home, /className="halieus-mobile-nav"/);
 assert.match(player, /className="halieus-player-action-trigger"/);
 assert.match(themeCore, /export function themeProfileVariables\(profile: HalieusThemeProfile\)[\s\S]*return customThemeVariables\(profile\.theme\)/);
-assert.match(themeButton, /UNLOCKABLE_THEME_PROFILES/);
-assert.match(themeButton, /<strong>Unlockables<\/strong>/);
-assert.doesNotMatch(themeButton, /<strong>Starting palettes<\/strong>|label: "Core"|<strong>Workspace palette<\/strong>/);
+assert.match(themeButton, /THEME_LIBRARY_GROUPS/);
+assert.match(themeButton, /label: "Core"/);
+assert.match(themeButton, /label: "Unlockables"/);
+assert.doesNotMatch(themeButton, /<strong>Starting palettes<\/strong>|<strong>Workspace palette<\/strong>/);
 assert.doesNotMatch(themeButton, /function selectCustomPalette\(/);
 assert.match(themeButton, /type="range" min=\{0\} max=\{255\}/);
 assert.match(themeButton, /halieus-custom-preview-legend/);
@@ -50,4 +51,4 @@ assert.doesNotMatch(guilds, /style=\{\{ background: entry\.playerColor \}\}/);
 assert.match(megaLeaderboard, /style=\{entry\.profilePicture \? undefined : \{ background: entry\.playerColor \?\? "#64748b" \}\}/);
 
 
-console.log("PASS 4.5.5 Batch 2/3 + Part 28: mobile geometry, slider-only custom palette rendering and avatar-only player colour ownership are locked");
+console.log("PASS 4.5.5 Batch 2/3 + Part 28: mobile geometry, Core + Unlockables library, slider-only Custom palette and avatar-only player colour ownership are locked");
