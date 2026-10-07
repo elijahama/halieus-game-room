@@ -622,3 +622,14 @@ Real-device testing established that the owner-PC updater can continue successfu
 The durable model now distinguishes **observed locally** from **acknowledged by the cloud**. Running progress updates advance the bridge's acknowledged phase/percentage only after a successful cloud response. Terminal success/failure is retried across temporary website unavailability, and an already-observed terminal marker is never replaced by a synthetic timeout. The persistent pending journal remains the restart authority.
 
 Control stylesheet/script revisions are cache-busted with the behaviour change. Terminal status glyphs have explicit animation/transform cancellation; only the running activity ring is permitted to rotate.
+
+
+### 2026-10-08 — Custom theme HSL/contrast controls and logo selection isolation
+
+The Custom theme editor keeps RGB as the canonical direct channel editor and adds HSL as a complementary editing model. Hue controls colour family, Saturation controls colour intensity and Lightness controls brightness/neutrality. Setting Saturation to zero produces greys; a Greyscale shortcut performs that exact operation without creating a separate fifth palette colour.
+
+Custom also exposes live numeric contrast guidance for text/surface and workspace/panel relationships. Contrast values are informative only and never auto-correct a user's chosen colours.
+
+The logo preset picker is visually independent from player identity colour and theme accent. Its selected state uses neutral border/surface tokens. Player colour remains restricted to initials/avatar fallback identity and must not own logo selection borders, platform chrome, navigation or theme state.
+
+Theme Library remains **Core + Unlockables**. The Core profiles are the existing always-available working palettes; Unlockables retain progression/Beta rules. The retired Custom preset gallery remains retired.
