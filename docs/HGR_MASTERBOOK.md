@@ -585,3 +585,12 @@ The persistent Control operation status is now the single terminal-status surfac
 The operation status can be minimized on **desktop and mobile** and snapped to a viewport corner. The compact form behaves like a global service/status banner: it remains available while the owner moves around Control without monopolising the page, and tapping it expands the full details again. Mobile bottom placement still clears the fixed navigation.
 
 This changes presentation only. Server-owned progress, durable operation IDs, failure capture, timeout/recovery rules and the rule that failed updates must stop rather than deploy remain unchanged. A source pass cannot identify a machine-specific update failure by itself; the next real owner-PC failure must be diagnosed from the now-surfaced bounded failure reason and operation history.
+
+
+### 2026-10-07 — Part 28 Control Update blank-line failure
+
+A real website-triggered owner-PC Update reached Control and failed at **3%** before source synchronisation/build/deployment. The captured PowerShell reason was `Cannot bind argument to parameter 'Line' because it is an empty string.` Root cause: `control-update.ps1` streamed CMD output into `Update-HgrProgressFromLine`, whose mandatory string parameter rejected blank output lines before the function body could inspect them.
+
+Durable rule: progress parsing must treat blank/whitespace updater output as a no-op. The parser now explicitly permits an empty string and returns before marker matching. This preserves live progress, bounded/redacted failure capture, exact operation IDs and the rule that a failed update never deploys an incomplete candidate.
+
+Source CI validates the guard. Real-device acceptance still requires a fresh Cloud Update to advance beyond 3% and reach either the next truthful failure or 100% completion.
