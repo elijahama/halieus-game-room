@@ -850,7 +850,7 @@ export function HomeScreen(props: HomeScreenProps) {
       <aside className="halieus-sidebar" aria-label="Halieus navigation">
         <button type="button" className="halieus-mobile-drawer-close" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu"><HgrIcon name="close" size={22} /></button>
         <button type="button" className="halieus-side-brand" onClick={() => { setView("home"); setMobileMenuOpen(false); }} aria-label="Halieus Game Room home"><HalieusBrandMark /><span>Halieus Game Room</span></button>
-        {account && <button type="button" className="halieus-side-account halieus-side-account-top" onClick={onOpenAccount}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><div><strong>{account.displayName}</strong><small>@{account.username}</small></div><i aria-hidden="true"><HgrIcon name="chevron-right" size={16} /></i></button>}
+        {account && <button type="button" className="halieus-side-account halieus-side-account-top" onClick={onOpenAccount}><span className="halieus-avatar-media" style={account.profilePicture ? undefined : { background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><div><strong>{account.displayName}</strong><small>@{account.username}</small></div><i aria-hidden="true"><HgrIcon name="chevron-right" size={16} /></i></button>}
         <nav className="halieus-side-nav">
           <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="home" /></span><b>Home</b></button>
           <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Games</b></button>
@@ -879,7 +879,7 @@ export function HomeScreen(props: HomeScreenProps) {
             <button type="button" className={mobileMenuOpen ? "halieus-mobile-tools is-active" : "halieus-mobile-tools"} onClick={() => setMobileMenuOpen((open) => !open)} aria-expanded={mobileMenuOpen} aria-controls="halieus-mobile-more-sheet" aria-label="Open more tools"><HgrIcon name="menu" size={20} /></button>
             <button type="button" className="halieus-mobile-top-fullscreen" onClick={() => void toggleFullscreen()} disabled={!fullscreenSupported} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"} title={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Full screen" : "Full screen unavailable"}><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} size={19} /></button>
             {account && <button type="button" className={inboxOpen ? "halieus-mobile-inbox is-active" : "halieus-mobile-inbox"} onClick={() => setInboxOpen(true)} aria-label="Open inbox"><HgrIcon name="inbox" size={20} />{inboxCount > 0 && <b className="halieus-mobile-top-badge">{inboxCount > 9 ? "9+" : inboxCount}</b>}</button>}
-            {account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={{ background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}
+            {account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={account.profilePicture ? undefined : { background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}
           </div>
         </header>
 
@@ -976,7 +976,7 @@ export function HomeScreen(props: HomeScreenProps) {
             <button type="button" className="halieus-profile-page-back" onClick={() => { setSelectedPlayerId(null); setInviteNotice(""); }}><HgrIcon name="chevron-left" size={17} /> Back to players</button>
             <article className="halieus-player-profile-page panel-enter">
               <header className="halieus-player-profile-hero">
-                <span className="halieus-profile-avatar halieus-avatar-media" style={{ background: selectedPlayer.playerColor }}>{selectedPlayer.profilePicture ? <img src={selectedPlayer.profilePicture} alt="" /> : selectedPlayer.avatar}</span>
+                <span className="halieus-profile-avatar halieus-avatar-media" style={selectedPlayer.profilePicture ? undefined : { background: selectedPlayer.playerColor }}>{selectedPlayer.profilePicture ? <img src={selectedPlayer.profilePicture} alt="" /> : selectedPlayer.avatar}</span>
                 <div className="halieus-profile-hero-copy"><p>{selectedPlayerRoom ? "IN A GAME" : selectedPlayer.online ? "ONLINE NOW" : "PLAYER PROFILE"}</p><h1>{selectedPlayer.displayName}</h1><small>@{selectedPlayer.username}</small></div>
                 <span className={`halieus-profile-presence ${selectedPlayer.online ? "is-online" : "is-offline"}`}><i />{selectedPlayer.online ? "Online" : "Offline"}</span>
               </header>
@@ -1035,7 +1035,7 @@ export function HomeScreen(props: HomeScreenProps) {
             {gamerScoreLoading ? <div className="halieus-gamer-score-empty">Loading Gamer Score…</div> : gamerScoreLeaderboard.length ? <div className="halieus-gamer-score-list">
               {gamerScoreLeaderboard.map((entry) => <button type="button" key={entry.accountId} className={entry.accountId === account?.id ? "is-self" : ""} onClick={() => { setSelectedPlayerId(entry.accountId); setView("players"); }}>
                 <strong className="halieus-gamer-score-rank">#{entry.rank}</strong>
-                <span className="halieus-gamer-score-avatar halieus-avatar-media" style={{ background: entry.playerColor }}>{entry.profilePicture ? <img src={entry.profilePicture} alt="" /> : entry.avatar}</span>
+                <span className="halieus-gamer-score-avatar halieus-avatar-media" style={entry.profilePicture ? undefined : { background: entry.playerColor }}>{entry.profilePicture ? <img src={entry.profilePicture} alt="" /> : entry.avatar}</span>
                 <span className="halieus-gamer-score-player"><strong>{entry.displayName}</strong><small>@{entry.username}{entry.accountId === account?.id ? " · You" : ""}</small></span>
                 <span className="halieus-gamer-score-detail"><small>Achievements</small><strong>{entry.achievements}</strong></span>
                 <span className="halieus-gamer-score-detail"><small>Verified games</small><strong>{entry.verifiedGames}</strong></span>
