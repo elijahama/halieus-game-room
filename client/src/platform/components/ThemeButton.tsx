@@ -296,12 +296,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </button>
               <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
                 <i aria-hidden="true">✦</i>
-                <span><strong>Custom</strong><small>Open RGB sliders immediately</small></span>
+                <span><strong>Custom</strong><small>Open RGB / HSL sliders immediately</small></span>
                 <b aria-hidden="true">→</b>
               </button>
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
-              <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB sliders</button>
+              <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HSL</button>
               <div className="halieus-theme-library-grid">
                 {THEME_LIBRARY_GROUPS.map((group) => (
                   <Fragment key={group.id}>
@@ -339,7 +339,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         <div className="halieus-custom-theme-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && cancelCustom()}>
           <section ref={editorRef} className="halieus-custom-theme-dialog" role="dialog" aria-modal="true" aria-label="Custom HGR theme">
             <header>
-              <div><p>CUSTOM THEME</p><h2>Build your own HGR palette</h2><span>Tune the four shared HGR colours directly. Games keep their identity while the platform shell follows this palette.</span></div>
+              <div><p>CUSTOM THEME</p><h2>Build your own HGR palette</h2><span>Tune the four shared HGR colours with RGB or HSL. Games keep their identity while the platform shell follows this palette.</span></div>
               <button type="button" onClick={cancelCustom} aria-label="Close custom theme editor">×</button>
             </header>
             <div className="halieus-custom-theme-grid">
