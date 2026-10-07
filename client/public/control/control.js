@@ -430,6 +430,7 @@
       action: String(value.action || "update"),
       title: String(value.title || (value.action === "update" ? "Updating HGR" : "HGR operation")),
       phase: String(value.phase || "Working…"),
+      reason: String(value.reason || "").trim(),
       progress,
       state: stateValue,
       startedAt: value.startedAt || null,
@@ -541,7 +542,8 @@
     $("operationToast").hidden = false;
     $("operationToast").dataset.state = operation.state;
     $("operationTitle").textContent = operation.state === "succeeded" ? "Update complete" : operation.state === "failed" ? "Update failed" : operation.state === "rejected" ? "Update not started" : operation.title;
-    $("operationPhase").textContent = operation.phase;
+    const terminalReason = operation.state === "failed" || operation.state === "rejected" ? operation.reason : "";
+    $("operationPhase").textContent = terminalReason || operation.phase;
     $("operationPercent").textContent = `${Math.round(operation.progress)}%`;
     $("operationProgressBar").style.width = `${operation.progress}%`;
     $("operationDetailAction").textContent = operation.title;
