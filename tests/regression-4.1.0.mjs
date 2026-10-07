@@ -144,7 +144,7 @@ assert.match(hgrDesignV1,/\.hgr-status--online/,'Reusable HGR status primitive m
 assert.match(hgrDesignV1,/\.halieus-nav-icon/,'Shared navigation SVG icon styling missing');
 assert.match(hgrDesignV1,/\.halieus-mobile-menu-button::before[\s\S]*?content:\s*none !important/s,'Legacy mobile hamburger pseudo-glyph must be disabled');
 assert.match(themeButton,/halieus-theme-custom-launch/,'Theme selector must expose Custom without bloating the quick choices');
-assert.match(themeButton,/type="color"/,'Custom theme must expose RGB colour controls');
+assert.match(themeButton,/type="range" min=\{0\} max=\{255\}/,'Custom theme must expose RGB slider controls');
 assert.match(themeModel,/CUSTOM_THEME_KEY/,'Custom theme palette must persist separately');
 assert.match(displaySettings,/ThemeButton/,'Game menus must preserve coordinated colour profiles through the compact theme library');
 assert.doesNotMatch(read('client/src/App.tsx'),/classList\.add\("theme-transitioning"\)/,'Theme changes must apply immediately without transition choreography');
