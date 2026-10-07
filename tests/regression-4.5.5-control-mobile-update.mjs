@@ -74,7 +74,7 @@ assert.match(css, /\.operation-toast-minimize\{display:grid;place-items:center/,
 assert.match(css, /\.operation-toast\.is-minimized\[data-corner\^="bottom"\]\{top:auto;bottom:14px\}/,"Desktop minimized status must snap away from content");
 assert.match(css, /data-state="failed"[\s\S]*border-color:rgba\(115,145,255,\.28\)/,"Failed status must keep neutral card chrome");
 assert.doesNotMatch(css, /data-state="failed"[\s\S]{0,180}border-color:#df7373/,"Failed status must not paint the whole card red");
-assert.match(css, /data-state="failed"[\s\S]*operation-icon,[\s\S]*data-state="rejected"[\s\S]*operation-icon\{background:transparent;color:#ff9d9d\}/,"Failed/rejected status glyph must not sit on a highlighted tile");
+assert.match(css, /data-state="failed"[\s\S]*operation-icon,[\s\S]*data-state="rejected"[\s\S]*operation-icon\{background:transparent;color:#ff9d9d[\s\S]*animation:none!important/,"Failed/rejected status glyph must stay unhighlighted and static");
 assert.match(css, /@media\(max-width:720px\)[\s\S]*\.profile-chip\{width:40px;height:40px;padding:2px;justify-content:center;border-radius:12px/,"Mobile profile frame must hug the avatar rather than keep desktop chip padding");
 assert.match(css, /\.operation-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css, /\.operation-toast\.is-minimized/);
