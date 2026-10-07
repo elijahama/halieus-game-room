@@ -10,6 +10,36 @@
 .operation-grid button:disabled,.operation-readiness button:disabled{opacity:.48;cursor:not-allowed}
 .operation-grid button:focus-visible,.operation-readiness button:focus-visible{outline:2px solid #90b5ff;outline-offset:3px}
 
+/* Operation state icon is semantic and state-bound. Running uses a CSS ring,
+   never a rotating arrow/image; terminal states are static glyphs. */
+.operation-icon{position:relative;display:grid;place-items:center}
+.operation-icon::before{display:block;box-sizing:border-box;animation:none;transform:none}
+.operation-toast[data-state="running"] .operation-icon::before{
+  content:"";
+  width:15px;
+  height:15px;
+  border:2px solid rgba(141,168,255,.28);
+  border-top-color:#8da8ff;
+  border-radius:50%;
+  animation:control-operation-spin .85s linear infinite;
+}
+.operation-toast[data-state="succeeded"] .operation-icon{background:rgba(69,183,120,.16);color:#63d394}
+.operation-toast[data-state="succeeded"] .operation-icon::before{
+  content:"✓";
+  width:auto;
+  height:auto;
+  border:0;
+  font-size:16px;
+  font-weight:950;
+  line-height:1;
+}
+.operation-toast[data-state="failed"] .operation-icon,
+.operation-toast[data-state="rejected"] .operation-icon{background:rgba(223,115,115,.14);color:#ff9d9d}
+.operation-toast[data-state="failed"] .operation-icon::before{content:"!";font-size:16px;font-weight:950;line-height:1}
+.operation-toast[data-state="rejected"] .operation-icon::before{content:"–";font-size:18px;font-weight:950;line-height:1}
+@keyframes control-operation-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.operation-toast[data-state="running"] .operation-icon::before{animation:none;border-top-color:#8da8ff;border-right-color:#8da8ff}}
+
 /* Motion indicates a running operation; only server reports change progress width. */
 .operation-copy #operationPhase{font-size:14px;line-height:1.4;color:#eef4ff;overflow-wrap:anywhere}
 .operation-copy #operationTitle{font-size:11px;color:#b6c8e8}
