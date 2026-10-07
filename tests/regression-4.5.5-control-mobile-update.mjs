@@ -5,13 +5,14 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (path) => readFile(resolve(root, path), "utf8");
 
-const [controlAgent, bridge, finalizer, cloudAgent, html, ui, css, integrity] = await Promise.all([
+const [controlAgent, bridge, finalizer, cloudAgent, html, ui, cloudUi, css, integrity] = await Promise.all([
   read("server/src/control-agent.ts"),
   read("scripts/windows/control-update.ps1"),
   read("scripts/windows/control-update-finalize.ps1"),
   read("server/src/control-cloud-agent.ts"),
   read("client/public/control/index.html"),
   read("client/public/control/control.js"),
+  read("client/public/control/cloud-update.js"),
   read("client/public/control/control.css"),
   read("scripts/release-integrity.mjs"),
 ]);
@@ -41,6 +42,14 @@ assert.match(cloudAgent, /marker\.phase\.trim\(\)/);
 assert.match(cloudAgent, /operationId\?: string/);
 assert.match(cloudAgent, /marker\?\.operationId === localOperationId/);
 
+assert.match(html, /id="operationStateIcon"/);
+assert.match(html, /data-operation="update" data-update-state="idle"[\s\S]*operation-action-icon/);
+assert.match(cloudUi, /update\.dataset\.updateState = busy \? "running" : terminalState \|\| "idle"/);
+assert.match(css, /@keyframes control-operation-spin/);
+assert.match(css, /data-state="running"[\s\S]*operation-icon::before[\s\S]*border-top-color:#8da8ff/);
+assert.match(css, /data-state="succeeded"[\s\S]*operation-icon::before[\s\S]*content:"✓"/);
+assert.match(css, /data-update-state="running"[\s\S]*operation-action-icon::before/);
+assert.match(css, /data-update-state="succeeded"[\s\S]*operation-action-icon::before\{content:"✓"/);
 assert.match(html, /id="operationToastMinimize"/);
 assert.match(ui, /hgr-control-operation-toast-minimized/);
 assert.match(ui, /hgr-control-operation-toast-corner/);
@@ -53,4 +62,4 @@ assert.match(css, /\.operation-toast\.is-minimized/);
 assert.match(css, /data-corner\^="bottom"/);
 assert.match(css, /bottom:calc\(84px \+ env\(safe-area-inset-bottom\)\)/);
 
-console.log("PASS 4.5.5 Batch 1: durable Control update progress and compact movable mobile status");
+console.log("PASS 4.5.5 Batch 1: durable Control update progress plus consistent running/terminal operation icons");
