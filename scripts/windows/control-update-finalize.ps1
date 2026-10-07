@@ -30,6 +30,10 @@ if (-not $existing -or [string]$existing.state -ne "running" -or [string]::IsNul
     throw "No running Cloud Update result marker is available for finalization."
 }
 $startedAt = [string]$existing.startedAt
+$currentProgress = 97
+try {
+    if ($null -ne $existing.progress) { $currentProgress = [Math]::Max(97, [Math]::Min(99, [int]$existing.progress)) }
+} catch { $currentProgress = 97 }
 $previousFinalizer = $env:HGR_CONTROL_UPDATE_FINALIZER
 $previousDeferRefresh = $env:HGR_CONTROL_DEFER_REFRESH
 $exitCode = 1
@@ -37,6 +41,11 @@ $failureReason = $null
 try {
     $env:HGR_CONTROL_UPDATE_FINALIZER = "1"
     Remove-Item Env:HGR_CONTROL_DEFER_REFRESH -ErrorAction SilentlyContinue
+    $currentProgress = [Math]::Max($currentProgress, 98)
+    Write-HgrUpdateResult -Value @{
+        state = "running"; startedAt = $startedAt; finishedAt = $null; exitCode = $null; reason = $null
+        progress = $currentProgress; phase = "Restarting Control after update"
+    }
     $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
     $refresh = Start-Process -FilePath $powershell -ArgumentList @(
         "-NoProfile",
@@ -70,6 +79,8 @@ if ($exitCode -eq 0 -and [string]::IsNullOrWhiteSpace($failureReason)) {
         finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
         exitCode = 0
         reason = $null
+        progress = 100
+        phase = "Update complete"
     }
     Write-Output "HGR Control final handoff completed; Cloud Update may report 100%."
     exit 0
@@ -82,5 +93,7 @@ Write-HgrUpdateResult -Value @{
     finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
     exitCode = $exitCode
     reason = $finalReason
+    progress = $currentProgress
+    phase = "Update finalization failed"
 }
 throw $finalReason

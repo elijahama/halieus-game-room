@@ -42,6 +42,8 @@ interface UpdateResultMarker {
   finishedAt?: string | null;
   exitCode?: number | null;
   reason?: string | null;
+  progress?: number;
+  phase?: string;
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -223,22 +225,25 @@ async function waitForUpdateResult(
   while (!stopping) {
     const marker = await readUpdateMarker();
     const markerIsCurrent = Boolean(marker?.startedAt && marker.startedAt !== markerStartedBefore);
-    if (markerIsCurrent && marker?.state === "succeeded") {
-      return reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId);
+    if (markerIsCurrent) {
+      const markerLimit = marker?.state === "succeeded" ? 100 : 99;
+      const markerProgress = Math.max(lastProgress, Math.min(markerLimit, Number(marker?.progress) || lastProgress));
+      const markerPhase = typeof marker?.phase === "string" && marker.phase.trim() ? marker.phase.trim() : lastPhase;
+      if (marker?.state === "succeeded") {
+        return reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId);
+      }
+      if (marker?.state === "failed") {
+        lastProgress = markerProgress;
+        lastPhase = markerPhase;
+        const detailedReason = await localAuditFailureReason(localOperationId);
+        return reportProgress(identity, requestId, "failed", lastProgress, markerPhase || "Update failed", detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.", localOperationId);
+      }
+      if (marker?.state === "running" && (markerProgress !== lastProgress || markerPhase !== lastPhase)) {
+        lastProgress = markerProgress;
+        lastPhase = markerPhase;
+        await reportProgress(identity, requestId, "running", lastProgress, lastPhase, null, localOperationId);
+      }
     }
-    if (markerIsCurrent && marker?.state === "failed") {
-      const detailedReason = await localAuditFailureReason(localOperationId);
-      return reportProgress(
-        identity,
-        requestId,
-        "failed",
-        lastProgress,
-        "Update failed",
-        detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.",
-        localOperationId,
-      );
-    }
-
     if (Date.now() >= deadline) break;
     const status = await localStatus();
     if (status?.activeOperation?.id === localOperationId) {
@@ -249,9 +254,12 @@ async function waitForUpdateResult(
         lastPhase = phase;
         await reportProgress(identity, requestId, "running", progress, phase, null, localOperationId);
       }
-    } else if (!status && lastProgress >= 80) {
-      lastPhase = "Owner Control Agent restarting";
-      await reportProgress(identity, requestId, "running", lastProgress, lastPhase, null, localOperationId);
+    } else if (!status && lastProgress >= 80 && !(markerIsCurrent && marker?.state === "running")) {
+      const restartPhase = "Owner Control Agent restarting";
+      if (lastPhase !== restartPhase) {
+        lastPhase = restartPhase;
+        await reportProgress(identity, requestId, "running", lastProgress, lastPhase, null, localOperationId);
+      }
     }
     await delay(2_000);
   }

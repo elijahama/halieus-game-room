@@ -19,6 +19,43 @@ function Write-HgrUpdateResult {
     [System.IO.File]::WriteAllText($resultPath, $json, $utf8)
 }
 
+$progressMarkers = @(
+    @{ Match = "STEP 1 - Updating LOCAL files from GitHub"; Phase = "Syncing from GitHub"; Progress = 10 },
+    @{ Match = "STEP 2 - Preparing release identity"; Phase = "Preparing release identity"; Progress = 22 },
+    @{ Match = "STEP 3 - HGR validation"; Phase = "Typecheck, build and regressions"; Progress = 38 },
+    @{ Match = "STEP 3B - Validating the real Oracle deployment package"; Phase = "Oracle package preflight"; Progress = 54 },
+    @{ Match = "STEP 4 - Reviewing local SOURCE changes"; Phase = "Reviewing source state"; Progress = 62 },
+    @{ Match = "STEP 8 - Regenerating final release identity"; Phase = "Final release identity"; Progress = 70 },
+    @{ Match = "STEP 8B - Final release check"; Phase = "Validating final release"; Progress = 78 },
+    @{ Match = "STEP 9 - Publishing the validated HGR release"; Phase = "Publishing to Oracle"; Progress = 88 },
+    @{ Match = "FINAL STEP - Refreshing the HGR client"; Phase = "Refreshing HGR client"; Progress = 96 }
+)
+$currentProgress = 3
+$currentPhase = "Starting approved updater"
+
+function Write-HgrUpdateCheckpoint {
+    param([Parameter(Mandatory = $true)][int]$Progress,[Parameter(Mandatory = $true)][string]$Phase)
+    $script:currentProgress = [Math]::Max($script:currentProgress, [Math]::Min(99, $Progress))
+    if (-not [string]::IsNullOrWhiteSpace($Phase)) { $script:currentPhase = $Phase }
+    Write-HgrUpdateResult -Value @{
+        state = "running"; startedAt = $script:startedAt; finishedAt = $null; exitCode = $null; reason = $null
+        progress = $script:currentProgress; phase = $script:currentPhase
+    }
+}
+
+function Update-HgrProgressFromLine {
+    param([Parameter(Mandatory = $true)][string]$Line)
+    foreach ($marker in $progressMarkers) {
+        if ($Line -notlike "*$($marker.Match)*") { continue }
+        $nextProgress = [int]$marker.Progress
+        $nextPhase = [string]$marker.Phase
+        if ($nextProgress -gt $script:currentProgress -or $nextPhase -ne $script:currentPhase) {
+            Write-HgrUpdateCheckpoint -Progress $nextProgress -Phase $nextPhase
+        }
+        break
+    }
+}
+
 function Get-HgrUpdateFailureReason {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -88,6 +125,8 @@ Write-HgrUpdateResult -Value @{
     finishedAt = $null
     exitCode = $null
     reason = $null
+    progress = $currentProgress
+    phase = $currentPhase
 }
 
 $previousMode = $env:HGR_UPDATE_NONINTERACTIVE
@@ -105,11 +144,18 @@ try {
     # Stream the updater output exactly as before so Control can keep deriving
     # live progress, while also keeping a bounded local transcript that can be
     # reduced to a safe failure reason if the CMD exits non-zero.
-    & $updateLauncher 2>&1 | Tee-Object -FilePath $updateOutputLog
+    & $updateLauncher 2>&1 |
+        Tee-Object -FilePath $updateOutputLog |
+        ForEach-Object {
+            $line = [string]$_
+            Update-HgrProgressFromLine -Line $line
+            Write-Output $_
+        }
     $exitCode = $LASTEXITCODE
     if ($exitCode -ne 0) {
         $failureReason = Get-HgrUpdateFailureReason -Path $updateOutputLog -ExitCode $exitCode
     } else {
+        Write-HgrUpdateCheckpoint -Progress 97 -Phase "Finalizing Control handoff"
         Remove-Item -LiteralPath $finalizerStdout -Force -ErrorAction SilentlyContinue
         Remove-Item -LiteralPath $finalizerStderr -Force -ErrorAction SilentlyContinue
         $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
@@ -149,6 +195,8 @@ try {
             finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
             exitCode = $exitCode
             reason = $failureReason
+            progress = $currentProgress
+            phase = "Update failed"
         }
     }
 }

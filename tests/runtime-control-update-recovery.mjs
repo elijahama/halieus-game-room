@@ -38,4 +38,18 @@ assert.equal(reports.at(-1)[4],'Update status timed out');
 ctx.stopping=true;const before=reports.length;
 assert.equal(await ctx.waitForUpdateResult({},'c','l','old',now+60000),false);
 assert.equal(reports.length,before,'Shutdown preserves journal without inventing a result');
-console.log('PASS Control update restart recovery, delivery retry, expiry and truthful terminal states');
+
+const durableReports=[];
+const durableCtx=vm.createContext({Date,Number,Boolean,Math,JSON,console,stopping:false,
+ readUpdateMarker:async()=>({state:'running',startedAt:'new',progress:54,phase:'Oracle package preflight'}),
+ localAuditFailureReason:async()=>null,localStatus:async()=>null,
+ delay:async()=>{durableCtx.stopping=true},
+ reportProgress:async(...args)=>{durableReports.push(args);return true}});
+vm.runInContext(ts.transpile(observer,{target:ts.ScriptTarget.ES2022}),durableCtx);
+assert.equal(await durableCtx.waitForUpdateResult({},'cloud-durable','local-durable','old',now+60000),false);
+assert.equal(durableReports.length,1,'Persistent marker progress should report without an in-memory local operation');
+assert.equal(durableReports[0][2],'running');
+assert.equal(durableReports[0][3],54);
+assert.equal(durableReports[0][4],'Oracle package preflight');
+
+console.log('PASS Control update restart recovery, durable progress delivery, expiry and truthful terminal states');
