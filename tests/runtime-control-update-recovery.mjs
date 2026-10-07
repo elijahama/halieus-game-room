@@ -17,17 +17,17 @@ const unchanged=JSON.stringify(entries);expireUnreportedUpdates(entries,now+1000
 const source=await readFile(new URL('../server/src/control-cloud-agent.ts',import.meta.url),'utf8');
 const observer=source.slice(source.indexOf('async function waitForUpdateResult('),source.indexOf('async function executeUpdate('));
 const recovery=source.slice(source.indexOf('async function resumePendingUpdate('),source.indexOf('async function cycle('));
-let marker={state:'succeeded',startedAt:'new'},delivered=false,removed=0,reports=[];
+let marker={state:'succeeded',startedAt:'new'},delivered=false,removed=0,reports=[],stopAfterDelay=true;
 const pending={requestId:'cloud-original',localOperationId:'local-original',markerStartedBefore:'old',deadline:now+60000};
 const ctx=vm.createContext({Date,Number,Boolean,Math,JSON,console,stopping:false,inFlightRequestId:null,pendingPath:'fixture',
  readFile:async()=>JSON.stringify(pending),rm:async()=>{removed++},readUpdateMarker:async()=>marker,
- localAuditFailureReason:async()=>null,localStatus:async()=>null,delay:async()=>{},
+ localAuditFailureReason:async()=>null,localStatus:async()=>null,delay:async()=>{if(stopAfterDelay)ctx.stopping=true},
  reportProgress:async(...args)=>{reports.push(args);return delivered}});
 vm.runInContext(ts.transpile(observer+recovery,{target:ts.ScriptTarget.ES2022}),ctx);
 await ctx.resumePendingUpdate({});await new Promise(setImmediate);
 assert.equal(removed,0,'Unacknowledged terminal report must retain journal');
 assert.equal(reports[0][1],'cloud-original');assert.equal(reports[0][6],'local-original');
-delivered=true;await ctx.resumePendingUpdate({});await new Promise(setImmediate);
+ctx.stopping=false;stopAfterDelay=false;delivered=true;await ctx.resumePendingUpdate({});await new Promise(setImmediate);
 assert.equal(removed,1,'Acknowledged recovery clears journal');assert.equal(reports[1][2],'succeeded');
 marker={state:'failed',startedAt:'new',reason:'updater failed'};
 await ctx.waitForUpdateResult({},'c','l','old',now+60000);
@@ -52,4 +52,17 @@ assert.equal(durableReports[0][2],'running');
 assert.equal(durableReports[0][3],54);
 assert.equal(durableReports[0][4],'Oracle package preflight');
 
-console.log('PASS Control update restart recovery, durable progress delivery, expiry and truthful terminal states');
+const retryReports=[];let retryAttempts=0;
+const retryCtx=vm.createContext({Date,Number,Boolean,Math,JSON,console,stopping:false,
+ readUpdateMarker:async()=>({state:'running',startedAt:'new',progress:70,phase:'Final release identity'}),
+ localAuditFailureReason:async()=>null,localStatus:async()=>null,
+ delay:async()=>{if(retryAttempts>=2)retryCtx.stopping=true},
+ reportProgress:async(...args)=>{retryReports.push(args);retryAttempts++;return retryAttempts>=2}});
+vm.runInContext(ts.transpile(observer,{target:ts.ScriptTarget.ES2022}),retryCtx);
+assert.equal(await retryCtx.waitForUpdateResult({},'cloud-retry','local-retry','old',now+60000),false);
+assert.equal(retryReports.length,2,'A dropped running progress report must be retried');
+assert.equal(retryReports[0][3],70);
+assert.equal(retryReports[1][3],70);
+assert.equal(retryReports[1][4],'Final release identity');
+
+console.log('PASS Control update restart recovery, retryable progress delivery, expiry and truthful terminal states');
