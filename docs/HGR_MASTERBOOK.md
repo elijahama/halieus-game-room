@@ -613,3 +613,12 @@ Part 28's first simplification removed too much from Theme Library. The correct 
 - **Workspace palette card**: stays removed from Theme Library because it duplicates the Custom editor.
 
 The removed Custom presets are not reinstated as selectable library cards. Their useful design principle is the coordinated four-colour relationship between workspace, panels, primary and secondary colours. Future proper Theme Library profiles may borrow that balance/contrast logic, but must be authored as intentional HGR profiles with their own identity rather than reintroducing the old Custom preset gallery.
+
+
+### 2026-10-08 — Cloud Update progress delivery retry
+
+Real-device testing established that the owner-PC updater can continue successfully while the website progress UI appears stalled. The bridge used the latest locally observed marker as if it had been delivered; a failed cloud POST during the production restart therefore suppressed later retries of the same progress phase.
+
+The durable model now distinguishes **observed locally** from **acknowledged by the cloud**. Running progress updates advance the bridge's acknowledged phase/percentage only after a successful cloud response. Terminal success/failure is retried across temporary website unavailability, and an already-observed terminal marker is never replaced by a synthetic timeout. The persistent pending journal remains the restart authority.
+
+Control stylesheet/script revisions are cache-busted with the behaviour change. Terminal status glyphs have explicit animation/transform cancellation; only the running activity ring is permitted to rotate.
