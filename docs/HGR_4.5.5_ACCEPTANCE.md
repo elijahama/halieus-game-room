@@ -66,3 +66,12 @@ Before 4.5.5 ships, verify on a real phone that progression Theme Library profil
 Player colour must be visible only when HGR needs an avatar/initials fallback. With a real profile picture present, changing player colour must not change the picture frame, theme outline, navigation selection, card glow, owner tools, guild UI or any other platform chrome.
 
 Control Update must show a visible running state while work is in progress. The running indicator is a real activity ring. The Operations Update tile owns only idle/running state and returns to its ordinary Update glyph after a terminal result; terminal success/failure/rejection appears once in the persistent/global status rather than being duplicated on the tile. Failure keeps neutral card chrome while retaining a semantic failure mark and the captured owner-PC reason. The global status can be minimized and snapped aside on desktop or mobile; mobile bottom positions remain above the fixed navigation.
+
+
+## 7 October 2026 — Control Update blank-line hotfix
+
+The first Part 28 real-device Cloud Update attempt failed at 3% before Git/build/deploy work because the PowerShell progress parser rejected a blank line emitted by the CMD updater: `Cannot bind argument to parameter 'Line' because it is an empty string.`
+
+The progress parser must explicitly accept empty-string input and immediately ignore blank/whitespace-only lines. Real output still flows through the existing progress-marker matcher and bounded failure capture unchanged. This hotfix does not alter deployment, operation identity, confirmation, recovery or failure-stop rules.
+
+Acceptance remains one fresh website/phone → cloud → owner-PC Update after this fix. It must advance beyond 3% and either complete at 100% or surface the next real bounded failure reason.

@@ -47,7 +47,8 @@ function Write-HgrUpdateCheckpoint {
 }
 
 function Update-HgrProgressFromLine {
-    param([Parameter(Mandatory = $true)][string]$Line)
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Line)
+    if ([string]::IsNullOrWhiteSpace($Line)) { return }
     foreach ($marker in $progressMarkers) {
         if ($Line -notlike "*$($marker.Match)*") { continue }
         $nextProgress = [int]$marker.Progress
