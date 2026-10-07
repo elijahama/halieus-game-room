@@ -87,7 +87,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const previewSurfaceInk = readableInk([draft.surface], "#101318");
   const previewSurfaceMuted = readableInk([draft.surface], "#4b5563");
   const previewPageInk = readableInk([draft.page], "#101318");
-  const previewPageMuted = readableInk([draft.page], "#4b5563");
 
   useEffect(() => {
     const handleMode = (event: Event) => setMode((event as CustomEvent<HalieusThemeMode>).detail);
@@ -225,12 +224,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </button>
               <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
                 <i aria-hidden="true">✦</i>
-                <span><strong>Custom</strong><small>Open RGB / HEX controls immediately</small></span>
+                <span><strong>Custom</strong><small>Open RGB sliders immediately</small></span>
                 <b aria-hidden="true">→</b>
               </button>
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
-              <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HEX</button>
+              <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB sliders</button>
               <div className="halieus-theme-library-grid">
                 <div className="halieus-theme-library-group">
                   <strong>Unlockables</strong>
