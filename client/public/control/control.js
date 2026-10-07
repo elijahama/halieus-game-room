@@ -122,12 +122,20 @@
   function renderAvatar(container, account) {
     clear(container);
     const fallback = account.avatar || account.displayName?.slice(0, 2).toUpperCase() || "?";
-    if (account.playerColor) container.style.background = account.playerColor;
-    if (!account.profilePicture) { container.textContent = fallback; return; }
+    container.style.background = "";
+    if (!account.profilePicture) {
+      if (account.playerColor) container.style.background = account.playerColor;
+      container.textContent = fallback;
+      return;
+    }
     const image = document.createElement("img");
     image.alt = "";
     image.src = account.profilePicture;
-    image.addEventListener("error", () => { container.textContent = fallback; }, { once: true });
+    image.addEventListener("error", () => {
+      clear(container);
+      if (account.playerColor) container.style.background = account.playerColor;
+      container.textContent = fallback;
+    }, { once: true });
     container.appendChild(image);
   }
 
