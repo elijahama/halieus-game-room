@@ -82,3 +82,14 @@ Acceptance remains one fresh website/phone → cloud → owner-PC Update after t
 The terminal Control status must not use a coloured/highlighted icon tile for failure or rejection. The semantic glyph may remain coloured, but its icon background is transparent so the failure state does not visually dominate the whole banner.
 
 On mobile, the top-right profile control is avatar-only. Its outer frame must collapse to a square that closely hugs the avatar; desktop chip padding must not remain around a hidden text label.
+
+
+## 8 October 2026 — Control progress retry and asset refresh
+
+A real owner-PC test showed the approved updater can complete and restart HGR while the website remains visually stuck on an older progress state. Root cause: intermediate cloud progress delivery is best-effort, but the bridge previously advanced its local "last reported" state even when the POST to the website failed during the deployment/restart window. The same progress value then became ineligible for retry.
+
+Durable rule: running and terminal progress are acknowledged locally **only after the cloud confirms receipt**. A dropped running phase remains retryable; succeeded/failed terminal markers are retried rather than silently converted into a later timeout. A locally observed terminal result must never be overwritten by an invented timeout merely because the website was briefly unavailable.
+
+Control status asset URLs also move with this batch so installed/normal browsers cannot keep the pre-Part-28 CSS/JS after a successful update. Only the running CSS ring may animate. Succeeded/failed/rejected glyphs are explicitly static.
+
+Real-device acceptance: trigger one website Update and verify the site advances through multiple truthful percentages/phases, survives the website/Control restart, reaches a terminal result, and shows a non-rotating terminal glyph.
