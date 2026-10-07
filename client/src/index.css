@@ -24511,14 +24511,6 @@ html[data-theme="light"] .halieus-intro-v4-card {
   font-size: .72rem;
 }
 
-.halieus-guild-player-dot {
-  position: absolute;
-  left: 25px;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-}
-
 .halieus-guild-leaderboard .has-global-rank,
 .halieus-guild-leaderboard .has-global-rating {
   color: var(--hgr-brand, var(--mm-gold));
