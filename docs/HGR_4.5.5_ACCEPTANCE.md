@@ -75,3 +75,10 @@ The first Part 28 real-device Cloud Update attempt failed at 3% before Git/build
 The progress parser must explicitly accept empty-string input and immediately ignore blank/whitespace-only lines. Real output still flows through the existing progress-marker matcher and bounded failure capture unchanged. This hotfix does not alter deployment, operation identity, confirmation, recovery or failure-stop rules.
 
 Acceptance remains one fresh website/phone → cloud → owner-PC Update after this fix. It must advance beyond 3% and either complete at 100% or surface the next real bounded failure reason.
+
+
+## 7 October 2026 — Control visual follow-up
+
+The terminal Control status must not use a coloured/highlighted icon tile for failure or rejection. The semantic glyph may remain coloured, but its icon background is transparent so the failure state does not visually dominate the whole banner.
+
+On mobile, the top-right profile control is avatar-only. Its outer frame must collapse to a square that closely hugs the avatar; desktop chip padding must not remain around a hidden text label.
