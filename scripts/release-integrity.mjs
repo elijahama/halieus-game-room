@@ -72,6 +72,7 @@ const singles = [
   'docs/HGR_MASTERBOOK.md', 'docs/HGR_MOBILE_CONTROL.md',
   'tests/regression-control-agent.mjs',
   'tests/regression-4.5.5-control-mobile-update.mjs',
+  'tests/regression-4.5.5-mobile-hub.mjs',
   'Start HGR Control.cmd',
   'Stop HGR Control.cmd',
   'assets/branding/references/HGR Control Launcher.png',
