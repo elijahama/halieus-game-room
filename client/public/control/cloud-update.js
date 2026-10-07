@@ -209,6 +209,8 @@
     const update = updateButton();
     if (update) {
       update.disabled = !ready || busy;
+      const terminalState = ["succeeded", "failed", "rejected"].includes(lastOperation?.state) ? lastOperation.state : null;
+      update.dataset.updateState = busy ? "running" : terminalState || "idle";
       const copy = update.querySelector("small");
       if (copy && ready) copy.textContent = busy ? "Update in progress · awaiting owner PC" : "Ready · run the approved updater";
       update.title = busy ? "An update is already being tracked. See its progress above." : ready ? "Update HGR on the owner PC" : "Approve enrollment and connect owner-PC Control first.";
