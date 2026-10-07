@@ -93,3 +93,12 @@ Durable rule: running and terminal progress are acknowledged locally **only afte
 Control status asset URLs also move with this batch so installed/normal browsers cannot keep the pre-Part-28 CSS/JS after a successful update. Only the running CSS ring may animate. Succeeded/failed/rejected glyphs are explicitly static.
 
 Real-device acceptance: trigger one website Update and verify the site advances through multiple truthful percentages/phases, survives the website/Control restart, reaches a terminal result, and shows a non-rotating terminal glyph.
+
+
+## 8 October 2026 — Custom HSL/contrast controls and logo selection isolation
+
+Custom retains the four canonical palette roles (Workspace, Panels, Primary UI, Secondary UI) and the existing RGB sliders, but each colour also exposes Hue, Saturation and Lightness controls. Saturation may be reduced to zero directly or through a Greyscale action so neutral grey palettes do not require manual RGB matching.
+
+The Custom preview shows numeric contrast ratios for Workspace text, Panel text, Workspace↔Panel separation and Primary↔Panel separation. These are guidance values; they do not silently rewrite the user's palette.
+
+The logo-preset selector's active frame is neutral UI chrome. It must not use player colour, profile colour or the active HGR accent. Player colour remains identity fallback data only, while actual logo artwork/preset colours remain independently selectable.

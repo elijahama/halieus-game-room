@@ -34,6 +34,65 @@ function rgbHex(channels: [number, number, number]): string {
   return `#${channels.map((channel) => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, "0")).join("")}`;
 }
 
+function hslChannels(hex: string): [number, number, number] {
+  const [red, green, blue] = rgbChannels(hex).map((channel) => channel / 255);
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const lightness = (max + min) / 2;
+  if (max === min) return [0, 0, Math.round(lightness * 100)];
+  const delta = max - min;
+  const saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  let hue = max === red
+    ? (green - blue) / delta + (green < blue ? 6 : 0)
+    : max === green
+      ? (blue - red) / delta + 2
+      : (red - green) / delta + 4;
+  hue /= 6;
+  return [Math.round(hue * 360), Math.round(saturation * 100), Math.round(lightness * 100)];
+}
+
+function hslHex(channels: [number, number, number]): string {
+  const hue = ((Number(channels[0]) % 360) + 360) % 360 / 360;
+  const saturation = Math.max(0, Math.min(100, Number(channels[1]))) / 100;
+  const lightness = Math.max(0, Math.min(100, Number(channels[2]))) / 100;
+  if (saturation === 0) {
+    const neutral = Math.round(lightness * 255);
+    return rgbHex([neutral, neutral, neutral]);
+  }
+  const hueToRgb = (p: number, q: number, t: number) => {
+    let value = t;
+    if (value < 0) value += 1;
+    if (value > 1) value -= 1;
+    if (value < 1 / 6) return p + (q - p) * 6 * value;
+    if (value < 1 / 2) return q;
+    if (value < 2 / 3) return p + (q - p) * (2 / 3 - value) * 6;
+    return p;
+  };
+  const q = lightness < 0.5 ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
+  const p = 2 * lightness - q;
+  return rgbHex([
+    hueToRgb(p, q, hue + 1 / 3) * 255,
+    hueToRgb(p, q, hue) * 255,
+    hueToRgb(p, q, hue - 1 / 3) * 255,
+  ]);
+}
+
+function relativeLuminance(hex: string): number {
+  const channels = rgbChannels(hex).map((channel) => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+}
+
+function contrastRatio(left: string, right: string): number {
+  const first = relativeLuminance(left);
+  const second = relativeLuminance(right);
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; label: string; description: string }> = [
   { mode: "system", icon: "◐", label: "System", description: "Follow this device" },
   { mode: "light", icon: "○", label: "Light", description: "Standard bright HGR" },
@@ -90,6 +149,10 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const previewSurfaceInk = readableInk([draft.surface], "#101318");
   const previewSurfaceMuted = readableInk([draft.surface], "#4b5563");
   const previewPageInk = readableInk([draft.page], "#101318");
+  const workspaceTextContrast = contrastRatio(draft.page, previewPageInk);
+  const panelTextContrast = contrastRatio(draft.surface, previewSurfaceInk);
+  const workspacePanelContrast = contrastRatio(draft.page, draft.surface);
+  const primaryPanelContrast = contrastRatio(draft.accent, draft.surface);
 
   useEffect(() => {
     const handleMode = (event: Event) => setMode((event as CustomEvent<HalieusThemeMode>).detail);
@@ -165,6 +228,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     updateDraftColour(key, rgbHex(channels));
   }
 
+  function updateHslChannel(key: keyof HalieusCustomTheme, channelIndex: number, value: number) {
+    const channels = hslChannels(draft[key]);
+    channels[channelIndex] = Number.isFinite(value) ? value : channels[channelIndex];
+    updateDraftColour(key, hslHex(channels));
+  }
+
   function applyCustom() { commitTheme({ ...committedTheme(), mode: "custom", custom: draft }); pending.current = null; setEditorOpen(false); }
 
   function cancelCustom() {
@@ -227,12 +296,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </button>
               <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
                 <i aria-hidden="true">✦</i>
-                <span><strong>Custom</strong><small>Open RGB sliders immediately</small></span>
+                <span><strong>Custom</strong><small>Open RGB / HSL sliders immediately</small></span>
                 <b aria-hidden="true">→</b>
               </button>
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
-              <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB sliders</button>
+              <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HSL</button>
               <div className="halieus-theme-library-grid">
                 {THEME_LIBRARY_GROUPS.map((group) => (
                   <Fragment key={group.id}>
@@ -270,7 +339,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         <div className="halieus-custom-theme-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && cancelCustom()}>
           <section ref={editorRef} className="halieus-custom-theme-dialog" role="dialog" aria-modal="true" aria-label="Custom HGR theme">
             <header>
-              <div><p>CUSTOM THEME</p><h2>Build your own HGR palette</h2><span>Tune the four shared HGR colours directly. Games keep their identity while the platform shell follows this palette.</span></div>
+              <div><p>CUSTOM THEME</p><h2>Build your own HGR palette</h2><span>Tune the four shared HGR colours with RGB or HSL. Games keep their identity while the platform shell follows this palette.</span></div>
               <button type="button" onClick={cancelCustom} aria-label="Close custom theme editor">×</button>
             </header>
             <div className="halieus-custom-theme-grid">
@@ -295,6 +364,26 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                       </label>
                     ))}
                   </div>
+                  <div className="halieus-custom-channel-heading">
+                    <small>Hue · saturation · lightness</small>
+                    <button type="button" onClick={() => updateHslChannel(key, 1, 0)}>Greyscale</button>
+                  </div>
+                  <div className="halieus-hsl-fields" aria-label={`${label} HSL channels`}>
+                    {hslChannels(draft[key]).map((channel, channelIndex) => (
+                      <label key={channelIndex}>
+                        <b>{["H", "S", "L"][channelIndex]}</b>
+                        <input
+                          type="range"
+                          min={0}
+                          max={channelIndex === 0 ? 360 : 100}
+                          value={channel}
+                          onChange={(event) => updateHslChannel(key, channelIndex, Number(event.target.value))}
+                          aria-label={`${label} ${["hue", "saturation", "lightness"][channelIndex]}`}
+                        />
+                        <output>{channel}{channelIndex === 0 ? "°" : "%"}</output>
+                      </label>
+                    ))}
+                  </div>
                 </article>
               ))}
             </div>
@@ -310,6 +399,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                   ["accent", "Primary"],
                   ["secondary", "Secondary"],
                 ] as Array<[keyof HalieusCustomTheme, string]>).map(([key, legendLabel]) => <span key={key}><i style={{ background: draft[key] }} /><b>{legendLabel}</b></span>)}
+              </div>
+              <div className="halieus-custom-contrast-guide" aria-label="Contrast guide">
+                <span><small>Workspace text</small><strong>{workspaceTextContrast.toFixed(1)}:1</strong></span>
+                <span><small>Panel text</small><strong>{panelTextContrast.toFixed(1)}:1</strong></span>
+                <span><small>Workspace / panel</small><strong>{workspacePanelContrast.toFixed(1)}:1</strong></span>
+                <span><small>Primary / panel</small><strong>{primaryPanelContrast.toFixed(1)}:1</strong></span>
               </div>
             </div>
             <footer>

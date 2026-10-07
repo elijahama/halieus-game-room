@@ -7521,3 +7521,88 @@ html[data-theme="dark"] .mega-create-cosmetics p {
   .halieus-custom-preview-legend>span{grid-template-columns:1fr;justify-items:center;text-align:center}
   .halieus-custom-theme-dialog .halieus-custom-theme-preview{grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* HGR Part 28 — HSL + contrast extension for Custom themes. */
+.halieus-custom-colour-card .halieus-hsl-fields{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:7px;
+}
+.halieus-custom-colour-card .halieus-hsl-fields label{
+  display:grid;
+  grid-template-columns:18px minmax(0,1fr) 42px;
+  align-items:center;
+  gap:8px;
+}
+.halieus-custom-colour-card .halieus-hsl-fields input[type="range"]{
+  width:100%;
+  min-width:0;
+  height:20px;
+  padding:0;
+  border:0;
+  background:transparent;
+  accent-color:var(--hgr-brand);
+  cursor:pointer;
+}
+.halieus-custom-colour-card .halieus-hsl-fields output{
+  color:var(--hgr-text);
+  font:800 9px/1 ui-monospace,SFMono-Regular,Consolas,monospace;
+  text-align:right;
+}
+.halieus-custom-channel-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:4px;
+  padding-top:7px;
+  border-top:1px solid var(--hgr-border);
+}
+.halieus-custom-channel-heading small{
+  color:var(--hgr-muted);
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.halieus-custom-channel-heading button{
+  appearance:none;
+  border:1px solid var(--hgr-border);
+  border-radius:8px;
+  background:var(--hgr-surface-soft);
+  color:var(--hgr-text);
+  padding:4px 7px;
+  font:800 8px/1 system-ui;
+  cursor:pointer;
+}
+.halieus-custom-channel-heading button:hover{border-color:var(--hgr-border-strong)}
+.halieus-custom-contrast-guide{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;
+  margin-top:2px;
+}
+.halieus-custom-contrast-guide>span{
+  min-width:0;
+  display:grid;
+  gap:2px;
+  padding:7px 8px;
+  border:1px solid var(--hgr-border);
+  border-radius:9px;
+  background:color-mix(in srgb,var(--hgr-surface-raised) 92%,transparent);
+}
+.halieus-custom-contrast-guide small{
+  color:var(--hgr-muted);
+  font-size:7px;
+  font-weight:800;
+  line-height:1.2;
+}
+.halieus-custom-contrast-guide strong{
+  color:var(--hgr-text);
+  font:900 10px/1 ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media(max-width:680px){
+  .halieus-custom-contrast-guide{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
