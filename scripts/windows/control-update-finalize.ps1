@@ -30,6 +30,7 @@ if (-not $existing -or [string]$existing.state -ne "running" -or [string]::IsNul
     throw "No running Cloud Update result marker is available for finalization."
 }
 $startedAt = [string]$existing.startedAt
+$operationId = if ($null -ne $existing.operationId) { [string]$existing.operationId } else { "" }
 $currentProgress = 97
 try {
     if ($null -ne $existing.progress) { $currentProgress = [Math]::Max(97, [Math]::Min(99, [int]$existing.progress)) }
@@ -44,6 +45,7 @@ try {
     $currentProgress = [Math]::Max($currentProgress, 98)
     Write-HgrUpdateResult -Value @{
         state = "running"; startedAt = $startedAt; finishedAt = $null; exitCode = $null; reason = $null
+        operationId = $operationId
         progress = $currentProgress; phase = "Restarting Control after update"
     }
     $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
@@ -79,6 +81,7 @@ if ($exitCode -eq 0 -and [string]::IsNullOrWhiteSpace($failureReason)) {
         finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
         exitCode = 0
         reason = $null
+        operationId = $operationId
         progress = 100
         phase = "Update complete"
     }
@@ -93,6 +96,7 @@ Write-HgrUpdateResult -Value @{
     finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
     exitCode = $exitCode
     reason = $finalReason
+    operationId = $operationId
     progress = $currentProgress
     phase = "Update finalization failed"
 }
