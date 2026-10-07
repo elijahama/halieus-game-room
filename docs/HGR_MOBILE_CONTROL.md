@@ -785,3 +785,15 @@ The Operations action area uses a two-column mobile grid so Start, Restart, Clos
 Release integrity now signs `scripts/windows/control-update-finalize.ps1`, and the real Oracle package regression requires that finalizer in the deployment archive. This closes the gap where a deployment-critical post-update handoff script could change without affecting the exact release fingerprint.
 
 **Acceptance status:** source implementation and automated regression coverage are present. Real Android/Brave acceptance remains required before VERSION may be promoted to 4.5.5.
+
+## HGR 4.5.5 Batch 2 — Game Room mobile geometry
+
+Batch 2 keeps VERSION at **4.5.4** and limits changes to phone/tablet Game Room presentation. The fixed five-item mobile navigation remains the accepted navigation model.
+
+The Home featured-game area no longer squeezes every game icon into one equal-width row. On phone, the featured card uses a deliberate art/text split and the game selector becomes a true horizontal rail with fixed-size targets. The rail occupies its own row instead of overlaying and stealing width from the feature content.
+
+Mobile platform controls now use a flatter treatment than desktop: the glossy selected-state gradient and elevated shadows are removed from the mobile navigation, discovery tabs, featured-game rail and discovery cards. Brand colour remains an edge/state cue rather than a large reflective surface.
+
+Player option buttons and Join-modal close controls now use explicit square geometry with centred content. Mobile player rows are slightly denser, and the Join game grid is compacted without reducing the game library or changing room behaviour.
+
+This batch does not change game rules, desktop layouts, Control, account readability controls, Owner Tools, launcher artwork or VERSION. Real Android/Brave acceptance remains required before the eventual 4.5.5 promotion.
