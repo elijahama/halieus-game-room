@@ -42,6 +42,10 @@ assert.doesNotMatch(themeButton, /<strong>Starting palettes<\/strong>|<strong>Wo
 assert.doesNotMatch(themeButton, /function selectCustomPalette\(/);
 assert.match(themeButton, /type="range" min=\{0\} max=\{255\}/);
 assert.match(themeButton, /halieus-custom-preview-legend/);
+assert.match(themeButton, /halieus-hsl-fields/);
+assert.match(themeButton, /Hue · saturation · lightness/);
+assert.match(themeButton, /halieus-custom-contrast-guide/);
+assert.match(designCss, /\.halieus-custom-contrast-guide/);
 assert.match(designCss, /:is\(html\[data-theme="custom"\], html\[data-theme="profile"\]\) \.halieus-home-discovery/);
 assert.match(designCss, /:is\(html\[data-theme="custom"\], html\[data-theme="profile"\]\) \.account-admin-content-card/);
 assert.match(home, /style=\{account\.profilePicture \? undefined : \{ background: account\.playerColor \}\}/);
@@ -51,4 +55,4 @@ assert.doesNotMatch(guilds, /style=\{\{ background: entry\.playerColor \}\}/);
 assert.match(megaLeaderboard, /style=\{entry\.profilePicture \? undefined : \{ background: entry\.playerColor \?\? "#64748b" \}\}/);
 
 
-console.log("PASS 4.5.5 Batch 2/3 + Part 28: mobile geometry, Core + Unlockables library, slider-only Custom palette and avatar-only player colour ownership are locked");
+console.log("PASS 4.5.5 Batch 2/3 + Part 28: Core + Unlockables, RGB/HSL Custom palette, contrast guide and avatar-only player colour ownership are locked");
