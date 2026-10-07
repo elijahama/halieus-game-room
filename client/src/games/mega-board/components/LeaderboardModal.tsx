@@ -38,7 +38,7 @@ export function LeaderboardModal({ entries, recentMatches, loading, error, theme
               const rank = entries.findIndex((candidate) => candidate.playerKey === entry.playerKey) + 1;
               return <article key={entry.playerKey} className={`is-rank-${rank}`}>
                 <span className="leaderboard-podium-medal" aria-hidden="true">{rank === 1 ? "👑" : rank === 2 ? "🥈" : "🥉"}</span>
-                <span className="leaderboard-podium-avatar" style={{ background: entry.playerColor ?? "#64748b" }}>
+                <span className="leaderboard-podium-avatar" style={entry.profilePicture ? undefined : { background: entry.playerColor ?? "#64748b" }}>
                   {entry.profilePicture ? <img src={entry.profilePicture} alt="" /> : entry.avatar ?? entry.playerName.slice(0, 2).toUpperCase()}
                 </span>
                 <strong>{entry.playerName}</strong>
