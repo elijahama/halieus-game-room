@@ -242,7 +242,7 @@ assert.match(release451Css,/\.halieus-generic-ranked-list/,"Verified Ranked stan
 
 
 assert.match(home,/\/accounts\/gamer-score\/leaderboard/,"Rankings UI must load the authoritative Gamer Score board");
-assert.match(home,/style=\{\{ background: entry\.playerColor \}\}/,"Player colour may remain on the Gamer Score avatar as identity");
+assert.match(home,/style=\{entry\.profilePicture \? undefined : \{ background: entry\.playerColor \}\}/,"Player colour may remain only on the Gamer Score fallback avatar when no profile picture exists");
 assert.match(release451Css,/\.halieus-gamer-score-list > button[\s\S]*?var\(--hgr-border\)/,"Gamer Score row chrome must inherit the active HGR theme");
 assert.doesNotMatch(release451Css,/halieus-gamer-score[^{}]*\{[^}]*var\(--profile-accent\)/,"Gamer Score chrome must not inherit profile colour");
 
