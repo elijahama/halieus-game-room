@@ -221,8 +221,13 @@ async function waitForUpdateResult(
   markerStartedBefore: string | null,
   deadline: number,
 ): Promise<boolean> {
+  // These values represent the latest progress that the cloud has actually
+  // acknowledged, not merely the latest local marker we observed. If the
+  // website is briefly unavailable during deployment/restart, the same marker
+  // must remain eligible for retry instead of being silently skipped forever.
   let lastProgress = 3;
   let lastPhase = "Starting approved updater";
+  let terminalObserved = false;
   while (!stopping) {
     const marker = await readUpdateMarker();
     const markerHasOperationId = typeof marker?.operationId === "string" && marker.operationId.trim().length > 0;
@@ -234,18 +239,25 @@ async function waitForUpdateResult(
       const markerProgress = Math.max(lastProgress, Math.min(markerLimit, Number(marker?.progress) || lastProgress));
       const markerPhase = typeof marker?.phase === "string" && marker.phase.trim() ? marker.phase.trim() : lastPhase;
       if (marker?.state === "succeeded") {
-        return reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId);
+        terminalObserved = true;
+        if (await reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId)) return true;
+        if (Date.now() >= deadline) break;
+        await delay(2_000);
+        continue;
       }
       if (marker?.state === "failed") {
-        lastProgress = markerProgress;
-        lastPhase = markerPhase;
+        terminalObserved = true;
         const detailedReason = await localAuditFailureReason(localOperationId);
-        return reportProgress(identity, requestId, "failed", lastProgress, markerPhase || "Update failed", detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.", localOperationId);
+        if (await reportProgress(identity, requestId, "failed", markerProgress, markerPhase || "Update failed", detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.", localOperationId)) return true;
+        if (Date.now() >= deadline) break;
+        await delay(2_000);
+        continue;
       }
       if (marker?.state === "running" && (markerProgress !== lastProgress || markerPhase !== lastPhase)) {
-        lastProgress = markerProgress;
-        lastPhase = markerPhase;
-        await reportProgress(identity, requestId, "running", lastProgress, lastPhase, null, localOperationId);
+        if (await reportProgress(identity, requestId, "running", markerProgress, markerPhase, null, localOperationId)) {
+          lastProgress = markerProgress;
+          lastPhase = markerPhase;
+        }
       }
     }
     if (Date.now() >= deadline) break;
@@ -254,20 +266,22 @@ async function waitForUpdateResult(
       const progress = Math.max(lastProgress, Math.min(99, Number(status.activeOperation.progress) || lastProgress));
       const phase = status.activeOperation.phase || lastPhase;
       if (progress !== lastProgress || phase !== lastPhase) {
-        lastProgress = progress;
-        lastPhase = phase;
-        await reportProgress(identity, requestId, "running", progress, phase, null, localOperationId);
+        if (await reportProgress(identity, requestId, "running", progress, phase, null, localOperationId)) {
+          lastProgress = progress;
+          lastPhase = phase;
+        }
       }
     } else if (!status && lastProgress >= 80 && !(markerIsCurrent && marker?.state === "running")) {
       const restartPhase = "Owner Control Agent restarting";
       if (lastPhase !== restartPhase) {
-        lastPhase = restartPhase;
-        await reportProgress(identity, requestId, "running", lastProgress, lastPhase, null, localOperationId);
+        if (await reportProgress(identity, requestId, "running", lastProgress, restartPhase, null, localOperationId)) {
+          lastPhase = restartPhase;
+        }
       }
     }
     await delay(2_000);
   }
-  if (stopping) return false;
+  if (stopping || terminalObserved) return false;
   return reportProgress(identity, requestId, "failed", lastProgress, "Update status timed out", "The cloud bridge stopped receiving a final result from the approved owner-PC updater.", localOperationId);
 }
 

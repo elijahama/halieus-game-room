@@ -39,7 +39,7 @@
   border-radius:50%;
   animation:control-operation-spin .85s linear infinite;
 }
-.operation-toast[data-state="succeeded"] .operation-icon{background:rgba(69,183,120,.16);color:#63d394}
+.operation-toast[data-state="succeeded"] .operation-icon{background:rgba(69,183,120,.16);color:#63d394;animation:none!important;transform:none!important}
 .operation-toast[data-state="succeeded"] .operation-icon::before{
   content:"✓";
   width:auto;
@@ -48,11 +48,13 @@
   font-size:16px;
   font-weight:950;
   line-height:1;
+  animation:none!important;
+  transform:none!important;
 }
 .operation-toast[data-state="failed"] .operation-icon,
-.operation-toast[data-state="rejected"] .operation-icon{background:transparent;color:#ff9d9d}
-.operation-toast[data-state="failed"] .operation-icon::before{content:"!";font-size:16px;font-weight:950;line-height:1}
-.operation-toast[data-state="rejected"] .operation-icon::before{content:"–";font-size:18px;font-weight:950;line-height:1}
+.operation-toast[data-state="rejected"] .operation-icon{background:transparent;color:#ff9d9d;animation:none!important;transform:none!important}
+.operation-toast[data-state="failed"] .operation-icon::before{content:"!";font-size:16px;font-weight:950;line-height:1;animation:none!important;transform:none!important}
+.operation-toast[data-state="rejected"] .operation-icon::before{content:"–";font-size:18px;font-weight:950;line-height:1;animation:none!important;transform:none!important}
 @keyframes control-operation-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.operation-toast[data-state="running"] .operation-icon::before{animation:none;border-top-color:#8da8ff;border-right-color:#8da8ff}}
 
@@ -135,4 +137,12 @@
   .operation-toast.is-minimized{width:min(232px,calc(100vw - 28px))}
   .operation-toast.is-minimized[data-corner^="top"]{top:max(10px,env(safe-area-inset-top));bottom:auto}
   .operation-toast.is-minimized[data-corner^="bottom"]{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}
+}
+
+
+/* HGR Part 28 — terminal operation glyphs are static by definition. */
+.operation-toast:not([data-state="running"]) .operation-icon,
+.operation-toast:not([data-state="running"]) .operation-icon::before{
+  animation:none!important;
+  transform:none!important;
 }

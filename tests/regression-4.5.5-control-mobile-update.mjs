@@ -43,14 +43,20 @@ assert.match(cloudAgent, /Number\(marker\?\.progress\)/);
 assert.match(cloudAgent, /marker\.phase\.trim\(\)/);
 assert.match(cloudAgent, /operationId\?: string/);
 assert.match(cloudAgent, /marker\?\.operationId === localOperationId/);
+assert.match(cloudAgent, /if \(await reportProgress\(identity, requestId, "running", markerProgress, markerPhase/,"Running marker progress must advance local acknowledgement state only after cloud delivery");
+assert.match(cloudAgent, /terminalObserved = true[\s\S]*if \(await reportProgress\(identity, requestId, "succeeded"/,"Terminal success must be retried until the cloud acknowledges it");
+assert.match(cloudAgent, /if \(stopping \|\| terminalObserved\) return false/,"A locally observed terminal result must never be rewritten as a timeout");
 
 assert.match(html, /id="operationStateIcon"/);
 assert.match(html, /data-operation="update" data-update-state="idle"[\s\S]*operation-action-icon/);
+assert.match(html, /control\.css\?v=part28-progress-retry1/,"Cloud Control CSS URL must move when status visuals change");
+assert.match(html, /control\.js\?v=part28-progress-retry1/,"Cloud Control script URL must move with the progress retry release");
 assert.match(cloudUi, /update\.dataset\.updateState = busy \? "running" : "idle"/);
 assert.doesNotMatch(cloudUi, /terminalState/,"Update action tile must not duplicate terminal status");
 assert.match(css, /@keyframes control-operation-spin/);
 assert.match(css, /data-state="running"[\s\S]*operation-icon::before[\s\S]*border-top-color:#8da8ff/);
 assert.match(css, /data-state="succeeded"[\s\S]*operation-icon::before[\s\S]*content:"✓"/);
+assert.match(css, /operation-toast:not\(\[data-state="running"\]\) \.operation-icon,[\s\S]*animation:none!important[\s\S]*transform:none!important/,"Only the running ring may animate; terminal glyphs must be static");
 assert.match(css, /data-update-state="running"[\s\S]*operation-action-icon::before/);
 assert.doesNotMatch(css, /data-update-state="succeeded"|data-update-state="failed"|data-update-state="rejected"/,"Update action tile must return to idle after terminal state");
 assert.match(html, /id="operationToastMinimize"/);
@@ -75,4 +81,4 @@ assert.match(css, /\.operation-toast\.is-minimized/);
 assert.match(css, /data-corner\^="bottom"/);
 assert.match(css, /bottom:calc\(84px \+ env\(safe-area-inset-bottom\)\)/);
 
-console.log("PASS 4.5.5 Batch 1 + Part 28: durable update progress, blank-line-safe parsing, neutral unhighlighted failure status, tight mobile profile frame and movable global status");
+console.log("PASS 4.5.5 Batch 1 + Part 28: retryable update progress, fresh Control assets, static terminal glyphs, neutral failure status and tight mobile profile frame");
