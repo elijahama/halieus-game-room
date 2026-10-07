@@ -1,4 +1,6 @@
-param()
+param(
+    [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$OperationId
+)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -39,6 +41,7 @@ function Write-HgrUpdateCheckpoint {
     if (-not [string]::IsNullOrWhiteSpace($Phase)) { $script:currentPhase = $Phase }
     Write-HgrUpdateResult -Value @{
         state = "running"; startedAt = $script:startedAt; finishedAt = $null; exitCode = $null; reason = $null
+        operationId = $script:OperationId
         progress = $script:currentProgress; phase = $script:currentPhase
     }
 }
@@ -125,6 +128,7 @@ Write-HgrUpdateResult -Value @{
     finishedAt = $null
     exitCode = $null
     reason = $null
+    operationId = $OperationId
     progress = $currentProgress
     phase = $currentPhase
 }
@@ -195,6 +199,7 @@ try {
             finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
             exitCode = $exitCode
             reason = $failureReason
+            operationId = $OperationId
             progress = $currentProgress
             phase = "Update failed"
         }
