@@ -547,3 +547,10 @@ Batch 2 automated validation gate: the normal HGR release-identity workflow must
 Owner-device review rejected the first Batch 2 portrait carousel geometry. The regression was caused by retaining the legacy two-column `.halieus-showcase-feature` grid while moving the thumbnail rail back into normal document flow; the feature card was therefore forced into the narrow first column and the rail occupied the second, producing a large empty block and missing/squeezed feature copy.
 
 Durable mobile rule: below 760px, the featured-game stage and its thumbnail rail share **one full-width parent column**. The stage may use an internal artwork/copy grid, but the rail must sit on its own full-width row below it. Do not reintroduce a parent-level artwork/rail two-column split on portrait mobile. Owner-device visual acceptance remains required before 4.5.5 is released.
+
+
+### 2026-10-07 — Control Update durable operation identity
+
+The 4.5.5 Control Update path now binds every durable update-result marker to the exact local Control operation ID. The Control Agent passes its generated operation ID into `control-update.ps1`; the bridge persists it with each phase/percentage checkpoint; `control-update-finalize.ps1` carries it across the Control restart and terminal result; and the cloud bridge prefers exact operation-ID matching when recovering progress. The older started-at marker comparison remains only for backward compatibility with markers created before this hardening.
+
+Durable rule: long-running remote Update continuity must not depend only on process memory or on an unscoped runtime marker. Progress/recovery must be attributable to the exact dispatched Control operation before the cloud UI treats it as current. 4.5.5 remains blocked until a real phone-triggered update advances beyond 3%, survives the owner-PC Control handoff and reaches an explicit terminal result.
