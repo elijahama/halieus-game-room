@@ -57,3 +57,12 @@ Live correction: the existing approved bridge credential successfully reported t
 A new Cloud Update must carry the local Control operation ID into the durable owner-PC update marker. The PowerShell bridge writes that ID with every running/failed checkpoint; the detached finalizer preserves it through the Control restart and terminal 100%/failed marker. The cloud bridge accepts a marker as authoritative when its operation ID matches the local operation it dispatched, with the older started-at comparison retained only as backward compatibility for pre-hardening markers.
 
 This closes a remaining ambiguity where a stale runtime marker could be mistaken for the current update after a Control process replacement. The release gate is unchanged: one fresh phone → cloud → owner-PC update must visibly advance beyond 3%, survive the Control handoff, and finish at an explicit terminal result before 4.5.5 is released.
+
+
+## 7 October 2026 — palette / player-colour / operation-icon acceptance
+
+Before 4.5.5 ships, verify on a real phone that Theme Library profiles and Custom palettes produce the same workspace/surface hierarchy for equivalent colours. Theme Library must present Starting palettes, Unlockables, Core and the saved Workspace palette with the same four colour swatches used by Custom.
+
+Player colour must be visible only when HGR needs an avatar/initials fallback. With a real profile picture present, changing player colour must not change the picture frame, theme outline, navigation selection, card glow, owner tools, guild UI or any other platform chrome.
+
+Control Update must show a visible running state while work is in progress. The running indicator is a real activity ring; completion is a static tick and must never rotate. The Operations Update tile and persistent/global update status must stay consistent with each other.
