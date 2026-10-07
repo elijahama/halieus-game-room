@@ -14,6 +14,10 @@
 
   const $ = (id) => document.getElementById(id);
   const queryAll = (selector) => Array.from(document.querySelectorAll(selector));
+  const OPERATION_TOAST_MINIMIZED_KEY = "hgr-control-operation-toast-minimized";
+  const OPERATION_TOAST_CORNER_KEY = "hgr-control-operation-toast-corner";
+  const OPERATION_TOAST_CORNERS = new Set(["top-left", "top-right", "bottom-left", "bottom-right"]);
+  let operationToastClickSuppressedUntil = 0;
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -425,6 +429,99 @@
     };
   }
 
+  function operationToastIsMobile() {
+    return window.matchMedia("(max-width: 720px)").matches;
+  }
+
+  function setOperationToastCorner(value, persist = true) {
+    const toast = $("operationToast");
+    if (!toast) return;
+    const corner = OPERATION_TOAST_CORNERS.has(value) ? value : "bottom-right";
+    toast.dataset.corner = corner;
+    for (const property of ["left", "right", "top", "bottom", "transform"]) toast.style.removeProperty(property);
+    if (persist) {
+      try { localStorage.setItem(OPERATION_TOAST_CORNER_KEY, corner); } catch { /* Storage is optional. */ }
+    }
+  }
+
+  function setOperationToastMinimized(value, persist = true) {
+    const toast = $("operationToast");
+    if (!toast) return;
+    const minimized = Boolean(value) && operationToastIsMobile();
+    toast.classList.toggle("is-minimized", minimized);
+    const minimize = $("operationToastMinimize");
+    if (minimize) minimize.hidden = minimized;
+    if (!minimized) {
+      for (const property of ["left", "right", "top", "bottom", "transform"]) toast.style.removeProperty(property);
+    }
+    if (persist) {
+      try { localStorage.setItem(OPERATION_TOAST_MINIMIZED_KEY, minimized ? "1" : "0"); } catch { /* Storage is optional. */ }
+    }
+  }
+
+  function restoreOperationToastLayout() {
+    let minimized = false;
+    let corner = "bottom-right";
+    try {
+      minimized = localStorage.getItem(OPERATION_TOAST_MINIMIZED_KEY) === "1";
+      const savedCorner = localStorage.getItem(OPERATION_TOAST_CORNER_KEY);
+      if (savedCorner && OPERATION_TOAST_CORNERS.has(savedCorner)) corner = savedCorner;
+    } catch { /* Storage is optional. */ }
+    setOperationToastCorner(corner, false);
+    setOperationToastMinimized(minimized, false);
+  }
+
+  function bindOperationToastDrag() {
+    const toast = $("operationToast");
+    const summary = $("operationToastToggle");
+    if (!toast || !summary) return;
+    let drag = null;
+
+    summary.addEventListener("pointerdown", (event) => {
+      if (!toast.classList.contains("is-minimized")) return;
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      const rect = toast.getBoundingClientRect();
+      drag = {
+        pointerId: event.pointerId,
+        offsetX: event.clientX - rect.left,
+        offsetY: event.clientY - rect.top,
+        startX: event.clientX,
+        startY: event.clientY,
+        moved: false,
+      };
+      summary.setPointerCapture?.(event.pointerId);
+    });
+
+    summary.addEventListener("pointermove", (event) => {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 6) drag.moved = true;
+      if (!drag.moved) return;
+      const rect = toast.getBoundingClientRect();
+      const left = Math.max(8, Math.min(window.innerWidth - rect.width - 8, event.clientX - drag.offsetX));
+      const top = Math.max(8, Math.min(window.innerHeight - rect.height - 92, event.clientY - drag.offsetY));
+      toast.style.left = `${left}px`;
+      toast.style.top = `${top}px`;
+      toast.style.right = "auto";
+      toast.style.bottom = "auto";
+      toast.style.transform = "none";
+    });
+
+    const finishDrag = (event) => {
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const moved = drag.moved;
+      drag = null;
+      summary.releasePointerCapture?.(event.pointerId);
+      if (!moved) return;
+      operationToastClickSuppressedUntil = Date.now() + 350;
+      const rect = toast.getBoundingClientRect();
+      const vertical = rect.top + rect.height / 2 < window.innerHeight / 2 ? "top" : "bottom";
+      const horizontal = rect.left + rect.width / 2 < window.innerWidth / 2 ? "left" : "right";
+      setOperationToastCorner(`${vertical}-${horizontal}`);
+    };
+    summary.addEventListener("pointerup", finishDrag);
+    summary.addEventListener("pointercancel", finishDrag);
+  }
+
   function setOperation(value) {
     const operation = normaliseOperation(value);
     state.activeOperation = operation;
@@ -467,11 +564,26 @@
     queryAll("[data-jump]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.jump)));
     $("refreshLive")?.addEventListener("click", () => void refreshCore());
     $("refreshAudit")?.addEventListener("click", () => void refreshCore());
+    restoreOperationToastLayout();
+    bindOperationToastDrag();
     $("operationToastToggle")?.addEventListener("click", () => {
+      if (Date.now() < operationToastClickSuppressedUntil) return;
+      const toast = $("operationToast");
+      if (toast.classList.contains("is-minimized")) {
+        setOperationToastMinimized(false);
+        return;
+      }
       const details = $("operationDetails");
       details.hidden = !details.hidden;
       $("operationToastToggle").setAttribute("aria-expanded", String(!details.hidden));
     });
+    $("operationToastMinimize")?.addEventListener("click", () => {
+      const details = $("operationDetails");
+      details.hidden = true;
+      $("operationToastToggle").setAttribute("aria-expanded", "false");
+      setOperationToastMinimized(true);
+    });
+    window.addEventListener("resize", restoreOperationToastLayout);
     $("operationDismiss")?.addEventListener("click", () => {
       if (state.activeOperation?.state !== "running") setOperation(null);
     });

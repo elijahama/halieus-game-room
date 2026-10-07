@@ -56,3 +56,34 @@
 .operation-grid button[data-operation] small{color:#b0bed3;white-space:normal;line-height:1.5}
 .operation-grid button[data-operation]:not(:disabled){background:#204779;border-color:#83b1ff;color:#fff;box-shadow:0 0 0 1px #83b1ff33}
 .operation-grid button[data-operation]:not(:disabled):hover{background:#295c99}
+
+/* HGR 4.5.5 Batch 1 — compact mobile Operations + movable update status. */
+.operation-toast-head{display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch}
+.operation-toast-minimize{display:none;appearance:none;border:0;border-left:1px solid rgba(255,255,255,.06);background:transparent;color:#aebbd0;min-width:42px;font:800 22px/1 system-ui;cursor:pointer}
+.operation-toast-minimize:focus-visible{outline:2px solid #90b5ff;outline-offset:-3px}
+
+@media(max-width:720px){
+  .operation-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  .operation-grid button[data-operation]{min-height:124px;padding:13px!important;border-radius:14px;display:flex;flex-direction:column;justify-content:flex-start}
+  .operation-grid button[data-operation] span{font-size:18px}
+  .operation-grid button[data-operation] strong{margin:6px 0 3px;font-size:12px}
+  .operation-grid button[data-operation] small{font-size:10px;line-height:1.35}
+  .operation-toast-head{grid-template-columns:minmax(0,1fr) 42px}
+  .operation-toast-minimize{display:grid;place-items:center}
+  .operation-toast.is-minimized{width:min(232px,calc(100vw - 28px));transform:none;border-radius:13px;touch-action:none;cursor:grab;user-select:none}
+  .operation-toast.is-minimized:active{cursor:grabbing}
+  .operation-toast.is-minimized .operation-toast-head{grid-template-columns:1fr}
+  .operation-toast.is-minimized .operation-toast-summary{grid-template-columns:28px minmax(0,1fr) auto;gap:8px;padding:9px 10px}
+  .operation-toast.is-minimized .operation-icon{width:28px;height:28px;border-radius:8px}
+  .operation-toast.is-minimized .operation-copy strong{font-size:10px}
+  .operation-toast.is-minimized .operation-copy small{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .operation-toast.is-minimized .operation-chevron,
+  .operation-toast.is-minimized .operation-updated,
+  .operation-toast.is-minimized .operation-progress,
+  .operation-toast.is-minimized .operation-toast-details,
+  .operation-toast.is-minimized .operation-toast-minimize{display:none!important}
+  .operation-toast.is-minimized[data-corner^="top"]{top:max(10px,env(safe-area-inset-top));bottom:auto}
+  .operation-toast.is-minimized[data-corner^="bottom"]{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}
+  .operation-toast.is-minimized[data-corner$="left"]{left:14px;right:auto}
+  .operation-toast.is-minimized[data-corner$="right"]{left:auto;right:14px}
+}
