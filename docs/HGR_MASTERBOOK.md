@@ -540,3 +540,10 @@ The accepted five-item fixed bottom navigation is preserved. Player action trigg
 VERSION remains 4.5.4 until the 4.5.5 mobile batches and real-device acceptance are complete.
 
 Batch 2 automated validation gate: the normal HGR release-identity workflow must pass against this source state before the next 4.5.5 batch is treated as accepted.
+
+
+### 2026-10-07 — HGR 4.5.5 mobile featured-carousel rollback/fix
+
+Owner-device review rejected the first Batch 2 portrait carousel geometry. The regression was caused by retaining the legacy two-column `.halieus-showcase-feature` grid while moving the thumbnail rail back into normal document flow; the feature card was therefore forced into the narrow first column and the rail occupied the second, producing a large empty block and missing/squeezed feature copy.
+
+Durable mobile rule: below 760px, the featured-game stage and its thumbnail rail share **one full-width parent column**. The stage may use an internal artwork/copy grid, but the rail must sit on its own full-width row below it. Do not reintroduce a parent-level artwork/rail two-column split on portrait mobile. Owner-device visual acceptance remains required before 4.5.5 is released.
