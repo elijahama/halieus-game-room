@@ -103,8 +103,8 @@
 .operation-grid button[data-operation] span{color:var(--action-color)}
 .operation-grid button[data-operation]:disabled{background:#131b28;color:#cbd5e5;border-color:#344052;border-top-color:var(--action-color);cursor:not-allowed}
 .operation-grid button[data-operation] small{color:#b0bed3;white-space:normal;line-height:1.5}
-.operation-grid button[data-operation]:not(:disabled){background:#204779;border-color:#83b1ff;color:#fff;box-shadow:0 0 0 1px #83b1ff33}
-.operation-grid button[data-operation]:not(:disabled):hover{background:#295c99}
+.operation-grid button[data-operation]:not(:disabled){background:#151d29;border-color:#344052;border-top-color:var(--action-color);color:#fff;box-shadow:none}
+.operation-grid button[data-operation]:not(:disabled):hover{background:#1b2635;border-color:#46556b;border-top-color:var(--action-color)}
 
 /* HGR Part 28 — compact global operation status.
    The status can be minimized and snapped aside on desktop or mobile. */

@@ -633,3 +633,8 @@ Custom also exposes live numeric contrast guidance for text/surface and workspac
 The logo preset picker is visually independent from player identity colour and theme accent. Its selected state uses neutral border/surface tokens. Player colour remains restricted to initials/avatar fallback identity and must not own logo selection borders, platform chrome, navigation or theme state.
 
 Theme Library remains **Core + Unlockables**. The Core profiles are the existing always-available working palettes; Unlockables retain progression/Beta rules. The retired Custom preset gallery remains retired.
+
+
+### 2026-10-08 — Control available-operation highlight correction
+
+An available Control operation must not look permanently selected, failed or alarmed. Operation cards keep their role-specific top edge/icon colour, but the card body uses a restrained neutral Control surface when enabled. Stronger role colour is reserved for the actual running indicator/status, not readiness alone.

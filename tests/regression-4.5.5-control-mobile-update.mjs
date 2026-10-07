@@ -79,6 +79,8 @@ assert.match(css, /@media\(max-width:720px\)[\s\S]*\.profile-chip\{width:40px;he
 assert.match(css, /\.operation-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
 assert.match(css, /\.operation-toast\.is-minimized/);
 assert.match(css, /data-corner\^="bottom"/);
+assert.match(css, /button\[data-operation\]:not\(:disabled\)\{background:#151d29;border-color:#344052;border-top-color:var\(--action-color\);color:#fff;box-shadow:none\}/,"Available operation cards must stay restrained instead of looking permanently highlighted");
+assert.doesNotMatch(css, /button\[data-operation\]:not\(:disabled\)\{background:#204779/,"The old blue-filled available-operation highlight must not return");
 assert.match(css, /bottom:calc\(84px \+ env\(safe-area-inset-bottom\)\)/);
 
 console.log("PASS 4.5.5 Batch 1 + Part 28: retryable update progress, fresh Control assets, static terminal glyphs, neutral failure status and tight mobile profile frame");

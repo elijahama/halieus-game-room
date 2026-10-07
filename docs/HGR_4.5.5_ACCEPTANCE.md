@@ -102,3 +102,8 @@ Custom retains the four canonical palette roles (Workspace, Panels, Primary UI, 
 The Custom preview shows numeric contrast ratios for Workspace text, Panel text, Workspace↔Panel separation and Primary↔Panel separation. These are guidance values; they do not silently rewrite the user's palette.
 
 The logo-preset selector's active frame is neutral UI chrome. It must not use player colour, profile colour or the active HGR accent. Player colour remains identity fallback data only, while actual logo artwork/preset colours remain independently selectable.
+
+
+## 8 October 2026 — Operation card highlight correction
+
+An enabled/ready Update HGR card must not remain filled bright blue. Readiness uses the normal dark Control card with the existing blue role edge/icon; the strong animated treatment is reserved for a genuinely running operation.
