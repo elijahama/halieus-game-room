@@ -50,7 +50,7 @@
   line-height:1;
 }
 .operation-toast[data-state="failed"] .operation-icon,
-.operation-toast[data-state="rejected"] .operation-icon{background:rgba(223,115,115,.14);color:#ff9d9d}
+.operation-toast[data-state="rejected"] .operation-icon{background:transparent;color:#ff9d9d}
 .operation-toast[data-state="failed"] .operation-icon::before{content:"!";font-size:16px;font-weight:950;line-height:1}
 .operation-toast[data-state="rejected"] .operation-icon::before{content:"–";font-size:18px;font-weight:950;line-height:1}
 @keyframes control-operation-spin{to{transform:rotate(360deg)}}
@@ -82,7 +82,8 @@
   .control-game-room-return:focus-visible{outline:2px solid #90b5ff;outline-offset:2px}
   .now-playing-card,.status-card,.panel-card,.room-card,.player-card{border:1px solid var(--control-card-border);border-radius:var(--control-card-radius);background:var(--control-card-surface);box-shadow:none}
   .now-playing-card,.status-card,.panel-card{padding:16px}
-  .profile-chip{box-shadow:none;border-color:var(--control-card-border)}
+  .profile-chip{width:40px;height:40px;padding:2px;justify-content:center;border-radius:12px;box-shadow:none;border-color:var(--control-card-border)}
+  .profile-chip>span:first-child{width:34px;height:34px}
   .operation-readiness>div{flex-wrap:wrap}
   .operation-readiness p{flex:1 1 180px;min-width:0}
   .operation-readiness button{max-width:100%;white-space:normal}
