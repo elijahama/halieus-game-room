@@ -1752,9 +1752,9 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
   transform: translateY(-1px);
 }
 .halieus-logo-preset-grid > button.is-active {
-  border-color: color-mix(in srgb,var(--hgr-brand) 66%,var(--hgr-border));
-  background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface-raised));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--hgr-brand) 18%,transparent);
+  border-color: var(--hgr-border-strong);
+  background: var(--hgr-surface-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--hgr-text) 12%,transparent);
 }
 .halieus-logo-preset-preview {
   width: 46px;
