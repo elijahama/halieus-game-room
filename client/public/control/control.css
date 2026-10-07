@@ -3,6 +3,25 @@
 /* Part 26 approved Control artwork: the image owns the H/cog/tile treatment. */
 .control-brand-mark,.access-icon{display:block;object-fit:contain;background:transparent!important;box-shadow:none!important;color:transparent!important;font-size:0!important;padding:0!important}.control-brand-mark{flex:0 0 auto}.access-icon{margin-left:auto;margin-right:auto}
 
+/* The Update action mirrors the global operation state. Idle is a static
+   update glyph, running is a real CSS activity ring, and terminal glyphs never rotate. */
+.operation-grid button[data-operation="update"] .operation-action-icon{position:relative;display:grid;place-items:center;width:22px;height:22px}
+.operation-grid button[data-operation="update"] .operation-action-icon::before{display:block;box-sizing:border-box;animation:none;transform:none}
+.operation-grid button[data-operation="update"][data-update-state="idle"] .operation-action-icon::before{content:"⇧";font-size:20px;line-height:1}
+.operation-grid button[data-operation="update"][data-update-state="running"] .operation-action-icon::before{
+  content:"";
+  width:16px;
+  height:16px;
+  border:2px solid color-mix(in srgb,var(--action-color,#83b1ff) 28%,transparent);
+  border-top-color:var(--action-color,#83b1ff);
+  border-radius:50%;
+  animation:control-operation-spin .85s linear infinite;
+}
+.operation-grid button[data-operation="update"][data-update-state="succeeded"] .operation-action-icon::before{content:"✓";font-size:18px;font-weight:950;line-height:1;color:#63d394}
+.operation-grid button[data-operation="update"][data-update-state="failed"] .operation-action-icon::before{content:"!";font-size:18px;font-weight:950;line-height:1;color:#ff9d9d}
+.operation-grid button[data-operation="update"][data-update-state="rejected"] .operation-action-icon::before{content:"–";font-size:20px;font-weight:950;line-height:1;color:#ffcf88}
+@media(prefers-reduced-motion:reduce){.operation-grid button[data-operation="update"][data-update-state="running"] .operation-action-icon::before{animation:none;border-top-color:var(--action-color,#83b1ff);border-right-color:var(--action-color,#83b1ff)}}
+
 /* Action appearance follows the actual disabled state, never the operation label. */
 .operation-grid button:not(:disabled){opacity:1;color:#eef4ff;background:#182b50;border-color:#547fcd;cursor:pointer}
 .operation-grid button:not(:disabled) small{color:#c0d1eb}
