@@ -2,7 +2,7 @@ import { CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../
 import { accountApi } from "../accounts/api";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -287,7 +287,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 ))}
 
                 {THEME_PROFILE_GROUPS.map((group) => (
-                  <div className="halieus-theme-library-category" key={group.id}>
+                  <Fragment key={group.id}>
                     <div className="halieus-theme-library-group">
                       <strong>{group.label}</strong>
                       <small>{group.description}</small>
@@ -307,7 +307,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                         {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
                       </button>
                     ))}
-                  </div>
+                  </Fragment>
                 ))}
 
                 <div className="halieus-theme-library-group">
