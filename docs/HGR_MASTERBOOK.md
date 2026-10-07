@@ -554,3 +554,14 @@ Durable mobile rule: below 760px, the featured-game stage and its thumbnail rail
 The 4.5.5 Control Update path now binds every durable update-result marker to the exact local Control operation ID. The Control Agent passes its generated operation ID into `control-update.ps1`; the bridge persists it with each phase/percentage checkpoint; `control-update-finalize.ps1` carries it across the Control restart and terminal result; and the cloud bridge prefers exact operation-ID matching when recovering progress. The older started-at marker comparison remains only for backward compatibility with markers created before this hardening.
 
 Durable rule: long-running remote Update continuity must not depend only on process memory or on an unscoped runtime marker. Progress/recovery must be attributable to the exact dispatched Control operation before the cloud UI treats it as current. 4.5.5 remains blocked until a real phone-triggered update advances beyond 3%, survives the owner-PC Control handoff and reaches an explicit terminal result.
+
+
+### 2026-10-07 — 4.5.5 palette ownership, player-colour scope and Control operation icons
+
+Theme Library and Custom now share the same four-colour workspace rendering contract: page, surface, primary accent and secondary accent are expanded through the same `customThemeVariables` surface hierarchy. Theme Library is organised as **Starting palettes → Unlockables → Core → Workspace palette**. Starting palettes are the editable Custom presets (deduplicated against exact profile palettes); Core/Unlockable profiles retain their progression metadata; Workspace palette is the player's saved custom RGB/HEX palette. A Theme Library profile must not fall back to legacy/navy card backgrounds that Custom does not use.
+
+Player colour is identity fallback data only. It may fill an initials/avatar tile when no profile picture exists (or when a picture fails to load), but it must not set theme accents, panel/background colour, navigation selection, borders, glow, guild markers or other platform chrome. Uploaded profile pictures render without a player-colour backing treatment; all surrounding chrome follows the active HGR theme.
+
+Control Update state icons are semantic and consistent. Idle may show the static Update glyph. Running uses a CSS activity ring; no arrow/image/tick is rotated as a fake spinner. Succeeded uses a static tick, failed a static failure mark and rejected a static neutral mark. The global update toast and the Operations Update tile use the same state vocabulary.
+
+These are 4.5.5 acceptance rules. Canonical VERSION remains 4.5.4 until real-device validation confirms the mobile carousel, Control update completion path, theme rendering and player-colour isolation.
