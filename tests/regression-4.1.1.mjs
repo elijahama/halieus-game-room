@@ -65,11 +65,11 @@ assert.match(
 
 assert.match(theme,/HalieusThemeMode = "system" \\| "dark" \\| "light" \\| "blue" \\| "red" \\| "green" \\| (?:"profile" \\| )?"custom"/,'Expanded theme contract missing');
 assert.match(theme,/CUSTOM_THEME_KEY/,'Custom theme persistence missing');
-assert.match(themeButton,/type="color"/,'Custom palette colour picker missing');
+assert.match(themeButton,/type="range" min=\{0\} max=\{255\}/,'Custom palette RGB sliders missing');
 assert.match(themeButton,/halieus-rgb-fields/,'Custom palette RGB channel controls missing');
 assert.match(themeButton,/mode: "system"[\s\S]*mode: "light"[\s\S]*mode: "dark"/,'Game menu quick theme choices must keep System, Light and Dark');
 assert.match(themeButton,/Theme Library/,'Game menu must expose the 4.5 Theme Library for expressive profiles');
-assert.match(themeButton,/THEME_PROFILES\.length/,'Game menu Theme Library must be driven by the shared profile catalog');
+assert.match(themeButton,/UNLOCKABLE_THEME_PROFILES = THEME_PROFILES\.filter/,'Game menu Theme Library must be driven by the shared progression profile catalog');
 assert.doesNotMatch(app,/classList\.add\("theme-transitioning"\)/,'Theme switching must not add transition choreography');
 assert.match(css,/html\[data-theme="dark"\][\s\S]*?--hgr-page:\s*#0f1012/s,'Dark mode must remain neutral');
 assert.match(css,/html\[data-theme="blue"\]/,'Blue theme must remain explicit');
