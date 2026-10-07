@@ -530,3 +530,11 @@ The 4.5.5 mobile pass begins with Control reliability rather than visual Game Ro
 On mobile, the Control update surface may be minimized and moved between viewport corners. A minimized bottom position must remain above the fixed Control navigation. The four allow-listed owner operations use a compact two-column mobile dashboard while preserving their role-specific colours.
 
 This batch does **not** change the canonical launcher family, Control artwork, Game Room mobile carousel, account settings, owner-theme treatment, or VERSION. Those remain separate audited work. VERSION stays 4.5.4 until the planned 4.5.5 mobile batches pass real-device acceptance.
+
+### 4.5.5 Batch 2 — mobile hub layout decision
+
+The Game Room mobile Home surface must not be a compressed desktop composition. The featured-game selector is a horizontal scroll rail with fixed target widths; the featured content keeps usable art and text space. Mobile selected controls are flat theme-aware surfaces with restrained brand accents rather than the desktop glossy/elevated treatment.
+
+The accepted five-item fixed bottom navigation is preserved. Player action triggers and modal close buttons use explicit square centring so glyph baselines cannot visually drift. These rules are phone/tablet-scoped and must not alter desktop or in-game table geometry.
+
+VERSION remains 4.5.4 until the 4.5.5 mobile batches and real-device acceptance are complete.
