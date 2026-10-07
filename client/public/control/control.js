@@ -430,6 +430,7 @@
       action: String(value.action || "update"),
       title: String(value.title || (value.action === "update" ? "Updating HGR" : "HGR operation")),
       phase: String(value.phase || "Working…"),
+      reason: String(value.reason || "").trim(),
       progress,
       state: stateValue,
       startedAt: value.startedAt || null,
@@ -455,7 +456,7 @@
   function setOperationToastMinimized(value, persist = true) {
     const toast = $("operationToast");
     if (!toast) return;
-    const minimized = Boolean(value) && operationToastIsMobile();
+    const minimized = Boolean(value);
     toast.classList.toggle("is-minimized", minimized);
     const minimize = $("operationToastMinimize");
     if (minimize) minimize.hidden = minimized;
@@ -506,7 +507,8 @@
       if (!drag.moved) return;
       const rect = toast.getBoundingClientRect();
       const left = Math.max(8, Math.min(window.innerWidth - rect.width - 8, event.clientX - drag.offsetX));
-      const top = Math.max(8, Math.min(window.innerHeight - rect.height - 92, event.clientY - drag.offsetY));
+      const bottomInset = operationToastIsMobile() ? 92 : 8;
+      const top = Math.max(8, Math.min(window.innerHeight - rect.height - bottomInset, event.clientY - drag.offsetY));
       toast.style.left = `${left}px`;
       toast.style.top = `${top}px`;
       toast.style.right = "auto";
@@ -540,7 +542,8 @@
     $("operationToast").hidden = false;
     $("operationToast").dataset.state = operation.state;
     $("operationTitle").textContent = operation.state === "succeeded" ? "Update complete" : operation.state === "failed" ? "Update failed" : operation.state === "rejected" ? "Update not started" : operation.title;
-    $("operationPhase").textContent = operation.phase;
+    const terminalReason = operation.state === "failed" || operation.state === "rejected" ? operation.reason : "";
+    $("operationPhase").textContent = terminalReason || operation.phase;
     $("operationPercent").textContent = `${Math.round(operation.progress)}%`;
     $("operationProgressBar").style.width = `${operation.progress}%`;
     $("operationDetailAction").textContent = operation.title;

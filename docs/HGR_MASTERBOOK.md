@@ -481,7 +481,7 @@ Cloud Update appearance follows the real disabled attribute. Approved/online/idl
 
 ## 4.5.4.15 — truthful Cloud Update progress
 
-Control prominently displays the real reported updater phase and last update timestamp. Progress percentages and width remain server-owned; a running-only subtle animation indicates activity without incrementing progress. Reduced-motion preferences disable animation. Terminal success/failure/rejection have distinct titles and colours while failure diagnostics remain available. Missing timestamps are shown as unavailable, never invented.
+Control prominently displays the real reported updater phase and last update timestamp. Progress percentages and width remain server-owned; a running-only subtle animation indicates activity without incrementing progress. Reduced-motion preferences disable animation. Terminal success/failure/rejection retain distinct titles and semantic icons, while the surrounding card chrome stays neutral for failure/rejection and the captured failure reason remains available. Missing timestamps are shown as unavailable, never invented.
 
 
 ## 4.5.4.16 — fullscreen across Control navigation
@@ -527,7 +527,7 @@ Source validation is separate from production acceptance. A fresh cloud update r
 
 The 4.5.5 mobile pass begins with Control reliability rather than visual Game Room changes. The durable rule is that remote Update progress must survive Control process replacement: the owner-PC updater writes phase/percentage checkpoints to the runtime update-result marker, the detached finalizer owns the final restart checkpoint and terminal result, and the cloud bridge recovers from that marker after restart. In-memory `activeOperation` is an optimisation, not the authority for long-running Update continuity.
 
-On mobile, the Control update surface may be minimized and moved between viewport corners. A minimized bottom position must remain above the fixed Control navigation. The four allow-listed owner operations use a compact two-column mobile dashboard while preserving their role-specific colours.
+The Control update surface may be minimized and moved between viewport corners on desktop or mobile. A minimized bottom position on mobile must remain above the fixed Control navigation. The four allow-listed owner operations use a compact two-column mobile dashboard while preserving their role-specific colours.
 
 This batch does **not** change the canonical launcher family, Control artwork, Game Room mobile carousel, account settings, owner-theme treatment, or VERSION. Those remain separate audited work. VERSION stays 4.5.4 until the planned 4.5.5 mobile batches pass real-device acceptance.
 
@@ -562,7 +562,7 @@ Theme Library and Custom now share the same four-colour workspace rendering cont
 
 Player colour is identity fallback data only. It may fill an initials/avatar tile when no profile picture exists (or when a picture fails to load), but it must not set theme accents, panel/background colour, navigation selection, borders, glow, guild markers or other platform chrome. Uploaded profile pictures render without a player-colour backing treatment; all surrounding chrome follows the active HGR theme.
 
-Control Update state icons are semantic and consistent. Idle may show the static Update glyph. Running uses a CSS activity ring; no arrow/image/tick is rotated as a fake spinner. Succeeded uses a static tick, failed a static failure mark and rejected a static neutral mark. The global update toast and the Operations Update tile use the same state vocabulary.
+Control Update state icons are semantic without duplication. The Operations Update tile shows the static Update glyph when idle and a CSS activity ring only while work is running; after a terminal result it returns to idle. Succeeded, failed and rejected are shown once in the persistent/global operation status, using static semantic marks. Failure/rejection do not paint the whole status card red. The captured owner-PC failure reason is surfaced in the global summary/details so a failed remote update can be diagnosed instead of merely labelled failed.
 
 These are 4.5.5 acceptance rules. Canonical VERSION remains 4.5.4 until real-device validation confirms the mobile carousel, Control update completion path, theme rendering and player-colour isolation.
 
@@ -576,3 +576,12 @@ Theme selection is deliberately simpler. **System, Light and Dark** remain the i
 Existing theme/profile data and entitlement rules are not deleted by this UI simplification. Previously stored profile identifiers remain readable for compatibility, Beta/Test Lab still exposes genuine progression-gated themes for testing, and game-surface cosmetics remain independent from platform chrome. This is a presentation/selection decision, not a game-rule or progression rewrite.
 
 Source regression must protect the absence of the retired Core/Starting/Workspace galleries and the presence of the RGB-slider editor. Real-device visual acceptance remains separate from CI.
+
+
+### 2026-10-07 — Part 28 Control update status simplification
+
+The persistent Control operation status is now the single terminal-status surface for Update. The Operations Update tile represents only **idle** and **running**, so a terminal failure/success icon is not duplicated at the bottom of the Operations dashboard. Failure/rejection keep neutral card chrome; the semantic status mark and exact captured owner-PC reason remain visible.
+
+The operation status can be minimized on **desktop and mobile** and snapped to a viewport corner. The compact form behaves like a global service/status banner: it remains available while the owner moves around Control without monopolising the page, and tapping it expands the full details again. Mobile bottom placement still clears the fixed navigation.
+
+This changes presentation only. Server-owned progress, durable operation IDs, failure capture, timeout/recovery rules and the rule that failed updates must stop rather than deploy remain unchanged. A source pass cannot identify a machine-specific update failure by itself; the next real owner-PC failure must be diagnosed from the now-surfaced bounded failure reason and operation history.
