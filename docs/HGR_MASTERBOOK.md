@@ -594,3 +594,10 @@ A real website-triggered owner-PC Update reached Control and failed at **3%** be
 Durable rule: progress parsing must treat blank/whitespace updater output as a no-op. The parser now explicitly permits an empty string and returns before marker matching. This preserves live progress, bounded/redacted failure capture, exact operation IDs and the rule that a failed update never deploys an incomplete candidate.
 
 Source CI validates the guard. Real-device acceptance still requires a fresh Cloud Update to advance beyond 3% and reach either the next truthful failure or 100% completion.
+
+
+### 2026-10-07 — Part 28 Control visual correction
+
+A failed/rejected global Control operation keeps a semantic status glyph but **no coloured icon-tile highlight**. Neutral card chrome and a transparent status-icon background prevent failure from becoming a large visual alarm while preserving truthful state.
+
+On mobile, the top-right profile control is avatar-only. When the text label is hidden, the control frame collapses to a compact square around the avatar instead of retaining desktop chip padding. This keeps the visible border proportional to the profile picture.
