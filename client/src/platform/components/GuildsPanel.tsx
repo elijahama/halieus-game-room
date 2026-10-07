@@ -589,7 +589,6 @@ export function GuildsPanel({
                   const losses = Math.max(0, entry.played - entry.wins);
                   return <article key={entry.accountId}>
                     <b>{index + 1}</b>
-                    <span className="halieus-guild-player-dot" style={{ background: entry.playerColor }} />
                     <strong>{entry.displayName}</strong>
                     <span className={global ? "has-global-rank" : "no-global-rank"}>{global ? `#${global.rank}` : "—"}</span>
                     <span className={global ? "has-global-rating" : "no-global-rank"}>{global ? global.rating.toLocaleString() : "—"}</span>
