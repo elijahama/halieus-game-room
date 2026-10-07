@@ -768,3 +768,20 @@ Each bug above resulted in a regression or contract check. HGR Control regressio
 6. if the automatic navigation does not leave the page, the maintenance surface exposes a manual **Refresh now** fallback.
 
 This deliberately avoids ordinary `window.location.reload()` for release transitions.
+
+## HGR 4.5.5 Batch 1 — durable mobile update progress
+
+This batch is implemented while the public release remains **4.5.4**. The VERSION file is not promoted to 4.5.5 until the complete mobile acceptance pass is finished.
+
+Cloud Update progress is no longer allowed to depend only on the Control Agent's in-memory `activeOperation`. The fixed Windows update wrapper now persists the current phase and percentage into `server/data/runtime/hgr-control-update-result.json` as the approved updater advances. The detached finalizer persists the Control-restart handoff and the final terminal result. After a Control restart, `control-cloud-agent.ts` resumes from that durable marker and reports the recovered phase to the public Control relay. The local in-memory operation remains a live fast path, but it is no longer the sole source of intermediate progress.
+
+The public mobile Control operation banner now supports two deliberate states:
+
+- expanded: full phase, percentage, timestamp and diagnostics;
+- minimized: a compact status pill that can be dragged and snapped to any screen corner. Bottom corners remain above the fixed Control navigation safe area. Tapping the pill expands it again.
+
+The Operations action area uses a two-column mobile grid so Start, Restart, Close and Update occupy a compact dashboard instead of four tall rows. Role colours remain unchanged.
+
+Release integrity now signs `scripts/windows/control-update-finalize.ps1`, and the real Oracle package regression requires that finalizer in the deployment archive. This closes the gap where a deployment-critical post-update handoff script could change without affecting the exact release fingerprint.
+
+**Acceptance status:** source implementation and automated regression coverage are present. Real Android/Brave acceptance remains required before VERSION may be promoted to 4.5.5.

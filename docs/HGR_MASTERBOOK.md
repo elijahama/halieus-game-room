@@ -522,3 +522,11 @@ The 4 October 23:57 Cloud Update remained at 3% after its bridge restarted: the 
 Operation cards retain role colour (blue Update, green Start, orange Restart, red Close) and readable unavailable reasons. Only Update is presently supported by the cloud bridge. Start/Restart/Close remain owner-PC actions, explicitly labelled rather than misleadingly enabled. A running Update explains its busy state.
 
 Source validation is separate from production acceptance. A fresh cloud update reaching a verified terminal result and owner-PC/phone visual checks remain required.
+
+### 4.5.5 Batch 1 — Control mobile reliability decision
+
+The 4.5.5 mobile pass begins with Control reliability rather than visual Game Room changes. The durable rule is that remote Update progress must survive Control process replacement: the owner-PC updater writes phase/percentage checkpoints to the runtime update-result marker, the detached finalizer owns the final restart checkpoint and terminal result, and the cloud bridge recovers from that marker after restart. In-memory `activeOperation` is an optimisation, not the authority for long-running Update continuity.
+
+On mobile, the Control update surface may be minimized and moved between viewport corners. A minimized bottom position must remain above the fixed Control navigation. The four allow-listed owner operations use a compact two-column mobile dashboard while preserving their role-specific colours.
+
+This batch does **not** change the canonical launcher family, Control artwork, Game Room mobile carousel, account settings, owner-theme treatment, or VERSION. Those remain separate audited work. VERSION stays 4.5.4 until the planned 4.5.5 mobile batches pass real-device acceptance.

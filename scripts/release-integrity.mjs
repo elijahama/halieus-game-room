@@ -71,6 +71,7 @@ const roots = [
 const singles = [
   'docs/HGR_MASTERBOOK.md', 'docs/HGR_MOBILE_CONTROL.md',
   'tests/regression-control-agent.mjs',
+  'tests/regression-4.5.5-control-mobile-update.mjs',
   'Start HGR Control.cmd',
   'Stop HGR Control.cmd',
   'assets/branding/references/HGR Control Launcher.png',
@@ -94,6 +95,7 @@ const singles = [
   'scripts/windows/control-restart.ps1',
   'scripts/windows/control-close.ps1',
   'scripts/windows/control-update.ps1',
+  'scripts/windows/control-update-finalize.ps1',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
   'docs/HGR_4.5.1_PART19_NAVIGATION.md',
   'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',
