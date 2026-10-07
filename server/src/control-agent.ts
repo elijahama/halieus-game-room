@@ -885,7 +885,7 @@ async function runUpdate(response: ServerResponse): Promise<void> {
   try {
     const child = execFile(
       "powershell.exe",
-      ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", updateBridge],
+      ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", updateBridge, "-OperationId", operation.id],
       {
         cwd: projectRoot,
         timeout: 45 * 60 * 1000,
