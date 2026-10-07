@@ -2,7 +2,7 @@ import { CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../
 import { accountApi } from "../accounts/api";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -34,43 +34,13 @@ function rgbHex(channels: [number, number, number]): string {
   return `#${channels.map((channel) => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, "0")).join("")}`;
 }
 
-const CUSTOM_PRESETS: Array<{ id: string; label: string; description: string; theme: HalieusCustomTheme }> = [
-  { id: "studio-graphite", label: "Studio Graphite", description: "Neutral dark workspace", theme: { page: "#111315", surface: "#1b1e22", accent: "#e3ad35", secondary: "#6f9fd8" } },
-  { id: "soft-light", label: "Soft Light", description: "Warm bright workspace", theme: { page: "#f3f0e8", surface: "#fffdf8", accent: "#d79a19", secondary: "#4c78a8" } },
-  { id: "deep-blue", label: "Deep Blue", description: "Blue-black control room", theme: { page: "#07111c", surface: "#102033", accent: "#3a8fd8", secondary: "#78bdf2" } },
-  { id: "forest", label: "Forest", description: "Deep green studio", theme: { page: "#0d1713", surface: "#16251e", accent: "#4ca86a", secondary: "#8ac6a1" } },
-  { id: "crimson", label: "Crimson", description: "Charcoal with red focus", theme: { page: "#171012", surface: "#27191d", accent: "#cc4b52", secondary: "#e18a8f" } },
-  { id: "aubergine", label: "Aubergine", description: "Purple creative suite", theme: { page: "#15101a", surface: "#241a2c", accent: "#9a68c7", secondary: "#d09be9" } },
-  { id: "cyan", label: "Cyan Studio", description: "Cool dark production UI", theme: { page: "#0c1517", surface: "#162428", accent: "#38a9b8", secondary: "#78d4df" } },
-  { id: "warm-amber", label: "Warm Amber", description: "Soft charcoal and amber", theme: { page: "#171411", surface: "#26211c", accent: "#e09a31", secondary: "#d37c65" } },
-  { id: "slate-mint", label: "Slate Mint", description: "Cool grey with mint", theme: { page: "#15191d", surface: "#242a30", accent: "#63b79c", secondary: "#8da9c4" } },
-  { id: "midnight-violet", label: "Midnight Violet", description: "Near-black violet studio", theme: { page: "#0f0d16", surface: "#1d1828", accent: "#7657c9", secondary: "#b08be4" } },
-  { id: "sand", label: "Sand", description: "Muted light neutral", theme: { page: "#ece7dc", surface: "#f8f5ed", accent: "#b67a20", secondary: "#657c91" } },
-  { id: "high-contrast", label: "High Contrast", description: "Maximum separation", theme: { page: "#070707", surface: "#171717", accent: "#f0c33c", secondary: "#58a8ff" } },
-];
-
 const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; label: string; description: string }> = [
   { mode: "system", icon: "◐", label: "System", description: "Follow this device" },
   { mode: "light", icon: "○", label: "Light", description: "Standard bright HGR" },
   { mode: "dark", icon: "●", label: "Dark", description: "Standard graphite HGR" },
 ];
 
-function paletteMatches(left: HalieusCustomTheme, right: HalieusCustomTheme): boolean {
-  return left.page === right.page
-    && left.surface === right.surface
-    && left.accent === right.accent
-    && left.secondary === right.secondary;
-}
-
-const CUSTOM_LIBRARY_PRESETS = CUSTOM_PRESETS.filter(
-  (preset) => !THEME_PROFILES.some((profile) => paletteMatches(profile.theme, preset.theme)),
-);
-
-const THEME_PROFILE_GROUPS = [
-  { id: "unlockable", label: "Unlockables", description: "Earned through verified play and achievements", profiles: THEME_PROFILES.filter(p=>!CORE_THEME_IDS.includes(p.id)) },
-  { id: "core", label: "Core", description: "Always available HGR palettes", profiles: THEME_PROFILES.filter(p=>CORE_THEME_IDS.includes(p.id)) },
-];
-
+const UNLOCKABLE_THEME_PROFILES = THEME_PROFILES.filter((profile) => !CORE_THEME_IDS.includes(profile.id));
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
   const [entitlements, setEntitlements] = useState<string[]>(CORE_THEME_IDS);
@@ -118,7 +88,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const previewSurfaceMuted = readableInk([draft.surface], "#4b5563");
   const previewPageInk = readableInk([draft.page], "#101318");
   const previewPageMuted = readableInk([draft.page], "#4b5563");
-  const workspacePalette = committedTheme().custom;
 
   useEffect(() => {
     const handleMode = (event: Event) => setMode((event as CustomEvent<HalieusThemeMode>).detail);
@@ -175,10 +144,6 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   function selectProfile(id: HalieusThemeProfileId) {
     if (!themeIsAvailable(id, entitlements, betaMode)) return;
     preview({ ...committedTheme(), mode: "profile", profile: id });
-  }
-
-  function selectCustomPalette(theme: HalieusCustomTheme) {
-    preview({ ...committedTheme(), mode: "custom", custom: { ...theme } });
   }
 
   function openCustom() {
@@ -255,7 +220,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </div>
               <button type="button" className={`halieus-theme-library-launch ${mode === "profile" || mode === "custom" || mode === "blue" || mode === "red" || mode === "green" ? "is-active" : ""}`} onClick={() => setLibraryOpen(true)}>
                 <span className="halieus-theme-library-art" aria-hidden="true"><i /><i /><i /><i /></span>
-                <span><strong>Theme Library</strong><small>{CUSTOM_LIBRARY_PRESETS.length + THEME_PROFILES.length + 1} coordinated palettes</small></span>
+                <span><strong>Theme Library</strong><small>{UNLOCKABLE_THEME_PROFILES.length} progression palettes</small></span>
                 <b aria-hidden="true">→</b>
               </button>
               <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
@@ -268,64 +233,24 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HEX</button>
               <div className="halieus-theme-library-grid">
                 <div className="halieus-theme-library-group">
-                  <strong>Starting palettes</strong>
-                  <small>Always available · the same editable four-colour palettes used by Custom</small>
+                  <strong>Unlockables</strong>
+                  <small>Earned through verified play and achievements</small>
                 </div>
-                {CUSTOM_LIBRARY_PRESETS.map((preset) => (
-                  <button type="button" key={`starting-${preset.id}`} className={mode === "custom" && paletteMatches(custom, preset.theme) ? "is-active" : ""} onClick={() => selectCustomPalette(preset.theme)}>
+                {UNLOCKABLE_THEME_PROFILES.map((profile) => (
+                  <button type="button" key={profile.id} disabled={!themeIsAvailable(profile.id, entitlements, betaMode)} aria-label={`${profile.label} · ${themeUnlockLabel(profile.id)}`} className={`${mode === "profile" && profileId === profile.id ? "is-active" : ""}${betaMode && !entitlements.includes(profile.id) ? " is-beta-unlocked" : ""}`.trim()} onClick={() => selectProfile(profile.id)}>
                     <span className="halieus-theme-profile-visual" aria-hidden="true">
                       <span className="halieus-theme-profile-swatch">
-                        <i style={{ background: preset.theme.page }} />
-                        <i style={{ background: preset.theme.surface }} />
-                        <i style={{ background: preset.theme.accent }} />
-                        <i style={{ background: preset.theme.secondary }} />
+                        <i style={{ background: profile.theme.page }} />
+                        <i style={{ background: profile.theme.surface }} />
+                        <i style={{ background: profile.theme.accent }} />
+                        <i style={{ background: profile.theme.secondary }} />
                       </span>
+                      {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
                     </span>
-                    <span><em>Starting palette</em><strong>{preset.label}</strong><small>{preset.description}</small><small className="theme-unlock-condition">Always available · editable</small></span>
-                    {mode === "custom" && paletteMatches(custom, preset.theme) && <b aria-hidden="true">✓</b>}
+                    <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{betaMode && !entitlements.includes(profile.id) ? `Beta access · Normally: ${themeUnlockLabel(profile.id)}` : entitlements.includes(profile.id) ? "Unlocked" : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
+                    {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
                   </button>
                 ))}
-
-                {THEME_PROFILE_GROUPS.map((group) => (
-                  <Fragment key={group.id}>
-                    <div className="halieus-theme-library-group">
-                      <strong>{group.label}</strong>
-                      <small>{group.description}</small>
-                    </div>
-                    {group.profiles.map((profile) => (
-                      <button type="button" key={profile.id} disabled={!themeIsAvailable(profile.id, entitlements, betaMode)} aria-label={`${profile.label} · ${themeUnlockLabel(profile.id)}`} className={`${mode === "profile" && profileId === profile.id ? "is-active" : ""}${betaMode && !entitlements.includes(profile.id) ? " is-beta-unlocked" : ""}`.trim()} onClick={() => selectProfile(profile.id)}>
-                        <span className="halieus-theme-profile-visual" aria-hidden="true">
-                          <span className="halieus-theme-profile-swatch">
-                            <i style={{ background: profile.theme.page }} />
-                            <i style={{ background: profile.theme.surface }} />
-                            <i style={{ background: profile.theme.accent }} />
-                            <i style={{ background: profile.theme.secondary }} />
-                          </span>
-                          {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
-                        </span>
-                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{betaMode && !entitlements.includes(profile.id) ? `Beta access · Normally: ${themeUnlockLabel(profile.id)}` : entitlements.includes(profile.id) ? (CORE_THEME_IDS.includes(profile.id) ? "Core" : "Unlocked") : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
-                        {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
-                      </button>
-                    ))}
-                  </Fragment>
-                ))}
-
-                <div className="halieus-theme-library-group">
-                  <strong>Workspace palette</strong>
-                  <small>Your saved personal palette · always available and editable</small>
-                </div>
-                <button type="button" className={mode === "custom" && paletteMatches(custom, workspacePalette) ? "is-active" : ""} onClick={() => selectCustomPalette(workspacePalette)}>
-                  <span className="halieus-theme-profile-visual" aria-hidden="true">
-                    <span className="halieus-theme-profile-swatch">
-                      <i style={{ background: workspacePalette.page }} />
-                      <i style={{ background: workspacePalette.surface }} />
-                      <i style={{ background: workspacePalette.accent }} />
-                      <i style={{ background: workspacePalette.secondary }} />
-                    </span>
-                  </span>
-                  <span><em>Personal</em><strong>Workspace palette</strong><small>Your current RGB / HEX custom palette.</small><small className="theme-unlock-condition">Personal · always available</small></span>
-                  {mode === "custom" && paletteMatches(custom, workspacePalette) && <b aria-hidden="true">✓</b>}
-                </button>
               </div>
             </>}
             {themeError && <p role="status">{themeError}</p>}
@@ -339,23 +264,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
         <div className="halieus-custom-theme-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && cancelCustom()}>
           <section ref={editorRef} className="halieus-custom-theme-dialog" role="dialog" aria-modal="true" aria-label="Custom HGR theme">
             <header>
-              <div><p>CUSTOM THEME</p><h2>Build your own HGR palette</h2><span>Start from a coordinated palette or go completely custom. Games keep their identity while the shared HGR shell follows your colours.</span></div>
+              <div><p>CUSTOM THEME</p><h2>Build your own HGR palette</h2><span>Tune the four shared HGR colours directly. Games keep their identity while the platform shell follows this palette.</span></div>
               <button type="button" onClick={cancelCustom} aria-label="Close custom theme editor">×</button>
             </header>
-            <section className="halieus-custom-presets" aria-label="Custom theme presets">
-              <header><strong>Starting palettes</strong><span>These are starting points, not locked themes. Change anything with RGB or HEX.</span></header>
-              <div>{CUSTOM_PRESETS.map((preset) => (
-                <button type="button" key={preset.id} onClick={() => setDraft({ ...preset.theme })}>
-                  <span className="halieus-custom-preset-swatch" aria-hidden="true">
-                    <i style={{ background: preset.theme.page }} />
-                    <i style={{ background: preset.theme.surface }} />
-                    <i style={{ background: preset.theme.accent }} />
-                    <i style={{ background: preset.theme.secondary }} />
-                  </span>
-                  <span><strong>{preset.label}</strong><small>{preset.description}</small></span>
-                </button>
-              ))}</div>
-            </section>
             <div className="halieus-custom-theme-grid">
               {([
                 ["page", "Workspace"],
@@ -366,24 +277,15 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                 <article key={key} className="halieus-custom-colour-card">
                   <header><strong>{label}</strong><code>{draft[key].toUpperCase()}</code></header>
                   <div className="halieus-custom-colour-main">
-                    <input type="color" value={draft[key]} onChange={(event) => updateDraftColour(key, event.target.value)} aria-label={`${label} colour picker`} />
-                    <input
-                      key={draft[key]}
-                      type="text"
-                      defaultValue={draft[key]}
-                      maxLength={7}
-                      onBlur={(event) => {
-                        if (/^#[0-9a-f]{6}$/i.test(event.target.value)) updateDraftColour(key, event.target.value.toLowerCase());
-                        else event.currentTarget.value = draft[key];
-                      }}
-                      aria-label={`${label} HEX colour`}
-                    />
+                    <span className="halieus-custom-colour-swatch" style={{ background: draft[key] }} aria-hidden="true" />
+                    <small>{label} colour</small>
                   </div>
                   <div className="halieus-rgb-fields" aria-label={`${label} RGB channels`}>
                     {rgbChannels(draft[key]).map((channel, channelIndex) => (
                       <label key={channelIndex}>
                         <b>{["R", "G", "B"][channelIndex]}</b>
-                        <input type="number" min={0} max={255} value={channel} onChange={(event) => updateRgbChannel(key, channelIndex, Number(event.target.value))} />
+                        <input type="range" min={0} max={255} value={channel} onChange={(event) => updateRgbChannel(key, channelIndex, Number(event.target.value))} aria-label={`${label} ${["red", "green", "blue"][channelIndex]} channel`} />
+                        <output>{channel}</output>
                       </label>
                     ))}
                   </div>
@@ -393,12 +295,16 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             <div className="halieus-custom-theme-preview" style={{ background: draft.page, color: previewPageInk }}>
               <section className="halieus-custom-preview-window" style={{ background: draft.surface, color: previewSurfaceInk }}>
                 <header><i style={{ background: draft.accent }} /><b style={{ color: previewSurfaceInk }}>HALIEUS GAME ROOM</b><em style={{ background: draft.secondary }} /></header>
-                <div style={{ color: previewSurfaceInk }}><strong>Game night</strong><span style={{ borderColor: draft.accent, color: previewSurfaceInk }}>Primary action</span><small style={{ color: previewSurfaceMuted }}>Secondary accent</small></div>
+                <div style={{ color: previewSurfaceInk }}><strong>Main-site preview</strong><span style={{ borderColor: draft.accent, color: previewSurfaceInk }}>Primary action</span><small style={{ color: previewSurfaceMuted }}>Panels use your surface colour</small></div>
               </section>
-              <div className="halieus-custom-preview-palette" aria-label="Selected palette">
-                {(["page", "surface", "accent", "secondary"] as Array<keyof HalieusCustomTheme>).map((key) => <span key={key}><i style={{ background: draft[key] }} /><code style={{ color: previewPageMuted }}>{draft[key].toUpperCase()}</code></span>)}
+              <div className="halieus-custom-preview-legend" aria-label="Main site colour legend">
+                {([
+                  ["page", "Workspace"],
+                  ["surface", "Panels"],
+                  ["accent", "Primary"],
+                  ["secondary", "Secondary"],
+                ] as Array<[keyof HalieusCustomTheme, string]>).map(([key, legendLabel]) => <span key={key}><i style={{ background: draft[key] }} /><b>{legendLabel}</b></span>)}
               </div>
-              <small style={{ color: previewPageMuted }}>Live palette preview</small>
             </div>
             <footer>
               <button type="button" className="button-muted" onClick={() => setDraft({ ...DEFAULT_CUSTOM_THEME })}>Reset</button>
