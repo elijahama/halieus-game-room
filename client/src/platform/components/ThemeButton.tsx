@@ -2,7 +2,7 @@ import { CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../
 import { accountApi } from "../accounts/api";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -40,7 +40,10 @@ const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; la
   { mode: "dark", icon: "●", label: "Dark", description: "Standard graphite HGR" },
 ];
 
-const UNLOCKABLE_THEME_PROFILES = THEME_PROFILES.filter((profile) => !CORE_THEME_IDS.includes(profile.id));
+const THEME_LIBRARY_GROUPS = [
+  { id: "core", label: "Core", description: "Always available HGR palettes", profiles: THEME_PROFILES.filter((profile) => CORE_THEME_IDS.includes(profile.id)) },
+  { id: "unlockable", label: "Unlockables", description: "Earned through verified play and achievements", profiles: THEME_PROFILES.filter((profile) => !CORE_THEME_IDS.includes(profile.id)) },
+] as const;
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
   const [entitlements, setEntitlements] = useState<string[]>(CORE_THEME_IDS);
@@ -199,7 +202,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             aria-label={libraryOpen ? "Theme Library" : "Appearance"}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <header><span>{libraryOpen ? "Theme Library" : "Appearance"}</span><small>{libraryOpen ? "One palette engine · starting, unlockable, core and workspace palettes" : "Fast defaults, library or your own palette"}</small><button type="button" className="appearance-close" aria-label="Close appearance" onClick={() => { cancelPreview(); setMenuOpen(false); }}>×</button></header>
+            <header><span>{libraryOpen ? "Theme Library" : "Appearance"}</span><small>{libraryOpen ? "Core palettes and progression unlockables" : "Fast defaults, library or your own palette"}</small><button type="button" className="appearance-close" aria-label="Close appearance" onClick={() => { cancelPreview(); setMenuOpen(false); }}>×</button></header>
 
             {!libraryOpen ? <>
               <div className="halieus-theme-quick-grid">
@@ -219,7 +222,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               </div>
               <button type="button" className={`halieus-theme-library-launch ${mode === "profile" || mode === "custom" || mode === "blue" || mode === "red" || mode === "green" ? "is-active" : ""}`} onClick={() => setLibraryOpen(true)}>
                 <span className="halieus-theme-library-art" aria-hidden="true"><i /><i /><i /><i /></span>
-                <span><strong>Theme Library</strong><small>{UNLOCKABLE_THEME_PROFILES.length} progression palettes</small></span>
+                <span><strong>Theme Library</strong><small>{THEME_PROFILES.length} core + progression palettes</small></span>
                 <b aria-hidden="true">→</b>
               </button>
               <button type="button" className={`halieus-theme-custom-launch ${mode === "custom" ? "is-active" : ""}`} onClick={openCustom}>
@@ -231,24 +234,28 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
               <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB sliders</button>
               <div className="halieus-theme-library-grid">
-                <div className="halieus-theme-library-group">
-                  <strong>Unlockables</strong>
-                  <small>Earned through verified play and achievements</small>
-                </div>
-                {UNLOCKABLE_THEME_PROFILES.map((profile) => (
-                  <button type="button" key={profile.id} disabled={!themeIsAvailable(profile.id, entitlements, betaMode)} aria-label={`${profile.label} · ${themeUnlockLabel(profile.id)}`} className={`${mode === "profile" && profileId === profile.id ? "is-active" : ""}${betaMode && !entitlements.includes(profile.id) ? " is-beta-unlocked" : ""}`.trim()} onClick={() => selectProfile(profile.id)}>
-                    <span className="halieus-theme-profile-visual" aria-hidden="true">
-                      <span className="halieus-theme-profile-swatch">
-                        <i style={{ background: profile.theme.page }} />
-                        <i style={{ background: profile.theme.surface }} />
-                        <i style={{ background: profile.theme.accent }} />
-                        <i style={{ background: profile.theme.secondary }} />
-                      </span>
-                      {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
-                    </span>
-                    <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{betaMode && !entitlements.includes(profile.id) ? `Beta access · Normally: ${themeUnlockLabel(profile.id)}` : entitlements.includes(profile.id) ? "Unlocked" : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
-                    {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
-                  </button>
+                {THEME_LIBRARY_GROUPS.map((group) => (
+                  <Fragment key={group.id}>
+                    <div className="halieus-theme-library-group">
+                      <strong>{group.label}</strong>
+                      <small>{group.description}</small>
+                    </div>
+                    {group.profiles.map((profile) => (
+                      <button type="button" key={profile.id} disabled={!themeIsAvailable(profile.id, entitlements, betaMode)} aria-label={`${profile.label} · ${themeUnlockLabel(profile.id)}`} className={`${mode === "profile" && profileId === profile.id ? "is-active" : ""}${betaMode && !entitlements.includes(profile.id) ? " is-beta-unlocked" : ""}`.trim()} onClick={() => selectProfile(profile.id)}>
+                        <span className="halieus-theme-profile-visual" aria-hidden="true">
+                          <span className="halieus-theme-profile-swatch">
+                            <i style={{ background: profile.theme.page }} />
+                            <i style={{ background: profile.theme.surface }} />
+                            <i style={{ background: profile.theme.accent }} />
+                            <i style={{ background: profile.theme.secondary }} />
+                          </span>
+                          {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
+                        </span>
+                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{betaMode && !entitlements.includes(profile.id) ? `Beta access · Normally: ${themeUnlockLabel(profile.id)}` : entitlements.includes(profile.id) ? (CORE_THEME_IDS.includes(profile.id) ? "Core · always available" : "Unlocked") : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
+                        {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
+                      </button>
+                    ))}
+                  </Fragment>
                 ))}
               </div>
             </>}
