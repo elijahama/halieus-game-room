@@ -16,7 +16,7 @@ assert.match(themeButton,/createPortal/,'Theme selector popover/editor must esca
 for(const mode of ['system','light','dark']) {
   assert.ok(themeButton.includes(`mode: "${mode}"`),`Quick theme selector missing ${mode}`);
 }
-assert.match(themeButton,/THEME_PROFILE_GROUPS/,'Theme selector must expose the 4.5 Theme Library profile groups');
+assert.match(themeButton,/UNLOCKABLE_THEME_PROFILES/,'Theme selector must expose the progression-only Theme Library profile set');
 assert.match(themeButton,/THEME_PROFILES\.filter/,'Theme Library must be backed by the shared profile catalog');
 assert.match(themeButton,/halieus-theme-custom-launch/,'Theme selector must retain direct Custom palette access');
 assert.match(themeButton,/halieus-custom-theme-dialog/,'Custom palette must use a contained dialog');
