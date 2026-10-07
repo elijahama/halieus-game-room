@@ -87,7 +87,7 @@ export function PlayerIdentityCard({
         }
       } : undefined}
     >
-      <span className="halieus-player-identity-avatar halieus-avatar-media" style={{ background: player.playerColor }}>
+      <span className="halieus-player-identity-avatar halieus-avatar-media" style={player.profilePicture ? undefined : { background: player.playerColor }}>
         {player.profilePicture ? <img src={player.profilePicture} alt="" /> : player.avatar}
       </span>
       <span className="halieus-player-identity-copy">
