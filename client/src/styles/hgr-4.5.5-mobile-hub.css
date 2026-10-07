@@ -51,16 +51,24 @@
 
   .halieus-feature-carousel .halieus-showcase-feature {
     min-height: 0 !important;
+    width: 100% !important;
     display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: auto auto !important;
+    grid-auto-flow: row !important;
     align-items: stretch !important;
     justify-items: stretch !important;
+    gap: 0 !important;
     padding: 0 0 10px !important;
     background: color-mix(in srgb, var(--feature-accent) 5%, var(--hgr-surface)) !important;
   }
 
   .halieus-feature-card-stage {
-    min-height: 164px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    min-height: 150px !important;
+    grid-column: 1 / -1 !important;
     grid-template-columns: 112px minmax(0, 1fr) !important;
     grid-template-rows: 1fr !important;
     align-items: center !important;
@@ -111,7 +119,7 @@
   }
 
   .halieus-feature-arrow {
-    top: 68px !important;
+    top: 58px !important;
     width: 32px !important;
     height: 32px !important;
     border-radius: 9px !important;
@@ -124,11 +132,14 @@
   .halieus-feature-arrow.is-next { right: 8px !important; }
 
   .halieus-feature-rail {
+    grid-column: 1 / -1 !important;
     position: relative !important;
     left: auto !important;
     right: auto !important;
     bottom: auto !important;
-    width: auto !important;
+    width: calc(100% - 20px) !important;
+    max-width: calc(100% - 20px) !important;
+    box-sizing: border-box !important;
     margin: 0 10px !important;
     padding: 6px !important;
     gap: 7px !important;
