@@ -61,7 +61,7 @@ This closes a remaining ambiguity where a stale runtime marker could be mistaken
 
 ## 7 October 2026 — palette / player-colour / operation-icon acceptance
 
-Before 4.5.5 ships, verify on a real phone that progression Theme Library profiles and Custom colours preserve the same workspace/surface hierarchy for equivalent colours. System, Light and Dark remain the immediate base modes outside the library. Theme Library now presents progression Unlockables only: the Core palette gallery, Starting/custom preset gallery and duplicate saved Workspace palette tile are deliberately removed. Custom is one four-part RGB-slider editor for Workspace, Panels, Primary UI and Secondary UI, with a compact main-site preview/legend below it.
+Before 4.5.5 ships, verify on a real phone that Theme Library profiles and Custom colours preserve the same workspace/surface hierarchy for equivalent colours. System, Light and Dark remain the immediate base modes outside the library. Theme Library presents the original always-available **Core** profiles plus progression **Unlockables** on the same page. The editable Starting/custom preset gallery and duplicate saved Workspace palette tile remain deliberately removed. Custom is one four-part RGB-slider editor for Workspace, Panels, Primary UI and Secondary UI, with a compact main-site preview/legend below it.
 
 Player colour must be visible only when HGR needs an avatar/initials fallback. With a real profile picture present, changing player colour must not change the picture frame, theme outline, navigation selection, card glow, owner tools, guild UI or any other platform chrome.
 
