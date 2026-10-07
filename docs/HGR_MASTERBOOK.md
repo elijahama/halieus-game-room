@@ -538,3 +538,5 @@ The Game Room mobile Home surface must not be a compressed desktop composition. 
 The accepted five-item fixed bottom navigation is preserved. Player action triggers and modal close buttons use explicit square centring so glyph baselines cannot visually drift. These rules are phone/tablet-scoped and must not alter desktop or in-game table geometry.
 
 VERSION remains 4.5.4 until the 4.5.5 mobile batches and real-device acceptance are complete.
+
+Batch 2 automated validation gate: the normal HGR release-identity workflow must pass against this source state before the next 4.5.5 batch is treated as accepted.
