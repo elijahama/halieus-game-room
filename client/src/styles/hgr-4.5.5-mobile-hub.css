@@ -1,0 +1,293 @@
+/* HGR 4.5.5 Batch 2 — mobile Game Room geometry.
+ * Phone layouts get their own compact flat treatment; desktop/table game
+ * surfaces and the fixed five-item mobile navigation remain untouched. */
+
+@media (max-width: 760px) {
+  .halieus-feature-carousel {
+    min-height: 0 !important;
+    overflow: hidden;
+  }
+
+  .halieus-feature-carousel .halieus-showcase-copy {
+    padding: 18px 16px 16px !important;
+    gap: 9px !important;
+  }
+
+  .halieus-feature-copy-stage > h1 {
+    font-size: clamp(2rem, 10vw, 2.85rem) !important;
+    line-height: .98 !important;
+  }
+
+  .halieus-feature-copy-stage > span {
+    min-height: 0 !important;
+    max-height: none !important;
+    -webkit-line-clamp: unset !important;
+    line-height: 1.45 !important;
+  }
+
+  .halieus-showcase-actions {
+    gap: 8px !important;
+    margin-top: 5px !important;
+  }
+
+  .halieus-showcase-actions button {
+    min-height: 44px !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+  }
+
+  .halieus-showcase-status {
+    gap: 7px !important;
+    margin-top: 5px !important;
+  }
+
+  .halieus-showcase-status > button {
+    min-height: 58px !important;
+    padding: 8px 9px !important;
+    border-radius: 11px !important;
+    background: var(--hgr-surface-soft) !important;
+    box-shadow: none !important;
+  }
+
+  .halieus-feature-carousel .halieus-showcase-feature {
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-rows: auto auto !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    padding: 0 0 10px !important;
+    background: color-mix(in srgb, var(--feature-accent) 5%, var(--hgr-surface)) !important;
+  }
+
+  .halieus-feature-card-stage {
+    min-height: 164px !important;
+    grid-template-columns: 112px minmax(0, 1fr) !important;
+    grid-template-rows: 1fr !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    gap: 14px !important;
+    padding: 16px 42px 12px !important;
+    animation: none !important;
+  }
+
+  .halieus-feature-card-stage > img {
+    width: 108px !important;
+    max-height: 116px !important;
+    justify-self: center !important;
+    filter: none !important;
+    animation: none !important;
+  }
+
+  .halieus-feature-card-stage > div {
+    width: 100%;
+    min-width: 0;
+    min-height: 0 !important;
+    justify-items: start !important;
+    text-align: left !important;
+  }
+
+  .halieus-feature-card-stage h2 {
+    max-width: 100%;
+    font-size: 1.45rem !important;
+    line-height: 1.02 !important;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .halieus-feature-card-stage span {
+    min-height: 0 !important;
+    font-size: .7rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .halieus-feature-card-stage > b {
+    top: 9px !important;
+    right: 10px !important;
+    box-shadow: none !important;
+  }
+
+  .halieus-showcase-orbit {
+    display: none !important;
+  }
+
+  .halieus-feature-arrow {
+    top: 68px !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 9px !important;
+    background: var(--hgr-surface-raised) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .halieus-feature-arrow.is-previous { left: 8px !important; }
+  .halieus-feature-arrow.is-next { right: 8px !important; }
+
+  .halieus-feature-rail {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: auto !important;
+    margin: 0 10px !important;
+    padding: 6px !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    border-radius: 12px !important;
+    background: var(--hgr-surface-soft) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    scroll-snap-type: x proximity;
+  }
+
+  .halieus-feature-rail button {
+    flex: 0 0 48px !important;
+    min-width: 48px !important;
+    width: 48px !important;
+    height: 48px !important;
+    padding: 5px !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+    scroll-snap-align: start;
+  }
+
+  .halieus-feature-rail img {
+    width: 32px !important;
+    height: 32px !important;
+    filter: none !important;
+  }
+
+  .halieus-feature-rail button.is-active,
+  .halieus-discovery-tabs button.is-active,
+  .halieus-mobile-nav button.is-active {
+    background: color-mix(in srgb, var(--hgr-brand) 11%, var(--hgr-surface-soft)) !important;
+    box-shadow: inset 0 -2px 0 var(--hgr-brand) !important;
+  }
+
+  .halieus-discovery-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+  }
+
+  .halieus-discovery-card {
+    min-height: 82px !important;
+    padding: 10px !important;
+    border-radius: 13px !important;
+    background: var(--hgr-surface-raised) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .halieus-discovery-card:hover {
+    transform: none !important;
+  }
+
+  .halieus-player-directory .halieus-player-identity {
+    min-height: 64px !important;
+    padding: 8px 9px !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+  }
+
+  .halieus-player-directory .halieus-player-identity-avatar {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .halieus-player-action-shell {
+    align-self: center !important;
+    justify-self: end !important;
+  }
+
+  .halieus-player-directory .halieus-player-action-trigger {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    border-radius: 11px !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+  }
+
+  .halieus-player-action-trigger > span {
+    display: block;
+    line-height: 1 !important;
+    transform: translateY(-1px);
+  }
+
+  .halieus-join-modal {
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  .halieus-join-modal > header {
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .halieus-join-modal > header > button {
+    flex: 0 0 42px !important;
+    width: 42px !important;
+    height: 42px !important;
+    display: grid !important;
+    place-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 1px solid var(--hgr-border) !important;
+    border-radius: 12px !important;
+    background: var(--hgr-surface-soft) !important;
+    color: var(--hgr-text) !important;
+    font-size: 1.7rem !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+  }
+
+  .halieus-join-games {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    margin: 14px 0 !important;
+  }
+
+  .halieus-join-games button {
+    min-height: 82px !important;
+    padding: 8px 5px !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+  }
+
+  .halieus-join-games img {
+    width: 40px !important;
+    height: 40px !important;
+    filter: none !important;
+  }
+
+  .halieus-mobile-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .halieus-feature-card-stage {
+    grid-template-columns: 92px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding-inline: 38px !important;
+  }
+
+  .halieus-feature-card-stage > img {
+    width: 88px !important;
+    max-height: 98px !important;
+  }
+
+  .halieus-feature-card-stage h2 {
+    font-size: 1.3rem !important;
+  }
+
+  .halieus-feature-rail button {
+    flex-basis: 46px !important;
+    min-width: 46px !important;
+    width: 46px !important;
+  }
+}
