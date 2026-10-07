@@ -23,6 +23,8 @@ assert.match(bridge, /operationId = \$script:OperationId/);
 assert.match(bridge, /operationId = \$OperationId/);
 assert.match(bridge, /progressMarkers[\s\S]*STEP 9 - Publishing the validated HGR release[\s\S]*Progress = 88/);
 assert.match(bridge, /Update-HgrProgressFromLine/);
+assert.match(bridge, /\[AllowEmptyString\(\)\]\[string\]\$Line/,"Control progress parser must accept blank CMD output lines");
+assert.match(bridge, /if \(\[string\]::IsNullOrWhiteSpace\(\$Line\)\) \{ return \}/,"Blank updater output must be ignored before marker matching");
 assert.match(bridge, /Tee-Object -FilePath \$updateOutputLog[\s\S]*ForEach-Object/);
 assert.match(bridge, /progress = \$script:currentProgress[\s\S]*phase = \$script:currentPhase/);
 assert.match(bridge, /Finalizing Control handoff/);
@@ -71,4 +73,4 @@ assert.match(css, /\.operation-toast\.is-minimized/);
 assert.match(css, /data-corner\^="bottom"/);
 assert.match(css, /bottom:calc\(84px \+ env\(safe-area-inset-bottom\)\)/);
 
-console.log("PASS 4.5.5 Batch 1 + Part 28: durable update progress, single terminal status, neutral failure chrome and movable global status");
+console.log("PASS 4.5.5 Batch 1 + Part 28: durable update progress, blank-line-safe parsing, single terminal status, neutral failure chrome and movable global status");
