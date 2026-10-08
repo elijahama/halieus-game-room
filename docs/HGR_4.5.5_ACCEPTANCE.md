@@ -107,3 +107,15 @@ The logo-preset selector's active frame is neutral UI chrome. It must not use pl
 ## 8 October 2026 — Operation card highlight correction
 
 An enabled/ready Update HGR card must not remain filled bright blue. Readiness uses the normal dark Control card with the existing blue role edge/icon; the strong animated treatment is reserved for a genuinely running operation.
+
+
+## 8 October 2026 — forced 4.5.5 delivery boundary
+
+Part 28 source fixes were present on `main` but the live client could still identify itself as **4.5.4**, retaining the previous PWA shell/cache identity and older Control asset URLs. The corrective release therefore moves the actual product version to **4.5.5** and refreshes all browser/install identities together.
+
+Acceptance requires:
+- browser/server report 4.5.5,
+- service-worker cache namespace is `halieus-shell-v4-5-5-<release fingerprint>`,
+- Control loads the `4.5.5-force-live-1` CSS/JS revision,
+- Part 28 final-authority CSS loads after all prior HGR styles,
+- Core + Unlockables, RGB/HSL/Greyscale/contrast controls, neutral logo selection, neutral ready Update cards, static terminal glyphs and retryable website progress are visibly present after update.
