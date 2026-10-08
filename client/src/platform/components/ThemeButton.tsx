@@ -101,7 +101,7 @@ const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; la
 
 const VISIBLE_CORE_THEME_IDS = new Set<string>(CORE_LIBRARY_THEME_IDS);
 const THEME_LIBRARY_GROUPS = [
-  { id: "core", label: "Core", description: "Original Custom preset logic · always available", profiles: THEME_PROFILES.filter((profile) => VISIBLE_CORE_THEME_IDS.has(profile.id)) },
+  { id: "core", label: "Core", description: "Always available · animated palette atmospheres", profiles: THEME_PROFILES.filter((profile) => VISIBLE_CORE_THEME_IDS.has(profile.id)) },
   { id: "unlockable", label: "Unlockables", description: "Earned through verified play and achievements", profiles: THEME_PROFILES.filter((profile) => !CORE_THEME_IDS.includes(profile.id)) },
 ] as const;
 
