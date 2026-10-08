@@ -37,6 +37,9 @@ assert.match(player, /className="halieus-player-action-trigger"/);
 assert.match(themeCore, /export function themeProfileVariables\(profile: HalieusThemeProfile\)[\s\S]*return customThemeVariables\(profile\.theme\)/);
 assert.match(themeButton, /THEME_LIBRARY_GROUPS/);
 assert.match(themeButton, /label: "Core"/);
+assert.match(themeButton, /CORE_LIBRARY_THEME_IDS/);
+assert.match(themeButton, /Original Custom preset logic · always available/);
+assert.match(themeCore, /id: "studio-graphite"[\s\S]*id: "high-contrast"/);
 assert.match(themeButton, /label: "Unlockables"/);
 assert.doesNotMatch(themeButton, /<strong>Starting palettes<\/strong>|<strong>Workspace palette<\/strong>/);
 assert.doesNotMatch(themeButton, /function selectCustomPalette\(/);
@@ -55,4 +58,4 @@ assert.doesNotMatch(guilds, /style=\{\{ background: entry\.playerColor \}\}/);
 assert.match(megaLeaderboard, /style=\{entry\.profilePicture \? undefined : \{ background: entry\.playerColor \?\? "#64748b" \}\}/);
 
 
-console.log("PASS 4.5.5 Batch 2/3 + Part 28: Core + Unlockables, RGB/HSL Custom palette, contrast guide and avatar-only player colour ownership are locked");
+console.log("PASS 4.5.5 Batch 2/3 + Part 28: restored Custom-preset Core atmosphere, Unlockables, RGB/HSL editor, contrast guide and avatar-only player colour ownership are locked");
