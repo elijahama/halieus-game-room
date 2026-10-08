@@ -27,3 +27,16 @@
 .halieus-theme-library-grid {
   visibility: visible !important;
 }
+
+
+/* HGR Part 28 — visible Core presets reuse the original Custom atmosphere. */
+html[data-theme-mode="profile"] .halieus-theme-atmosphere{
+  visibility:visible!important;
+  opacity:1!important;
+}
+@media (prefers-reduced-motion:no-preference){
+  html[data-theme-mode="profile"] .halieus-theme-atmosphere>span{
+    animation-name:halieusAmbientFloat!important;
+    animation-play-state:running!important;
+  }
+}
