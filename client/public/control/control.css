@@ -146,3 +146,28 @@
   animation:none!important;
   transform:none!important;
 }
+
+
+/* HGR 4.5.5 — forced live Control authority. */
+.operation-grid button[data-operation]:not(:disabled){
+  background:#151d29!important;
+  border-color:#344052!important;
+  border-top-color:var(--action-color)!important;
+  box-shadow:none!important;
+}
+.operation-grid button[data-operation]:not(:disabled):hover{
+  background:#1b2635!important;
+  border-color:#46556b!important;
+  border-top-color:var(--action-color)!important;
+}
+.operation-toast[data-state="failed"] .operation-icon,
+.operation-toast[data-state="rejected"] .operation-icon{
+  background:transparent!important;
+  animation:none!important;
+  transform:none!important;
+}
+.operation-toast:not([data-state="running"]) .operation-icon,
+.operation-toast:not([data-state="running"]) .operation-icon::before{
+  animation:none!important;
+  transform:none!important;
+}
