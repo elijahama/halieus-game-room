@@ -49,8 +49,8 @@ assert.match(cloudAgent, /if \(stopping \|\| terminalObserved\) return false/,"A
 
 assert.match(html, /id="operationStateIcon"/);
 assert.match(html, /data-operation="update" data-update-state="idle"[\s\S]*operation-action-icon/);
-assert.match(html, /control\.css\?v=part28-progress-retry1/,"Cloud Control CSS URL must move when status visuals change");
-assert.match(html, /control\.js\?v=part28-progress-retry1/,"Cloud Control script URL must move with the progress retry release");
+assert.match(html, /control\.css\?v=4\.5\.5-force-live-1/,"Cloud Control CSS URL must move when status visuals change");
+assert.match(html, /control\.js\?v=4\.5\.5-force-live-1/,"Cloud Control script URL must move with the progress retry release");
 assert.match(cloudUi, /update\.dataset\.updateState = busy \? "running" : "idle"/);
 assert.doesNotMatch(cloudUi, /terminalState/,"Update action tile must not duplicate terminal status");
 assert.match(css, /@keyframes control-operation-spin/);
@@ -81,6 +81,8 @@ assert.match(css, /\.operation-toast\.is-minimized/);
 assert.match(css, /data-corner\^="bottom"/);
 assert.match(css, /button\[data-operation\]:not\(:disabled\)\{background:#151d29;border-color:#344052;border-top-color:var\(--action-color\);color:#fff;box-shadow:none\}/,"Available operation cards must stay restrained instead of looking permanently highlighted");
 assert.doesNotMatch(css, /button\[data-operation\]:not\(:disabled\)\{background:#204779/,"The old blue-filled available-operation highlight must not return");
+assert.match(css, /HGR 4\.5\.5 — forced live Control authority/,"4.5.5 must carry a final Control authority layer");
+assert.match(css, /background:#151d29!important/,"Final Control authority must defeat legacy highlighted operation fills");
 assert.match(css, /bottom:calc\(84px \+ env\(safe-area-inset-bottom\)\)/);
 
 console.log("PASS 4.5.5 Batch 1 + Part 28: retryable update progress, fresh Control assets, static terminal glyphs, neutral failure status and tight mobile profile frame");
