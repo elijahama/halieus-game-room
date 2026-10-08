@@ -558,7 +558,7 @@ Durable rule: long-running remote Update continuity must not depend only on proc
 
 ### 2026-10-07 — 4.5.5 palette ownership, player-colour scope and Control operation icons
 
-Theme Library and Custom share the same four-colour workspace rendering contract: page, surface, primary accent and secondary accent are expanded through the same `customThemeVariables` surface hierarchy. Theme Library contains the original always-available **Core** profiles and progression **Unlockables** only. The former editable Starting/custom preset gallery and duplicate Workspace-palette card are not Theme Library entries. Custom remains the player's saved four-colour workspace editor. A Theme Library profile must not fall back to legacy/navy card backgrounds that Custom does not use.
+Theme Library and Custom share the same four-colour workspace rendering contract: page, surface, primary accent and secondary accent are expanded through the same `customThemeVariables` surface hierarchy. Theme Library contains **Core** plus progression **Unlockables**. Core is now the curated set of the former working Custom presets (Studio Graphite through High Contrast), promoted into proper always-available profiles while retaining the Custom-mode moving ambient-emblem logic. The Custom editor itself remains preset-free and directly edits the player's saved four-colour workspace. The duplicate Workspace-palette card remains removed.
 
 Player colour is identity fallback data only. It may fill an initials/avatar tile when no profile picture exists (or when a picture fails to load), but it must not set theme accents, panel/background colour, navigation selection, borders, glow, guild markers or other platform chrome. Uploaded profile pictures render without a player-colour backing treatment; all surrounding chrome follows the active HGR theme.
 
@@ -569,13 +569,13 @@ These are 4.5.5 acceptance rules. Canonical VERSION remains 4.5.4 until real-dev
 
 ## 7 October 2026 — Part 28 theme-control simplification
 
-Theme selection is deliberately simpler. **System, Light and Dark** remain the immediate base appearance modes. The Theme Library exposes the original always-available **Core** profiles alongside progression **Unlockables**. The editable Starting/custom preset gallery and duplicate saved Workspace-palette tile are removed from the selection surface.
+Theme selection is deliberately simpler. **System, Light and Dark** remain the immediate base appearance modes. Theme Library exposes **Core** beside progression **Unlockables**. Core is the promoted former Custom preset set; those presets are no longer duplicated inside the Custom editor. The duplicate saved Workspace-palette tile remains removed.
 
 **Custom** is now one direct four-part editor for **Workspace, Panels, Primary UI and Secondary UI**. Each colour is adjusted with RGB sliders, while the current hexadecimal value remains visible for reference. A compact main-site preview and four-part legend sit below the controls so the player can understand which part of the HGR shell each colour owns without browsing duplicate preset cards.
 
 Existing theme/profile data and entitlement rules are not deleted by this UI simplification. Previously stored profile identifiers remain readable for compatibility, Beta/Test Lab still exposes genuine progression-gated themes for testing, and game-surface cosmetics remain independent from platform chrome. This is a presentation/selection decision, not a game-rule or progression rewrite.
 
-Source regression must protect the presence of both Core and Unlockables, the absence of the retired Starting/custom-preset and duplicate Workspace galleries, and the presence of the RGB-slider editor. Real-device visual acceptance remains separate from CI.
+Source regression must protect the visible promoted Core preset set, Unlockables, the absence of a second preset gallery inside Custom, the absence of the duplicate Workspace card, and the RGB/HSL editor. Core preset backgrounds must keep moving ambient emblems when reduced motion is not requested. Real-device visual acceptance remains separate from CI.
 
 
 ### 2026-10-07 — Part 28 Control update status simplification
@@ -605,14 +605,14 @@ On mobile, the top-right profile control is avatar-only. When the text label is 
 
 ### 2026-10-08 — Part 28 Core theme restoration correction
 
-Part 28's first simplification removed too much from Theme Library. The correct durable split is:
+Part 28's first simplification removed too much from Theme Library. The corrected durable split is:
 
-- **Core**: the existing always-available HGR profile themes remain in Theme Library unchanged.
-- **Unlockables**: progression-gated profile themes remain alongside Core and keep their existing entitlement/Beta rules.
-- **Custom**: the old preset/Starting-palette gallery stays removed. Custom is the direct RGB-slider editor plus compact main-site preview/legend.
+- **Core**: the former working Custom presets are promoted into proper always-available Theme Library profiles. They keep the same four-colour palette behaviour and the same moving ambient-emblem atmosphere that made those presets work.
+- **Unlockables**: progression-gated profile themes remain beside Core and keep their existing entitlement/Beta rules.
+- **Custom**: remains the direct RGB/HSL editor plus compact main-site preview/legend. It no longer duplicates the Core presets as a second gallery.
 - **Workspace palette card**: stays removed from Theme Library because it duplicates the Custom editor.
 
-The removed Custom presets are not reinstated as selectable library cards. Their useful design principle is the coordinated four-colour relationship between workspace, panels, primary and secondary colours. Future proper Theme Library profiles may borrow that balance/contrast logic, but must be authored as intentional HGR profiles with their own identity rather than reintroducing the old Custom preset gallery.
+Legacy Core profile IDs remain readable for compatibility with saved accounts, but they are not the visible Core catalogue. This preserves old state without presenting the wrong static Core choices.
 
 
 ### 2026-10-08 — Cloud Update progress delivery retry
@@ -632,7 +632,7 @@ Custom also exposes live numeric contrast guidance for text/surface and workspac
 
 The logo preset picker is visually independent from player identity colour and theme accent. Its selected state uses neutral border/surface tokens. Player colour remains restricted to initials/avatar fallback identity and must not own logo selection borders, platform chrome, navigation or theme state.
 
-Theme Library remains **Core + Unlockables**. The Core profiles are the existing always-available working palettes; Unlockables retain progression/Beta rules. The retired Custom preset gallery remains retired.
+Theme Library remains **Core + Unlockables**. Core is the promoted former Custom preset set, using the Custom-style ambient background logic; Unlockables retain progression/Beta rules. Custom itself remains a slider editor rather than duplicating those presets.
 
 
 ### 2026-10-08 — Control available-operation highlight correction
@@ -646,4 +646,13 @@ A repeated real-device report showed that validated Part 28 source changes were 
 
 Durable correction: Part 28 is cut as an actual **4.5.5** release. VERSION/package identity, service-worker cache namespace, manifest/icon URLs, browser favicon identity, main Control-navigation revision and Cloud Control CSS/JS revision move together. A final Part 28 stylesheet is imported last so legacy/mobile/player-accent rules cannot override the approved appearance-control behaviour.
 
-This is a delivery/authority fix, not a redesign. Canonical HGR H geometry is unchanged. Core and Unlockable themes remain intact; Custom remains RGB + HSL + Greyscale + contrast guidance; player colour remains avatar/initials fallback only; Control update progress and terminal-state rules remain as previously approved.
+This is a delivery/authority fix, not a geometry redesign. Canonical HGR H geometry is unchanged. Theme Library remains Core + Unlockables; Custom remains RGB + HSL + Greyscale + contrast guidance; player colour remains avatar/initials fallback only; Control update progress and terminal-state rules remain as previously approved.
+
+
+### 2026-10-08 — Core preset atmosphere and logo-rim correction
+
+Owner-device review clarified the intended Core model. The visible Core catalogue is the former working Custom preset set: Studio Graphite, Soft Light, Deep Blue, Forest, Crimson, Aubergine, Cyan Studio, Warm Amber, Slate Mint, Midnight Violet, Sand and High Contrast. These are promoted to proper Core profile IDs while preserving the original Custom atmosphere behaviour: generic ambient symbols move behind the platform and derive colour from each palette. Progression Unlockables remain separate.
+
+Legacy Core profile IDs are retained only for saved-profile compatibility and are hidden from the visible Core group.
+
+The yellow rim seen around a recoloured H was traced to two independent stale-gold sources: `--hgr-logo-border` did not move with custom/profile logo colour, and the pre-React boot curtain carried hard-coded gold border/glow values. The runtime logo rim now derives tonally from the active logo colour, the boot curtain border/glow derives from `--boot-accent`, and the branded intro glow follows `--hgr-brand`. Canonical H geometry and launcher artwork are unchanged.

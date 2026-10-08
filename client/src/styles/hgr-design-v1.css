@@ -2860,7 +2860,7 @@ button.halieus-player-identity {
   --hgr-action-ink: var(--hgr-brand-ink);
   --hgr-logo-bg: var(--hgr-gold);
   --hgr-logo-ink: #000000;
-  --hgr-logo-border: color-mix(in srgb, var(--hgr-logo-bg) 70%, #7a5600);
+  --hgr-logo-border: color-mix(in srgb, var(--hgr-logo-bg) 76%, #000000);
 }
 
 /* Dark mode is one neutral graphite surface system. Blue remains the explicit

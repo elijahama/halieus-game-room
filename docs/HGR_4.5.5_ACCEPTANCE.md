@@ -61,7 +61,7 @@ This closes a remaining ambiguity where a stale runtime marker could be mistaken
 
 ## 7 October 2026 — palette / player-colour / operation-icon acceptance
 
-Before 4.5.5 ships, verify on a real phone that Theme Library profiles and Custom colours preserve the same workspace/surface hierarchy for equivalent colours. System, Light and Dark remain the immediate base modes outside the library. Theme Library presents the original always-available **Core** profiles plus progression **Unlockables** on the same page. The editable Starting/custom preset gallery and duplicate saved Workspace palette tile remain deliberately removed. Custom is one four-part RGB-slider editor for Workspace, Panels, Primary UI and Secondary UI, with a compact main-site preview/legend below it.
+Before 4.5.5 ships, verify on a real phone that Theme Library profiles and Custom colours preserve the same workspace/surface hierarchy for equivalent colours. System, Light and Dark remain the immediate base modes outside the library. Theme Library presents **Core + Unlockables** on the same page. Core must be the promoted former Custom preset set (Studio Graphite through High Contrast), and those Core backgrounds must show the same moving ambient-emblem logic used by Custom when reduced motion is not requested. Custom itself remains one direct RGB/HSL editor rather than a second preset gallery.
 
 Player colour must be visible only when HGR needs an avatar/initials fallback. With a real profile picture present, changing player colour must not change the picture frame, theme outline, navigation selection, card glow, owner tools, guild UI or any other platform chrome.
 
@@ -101,7 +101,7 @@ Custom retains the four canonical palette roles (Workspace, Panels, Primary UI, 
 
 The Custom preview shows numeric contrast ratios for Workspace text, Panel text, Workspace↔Panel separation and Primary↔Panel separation. These are guidance values; they do not silently rewrite the user's palette.
 
-The logo-preset selector's active frame is neutral UI chrome. It must not use player colour, profile colour or the active HGR accent. Player colour remains identity fallback data only, while actual logo artwork/preset colours remain independently selectable.
+The logo-preset selector's active frame is neutral UI chrome. It must not use player colour. Player colour remains identity fallback data only. If the in-app H tile is recoloured by a theme/logo treatment, its rim must derive from that same tile colour rather than retaining a gold/yellow outline. First-paint and branded loading glows must likewise follow the active theme accent.
 
 
 ## 8 October 2026 — Operation card highlight correction
@@ -119,3 +119,15 @@ Acceptance requires:
 - Control loads the `4.5.5-force-live-1` CSS/JS revision,
 - Part 28 final-authority CSS loads after all prior HGR styles,
 - Core + Unlockables, RGB/HSL/Greyscale/contrast controls, neutral logo selection, neutral ready Update cards, static terminal glyphs and retryable website progress are visibly present after update.
+
+
+## 8 October 2026 — Core preset atmosphere + tonal H rim
+
+Real-device acceptance must confirm all of the following together:
+
+- Core contains Studio Graphite, Soft Light, Deep Blue, Forest, Crimson, Aubergine, Cyan Studio, Warm Amber, Slate Mint, Midnight Violet, Sand and High Contrast.
+- Selecting any Core preset produces the moving generic ambient emblems behind the Game Room, using that preset's primary/secondary colours.
+- Unlockables remain a separate progression group.
+- Custom remains RGB/HSL/Greyscale/contrast editing and does not duplicate the preset gallery.
+- A recoloured H tile has a tonal edge derived from its own colour; a cyan/teal H tile must not show a gold/yellow rim.
+- The pre-React boot curtain and branded intro must not reintroduce a hard-coded gold ring/glow when another theme accent is active.

@@ -1,7 +1,27 @@
 import type { PlayerProgression } from "./progression.js";
 export type ThemeRequirement = { kind: "core" } | { kind: "score"; count: number } | { kind: "played"; count: number } | { kind: "achievement"; id: string; label: string };
+export const CORE_LIBRARY_THEME_IDS = [
+  "studio-graphite",
+  "soft-light",
+  "deep-blue",
+  "forest",
+  "crimson",
+  "aubergine",
+  "cyan",
+  "warm-amber",
+  "slate-mint",
+  "midnight-violet",
+  "sand",
+  "high-contrast",
+] as const;
 /** Stable IDs; theme rewards never use Elo, account role or client-supplied totals. */
 export const THEME_REQUIREMENTS: Record<string, ThemeRequirement> = {
+  "studio-graphite": {kind:"core"}, "soft-light": {kind:"core"}, "deep-blue": {kind:"core"},
+  "forest": {kind:"core"}, "crimson": {kind:"core"}, "aubergine": {kind:"core"},
+  "cyan": {kind:"core"}, "warm-amber": {kind:"core"}, "slate-mint": {kind:"core"},
+  "midnight-violet": {kind:"core"}, "sand": {kind:"core"}, "high-contrast": {kind:"core"},
+  // Legacy 4.5.x Core IDs remain valid for saved profiles and old accounts, but
+  // the visible Core library is the curated preset set above.
   "minimal-mono": {kind:"core"},
   "blue-circuit": {kind:"core"}, "redline": {kind:"core"}, "emerald-arcade": {kind:"core"},
   "ultraviolet": {kind:"core"}, "neon-grid": {kind:"core"}, "brass-coal": {kind:"core"},
