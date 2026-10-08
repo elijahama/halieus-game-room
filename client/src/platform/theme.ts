@@ -1,8 +1,21 @@
 import type { HgrLogoPreset } from "../../../shared/platform/brand";
+import { CORE_LIBRARY_THEME_IDS } from "../../../shared/platform/themeProgression";
 export type HalieusThemeMode = "system" | "dark" | "light" | "blue" | "red" | "green" | "profile" | "custom";
 export type HalieusTextScale = "small" | "standard" | "large";
 export type HalieusDensity = "compact" | "standard" | "comfortable";
 export type HalieusThemeProfileId =
+  | "studio-graphite"
+  | "soft-light"
+  | "deep-blue"
+  | "forest"
+  | "crimson"
+  | "aubergine"
+  | "cyan"
+  | "warm-amber"
+  | "slate-mint"
+  | "midnight-violet"
+  | "sand"
+  | "high-contrast"
   | "minimal-mono"
   | "blue-circuit"
   | "redline"
@@ -68,6 +81,18 @@ export const DEFAULT_CUSTOM_THEME: HalieusCustomTheme = {
 };
 
 export const THEME_PROFILES: readonly HalieusThemeProfile[] = [
+  { id: "studio-graphite", label: "Studio Graphite", description: "Neutral dark workspace with the original moving Custom atmosphere.", mood: "Studio", motif: ["#e3ad35","#6f9fd8","#1b1e22","#111315"], theme: { page: "#111315", surface: "#1b1e22", accent: "#e3ad35", secondary: "#6f9fd8" } },
+  { id: "soft-light", label: "Soft Light", description: "Warm bright workspace with the original moving Custom atmosphere.", mood: "Soft", motif: ["#d79a19","#4c78a8","#fffdf8","#f3f0e8"], theme: { page: "#f3f0e8", surface: "#fffdf8", accent: "#d79a19", secondary: "#4c78a8" } },
+  { id: "deep-blue", label: "Deep Blue", description: "Blue-black control room with moving ambient emblems.", mood: "Control", motif: ["#3a8fd8","#78bdf2","#102033","#07111c"], theme: { page: "#07111c", surface: "#102033", accent: "#3a8fd8", secondary: "#78bdf2" } },
+  { id: "forest", label: "Forest", description: "Deep green studio with moving ambient emblems.", mood: "Organic", motif: ["#4ca86a","#8ac6a1","#16251e","#0d1713"], theme: { page: "#0d1713", surface: "#16251e", accent: "#4ca86a", secondary: "#8ac6a1" } },
+  { id: "crimson", label: "Crimson", description: "Charcoal and red focus with moving ambient emblems.", mood: "Focused", motif: ["#cc4b52","#e18a8f","#27191d","#171012"], theme: { page: "#171012", surface: "#27191d", accent: "#cc4b52", secondary: "#e18a8f" } },
+  { id: "aubergine", label: "Aubergine", description: "Purple creative suite with moving ambient emblems.", mood: "Creative", motif: ["#9a68c7","#d09be9","#241a2c","#15101a"], theme: { page: "#15101a", surface: "#241a2c", accent: "#9a68c7", secondary: "#d09be9" } },
+  { id: "cyan", label: "Cyan Studio", description: "Cool dark production UI with moving ambient emblems.", mood: "Production", motif: ["#38a9b8","#78d4df","#162428","#0c1517"], theme: { page: "#0c1517", surface: "#162428", accent: "#38a9b8", secondary: "#78d4df" } },
+  { id: "warm-amber", label: "Warm Amber", description: "Soft charcoal and amber with moving ambient emblems.", mood: "Warm", motif: ["#e09a31","#d37c65","#26211c","#171411"], theme: { page: "#171411", surface: "#26211c", accent: "#e09a31", secondary: "#d37c65" } },
+  { id: "slate-mint", label: "Slate Mint", description: "Cool grey and mint with moving ambient emblems.", mood: "Calm", motif: ["#63b79c","#8da9c4","#242a30","#15191d"], theme: { page: "#15191d", surface: "#242a30", accent: "#63b79c", secondary: "#8da9c4" } },
+  { id: "midnight-violet", label: "Midnight Violet", description: "Near-black violet studio with moving ambient emblems.", mood: "Night", motif: ["#7657c9","#b08be4","#1d1828","#0f0d16"], theme: { page: "#0f0d16", surface: "#1d1828", accent: "#7657c9", secondary: "#b08be4" } },
+  { id: "sand", label: "Sand", description: "Muted light neutral workspace with moving ambient emblems.", mood: "Neutral", motif: ["#b67a20","#657c91","#f8f5ed","#ece7dc"], theme: { page: "#ece7dc", surface: "#f8f5ed", accent: "#b67a20", secondary: "#657c91" } },
+  { id: "high-contrast", label: "High Contrast", description: "Maximum separation with the original moving Custom atmosphere.", mood: "Contrast", motif: ["#f0c33c","#58a8ff","#171717","#070707"], theme: { page: "#070707", surface: "#171717", accent: "#f0c33c", secondary: "#58a8ff" } },
   { id: "minimal-mono", label: "Mono Minimal", description: "Black, white and neutral grey with decoration stripped back to the essentials.", mood: "Minimal", motif: ["#ffffff","#b8b8b8","#5d5d5d","#000000"], theme: { page: "#090909", surface: "#171717", accent: "#ffffff", secondary: "#8a8a8a" } },
   { id: "blue-circuit", label: "Blue Circuit", description: "Electric cobalt controls over an ink-black room.", mood: "Electric", theme: { page: "#050b14", surface: "#0c1726", accent: "#258dff", secondary: "#62d7ff" } },
   { id: "redline", label: "Redline", description: "Deep carbon surfaces with racing-red actions.", mood: "Aggressive", theme: { page: "#12080b", surface: "#241014", accent: "#e03b46", secondary: "#ff8a72" } },
@@ -123,6 +148,7 @@ export function themeAtmosphereSymbols(mode: HalieusThemeMode, profileId: Halieu
     return ATMOSPHERE_LUXE;
   }
 
+  if ((CORE_LIBRARY_THEME_IDS as readonly string[]).includes(profileId)) return ATMOSPHERE_MINIMAL;
   if (profileId === "minimal-mono") return ATMOSPHERE_MINIMAL;
   if (["blue-circuit","terminal","neon-grid","icebox","deep-ocean"].includes(profileId)) return ATMOSPHERE_TECH;
   if (["arcade-cabinet","neo-arcade","redline"].includes(profileId)) return ATMOSPHERE_ARCADE;
@@ -290,6 +316,7 @@ export function customThemeVariables(theme: HalieusCustomTheme): Record<string, 
     "--hgr-action-ink": brandInk,
     "--hgr-logo-bg": action,
     "--hgr-logo-ink": brandInk,
+    "--hgr-logo-border": mix(action, "#000000", 0.24),
     "--hgr-logo-light-ink": readableInk([theme.surface]),
     "--hgr-card-text": text,
     "--hgr-panel-text": text,
