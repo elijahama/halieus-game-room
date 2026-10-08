@@ -1,4 +1,4 @@
-import { CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
+import { CORE_LIBRARY_THEME_IDS, CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
 import { accountApi } from "../accounts/api";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
@@ -99,8 +99,9 @@ const QUICK_OPTIONS: Array<{ mode: "system" | "light" | "dark"; icon: string; la
   { mode: "dark", icon: "●", label: "Dark", description: "Standard graphite HGR" },
 ];
 
+const VISIBLE_CORE_THEME_IDS = new Set<string>(CORE_LIBRARY_THEME_IDS);
 const THEME_LIBRARY_GROUPS = [
-  { id: "core", label: "Core", description: "Always available HGR palettes", profiles: THEME_PROFILES.filter((profile) => CORE_THEME_IDS.includes(profile.id)) },
+  { id: "core", label: "Core", description: "Original Custom preset logic · always available", profiles: THEME_PROFILES.filter((profile) => VISIBLE_CORE_THEME_IDS.has(profile.id)) },
   { id: "unlockable", label: "Unlockables", description: "Earned through verified play and achievements", profiles: THEME_PROFILES.filter((profile) => !CORE_THEME_IDS.includes(profile.id)) },
 ] as const;
 
