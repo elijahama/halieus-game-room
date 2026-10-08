@@ -1,0 +1,29 @@
+/* HGR 4.5.5 — Part 28 final visual authority.
+   This file is intentionally imported last. It prevents legacy/player-accent
+   selectors from reclaiming platform appearance controls. */
+
+.halieus-logo-preset-grid > button.is-active {
+  border-color: var(--hgr-border-strong) !important;
+  background: var(--hgr-surface-soft) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--hgr-text) 12%,transparent) !important;
+  outline: none !important;
+}
+
+.halieus-logo-preset-grid > button.is-active,
+.halieus-logo-preset-grid > button.is-active * {
+  --player-accent: var(--hgr-brand);
+}
+
+.halieus-custom-colour-card .halieus-rgb-fields,
+.halieus-custom-colour-card .halieus-hsl-fields,
+.halieus-custom-contrast-guide {
+  display: grid !important;
+}
+
+.halieus-custom-channel-heading {
+  display: flex !important;
+}
+
+.halieus-theme-library-grid {
+  visibility: visible !important;
+}
