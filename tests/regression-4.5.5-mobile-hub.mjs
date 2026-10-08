@@ -38,7 +38,7 @@ assert.match(themeCore, /export function themeProfileVariables\(profile: Halieus
 assert.match(themeButton, /THEME_LIBRARY_GROUPS/);
 assert.match(themeButton, /label: "Core"/);
 assert.match(themeButton, /CORE_LIBRARY_THEME_IDS/);
-assert.match(themeButton, /Original Custom preset logic · always available/);
+assert.match(themeButton, /Always available · animated palette atmospheres/);
 assert.match(themeCore, /id: "studio-graphite"[\s\S]*id: "high-contrast"/);
 assert.match(themeButton, /label: "Unlockables"/);
 assert.doesNotMatch(themeButton, /<strong>Starting palettes<\/strong>|<strong>Workspace palette<\/strong>/);
