@@ -656,3 +656,21 @@ Owner-device review clarified the intended Core model. The visible Core catalogu
 Legacy Core profile IDs are retained only for saved-profile compatibility and are hidden from the visible Core group.
 
 The yellow rim seen around a recoloured H was traced to two independent stale-gold sources: `--hgr-logo-border` did not move with custom/profile logo colour, and the pre-React boot curtain carried hard-coded gold border/glow values. The runtime logo rim now derives tonally from the active logo colour, the boot curtain border/glow derives from `--boot-accent`, and the branded intro glow follows `--hgr-brand`. Canonical H geometry and launcher artwork are unchanged.
+
+
+### 2026-10-08 — Control Update 3% `@echo` bootstrap failure
+
+Real-device Cloud Update failed immediately at 3% with `'@echo' is not recognized as an internal or external command`. The failure occurred before STEP 1/Git sync.
+
+Root cause was a Windows execution-boundary interaction:
+- the tracked `Update HGR GitHub.cmd` carried a UTF-8 BOM before `@echo off`;
+- `control-update.ps1` invoked the batch file directly from Windows PowerShell while PowerShell owned `2>&1`;
+- the batch parser's first-line stderr was therefore surfaced as a PowerShell error record, and `$ErrorActionPreference = "Stop"` terminated the bridge before the updater could reach Git.
+
+Durable correction:
+- the root updater is stored without a BOM and begins byte-for-byte with `@echo off`;
+- Cloud Control resolves `cmd.exe` explicitly and runs the fixed batch launcher through `cmd.exe /d /s /c`;
+- stdout/stderr merging occurs **inside cmd.exe**, so PowerShell receives ordinary updater text and the real batch exit code instead of converting native stderr into a terminating pipeline error;
+- Control audit prefers the bounded failure reason written to `hgr-control-update-result.json`, avoiding PowerShell `throw`/CategoryInfo/FullyQualifiedErrorId noise on the phone.
+
+Because the broken owner-PC wrapper cannot pull its own replacement before STEP 1, the owner must perform **one local bootstrap update/pull** after this fix lands. Subsequent website-triggered updates use the corrected path.

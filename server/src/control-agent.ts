@@ -77,6 +77,7 @@ if (remoteBinding && !token) {
 
 const auditDirectory = resolve(projectRoot, "server", "data", "runtime");
 const auditFile = resolve(auditDirectory, "hgr-control-audit.ndjson");
+const updateResultFile = resolve(auditDirectory, "hgr-control-update-result.json");
 const startScript = resolve(projectRoot, "Start Halieus Game Room.cmd");
 const restartScript = resolve(projectRoot, "Restart Halieus Game Room.cmd");
 const closeScript = resolve(projectRoot, "Close Halieus Game Room.cmd");
@@ -775,6 +776,22 @@ function summarizeUpdaterFailure(
     : "Approved HGR update flow failed.";
 }
 
+
+async function updateMarkerFailureReason(operationId: string): Promise<string | null> {
+  try {
+    const parsed = JSON.parse(await readFile(updateResultFile, "utf8")) as {
+      operationId?: unknown;
+      state?: unknown;
+      reason?: unknown;
+    };
+    if (parsed.operationId !== operationId || parsed.state !== "failed") return null;
+    const reason = typeof parsed.reason === "string" ? parsed.reason.trim() : "";
+    return reason ? reason.slice(0, 900) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function blockingRemoteUpdateChanges(): Promise<string[] | null> {
   const porcelain = await gitValue(["status", "--porcelain", "--untracked-files=no"], true);
   if (porcelain === null) return null;
@@ -902,6 +919,9 @@ async function runUpdate(response: ServerResponse): Promise<void> {
               : error
                 ? null
                 : 0;
+          const failureReason = error
+            ? (await updateMarkerFailureReason(operation.id)) || summarizeUpdaterFailure(stdout, stderr, error)
+            : null;
           try {
             await writeAudit({
               id: operation.id,
@@ -910,12 +930,12 @@ async function runUpdate(response: ServerResponse): Promise<void> {
               startedAt: operation.startedAt,
               finishedAt,
               exitCode,
-              reason: error ? summarizeUpdaterFailure(stdout, stderr, error) : null,
+              reason: failureReason,
             });
           } catch (auditError) {
             console.error("HGR Control update audit could not be written:", auditError);
           }
-          if (error) console.error("HGR Control update failed:", summarizeUpdaterFailure(stdout, stderr, error));
+          if (error) console.error("HGR Control update failed:", failureReason);
           if (activeOperation?.id === operation.id) activeOperation = null;
         })();
       },

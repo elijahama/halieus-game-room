@@ -146,10 +146,14 @@ try {
     # to an independent PowerShell finalizer after deploy/client handoff succeeds.
     $env:HGR_CONTROL_DEFER_REFRESH = "1"
     Remove-Item -LiteralPath $updateOutputLog -Force -ErrorAction SilentlyContinue
-    # Stream the updater output exactly as before so Control can keep deriving
-    # live progress, while also keeping a bounded local transcript that can be
-    # reduced to a safe failure reason if the CMD exits non-zero.
-    & $updateLauncher 2>&1 |
+    # Always execute the batch launcher under cmd.exe. Calling a .cmd directly
+    # from Windows PowerShell while PowerShell itself owns 2>&1 can turn a native
+    # stderr line into a terminating ErrorRecord before STEP 1 runs. Merge stderr
+    # inside cmd.exe instead, so Control sees ordinary text and the real CMD exit code.
+    $cmdExe = (Get-Command cmd.exe -ErrorAction Stop).Source
+    $escapedLauncher = $updateLauncher.Replace('"', '""')
+    $cmdCommand = "call `"$escapedLauncher`" 2>&1"
+    & $cmdExe /d /s /c $cmdCommand |
         Tee-Object -FilePath $updateOutputLog |
         ForEach-Object {
             $line = [string]$_

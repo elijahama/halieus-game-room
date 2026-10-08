@@ -797,3 +797,14 @@ Mobile platform controls now use a flatter treatment than desktop: the glossy se
 Player option buttons and Join-modal close controls now use explicit square geometry with centred content. Mobile player rows are slightly denser, and the Join game grid is compacted without reducing the game library or changing room behaviour.
 
 This batch does not change game rules, desktop layouts, Control, account readability controls, Owner Tools, launcher artwork or VERSION. Real Android/Brave acceptance remains required before the eventual 4.5.5 promotion.
+
+
+## 8 October 2026 — Cloud Update stopped at 3% on `@echo`
+
+Symptom: Cloud Update enters the operation view, remains at 3%, then fails with `'@echo' is not recognized as an internal or external command` and PowerShell error metadata.
+
+Diagnosis: this is not a GitHub, Oracle, build or regression failure. The owner-PC bridge failed while starting the approved root batch updater. A UTF-8 BOM before `@echo off`, combined with direct PowerShell batch invocation and PowerShell-owned stderr redirection, could promote the batch parser's first stderr line into a terminating PowerShell error.
+
+Fix: keep the CMD BOM-free and execute it explicitly under `cmd.exe /d /s /c`, with `2>&1` performed inside the CMD command string. This preserves the allow-listed updater boundary while preventing PowerShell from misclassifying native batch stderr.
+
+Bootstrap note: an owner PC still running the broken wrapper cannot fetch this repair through Cloud Update because the failure happens before STEP 1. Run the local updater/pull once, then restart/refresh HGR Control before retesting Cloud Update.

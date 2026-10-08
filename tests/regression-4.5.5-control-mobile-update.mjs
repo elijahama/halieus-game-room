@@ -29,6 +29,9 @@ assert.match(bridge, /Tee-Object -FilePath \$updateOutputLog[\s\S]*ForEach-Objec
 assert.match(bridge, /progress = \$script:currentProgress[\s\S]*phase = \$script:currentPhase/);
 assert.match(bridge, /Finalizing Control handoff/);
 assert.doesNotMatch(bridge, /Invoke-Expression|\biex\b/i);
+assert.match(bridge, /Get-Command cmd\.exe -ErrorAction Stop/,"Remote Update must execute the approved batch file through cmd.exe");
+assert.match(bridge, /& \$cmdExe \/d \/s \/c \$cmdCommand/,"cmd.exe must own updater stderr merging and exit status");
+assert.doesNotMatch(bridge, /& \$updateLauncher 2>&1/,"Direct PowerShell batch invocation must not return");
 
 assert.match(finalizer, /progress = 100[\s\S]*phase = "Update complete"/);
 assert.match(finalizer, /phase = "Restarting Control after update"/);
