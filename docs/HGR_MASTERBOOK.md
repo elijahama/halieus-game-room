@@ -638,3 +638,12 @@ Theme Library remains **Core + Unlockables**. The Core profiles are the existing
 ### 2026-10-08 — Control available-operation highlight correction
 
 An available Control operation must not look permanently selected, failed or alarmed. Operation cards keep their role-specific top edge/icon colour, but the card body uses a restrained neutral Control surface when enabled. Stronger role colour is reserved for the actual running indicator/status, not readiness alone.
+
+
+### 2026-10-08 — 4.5.5 forced live delivery correction
+
+A repeated real-device report showed that validated Part 28 source changes were still not visible after updating. Audit found a delivery mismatch: the repository continued to declare the product/PWA shell as **4.5.4** even though the accepted UI work and tests were already operating under the 4.5.5 contract.
+
+Durable correction: Part 28 is cut as an actual **4.5.5** release. VERSION/package identity, service-worker cache namespace, manifest/icon URLs, browser favicon identity, main Control-navigation revision and Cloud Control CSS/JS revision move together. A final Part 28 stylesheet is imported last so legacy/mobile/player-accent rules cannot override the approved appearance-control behaviour.
+
+This is a delivery/authority fix, not a redesign. Canonical HGR H geometry is unchanged. Core and Unlockable themes remain intact; Custom remains RGB + HSL + Greyscale + contrast guidance; player colour remains avatar/initials fallback only; Control update progress and terminal-state rules remain as previously approved.
