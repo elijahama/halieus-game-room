@@ -149,11 +149,11 @@
         place-items: center;
         width: 62px;
         height: 62px;
-        border: 1px solid rgba(229,167,33,.32);
+        border: 1px solid color-mix(in srgb, var(--boot-accent, #e5a721) 76%, var(--boot-bg, #0f1012));
         border-radius: 19px;
         background: var(--boot-accent, #e5a721);
         color: var(--boot-ink, #000000);
-        box-shadow: 0 18px 55px rgba(0,0,0,.18), 0 0 34px rgba(229,167,33,.10);
+        box-shadow: 0 18px 55px rgba(0,0,0,.18), 0 0 34px color-mix(in srgb, var(--boot-accent, #e5a721) 12%, transparent);
         animation: halieus-boot-breathe 1.8s ease-in-out infinite;
       }
       .halieus-boot-mark svg {
@@ -164,7 +164,7 @@
       }
       html[data-theme="light"] .halieus-boot-mark {
         background: var(--boot-accent, #e5a721);
-        box-shadow: 0 16px 40px rgba(97,69,18,.10), 0 0 32px rgba(181,126,17,.08);
+        box-shadow: 0 16px 40px rgba(0,0,0,.10), 0 0 32px color-mix(in srgb, var(--boot-accent, #e5a721) 10%, transparent);
       }
       #halieus-boot-curtain.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
       @keyframes halieus-boot-breathe { 0%,100% { transform: scale(.985); opacity:.82; } 50% { transform: scale(1); opacity:1; } }
