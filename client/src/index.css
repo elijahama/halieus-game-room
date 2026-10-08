@@ -22152,8 +22152,8 @@ html[data-theme="dark"] .bank-building-stock-item.is-empty em {
   --intro-muted: rgba(248,250,252,.62);
   --intro-panel: rgba(14,20,29,.72);
   --intro-border: rgba(255,255,255,.10);
-  --intro-accent: #f5c84b;
-  --intro-accent-strong: #ffe36b;
+  --intro-accent: var(--hgr-brand);
+  --intro-accent-strong: color-mix(in srgb,var(--hgr-brand) 82%,white);
   --intro-button-text: #15181d;
   padding: clamp(20px, 4vw, 56px);
   background:
@@ -22362,8 +22362,8 @@ html[data-theme="light"] .halieus-intro-v4 {
   --intro-muted: rgba(20,25,34,.62);
   --intro-panel: rgba(255,255,255,.82);
   --intro-border: rgba(35,45,58,.10);
-  --intro-accent: #d7a923;
-  --intro-accent-strong: #f3cf4e;
+  --intro-accent: var(--hgr-brand);
+  --intro-accent-strong: color-mix(in srgb,var(--hgr-brand) 76%,#ffffff);
   --intro-button-text: #181a1f;
   background:
     radial-gradient(circle at 18% 18%, rgba(215,169,35,.13), transparent 32%),
