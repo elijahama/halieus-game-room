@@ -177,7 +177,7 @@ export function resolveThemeMode(mode: HalieusThemeMode, systemPrefersDark = win
 
 export function readThemeProfileId(): HalieusThemeProfileId {
   const value = localStorage.getItem(THEME_PROFILE_KEY) as HalieusThemeProfileId | null;
-  return value && PROFILE_IDS.has(value) ? value : "blue-circuit";
+  return value && PROFILE_IDS.has(value) ? value : "studio-graphite";
 }
 
 export function readThemeProfile(): HalieusThemeProfile {
