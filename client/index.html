@@ -130,7 +130,7 @@
       }
       html[data-theme="light"] #halieus-boot-curtain {
         background:
-          radial-gradient(circle at 50% 42%, rgba(181,126,17,.14), transparent 28%),
+          radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--boot-accent, #e5a721) 14%, transparent), transparent 28%),
           #f0e8da;
       }
       #halieus-boot-curtain::before {
@@ -139,8 +139,8 @@
         width: min(58vw, 520px);
         aspect-ratio: 1;
         border-radius: 50%;
-        border: 1px solid rgba(229,167,33,.09);
-        box-shadow: 0 0 90px rgba(229,167,33,.055) inset;
+        border: 1px solid color-mix(in srgb, var(--boot-accent, #e5a721) 24%, transparent);
+        box-shadow: 0 0 90px color-mix(in srgb, var(--boot-accent, #e5a721) 7%, transparent) inset;
         animation: halieus-boot-orbit 6s linear infinite;
       }
       .halieus-boot-mark {
