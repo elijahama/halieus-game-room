@@ -292,7 +292,9 @@ assert.match(agent, /const controlIconPng = resolve\(controlUiDirectory, "contro
 assert.match(agent, /"\/control-icon\.png"/, "Control Agent must serve the dedicated Control PNG");
 assert.match(agent, /controlIconPng[\s\S]*?cacheControl: "no-store"/s, "Control PNG response must never be browser-cached by the Agent");
 assert.match(agent, /function summarizeUpdaterFailure\(/, "Control Agent must preserve the actual updater failure reason");
-assert.match(agent, /reason: error \? summarizeUpdaterFailure\(stdout, stderr, error\) : null/, "Update audit must record the captured updater failure rather than a generic message");
+assert.match(agent, /async function updateMarkerFailureReason\(operationId: string\)/, "Control Agent must read the clean updater marker reason when available");
+assert.match(agent, /const failureReason = error[\s\S]*await updateMarkerFailureReason\(operation\.id\)[\s\S]*summarizeUpdaterFailure\(stdout, stderr, error\)/, "Update audit must prefer the clean marker reason and fall back to bounded process output");
+assert.match(agent, /reason: failureReason/, "Update audit must record the resolved updater failure rather than a generic message");
 assert.doesNotMatch(agent, /appIcon192|appIcon512|\/icon-192\.png|\/icon-512\.png/, "Control Agent must not serve the main Halieus app icon as Control identity");
 assert.doesNotMatch(controlManifest, /app-icon-192|app-icon-512/, "HGR Control must never reuse the main Halieus app icon");
 assert.match(controlUiHtml, /control-icon\.png\?v=4\.5\.3-control-approved2/, "Control splash/header must use the approved reference Control PNG");
