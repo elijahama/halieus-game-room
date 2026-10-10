@@ -58,11 +58,11 @@ try {
   // revision so Chrome/Brave cannot keep the superseded H.
   assert.equal(
     await page.locator('#halieus-dynamic-favicon').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-h8`,
+    `/halieus-mark.svg?v=${version}-brand-h9`,
   );
   assert.equal(
     await page.locator('link[rel="shortcut icon"]').getAttribute('href'),
-    `/halieus-mark.svg?v=${version}-brand-h8`,
+    `/halieus-mark.svg?v=${version}-brand-h9`,
   );
   assert.deepEqual(errors, []);
   console.log(`PASS: rendered Build ${label}; browser/server ${version}; ${release.fingerprint}; cache ${expectedCache}; favicon identity; no page errors`);

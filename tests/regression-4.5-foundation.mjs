@@ -114,7 +114,7 @@ assert.match(
   "Initial browser identity must use the canonical Halieus mark",
 );
 assert.match(html,/halieus-boot-mark[\s\S]*?M13 16H28L25 20V30H39V20L36 16H51L48 20V44L51 48H36L39 44V35H25V44L28 48H13L16 44V20Z/,"First-paint mark must reuse the approved H geometry");
-assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h6"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
+assert.match(app,new RegExp(`favicon\\.href = "\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h9"`),"Platform tab identity must use the canonical CONTROL UPDATE web mark");
 assert.doesNotMatch(app,/makeHalieusTabGlyph/,"Platform tab identity must not redraw the canonical H at runtime");
 assert.doesNotMatch(app,/favicon[\s\S]*?getPropertyValue\("--hgr-logo-bg"\)/,"Platform favicon must not be recoloured from theme CSS at runtime");
 assert.equal(createHash("sha256").update(halieusAppIcon).digest("hex"),createHash("sha256").update(canonicalInstallIcon).digest("hex"),"Compatibility/browser PNG must be byte-identical to the canonical install H raster");
