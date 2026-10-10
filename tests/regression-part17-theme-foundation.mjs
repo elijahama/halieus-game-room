@@ -90,7 +90,7 @@ assert.match(theme,/Theme atmosphere is platform decoration, not game state/,"Th
 assert.match(home,/halieus-game-atmosphere halieus-theme-atmosphere/,"Platform shell must render theme-owned ambient icons");
 assert.match(home,/standardGameAtmosphere = themeMode === "system" \|\| themeMode === "dark" \|\| themeMode === "light"/,"System, Light and Dark must use game-owned atmosphere");
 assert.match(home,/standardGameAtmosphere \? selected\.motifs\.concat\(selected\.motifs\.slice\(0, 3\)\) : themeAtmosphereSymbols\(themeMode, themeProfileId\)/,"Standard modes must use selected-game glyphs while explicit themes keep stable theme glyphs");
-assert.match(home,/data-atmosphere-source=\{standardGameAtmosphere \? "game" : "theme"\}/,"Atmosphere source must be explicit in the rendered shell");
+assert.match(home,/data-atmosphere-source=\{standardGameAtmosphere \? "game" : customAtmosphereEngine \? "custom" : "theme"\}/,"Atmosphere source must explicitly distinguish game, shared Custom engine and profile theme paths");
 assert.match(guilds,/className="halieus-guild-switcher"/,"Guilds must expose a responsive guild switcher");
 assert.match(guilds,/aria-label="Switch guild"/,"Guild switcher must remain accessible");
 assert.match(part19Css,/HGR 4\.5\.3 — Guild layout hierarchy \+ theme-owned ambient atmosphere/,"Guild/theme final-authority CSS must exist");
