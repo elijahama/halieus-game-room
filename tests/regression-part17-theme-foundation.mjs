@@ -13,7 +13,12 @@ assert.match(themeButton,/label: "Unlockables"[\s\S]*THEME_PROFILES\.filter\(\(p
 assert.doesNotMatch(themeButton,/CUSTOM_PRESETS|CUSTOM_LIBRARY_PRESETS/,"Custom editor must remain slider-first rather than restoring a second preset gallery");
 assert.match(progression,/CORE_LIBRARY_THEME_IDS[\s\S]*studio-graphite[\s\S]*soft-light[\s\S]*high-contrast/,"Old working Custom presets must now be the visible Core catalog");
 assert.match(theme,/id: "studio-graphite"[\s\S]*id: "soft-light"[\s\S]*id: "high-contrast"/,"Core profiles must carry the former Custom preset palettes");
-assert.match(theme,/CORE_LIBRARY_THEME_IDS as readonly string\[\][\s\S]*ATMOSPHERE_MINIMAL/,"Visible Core presets must reuse the Custom moving-emblem atmosphere family");
+assert.match(theme,/function usesCustomAtmosphereEngine\([\s\S]*mode === "custom"[\s\S]*CORE_LIBRARY_THEME_IDS/,"Core and Custom must share one explicit atmosphere-engine predicate");
+assert.match(theme,/function customAtmosphereSymbols\(\)[\s\S]*return ATMOSPHERE_MINIMAL/,"Custom atmosphere symbols must have one canonical generator");
+assert.match(theme,/usesCustomAtmosphereEngine\(mode, profileId\)[\s\S]*customAtmosphereSymbols\(\)/,"Core must enter the same Custom symbol generator rather than duplicate its symbol array");
+assert.match(home,/const customAtmosphereEngine = usesCustomAtmosphereEngine\(themeMode, themeProfileId\)/,"HomeScreen must resolve the shared Custom atmosphere engine at runtime");
+assert.match(home,/data-atmosphere-source=\{standardGameAtmosphere \? "game" : customAtmosphereEngine \? "custom" : "theme"\}/,"Promoted Core profiles must be marked as Custom atmosphere source");
+assert.match(home,/data-atmosphere-engine=\{customAtmosphereEngine \? "custom"/,"Core and Custom must share the same atmosphere engine marker");
 assert.doesNotMatch(themeButton,/Starting palettes|Workspace palette/,"Theme Library must not render Starting/custom preset or duplicate Workspace palette sections");
 assert.match(themeButton,/type="range" min=\{0\} max=\{255\}/,"Custom palette must use RGB sliders");
 assert.match(themeButton,/halieus-custom-preview-legend/,"Custom palette must include the simplified main-site legend");
@@ -30,7 +35,7 @@ assert.match(main,/hgr-4\.5\.5-part28-authority\.css/,"4.5.5 Part 28 authority s
 assert.ok(main.lastIndexOf('hgr-4.5.5-part28-authority.css') > main.lastIndexOf('hgr-4.5.5-mobile-hub.css'),"Part 28 authority must load after the mobile hub");
 assert.match(authority,/\.halieus-logo-preset-grid > button\.is-active[\s\S]*!important/,"Final authority must neutralise legacy logo selection highlighting");
 assert.match(authority,/\.halieus-custom-colour-card \.halieus-hsl-fields[\s\S]*display: grid !important/,"HSL controls must remain visible at final authority");
-assert.match(authority,/data-theme-mode="profile"[\s\S]*halieus-theme-atmosphere[\s\S]*animation-name:halieusAmbientFloat!important/,"Profile/Core atmosphere must visibly animate when reduced motion is not requested");
+assert.match(authority,/data-atmosphere-engine="custom"[\s\S]*halieusAmbientFloat 17s[\s\S]*animation-play-state:running!important/,"Core and Custom must use the same final-authority animation path");
 assert.match(theme,/--hgr-logo-border": mix\(action, "#000000", 0\.24\)/,"Theme-coloured logos must derive their rim from the logo colour instead of inherited gold");
 assert.doesNotMatch(html,/border:\s*1px solid rgba\(229,167,33/,"First-paint logo must not retain a hard-coded gold rim");
 assert.doesNotMatch(html,/box-shadow:[^;]*rgba\(229,167,33/,"First-paint loading glow must not retain hard-coded gold");
