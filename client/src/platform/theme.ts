@@ -139,16 +139,24 @@ const ATMOSPHERE_SOFT = ["○","◇","✦","◌","□","⊹","△","✧","·"] a
  * These symbols are deliberately generic/restricted so changing a theme never
  * implies a specific game's rules, cards, pieces or interactive affordances.
  */
+export function usesCustomAtmosphereEngine(mode: HalieusThemeMode, profileId: HalieusThemeProfileId): boolean {
+  return mode === "custom" || (mode === "profile" && (CORE_LIBRARY_THEME_IDS as readonly string[]).includes(profileId));
+}
+
+export function customAtmosphereSymbols(): readonly string[] {
+  return ATMOSPHERE_MINIMAL;
+}
+
 export function themeAtmosphereSymbols(mode: HalieusThemeMode, profileId: HalieusThemeProfileId): readonly string[] {
+  if (usesCustomAtmosphereEngine(mode, profileId)) return customAtmosphereSymbols();
+
   if (mode !== "profile") {
     if (mode === "blue" || mode === "green") return ATMOSPHERE_TECH;
     if (mode === "red") return ATMOSPHERE_ARCADE;
     if (mode === "light") return ATMOSPHERE_SOFT;
-    if (mode === "custom") return ATMOSPHERE_MINIMAL;
     return ATMOSPHERE_LUXE;
   }
 
-  if ((CORE_LIBRARY_THEME_IDS as readonly string[]).includes(profileId)) return ATMOSPHERE_MINIMAL;
   if (profileId === "minimal-mono") return ATMOSPHERE_MINIMAL;
   if (["blue-circuit","terminal","neon-grid","icebox","deep-ocean"].includes(profileId)) return ATMOSPHERE_TECH;
   if (["arcade-cabinet","neo-arcade","redline"].includes(profileId)) return ATMOSPHERE_ARCADE;
