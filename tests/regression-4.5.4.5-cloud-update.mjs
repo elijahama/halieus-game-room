@@ -61,7 +61,7 @@ assert.match(rootUpdater, /STEP 7B - Safe re-push check/,"Updater must check for
 assert.match(rootUpdater, /git merge-base --is-ancestor %REMOTE%\/%BRANCH% HEAD/,"Safe re-push must refuse divergent history");
 assert.match(rootUpdater, /git rev-list --count %REMOTE%\/%BRANCH%\.\.HEAD/,"Safe re-push must count pending local commits");
 assert.match(rootUpdater, /git push %REMOTE% %BRANCH%[\s\S]*Safe re-push failed/,"Ahead commits must be pushed without force");
-assert.doesNotMatch(rootUpdater, /git push --force|git push -f/,"Updater must never force-push during re-push");
+assert.doesNotMatch(rootUpdater, /^\s*git\s+push\s+(?:--force|-f)\b/im,"Updater must never execute a force-push during re-push");
 assert.match(refreshControl, /start-control-cloud\.ps1/);
 assert.match(refreshControl, /in-flight cloud Update is not killed/);
 

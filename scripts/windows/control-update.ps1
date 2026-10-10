@@ -81,15 +81,37 @@ function Get-HgrUpdateFailureReason {
             return $fallback
         }
 
-        $important = @(
+        # Prefer one truthful terminal signal over serialized assertion payloads.
+        # Node's AssertionError can dump the entire tested batch file as an
+        # escaped string; those lines contain "\r\n" and "echo [STOPPED]"
+        # fragments which are source code, not the real updater failure.
+        $assertions = @(
             $lines | Where-Object {
-                $_ -match '\[STOPPED\]|\[ERROR\]|npm ERR!|\bFAIL\b|\bAssertionError\b|\bTS\d{4}\b|\b(error|failed|failure|missing|refused|incomplete|could not|exit(ed)? with code)\b'
+                $_ -match '^AssertionError(?:\s+\[ERR_ASSERTION\])?:' -or
+                $_ -match 'AssertionError\s+\[ERR_ASSERTION\]:'
             }
         )
-        $selected = if ($important.Count -gt 0) {
-            @($important | Select-Object -Last 6)
+        $stopped = @(
+            $lines | Where-Object {
+                $_ -match '^\[(STOPPED|ERROR)\]\s+'
+            }
+        )
+        $diagnostics = @(
+            $lines | Where-Object {
+                $_ -notmatch '\\r\\n' -and
+                $_ -notmatch '(?i)\becho\s+\[(STOPPED|ERROR)\]' -and
+                $_ -match 'npm ERR!|\bFAIL\b|\bTS\d{4}\b|\b(error|failed|failure|missing|refused|incomplete|could not|exit(ed)? with code)\b'
+            }
+        )
+
+        $selected = if ($assertions.Count -gt 0) {
+            @($assertions | Select-Object -Last 1)
+        } elseif ($stopped.Count -gt 0) {
+            @($stopped | Select-Object -Last 1)
+        } elseif ($diagnostics.Count -gt 0) {
+            @($diagnostics | Select-Object -Last 3)
         } else {
-            @($lines | Select-Object -Last 6)
+            @($lines | Select-Object -Last 3)
         }
 
         $sanitized = @(

@@ -700,3 +700,14 @@ STEP 7B now:
 - never uses `--force` or `-f`.
 
 This is deliberately a **re-push**, not an unconditional push. Equal branches are a no-op; behind/divergent branches stop safely and instruct the owner to rerun the updater so STEP 1 can rebase first.
+
+
+### 2026-10-10 — Control regression failure summary cleanup
+
+A real Cloud Update progressed into the validation pipeline and then failed during regression testing. The underlying regression was a false positive: the new “never force-push” guard matched the updater's explanatory text `Do NOT use git push --force.` even though no force-push command existed.
+
+The guard now matches only executable command lines that begin with `git push --force` or `git push -f`. Human-readable warnings may still mention those prohibited commands.
+
+The same failure exposed a second presentation issue. Node's AssertionError serialised the tested batch file into escaped `\r\n` source text, and the Control failure parser selected embedded source strings such as `echo [STOPPED] Build failed` as if they were runtime failures. Control now prioritises one real `AssertionError`, then one anchored runtime `[STOPPED]`/`[ERROR]` line, then bounded diagnostics. Escaped source dumps and embedded `echo [STOPPED]` source lines are excluded.
+
+This means a future regression failure should read like `AssertionError [ERR_ASSERTION]: <actual contract>` rather than dumping several unrelated STOPPED messages from the updater source.
