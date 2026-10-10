@@ -29,14 +29,17 @@
 }
 
 
-/* HGR Part 28 — visible Core presets reuse the original Custom atmosphere. */
-html[data-theme-mode="profile"] .halieus-theme-atmosphere{
+/* HGR Part 28 — Core and Custom share one atmosphere engine.
+   Promoted Core profiles are marked data-atmosphere-engine="custom" by
+   HomeScreen and therefore use the exact same visibility/motion path as Custom. */
+.halieus-theme-atmosphere[data-atmosphere-engine="custom"]{
   visibility:visible!important;
   opacity:1!important;
 }
 @media (prefers-reduced-motion:no-preference){
-  html[data-theme-mode="profile"] .halieus-theme-atmosphere>span{
-    animation-name:halieusAmbientFloat!important;
+  .halieus-theme-atmosphere[data-atmosphere-engine="custom"]>span{
+    animation:halieusAmbientFloat 17s cubic-bezier(.42,0,.2,1) infinite alternate!important;
     animation-play-state:running!important;
+    will-change:transform,opacity;
   }
 }
