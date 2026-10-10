@@ -18,6 +18,11 @@ assert.ok(bridge.includes("Tee-Object -FilePath $updateOutputLog"));
 assert.ok(bridge.includes("\\[STOPPED\\]"));
 assert.ok(bridge.includes("npm ERR!"));
 assert.ok(bridge.includes("AssertionError"));
+assert.match(bridge, /\$assertions = @\([\s\S]*AssertionError/,"Control must explicitly prioritize AssertionError summaries");
+assert.match(bridge, /\$stopped = @\([\s\S]*\^\\\[\(STOPPED\|ERROR\)\\\]/,"Control must only treat anchored STOPPED/ERROR output as terminal updater messages");
+assert.match(bridge, /\$_ -notmatch '\\\\r\\\\n'/,"Serialized assertion source payloads must be excluded from failure summaries");
+assert.match(bridge, /\$_ -notmatch '\(\?i\)\\becho\\s\+\\\[\(STOPPED\|ERROR\)\\\]'/,"Batch source lines such as echo [STOPPED] must not be presented as runtime failures");
+assert.match(bridge, /\$assertions \| Select-Object -Last 1/,"One actual assertion message should win over source dumps");
 assert.ok(bridge.includes("TS\\d{4}"));
 assert.ok(bridge.includes("<HGR_ROOT>"));
 assert.ok(bridge.includes("authorization:\\s*bearer"));
@@ -39,4 +44,4 @@ assert.ok(
   "Cloud bridge must retain marker failure detail when local audit lookup is unavailable",
 );
 
-console.log("PASS 4.5.4.10 + Part 28: Control Update uses BOM-free cmd.exe execution and preserves clean bounded failure detail");
+console.log("PASS 4.5.4.10 + Part 28: Control Update uses safe cmd.exe execution and surfaces one clean bounded failure instead of serialized source dumps");
