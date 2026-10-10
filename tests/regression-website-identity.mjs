@@ -75,7 +75,8 @@ assert.doesNotMatch(indexHtml, /app-icon-reference\.png/, 'Historical install re
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
 assert.match(pwaCopy,/rm\(resolve\(publicDir, "app-icon-reference\.png"\), \{ force: true \}\)/,'Client prebuild must remove the stale historical install thumbnail');
 assert.match(pwaCopy,/canonicalGlyph/,'Client prebuild must validate the canonical launcher-family H authority');
-assert.match(pwaCopy,/copyFile\(canonicalInstallRaster, compatibilityPng\)/,'Client prebuild must alias the compatibility/social PNG from the canonical install family');
+assert.match(pwaCopy,/identity-artwork\.json/,'Client prebuild must validate the generated identity hash record');
+assert.match(pwaCopy,/canonicalInstall\.equals\(compatibilityPng\)/,'Client prebuild must reject a social/compatibility PNG that differs from the generated install icon');
 assert.doesNotMatch(pwaCopy,/HGR Main\.png/,'Client prebuild must never restore the superseded historical H over current browser/PWA identity');
 const clientPackage = JSON.parse(read('client/package.json'));
 assert.equal(clientPackage.scripts.prebuild,'node ../scripts/copy-approved-pwa-icon.mjs','Client prebuild must validate and prepare canonical identity before Vite runs');
