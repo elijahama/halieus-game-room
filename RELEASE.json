@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.5",
-  "fingerprint": "hgr-4.5.5-e9c888cd7ea0ccd3",
+  "fingerprint": "hgr-4.5.5-78800a846fa2d98c",
   "algorithm": "sha256",
-  "sourceHash": "e9c888cd7ea0ccd3c7c06a91ed90610106ceb15a0edc80386ac43d31208a3100",
-  "integrityFileCount": 496,
+  "sourceHash": "78800a846fa2d98c58e5a5e96fbb3c673e354dacf7e9468af867a0265e46d182",
+  "integrityFileCount": 497,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -96,6 +96,7 @@
     "client/public/halieus-app-icon.png",
     "client/public/halieus-app-icon.svg",
     "client/public/halieus-mark.svg",
+    "client/public/identity-artwork.json",
     "client/public/ludo-icon.svg",
     "client/public/mega-board-icon-192.png",
     "client/public/mega-board-icon-512.png",

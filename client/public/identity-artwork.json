@@ -1,0 +1,11 @@
+{
+  "source": "client/public/halieus-app-icon.svg",
+  "canonicalGlyph": "assets/branding/icon-sets/glyphs/hgr-h.svg",
+  "sourceSvgSha256": "0543c5cadfede9965be8d2034edaac3c898bf19448aa9e566bcabfac6ba8aae4",
+  "canonicalGlyphSha256": "c6c38db088e153cc3715c3d8c07945d797139eed7d299fb6e16a264e77690f44",
+  "appIcon512Sha256": "e306c4c4c6388b66f20ac296d0a1ee1e3d9c63fa2329f73b64f4b4aa16d3df60",
+  "favicon32Sha256": "12628370a18cfd778d6518eb00038c0446585766467395ab24746c3cc7ff4563",
+  "faviconIcoSha256": "03c933149779e3c18edd43269c61de27a5d5e49fa466a8eb9b3cd9e2be5143b2",
+  "mainIcoSha256": "8a8304b8878e8ab6e5bc8c171b056598db740bd9e9836b7a6b93b0ba99449fb5",
+  "generatedFromCanonicalH": true
+}
