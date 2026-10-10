@@ -38,7 +38,7 @@ import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
-import { themeAtmosphereSymbols, type HalieusThemeMode, type HalieusThemeProfileId } from "../theme";
+import { themeAtmosphereSymbols, usesCustomAtmosphereEngine, type HalieusThemeMode, type HalieusThemeProfileId } from "../theme";
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
@@ -172,6 +172,7 @@ export function HomeScreen(props: HomeScreenProps) {
 
   const selected = GAME_BY_ID[selectedGame];
   const standardGameAtmosphere = themeMode === "system" || themeMode === "dark" || themeMode === "light";
+  const customAtmosphereEngine = usesCustomAtmosphereEngine(themeMode, themeProfileId);
   const atmosphereSymbols = useMemo(
     () => standardGameAtmosphere ? selected.motifs.concat(selected.motifs.slice(0, 3)) : themeAtmosphereSymbols(themeMode, themeProfileId),
     [selected, standardGameAtmosphere, themeMode, themeProfileId],
@@ -819,8 +820,9 @@ export function HomeScreen(props: HomeScreenProps) {
     <main className={`halieus-shell page-enter game-bg-${selectedGame}`} style={{ background: theme.pageBackground, color: theme.text, ["--selected-game-accent" as string]: gameAccent }}>
       <div
         className="halieus-game-atmosphere halieus-theme-atmosphere"
-        data-atmosphere-source={standardGameAtmosphere ? "game" : "theme"}
-        data-theme-atmosphere={themeMode === "profile" ? themeProfileId : themeMode}
+        data-atmosphere-source={standardGameAtmosphere ? "game" : customAtmosphereEngine ? "custom" : "theme"}
+        data-atmosphere-engine={customAtmosphereEngine ? "custom" : standardGameAtmosphere ? "game" : "profile"}
+        data-theme-atmosphere={customAtmosphereEngine ? "custom" : themeMode === "profile" ? themeProfileId : themeMode}
         aria-hidden="true"
       >
         {atmosphereSymbols.map((symbol, index) => <span key={`${symbol}-${index}`} style={{ ["--float-index" as string]: index }}>{symbol}</span>)}
