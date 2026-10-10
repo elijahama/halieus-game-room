@@ -8,7 +8,7 @@ rem this tracked launcher during fetch/rebase without corrupting the
 rem currently executing batch parser/file position.
 rem ============================================================
 if /i not "%HGR_UPDATE_SNAPSHOT%"=="1" (
-    set "HGR_PROJECT_ROOT=%HGR_PROJECT_ROOT%"
+    set "HGR_PROJECT_ROOT=%~dp0"
     set "HGR_UPDATE_SNAPSHOT=1"
     set "HGR_UPDATE_SNAPSHOT_PATH=%TEMP%\HGR-Update-%RANDOM%-%RANDOM%.cmd"
     copy /Y "%~f0" "!HGR_UPDATE_SNAPSHOT_PATH!" >nul
@@ -22,7 +22,7 @@ if /i not "%HGR_UPDATE_SNAPSHOT%"=="1" (
     exit /b !HGR_UPDATE_EXIT!
 )
 
-if not defined HGR_PROJECT_ROOT set "HGR_PROJECT_ROOT=%HGR_PROJECT_ROOT%"
+if not defined HGR_PROJECT_ROOT set "HGR_PROJECT_ROOT=%~dp0"
 
 title Halieus Game Room - Update + Deploy
 color 0E
