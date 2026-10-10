@@ -17,7 +17,7 @@ for(const mode of ['system','light','dark']) {
   assert.ok(themeButton.includes(`mode: "${mode}"`),`Quick theme selector missing ${mode}`);
 }
 assert.match(themeButton,/THEME_LIBRARY_GROUPS/,'Theme selector must expose the Core + Unlockables Theme Library groups');
-assert.match(themeButton,/label: "Core"/,'Theme selector must retain the original always-available Core profiles');
+assert.match(themeButton,/label: "Core"/,'Theme selector must retain the promoted always-available Core palette set');
 assert.match(themeButton,/label: "Unlockables"/,'Theme selector must retain progression Unlockables');
 assert.match(themeButton,/THEME_PROFILES\.filter/,'Theme Library must be backed by the shared profile catalog');
 assert.match(themeButton,/halieus-theme-custom-launch/,'Theme selector must retain direct Custom palette access');
