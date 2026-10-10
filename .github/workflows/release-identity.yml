@@ -41,6 +41,7 @@ jobs:
             './scripts/windows/refresh-control-after-update.ps1',
             './scripts/windows/control-update.ps1',
             './scripts/windows/control-update-finalize.ps1',
+            './scripts/windows/post-update-client.ps1',
             './scripts/windows/start-control.ps1',
             './scripts/windows/stop-control.ps1',
             './scripts/windows/start-control-cloud.ps1',
@@ -62,11 +63,17 @@ jobs:
             Write-Host "PowerShell syntax PASS: $script"
           }
 
-      - name: Generate canonical version artifacts before checks
-        run: npm run prepare:release
-
       - name: Install HGR workspace dependencies
         run: npm ci
+
+      - name: Install canonical identity renderer
+        run: npx playwright install --with-deps chromium
+
+      - name: Regenerate canonical main HGR identity assets
+        run: node scripts/generate-platform-icons.mjs
+
+      - name: Generate canonical version artifacts before checks
+        run: npm run prepare:release
 
       - name: Typecheck current HGR source
         run: npm run typecheck
@@ -85,7 +92,6 @@ jobs:
 
       - name: Check built release identity
         run: |
-          npx playwright install --with-deps chromium
           npm run test:release:browser
           node tests/browser-control-state.mjs
           node tests/browser-control-branding.mjs
@@ -94,13 +100,13 @@ jobs:
       - name: Commit generated release identity when changed
         shell: bash
         run: |
-          if git diff --quiet -- RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/src/App.tsx client/public/site.webmanifest client/public/sw.js README.md; then
+          if git diff --quiet -- RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/src/App.tsx client/public/site.webmanifest client/public/sw.js client/public/app-icon-180.png client/public/app-icon-192.png client/public/app-icon-512.png client/public/halieus-app-icon.png client/public/favicon-32.png client/public/favicon.ico client/public/identity-artwork.json "assets/Halieus Game Room.png" "assets/Halieus Game Room.ico" assets/app-icon.png "assets/branding/Halieus Game Room.png" "assets/branding/Halieus Game Room.ico" "assets/branding/references/HGR Main.png" "desktop/assets/Halieus Game Room.png" "desktop/assets/Halieus Game Room.ico" "server/Halieus Game Room.png" "server/Halieus Game Room.ico" "server/assets/branding/Halieus Game Room.png" "server/assets/branding/Halieus Game Room.ico" README.md; then
             echo "Release identity is already current."
             exit 0
           fi
 
           git config user.name "HGR Release Bot"
           git config user.email "actions@users.noreply.github.com"
-          git add RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/src/App.tsx client/public/site.webmanifest client/public/sw.js README.md
+          git add RELEASE.json shared/release.ts VERSION package.json package-lock.json client/package.json server/package.json shared/package.json desktop/package.json shared/version.ts client/index.html client/src/App.tsx client/public/site.webmanifest client/public/sw.js client/public/app-icon-180.png client/public/app-icon-192.png client/public/app-icon-512.png client/public/halieus-app-icon.png client/public/favicon-32.png client/public/favicon.ico client/public/identity-artwork.json "assets/Halieus Game Room.png" "assets/Halieus Game Room.ico" assets/app-icon.png "assets/branding/Halieus Game Room.png" "assets/branding/Halieus Game Room.ico" "assets/branding/references/HGR Main.png" "desktop/assets/Halieus Game Room.png" "desktop/assets/Halieus Game Room.ico" "server/Halieus Game Room.png" "server/Halieus Game Room.ico" "server/assets/branding/Halieus Game Room.png" "server/assets/branding/Halieus Game Room.ico" README.md
           git commit -m "chore: refresh HGR release identity"
           git push origin HEAD:main

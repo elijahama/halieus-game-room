@@ -16,6 +16,8 @@ const brandContract=read("shared/platform/brand.ts");
 const flatGenerator=read("scripts/generate-flat-brand.mjs");
 const logoReference=read("assets/branding/references/HGR_LOGO_SYSTEM_REFERENCE.md");
 const iconPalette=read("assets/branding/references/HGR_ICON_PALETTE.md");
+const postUpdateClient=read("scripts/windows/post-update-client.ps1");
+const mainIdentityGenerator=read("scripts/generate-platform-icons.mjs");
 
 assert.match(home,/HalieusBrandMark/,"Home chrome must use the shared Halieus mark");
 assert.match(home,/HgrIcon name="chevron-left"/,"Featured previous control must use the shared SVG chevron");
@@ -66,6 +68,13 @@ assert.match(shortcuts,/StartMenuLauncherDirectory = Join-Path \$ProgramsRoot 'H
 assert.match(shortcuts,/ tui`""/,"OpenShard shortcut must open the receipt dashboard/TUI");
 assert.match(packagedShortcuts,/Close HGR App\.lnk/,"Packaged launcher must use the same Close HGR App wording");
 assert.match(packagedShortcuts,/desktop app window only/,"Packaged Close shortcut must not imply cloud shutdown");
+assert.match(postUpdateClient,/function Test-HgrVisibleAppWindow/,"Post-update handoff must distinguish a visible HGR app window from background Edge processes");
+assert.match(postUpdateClient,/MainWindowHandle -ne 0/,"Only a visible dedicated Edge app window may suppress post-update launch");
+assert.match(postUpdateClient,/No visible dedicated HGR app window was found\. Opening HGR/,"A successful update must explicitly open HGR when no visible app window exists");
+assert.match(postUpdateClient,/Wait-HgrVisibleAppWindow/,"Post-update Start/Restart must verify that a visible HGR window actually appeared");
+assert.match(postUpdateClient,/Get-Command cmd\.exe -ErrorAction Stop/,"Post-update handoff must invoke batch launchers through cmd.exe");
+assert.match(mainIdentityGenerator,/assets\/branding\/references\/HGR Main\.png/,"Main HGR reference export must be regenerated from the canonical H");
+assert.doesNotMatch(mainIdentityGenerator,/HGR Start\.png|HGR Restart\.png|HGR Close\.png|HGR Update\.png|HGR PowerShell\.png|HGR OpenShard\.png|HGR Control Launcher\.png/,"Main identity regeneration must never rewrite role-specific utility art");
 
 const recoveryStart=updater.indexOf('for /f "delims=" %%F in (\'git ls-tree -r --name-only HEAD -- "assets/branding/references"\') do (');
 assert.ok(recoveryStart >= 0,"Updater must repair missing protected launcher/reference assets after autostash");

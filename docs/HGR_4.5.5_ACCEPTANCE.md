@@ -138,3 +138,21 @@ Real-device acceptance must confirm all of the following together:
 Core is accepted only if it is routed through the **same runtime atmosphere engine as Custom**, not a profile-specific imitation. Source acceptance requires the same Custom symbol generator, the same HomeScreen atmosphere source/engine marker and the same final animation selector for Custom and promoted Core palettes.
 
 Real-device check: select Custom, observe the moving generic symbols; then select Studio Graphite, Cyan Studio and another Core palette. The symbols must remain present and moving with the same motion behaviour while only their palette/theme treatment changes.
+
+
+## 10 October 2026 — update launch + canonical-H delivery acceptance
+
+After a successful owner-PC Update:
+- if no **visible** dedicated HGR app window exists, the updater must open one and verify that a visible window appeared;
+- background Edge processes using the HGR profile must not suppress that launch;
+- if a visible release-aware HGR window already exists, it may remain open for in-place release refresh.
+
+Main Halieus identity acceptance:
+- browser favicon uses the current canonical launcher-family H;
+- Apple/PWA install images at 180/192/512 use that same current H;
+- website link/share preview (Open Graph/Twitter) uses the current canonical-H main image;
+- main desktop/Electron/package PNG/ICO identity uses that same current H;
+- `HGR Main.png` is regenerated from the canonical current-H main vector;
+- Start/Restart/Close/Update/PowerShell/OpenShard/HGR Control retain their separately approved role-specific artwork.
+
+Real-device/browser acceptance may require removing a previously installed PWA/app or clearing an OS/browser icon cache before judging a newly generated install icon, because installed shell artwork can be retained by the operating system independently of website cache invalidation.

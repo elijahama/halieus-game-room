@@ -725,3 +725,14 @@ The runtime now resolves one explicit **Custom atmosphere engine**:
 - The final animation/visibility CSS targets that shared engine marker, so Core cannot silently fall back to a static profile-background path.
 
 Only the palette changes between promoted Core themes. The moving generic background emblems and their animation mechanism are the same system Custom uses. Reduced-motion preferences remain authoritative.
+
+
+### 2026-10-10 — visible post-update launch + current-H raster delivery
+
+Real-device acceptance found two delivery gaps after the updater itself completed.
+
+First, the post-update client handoff could see any Edge process using the dedicated HGR profile and assume the HGR app window was already open. Background Edge/profile processes can survive without a visible app window, so a successful update could finish without launching anything. The handoff now treats HGR as already open only when a matching dedicated-profile Edge process has a non-zero `MainWindowHandle`. Start/Restart are invoked through `cmd.exe`, and the handoff waits for a visible HGR window. If no visible window appears, the update fails instead of silently claiming a successful client handoff.
+
+Second, the canonical launcher-family H vector had been corrected after several committed raster consumers were last generated. The SVG/browser mark was current, but favicon/PWA/social-preview and desktop/package PNG/ICO copies could still contain the older H. Release CI now runs `scripts/generate-platform-icons.mjs` before release validation. It renders the main Halieus favicon, 180/192/512 PWA icons, social/share PNG, main Windows/package PNG/ICO copies and `HGR Main.png` from the canonical current-H main vector, then records source/output hashes in `client/public/identity-artwork.json`.
+
+The identity cache revisions move to `install-h5` and `brand-h9` so browsers and installed-PWA discovery do not keep the prior raster family. Role-specific Start/Restart/Close/Update/PowerShell/OpenShard/Control artwork remains under its approved rendered-PNG authority and is not redrawn by the main identity generator.

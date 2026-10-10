@@ -78,3 +78,10 @@ These friendly filenames are the only launcher-art inputs used by the Windows ex
 | HGR Control | `HGR Control.png` |
 
 The friendly files are byte-identical aliases of the selected approved artwork. Windows may resize them for icon delivery and wrap them as ICO, but it must not redraw them.
+
+
+## Main app delivery exception
+
+`HGR Main.png` is the main-app delivery export and is regenerated from the canonical current-H vector by `scripts/generate-platform-icons.mjs`. This is not permission to reconstruct the utility family.
+
+Start, Restart, Close, Update, PowerShell, OpenShard and HGR Control remain pixel-authoritative approved rendered PNGs. Their badges, sheen, rim and role treatments must remain unchanged unless the owner explicitly approves new artwork.

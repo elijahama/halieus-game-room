@@ -1,6 +1,6 @@
 # HGR Brand Asset Policy
 
-Status: HGR 4.5.3 canonical icon system
+Status: HGR 4.5.5 canonical identity delivery
 
 ## Visual source of truth
 
@@ -40,10 +40,14 @@ White, black, gold, inverted and outline treatments are permutations of that geo
 - **OpenShard** — purple.
 - **Update** — light blue.
 
-Installed PWA/browser identity uses canonical SVGs directly:
+Main browser/PWA/social/desktop identity is derived from the canonical current H vector:
 
-- `client/public/halieus-app-icon.svg`
-- `server/control-ui/control-icon.svg`
+- `assets/branding/icon-sets/glyphs/hgr-h.svg` — geometry authority
+- `client/public/halieus-app-icon.svg` — fixed gold main-app composition
+- `scripts/generate-platform-icons.mjs` — deterministic raster/export generator
+- `client/public/identity-artwork.json` — source/output hash record
+
+HGR Control remains a separate blue product identity and is not generated from the main gold app asset.
 
 ## Owner utility palette
 
@@ -59,31 +63,22 @@ Each utility uses the common H plus a small white role badge.
 
 ## Windows launcher generation
 
-Tracked SVG files under:
+There are two deliberately different authorities:
 
-`assets/branding/launchers/`
+1. **Main Halieus app** — `assets/branding/references/HGR Main.png` is a generated raster export of the canonical current-H main app vector. Release CI refreshes it together with website/PWA/social/desktop main identity.
+2. **Role-specific owner utilities** — Start, Restart, Close, Update, PowerShell, OpenShard and HGR Control remain human-approved rendered PNG artwork in `assets/branding/references/`. Their badge/sheen/rim treatment must not be reconstructed by the main identity generator.
 
-are reviewable source artwork.
-
-Windows PNG/ICO files used by owner shortcuts are generated at refresh time into ignored runtime state:
+Windows PNG/ICO files used by owner shortcuts are exported at refresh time into:
 
 `server/data/runtime/launcher-icons/`
 
-by:
+by `scripts/windows/generate-launcher-icons.ps1`, then `scripts/windows/launcher-shortcuts.ps1` rebuilds the shortcut family.
 
-`scripts/windows/generate-launcher-icons.ps1`
-
-Then:
-
-`scripts/windows/launcher-shortcuts.ps1`
-
-rebuilds the HGR shortcut family against those generated runtime ICOs.
-
-This avoids binary Git churn while keeping every shortcut visually synchronized with the approved SVG/role contract.
+The main role therefore receives the current canonical H without allowing the utility-role generator to invent or alter any approved role-specific artwork.
 
 ## Compatibility binaries
 
-Older tracked ICO/PNG assets may remain for compatibility with legacy packaging paths. They are not the current geometry authority and must not override a canonical SVG/runtime-generated icon where the new pipeline is available.
+Tracked main-app ICO/PNG compatibility copies are now actively synchronised from the canonical current-H main vector because Electron/package/legacy launcher paths still consume them. Historical copies under explicit `legacy/` or test-fixture locations remain archives only.
 
 ## Protection model
 
@@ -108,11 +103,15 @@ visual reference
       ↓
 canonical H + semantic role contract
       ↓
-reviewable SVG source
+reviewable canonical main SVG
       ↓
-PWA/browser SVG identity
-      or
-runtime Windows PNG/ICO export
+release-time main raster generation
+      ↓
+favicon / PWA / social / desktop main identity
+
+approved role-specific reference PNG
+      ↓
+runtime Windows utility PNG/ICO export
 ```
 
 One geometry, one role language, multiple delivery formats.
