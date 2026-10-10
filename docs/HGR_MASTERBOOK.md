@@ -711,3 +711,17 @@ The guard now matches only executable command lines that begin with `git push --
 The same failure exposed a second presentation issue. Node's AssertionError serialised the tested batch file into escaped `\r\n` source text, and the Control failure parser selected embedded source strings such as `echo [STOPPED] Build failed` as if they were runtime failures. Control now prioritises one real `AssertionError`, then one anchored runtime `[STOPPED]`/`[ERROR]` line, then bounded diagnostics. Escaped source dumps and embedded `echo [STOPPED]` source lines are excluded.
 
 This means a future regression failure should read like `AssertionError [ERR_ASSERTION]: <actual contract>` rather than dumping several unrelated STOPPED messages from the updater source.
+
+
+### 2026-10-10 — Core and Custom use one background-symbol engine
+
+The Core background requirement is architectural, not merely visual. Promoted Core palettes must not own a separate profile-atmosphere implementation that happens to look similar to Custom.
+
+The runtime now resolves one explicit **Custom atmosphere engine**:
+- Custom mode enters it directly.
+- A visible promoted Core profile enters that same engine through `usesCustomAtmosphereEngine(...)`.
+- Both receive symbols from the same `customAtmosphereSymbols()` generator.
+- HomeScreen marks both with `data-atmosphere-engine="custom"` / `data-atmosphere-source="custom"`.
+- The final animation/visibility CSS targets that shared engine marker, so Core cannot silently fall back to a static profile-background path.
+
+Only the palette changes between promoted Core themes. The moving generic background emblems and their animation mechanism are the same system Custom uses. Reduced-motion preferences remain authoritative.
