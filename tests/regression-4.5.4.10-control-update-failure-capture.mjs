@@ -15,7 +15,7 @@ const [bridge, cloudAgent, controlAgent, updaterCmd] = await Promise.all([
 assert.ok(bridge.includes("hgr-control-update.out.log"));
 assert.ok(bridge.includes("function Get-HgrUpdateFailureReason"));
 assert.ok(bridge.includes("Tee-Object -FilePath $updateOutputLog"));
-assert.ok(bridge.includes("\\[STOPPED\\]"));
+assert.match(bridge, /\^\\\[\(STOPPED\|ERROR\)\\\]\\s\+/, "Control failure parser must anchor terminal STOPPED/ERROR lines");
 assert.ok(bridge.includes("npm ERR!"));
 assert.ok(bridge.includes("AssertionError"));
 assert.match(bridge, /\$assertions = @\([\s\S]*AssertionError/,"Control must explicitly prioritize AssertionError summaries");
