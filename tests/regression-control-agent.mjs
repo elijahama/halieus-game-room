@@ -350,10 +350,12 @@ assert.match(websiteServiceWorker, /HALIEUS_RELEASE_REFRESH/, "Website service w
 assert.match(serverIndex, /Cache-Control", "no-store, no-cache, must-revalidate"/, "Production release identity and HTML navigations must be non-cacheable");
 assert.match(maintenanceBannerCss, /z-index: 10000/, "Maintenance warning must stay above game surfaces");
 assert.match(postUpdateClient, /release-aware-refresh\.enabled/, "Post-update helper must persist the one-time release-aware capability marker");
-assert.match(postUpdateClient, /Existing release-aware HGR app window detected/, "Post-update helper must preserve an already-open release-aware HGR window");
-assert.match(postUpdateClient, /Existing HGR window predates release-aware refresh/, "Pre-feature clients must receive one bootstrap restart");
+assert.match(postUpdateClient, /Existing visible release-aware HGR app window detected/, "Post-update helper must preserve an already-open visible release-aware HGR window");
+assert.match(postUpdateClient, /Existing visible HGR window predates release-aware refresh/, "Pre-feature visible clients must receive one bootstrap restart");
 assert.match(postUpdateClient, /Restart Halieus Game Room\.cmd/, "One-time bootstrap may use the canonical hard Restart fallback");
-assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper may open HGR when no dedicated window is running");
+assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper must retain the canonical Start launcher");
+assert.match(postUpdateClient, /MainWindowHandle -ne 0/, "Background Edge profile processes must not count as a visible HGR window");
+assert.match(postUpdateClient, /Wait-HgrVisibleAppWindow/, "Successful post-update Start/Restart must verify a visible HGR window appeared");
 assert.match(updateLauncher, /FINAL STEP 2 - Refreshing HGR Control if it was already running/, "Updater must refresh a live Control Agent after pulling the updated source");
 assert.match(updateLauncher, /refresh-control-after-update\.ps1/, "Updater must invoke the guarded Control post-update handoff");
 assert.match(updateLauncher, /FINAL STEP 3 - Refreshing the HGR client/, "Updater must refresh Control before the release-aware client handoff");
