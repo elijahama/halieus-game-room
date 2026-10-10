@@ -674,3 +674,14 @@ Durable correction:
 - Control audit prefers the bounded failure reason written to `hgr-control-update-result.json`, avoiding PowerShell `throw`/CategoryInfo/FullyQualifiedErrorId noise on the phone.
 
 Because the broken owner-PC wrapper cannot pull its own replacement before STEP 1, the owner must perform **one local bootstrap update/pull** after this fix lands. Subsequent website-triggered updates use the corrected path.
+
+
+### 2026-10-10 — updater self-rebase snapshot
+
+A local owner-PC update successfully fetched and rebased `origin/main`, then immediately printed `'errorlevel' is not recognized as an internal or external command` and fell into the rebase-failure branch even though Git had already reported success.
+
+The fault was not Git state. `Update HGR GitHub.cmd` is itself tracked by Git and was being replaced while that same batch file was still executing. Windows CMD reads batch files incrementally, so changing the executing file can move/replace bytes underneath the interpreter and corrupt the next parsed command. In this case the following `if errorlevel 1` line was effectively read as a malformed `errorlevel` command.
+
+Durable rule: the root updater now copies its current bytes to a unique TEMP snapshot before any Git work, records the actual HGR repository root in `HGR_PROJECT_ROOT`, and executes the update from that immutable snapshot. Git may then replace the tracked root updater safely during fetch/rebase. Every project-relative helper path uses `HGR_PROJECT_ROOT`, never the TEMP snapshot directory.
+
+This also explains why simply retrying after the screenshot can work: the rebase had already completed, so the local checkout already contained the newer files. The snapshot rule prevents future updates from depending on that accidental recovery path.
