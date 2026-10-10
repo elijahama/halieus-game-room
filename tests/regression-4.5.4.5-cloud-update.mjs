@@ -57,6 +57,11 @@ assert.match(rootUpdater, /HGR_UPDATE_SNAPSHOT/,"The tracked updater must execut
 assert.match(rootUpdater, /copy \/Y "%~f0" "!HGR_UPDATE_SNAPSHOT_PATH!"/,"Updater must snapshot its own current bytes before STEP 1");
 assert.match(rootUpdater, /pushd "%HGR_PROJECT_ROOT%"/,"Snapshot execution must continue from the real HGR repository root");
 assert.doesNotMatch(rootUpdater, /pushd "%~dp0"/,"The temp snapshot must never treat the TEMP directory as the HGR repository root");
+assert.match(rootUpdater, /STEP 7B - Safe re-push check/,"Updater must check for validated local commits that are still ahead of GitHub");
+assert.match(rootUpdater, /git merge-base --is-ancestor %REMOTE%\/%BRANCH% HEAD/,"Safe re-push must refuse divergent history");
+assert.match(rootUpdater, /git rev-list --count %REMOTE%\/%BRANCH%\.\.HEAD/,"Safe re-push must count pending local commits");
+assert.match(rootUpdater, /git push %REMOTE% %BRANCH%[\s\S]*Safe re-push failed/,"Ahead commits must be pushed without force");
+assert.doesNotMatch(rootUpdater, /git push --force|git push -f/,"Updater must never force-push during re-push");
 assert.match(refreshControl, /start-control-cloud\.ps1/);
 assert.match(refreshControl, /in-flight cloud Update is not killed/);
 
@@ -73,4 +78,4 @@ assert.match(cloudUi, /\/control\/cloud\/actions\/update/);
 assert.match(cloudUi, /window\.confirm/);
 assert.doesNotMatch(cloudUi, /actions\/(start|restart|close)/, "Cloud UI must not quietly enable later remote actions in this batch");
 
-console.log("PASS 4.5.4.5 + Part 28: Cloud Update remains fixed-action and the tracked updater survives replacing itself during Git rebase");
+console.log("PASS 4.5.4.5 + Part 28: Cloud Update remains fixed-action, survives self-rebase and safely re-pushes validated ahead commits");
