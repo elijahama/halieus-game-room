@@ -1,5 +1,29 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
+
+rem ============================================================
+rem Halieus Game Room - GitHub Update
+rem Run the real update from a TEMP snapshot so Git can safely replace
+rem this tracked launcher during fetch/rebase without corrupting the
+rem currently executing batch parser/file position.
+rem ============================================================
+if /i not "%HGR_UPDATE_SNAPSHOT%"=="1" (
+    set "HGR_PROJECT_ROOT=%HGR_PROJECT_ROOT%"
+    set "HGR_UPDATE_SNAPSHOT=1"
+    set "HGR_UPDATE_SNAPSHOT_PATH=%TEMP%\HGR-Update-%RANDOM%-%RANDOM%.cmd"
+    copy /Y "%~f0" "!HGR_UPDATE_SNAPSHOT_PATH!" >nul
+    if errorlevel 1 (
+        echo [ERROR] Could not create a temporary HGR updater snapshot.
+        exit /b 1
+    )
+    call "!HGR_UPDATE_SNAPSHOT_PATH!"
+    set "HGR_UPDATE_EXIT=!ERRORLEVEL!"
+    del /Q "!HGR_UPDATE_SNAPSHOT_PATH!" >nul 2>&1
+    exit /b !HGR_UPDATE_EXIT!
+)
+
+if not defined HGR_PROJECT_ROOT set "HGR_PROJECT_ROOT=%HGR_PROJECT_ROOT%"
+
 title Halieus Game Room - Update + Deploy
 color 0E
 chcp 65001 >nul 2>&1
@@ -10,7 +34,7 @@ rem Put this CMD file in the ROOT of the HGR project.
 rem It works from its own folder, including Start Menu shortcuts.
 rem ============================================================
 
-pushd "%~dp0"
+pushd "%HGR_PROJECT_ROOT%"
 
 set "REMOTE=origin"
 set "BRANCH=main"
@@ -80,7 +104,7 @@ echo ------------------------------------------------------------
 echo.
 
 rem Capture running/stopped state before any source changes.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\refresh-control-after-update.ps1" -Capture
+powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\refresh-control-after-update.ps1" -Capture
 if errorlevel 1 goto :PAUSE_EXIT
 
 echo STEP 1 - Updating LOCAL files from GitHub...
@@ -377,8 +401,8 @@ echo.
 
 rem Refresh the local owner deploy helper from the tracked canonical copy so
 rem ignored/private dev-tools cannot silently remain on an older release.
-set "TRACKED_ORACLE_DIR=%~dp0tests\dev-tools\Oracle Quick Deploy"
-set "LOCAL_ORACLE_DIR=%~dp0dev-tools\Oracle Quick Deploy"
+set "TRACKED_ORACLE_DIR=%HGR_PROJECT_ROOT%tests\dev-tools\Oracle Quick Deploy"
+set "LOCAL_ORACLE_DIR=%HGR_PROJECT_ROOT%dev-tools\Oracle Quick Deploy"
 if exist "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" (
     if not exist "%LOCAL_ORACLE_DIR%" mkdir "%LOCAL_ORACLE_DIR%" >nul 2>&1
     copy /Y "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" "%LOCAL_ORACLE_DIR%\deploy-from-windows.ps1" >nul
@@ -386,7 +410,7 @@ if exist "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" (
     echo [OK] Local Oracle deploy helper refreshed from the current tracked source.
 )
 
-set "PRIVATE_UPDATE_PS1=%~dp0update-website.ps1"
+set "PRIVATE_UPDATE_PS1=%HGR_PROJECT_ROOT%update-website.ps1"
 set "ORACLE_DEPLOY_PS1=%LOCAL_ORACLE_DIR%\deploy-from-windows.ps1"
 
 if exist "%PRIVATE_UPDATE_PS1%" (
@@ -458,14 +482,14 @@ echo.
 echo FINAL STEP 1 - Refreshing HGR Launchers...
 echo Rebuilding the project HGR Launchers folder and Start Menu group from the current source.
 echo.
-if not exist "%~dp0scripts\windows\launcher-shortcuts.ps1" (
+if not exist "%HGR_PROJECT_ROOT%scripts\windows\launcher-shortcuts.ps1" (
     echo [STOPPED] Update completed, but the HGR launcher refresh helper is missing:
-    echo   %~dp0scripts\windows\launcher-shortcuts.ps1
+    echo   %HGR_PROJECT_ROOT%scripts\windows\launcher-shortcuts.ps1
     popd
     endlocal
     exit /b 1
 )
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\launcher-shortcuts.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\launcher-shortcuts.ps1"
 if errorlevel 1 (
     echo.
     echo [STOPPED] Update/deploy completed, but HGR Launchers could not be refreshed.
@@ -480,15 +504,15 @@ echo FINAL STEP 2 - Refreshing HGR Control if it was already running...
 echo This restarts only an existing live Control Agent, using the newly updated source
 echo and fresh credentials. A stopped Control service stays stopped.
 echo.
-if not exist "%~dp0scripts\windows\refresh-control-after-update.ps1" (
+if not exist "%HGR_PROJECT_ROOT%scripts\windows\refresh-control-after-update.ps1" (
     echo [STOPPED] Update completed, but the HGR Control refresh helper is missing:
-    echo   %~dp0scripts\windows\refresh-control-after-update.ps1
+    echo   %HGR_PROJECT_ROOT%scripts\windows\refresh-control-after-update.ps1
     echo The website deployment is complete. Start HGR - Control manually if needed.
     popd
     endlocal
     exit /b 1
 )
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\refresh-control-after-update.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\refresh-control-after-update.ps1"
 if errorlevel 1 (
     echo.
     echo [STOPPED] Update/deploy completed, but a running HGR Control could not be refreshed.
@@ -503,16 +527,16 @@ echo FINAL STEP 3 - Refreshing the HGR client...
 echo Existing HGR windows now refresh themselves after the production release changes.
 echo A new HGR window is opened only when no dedicated HGR window is already running.
 echo.
-if not exist "%~dp0scripts\windows\post-update-client.ps1" (
+if not exist "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1" (
     echo [STOPPED] Update completed, but the post-update HGR client helper is missing:
-    echo   %~dp0scripts\windows\post-update-client.ps1
+    echo   %HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1
     echo The website deployment is complete. Run Start Halieus Game Room.cmd manually if needed.
     popd
     endlocal
     exit /b 1
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\post-update-client.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1"
 if errorlevel 1 (
     echo.
     echo [STOPPED] Update/deploy completed, but the HGR client could not be refreshed/opened cleanly.
