@@ -685,3 +685,18 @@ The fault was not Git state. `Update HGR GitHub.cmd` is itself tracked by Git an
 Durable rule: the root updater now copies its current bytes to a unique TEMP snapshot before any Git work, records the actual HGR repository root in `HGR_PROJECT_ROOT`, and executes the update from that immutable snapshot. Git may then replace the tracked root updater safely during fetch/rebase. Every project-relative helper path uses `HGR_PROJECT_ROOT`, never the TEMP snapshot directory.
 
 This also explains why simply retrying after the screenshot can work: the rebase had already completed, so the local checkout already contained the newer files. The snapshot rule prevents future updates from depending on that accidental recovery path.
+
+
+### 2026-10-10 — updater safe re-push check
+
+The updater now includes a **safe re-push check** after source validation/sync. Previously, a clean working tree could still be locally ahead of `origin/main` because of an already-existing local commit, yet STEP 4 could report “nothing needs committing” and proceed without uploading that commit.
+
+STEP 7B now:
+- fetches the latest remote branch;
+- verifies `origin/main` is an ancestor of local `HEAD`;
+- counts commits in `origin/main..HEAD`;
+- pushes those validated ahead commits automatically when the count is non-zero;
+- refuses to push if history diverged or GitHub changed in a way that needs another rebase;
+- never uses `--force` or `-f`.
+
+This is deliberately a **re-push**, not an unconditional push. Equal branches are a no-op; behind/divergent branches stop safely and instruct the owner to rerun the updater so STEP 1 can rebase first.
