@@ -13,6 +13,7 @@ const [
   startCmd,
   stopCmd,
   updateBridge,
+  rootUpdater,
   refreshControl,
   service,
   contract,
@@ -24,6 +25,7 @@ const [
   read("Start HGR Control.cmd"),
   read("Stop HGR Control.cmd"),
   read("scripts/windows/control-update.ps1"),
+  read("Update HGR GitHub.cmd"),
   read("scripts/windows/refresh-control-after-update.ps1"),
   read("deploy/oracle/halieus-game-room.service"),
   read("shared/platform/control-cloud.ts"),
@@ -51,6 +53,10 @@ assert.match(stopCmd, /stop-control-cloud\.ps1/);
 assert.match(stopCmd, /stop-control\.ps1/);
 assert.match(updateBridge, /hgr-control-update-result\.json/);
 assert.match(updateBridge, /HGR_UPDATE_NONINTERACTIVE/);
+assert.match(rootUpdater, /HGR_UPDATE_SNAPSHOT/,"The tracked updater must execute from a stable snapshot before Git can replace itself");
+assert.match(rootUpdater, /copy \/Y "%~f0" "!HGR_UPDATE_SNAPSHOT_PATH!"/,"Updater must snapshot its own current bytes before STEP 1");
+assert.match(rootUpdater, /pushd "%HGR_PROJECT_ROOT%"/,"Snapshot execution must continue from the real HGR repository root");
+assert.doesNotMatch(rootUpdater, /pushd "%~dp0"/,"The temp snapshot must never treat the TEMP directory as the HGR repository root");
 assert.match(refreshControl, /start-control-cloud\.ps1/);
 assert.match(refreshControl, /in-flight cloud Update is not killed/);
 
@@ -67,4 +73,4 @@ assert.match(cloudUi, /\/control\/cloud\/actions\/update/);
 assert.match(cloudUi, /window\.confirm/);
 assert.doesNotMatch(cloudUi, /actions\/(start|restart|close)/, "Cloud UI must not quietly enable later remote actions in this batch");
 
-console.log("PASS 4.5.4.5: Cloud Update stays owner/admin-authenticated, confirmed, outbound-only and fixed-action");
+console.log("PASS 4.5.4.5 + Part 28: Cloud Update remains fixed-action and the tracked updater survives replacing itself during Git rebase");
