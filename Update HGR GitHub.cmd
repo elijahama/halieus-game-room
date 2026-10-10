@@ -363,6 +363,47 @@ if errorlevel 1 (
 
 :DONE
 echo.
+echo STEP 7B - Safe re-push check...
+echo Verifying whether validated local commits still need uploading to GitHub.
+echo.
+
+git fetch %REMOTE% %BRANCH%
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] Could not refresh %REMOTE%/%BRANCH% before the re-push check.
+    echo No force push was attempted.
+    goto :PAUSE_EXIT
+)
+
+git merge-base --is-ancestor %REMOTE%/%BRANCH% HEAD
+if errorlevel 1 (
+    echo.
+    echo [STOPPED] GitHub changed again or local history no longer cleanly contains %REMOTE%/%BRANCH%.
+    echo No force push was attempted.
+    echo Run the updater again so STEP 1 can safely rebase onto the newest GitHub state.
+    goto :PAUSE_EXIT
+)
+
+set "HGR_AHEAD_COUNT=0"
+for /f "delims=" %%A in ('git rev-list --count %REMOTE%/%BRANCH%..HEAD') do set "HGR_AHEAD_COUNT=%%A"
+
+if not "!HGR_AHEAD_COUNT!"=="0" (
+    echo [SYNC] Local %BRANCH% is !HGR_AHEAD_COUNT! commit(s) ahead of GitHub.
+    echo [SYNC] Re-pushing validated local commits...
+    git push %REMOTE% %BRANCH%
+    if errorlevel 1 (
+        echo.
+        echo [STOPPED] Safe re-push failed.
+        echo Your local commits are still safe on this computer.
+        echo No force push was attempted.
+        goto :PAUSE_EXIT
+    )
+    echo [OK] Pending local commits were pushed to GitHub.
+) else (
+    echo [OK] No pending local commits need re-pushing.
+)
+
+echo.
 echo ============================================================
 echo                    HGR SYNC COMPLETE
 echo ============================================================
@@ -373,7 +414,7 @@ echo LOCAL  ^<-- git pull --  GITHUB
 echo LOCAL  -- git push --^>  GITHUB
 echo.
 echo Your local files were updated at STEP 1.
-echo Your local source changes were uploaded at STEP 7 when a commit was needed.
+echo STEP 7 pushes newly created commits; STEP 7B safely re-pushes any validated commits already ahead of GitHub.
 echo.
 echo STEP 8 - Regenerating final release identity after sync...
 echo.
