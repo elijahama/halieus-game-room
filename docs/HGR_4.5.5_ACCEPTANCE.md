@@ -131,3 +131,10 @@ Real-device acceptance must confirm all of the following together:
 - Custom remains RGB/HSL/Greyscale/contrast editing and does not duplicate the preset gallery.
 - A recoloured H tile has a tonal edge derived from its own colour; a cyan/teal H tile must not show a gold/yellow rim.
 - The pre-React boot curtain and branded intro must not reintroduce a hard-coded gold ring/glow when another theme accent is active.
+
+
+## 10 October 2026 — exact Core/Custom atmosphere-engine acceptance
+
+Core is accepted only if it is routed through the **same runtime atmosphere engine as Custom**, not a profile-specific imitation. Source acceptance requires the same Custom symbol generator, the same HomeScreen atmosphere source/engine marker and the same final animation selector for Custom and promoted Core palettes.
+
+Real-device check: select Custom, observe the moving generic symbols; then select Studio Graphite, Cyan Studio and another Core palette. The symbols must remain present and moving with the same motion behaviour while only their palette/theme treatment changes.
