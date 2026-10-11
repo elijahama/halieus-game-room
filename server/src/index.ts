@@ -666,8 +666,17 @@ if (canServeClient) {
     next();
   });
 
+  // Install identity must never inherit a stale browser HTTP cache after a
+  // release refresh. Versioned manifest/icon URLs remain the first safeguard.
   app.use(
-    express.static(clientDistPath),
+    express.static(clientDistPath, {
+      setHeaders: (response, filePath) => {
+        if (/(?:^|[\\/])(?:site\.webmanifest|app-icon-(?:180|192|512)\.png|halieus-app-icon\.(?:png|svg)|halieus-mark\.svg|favicon-32\.png|favicon\.ico)$/.test(filePath)) {
+          response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+          response.setHeader("Pragma", "no-cache");
+        }
+      },
+    }),
   );
 
   app.get(

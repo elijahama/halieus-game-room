@@ -27,7 +27,14 @@ for (const [file, expected] of Object.entries(fixture)) {
   assert.equal(createHash('sha256').update(bytes).digest('hex'), expected, `${file}: website raster or contextual game artwork changed`);
 }
 const manifest = JSON.parse(read('client/public/site.webmanifest'));
-assert.ok(manifest.icons.every(i => i.src.includes(`?v=${version}-install-h5`)), `PWA identities must invalidate prior H artwork URLs for ${version}`);
+const clientDelivery = read('server/src/index.ts');
+assert.match(clientDelivery, /setHeaders: \(response, filePath\)/, 'Production static server must prevent caching install identity artwork');
+assert.match(clientDelivery, /site\\.webmanifest\|app-icon-/, 'Install manifest and PNG assets must be explicitly cache-controlled');
+const oracleInstaller = read('tests/dev-tools/Oracle Quick Deploy/quick-install.sh');
+assert.match(oracleInstaller, /BUILT_PWA_192_SHA256[\s\S]*BUILT_PWA_512_SHA256/, 'Oracle must verify canonical artwork survives production build');
+assert.match(oracleInstaller, /SERVED_PWA_192_SHA256[\s\S]*SERVED_PWA_512_SHA256/, 'Oracle must check actual served PWA identity bytes');
+assert.match(oracleInstaller, /Rolling back/, 'PWA mismatch must activate existing rollback mechanism');
+assert.ok(manifest.icons.every(i => i.src.includes(`?v=${version}-install-h6`)), `PWA identities must invalidate prior H artwork URLs for ${version}`);
 assert.deepEqual(manifest.icons.map(i => i.src.split("?")[0]), ['/app-icon-192.png', '/app-icon-512.png'], 'Installed Halieus PWA must use the canonical generated H icon sizes');
 assert.ok(manifest.icons.every(i => i.type === 'image/png'), 'Installed Halieus identity must use PNG raster exports of the canonical web mark');
 assert.deepEqual(manifest.icons.map(i => i.sizes), ['192x192', '512x512'], 'Installed Halieus PNGs must declare their generated square sizes');
@@ -71,11 +78,11 @@ for (const file of [
   assert.equal(sha256(readFileSync(resolve(root, file))), identityArtwork.mainIcoSha256, `${file}: packaged main app ICO must use the current canonical H`);
 }
 const indexHtml = read('client/index.html');
-assert.match(indexHtml, new RegExp(`rel="icon"[^>]*href="\\/favicon-32\\.png\\?v=${versionRe}-install-h5"`), 'Initial PNG favicon fallback must use the canonical generated H export');
-assert.match(indexHtml, new RegExp(`rel="apple-touch-icon"[^>]*href="\\/app-icon-180\\.png\\?v=${versionRe}-install-h5"`), 'Apple touch icon must use the canonical generated H export');
+assert.match(indexHtml, new RegExp(`rel="icon"[^>]*href="\\/favicon-32\\.png\\?v=${versionRe}-install-h6"`), 'Initial PNG favicon fallback must use the canonical generated H export');
+assert.match(indexHtml, new RegExp(`rel="apple-touch-icon"[^>]*href="\\/app-icon-180\\.png\\?v=${versionRe}-install-h6"`), 'Apple touch icon must use the canonical generated H export');
 assert.match(indexHtml, new RegExp(`id="halieus-dynamic-favicon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h9"`), 'Initial browser favicon must use the canonical HGR web mark with fresh cache identity');
 assert.match(indexHtml, new RegExp(`rel="shortcut icon"[^>]*href="\\/halieus-mark\\.svg\\?v=${versionRe}-brand-h9"`), 'Shortcut favicon must use the canonical HGR web mark with fresh cache identity');
-assert.match(indexHtml, new RegExp(`rel="manifest"[^>]*href="\\/site\\.webmanifest\\?v=${versionRe}-install-h5"`), 'Manifest discovery must use the fresh install identity revision');
+assert.match(indexHtml, new RegExp(`rel="manifest"[^>]*href="\\/site\\.webmanifest\\?v=${versionRe}-install-h6"`), 'Manifest discovery must use the fresh install identity revision');
 assert.doesNotMatch(indexHtml, /app-icon-reference\.png/, 'Historical install reference must not remain in live HTML');
 const pwaCopy = read('scripts/copy-approved-pwa-icon.mjs');
 assert.match(pwaCopy,/rm\(resolve\(publicDir, "app-icon-reference\.png"\), \{ force: true \}\)/,'Client prebuild must remove the stale historical install thumbnail');
@@ -106,7 +113,7 @@ assert.match(read('client/public/brand/glyphs/H-white.svg'),/fill="#FFFFFF"/);
 assert.match(read('client/public/brand/glyphs/H-gold.svg'),/fill="#F4C430"/);
 for(const game of ['anagrams-race','ayo']) assert.equal(read(`client/public/game-icons/${game}.svg`),read(`client/src/assets/game-icons/${game}.svg`));
 
-assert.match(indexHtml, new RegExp(`property="og:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-install-h5"`), 'Social share metadata must use the canonical H compatibility PNG revision');
-assert.match(indexHtml, new RegExp(`property="og:image:secure_url" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-install-h5"`), 'Social share image must expose the canonical H compatibility PNG over a secure URL');
-assert.match(indexHtml, new RegExp(`name="twitter:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-install-h5"`), 'Twitter/social fallback must use the canonical H compatibility PNG');
+assert.match(indexHtml, new RegExp(`property="og:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-install-h6"`), 'Social share metadata must use the canonical H compatibility PNG revision');
+assert.match(indexHtml, new RegExp(`property="og:image:secure_url" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-install-h6"`), 'Social share image must expose the canonical H compatibility PNG over a secure URL');
+assert.match(indexHtml, new RegExp(`name="twitter:image" content="https:\\/\\/halieus\\.remotewire\\.net\\/halieus-app-icon\\.png\\?v=${versionRe}-install-h6"`), 'Twitter/social fallback must use the canonical H compatibility PNG');
 assert.doesNotMatch(indexHtml, /(?:og:image|twitter:image)[^>]+app-icon-reference\.png/, 'Social previews must never use the historical install reference sheet');

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { APP_VERSION } from "../../version";
 
-const INSTALL_IDENTITY_REVISION = `${APP_VERSION}-install-h5`;
+const INSTALL_IDENTITY_REVISION = `${APP_VERSION}-install-h6`;
 const FAVICON_IDENTITY_REVISION = `${APP_VERSION}-brand-h9`;
 
 function withVersion(path: string, revision: string): string {

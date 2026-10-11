@@ -22,7 +22,7 @@ fi
 
 require_runtime() {
   local missing=0
-  for cmd in unzip curl rsync node npm systemctl; do
+  for cmd in unzip curl rsync node npm systemctl sha256sum; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
       echo "Missing required runtime command: $cmd" >&2
       missing=1
@@ -140,6 +140,18 @@ if [[ ! -f "$SOURCE_ROOT/server/dist/server/src/index.js" ]]; then
   exit 1
 fi
 
+# Signed canonical PWA rasters must survive Vite packaging unchanged.
+# A healthy server with old installed-app artwork is not a valid release.
+EXPECTED_PWA_192_SHA256="$(sha256sum "$SOURCE_ROOT/client/public/app-icon-192.png" | awk '{print $1}')"
+EXPECTED_PWA_512_SHA256="$(sha256sum "$SOURCE_ROOT/client/public/app-icon-512.png" | awk '{print $1}')"
+BUILT_PWA_192_SHA256="$(sha256sum "$SOURCE_ROOT/client/dist/app-icon-192.png" | awk '{print $1}')"
+BUILT_PWA_512_SHA256="$(sha256sum "$SOURCE_ROOT/client/dist/app-icon-512.png" | awk '{print $1}')"
+if [[ "$BUILT_PWA_192_SHA256" != "$EXPECTED_PWA_192_SHA256" || "$BUILT_PWA_512_SHA256" != "$EXPECTED_PWA_512_SHA256" ]]; then
+  echo "Candidate PWA icon bytes differ from the signed canonical 192/512px artwork. Refusing activation." >&2
+  exit 1
+fi
+echo "Candidate PWA 192/512px artwork matches signed canonical source."
+
 # Production only needs runtime dependencies after the build artifacts exist.
 npm prune --omit=dev
 
@@ -215,20 +227,28 @@ systemctl enable --now halieus-game-room
 HEALTH_JSON=""
 HEALTH_VERSION=""
 HEALTH_FINGERPRINT=""
+SERVED_PWA_192_SHA256=""
+SERVED_PWA_512_SHA256=""
 for _attempt in $(seq 1 30); do
   if HEALTH_JSON="$(curl -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health 2>/dev/null)"; then
     HEALTH_VERSION="$(printf '%s' "$HEALTH_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{process.stdout.write(String(JSON.parse(s).version||""))}catch{process.exit(1)}})')" || HEALTH_VERSION=""
     HEALTH_FINGERPRINT="$(printf '%s' "$HEALTH_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{process.stdout.write(String(JSON.parse(s).releaseFingerprint||""))}catch{process.exit(1)}})')" || HEALTH_FINGERPRINT=""
     if [[ "$HEALTH_VERSION" == "$EXPECTED_VERSION" && "$HEALTH_FINGERPRINT" == "$EXPECTED_FINGERPRINT" ]]; then
-      break
+      SERVED_PWA_192_SHA256="$(curl -fsS --max-time 8 -H 'Cache-Control: no-cache' "http://127.0.0.1:3000/app-icon-192.png?deploy-verify=$EXPECTED_FINGERPRINT" | sha256sum | awk '{print $1}')" || SERVED_PWA_192_SHA256=""
+      SERVED_PWA_512_SHA256="$(curl -fsS --max-time 8 -H 'Cache-Control: no-cache' "http://127.0.0.1:3000/app-icon-512.png?deploy-verify=$EXPECTED_FINGERPRINT" | sha256sum | awk '{print $1}')" || SERVED_PWA_512_SHA256=""
+      if [[ "$SERVED_PWA_192_SHA256" == "$EXPECTED_PWA_192_SHA256" && "$SERVED_PWA_512_SHA256" == "$EXPECTED_PWA_512_SHA256" ]]; then
+        break
+      fi
     fi
   fi
   sleep 1
 done
 
-if [[ "$HEALTH_VERSION" != "$EXPECTED_VERSION" || "$HEALTH_FINGERPRINT" != "$EXPECTED_FINGERPRINT" ]]; then
+if [[ "$HEALTH_VERSION" != "$EXPECTED_VERSION" || "$HEALTH_FINGERPRINT" != "$EXPECTED_FINGERPRINT" || "$SERVED_PWA_192_SHA256" != "$EXPECTED_PWA_192_SHA256" || "$SERVED_PWA_512_SHA256" != "$EXPECTED_PWA_512_SHA256" ]]; then
   echo >&2
-  echo "New Halieus release failed exact release verification. Expected $EXPECTED_VERSION / $EXPECTED_FINGERPRINT; got ${HEALTH_VERSION:-unreachable} / ${HEALTH_FINGERPRINT:-missing}. Rolling back..." >&2
+  echo "New Halieus release failed exact release/PWA identity verification. Expected $EXPECTED_VERSION / $EXPECTED_FINGERPRINT; got ${HEALTH_VERSION:-unreachable} / ${HEALTH_FINGERPRINT:-missing}. Rolling back..." >&2
+  echo "PWA 192 expected $EXPECTED_PWA_192_SHA256; served ${SERVED_PWA_192_SHA256:-unreachable}" >&2
+  echo "PWA 512 expected $EXPECTED_PWA_512_SHA256; served ${SERVED_PWA_512_SHA256:-unreachable}" >&2
   systemctl stop halieus-game-room 2>/dev/null || true
   FAILED_DIR="${APP_DIR}.failed-${STAMP}"
   mv "$APP_DIR" "$FAILED_DIR"
@@ -243,7 +263,7 @@ if [[ "$HEALTH_VERSION" != "$EXPECTED_VERSION" || "$HEALTH_FINGERPRINT" != "$EXP
 fi
 
 printf '%s\n' "$HEALTH_JSON"
-echo "Oracle local health verified exact release: $EXPECTED_VERSION / $EXPECTED_FINGERPRINT"
+echo "Oracle local health and canonical PWA 192/512px bytes verified: $EXPECTED_VERSION / $EXPECTED_FINGERPRINT"
 
 # Keep the newest rollback copy, but remove older application backups to avoid
 # silently filling the small Oracle boot volume across frequent UI releases.

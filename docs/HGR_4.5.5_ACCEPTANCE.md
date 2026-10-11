@@ -156,3 +156,9 @@ Main Halieus identity acceptance:
 - Start/Restart/Close/Update/PowerShell/OpenShard/HGR Control retain their separately approved role-specific artwork.
 
 Real-device/browser acceptance may require removing a previously installed PWA/app or clearing an OS/browser icon cache before judging a newly generated install icon, because installed shell artwork can be retained by the operating system independently of website cache invalidation.
+
+## 12 October 2026 — PWA logo update rejected
+
+Brave proposed a logo update showing the retired play-cut H; the installed logo on the left was also an older block-H variant. GitHub's current canonical PWA 192/512 raster art was inspected and does not contain the play cutout. This is an unresolved deployment/PWA-cache acceptance issue, not a request to invent a new logo. Part 29 advances the install manifest/favicon/social/worker URL revision to `install-h6` while preserving the approved canonical H and all role-specific masters. The Oracle deploy gate must verify the *served* image bytes, not just `/health`.
+
+Owner acceptance after deployment: Brave's logo-review prompt must show the current canonical flared H without the play triangle; both actual 192px and 512px manifest icons must match the committed current-H rasters. Verify on the public URL and installed-app surface separately; neither CI success nor an Oracle-only content check establishes public browser acceptance.
