@@ -736,3 +736,11 @@ First, the post-update client handoff could see any Edge process using the dedic
 Second, the canonical launcher-family H vector had been corrected after several committed raster consumers were last generated. The SVG/browser mark was current, but favicon/PWA/social-preview and desktop/package PNG/ICO copies could still contain the older H. Release CI now runs `scripts/generate-platform-icons.mjs` before release validation. It renders the main Halieus favicon, 180/192/512 PWA icons, social/share PNG, main Windows/package PNG/ICO copies and `HGR Main.png` from the canonical current-H main vector, then records source/output hashes in `client/public/identity-artwork.json`.
 
 The identity cache revisions move to `install-h5` and `brand-h9` so browsers and installed-PWA discovery do not keep the prior raster family. Role-specific Start/Restart/Close/Update/PowerShell/OpenShard/Control artwork remains under its approved rendered-PNG authority and is not redrawn by the main identity generator.
+
+## Part 29 — Windows canonical-H identity checkout correction (11 October 2026)
+
+An owner-PC Update reached client prebuild and stopped before deployment: `copy-approved-pwa-icon.mjs` rejected the main H icon's source hash as stale. CI-generated assets on `main` were previously validated, but Windows Git checkout can convert SVG line endings because the prior `.gitattributes` did not explicitly pin `*.svg` to LF. A changed line ending is not a changed H geometry.
+
+Protect against this source-identity false positive by pinning SVG checkout to LF and hashing only SVG identity **source text** with CRLF/CR normalised to LF in both the generator and validator. Keep exact byte hashes for PNG/ICO output. A genuinely edited SVG must still be rejected unless canonical main assets are deliberately regenerated and validated. Do not auto-redraw or overwrite Start, Restart, Close, Update, PowerShell, OpenShard or Control artwork as a side effect of Update.
+
+The client prebuild now names the mismatched source so a real local override can be distinguished from a line-ending artefact. Source regression covers LF-vs-CRLF equivalence and genuine artwork-change rejection. Owner-PC rerun and visible installed-icon acceptance remain pending.

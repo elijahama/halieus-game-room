@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
+import { identitySourceSha256 } from '../scripts/identity-source-hash.mjs';
 const root = resolve(import.meta.dirname, '..');
 const read = p => readFileSync(resolve(root, p), 'utf8');
 const version = read('VERSION').trim();
@@ -42,8 +43,12 @@ assert.equal(createHash('sha256').update(compatibilityPwaBytes).digest('hex'), c
 const identityArtwork = JSON.parse(read('client/public/identity-artwork.json'));
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 assert.equal(identityArtwork.generatedFromCanonicalH, true, 'Identity artwork record must prove canonical-H generation');
-assert.equal(identityArtwork.sourceSvgSha256, sha256(readFileSync(resolve(root, 'client/public/halieus-app-icon.svg'))), 'Identity record must match the current canonical app SVG');
-assert.equal(identityArtwork.canonicalGlyphSha256, sha256(readFileSync(resolve(root, 'assets/branding/icon-sets/glyphs/hgr-h.svg'))), 'Identity record must match the current canonical H glyph');
+assert.equal(identityArtwork.sourceSvgSha256, identitySourceSha256(readFileSync(resolve(root, 'client/public/halieus-app-icon.svg'))), 'Identity record must match the current canonical app SVG');
+assert.equal(identityArtwork.canonicalGlyphSha256, identitySourceSha256(readFileSync(resolve(root, 'assets/branding/icon-sets/glyphs/hgr-h.svg'))), 'Identity record must match the current canonical H glyph');
+const lfSource = read('client/public/halieus-app-icon.svg').replace(/\r\n?/g, '\n');
+const crlfSource = lfSource.replace(/\n/g, '\r\n');
+assert.equal(identitySourceSha256(lfSource), identitySourceSha256(crlfSource), 'Windows CRLF checkout must not falsely invalidate canonical H source identity');
+assert.notEqual(identitySourceSha256(lfSource), identitySourceSha256(lfSource.replace('fill="#07090d"', 'fill="#090b0e"')), 'An actual main H artwork change must still invalidate identity');
 assert.equal(identityArtwork.appIcon512Sha256, sha256(canonicalInstallBytes), 'Identity record must match the generated 512px install raster');
 for (const file of [
   'assets/Halieus Game Room.png',

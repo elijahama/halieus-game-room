@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { chromium } from 'playwright';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { identitySourceSha256 } from './identity-source-hash.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const output = resolve(root, 'client/public');
@@ -91,8 +92,8 @@ try {
   const identityRecord = {
     source: 'client/public/halieus-app-icon.svg',
     canonicalGlyph: 'assets/branding/icon-sets/glyphs/hgr-h.svg',
-    sourceSvgSha256: sha256(Buffer.from(svg)),
-    canonicalGlyphSha256: sha256(Buffer.from(glyph)),
+    sourceSvgSha256: identitySourceSha256(svg),
+    canonicalGlyphSha256: identitySourceSha256(glyph),
     appIcon512Sha256: sha256(rendered.get(512)),
     favicon32Sha256: sha256(rendered.get(32)),
     faviconIcoSha256: sha256(faviconIco),

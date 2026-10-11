@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { access, readFile, rm } from "node:fs/promises";
 import { resolve } from "node:path";
+import { identitySourceSha256 } from "./identity-source-hash.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const publicDir = resolve(root, "client/public");
@@ -22,10 +23,12 @@ if (!glyphSvg.includes(canonicalPath) || !appSvg.includes(canonicalPath)) {
 }
 
 const record = JSON.parse(identityRecordRaw);
-if (!record.generatedFromCanonicalH ||
-    record.sourceSvgSha256 !== sha256(Buffer.from(appSvg)) ||
-    record.canonicalGlyphSha256 !== sha256(Buffer.from(glyphSvg))) {
-  throw new Error("Main HGR identity rasters are stale relative to the canonical H. Run node scripts/generate-platform-icons.mjs.");
+const mismatches = [];
+if (!record.generatedFromCanonicalH) mismatches.push("canonical generation record");
+if (record.sourceSvgSha256 !== identitySourceSha256(appSvg)) mismatches.push("main source SVG");
+if (record.canonicalGlyphSha256 !== identitySourceSha256(glyphSvg)) mismatches.push("canonical H glyph SVG");
+if (mismatches.length) {
+  throw new Error(`Main HGR identity rasters are stale relative to the canonical H (${mismatches.join(", ")} mismatch). Compare local SVG edits with GitHub before regenerating artwork.`);
 }
 
 const checks = [
