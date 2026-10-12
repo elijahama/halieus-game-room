@@ -482,11 +482,12 @@ if exist "%ORACLE_DEPLOY_PS1%" (
 )
 
 echo.
-echo [OK] GitHub sync, validation and release preparation completed.
-echo [INFO] No private Oracle deployment helper was found on this computer.
-echo        Nothing is wrong with GitHub; website deployment was skipped.
+echo [STOPPED] GitHub sync and build completed, but WEBSITE DEPLOYMENT DID NOT RUN.
+echo Neither update-website.ps1 nor the local Oracle deploy helper is available.
+echo The website has NOT been updated by this run. This is not a successful Update.
+echo Restore the owner deployment credentials/helper, then retry.
 echo.
-goto :PAUSE_SUCCESS
+goto :PAUSE_EXIT
 
 :DEPLOY_DONE
 
@@ -507,14 +508,6 @@ echo   8. Website deployment completed
 echo   9. HGR Launchers refreshed and verified
 echo  10. A running HGR Control restarts from the updated source with fresh pairing state
 echo  11. Existing HGR app window refreshes itself; HGR opens only if it was closed
-echo.
-goto :REFRESH_AFTER_UPDATE
-
-:PAUSE_SUCCESS
-echo.
-echo ============================================================
-echo                 HGR UPDATE COMPLETE
-echo ============================================================
 echo.
 goto :REFRESH_AFTER_UPDATE
 
@@ -589,6 +582,18 @@ if errorlevel 1 (
 
 echo [OK] HGR client handoff completed without forcing a new window.
 echo.
+echo ============================================================
+echo             HGR UPDATE FINISHED - CHECK RESULT
+echo ============================================================
+echo GitHub sync, local validation and deploy helper returned success.
+echo This is the SOURCE release identity; Brave/phone install artwork still needs device acceptance:
+node -e "const m=require('./RELEASE.json'); console.log(m.fingerprint)"
+echo.
+echo If the visible HGR window or app icon did not update, report this result.
+if /i not "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
+    echo.
+    pause
+)
 popd
 endlocal
 exit 0

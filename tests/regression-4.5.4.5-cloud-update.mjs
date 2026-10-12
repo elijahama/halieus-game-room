@@ -58,6 +58,9 @@ assert.match(rootUpdater, /copy \/Y "%~f0" "!HGR_UPDATE_SNAPSHOT_PATH!"/,"Update
 assert.match(rootUpdater, /pushd "%HGR_PROJECT_ROOT%"/,"Snapshot execution must continue from the real HGR repository root");
 assert.doesNotMatch(rootUpdater, /pushd "%~dp0"/,"The temp snapshot must never treat the TEMP directory as the HGR repository root");
 assert.match(rootUpdater, /STEP 7B - Safe re-push check/,"Updater must check for validated local commits that are still ahead of GitHub");
+assert.match(rootUpdater, /\[STOPPED\] GitHub sync and build completed, but WEBSITE DEPLOYMENT DID NOT RUN/, "A missing Oracle helper must never return a false Update success");
+assert.doesNotMatch(rootUpdater, /goto :PAUSE_SUCCESS|:PAUSE_SUCCESS/, "The updater must not report completed when deploy is skipped");
+assert.match(rootUpdater, /if \/i not "%HGR_UPDATE_NONINTERACTIVE%"=="1" \([\s\S]*?pause[\s\S]*?\)/, "Manual updater success must keep result visible without blocking remote Control");
 assert.match(rootUpdater, /git merge-base --is-ancestor %REMOTE%\/%BRANCH% HEAD/,"Safe re-push must refuse divergent history");
 assert.match(rootUpdater, /git rev-list --count %REMOTE%\/%BRANCH%\.\.HEAD/,"Safe re-push must count pending local commits");
 assert.match(rootUpdater, /git push %REMOTE% %BRANCH%[\s\S]*Safe re-push failed/,"Ahead commits must be pushed without force");
