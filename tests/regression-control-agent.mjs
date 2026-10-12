@@ -356,6 +356,14 @@ assert.match(postUpdateClient, /Restart Halieus Game Room\.cmd/, "One-time boots
 assert.match(postUpdateClient, /Start Halieus Game Room\.cmd/, "Post-update helper must retain the canonical Start launcher");
 assert.match(postUpdateClient, /MainWindowHandle -ne 0/, "Background Edge profile processes must not count as a visible HGR window");
 assert.match(postUpdateClient, /Wait-HgrVisibleAppWindow/, "Successful post-update Start/Restart must verify a visible HGR window appeared");
+assert.match(postUpdateClient, /param\(\[switch\]\$ShowWindow\)/, "Manual Update must support an owner-visible window handoff");
+assert.match(postUpdateClient, /ShowWindowAsync\(\$process\.MainWindowHandle, 9\)/, "Existing minimized website window must be restored without closing active games");
+assert.match(updateLauncher, /post-update-client\.ps1" -ShowWindow/, "Manual Update must request visible website activation");
+assert.match(updateLauncher, /FINAL STEP 4 - Starting or opening HGR Control for the owner/, "Manual Update must start/open Control after website handoff");
+assert.match(updateLauncher, /if \/i not "%HGR_UPDATE_NONINTERACTIVE%"=="1" \([\s\S]*?call "%HGR_PROJECT_ROOT%Start HGR Control\.cmd"/, "Control launch must be manual-only; cloud updates must preserve prior running state");
+assert.match(updateLauncher, /last-update-result\.txt/, "Update must write a persistent non-sensitive receipt even if the CMD window closes");
+assert.match(launcherShortcuts, /\$UpdateScript = Join-Path \$ProjectRoot 'Update HGR GitHub\.cmd'/, "Update Site shortcut must use the complete canonical GitHub sync + deploy updater");
+assert.match(launcherShortcuts, /Assert-HalieusShortcutCommandScript -ShortcutPath \$ProjectUpdateShortcut -ExpectedCommandScript \$UpdateScript/, "Update shortcut target must be verified after creation");
 assert.match(updateLauncher, /FINAL STEP 2 - Refreshing HGR Control if it was already running/, "Updater must refresh a live Control Agent after pulling the updated source");
 assert.match(updateLauncher, /refresh-control-after-update\.ps1/, "Updater must invoke the guarded Control post-update handoff");
 assert.match(updateLauncher, /FINAL STEP 3 - Refreshing the HGR client/, "Updater must refresh Control before the release-aware client handoff");

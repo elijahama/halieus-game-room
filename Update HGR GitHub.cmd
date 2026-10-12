@@ -36,6 +36,12 @@ rem ============================================================
 
 pushd "%HGR_PROJECT_ROOT%"
 
+rem Keep a minimal, non-sensitive result record even if an outer shortcut closes.
+set "HGR_LAST_RESULT_DIR=%LOCALAPPDATA%\Halieus Game Room"
+if not exist "!HGR_LAST_RESULT_DIR!" mkdir "!HGR_LAST_RESULT_DIR!" >nul 2>&1
+set "HGR_LAST_RESULT=!HGR_LAST_RESULT_DIR!\last-update-result.txt"
+> "!HGR_LAST_RESULT!" echo STATUS=RUNNING - not yet verified or deployed
+
 set "REMOTE=origin"
 set "BRANCH=main"
 
@@ -506,8 +512,9 @@ echo   6. Source changes committed/pushed when needed
 echo   7. Final release identity regenerated and re-verified
 echo   8. Website deployment completed
 echo   9. HGR Launchers refreshed and verified
-echo  10. A running HGR Control restarts from the updated source with fresh pairing state
-echo  11. Existing HGR app window refreshes itself; HGR opens only if it was closed
+echo  10. Existing HGR Control state refreshed safely
+echo  11. HGR app window verified
+echo  12. Manual Update opens HGR Control and restores the HGR window
 echo.
 goto :REFRESH_AFTER_UPDATE
 
@@ -558,8 +565,8 @@ if errorlevel 1 (
 echo [OK] HGR Control post-update handoff completed.
 echo.
 echo FINAL STEP 3 - Refreshing the HGR client...
-echo Existing HGR windows now refresh themselves after the production release changes.
-echo A new HGR window is opened only when no dedicated HGR window is already running.
+echo Manual Update brings the existing website window forward or opens one if absent.
+echo Remote Control Update preserves the noninteractive handoff behaviour.
 echo.
 if not exist "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1" (
     echo [STOPPED] Update completed, but the post-update HGR client helper is missing:
@@ -570,7 +577,11 @@ if not exist "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1" (
     exit /b 1
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1"
+if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1"
+) else (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1" -ShowWindow
+)
 if errorlevel 1 (
     echo.
     echo [STOPPED] Update/deploy completed, but the HGR client could not be refreshed/opened cleanly.
@@ -580,26 +591,68 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [OK] HGR client handoff completed without forcing a new window.
+echo [OK] HGR website handoff completed.
+echo.
+set "HGR_CONTROL_RESULT=PRESERVED (remote update)"
+set "HGR_OWNER_EXIT=0"
+if /i not "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
+    echo FINAL STEP 4 - Starting or opening HGR Control for the owner...
+    echo The private Control agent remains background-based; its pairing card should open.
+    set "HGR_CONTROL_RESULT=FAILED"
+    if exist "%HGR_PROJECT_ROOT%Start HGR Control.cmd" (
+        call "%HGR_PROJECT_ROOT%Start HGR Control.cmd"
+        if errorlevel 1 (
+            echo [PARTIAL] HGR was deployed and the website window opened, but Control did not start.
+            echo Try the HGR - Control shortcut and review its error before retrying Update.
+            set "HGR_OWNER_EXIT=1"
+        ) else (
+            set "HGR_CONTROL_RESULT=STARTED_OR_RUNNING"
+            echo [OK] HGR Control launched/verified through its canonical launcher.
+        )
+    ) else (
+        echo [PARTIAL] The Start HGR Control.cmd launcher is missing.
+        set "HGR_OWNER_EXIT=1"
+    )
+)
+
 echo.
 echo ============================================================
 echo             HGR UPDATE FINISHED - CHECK RESULT
 echo ============================================================
-echo GitHub sync, local validation and deploy helper returned success.
+echo GitHub sync, local validation and Oracle deployment returned success.
+echo HGR website: visible dedicated window verified.
+echo HGR Control: !HGR_CONTROL_RESULT!
 echo This is the SOURCE release identity; Brave/phone install artwork still needs device acceptance:
 node -e "const m=require('./RELEASE.json'); console.log(m.fingerprint)"
 echo.
-echo If the visible HGR window or app icon did not update, report this result.
+if not "!HGR_OWNER_EXIT!"=="0" (
+    echo [PARTIAL] Website updated, but the manual Control launch requires attention.
+) else (
+    echo [OK] Update handoff completed.
+)
+(
+    echo STATUS=DEPLOYED
+    echo HGR_WINDOW=VERIFIED
+    echo CONTROL=!HGR_CONTROL_RESULT!
+    echo SOURCE_FINGERPRINT:
+) > "!HGR_LAST_RESULT!"
+node -e "const m=require('./RELEASE.json'); console.log(m.fingerprint)" >> "!HGR_LAST_RESULT!" 2>nul
+echo Last update receipt: !HGR_LAST_RESULT!
+echo.
 if /i not "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
     echo.
     pause
 )
+set "HGR_RETURN_CODE=!HGR_OWNER_EXIT!"
 popd
-endlocal
-exit 0
+endlocal & exit /b %HGR_RETURN_CODE%
 
 :PAUSE_EXIT
 echo.
+if defined HGR_LAST_RESULT (
+    > "!HGR_LAST_RESULT!" echo STATUS=STOPPED_OR_INCOMPLETE - read last console error
+    echo Update result recorded in: !HGR_LAST_RESULT!
+)
 rem A failed validation/build must not leave generated release identity dirty.
 rem These files are regenerated from canonical source on every update attempt.
 git restore --staged --worktree -- RELEASE.json shared/release.ts >nul 2>&1

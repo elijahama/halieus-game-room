@@ -24,7 +24,7 @@ try {
         Copy-Item -LiteralPath (Join-Path $sourceRoot "assets/branding/references/$name") -Destination $references
     }
     Copy-Item -LiteralPath (Join-Path $sourceRoot 'server/control-ui/control-icon.png') -Destination $delivery
-    foreach ($name in @('Start Halieus Game Room.cmd','Restart Halieus Game Room.cmd','Close Halieus Game Room.cmd','Update Halieus Website.cmd','Start HGR Control.cmd','Stop HGR Control.cmd','scripts/windows/OpenShard-HGR.cmd')) {
+    foreach ($name in @('Start Halieus Game Room.cmd','Restart Halieus Game Room.cmd','Close Halieus Game Room.cmd','Update HGR GitHub.cmd','Start HGR Control.cmd','Stop HGR Control.cmd','scripts/windows/OpenShard-HGR.cmd')) {
         Set-Content -LiteralPath (Join-Path $fixture $name) -Value '@exit /b 0'
     }
     Set-Content -LiteralPath (Join-Path $exports 'stale.ico') -Value 'stale'
@@ -41,6 +41,8 @@ try {
     $env:APPDATA = Join-Path $fixture 'appdata'
     . (Join-Path $helpers 'launcher-shortcuts.ps1') -UnhideScripts
     if ($CreatedShortcuts.Count -ne 16) { throw 'Expected all eight roles in both managed folders' }
+    Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript (Join-Path $fixture 'Update HGR GitHub.cmd')
+    Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript (Join-Path $fixture 'Update HGR GitHub.cmd')
     $changed = $wsh.CreateShortcut($ProjectControlShortcut)
     $changed.IconLocation = "$ControlIconPath,1"
     $changed.Save()

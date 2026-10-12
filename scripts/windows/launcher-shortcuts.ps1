@@ -45,7 +45,8 @@ foreach ($LauncherDirectory in @($ProjectLauncherDirectory, $StartMenuLauncherDi
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
 $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
-$UpdateScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
+$UpdateScript = Join-Path $ProjectRoot 'Update HGR GitHub.cmd'
+$LegacyPrivateDeployScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
 $ControlScript = Join-Path $ProjectRoot 'Start HGR Control.cmd'
 $ControlStopScript = Join-Path $ProjectRoot 'Stop HGR Control.cmd'
@@ -321,6 +322,10 @@ foreach ($check in $ShortcutIconChecks) {
 # Control launchers must point at canonical user-facing entry points. Legacy
 # *Control Mobile* wrappers may remain internally for compatibility, but they
 # are not allowed to leak into generated shortcut targets.
+if (Test-Path -LiteralPath $UpdateScript) {
+    Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript $UpdateScript
+    Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript $UpdateScript
+}
 if (Test-Path -LiteralPath $ControlScript) {
     Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectControlShortcut -ExpectedCommandScript $ControlScript
     Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuControlShortcut -ExpectedCommandScript $ControlScript
@@ -349,12 +354,12 @@ if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null
     attrib -h $RestartScript 2>$null | Out-Null
     attrib -h $CloseScript 2>$null | Out-Null
-    if (Test-Path -LiteralPath $UpdateScript) { attrib -h $UpdateScript 2>$null | Out-Null }
+    if (Test-Path -LiteralPath $LegacyPrivateDeployScript) { attrib -h $LegacyPrivateDeployScript 2>$null | Out-Null }
     if (Test-Path -LiteralPath $UpdatePowerShell) { attrib -h $UpdatePowerShell 2>$null | Out-Null }
 } else {
     attrib +h $StartScript 2>$null | Out-Null
     attrib +h $RestartScript 2>$null | Out-Null
     attrib +h $CloseScript 2>$null | Out-Null
-    if (Test-Path -LiteralPath $UpdateScript) { attrib +h $UpdateScript 2>$null | Out-Null }
+    if (Test-Path -LiteralPath $LegacyPrivateDeployScript) { attrib +h $LegacyPrivateDeployScript 2>$null | Out-Null }
     if (Test-Path -LiteralPath $UpdatePowerShell) { attrib +h $UpdatePowerShell 2>$null | Out-Null }
 }
