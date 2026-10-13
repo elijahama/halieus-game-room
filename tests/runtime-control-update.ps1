@@ -1,4 +1,9 @@
 $ErrorActionPreference = 'Stop'
+# This file exclusively runs against a private temporary fixture. Never let a
+# parent's active Cloud Update defer these simulated Control lifecycle calls.
+# Removing flags here affects only this disposable PowerShell test process.
+Remove-Item Env:HGR_CONTROL_DEFER_REFRESH -ErrorAction SilentlyContinue
+Remove-Item Env:HGR_CONTROL_UPDATE_FINALIZER -ErrorAction SilentlyContinue
 $fixture = Join-Path ([IO.Path]::GetTempPath()) ('hgr-control-update-' + [guid]::NewGuid().ToString('N'))
 $helpers = Join-Path $fixture 'scripts/windows'
 $runtime = Join-Path $fixture 'server/data/runtime'
@@ -27,6 +32,15 @@ try {
     Assert-Calls 0 # Stopped before update remains untouched even if started meanwhile.
     Set-Content (Join-Path $runtime '.hgr-control-token') 'old-test-credential'
     & $helper -Capture
+    # Separately prove the REAL Cloud Update deferral never stops Control and
+    # retains its snapshot for the independent finalizer.
+    $env:HGR_CONTROL_DEFER_REFRESH = '1'
+    & $helper
+    Assert-Calls 0
+    if (-not (Test-Path -LiteralPath (Join-Path $runtime 'hgr-control-update-snapshot.json'))) {
+        throw 'Cloud Update deferral must retain the captured Control snapshot'
+    }
+    Remove-Item Env:HGR_CONTROL_DEFER_REFRESH -ErrorAction SilentlyContinue
     & $helper
     Assert-Calls 2
     & $helper -Capture
@@ -41,7 +55,7 @@ try {
     $rejected = $false
     try { & $helper } catch { $rejected = $_.Exception.Message -match 'rotate' }
     if (-not $rejected) { throw 'Unrotated credentials were accepted' }
-    Write-Output 'PASS Control update snapshot, stopped/replaced cases, port preservation and credential rotation'
+    Write-Output 'PASS isolated Control snapshot, Cloud deferral/finalizer handoff, stopped/replaced cases, port preservation and credential rotation'
 } finally {
     # Only this test's explicitly created temporary fixture is removed.
     if ([IO.Path]::GetFullPath($fixture).StartsWith([IO.Path]::GetTempPath()) -and (Split-Path $fixture -Leaf) -like 'hgr-control-update-*') { Remove-Item -LiteralPath $fixture -Recurse -Force }

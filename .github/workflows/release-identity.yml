@@ -81,6 +81,12 @@ jobs:
       - name: Run HGR regression chain
         run: npm run test:regression
 
+      - name: Reproduce owner Cloud Update deferred-Control regression environment
+        env:
+          HGR_CONTROL_DEFER_REFRESH: "1"
+          HGR_UPDATE_NONINTERACTIVE: "1"
+        run: node tests/runtime-control-lifecycle.mjs
+
       - name: Enforce npm high/critical security gate
         run: npm audit --audit-level=high
 

@@ -28,7 +28,15 @@ try {
   assert.equal((await Promise.race([exited, delay(5000).then(() => { throw Error('Graceful stop timed out'); })]))[0], 0);
 } finally { if (child.exitCode === null) child.kill(); }
 const shell = process.platform === 'win32' ? 'powershell.exe' : 'pwsh';
-const result = spawnSync(shell, ['-NoProfile', '-File', 'tests/runtime-control-update.ps1'], { encoding: 'utf8' });
+// A Cloud Update runs this regression with its REAL agent restart deferred.
+// The mock lifecycle subprocess must not inherit that production control flag.
+const isolatedTestEnvironment = { ...process.env };
+delete isolatedTestEnvironment.HGR_CONTROL_DEFER_REFRESH;
+delete isolatedTestEnvironment.HGR_CONTROL_UPDATE_FINALIZER;
+const result = spawnSync(shell, ['-NoProfile', '-File', 'tests/runtime-control-update.ps1'], {
+  encoding: 'utf8',
+  env: isolatedTestEnvironment,
+});
 assert.equal(result.status, 0, result.stdout + result.stderr);
 console.log(result.stdout.trim());
 console.log('PASS Control local authenticated graceful stop; anonymous/wrong-token rejected');

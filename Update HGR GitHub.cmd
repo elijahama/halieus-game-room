@@ -75,6 +75,28 @@ if /i not "!CURRENT_BRANCH!"=="%BRANCH%" (
     goto :PAUSE_EXIT
 )
 
+rem The repository owner changed from Laijee27 to elijahama.
+rem GitHub redirects the old URL, but the PC should not keep advertising it.
+rem Migrate ONLY the verified old HGR origin URL; preserve all other remotes.
+set "HGR_ORIGIN_URL="
+for /f "delims=" %%U in ('git config --get remote.origin.url') do set "HGR_ORIGIN_URL=%%U"
+set "HGR_CANONICAL_ORIGIN="
+if /i "!HGR_ORIGIN_URL!"=="https://github.com/Laijee27/halieus-game-room" set "HGR_CANONICAL_ORIGIN=https://github.com/elijahama/halieus-game-room.git"
+if /i "!HGR_ORIGIN_URL!"=="https://github.com/Laijee27/halieus-game-room.git" set "HGR_CANONICAL_ORIGIN=https://github.com/elijahama/halieus-game-room.git"
+if /i "!HGR_ORIGIN_URL!"=="git@github.com:Laijee27/halieus-game-room" set "HGR_CANONICAL_ORIGIN=git@github.com:elijahama/halieus-game-room.git"
+if /i "!HGR_ORIGIN_URL!"=="git@github.com:Laijee27/halieus-game-room.git" set "HGR_CANONICAL_ORIGIN=git@github.com:elijahama/halieus-game-room.git"
+if /i "!HGR_ORIGIN_URL!"=="ssh://git@github.com/Laijee27/halieus-game-room" set "HGR_CANONICAL_ORIGIN=ssh://git@github.com/elijahama/halieus-game-room.git"
+if /i "!HGR_ORIGIN_URL!"=="ssh://git@github.com/Laijee27/halieus-game-room.git" set "HGR_CANONICAL_ORIGIN=ssh://git@github.com/elijahama/halieus-game-room.git"
+if defined HGR_CANONICAL_ORIGIN (
+    echo [SYNC] Migrating the known old HGR origin to its canonical GitHub owner...
+    git remote set-url %REMOTE% "!HGR_CANONICAL_ORIGIN!"
+    if errorlevel 1 (
+        echo [STOPPED] The original GitHub remote could not be updated.
+        goto :PAUSE_EXIT
+    )
+    echo [OK] origin now uses !HGR_CANONICAL_ORIGIN!
+)
+
 rem RELEASE.json and shared/release.ts are generated release-identity files.
 rem A copied ZIP can preserve stale unmerged index entries for those two files.
 rem Recover ONLY those generated conflicts automatically; never auto-resolve source conflicts.
