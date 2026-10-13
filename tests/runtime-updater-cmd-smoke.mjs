@@ -18,7 +18,7 @@ function run(file, args, options = {}) {
 function runCmd(content) {
   const cmdPath = join(fixture, "probe-" + Math.random().toString(36).slice(2) + ".cmd");
   writeFileSync(cmdPath, content.split("\n").join("\r\n"), "ascii");
-  const output = run("cmd.exe", ["/d", "/s", "/c", '"' + cmdPath + '"']);
+  const output = run("cmd.exe", ["/d", "/c", cmdPath]);
   assert.doesNotMatch(output, /unexpected at this time/i);
   return output;
 }
