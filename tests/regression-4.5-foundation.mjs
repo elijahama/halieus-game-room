@@ -162,11 +162,12 @@ assert.doesNotMatch(previewGenerator,/control\s*=\s*Join-Path \$ReferenceRoot 'H
 assert.match(previewGenerator,/control-stop\.ico/,"Stop Control must receive a distinct runtime icon");
 assert.doesNotMatch(previewGenerator,/Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/,"Launcher exporter must not redraw approved H geometry");
 assert.match(launcherShortcuts,/generate-launcher-icons\.ps1/,"Shortcut refresh must regenerate runtime ICOs from approved PNGs");
-assert.match(launcherShortcuts,/HGR - Control\.lnk/,"Shortcut family must expose one HGR Control launcher");
-assert.match(launcherShortcuts,/HGR - Stop Control\.lnk/,"Shortcut family must expose one Stop Control launcher");
+assert.match(launcherShortcuts,/Update = 'HGR - Update\.lnk'/,"Owner launcher set must expose the mandatory HGR Update shortcut");
+assert.doesNotMatch(launcherShortcuts,/Control = 'HGR - Control\.lnk'|ControlStop = 'HGR - Stop Control\.lnk'/,"Legacy Tailscale Control shortcuts must be retired from the owner launcher family");
 assert.doesNotMatch(launcherShortcuts,/ControlMobile = 'HGR - Control Mobile\.lnk'/,"Redundant Control Mobile shortcut must stay removed");
-assert.match(launcherShortcuts,/ControlIconPath/,"Control shortcut must use its dedicated icon path");
-assert.match(launcherShortcuts,/ControlStopIconPath/,"Stop Control shortcut must use a distinct stop icon path");
+assert.match(launcherShortcuts,/\$UpdateIconPath = Join-Path \$RuntimeLauncherIconRoot 'update\.ico'/,"Update shortcut must preserve dedicated approved light-blue icon");
+assert.match(launcherShortcuts,/Mandatory HGR Update launcher target is missing/,"Update target must be verified before deleting existing shortcuts");
+assert.match(launcherShortcuts,/\$CreatedShortcuts\.Count -ne 12/,"Six core roles must be generated in both managed shortcut folders");
 assert.match(launcherShortcuts,/Assert-HalieusShortcutIcon/,"Launcher refresh must verify actual .lnk icon metadata instead of only checking shortcut existence");
 assert.doesNotMatch(launcherShortcuts,/launchers\\matte/,"Retired nested launcher folder must not return");
 
