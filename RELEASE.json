@@ -1,9 +1,9 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.5",
-  "fingerprint": "hgr-4.5.5-9022e819a0af4231",
+  "fingerprint": "hgr-4.5.5-4b40be410885c39a",
   "algorithm": "sha256",
-  "sourceHash": "9022e819a0af4231afe38cf1478f89daa809f1006e272f339f1de4659a3c1295",
+  "sourceHash": "4b40be410885c39a9e5a6c5568fb27e39a35f1b066cd0ebf42a4ad8384c9d342",
   "integrityFileCount": 497,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
