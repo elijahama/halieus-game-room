@@ -17,6 +17,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  updater-windows-smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Check out HGR updater
+        uses: actions/checkout@v4
+      - name: Exercise real Windows CMD repush and renamed origin
+        run: node tests/runtime-updater-cmd-smoke.mjs
+
   refresh-release-identity:
     runs-on: ubuntu-latest
     steps:

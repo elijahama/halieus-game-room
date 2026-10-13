@@ -170,3 +170,7 @@ After running the canonical `Update HGR GitHub.cmd` on the owner PC, the newly r
 ## 13 October 2026 — Cloud Update 38% test fixture regression (pending device retry)
 
 Owner Cloud Update showed 38%, error AssertionError. Full log confirms typecheck/build were successful; regression `tests/runtime-control-update.ps1` expected two simulated lifecycle calls but inherited `HGR_CONTROL_DEFER_REFRESH=1` from the live Cloud Update and skipped them. `1 !== 0` was the wrapper failure. No deployment was attempted. Correction scopes environment cleanup to the *test-only subprocess*, validates the deferred branch independently and reproduces the owner inherited-flag context in CI. Real Control deferral and finalizer stay intact. Verify Cloud Update progresses past 38% on the PC and reaches the genuine Oracle release fingerprint and finalizer. The canonical GitHub origin is now `elijahama/halieus-game-room`; only the old known URL is migrated.
+
+## 13 October 2026 — CMD parse and old GitHub URL at 62%
+
+Owner Cloud Update showed `ahead was unexpected at this time` and old `Laijee27` redirected fetch. STEP 7B echo inside parenthesized CMD IF now avoids `commit(s)`, and a Windows real-CMD smoke job covers both branch outcomes and safe legacy-origin migration. Accept only when PC reports current `elijahama` remote, passes STEP 7B, deploys Oracle and verifies Control handoff.

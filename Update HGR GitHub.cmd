@@ -96,6 +96,12 @@ if defined HGR_CANONICAL_ORIGIN (
     )
     echo [OK] origin now uses !HGR_CANONICAL_ORIGIN!
 )
+echo [SYNC] GitHub origin currently configured as:
+git remote get-url %REMOTE%
+if errorlevel 1 (
+    echo [STOPPED] The HGR origin could not be read after migration.
+    goto :PAUSE_EXIT
+)
 
 rem RELEASE.json and shared/release.ts are generated release-identity files.
 rem A copied ZIP can preserve stale unmerged index entries for those two files.
@@ -416,7 +422,8 @@ set "HGR_AHEAD_COUNT=0"
 for /f "delims=" %%A in ('git rev-list --count %REMOTE%/%BRANCH%..HEAD') do set "HGR_AHEAD_COUNT=%%A"
 
 if not "!HGR_AHEAD_COUNT!"=="0" (
-    echo [SYNC] Local %BRANCH% is !HGR_AHEAD_COUNT! commit(s) ahead of GitHub.
+    rem Parentheses inside this CMD IF block previously broke parsing.
+    echo [SYNC] Local %BRANCH% is !HGR_AHEAD_COUNT! commits ahead of GitHub.
     echo [SYNC] Re-pushing validated local commits...
     git push %REMOTE% %BRANCH%
     if errorlevel 1 (

@@ -58,6 +58,9 @@ assert.match(rootUpdater, /copy \/Y "%~f0" "!HGR_UPDATE_SNAPSHOT_PATH!"/,"Update
 assert.match(rootUpdater, /pushd "%HGR_PROJECT_ROOT%"/,"Snapshot execution must continue from the real HGR repository root");
 assert.doesNotMatch(rootUpdater, /pushd "%~dp0"/,"The temp snapshot must never treat the TEMP directory as the HGR repository root");
 assert.match(rootUpdater, /STEP 7B - Safe re-push check/,"Updater must check for validated local commits that are still ahead of GitHub");
+assert.match(rootUpdater, /commits ahead of GitHub\./, "Repush block output must not contain CMD-breaking literal parentheses");
+assert.doesNotMatch(rootUpdater, /commit\(s\) ahead/, "Parenthesized echo caused Windows 'ahead was unexpected' regression");
+assert.match(rootUpdater, /git remote get-url %REMOTE%/, "Updater must report effective remote URL after migration");
 assert.match(rootUpdater, /git config --get remote\.origin\.url/, "Updater must examine the configured origin before changing any URL");
 assert.match(rootUpdater, /Laijee27\/halieus-game-room\.git/, "Only the known legacy owner mapping may be migrated");
 assert.match(rootUpdater, /git remote set-url %REMOTE% "!HGR_CANONICAL_ORIGIN!"/, "Updater must safely migrate the HGR origin URL without rewriting history");
