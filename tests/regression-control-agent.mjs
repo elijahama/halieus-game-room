@@ -359,6 +359,10 @@ assert.match(postUpdateClient, /Wait-HgrVisibleAppWindow/, "Successful post-upda
 assert.match(postUpdateClient, /param\(\[switch\]\$ShowWindow\)/, "Manual Update must support an owner-visible window handoff");
 assert.match(postUpdateClient, /ShowWindowAsync\(\$process\.MainWindowHandle, 9\)/, "Existing minimized website window must be restored without closing active games");
 assert.match(updateLauncher, /post-update-client\.ps1" -ShowWindow/, "Manual Update must request visible website activation");
+assert.match(updateLauncher, /if \/i "%HGR_UPDATE_NONINTERACTIVE%"=="1" goto :CLOUD_CLIENT_HANDOFF/, "Cloud Update must bypass interactive Windows desktop verification");
+assert.match(updateLauncher, /:CLOUD_CLIENT_HANDOFF[\s\S]*?Skipping interactive Windows window detection and launch/, "Cloud Update must explain desktop check is not a release success requirement");
+assert.match(updateLauncher, /HGR_WINDOW=!HGR_WINDOW_RESULT!/, "Update receipt must distinguish verified manual window from skipped Cloud window");
+assert.doesNotMatch(updateLauncher, /echo HGR_WINDOW=VERIFIED/, "Cloud Update must not falsify a visible desktop-window result");
 assert.match(updateLauncher, /FINAL STEP 4 - Starting or opening HGR Control for the owner/, "Manual Update must start/open Control after website handoff");
 assert.match(updateLauncher, /if \/i not "%HGR_UPDATE_NONINTERACTIVE%"=="1" \([\s\S]*?call "%HGR_PROJECT_ROOT%Start HGR Control\.cmd"/, "Control launch must be manual-only; cloud updates must preserve prior running state");
 assert.match(updateLauncher, /last-update-result\.txt/, "Update must write a persistent non-sensitive receipt even if the CMD window closes");

@@ -65,7 +65,35 @@ try {
   const backup = run("git", ["-C", gitRepo, "config", "--get", "remote.backup.url"]).trim();
   assert.equal(origin, "https://github.com/elijahama/halieus-game-room.git");
   assert.equal(backup, "https://example.com/other/repo.git");
-  console.log("PASS genuine Windows CMD STEP 7B paths and safe legacy HGR origin migration");
+  // Execute the REAL client-handoff branch from the updater on Windows.
+  // Cloud Update must never touch interactive Edge, even without a GUI session.
+  const clientBlock = updater.match(/^set "HGR_WINDOW_RESULT=SKIPPED_BACKGROUND_ONLY"\r?\n[\s\S]*?^:CLIENT_HANDOFF_DONE/m);
+  assert.ok(clientBlock, "Tracked owner/cloud client handoff must exist");
+  const windowScripts = join(fixture, "scripts", "windows");
+  mkdirSync(windowScripts, { recursive: true });
+  writeFileSync(join(windowScripts, "post-update-client.ps1"),
+    'param([switch]$ShowWindow)\nif (-not $ShowWindow) { exit 5 }\nWrite-Output "MANUAL_WINDOW_VERIFIED"\n');
+  for (const cloud of [true, false]) {
+    const batch = [
+      "@echo off",
+      "setlocal EnableDelayedExpansion",
+      'set "HGR_PROJECT_ROOT=' + fixture + '\\\\"',
+      'set "HGR_UPDATE_NONINTERACTIVE=' + (cloud ? "1" : "0") + '"',
+      clientBlock[0],
+      'echo WINDOW_RESULT=!HGR_WINDOW_RESULT!',
+      "exit /b 0",
+    ].join("\n");
+    const output = runCmd(batch);
+    if (cloud) {
+      assert.match(output, /Skipping interactive Windows window detection and launch/);
+      assert.match(output, /WINDOW_RESULT=SKIPPED_BACKGROUND_ONLY/);
+      assert.doesNotMatch(output, /MANUAL_WINDOW_VERIFIED/);
+    } else {
+      assert.match(output, /MANUAL_WINDOW_VERIFIED/);
+      assert.match(output, /WINDOW_RESULT=VERIFIED/);
+    }
+  }
+  console.log("PASS real Windows CMD safe repush, Git origin migration and manual-vs-Cloud GUI handoff");
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

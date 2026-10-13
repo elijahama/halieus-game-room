@@ -174,3 +174,7 @@ Owner Cloud Update showed 38%, error AssertionError. Full log confirms typecheck
 ## 13 October 2026 — CMD parse and old GitHub URL at 62%
 
 Owner Cloud Update showed `ahead was unexpected at this time` and old `Laijee27` redirected fetch. STEP 7B echo inside parenthesized CMD IF now avoids `commit(s)`, and a Windows real-CMD smoke job covers both branch outcomes and safe legacy-origin migration. Accept only when PC reports current `elijahama` remote, passes STEP 7B, deploys Oracle and verifies Control handoff.
+
+## 13 October 2026 — Cloud Update 88% desktop-session handoff
+
+Owner screenshot: deployment reportedly completed, but Cloud Update failed at 88% because `post-update-client.ps1` could not confirm a desktop window from the noninteractive updater. Owner observed HGR open on laptop. Source correction: Cloud Update no longer calls the desktop helper; it still requires verified Oracle deploy and independent Control finalizer before 100%. Manual updates continue to restore/verify laptop HGR. Windows CMD smoke must prove Cloud branch does not start a GUI even if no window exists; manual branch still uses `-ShowWindow`. Receipt must truthfully report `SKIPPED_BACKGROUND_ONLY` vs `VERIFIED`. User-device 100% success remains pending.

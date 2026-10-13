@@ -28,6 +28,10 @@ assert.match(bridge, /if \(\[string\]::IsNullOrWhiteSpace\(\$Line\)\) \{ return 
 assert.match(bridge, /Tee-Object -FilePath \$updateOutputLog[\s\S]*ForEach-Object/);
 assert.match(bridge, /progress = \$script:currentProgress[\s\S]*phase = \$script:currentPhase/);
 assert.match(bridge, /Finalizing Control handoff/);
+const updater = await read("Update HGR GitHub.cmd");
+assert.match(updater, /if \/i "%HGR_UPDATE_NONINTERACTIVE%"=="1" goto :CLOUD_CLIENT_HANDOFF/, "Cloud Update must not require an interactive desktop session");
+assert.match(updater, /DEFERRED_TO_CLOUD_FINALIZER/, "Cloud Update must wait for background Control finalizer, not desktop window");
+assert.match(updater, /HGR_WINDOW=!HGR_WINDOW_RESULT!/, "Updater must record a truthful per-mode desktop handoff result");
 assert.doesNotMatch(bridge, /Invoke-Expression|\biex\b/i);
 assert.match(bridge, /Get-Command cmd\.exe -ErrorAction Stop/,"Remote Update must execute the approved batch file through cmd.exe");
 assert.match(bridge, /& \$cmdExe \/d \/s \/c \$cmdCommand/,"cmd.exe must own updater stderr merging and exit status");

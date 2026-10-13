@@ -542,8 +542,8 @@ echo   7. Final release identity regenerated and re-verified
 echo   8. Website deployment completed
 echo   9. HGR Launchers refreshed and verified
 echo  10. Existing HGR Control state refreshed safely
-echo  11. HGR app window verified
-echo  12. Manual Update opens HGR Control and restores the HGR window
+echo  11. Manual website window verified or Cloud GUI check skipped
+echo  12. Manual Update opens Control; Cloud finalizer verifies service handoff
 echo.
 goto :REFRESH_AFTER_UPDATE
 
@@ -595,34 +595,38 @@ echo [OK] HGR Control post-update handoff completed.
 echo.
 echo FINAL STEP 3 - Refreshing the HGR client...
 echo Manual Update brings the existing website window forward or opens one if absent.
-echo Remote Control Update preserves the noninteractive handoff behaviour.
+echo Cloud Update uses verified server deployment and a separate background Control finalizer.
 echo.
+set "HGR_WINDOW_RESULT=SKIPPED_BACKGROUND_ONLY"
+if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" goto :CLOUD_CLIENT_HANDOFF
 if not exist "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1" (
-    echo [STOPPED] Update completed, but the post-update HGR client helper is missing:
+    echo [STOPPED] Update completed, but the manual HGR window helper is missing:
     echo   %HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1
     echo The website deployment is complete. Run Start Halieus Game Room.cmd manually if needed.
     popd
     endlocal
     exit /b 1
 )
-
-if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1"
-) else (
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1" -ShowWindow
-)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\post-update-client.ps1" -ShowWindow
 if errorlevel 1 (
     echo.
-    echo [STOPPED] Update/deploy completed, but the HGR client could not be refreshed/opened cleanly.
+    echo [STOPPED] Update/deploy completed, but the manual HGR client could not be refreshed/opened cleanly.
     echo The website deployment is complete. Use Restart Halieus Game Room.cmd as the recovery fallback.
     popd
     endlocal
     exit /b 1
 )
+set "HGR_WINDOW_RESULT=VERIFIED"
+echo [OK] Manual HGR website window handoff completed.
+goto :CLIENT_HANDOFF_DONE
 
-echo [OK] HGR website handoff completed.
+:CLOUD_CLIENT_HANDOFF
+echo [CLOUD] Skipping interactive Windows window detection and launch.
+echo [CLOUD] Oracle deployment has already been verified; Control restart is deferred to its independent finalizer.
+
+:CLIENT_HANDOFF_DONE
 echo.
-set "HGR_CONTROL_RESULT=PRESERVED (remote update)"
+set "HGR_CONTROL_RESULT=DEFERRED_TO_CLOUD_FINALIZER"
 set "HGR_OWNER_EXIT=0"
 if /i not "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
     echo FINAL STEP 4 - Starting or opening HGR Control for the owner...
@@ -649,7 +653,8 @@ echo ============================================================
 echo             HGR UPDATE FINISHED - CHECK RESULT
 echo ============================================================
 echo GitHub sync, local validation and Oracle deployment returned success.
-echo HGR website: visible dedicated window verified.
+echo HGR website: Oracle deployment helper returned success.
+echo Owner-PC desktop window: !HGR_WINDOW_RESULT!
 echo HGR Control: !HGR_CONTROL_RESULT!
 echo This is the SOURCE release identity; Brave/phone install artwork still needs device acceptance:
 node -e "const m=require('./RELEASE.json'); console.log(m.fingerprint)"
@@ -661,7 +666,7 @@ if not "!HGR_OWNER_EXIT!"=="0" (
 )
 (
     echo STATUS=DEPLOYED
-    echo HGR_WINDOW=VERIFIED
+    echo HGR_WINDOW=!HGR_WINDOW_RESULT!
     echo CONTROL=!HGR_CONTROL_RESULT!
     echo SOURCE_FINGERPRINT:
 ) > "!HGR_LAST_RESULT!"
