@@ -182,3 +182,7 @@ Owner screenshot: deployment reportedly completed, but Cloud Update failed at 88
 ## 13 October 2026 — Update launcher required, Control icon retired from laptop launcher set
 
 Owner has six desktop utility links but Update is missing while private Control is present. Required accepted group after local shortcut refresh: Start, Restart, Close, Update, PowerShell and OpenShard (exactly six in `HGR Launchers` and Start Menu), with `HGR - Update.lnk` targeting `Update HGR GitHub.cmd`, using approved light-blue artwork. Remove the old Control/Stop Control and Update Site shortcuts from these managed groups without stopping the Control Agent or changing approved web Control artwork. If Update CMD is missing, the generator must reject before clearing existing links. Tailscale-independent Control agent startup requires a separate later migration; website Cloud Update continues using the current owner-PC bridge until that is validated. Owner PC shortcut acceptance pending.
+
+## 13 October 2026 — Browser-verified themed background symbol acceptance
+
+Core Theme Library presets and Custom must show the same generic animated glyphs with usable visibility and palette-specific primary/secondary tints, including light and touch/mobile palettes. The production browser test checks actual movement, computed opacity, mode parity and reduced-motion behavior; System/Light/Dark retain game-specific symbols. Source success alone does not prove the deployed PWA has refreshed. Confirm on the owner's website, installed laptop, phone and tablet after deployment.

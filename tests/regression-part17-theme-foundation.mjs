@@ -35,7 +35,9 @@ assert.match(main,/hgr-4\.5\.5-part28-authority\.css/,"4.5.5 Part 28 authority s
 assert.ok(main.lastIndexOf('hgr-4.5.5-part28-authority.css') > main.lastIndexOf('hgr-4.5.5-mobile-hub.css'),"Part 28 authority must load after the mobile hub");
 assert.match(authority,/\.halieus-logo-preset-grid > button\.is-active[\s\S]*!important/,"Final authority must neutralise legacy logo selection highlighting");
 assert.match(authority,/\.halieus-custom-colour-card \.halieus-hsl-fields[\s\S]*display: grid !important/,"HSL controls must remain visible at final authority");
-assert.match(authority,/data-atmosphere-engine="custom"[\s\S]*halieusAmbientFloat 17s[\s\S]*animation-play-state:running!important/,"Core and Custom must use the same final-authority animation path");
+assert.match(authority,/data-atmosphere-engine="custom"[\s\S]*animation-name:\s*halieusAmbientFloat\s*!important;[\s\S]*animation-play-state:\s*running\s*!important/,"Core and Custom must use the same final-authority moving animation path");
+assert.match(authority,/data-atmosphere-engine="custom"\] > span\s*\{\s*opacity:\s*\.17\s*!important/,"Actual theme symbols must be visible on mobile and desktop");
+assert.match(authority,/prefers-reduced-motion:\s*reduce/,"Ambient animation must honor reduced-motion preferences");
 assert.match(theme,/--hgr-logo-border": mix\(action, "#000000", 0\.24\)/,"Theme-coloured logos must derive their rim from the logo colour instead of inherited gold");
 assert.doesNotMatch(html,/border:\s*1px solid rgba\(229,167,33/,"First-paint logo must not retain a hard-coded gold rim");
 assert.doesNotMatch(html,/box-shadow:[^;]*rgba\(229,167,33/,"First-paint loading glow must not retain hard-coded gold");
