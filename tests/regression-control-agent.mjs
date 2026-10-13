@@ -231,8 +231,8 @@ assert.match(controlMobileHelper, /function Copy-HgrControlLink/, "Mobile launch
 assert.match(controlMobileHelper, /Phone link copied to clipboard\./, "Mobile launcher must tell the owner when the phone URL is ready to paste");
 assert.match(updateLauncher, /FINAL STEP 1 - Refreshing HGR Launchers/, "Successful Update HGR runs must refresh the generated HGR Launchers folder automatically");
 assert.match(updateLauncher, /launcher-shortcuts\.ps1/, "Update HGR must invoke the canonical launcher shortcut generator");
-assert.match(updateLauncher, /HGR - Control and HGR - Stop Control/, "Updater must confirm the non-duplicated Control launcher pair");
-assert.doesNotMatch(updateLauncher, /Control Mobile and HGR - Stop Control/, "Updater must not advertise the removed duplicate Control Mobile shortcut");
+assert.match(updateLauncher, /including mandatory HGR - Update/, "Updater must confirm restoration of the required Windows Update launcher");
+assert.doesNotMatch(updateLauncher, /including HGR - Control and HGR - Stop Control/, "Updater must no longer advertise retired private Control launchers");
 assert.match(clientCss, /integrated physical button surfaces/, "HGR action surfaces must use the approved integrated physical button treatment");
 assert.match(clientCss, /assets\/branding\/references\/HGR Main\.png/, "HGR button surface contract must point at the approved original rendered icon");
 assert.ok(!clientCss.includes("radial-gradient(120% 100% at 50% 0%"), "HGR buttons must not use a floating radial gloss panel");
@@ -244,10 +244,9 @@ assert.match(controlMobileHelper, /node_modules\\qrcode\\bin\\qrcode/, "Mobile l
 assert.match(controlMobileHelper, /Pairing card opened with QR code and copy buttons\./, "Fresh pairing must open a scannable owner pairing card");
 assert.doesNotMatch(controlMobileHelper, /api\.qrserver|chart\.googleapis|quickchart/i, "Control pairing QR must not depend on an external QR image service");
 assert.doesNotMatch(launcherShortcuts, /ControlMobile = 'HGR - Control Mobile\.lnk'/, "Launcher refresh must not create redundant Control Mobile");
-assert.match(launcherShortcuts, /Control = 'HGR - Control\.lnk'/, "Launcher refresh must create one canonical HGR Control shortcut");
-assert.match(launcherShortcuts, /ControlStop = 'HGR - Stop Control\.lnk'/, "Launcher refresh must create an explicit HGR Control stop shortcut");
-assert.match(launcherShortcuts, /Start HGR Control\.cmd/, "Control shortcut must delegate to the canonical background launcher");
-assert.match(launcherShortcuts, /Stop HGR Control Mobile\.cmd/, "Control stop shortcut must delegate to the stable background stop launcher");
+assert.doesNotMatch(launcherShortcuts, /Control = 'HGR - Control\.lnk'|ControlStop = 'HGR - Stop Control\.lnk'/, "Private Tailscale Control/Stop must not occupy main launcher roles");
+assert.match(launcherShortcuts, /Update = 'HGR - Update\.lnk'/, "Main launcher family must include an unmistakable Update shortcut");
+assert.match(launcherShortcuts, /Mandatory HGR Update launcher target is missing/, "Missing Update must fail before existing owner shortcuts are removed");
 assert.match(controlMobileStopHelper, /Stop-Process -Id \$listenerPid -Force/, "Explicit Stop Control must terminate the recorded listener process");
 assert.match(controlMobileStopHelper, /serve "--https=\$httpsPort" off/, "Explicit Stop Control must remove its Tailscale Serve route");
 assert.match(controlMobileStopHelper, /Remove-Item -LiteralPath \$tokenPath -Force/, "Explicit Stop Control must remove the runtime bearer credential");
@@ -307,8 +306,8 @@ assert.match(launcherIconGenerator, /HGR OpenShard\.png/, "Launcher exporter mus
 assert.match(launcherIconGenerator, /server\\control-ui\\control-icon\.png/, "Launcher exporter must use the dedicated approved Control PNG");
 assert.doesNotMatch(launcherIconGenerator, /control\s*=\s*Join-Path \$ReferenceRoot 'HGR Control\.png'/, "Launcher exporter must not map the legacy full Control sheet");
 assert.match(launcherIconGenerator, /control-stop\.ico/, "Launcher exporter must produce a distinct Stop Control icon");
-assert.match(launcherShortcuts, /ControlStopIconPath/, "Stop Control shortcut must point at its distinct stop artwork");
-assert.match(launcherShortcuts, /Assert-HalieusShortcutIcon/, "Launcher refresh must verify actual Control .lnk icon metadata");
+assert.match(launcherShortcuts, /UpdateIconPath/, "Update shortcut must point at approved light-blue icon");
+assert.match(launcherShortcuts, /Assert-HalieusShortcutIcon/, "Launcher refresh must verify actual owner .lnk icon metadata");
 assert.match(launcherShortcuts, /-ClearIconCache/, "Launcher refresh must clear stale Windows icon cache state");
 assert.doesNotMatch(launcherIconGenerator, /Draw-HalieusH|Draw-HgrBadge|Mix-HgrColour/, "Launcher exporter must not redraw approved H geometry");
 assert.match(controlCss, /--start: #22C55E/, "Control UI must reuse Start green");

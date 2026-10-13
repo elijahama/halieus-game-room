@@ -59,20 +59,20 @@ assert.match(generator, /\$png\.Width -ne 256 -or \$png\.Height -ne 256/, "Gener
 assert.match(generator, /\$reserved -ne 0 -or \$kind -ne 1 -or \$count -lt 1/, "Generated ICO container headers must be verified");
 assert.match(generator, /control-stop\.ico/, "Stop Control must keep its own distinct icon output");
 
-// Naming and shortcut target protection: user-facing launchers stay Control/Stop Control.
-assert.match(shortcuts, /\$ControlScript = Join-Path \$ProjectRoot 'Start HGR Control\.cmd'/, "Control launcher must use the canonical Start Control entry point");
-assert.match(shortcuts, /\$ControlStopScript = Join-Path \$ProjectRoot 'Stop HGR Control\.cmd'/, "Stop Control launcher must use the canonical Stop Control entry point");
-assert.doesNotMatch(shortcuts, /\$ControlStopScript = Join-Path \$ProjectRoot 'Stop HGR Control Mobile\.cmd'/, "Generated Stop Control shortcut must not target obsolete Mobile naming");
-assert.match(shortcuts, /Control = 'HGR - Control\.lnk'/, "Launcher family must expose HGR - Control");
-assert.match(shortcuts, /ControlStop = 'HGR - Stop Control\.lnk'/, "Launcher family must expose HGR - Stop Control");
+// The private Control agent remains available for Cloud Update, but its
+// Tailscale launcher buttons are removed from the six-icon owner collection.
+assert.match(shortcuts, /Update = 'HGR - Update\.lnk'/, "Update must take the permanent utility slot");
+assert.doesNotMatch(shortcuts, /Control = 'HGR - Control\.lnk'|ControlStop = 'HGR - Stop Control\.lnk'/, "Private Control/Stop must not return as launcher roles");
+assert.match(shortcuts, /Mandatory HGR Update launcher target is missing/, "Update must never disappear silently");
+assert.match(shortcuts, /Assert-HalieusShortcutCommandScript -ShortcutPath \$ProjectUpdateShortcut -ExpectedCommandScript \$UpdateScript/, "Update target must be inspected");
 assert.doesNotMatch(shortcuts, /ControlMobile\s*=\s*'HGR - Control Mobile\.lnk'/, "HGR - Control Mobile must not return as a generated launcher role");
 
 // Every launcher role is checked against the icon path stored in the .lnk metadata.
 assert.match(shortcuts, /\$ShortcutIconChecks = @\(/, "Launcher refresh must build a complete icon-verification set");
-for (const iconVar of ["StartIconPath", "RestartIconPath", "CloseIconPath", "UpdateIconPath", "PowerShellIconPath", "OpenShardIconPath", "ControlIconPath", "ControlStopIconPath"]) {
+for (const iconVar of ["StartIconPath", "RestartIconPath", "CloseIconPath", "UpdateIconPath", "PowerShellIconPath", "OpenShardIconPath"]) {
   assert.ok(shortcuts.includes(`Icon = $${iconVar}`), `Launcher icon verification must cover ${iconVar}`);
 }
-assert.match(shortcuts, /Assert-HalieusShortcutCommandScript/, "Control shortcuts must verify their canonical command targets");
+assert.match(shortcuts, /Assert-HalieusShortcutCommandScript/, "Update shortcuts must verify their canonical command targets");
 assert.match(shortcuts, /ClearIconCache/, "Launcher refresh must explicitly clear the Windows icon cache after replacement");
 
 // The canonical public wrapper may still call the legacy-named internal helper

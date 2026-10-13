@@ -568,7 +568,7 @@ if errorlevel 1 (
     endlocal
     exit /b 1
 )
-echo [OK] HGR Launchers refreshed, including HGR - Control and HGR - Stop Control.
+echo [OK] Six HGR Launchers refreshed, including mandatory HGR - Update; private Control launchers retired.
 echo.
 echo FINAL STEP 2 - Refreshing HGR Control if it was already running...
 echo This restarts only an existing live Control Agent, using the newly updated source

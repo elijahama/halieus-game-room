@@ -24,6 +24,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Exercise real Windows CMD repush and renamed origin
         run: node tests/runtime-updater-cmd-smoke.mjs
+      - name: Validate six actual Windows launcher shortcuts and approved artwork
+        run: node tests/regression-part26-control-launcher-hardening.mjs
 
   refresh-release-identity:
     runs-on: ubuntu-latest

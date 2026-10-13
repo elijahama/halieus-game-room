@@ -40,16 +40,28 @@ try {
     # Real Windows COM .lnk metadata, but only in an isolated fake Start Menu.
     $env:APPDATA = Join-Path $fixture 'appdata'
     . (Join-Path $helpers 'launcher-shortcuts.ps1') -UnhideScripts
-    if ($CreatedShortcuts.Count -ne 16) { throw 'Expected all eight roles in both managed folders' }
+    if ($CreatedShortcuts.Count -ne 12) { throw 'Expected six core launchers in both managed folders' }
+    foreach ($root in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
+        foreach ($name in @('HGR - Control.lnk','HGR - Stop Control.lnk','HGR - Update Site.lnk')) {
+            if (Test-Path -LiteralPath (Join-Path $root $name)) { throw "Retired launcher should not be generated: $name" }
+        }
+        if (-not (Test-Path -LiteralPath (Join-Path $root 'HGR - Update.lnk'))) { throw 'Mandatory HGR Update shortcut missing' }
+    }
     Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript (Join-Path $fixture 'Update HGR GitHub.cmd')
     Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript (Join-Path $fixture 'Update HGR GitHub.cmd')
-    $changed = $wsh.CreateShortcut($ProjectControlShortcut)
-    $changed.IconLocation = "$ControlIconPath,1"
+    $changed = $wsh.CreateShortcut($ProjectUpdateShortcut)
+    $changed.IconLocation = "$UpdateIconPath,1"
     $changed.Save()
-    Assert-Rejected { Assert-HalieusShortcutIcon -ShortcutPath $ProjectControlShortcut -ExpectedIconPath $ControlIconPath } 'wrong icon index' 'icon index zero'
+    Assert-Rejected { Assert-HalieusShortcutIcon -ShortcutPath $ProjectUpdateShortcut -ExpectedIconPath $UpdateIconPath } 'wrong update icon index' 'icon index zero'
     $changed.Arguments = '/c wrong.cmd'
     $changed.Save()
-    Assert-Rejected { Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectControlShortcut -ExpectedCommandScript $ControlScript } 'wrong command' 'target mismatch'
+    Assert-Rejected { Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript (Join-Path $fixture 'Update HGR GitHub.cmd') } 'wrong Update command' 'target mismatch'
+    # A missing mandatory updater must not erase the existing owner .lnk set.
+    $updaterFixture = Join-Path $fixture 'Update HGR GitHub.cmd'
+    Remove-Item -LiteralPath $updaterFixture -Force
+    Assert-Rejected { & (Join-Path $helpers 'launcher-shortcuts.ps1') -UnhideScripts } 'missing required Update' 'Mandatory HGR Update launcher target is missing'
+    if (-not (Test-Path -LiteralPath $ProjectUpdateShortcut)) { throw 'A missing Update script erased an existing launcher' }
+    Set-Content -LiteralPath $updaterFixture -Value '@exit /b 0'
 
     function Start-Process { [pscustomobject]@{ ExitCode = 1 } }
     Assert-Rejected { & (Join-Path $helpers 'launcher-shortcuts.ps1') -UnhideScripts } 'cache-refresh failure' 'icon-cache refresh failed'

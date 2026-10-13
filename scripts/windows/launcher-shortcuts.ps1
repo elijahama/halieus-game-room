@@ -24,8 +24,6 @@ $CloseIconPath = Join-Path $RuntimeLauncherIconRoot 'close.ico'
 $UpdateIconPath = Join-Path $RuntimeLauncherIconRoot 'update.ico'
 $PowerShellIconPath = Join-Path $RuntimeLauncherIconRoot 'powershell.ico'
 $OpenShardIconPath = Join-Path $RuntimeLauncherIconRoot 'openshard.ico'
-$ControlIconPath = Join-Path $RuntimeLauncherIconRoot 'control.ico'
-$ControlStopIconPath = Join-Path $RuntimeLauncherIconRoot 'control-stop.ico'
 $GameRoomIconPath = Join-Path $RuntimeLauncherIconRoot 'main.ico'
 if (-not (Test-Path -LiteralPath $GameRoomIconPath)) { $GameRoomIconPath = $TrackedGameRoomIconPath }
 $ProgramsRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
@@ -35,33 +33,34 @@ New-Item -ItemType Directory -Force -Path $ProgramsRoot | Out-Null
 New-Item -ItemType Directory -Force -Path $StartMenuLauncherDirectory | Out-Null
 New-Item -ItemType Directory -Force -Path $ProjectLauncherDirectory | Out-Null
 
-# These folders are generated launcher collections. Clear prior .lnk files first
-# so renames cannot leave stale duplicates behind.
-foreach ($LauncherDirectory in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
-    Get-ChildItem -LiteralPath $LauncherDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
-        Remove-Item -Force -ErrorAction Stop
-}
-
 $StartScript = Join-Path $ProjectRoot 'Start Halieus Game Room.cmd'
 $RestartScript = Join-Path $ProjectRoot 'Restart Halieus Game Room.cmd'
 $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
 $UpdateScript = Join-Path $ProjectRoot 'Update HGR GitHub.cmd'
 $LegacyPrivateDeployScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
-$ControlScript = Join-Path $ProjectRoot 'Start HGR Control.cmd'
-$ControlStopScript = Join-Path $ProjectRoot 'Stop HGR Control.cmd'
-# Compatibility only: Stop HGR Control Mobile.cmd may remain as an internal legacy wrapper,
-# but generated shortcuts must target the canonical Stop HGR Control.cmd entry point above.
+# Cloud Control continues to use the owner-PC Control agent in the background.
+# Its private Tailscale pairing/start/stop wrappers are retained for recovery
+# but no longer occupy user-facing Windows launcher slots.
+
+if (-not (Test-Path -LiteralPath $UpdateScript -PathType Leaf)) {
+    throw "Mandatory HGR Update launcher target is missing: $UpdateScript. Existing shortcuts have been preserved."
+}
+# Validate first; never erase working shortcuts just because Update is absent.
+# Both managed folders are generated collections, so retired private Control and
+# old Update Site links are removed when a complete set can be recreated.
+foreach ($LauncherDirectory in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
+    Get-ChildItem -LiteralPath $LauncherDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
+        Remove-Item -Force -ErrorAction Stop
+}
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
     Restart = 'HGR - Restart.lnk'
     Close = 'HGR - Close.lnk'
-    Update = 'HGR - Update Site.lnk'
+    Update = 'HGR - Update.lnk'
     PowerShell = 'HGR - PowerShell.lnk'
     OpenShard = 'HGR - OpenShard TUI.lnk'
-    Control = 'HGR - Control.lnk'
-    ControlStop = 'HGR - Stop Control.lnk'
 }
 
 $ProjectStartShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Start
@@ -70,8 +69,6 @@ $ProjectCloseShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Close
 $ProjectUpdateShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Update
 $ProjectPowerShellShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.PowerShell
 $ProjectOpenShardShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.OpenShard
-$ProjectControlShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.Control
-$ProjectControlStopShortcut = Join-Path $ProjectLauncherDirectory $LauncherNames.ControlStop
 
 $StartMenuStartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Start
 $StartMenuRestartShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Restart
@@ -79,8 +76,6 @@ $StartMenuCloseShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.C
 $StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Update
 $StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
 $StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
-$StartMenuControlShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Control
-$StartMenuControlStopShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.ControlStop
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -95,9 +90,7 @@ foreach ($requiredIcon in @(
     $CloseIconPath,
     $UpdateIconPath,
     $PowerShellIconPath,
-    $OpenShardIconPath,
-    $ControlIconPath,
-    $ControlStopIconPath
+    $OpenShardIconPath
 )) {
     if (-not (Test-Path -LiteralPath $requiredIcon)) {
         throw "Approved HGR launcher export is missing: $requiredIcon"
@@ -192,9 +185,7 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
     New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Start) -CommandScript $StartScript -Description 'Open the Halieus Game Room desktop app window' -IconPath $StartIconPath
     New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Restart) -CommandScript $RestartScript -Description 'Close and reopen the Halieus Game Room desktop app window' -IconPath $RestartIconPath
     New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Close) -CommandScript $CloseScript -Description 'Close the local Halieus Game Room desktop app window only' -IconPath $CloseIconPath
-    if (Test-Path -LiteralPath $UpdateScript) {
-        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Update) -CommandScript $UpdateScript -Description 'Validate, sync and deploy the Halieus Game Room website' -IconPath $UpdateIconPath
-    }
+    New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Update) -CommandScript $UpdateScript -Description 'Validate, sync and deploy HGR through the canonical GitHub updater' -IconPath $UpdateIconPath
 
     $terminal = $wsh.CreateShortcut((Join-Path $ShortcutRoot $LauncherNames.PowerShell))
     $WindowsTerminal = Get-Command wt.exe -ErrorAction SilentlyContinue
@@ -224,12 +215,6 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
     $openShard.WindowStyle = 1
     $openShard.Save()
 
-    if (Test-Path -LiteralPath $ControlScript) {
-        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.Control) -CommandScript $ControlScript -Description 'Start HGR Control in the background and open the private phone pairing route' -IconPath $ControlIconPath
-    }
-    if (Test-Path -LiteralPath $ControlStopScript) {
-        New-HalieusShortcut -ShortcutPath (Join-Path $ShortcutRoot $LauncherNames.ControlStop) -CommandScript $ControlStopScript -Description 'Stop the background HGR Control service and private phone route' -IconPath $ControlStopIconPath
-    }
 }
 
 # Remove loose/legacy shortcuts so HGR launchers only live inside the two
@@ -243,6 +228,9 @@ $LooseShortcutNames = @(
     'Restart HGR App.lnk',
     'Close HGR App.lnk',
     'Update HGR Site.lnk',
+    'HGR - Update Site.lnk',
+    'HGR - Control.lnk',
+    'HGR - Stop Control.lnk',
     'Update Halieus Game Room.lnk',
     'HGR GitHub Update.lnk',
     'HGR GitHub Sync.lnk',
@@ -263,26 +251,16 @@ $CreatedShortcuts = @(
     $ProjectStartShortcut,
     $ProjectRestartShortcut,
     $ProjectCloseShortcut,
+    $ProjectUpdateShortcut,
     $ProjectPowerShellShortcut,
     $ProjectOpenShardShortcut,
     $StartMenuStartShortcut,
     $StartMenuRestartShortcut,
     $StartMenuCloseShortcut,
+    $StartMenuUpdateShortcut,
     $StartMenuPowerShellShortcut,
     $StartMenuOpenShardShortcut
 )
-if (Test-Path -LiteralPath $ControlScript) {
-    $CreatedShortcuts += $ProjectControlShortcut
-    $CreatedShortcuts += $StartMenuControlShortcut
-}
-if (Test-Path -LiteralPath $ControlStopScript) {
-    $CreatedShortcuts += $ProjectControlStopShortcut
-    $CreatedShortcuts += $StartMenuControlStopShortcut
-}
-if (Test-Path -LiteralPath $UpdateScript) {
-    $CreatedShortcuts += $ProjectUpdateShortcut
-    $CreatedShortcuts += $StartMenuUpdateShortcut
-}
 foreach ($shortcutPath in $CreatedShortcuts) {
     if (-not (Test-Path -LiteralPath $shortcutPath)) {
         throw "Halieus shortcut creation failed: $shortcutPath"
@@ -295,44 +273,32 @@ $ShortcutIconChecks = @(
     [pscustomobject]@{ Shortcut = $ProjectStartShortcut; Icon = $StartIconPath },
     [pscustomobject]@{ Shortcut = $ProjectRestartShortcut; Icon = $RestartIconPath },
     [pscustomobject]@{ Shortcut = $ProjectCloseShortcut; Icon = $CloseIconPath },
+    [pscustomobject]@{ Shortcut = $ProjectUpdateShortcut; Icon = $UpdateIconPath },
     [pscustomobject]@{ Shortcut = $ProjectPowerShellShortcut; Icon = $PowerShellIconPath },
     [pscustomobject]@{ Shortcut = $ProjectOpenShardShortcut; Icon = $OpenShardIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuStartShortcut; Icon = $StartIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuRestartShortcut; Icon = $RestartIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuCloseShortcut; Icon = $CloseIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuUpdateShortcut; Icon = $UpdateIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuPowerShellShortcut; Icon = $PowerShellIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuOpenShardShortcut; Icon = $OpenShardIconPath }
 )
-if (Test-Path -LiteralPath $ControlScript) {
-    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $ProjectControlShortcut; Icon = $ControlIconPath }
-    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $StartMenuControlShortcut; Icon = $ControlIconPath }
-}
-if (Test-Path -LiteralPath $ControlStopScript) {
-    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $ProjectControlStopShortcut; Icon = $ControlStopIconPath }
-    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $StartMenuControlStopShortcut; Icon = $ControlStopIconPath }
-}
-if (Test-Path -LiteralPath $UpdateScript) {
-    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $ProjectUpdateShortcut; Icon = $UpdateIconPath }
-    $ShortcutIconChecks += [pscustomobject]@{ Shortcut = $StartMenuUpdateShortcut; Icon = $UpdateIconPath }
-}
 foreach ($check in $ShortcutIconChecks) {
     Assert-HalieusShortcutIcon -ShortcutPath $check.Shortcut -ExpectedIconPath $check.Icon
 }
 
-# Control launchers must point at canonical user-facing entry points. Legacy
-# *Control Mobile* wrappers may remain internally for compatibility, but they
-# are not allowed to leak into generated shortcut targets.
-if (Test-Path -LiteralPath $UpdateScript) {
-    Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript $UpdateScript
-    Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript $UpdateScript
+# Update is mandatory, and must target the full GitHub sync/build/deploy CMD.
+Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript $UpdateScript
+Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript $UpdateScript
+if ($CreatedShortcuts.Count -ne 12) {
+    throw "Expected exactly six owner launcher roles in both managed folders; found $($CreatedShortcuts.Count)."
 }
-if (Test-Path -LiteralPath $ControlScript) {
-    Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectControlShortcut -ExpectedCommandScript $ControlScript
-    Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuControlShortcut -ExpectedCommandScript $ControlScript
-}
-if (Test-Path -LiteralPath $ControlStopScript) {
-    Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectControlStopShortcut -ExpectedCommandScript $ControlStopScript
-    Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuControlStopShortcut -ExpectedCommandScript $ControlStopScript
+foreach ($retiredName in @('HGR - Control.lnk', 'HGR - Stop Control.lnk', 'HGR - Update Site.lnk')) {
+    foreach ($launcherRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
+        if (Test-Path -LiteralPath (Join-Path $launcherRoot $retiredName)) {
+            throw "Retired launcher remains visible: $retiredName"
+        }
+    }
 }
 
 # Nudge Windows to re-read shortcut artwork after the icon paths change.
@@ -348,7 +314,7 @@ Write-Host 'HGR launcher family refreshed and verified against generated icon me
 Write-Host "  Project:    $ProjectLauncherDirectory" -ForegroundColor DarkGray
 Write-Host "  Start Menu: $StartMenuLauncherDirectory" -ForegroundColor DarkGray
 Write-Host ''
-Write-Host 'All HGR shortcuts now use the same grouped layout and canonical naming.' -ForegroundColor Green
+Write-Host 'Six HGR launchers (Start, Restart, Close, Update, PowerShell, OpenShard) verified in both managed folders.' -ForegroundColor Green
 
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null
