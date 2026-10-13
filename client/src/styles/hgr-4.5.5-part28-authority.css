@@ -29,17 +29,40 @@
 }
 
 
-/* HGR Part 28 — Core and Custom share one atmosphere engine.
-   Promoted Core profiles are marked data-atmosphere-engine="custom" by
-   HomeScreen and therefore use the exact same visibility/motion path as Custom. */
-.halieus-theme-atmosphere[data-atmosphere-engine="custom"]{
-  visibility:visible!important;
-  opacity:1!important;
+/* Part 29: the Core palettes and Custom share one visible, animated symbol layer.
+   The legacy theme and touch CSS faded the glyphs to 5–8% opacity. */
+.halieus-shell > .halieus-theme-atmosphere[data-atmosphere-engine="custom"] {
+  z-index: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
-@media (prefers-reduced-motion:no-preference){
-  .halieus-theme-atmosphere[data-atmosphere-engine="custom"]>span{
-    animation:halieusAmbientFloat 17s cubic-bezier(.42,0,.2,1) infinite alternate!important;
-    animation-play-state:running!important;
-    will-change:transform,opacity;
+.halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
+  opacity: .17 !important;
+  color: var(--hgr-brand) !important;
+  text-shadow: 0 8px 32px color-mix(in srgb,var(--hgr-brand) 16%,transparent) !important;
+  pointer-events: none !important;
+}
+.halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span:nth-child(3n+2) {
+  color: var(--hgr-info) !important;
+  text-shadow: 0 8px 32px color-mix(in srgb,var(--hgr-info) 16%,transparent) !important;
+}
+.halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span:nth-child(3n) {
+  color: color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-info)) !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
+    animation-name: halieusAmbientFloat !important;
+    animation-duration: 17s !important;
+    animation-timing-function: cubic-bezier(.42,0,.2,1) !important;
+    animation-iteration-count: infinite !important;
+    animation-direction: alternate !important;
+    animation-play-state: running !important;
+    will-change: transform;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
+    animation: none !important;
+    will-change: auto !important;
   }
 }
