@@ -29,28 +29,30 @@
 }
 
 
-/* Part 29: the Core palettes and Custom share one visible, animated symbol layer.
-   The legacy theme and touch CSS faded the glyphs to 5–8% opacity. */
-.halieus-shell > .halieus-theme-atmosphere[data-atmosphere-engine="custom"] {
+/* Part 29: Core palettes and Custom share one visible moving symbol layer.
+   Older html[data-theme-mode] .halieus-game-atmosphere span selectors
+   outranked unqualified final selectors: Chromium still rendered only 9%.
+   Match their specificity so this final imported CSS actually wins. */
+html .halieus-shell > .halieus-theme-atmosphere[data-atmosphere-engine="custom"] {
   z-index: 0 !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
-.halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
+html .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
   opacity: .17 !important;
   color: var(--hgr-brand) !important;
   text-shadow: 0 8px 32px color-mix(in srgb,var(--hgr-brand) 16%,transparent) !important;
   pointer-events: none !important;
 }
-.halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span:nth-child(3n+2) {
+html .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span:nth-child(3n+2) {
   color: var(--hgr-info) !important;
   text-shadow: 0 8px 32px color-mix(in srgb,var(--hgr-info) 16%,transparent) !important;
 }
-.halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span:nth-child(3n) {
+html .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span:nth-child(3n) {
   color: color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-info)) !important;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
+  html .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
     animation-name: halieusAmbientFloat !important;
     animation-duration: 17s !important;
     animation-timing-function: cubic-bezier(.42,0,.2,1) !important;
@@ -61,7 +63,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
+  html .halieus-theme-atmosphere[data-atmosphere-engine="custom"] > span {
     animation: none !important;
     will-change: auto !important;
   }
