@@ -11,9 +11,6 @@ import {
   type HalieusCustomTheme,
   type HalieusThemeMode,
   type HalieusThemeProfileId,
-  readCustomTheme,
-  readThemeMode,
-  readThemeProfileId,
   readableInk,
 } from "../theme";
 
@@ -110,10 +107,10 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [themeError, setThemeError] = useState("");
   const [applying, setApplying] = useState(false);
   const pending = useRef<ThemeSelection | null>(null);
-  const [mode, setMode] = useState<HalieusThemeMode>(() => readThemeMode());
-  const [profileId, setProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
-  const [custom, setCustom] = useState<HalieusCustomTheme>(() => readCustomTheme());
-  const [draft, setDraft] = useState<HalieusCustomTheme>(() => readCustomTheme());
+  const [mode, setMode] = useState<HalieusThemeMode>(() => committedTheme().mode);
+  const [profileId, setProfileId] = useState<HalieusThemeProfileId>(() => committedTheme().profile);
+  const [custom, setCustom] = useState<HalieusCustomTheme>(() => committedTheme().custom);
+  const [draft, setDraft] = useState<HalieusCustomTheme>(() => committedTheme().custom);
   const [menuOpen, setMenuOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -122,7 +119,14 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   useEffect(() => {
     const syncBetaMode = (event?: Event) => {
       const detail = event instanceof CustomEvent ? event.detail : undefined;
-      setBetaMode(typeof detail === "boolean" ? detail : sessionStorage.getItem("halieus-beta-test-mode") === "1");
+      const active = typeof detail === "boolean" ? detail : sessionStorage.getItem("halieus-beta-test-mode") === "1";
+      setBetaMode(active);
+      if (!active) {
+        pending.current = null;
+        setMenuOpen(false);
+        setLibraryOpen(false);
+        setEditorOpen(false);
+      }
     };
     window.addEventListener("halieus-beta-mode", syncBetaMode);
     return () => window.removeEventListener("halieus-beta-mode", syncBetaMode);

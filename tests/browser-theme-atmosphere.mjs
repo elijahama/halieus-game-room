@@ -164,6 +164,25 @@ try {
     assert.ok(betaPreview.opacity >= .14, "Beta-selected background still invisible");
     await page.getByRole("button", { name: "Apply theme" }).click();
     assert.equal((await inspect(page)).theme, "xbox-core", "Applied Beta theme lost its ambient pattern");
+    const storageAfterBeta = await page.evaluate(() => ({
+      permanentMode: localStorage.getItem("halieus-game-room-theme"),
+      betaSessionTheme: sessionStorage.getItem("halieus-beta-theme-selection"),
+    }));
+    assert.equal(storageAfterBeta.permanentMode, "custom", "Beta must never overwrite the normal theme selection");
+    assert.equal(JSON.parse(storageAfterBeta.betaSessionTheme ?? "{}").profile, "xbox-core", "Beta appearance must be kept in session storage");
+    await page.reload();
+    await page.waitForFunction(() =>
+      document.documentElement.dataset.themeMode === "profile" &&
+      document.documentElement.dataset.themeProfile === "xbox-core"
+    );
+    assert.equal((await inspect(page)).engine, "profile", "Beta background must survive refresh inside Test Lab");
+
+    // Leaving Beta returns to permanent appearance, including after reload.
+    await page.evaluate(() => sessionStorage.removeItem("halieus-beta-test-mode"));
+    await page.reload();
+    await page.waitForFunction(() => document.documentElement.dataset.themeMode === "custom");
+    assert.equal((await inspect(page)).engine, "custom", "Normal saved appearance not restored after Beta");
+    assert.equal(await page.evaluate(() => localStorage.getItem("halieus-game-room-theme")), "custom");
 
     const standard = await select(page, "dark", "studio-graphite");
     assert.equal(standard.source, "game", "Standard theme must use game symbols");

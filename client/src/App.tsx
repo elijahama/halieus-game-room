@@ -1,5 +1,5 @@
 import { CORE_THEME_IDS } from "../../shared/platform/themeProgression";
-import { committedTheme, commitTheme } from "./platform/themePreview";
+import { committedTheme, commitTheme, clearBetaThemePreview } from "./platform/themePreview";
 import { type HgrLogoPreset } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -60,7 +60,7 @@ import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
 import { downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { styles } from "./games/mega-board/styles/gameStyles";
-import { clearCustomThemeVariables, customThemeVariables, readableInk, isDarkColour, readCustomTheme, readDensity, readLogoPreset, readTextScale, readThemeMode, readThemeProfileId, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
+import { clearCustomThemeVariables, customThemeVariables, readableInk, isDarkColour, readDensity, readLogoPreset, readTextScale, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
 import { saveSkinPreferences, clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
 import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
@@ -499,6 +499,7 @@ export default function App() {
     setAccountPanelOpen(false);
     sessionStorage.removeItem("halieus-beta-test-mode");
     window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: false }));
+    clearBetaThemePreview();
     sessionStorage.removeItem(INTRO_SESSION_KEY);
     setSiteIntroSeen(false);
     setBetaMode(false);
@@ -526,6 +527,7 @@ export default function App() {
   function exitBetaTestMode(): void {
     sessionStorage.removeItem("halieus-beta-test-mode");
     window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: false }));
+    clearBetaThemePreview();
     clearBetaSkinPreview();
     setBetaMode(false);
     if (authStatus?.account) setPlayerName(authStatus.account.displayName);
@@ -533,9 +535,9 @@ export default function App() {
   }
 
   const [skinPreferences, setSkinPreferences] = useState<HalieusSkinPreferences>(() => readEffectiveSkinPreferences(false));
-  const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => readThemeMode());
-  const [themeProfileId, setThemeProfileId] = useState<HalieusThemeProfileId>(() => readThemeProfileId());
-  const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => readCustomTheme());
+  const [themeMode, setThemeMode] = useState<HalieusThemeMode>(() => committedTheme().mode);
+  const [themeProfileId, setThemeProfileId] = useState<HalieusThemeProfileId>(() => committedTheme().profile);
+  const [customTheme, setCustomTheme] = useState<HalieusCustomTheme>(() => committedTheme().custom);
   const [logoPreset, setLogoPreset] = useState<HgrLogoPreset>(() => readLogoPreset());
   const [textScale, setTextScale] = useState<HalieusTextScale>(() => readTextScale());
   const [density, setDensity] = useState<HalieusDensity>(() => readDensity());

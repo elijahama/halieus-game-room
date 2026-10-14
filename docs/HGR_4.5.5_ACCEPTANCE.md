@@ -190,3 +190,7 @@ Core Theme Library presets and Custom must show the same generic animated glyphs
 ## 14 October 2026 — Beta unlockable theme ambience must visually differ
 
 Owner reports console themes in Beta still have no meaningful changing backdrop after the Core/Custom fixes. Fixed shared-console-symbol fallback and CSS profile-engine visibility gap. All progression profiles must have *their own* nine-glyph background, run the shared ambient animation on desktop/touch with correct opacity/z-index and theme palette, and remain selectable in Beta without changing their permanent entitlement metadata. Validate via the real Beta theme-picker UI and all actual rendered profiles; local device deployment/persistence needs final acceptance.
+
+## 14 October 2026 — Beta theme session-only state
+
+Beta Apply must not persist locked profile choices into the normal `halieus-game-room-theme` / theme-profile / custom-theme localStorage keys. Test Lab theme choices survive a refresh only within the active session, then restore the normal saved appearance on Exit Test Lab and account sign-out. Source UI tests and real browser tests verify this without altering actual entitlement metadata. Live-owner device acceptance pending.
