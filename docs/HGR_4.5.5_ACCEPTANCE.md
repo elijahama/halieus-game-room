@@ -186,3 +186,7 @@ Owner has six desktop utility links but Update is missing while private Control 
 ## 13 October 2026 — Browser-verified themed background symbol acceptance
 
 Core Theme Library presets and Custom must show the same generic animated glyphs with usable visibility and palette-specific primary/secondary tints, including light and touch/mobile palettes. The production browser test checks actual movement, computed opacity, mode parity and reduced-motion behavior; System/Light/Dark retain game-specific symbols. Source success alone does not prove the deployed PWA has refreshed. Confirm on the owner's website, installed laptop, phone and tablet after deployment.
+
+## 14 October 2026 — Beta unlockable theme ambience must visually differ
+
+Owner reports console themes in Beta still have no meaningful changing backdrop after the Core/Custom fixes. Fixed shared-console-symbol fallback and CSS profile-engine visibility gap. All progression profiles must have *their own* nine-glyph background, run the shared ambient animation on desktop/touch with correct opacity/z-index and theme palette, and remain selectable in Beta without changing their permanent entitlement metadata. Validate via the real Beta theme-picker UI and all actual rendered profiles; local device deployment/persistence needs final acceptance.

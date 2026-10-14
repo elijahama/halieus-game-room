@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { chromium } from "playwright";
@@ -9,6 +9,12 @@ const root = resolve(import.meta.dirname, "..");
 const data = await mkdtemp(resolve(tmpdir(), "hgr-browser-atmosphere-"));
 const port = process.env.HGR_THEME_TEST_PORT || "39467";
 const base = "http://127.0.0.1:" + port;
+// Derive every progression profile from the real server entitlement contract,
+// so adding a new locked theme without an ambient pattern breaks browser CI.
+const progressionSource = await readFile(resolve(root, "shared/platform/themeProgression.ts"), "utf8");
+const progressionProfiles = [...progressionSource.matchAll(/"([a-z0-9-]+)": \{kind:"(?:achievement|score|played)"/g)]
+  .map((match) => match[1]);
+assert.ok(progressionProfiles.length >= 19, "Progression theme contract unexpectedly shrank");
 const server = spawn(process.execPath, [resolve(root, "server/dist/server/src/index.js")], {
   cwd: resolve(root, "server"),
   env: { ...process.env, PORT: port, SERVE_CLIENT: "true", CLIENT_ORIGINS: base,
@@ -34,6 +40,8 @@ async function inspect(page) {
     const canvas = getComputedStyle(node);
     return {
       engine: node.getAttribute("data-atmosphere-engine"),
+      theme: node.getAttribute("data-theme-atmosphere"),
+      stacking: canvas.zIndex,
       source: node.getAttribute("data-atmosphere-source"),
       symbols: [...node.querySelectorAll("span")].map((symbol) => symbol.textContent),
       opacity: Number(style.opacity),
@@ -112,6 +120,50 @@ try {
       await checkMotion(page, label + " Core " + profile);
     }
 
+    // Test ALL 19 unlockable backgrounds, not just the 12 Core profiles.
+    const distinctPatterns = new Set();
+    for (const profile of progressionProfiles) {
+      const current = await select(page, "profile", profile);
+      assert.equal(current.theme, profile, profile + ": profile identity not attached to atmosphere");
+      assert.equal(current.engine, "profile", profile + ": unlockable must use its own atmosphere engine");
+      assert.equal(current.source, "theme", profile + ": game symbols leaked into unlockable theme");
+      assert.ok(current.opacity >= .14, profile + ": ambient glyphs still invisible (" + current.opacity + ")");
+      assert.equal(current.stacking, "0", profile + ": ambient layer buried behind page");
+      assert.notEqual(current.animation, "none", profile + ": animation disabled");
+      assert.equal(current.playState, "running", profile + ": animation stopped");
+      assert.notDeepEqual(current.symbols, custom.symbols, profile + ": generic Custom glyphs reused");
+      assert.equal(current.symbols.length, 9, profile + ": incomplete glyph pattern");
+      const signature = current.symbols.join("|");
+      assert.ok(!distinctPatterns.has(signature), profile + ": duplicate of another console/retro/arcade pattern");
+      distinctPatterns.add(signature);
+    }
+    assert.equal(distinctPatterns.size, progressionProfiles.length, "Every progression palette must have unique background symbols");
+    for (const profile of ["ivory-8bit", "xbox-core", "ps2-midnight", "ps4-wave", "cube-indigo", "dreamcast-white", "arcade-cabinet"]) {
+      await select(page, "profile", profile);
+      await checkMotion(page, label + " Beta console " + profile);
+    }
+
+    // Exercise the real appearance chooser in Beta mode, not only dispatched
+    // profile events. The genuine entitlement service still has no grants.
+    await select(page, "dark", "studio-graphite");
+    await page.evaluate(() => {
+      sessionStorage.setItem("halieus-beta-test-mode", "1");
+      window.dispatchEvent(new CustomEvent("halieus-beta-mode", { detail: true }));
+    });
+    await page.locator(".halieus-theme-trigger").click();
+    await page.locator(".halieus-theme-library-launch").click();
+    const unlockableOption = page.getByRole("button", { name: /Green Core ·/ });
+    await unlockableOption.waitFor();
+    assert.equal(await unlockableOption.isEnabled(), true, "Beta mode must unlock progression theme selection");
+    await unlockableOption.click();
+    await page.waitForFunction(() => document.documentElement.dataset.themeProfile === "xbox-core");
+    const betaPreview = await inspect(page);
+    assert.equal(betaPreview.engine, "profile", "Beta selector did not produce progression background");
+    assert.equal(betaPreview.stacking, "0", "Beta-selected background must be rendered above root canvas");
+    assert.ok(betaPreview.opacity >= .14, "Beta-selected background still invisible");
+    await page.getByRole("button", { name: "Apply theme" }).click();
+    assert.equal((await inspect(page)).theme, "xbox-core", "Applied Beta theme lost its ambient pattern");
+
     const standard = await select(page, "dark", "studio-graphite");
     assert.equal(standard.source, "game", "Standard theme must use game symbols");
     assert.notDeepEqual(standard.symbols, custom.symbols, "Game mode reused Custom glyphs");
@@ -126,7 +178,7 @@ try {
     assert.deepEqual(errors, [], errors.join("; "));
     await context.close();
   }
-  console.log("PASS actual browser Core+Custom symbols: same visible moving glyphs on desktop/touch; System/Dark game motifs; reduced motion");
+  console.log("PASS actual browser Core+Custom, every Beta progression theme distinct/visible, Beta chooser Apply, desktop/touch motion and reduced motion");
 } finally {
   await browser?.close();
   server.kill();

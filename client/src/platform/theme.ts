@@ -130,7 +130,31 @@ export const THEME_PROFILES: readonly HalieusThemeProfile[] = [
 const ATMOSPHERE_MINIMAL = ["○","□","△","◇","◌","▢","✦","·","—"] as const;
 const ATMOSPHERE_TECH = ["⌁","◌","◇","▦","⊹","✦","○","◈","⌘"] as const;
 const ATMOSPHERE_ARCADE = ["★","●","◆","✚","◉","▦","✦","◇","○"] as const;
-const ATMOSPHERE_CONSOLE = ["△","○","×","□","◇","✦","◉","▣","⊹"] as const;
+/* Progression console/handheld/arcade themes must be visually distinguishable,
+ * not 19 palettes over one generic console symbol loop. These are original
+ * Unicode ambient shapes (never proprietary platform logos or gameplay icons).
+ * Core and Custom intentionally retain their shared minimal symbol family. */
+const PROGRESSION_ATMOSPHERE: Partial<Record<HalieusThemeProfileId, readonly string[]>> = {
+  "ivory-8bit":       ["▣","▤","▪","□","▥","▫","▨","◇","▢"],
+  "lavender-16bit":   ["◈","▦","◆","◌","▤","▢","✧","◇","▨"],
+  "black-drive":     ["▶","◆","⊞","◇","◀","▥","●","⧈","▪"],
+  "grey-disc":       ["◎","◌","◯","⊕","◈","⊙","○","⟐","◇"],
+  "xbox-core":       ["✕","◉","⊗","○","⨯","◈","◎","✳","⊙"],
+  "ps2-midnight":    ["△","○","×","□","△","○","×","□","✦"],
+  "ps3-xmb":         ["≋","△","○","×","□","∿","◇","≈","◈"],
+  "psp-silver":      ["◁","▷","○","□","△","◇","≡","◌","▤"],
+  "psp-go-pearl":    ["⇥","▱","○","◇","⇤","▭","◌","▷","□"],
+  "vita-graphite":   ["◈","◇","◎","△","◉","□","⊙","✧","○"],
+  "ps4-wave":        ["∿","△","○","×","□","≈","⌁","◇","〰"],
+  "dreamcast-white": ["◌","◎","⟲","○","↻","⊙","◍","⟴","◈"],
+  "cube-indigo":     ["◧","◆","▣","◇","◨","▢","⬖","◈","◩"],
+  "n64-fog":         ["✣","✦","●","◈","✚","◆","◉","✧","◇"],
+  "snes-colour":     ["✚","○","◇","□","✣","△","◈","●","✦"],
+  "atari-woodgrain": ["▥","┃","┇","▤","▦","─","▫","▨","╳"],
+  "c64-breadbox":    ["▦","⌨","▤","▥","▧","▣","▨","□","▫"],
+  "arcade-cabinet":  ["★","●","◆","✚","◉","▦","✦","◇","○"],
+  "neo-arcade":      ["✸","⬟","✦","◈","✹","◆","★","◉","▣"],
+};
 const ATMOSPHERE_LUXE = ["✦","◇","◆","◌","✧","⊹","○","◈","✣"] as const;
 const ATMOSPHERE_SOFT = ["○","◇","✦","◌","□","⊹","△","✧","·"] as const;
 
@@ -157,10 +181,11 @@ export function themeAtmosphereSymbols(mode: HalieusThemeMode, profileId: Halieu
     return ATMOSPHERE_LUXE;
   }
 
+  const progressionSymbols = PROGRESSION_ATMOSPHERE[profileId];
+  if (progressionSymbols) return progressionSymbols;
   if (profileId === "minimal-mono") return ATMOSPHERE_MINIMAL;
   if (["blue-circuit","terminal","neon-grid","icebox","deep-ocean"].includes(profileId)) return ATMOSPHERE_TECH;
   if (["arcade-cabinet","neo-arcade","redline"].includes(profileId)) return ATMOSPHERE_ARCADE;
-  if (["xbox-core","ps2-midnight","ps3-xmb","psp-silver","psp-go-pearl","vita-graphite","ps4-wave","dreamcast-white","cube-indigo","n64-fog","snes-colour","atari-woodgrain","c64-breadbox","ivory-8bit","lavender-16bit","black-drive","grey-disc"].includes(profileId)) return ATMOSPHERE_CONSOLE;
   if (["cream-soda"].includes(profileId)) return ATMOSPHERE_SOFT;
   return ATMOSPHERE_LUXE;
 }

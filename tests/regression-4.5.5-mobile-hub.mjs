@@ -42,9 +42,12 @@ assert.match(themeButton, /Always available · animated palette atmospheres/);
 assert.match(themeCore, /id: "studio-graphite"[\s\S]*id: "high-contrast"/);
 assert.match(themeCore, /usesCustomAtmosphereEngine/);
 assert.match(home, /data-atmosphere-engine=\{customAtmosphereEngine \? "custom"/);
+assert.match(themeCore, /PROGRESSION_ATMOSPHERE: Partial<Record<HalieusThemeProfileId, readonly string\[\]>>/, "All progression profiles need explicit original background symbol identities");
+assert.match(themeCore, /const progressionSymbols = PROGRESSION_ATMOSPHERE\[profileId\]/, "Progression profiles must render their own symbols, not the same console pattern");
 const atmosphereCss = await read("client/src/styles/hgr-4.5.5-part28-authority.css");
 assert.match(atmosphereCss, /data-atmosphere-engine="custom"\] > span\s*\{\s*opacity:\s*\.17\s*!important/, "Core/Custom symbols must remain visible on dark, light and touch screens");
-assert.match(atmosphereCss, /animation-name:\s*halieusAmbientFloat\s*!important/, "Core/Custom must use a running ambient keyframe");
+assert.match(atmosphereCss, /animation-name:\s*halieusAmbientFloat\s*!important/, "Core/Custom/Beta profiles must use a running ambient keyframe");
+assert.match(atmosphereCss, /data-atmosphere-engine="profile"/, "Beta-unlocked console/retro profiles must have the same visible animated layer");
 assert.match(atmosphereCss, /prefers-reduced-motion:\s*reduce/, "Motion-disabled users must keep still backgrounds");
 assert.match(themeButton, /label: "Unlockables"/);
 assert.doesNotMatch(themeButton, /<strong>Starting palettes<\/strong>|<strong>Workspace palette<\/strong>/);
@@ -64,4 +67,4 @@ assert.doesNotMatch(guilds, /style=\{\{ background: entry\.playerColor \}\}/);
 assert.match(megaLeaderboard, /style=\{entry\.profilePicture \? undefined : \{ background: entry\.playerColor \?\? "#64748b" \}\}/);
 
 
-console.log("PASS 4.5.5 Batch 2/3 + Part 28: restored Custom-preset Core atmosphere, Unlockables, RGB/HSL editor, contrast guide and avatar-only player colour ownership are locked");
+console.log("PASS 4.5.5 + Part 29: Core and Custom animate, all progression themes own distinct Beta-visible symbols, RGB/HSL editor and avatar colour ownership remain locked");
