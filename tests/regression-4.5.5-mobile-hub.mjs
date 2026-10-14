@@ -45,7 +45,7 @@ assert.match(home, /data-atmosphere-engine=\{customAtmosphereEngine \? "custom"/
 assert.match(themeCore, /PROGRESSION_ATMOSPHERE: Partial<Record<HalieusThemeProfileId, readonly string\[\]>>/, "All progression profiles need explicit original background symbol identities");
 assert.match(themeCore, /const progressionSymbols = PROGRESSION_ATMOSPHERE\[profileId\]/, "Progression profiles must render their own symbols, not the same console pattern");
 const atmosphereCss = await read("client/src/styles/hgr-4.5.5-part28-authority.css");
-assert.match(atmosphereCss, /data-atmosphere-engine="custom"\] > span\s*\{\s*opacity:\s*\.17\s*!important/, "Core/Custom symbols must remain visible on dark, light and touch screens");
+assert.match(atmosphereCss, /\.halieus-theme-atmosphere:is\(\[data-atmosphere-engine="custom"\], \[data-atmosphere-engine="profile"\]\) > span\s*\{\s*opacity:\s*\.17\s*!important/, "Core/Custom and progression symbols must remain visible on dark, light and touch screens");
 assert.match(atmosphereCss, /animation-name:\s*halieusAmbientFloat\s*!important/, "Core/Custom/Beta profiles must use a running ambient keyframe");
 assert.match(atmosphereCss, /data-atmosphere-engine="profile"/, "Beta-unlocked console/retro profiles must have the same visible animated layer");
 assert.match(atmosphereCss, /prefers-reduced-motion:\s*reduce/, "Motion-disabled users must keep still backgrounds");
