@@ -150,8 +150,9 @@ try {
       sessionStorage.setItem("halieus-beta-test-mode", "1");
       window.dispatchEvent(new CustomEvent("halieus-beta-mode", { detail: true }));
     });
-    await page.locator(".halieus-theme-trigger").click();
-    await page.locator(".halieus-theme-library-launch").click();
+    if (mobile) await page.getByRole("button", { name: "Open more tools" }).click();
+    await page.locator(".halieus-theme-trigger:visible").first().click();
+    await page.locator(".halieus-theme-library-launch:visible").click();
     const unlockableOption = page.getByRole("button", { name: /Green Core ·/ });
     await unlockableOption.waitFor();
     assert.equal(await unlockableOption.isEnabled(), true, "Beta mode must unlock progression theme selection");
