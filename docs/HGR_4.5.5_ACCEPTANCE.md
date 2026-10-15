@@ -194,3 +194,9 @@ Owner reports console themes in Beta still have no meaningful changing backdrop 
 ## 14 October 2026 — Beta theme session-only state
 
 Beta Apply must not persist locked profile choices into the normal `halieus-game-room-theme` / theme-profile / custom-theme localStorage keys. Test Lab theme choices survive a refresh only within the active session, then restore the normal saved appearance on Exit Test Lab and account sign-out. Source UI tests and real browser tests verify this without altering actual entitlement metadata. Live-owner device acceptance pending.
+
+## 15 October 2026 — Theme atmosphere must be visible IN the page, not only in computed styles
+
+Owner reported no visual change despite repeated theme fixes. Live public desktop/mobile screenshot audit confirmed Core/Custom and Beta console glyph nodes animated but were hidden behind opaque `.halieus-main` (`z-index:2`) because the motif layer was below it (`z-index:0`). The paint-order correction promotes only the noninteractive symbols above content (`z-index:3`), while making the promoted canvas transparent and removing its gradient overlay. Do not dim the page, block controls, change Standard game atmosphere or alter approved HGR artwork.
+
+Local acceptance: typecheck, full regressions, production build and Playwright screen-pixel visibility tests on both desktop and mobile pass, including Core Soft Light and a progression theme. Remote live acceptance: after a safely scheduled owner-PC deployment, confirm exact public `/health` release fingerprint, visible pixel-changing backgrounds on the public built assets on desktop/mobile, clickable navigation and honest deployment receipt. Owner's installed Edge/Brave PWA cache may require the normal release-aware refresh; never erase account/game data to repair cosmetics.

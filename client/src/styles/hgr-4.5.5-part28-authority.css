@@ -34,13 +34,26 @@
    while the theme palette supplies colour. The earlier fix selected only the
    "custom" engine, leaving unlocked profiles at 5–9% under old CSS rules.
    Specificity here outranks legacy html[data-theme-mode] selectors. */
+/* Part 30: the glyphs were technically animated but painted UNDER the
+   opaque .halieus-main (z-index:2), so owners could not actually see them.
+   Promote only the inert ornament layer above the cards; NEVER promote the
+   full-viewport theme-colour canvas or its ::after gradient, since that would
+   darken the interface and obscure buttons during theme transitions. */
 html .halieus-shell > .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) {
-  z-index: 0 !important;
+  z-index: 3 !important;
   visibility: visible !important;
   opacity: 1 !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  transition: none !important;
+}
+html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"])::after {
+  display: none !important;
+  content: none !important;
 }
 html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) > span {
-  opacity: .17 !important;
+  opacity: .20 !important;
+  mix-blend-mode: normal !important;
   color: var(--hgr-brand) !important;
   text-shadow: 0 8px 32px color-mix(in srgb,var(--hgr-brand) 16%,transparent) !important;
   pointer-events: none !important;
@@ -51,6 +64,23 @@ html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmos
 }
 html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) > span:nth-child(3n) {
   color: color-mix(in srgb,var(--hgr-brand) 58%,var(--hgr-info)) !important;
+}
+/* Keep the two central motifs off the hero heading and primary buttons. */
+html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) > span:nth-child(6) {
+  left: 86% !important;
+  top: 46% !important;
+}
+html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) > span:nth-child(7) {
+  left: 63% !important;
+  top: 10% !important;
+}
+/* The phone hero leaves little empty canvas: soften central glyphs rather
+   than painting symbols over Join/Watch or the title. */
+@media (max-width: 920px) {
+  html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) > span:nth-child(6),
+  html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) > span:nth-child(7) {
+    opacity: .06 !important;
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
   html .halieus-theme-atmosphere:is([data-atmosphere-engine="custom"], [data-atmosphere-engine="profile"]) > span {

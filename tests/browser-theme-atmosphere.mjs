@@ -4,6 +4,8 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { chromium } from "playwright";
+import pngjs from "pngjs";
+const { PNG } = pngjs;
 
 const root = resolve(import.meta.dirname, "..");
 const data = await mkdtemp(resolve(tmpdir(), "hgr-browser-atmosphere-"));
@@ -52,6 +54,10 @@ async function inspect(page) {
       color: style.color,
       backdropVisibility: canvas.visibility,
       backdropOpacity: Number(canvas.opacity),
+      backdropZIndex: canvas.zIndex,
+      backdropBackground: canvas.backgroundColor,
+      backdropPointerEvents: canvas.pointerEvents,
+      atmosphereGradientVisible: getComputedStyle(node, "::after").display !== "none",
     };
   });
 }
@@ -74,10 +80,50 @@ async function checkMotion(page, label) {
   assert.equal(before.playState, "running", label + ": animation paused");
   assert.equal(before.backdropVisibility, "visible", label + ": backdrop hidden");
   assert.ok(before.backdropOpacity >= .95, label + ": backdrop transparent");
+  assert.equal(before.backdropZIndex, "3", label + ": glyphs hidden under opaque content cards");
+  assert.equal(before.backdropBackground, "rgba(0, 0, 0, 0)", label + ": promoted layer must have no opaque theme canvas");
+  assert.equal(before.backdropPointerEvents, "none", label + ": decor must not block buttons");
+  assert.equal(before.atmosphereGradientVisible, false, label + ": promoted layer must not darken the whole app");
   await page.waitForTimeout(850);
   const after = await inspect(page);
   assert.notEqual(after.transform, before.transform, label + ": motion not perceptible in computed transform");
   return before;
+}
+// Computed opacity/movement alone used to pass even while the real glyphs
+// were hidden UNDER opaque cards. Compare actual Chromium-painted pixels of
+// the visible theme with/without the decorative spans in the content region.
+async function assertPaintedBackground(page, label, mobile) {
+  await page.waitForTimeout(200);
+  const shot = async () => PNG.sync.read(await page.screenshot({ animations: "disabled", caret: "hide" }));
+  const before = await shot();
+  const selector = ".halieus-theme-atmosphere > span";
+  await page.locator(selector).evaluateAll((glyphs) => {
+    glyphs.forEach((glyph) => glyph.style.setProperty("visibility", "hidden", "important"));
+  });
+  let without;
+  try { without = await shot(); }
+  finally {
+    await page.locator(selector).evaluateAll((glyphs) => {
+      glyphs.forEach((glyph) => glyph.style.removeProperty("visibility"));
+    });
+  }
+  assert.equal(before.width, without.width);
+  assert.equal(before.height, without.height);
+  let changed = 0;
+  const left = mobile ? 14 : 275, right = before.width - (mobile ? 12 : 65);
+  const top = mobile ? 80 : 45, bottom = before.height - (mobile ? 105 : 40);
+  for (let y = top; y < bottom; y += 2) {
+    for (let x = left; x < right; x += 2) {
+      const i = (y * before.width + x) * 4;
+      const difference = Math.abs(before.data[i] - without.data[i]) +
+        Math.abs(before.data[i+1] - without.data[i+1]) +
+        Math.abs(before.data[i+2] - without.data[i+2]);
+      if (difference >= 24) changed++;
+    }
+  }
+  assert.ok(changed >= (mobile ? 35 : 110),
+    label + ": background motifs are not visibly painted across page cards (" + changed + " pixels).");
+  return changed;
 }
 try {
   let health;
@@ -109,6 +155,7 @@ try {
     const label = mobile ? "mobile" : "desktop";
     const custom = await select(page, "custom", "studio-graphite");
     await checkMotion(page, label + " Custom");
+    await assertPaintedBackground(page, label + " Custom", mobile);
 
     for (const profile of ["studio-graphite", "cyan", "soft-light"]) {
       const core = await select(page, "profile", profile);
@@ -118,6 +165,9 @@ try {
       assert.equal(core.animation, custom.animation, profile + ": Core keyframes differ");
       assert.equal(core.duration, custom.duration, profile + ": Core speed differs");
       await checkMotion(page, label + " Core " + profile);
+      if (profile === "soft-light") {
+        await assertPaintedBackground(page, label + " Light Core", mobile);
+      }
     }
 
     // Test ALL 19 unlockable backgrounds, not just the 12 Core profiles.
@@ -128,7 +178,8 @@ try {
       assert.equal(current.engine, "profile", profile + ": unlockable must use its own atmosphere engine");
       assert.equal(current.source, "theme", profile + ": game symbols leaked into unlockable theme");
       assert.ok(current.opacity >= .14, profile + ": ambient glyphs still invisible (" + current.opacity + ")");
-      assert.equal(current.stacking, "0", profile + ": ambient layer buried behind page");
+      assert.equal(current.stacking, "3", profile + ": ambient motifs buried beneath opaque cards");
+      assert.equal(current.backdropBackground, "rgba(0, 0, 0, 0)", profile + ": promoted background must stay transparent");
       assert.notEqual(current.animation, "none", profile + ": animation disabled");
       assert.equal(current.playState, "running", profile + ": animation stopped");
       assert.notDeepEqual(current.symbols, custom.symbols, profile + ": generic Custom glyphs reused");
@@ -141,6 +192,7 @@ try {
     for (const profile of ["ivory-8bit", "xbox-core", "ps2-midnight", "ps4-wave", "cube-indigo", "dreamcast-white", "arcade-cabinet"]) {
       await select(page, "profile", profile);
       await checkMotion(page, label + " Beta console " + profile);
+      if (profile === "xbox-core") await assertPaintedBackground(page, label + " Xbox", mobile);
     }
 
     // Exercise the real appearance chooser in Beta mode, not only dispatched
@@ -160,7 +212,7 @@ try {
     await page.waitForFunction(() => document.documentElement.dataset.themeProfile === "xbox-core");
     const betaPreview = await inspect(page);
     assert.equal(betaPreview.engine, "profile", "Beta selector did not produce progression background");
-    assert.equal(betaPreview.stacking, "0", "Beta-selected background must be rendered above root canvas");
+    assert.equal(betaPreview.stacking, "3", "Beta-selected background must be painted above opaque content cards");
     assert.ok(betaPreview.opacity >= .14, "Beta-selected background still invisible");
     await page.getByRole("button", { name: "Apply theme" }).click();
     assert.equal((await inspect(page)).theme, "xbox-core", "Applied Beta theme lost its ambient pattern");
