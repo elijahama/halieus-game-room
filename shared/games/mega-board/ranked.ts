@@ -58,12 +58,15 @@ interface AwardDefinition {
   detail: string;
   points: number;
   score: (stats: PlayerMatchStats, player: GamePlayer) => number;
+  /** Award every qualifying player above this strict score threshold (if set). */
+  thresholdExclusive?: number;
 }
 
 export const RANKED_AWARD_DEFINITIONS: readonly AwardDefinition[] = [
   { key: "property-mogul", title: "Property Mogul", detail: "Highest property count reached", points: 5, score: (stats) => stats.peakProperties },
   { key: "master-builder", title: "Master Builder", detail: "Most development actions", points: 5, score: (stats) => stats.buildingEvents },
   { key: "rent-baron", title: "Rent Baron", detail: "Most rent collected", points: 7, score: (stats) => stats.rentCollected },
+  { key: "obaseki", title: "Obaseki Award", detail: "Collect over £200 in utility rent while owning all three utilities", points: 7, thresholdExclusive: 200, score: (stats) => stats.utilityRentWithAllUtilities ?? 0 },
   { key: "auction-regular", title: "Auction Regular", detail: "Most auction activity", points: 4, score: (stats) => stats.auctionEvents },
   { key: "deal-maker", title: "Deal Maker", detail: "Most trade activity", points: 5, score: (stats) => stats.tradeEvents },
   { key: "road-warrior", title: "Road Warrior", detail: "Most rolls", points: 3, score: (stats) => stats.rolls },
@@ -87,6 +90,7 @@ function fallbackStats(player: GamePlayer): PlayerMatchStats {
     jailEvents: 0,
     rentPaid: 0,
     rentCollected: 0,
+    utilityRentWithAllUtilities: 0,
     revenue: 0,
     expenses: 0,
     busTicketsCollected: 0,
@@ -123,9 +127,11 @@ export function getMatchAwards(gameState: GameState): RankedAwardResult[] {
       detail: definition.detail,
       points: definition.points,
       value: best,
-      winnerIds: best > 0
-        ? scored.filter((entry) => entry.value === best).map((entry) => entry.player.id)
-        : [],
+      winnerIds: definition.thresholdExclusive !== undefined
+        ? scored.filter((entry) => entry.value > definition.thresholdExclusive!).map((entry) => entry.player.id)
+        : best > 0
+          ? scored.filter((entry) => entry.value === best).map((entry) => entry.player.id)
+          : [],
     };
   });
 }

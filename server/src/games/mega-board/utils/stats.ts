@@ -3,6 +3,8 @@ import {
   GO_POSITION,
   getBoardSpace,
   isPropertyBoardSpace,
+  isUtilityBoardSpace,
+  BOARD_SPACES,
 } from "../../../../../shared/games/mega-board/board.js";
 import type {
   GamePlayer,
@@ -24,6 +26,7 @@ function defaultStats(player: GamePlayer): PlayerMatchStats {
     jailEvents: 0,
     rentPaid: 0,
     rentCollected: 0,
+    utilityRentWithAllUtilities: 0,
     revenue: 0,
     expenses: 0,
     busTicketsCollected: 0,
@@ -49,6 +52,7 @@ export function ensurePlayerStats(gameState: GameState, player: GamePlayer): Pla
   stats.revenue ??= 0;
   stats.expenses ??= 0;
   stats.kassManeuvers ??= 0;
+  stats.utilityRentWithAllUtilities ??= 0;
   stats.lastTrackedPosition ??= player.position;
   stats.finishPosition ??= null;
   stats.history ??= [];
@@ -164,9 +168,25 @@ export function recordRentStats(
   payer: GamePlayer,
   recipient: GamePlayer,
   amount: number,
+  sourceSpaceId?: number,
 ): void {
+  if (!Number.isFinite(amount) || amount <= 0) return;
   ensurePlayerStats(gameState, payer).rentPaid += amount;
-  ensurePlayerStats(gameState, recipient).rentCollected += amount;
+  const recipientStats = ensurePlayerStats(gameState, recipient);
+  recipientStats.rentCollected += amount;
+  // Count only verified utility rent receipts that occur WHILE this player
+  // owns all three utilities. Property/railroad rent and pre-monopoly income
+  // cannot qualify retroactively when ownership changes.
+  if (
+    sourceSpaceId !== undefined &&
+    isUtilityBoardSpace(getBoardSpace(sourceSpaceId)) &&
+    BOARD_SPACES.filter(isUtilityBoardSpace).every(
+      (utility) => gameState.propertyOwners[utility.id] === recipient.id,
+    )
+  ) {
+    recipientStats.utilityRentWithAllUtilities =
+      (recipientStats.utilityRentWithAllUtilities ?? 0) + amount;
+  }
   recordCashFlow(gameState, payer, -amount);
   recordCashFlow(gameState, recipient, amount);
 }

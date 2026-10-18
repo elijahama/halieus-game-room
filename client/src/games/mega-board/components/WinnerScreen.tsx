@@ -236,6 +236,7 @@ export function WinnerScreen({
       "Property Mogul": "🏘️",
       "Master Builder": "🏗️",
       "Rent Baron": "💷",
+      "Obaseki Award": "💡",
       "Auction Regular": "🔨",
       "Deal Maker": "🤝",
       "Road Warrior": "🎲",

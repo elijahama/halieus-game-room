@@ -204,3 +204,7 @@ Local acceptance: typecheck, full regressions, production build and Playwright s
 ## 18 October 2026 — Mega Board 3-item UI patch
 
 Owner ERU38J screenshots require: mortgaged tiles red, complete player-property lists (no six-asset truncation), and a smaller scrollable liquidation/full management panel. Source changes are paint/layout and client presentation only. New regression and actual Chromium CSS fixture check are in release CI. Acceptance pending device screenshots after deploy; do not infer production deployment from a passing build.
+
+## 18 October 2026 — Obaseki Award acceptance
+
+Mega Board match award: more than £200 cumulatively in actual utility rent **while owning Gas Company, Electric Company and Water Works**. Requires three-way utility ownership at the moment of each credited receipt, counts direct and settled-debt payments, excludes non-utility rent and prior receipts, once qualifying >£200 shows Obaseki Award (💡) in Results > Awards and in the report, ranked +7 bonus subject to existing cap. Exactly £200 must not award. Device match acceptance pending.

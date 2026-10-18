@@ -34,6 +34,12 @@ import { pushGlobalNotice, recordActivity } from "./activity.js";
 import { syncSpeedDieRetirement } from "./speed-die-lifecycle.js";
 import { ensurePlayerStats, markEliminated, recordCashFlow, recordRentStats } from "./stats.js";
 
+function rentSpaceIdForDebt(reason: string): number | undefined {
+  if (!reason.startsWith("Rent for ")) return undefined;
+  const name = reason.slice("Rent for ".length);
+  return BOARD_SPACES.find((space) => space.name === name)?.id;
+}
+
 export function createDebt(
   gameState: GameState,
   debt: PendingDebt,
@@ -111,7 +117,7 @@ export function settleDebtIfAffordable(
       creditor.cash += share.amount;
       distributed += share.amount;
       if (debt.reason.startsWith("Rent for ")) {
-        recordRentStats(gameState, debtor, creditor, share.amount);
+        recordRentStats(gameState, debtor, creditor, share.amount, rentSpaceIdForDebt(debt.reason));
       } else {
         recordCashFlow(gameState, creditor, share.amount);
       }
@@ -145,7 +151,7 @@ export function settleDebtIfAffordable(
     if (creditor && !creditor.isBankrupt) {
       creditor.cash += debt.amount;
       if (debt.reason.startsWith("Rent for ")) {
-        recordRentStats(gameState, debtor, creditor, debt.amount);
+        recordRentStats(gameState, debtor, creditor, debt.amount, rentSpaceIdForDebt(debt.reason));
         const propertyName = debt.reason.replace(/^Rent for /, "");
         pushGlobalNotice(gameState, {
           kind: "rent-payment",
@@ -427,7 +433,7 @@ export function declareBankruptcy(
       creditor.cash += allocation;
       debtor.cash -= allocation;
       remainingCash -= allocation;
-      recordRentStats(gameState, debtor, creditor, allocation);
+      recordRentStats(gameState, debtor, creditor, allocation, rentSpaceIdForDebt(debt.reason));
     });
   }
 

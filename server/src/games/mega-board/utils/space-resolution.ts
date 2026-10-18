@@ -798,11 +798,11 @@ export function resolveLandedSpace({
           );
           if (!recipient) continue;
           recipient.cash += share.amount;
-          recordRentStats(gameState, player, recipient, share.amount);
+          recordRentStats(gameState, player, recipient, share.amount, landedSpace.id);
         }
       } else {
         owner.cash += rent;
-        recordRentStats(gameState, player, owner, rent);
+        recordRentStats(gameState, player, owner, rent, landedSpace.id);
       }
       const ownershipLevel = landedSpace.type === "property" &&
         (gameState.propertyDevelopments[landedSpace.id] ?? 0) === 0

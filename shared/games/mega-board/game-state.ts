@@ -329,6 +329,8 @@ export interface PlayerMatchStats {
   jailEvents: number;
   rentPaid: number;
   rentCollected: number;
+  /** Rent actually received from utilities while this player owned all three. */
+  utilityRentWithAllUtilities?: number;
   revenue: number;
   expenses: number;
   busTicketsCollected: number;
