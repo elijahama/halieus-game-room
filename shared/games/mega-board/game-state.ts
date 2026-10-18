@@ -329,8 +329,8 @@ export interface PlayerMatchStats {
   jailEvents: number;
   rentPaid: number;
   rentCollected: number;
-  /** Rent actually received from utilities while this player owned all three. */
-  utilityRentWithAllUtilities?: number;
+  /** Highest single utility-rent payment received while owning all three utilities. */
+  peakUtilityRentWithAllUtilities?: number;
   revenue: number;
   expenses: number;
   busTicketsCollected: number;

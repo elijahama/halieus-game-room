@@ -26,7 +26,7 @@ function defaultStats(player: GamePlayer): PlayerMatchStats {
     jailEvents: 0,
     rentPaid: 0,
     rentCollected: 0,
-    utilityRentWithAllUtilities: 0,
+    peakUtilityRentWithAllUtilities: 0,
     revenue: 0,
     expenses: 0,
     busTicketsCollected: 0,
@@ -52,7 +52,7 @@ export function ensurePlayerStats(gameState: GameState, player: GamePlayer): Pla
   stats.revenue ??= 0;
   stats.expenses ??= 0;
   stats.kassManeuvers ??= 0;
-  stats.utilityRentWithAllUtilities ??= 0;
+  stats.peakUtilityRentWithAllUtilities ??= 0;
   stats.lastTrackedPosition ??= player.position;
   stats.finishPosition ??= null;
   stats.history ??= [];
@@ -184,8 +184,10 @@ export function recordRentStats(
       (utility) => gameState.propertyOwners[utility.id] === recipient.id,
     )
   ) {
-    recipientStats.utilityRentWithAllUtilities =
-      (recipientStats.utilityRentWithAllUtilities ?? 0) + amount;
+    recipientStats.peakUtilityRentWithAllUtilities = Math.max(
+      recipientStats.peakUtilityRentWithAllUtilities ?? 0,
+      amount,
+    );
   }
   recordCashFlow(gameState, payer, -amount);
   recordCashFlow(gameState, recipient, amount);
