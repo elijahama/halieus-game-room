@@ -52,3 +52,86 @@ html .mega-live-page .board-grid .board-space.is-mortgaged-space :is(.board-spac
 .mega-live-page .player-rail-side .player-property-chip.is-mortgaged i {
   background: #ef4444 !important;
 }
+
+/* Compact, viewport-contained debt and liquidation manager. Only Mega Board. */
+.right-game-stack .turn-actions-popup-layer.has-live-debt {
+  box-sizing: border-box !important;
+  padding: 12px !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt .turn-actions-popup {
+  width: min(680px, calc(100vw - 32px)) !important;
+  max-width: min(680px, calc(100vw - 32px)) !important;
+  max-height: min(78dvh, calc(100dvh - 104px)) !important;
+  min-height: 0 !important;
+  padding: 12px !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt .turn-actions-popup-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt .turn-actions-popup-header h2 {
+  font-size: 18px !important;
+  line-height: 1.12 !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt .debt-resolution-card {
+  padding: 10px !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt :is(.debt-property-option, .debt-property-options) {
+  min-width: 0 !important;
+  padding: 8px !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt .debt-property-option-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt .debt-property-option {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 5px !important;
+}
+.right-game-stack .turn-actions-popup-layer.has-live-debt .debt-property-option-actions button {
+  min-height: 30px !important;
+}
+.right-game-stack .turn-actions-debt-back {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 6px 9px;
+  border: 1px solid var(--mm-border);
+  border-radius: 8px;
+  color: var(--mm-text);
+  background: var(--mm-surface-2);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+@media (max-width: 900px) {
+  .right-game-stack .turn-actions-popup-layer.has-live-debt {
+    inset: auto 0 0 !important;
+    top: max(58px, env(safe-area-inset-top)) !important;
+    width: 100vw !important;
+    height: auto !important;
+    max-height: calc(100dvh - 58px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    padding: 8px !important;
+  }
+  .right-game-stack .turn-actions-popup-layer.has-live-debt .turn-actions-popup {
+    width: min(620px, calc(100vw - 16px)) !important;
+    max-width: min(620px, calc(100vw - 16px)) !important;
+    max-height: calc(100dvh - 82px) !important;
+    pointer-events: auto !important;
+  }
+  .right-game-stack .turn-actions-popup-layer.has-live-debt .debt-property-option-list {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

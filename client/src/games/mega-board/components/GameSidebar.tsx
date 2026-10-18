@@ -307,13 +307,15 @@ export function GameSidebar({
   ]);
 
   const optionalTimeLabel = `${Math.floor(optionalActionSeconds / 60)}:${String(optionalActionSeconds % 60).padStart(2, "0")}`;
+  const hasLiveDebt = Boolean(gameState.pendingDebt);
+  const isDebtDebtor = gameState.pendingDebt?.debtorId === lobby.playerId;
 
   return (
     <>
 
 
       {popupOpen && (
-        <div className={`turn-actions-popup-layer ${activePanel ? `is-${activePanel}` : "is-decision"}`}>
+        <div className={`turn-actions-popup-layer ${activePanel ? `is-${activePanel}` : "is-decision"} ${hasLiveDebt ? "has-live-debt" : ""} ${isDebtDebtor && !activePanel ? "is-liquidation" : ""}`}>
           <section
             className="turn-actions-popup"
             role="dialog"
@@ -354,6 +356,11 @@ export function GameSidebar({
                   <strong>{optionalTimeLabel}</strong>
                 </div>
               )}
+              {isDebtDebtor && activePanel === "properties" && (
+                <button type="button" className="turn-actions-debt-back" onClick={() => setActivePanel(null)}>
+                  ← Debt options
+                </button>
+              )}
               <button
                 type="button"
                 className="turn-actions-popup-close"
@@ -375,7 +382,22 @@ export function GameSidebar({
 
 
 
-            {!isSpectator && currentGamePlayer && (
+
+            {activePanel && (
+              <div className="turn-actions-detail-header">
+                <strong>
+                  {activePanel === "properties"
+                    ? "Property & asset management"
+                    : activePanel === "trade"
+                      ? "Trading"
+                      : "Match history"}
+                </strong>
+                <button type="button" onClick={() => setPopupOpen(false)}>Close</button>
+              </div>
+            )}
+
+            <div className={`turn-actions-popup-scroll ${activePanel ? "has-detail" : ""}`}>
+            {!isSpectator && currentGamePlayer && hasLiveDebt && !activePanel && (
               <DebtPanel
                 playerId={lobby.playerId}
                 gameState={gameState}
@@ -394,20 +416,6 @@ export function GameSidebar({
               />
             )}
 
-            {activePanel && (
-              <div className="turn-actions-detail-header">
-                <strong>
-                  {activePanel === "properties"
-                    ? "Property & asset management"
-                    : activePanel === "trade"
-                      ? "Trading"
-                      : "Match history"}
-                </strong>
-                <button type="button" onClick={() => setPopupOpen(false)}>Close</button>
-              </div>
-            )}
-
-            <div className={`turn-actions-popup-scroll ${activePanel ? "has-detail" : ""}`}>
               {!activePanel && (autopilotActive || hasBlockingDecision) && (
                 <div className="turn-actions-popup-hint is-compact" style={{ background: theme.secondaryBackground, borderColor: theme.border }}>
                   <strong>{autopilotActive ? "Autopilot active" : blockingLabel(gameState)}</strong>
