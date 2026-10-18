@@ -11,17 +11,41 @@ $capabilityRoot = Join-Path $env:LOCALAPPDATA "Halieus Game Room"
 $releaseAwareMarker = Join-Path $capabilityRoot "release-aware-refresh.enabled"
 $cmdExe = (Get-Command cmd.exe -ErrorAction Stop).Source
 
-function Test-HgrVisibleAppWindow {
-    $candidates = Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" -ErrorAction SilentlyContinue |
+function Get-HgrVisibleAppProcess {
+    # Edge's dedicated HGR profile remains the primary application window.
+    $edgeCandidates = Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" -ErrorAction SilentlyContinue |
         Where-Object { $_.CommandLine -and $_.CommandLine.Contains($profilePath) }
 
-    foreach ($candidate in $candidates) {
+    foreach ($candidate in $edgeCandidates) {
         $process = Get-Process -Id $candidate.ProcessId -ErrorAction SilentlyContinue
         if ($process -and $process.MainWindowHandle -ne 0) {
-            return $true
+            return $process
         }
     }
-    return $false
+
+    # Start falls back to the system browser when Edge is not installed.
+    # Accept only an actual HGR-titled Brave/Chrome window launched for
+    # a canonical HGR website, never a generic background browser process.
+    $browserCandidates = @(
+        Get-CimInstance Win32_Process -Filter "Name='brave.exe'" -ErrorAction SilentlyContinue
+        Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" -ErrorAction SilentlyContinue
+    )
+    foreach ($candidate in $browserCandidates) {
+        if (-not $candidate.CommandLine -or
+            $candidate.CommandLine -notmatch '(?i)https://(?:halieus\.remotewire\.net|play\.halieus\.net)(?:/|["\s]|$)') {
+            continue
+        }
+        $process = Get-Process -Id $candidate.ProcessId -ErrorAction SilentlyContinue
+        if ($process -and $process.MainWindowHandle -ne 0 -and
+            $process.MainWindowTitle -match '^Halieus Game Room(?: - (?:Brave|Google Chrome))?$') {
+            return $process
+        }
+    }
+    return $null
+}
+
+function Test-HgrVisibleAppWindow {
+    return $null -ne (Get-HgrVisibleAppProcess)
 }
 
 function Show-HgrVisibleAppWindow {
@@ -37,17 +61,12 @@ public static class HgrWindowActivation {
 }
 '@
     }
-    $candidates = Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" -ErrorAction SilentlyContinue |
-        Where-Object { $_.CommandLine -and $_.CommandLine.Contains($profilePath) }
-
-    foreach ($candidate in $candidates) {
-        $process = Get-Process -Id $candidate.ProcessId -ErrorAction SilentlyContinue
-        if ($process -and $process.MainWindowHandle -ne 0) {
-            [void][HgrWindowActivation]::ShowWindowAsync($process.MainWindowHandle, 9)
-            [void][HgrWindowActivation]::SetForegroundWindow($process.MainWindowHandle)
-            Write-Output "Requested foreground activation for visible dedicated HGR window."
-            return $true
-        }
+    $process = Get-HgrVisibleAppProcess
+    if ($process -and $process.MainWindowHandle -ne 0) {
+        [void][HgrWindowActivation]::ShowWindowAsync($process.MainWindowHandle, 9)
+        [void][HgrWindowActivation]::SetForegroundWindow($process.MainWindowHandle)
+        Write-Output "Requested foreground activation for visible HGR browser/app window."
+        return $true
     }
     return $false
 }
