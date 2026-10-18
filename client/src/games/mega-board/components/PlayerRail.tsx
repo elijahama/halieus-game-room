@@ -68,7 +68,7 @@ export function PlayerRail({
           <h2>{headerTitle}</h2>
         </div>
         <span>
-          {visiblePlayers.length}/{gameState.players.length}
+          {visiblePlayers.length}/{activePlayers.length} · {activePlayers.filter((player) => player.isConnected).length} online
         </span>
       </header>
 

@@ -31,3 +31,13 @@ assert.match(css, /\.turn-actions-popup-layer\.has-live-debt \.turn-actions-popu
 assert.match(css, /\.turn-actions-popup-layer\.has-live-debt \.turn-actions-popup-scroll[\s\S]*?overflow-y: auto !important/, "Debt body must scroll rather than clipping payment actions");
 assert.match(entry, /hgr-4\.5\.5-part28-authority\.css";\s*import "\.\/styles\/hgr-4\.5\.5-mega-board-portfolio\.css"/, "New Mega Board override must load last, after theme and skin CSS");
 console.log("PASS Mega Board red mortgaged tiles, entire property roster and scrollable compact liquidation dialog");
+
+const allSeatSummary = /activePlayers\.filter\(\(player\) => player\.isConnected\)\.length\} online/;
+assert.match(rail, allSeatSummary, "Side rails must show connected match-player counts");
+assert.match(css, /player-rail-side \.player-rail-list[\s\S]*?overflow-y: auto !important/, "No active player seat may be clipped by the fixed grid");
+assert.match(css, /player-rail-side \.player-rail-card[\s\S]*?height: auto !important/, "Seats must scroll as content-sized cards");
+assert.match(board, /latestDiceActivity\?\.playerId === activeGamePlayer\?\.id/, "Do not mislabel an earlier player's dice as the current roll");
+assert.match(board, /latestDiceActivity\.turnNumber === gameState\.turnNumber/, "An old round must not leave a stale Last roll label");
+assert.match(board, /This turn's roll/, "Completed dice should be labelled for the current player and turn");
+assert.doesNotMatch(board, /aria-label="Last dice roll"/, "Global stale roll must not pretend to be the current player's result");
+console.log("PASS full online-match roster and per-turn dice presentation semantics");

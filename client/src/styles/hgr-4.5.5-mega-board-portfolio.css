@@ -6,6 +6,7 @@ html .mega-live-page .board-grid .board-space.is-mortgaged-space.is-owned-space 
   border-color: #ef4444 !important;
   box-shadow: inset 0 0 0 2px #ef4444, inset 0 -7px 0 rgba(75, 0, 6, .28) !important;
   filter: none !important;
+  transition: none !important;
   color: #fff !important;
 }
 html .mega-live-page .board-grid .board-space.is-mortgaged-space :is(.board-space-number, .board-space-name, .board-space-price) {
@@ -133,5 +134,31 @@ html .mega-live-page .board-grid .board-space.is-mortgaged-space :is(.board-spac
   }
   .right-game-stack .turn-actions-popup-layer.has-live-debt .debt-property-option-list {
     grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+/* Override the old evenly-split grid rows that clipped the match roster.
+   The player rail itself scrolls to every seat; each portfolio scrolls locally. */
+@media (min-width: 1181px) {
+  .mega-live-page .player-rail-side .player-rail-list {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-rows: none !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    gap: 7px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    scrollbar-width: thin !important;
+  }
+  .mega-live-page .player-rail-side .player-rail-card {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 108px !important;
+    max-height: clamp(170px, 30dvh, 290px) !important;
+    overflow: hidden !important;
   }
 }

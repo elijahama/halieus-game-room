@@ -440,6 +440,18 @@ export function GameBoard({
     !gameState.pendingTrade,
   );
 
+  // lastDiceRoll is global and deliberately survives a change of player.
+  // The centre may label it as a current roll only when the server's
+  // latest roll activity belongs to this player and this round.
+  const latestDiceActivity = [...(gameState.activityLog ?? [])]
+    .reverse()
+    .find((entry) => entry.kind === "roll");
+  const currentTurnDice = gameState.lastDiceRoll &&
+    latestDiceActivity?.playerId === activeGamePlayer?.id &&
+    latestDiceActivity.turnNumber === gameState.turnNumber
+      ? gameState.lastDiceRoll
+      : null;
+
   const [animatedRoll, setAnimatedRoll] =
     useState(
       gameState.lastDiceRoll,
@@ -1559,32 +1571,32 @@ export function GameBoard({
             )}
 
             <div className="centre-roll-readout" style={{ color: theme.mutedText }}>
-              {gameState.lastDiceRoll ? (
+              {currentTurnDice ? (
                 <>
                   <div
                     className="dice-tray"
-                    key={`${gameState.rollSequence ?? 0}-${gameState.lastDiceRoll.white1}-${gameState.lastDiceRoll.white2}-${gameState.lastDiceRoll.speed ?? "none"}`}
-                    aria-label="Last dice roll"
+                    key={`${gameState.rollSequence ?? 0}-${currentTurnDice.white1}-${currentTurnDice.white2}-${currentTurnDice.speed ?? "none"}`}
+                    aria-label={`${activeGamePlayer?.name ?? "Current player"}'s most recent dice roll this turn`}
                   >
-                    <DieFace value={gameState.lastDiceRoll.white1} />
-                    <DieFace value={gameState.lastDiceRoll.white2} />
-                    {gameState.lastDiceRoll.speed !== null && (
-                      <DieFace value={gameState.lastDiceRoll.speed} speed />
+                    <DieFace value={currentTurnDice.white1} />
+                    <DieFace value={currentTurnDice.white2} />
+                    {currentTurnDice.speed !== null && (
+                      <DieFace value={currentTurnDice.speed} speed />
                     )}
                   </div>
                   <span>
-                    Last roll
-                    {typeof gameState.lastDiceRoll.speed === "number" &&
-                    gameState.lastDiceRoll.white1 === gameState.lastDiceRoll.white2 &&
-                    gameState.lastDiceRoll.white1 === gameState.lastDiceRoll.speed
+                    This turn's roll
+                    {typeof currentTurnDice.speed === "number" &&
+                    currentTurnDice.white1 === currentTurnDice.white2 &&
+                    currentTurnDice.white1 === currentTurnDice.speed
                       ? " • Triples!"
-                      : gameState.lastDiceRoll.white1 === gameState.lastDiceRoll.white2
+                      : currentTurnDice.white1 === currentTurnDice.white2
                         ? " • Doubles!"
                         : ""}
                   </span>
                 </>
               ) : (
-                <span>Waiting for the first roll</span>
+                <span>{gameState.turnPhase === "jail-decision" ? "Jail decision pending" : `Waiting for ${activeGamePlayer?.name ?? "the next player"} to roll`}</span>
               )}
             </div>
           </div>
