@@ -162,3 +162,29 @@ html .mega-live-page .board-grid .board-space.is-mortgaged-space :is(.board-spac
     overflow: hidden !important;
   }
 }
+ 
+/* Tablets and phones use the full Players drawer, not the hidden desktop rail.
+   Keep every player's complete asset inventory reachable inside that drawer. */
+.mega-live-page .tablet-players-drawer .player-property-strip {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: min-content !important;
+  align-content: start !important;
+  max-height: min(30dvh, 220px) !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin !important;
+}
+.mega-live-page .tablet-players-drawer .player-property-count {
+  grid-column: 1 / -1 !important;
+  font-size: 10px;
+  font-weight: 800;
+}
+@media (max-width: 560px) {
+  .mega-live-page .tablet-players-drawer .player-property-strip {
+    grid-template-columns: minmax(0, 1fr) !important;
+    max-height: min(27dvh, 190px) !important;
+  }
+}

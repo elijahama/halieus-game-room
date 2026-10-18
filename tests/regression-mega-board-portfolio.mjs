@@ -41,3 +41,6 @@ assert.match(board, /latestDiceActivity\.turnNumber === gameState\.turnNumber/, 
 assert.match(board, /This turn's roll/, "Completed dice should be labelled for the current player and turn");
 assert.doesNotMatch(board, /aria-label="Last dice roll"/, "Global stale roll must not pretend to be the current player's result");
 console.log("PASS full online-match roster and per-turn dice presentation semantics");
+
+assert.match(css,/tablet-players-drawer \.player-property-strip[\s\S]*?overflow-y: auto !important/,"Tablet/phone Players drawer must scroll all properties");
+assert.match(css,/tablet-players-drawer \.player-property-strip[\s\S]*?max-height: min\(30dvh, 220px\)/,"Player drawer property chips must not consume the entire screen");
