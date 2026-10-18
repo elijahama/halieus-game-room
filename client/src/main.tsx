@@ -17,6 +17,7 @@ import "./styles/hgr-4.5.4-identity.css";
 import "./styles/hgr-4.5.4.6-feature-rail.css";
 import "./styles/hgr-4.5.5-mobile-hub.css";
 import "./styles/hgr-4.5.5-part28-authority.css";
+import "./styles/hgr-4.5.5-mega-board-portfolio.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.

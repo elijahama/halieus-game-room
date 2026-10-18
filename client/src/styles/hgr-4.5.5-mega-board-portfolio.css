@@ -1,0 +1,54 @@
+/* Mega Board mortgage and roster accessibility.
+   Loaded after the game-surface skin so red mortgage semantics are not overwritten. */
+html .mega-live-page .board-grid .board-space.is-mortgaged-space,
+html .mega-live-page .board-grid .board-space.is-mortgaged-space.is-owned-space {
+  background: linear-gradient(155deg, #b91c1c 0%, #88151b 100%) !important;
+  border-color: #ef4444 !important;
+  box-shadow: inset 0 0 0 2px #ef4444, inset 0 -7px 0 rgba(75, 0, 6, .28) !important;
+  filter: none !important;
+  color: #fff !important;
+}
+html .mega-live-page .board-grid .board-space.is-mortgaged-space :is(.board-space-number, .board-space-name, .board-space-price) {
+  color: #fff !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 2px rgba(40, 0, 0, .7) !important;
+}
+.mega-live-page .player-rail-side .player-rail-card {
+  min-height: 0 !important;
+}
+.mega-live-page .player-rail-side .player-property-strip {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 4px !important;
+  padding-right: 4px !important;
+}
+.mega-live-page .player-rail-side .player-property-count {
+  grid-column: 1 / -1;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--mm-muted, #a7adb5);
+}
+.mega-live-page .player-rail-side .player-property-chip {
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: 3px 4px !important;
+  font-size: 8.5px !important;
+  line-height: 1.2 !important;
+}
+.mega-live-page .player-rail-side .player-property-chip.is-mortgaged {
+  border-color: #ef4444 !important;
+  background: rgba(185,28,28,.30) !important;
+  box-shadow: inset 0 0 0 1px rgba(239,68,68,.55) !important;
+}
+.mega-live-page .player-rail-side .player-property-chip.is-mortgaged i {
+  background: #ef4444 !important;
+}
