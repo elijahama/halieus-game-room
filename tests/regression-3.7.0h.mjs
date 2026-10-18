@@ -20,7 +20,7 @@ assert.match(resolution,/Shared Maximum Rent/,'Players must receive an explicit 
 const debt=read('server/src/games/mega-board/utils/debt.ts');
 assert.match(debt,/debt\.creditorShares/,'Debt settlement must consume multi-creditor shares');
 assert.match(debt,/creditor\.cash \+= share\.amount/,'Each tied owner must receive their server-authoritative rent share');
-assert.match(debt,/recordRentStats\(gameState, debtor, creditor, share\.amount\)/,'Shared payments must feed rent statistics per recipient');
+assert.match(debt,/recordRentStats\(gameState, debtor, creditor, share\.amount, rentSpaceIdForDebt\(debt\.reason\)\)/,'Shared payments must feed rent statistics per recipient and identify the paid board space');
 assert.match(debt,/Remaining properties return to the Bank rather than being awarded arbitrarily to one creditor/,'Shared-rent bankruptcy must not arbitrarily award all assets to one tied owner');
 const reconnect=read('server/src/games/mega-board/utils/reconnection.ts');
 assert.match(reconnect,/creditorShares.*map/s,'Shared creditor IDs must survive seat reconnection/remapping');
