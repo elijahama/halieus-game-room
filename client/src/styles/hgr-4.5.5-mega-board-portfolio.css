@@ -127,8 +127,10 @@ html .mega-live-page .board-grid .board-space.is-mortgaged-space :is(.board-spac
     padding: 8px !important;
   }
   .right-game-stack .turn-actions-popup-layer.has-live-debt .turn-actions-popup {
-    width: min(620px, calc(100vw - 16px)) !important;
-    max-width: min(620px, calc(100vw - 16px)) !important;
+    /* Reserve 20px of safe width on both sides, including when an older
+       transform/viewport inset shifts the host popup by a few pixels. */
+    width: min(620px, calc(100vw - 40px)) !important;
+    max-width: min(620px, calc(100vw - 40px)) !important;
     max-height: calc(100dvh - 82px) !important;
     pointer-events: auto !important;
   }
