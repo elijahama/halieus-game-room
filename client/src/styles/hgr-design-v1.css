@@ -7606,3 +7606,13 @@ html[data-theme="dark"] .mega-create-cosmetics p {
 @media(max-width:680px){
   .halieus-custom-contrast-guide{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Explain active directory filtering instead of silently hiding other users. */
+.halieus-player-result-summary {
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:8px; margin:4px 0 12px; color:var(--hgr-muted); font-size:12px; font-weight:700;
+}
+.halieus-player-result-summary button {
+  padding:6px 10px; border:1px solid var(--hgr-border); border-radius:9px;
+  background:var(--hgr-surface-soft); color:var(--hgr-text); cursor:pointer;
+}

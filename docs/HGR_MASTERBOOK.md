@@ -859,3 +859,7 @@ Owner requested: “Obaseki Award — when someone collects over £200 with all 
 ### QA correction — Players drawer at ≤1180px (18 October 2026)
 
 The first Chromium viewport test was invalid on tablets because it inspected `.player-rail-side`, which the app deliberately hides below 1181px. The responsive test now instantiates the actual `.tablet-players-drawer > .player-rail` structure for tablet/phone and the desktop split rail for desktop. It asserts seven match seats, 26 asset chips, scrollable inventories, red computed mortgage paint, and bounded debt controls at all three widths. A separately scoped drawer rule ensures an internal, height-bounded property inventory even on phones.
+
+## Part 29 — Online directory search visibility (18 October 2026)
+
+Owner Players page screenshot shows a stale `Sam` search while the `All` status filter is active, explaining why only Sam E appeared. Fix now makes `All` and `Online` clear the name search, shows `N of M shown · K online`, and exposes a clear-search button. Directory refresh is isolated from six other profile/social requests, and refreshes each 10 seconds and after foreground resume, so unrelated endpoint failures cannot freeze the roster. The existing privacy/visibility rules and presence timeout remain in force. Owner-device verification after deploy is pending.

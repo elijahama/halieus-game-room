@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+const read = (p) => readFile(resolve(import.meta.dirname, "..", p), "utf8");
+const home = await read("client/src/platform/components/HomeScreen.tsx");
+const css = await read("client/src/styles/hgr-design-v1.css");
+const server = await read("server/src/platform/accounts.ts");
+assert.match(home, /const loadDirectory = async \(\) =>/, "Presence must refresh independently");
+assert.match(home, /void loadDirectory\(\); void loadOtherData\(\)/, "Peripheral fetches cannot block directory");
+assert.match(home, /document\.addEventListener\("visibilitychange", refreshOnFocus\)/, "Resume must refresh");
+assert.match(home, /if \(filter === "all" \|\| filter === "online"\) setPlayerSearch\(""/, "All/Online must clear the stale name query");
+assert.match(home, /filteredDirectory\.length\} of \{directory\.length\} players shown/, "Reveal filtered count");
+assert.match(home, /Clear search/, "Offer clear-search action");
+assert.match(css, /\.halieus-player-result-summary/, "Style the result disclosure");
+assert.match(server, /account\.visibility !== "hidden" \|\| account\.id === viewer\.id/, "Keep visibility safeguards");
+console.log("PASS independent online presence refresh and clear Players search");

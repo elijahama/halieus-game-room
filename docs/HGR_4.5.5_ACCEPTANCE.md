@@ -208,3 +208,7 @@ Owner ERU38J screenshots require: mortgaged tiles red, complete player-property 
 ## 18 October 2026 — Obaseki Award acceptance
 
 Mega Board match award: strictly more than £200 in a single actual utility-rent payment **while owning Gas Company, Electric Company and Water Works**. Requires three-way utility ownership at the moment of each credited receipt, counts a direct or settled-debt payment only when that individual receipt exceeds £200, excludes adding smaller rent receipts, non-utility rent and prior receipts, once an individual receipt exceeds £200 shows Obaseki Award (💡) in Results > Awards and in the report, ranked +7 bonus subject to existing cap. Exactly £200 must not award. Device match acceptance pending.
+
+## 18 October 2026 — Players page all-online visibility
+
+All and Online status filters clear stale search text; directory shows online count and visible/total counts and has a dedicated Clear search button. Presence loads independently from other social data and refreshes on foreground resume. Verify with multiple concurrent signed-in, visible users after deployment. Privacy remains unchanged.

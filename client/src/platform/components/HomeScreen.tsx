@@ -216,10 +216,18 @@ export function HomeScreen(props: HomeScreenProps) {
 
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
+    // Player presence must not stall because guilds, invites or stats fail.
+    const loadDirectory = async () => {
       try {
-        const [people, stats, quick, live, invites, requests, guildInvitations] = await Promise.all([
-          accountApi<{ ok: true; players: HalieusPlayerDirectoryEntry[] }>("/accounts/directory"),
+        const people = await accountApi<{ ok: true; players: HalieusPlayerDirectoryEntry[] }>("/accounts/directory");
+        if (!cancelled) { setDirectory(people.players); setDataError(""); }
+      } catch (error) {
+        if (!cancelled) setDataError(error instanceof Error ? error.message : "Player presence is temporarily unavailable.");
+      }
+    };
+    const loadOtherData = async () => {
+      try {
+        const [stats, quick, live, invites, requests, guildInvitations] = await Promise.all([
           accountApi<{ ok: true; stats: HalieusPersonalStats }>("/accounts/me/stats"),
           accountApi<{ ok: true; profile: HalieusQuickPlayProfile }>("/accounts/me/quick-play"),
           accountApi<{ ok: true; rooms: HalieusLiveRoomSummary[] }>("/accounts/live-games"),
@@ -227,14 +235,24 @@ export function HomeScreen(props: HomeScreenProps) {
           accountApi<{ ok: true; requests: HalieusGameRequestSummary[] }>("/accounts/game-requests"),
           accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations"),
         ]);
-        if (!cancelled) { setDirectory(people.players); setPersonalStats(stats.stats); setQuickPlay(quick.profile); setLiveRooms(live.rooms.filter((room) => ACTIVE_GAME_IDS.has(room.game))); setGameInvites(invites.invites.filter((invite) => ACTIVE_GAME_IDS.has(invite.game as GameId))); setGameRequests(requests.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId))); setGuildInvites(guildInvitations.invitations.filter((invitation) => invitation.status === "pending")); setDataError(""); }
-      } catch (error) {
-        if (!cancelled) setDataError(error instanceof Error ? error.message : "Player data is temporarily unavailable.");
+        if (!cancelled) {
+          setPersonalStats(stats.stats);
+          setQuickPlay(quick.profile);
+          setLiveRooms(live.rooms.filter((room) => ACTIVE_GAME_IDS.has(room.game)));
+          setGameInvites(invites.invites.filter((invite) => ACTIVE_GAME_IDS.has(invite.game as GameId)));
+          setGameRequests(requests.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId)));
+          setGuildInvites(guildInvitations.invitations.filter((invitation) => invitation.status === "pending"));
+        }
+      } catch {
+        // Retry peripheral social data without hiding successfully loaded Players.
       }
     };
-    void load();
-    const timer = window.setInterval(() => void load(), 10000);
-    return () => { cancelled = true; window.clearInterval(timer); };
+    const load = () => { void loadDirectory(); void loadOtherData(); };
+    load();
+    const timer = window.setInterval(load, 10000);
+    const refreshOnFocus = () => { if (document.visibilityState === "visible") load(); };
+    document.addEventListener("visibilitychange", refreshOnFocus);
+    return () => { cancelled = true; window.clearInterval(timer); document.removeEventListener("visibilitychange", refreshOnFocus); };
   }, [account?.id]);
 
   useEffect(() => {
@@ -1003,8 +1021,12 @@ export function HomeScreen(props: HomeScreenProps) {
             <div className="halieus-player-tools">
               <label><span>Search players</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
               <div className="halieus-player-filters" role="group" aria-label="Player status filter">
-                {(["all", "online", "in-game", "offline"] as const).map((filter) => <button type="button" key={filter} className={playerFilter === filter ? "is-active" : ""} onClick={() => setPlayerFilter(filter)}>{filter === "in-game" ? "In Game" : filter[0].toUpperCase() + filter.slice(1)}</button>)}
+                {(["all", "online", "in-game", "offline"] as const).map((filter) => <button type="button" key={filter} className={playerFilter === filter ? "is-active" : ""} onClick={() => { setPlayerFilter(filter); if (filter === "all" || filter === "online") setPlayerSearch(""); }}>{filter === "in-game" ? "In Game" : filter[0].toUpperCase() + filter.slice(1)}</button>)}
               </div>
+            </div>
+            <div className="halieus-player-result-summary" role="status" aria-live="polite">
+              <span>{filteredDirectory.length} of {directory.length} players shown · {onlinePlayers.length} online</span>
+              {playerSearch.trim() && <button type="button" onClick={() => setPlayerSearch("")}>Clear search “{playerSearch.trim()}”</button>}
             </div>
             <div className="halieus-player-directory">
               {filteredDirectory.map((person) => {
@@ -1020,7 +1042,7 @@ export function HomeScreen(props: HomeScreenProps) {
                   onClick={() => setSelectedPlayerId(person.id)}
                 />;
               })}
-              {filteredDirectory.length === 0 && <div className="halieus-player-empty">No players match this filter.</div>}
+              {filteredDirectory.length === 0 && <div className="halieus-player-empty">No players match this search or filter. Clear the search to see everyone.</div>}
             </div>
           </>}
         </section>}
