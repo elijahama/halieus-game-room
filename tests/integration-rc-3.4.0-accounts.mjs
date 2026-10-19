@@ -81,9 +81,9 @@ try {
 
   const directory = await request('/accounts/directory', { cookie: newLogin.cookie });
   assert.equal(directory.response.status, 200);
-  const directoryJordan = directory.json.players.find((entry) => entry.username === 'jordan.new');
-  assert.ok(directoryJordan, 'renamed player should appear in the signed-in player directory');
-  const publicStats = await request(`/accounts/players/${directoryJordan.id}/stats`, { cookie: newLogin.cookie });
+  assert.ok(!directory.json.players.some((entry) => entry.username === 'jordan.new'),
+    'Friends directory must not list your own account or unconnected players');
+  const publicStats = await request(`/accounts/players/${newLogin.json.account.id}/stats`, { cookie: newLogin.cookie });
   assert.equal(publicStats.response.status, 200);
   assert.equal(typeof publicStats.json.stats.played, 'number');
   assert.ok(Array.isArray(publicStats.json.stats.byGame));

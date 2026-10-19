@@ -1,0 +1,41 @@
+/* HGR 4.5.5h | Friends + shared-guild discovery UI.
+ * No global font or layout zoom; tuned for narrow portrait layouts. */
+.halieus-friends-access {
+  display:grid;
+  gap:12px;
+  margin:12px 0 16px;
+}
+.halieus-add-friend,
+.halieus-friend-requests {
+  border:1px solid var(--hgr-border,rgba(128,146,180,.35));
+  border-radius:14px;
+  padding:clamp(12px,2vw,18px);
+  background:var(--hgr-surface,rgba(14,20,35,.9));
+  min-width:0;
+}
+.halieus-add-friend label,
+.halieus-friend-requests h3 {display:block;font-weight:650;margin:0 0 8px}
+.halieus-add-friend > div{display:flex;gap:8px;align-items:stretch;min-width:0}
+.halieus-add-friend input{flex:1 1 190px;min-width:0;width:100%;padding:9px 11px;border-radius:9px}
+.halieus-add-friend button{flex:0 0 auto;white-space:nowrap}
+.halieus-add-friend small,.halieus-friend-pending{display:block;font-size:12px;line-height:1.5;margin-top:9px;overflow-wrap:anywhere;color:var(--hgr-text-muted,#b3bdce)}
+.halieus-friend-requests article{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--hgr-border,rgba(128,146,180,.25))}
+.halieus-friend-requests article > span{min-width:0;display:grid;gap:3px;overflow-wrap:anywhere}
+.halieus-friend-requests article > span small{font-size:11px;color:var(--hgr-text-muted,#b3bdce)}
+.halieus-friend-requests article > div{display:flex;gap:6px}
+.halieus-friend-requests button{min-height:38px;border-radius:9px;padding:7px 10px}
+.halieus-friend-notice{margin:0;font-size:13px;overflow-wrap:anywhere}
+.hgr-beta-developer-directory{display:grid;gap:10px;margin-top:16px}
+.hgr-beta-developer-directory h4,.hgr-beta-developer-directory p{margin:0}
+.hgr-beta-developer-list{display:grid;gap:5px;max-height:280px;overflow-y:auto;overscroll-behavior:contain}
+.hgr-beta-developer-list > div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 12px;padding:9px 10px;border:1px solid var(--hgr-border,rgba(128,146,180,.3));border-radius:9px;min-width:0}
+.hgr-beta-developer-list > div > *{overflow-wrap:anywhere;min-width:0;font-size:12px}
+.hgr-beta-developer-list > div > small{grid-column:1 / -1;color:var(--hgr-text-muted,#b3bdce)}
+@media (max-width:380px) and (orientation:portrait){
+ .halieus-add-friend > div{flex-direction:column;align-items:stretch}
+ .halieus-add-friend input{flex-basis:auto;font-size:14px}
+ .halieus-add-friend button{width:100%;min-height:42px}
+ .halieus-friend-requests article{flex-wrap:wrap}
+ .halieus-friend-requests article > div{width:100%}
+ .halieus-friend-requests button{flex:1}
+}

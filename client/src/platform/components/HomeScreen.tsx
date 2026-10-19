@@ -7,6 +7,7 @@ import type {
   HalieusAccountSummary,
   HalieusGameInviteSummary,
   HalieusGameRequestSummary,
+  HalieusFriendRequest,
   HalieusGamerScoreLeaderboardEntry,
   HalieusPersonalStats,
   HalieusPlayerDirectoryEntry,
@@ -134,6 +135,11 @@ export function HomeScreen(props: HomeScreenProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
   const [directory, setDirectory] = useState<HalieusPlayerDirectoryEntry[]>([]);
+  const [friendRequests, setFriendRequests] = useState<HalieusFriendRequest[]>([]);
+  const [friendIds, setFriendIds] = useState<string[]>([]);
+  const [friendHandle, setFriendHandle] = useState("");
+  const [friendBusy, setFriendBusy] = useState(false);
+  const [friendNotice, setFriendNotice] = useState("");
   const [gamerScoreLeaderboard, setGamerScoreLeaderboard] = useState<HalieusGamerScoreLeaderboardEntry[]>([]);
   const [gamerScoreLoading, setGamerScoreLoading] = useState(false);
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
@@ -227,13 +233,14 @@ export function HomeScreen(props: HomeScreenProps) {
     };
     const loadOtherData = async () => {
       try {
-        const [stats, quick, live, invites, requests, guildInvitations] = await Promise.all([
+        const [stats, quick, live, invites, requests, guildInvitations, social] = await Promise.all([
           accountApi<{ ok: true; stats: HalieusPersonalStats }>("/accounts/me/stats"),
           accountApi<{ ok: true; profile: HalieusQuickPlayProfile }>("/accounts/me/quick-play"),
           accountApi<{ ok: true; rooms: HalieusLiveRoomSummary[] }>("/accounts/live-games"),
           accountApi<{ ok: true; invites: HalieusGameInviteSummary[] }>("/accounts/game-invites"),
           accountApi<{ ok: true; requests: HalieusGameRequestSummary[] }>("/accounts/game-requests"),
           accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations"),
+          accountApi<{ ok: true; requests: HalieusFriendRequest[]; friendIds: string[] }>("/accounts/friends"),
         ]);
         if (!cancelled) {
           setPersonalStats(stats.stats);
@@ -242,6 +249,8 @@ export function HomeScreen(props: HomeScreenProps) {
           setGameInvites(invites.invites.filter((invite) => ACTIVE_GAME_IDS.has(invite.game as GameId)));
           setGameRequests(requests.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId)));
           setGuildInvites(guildInvitations.invitations.filter((invitation) => invitation.status === "pending"));
+          setFriendRequests(social.requests);
+          setFriendIds(social.friendIds);
         }
       } catch {
         // Retry peripheral social data without hiding successfully loaded Players.
@@ -497,6 +506,63 @@ export function HomeScreen(props: HomeScreenProps) {
     finally { setRequestingPlayerId(null); }
   }
 
+
+  async function refreshFriends(): Promise<void> {
+    const [social, people] = await Promise.all([
+      accountApi<{ ok: true; requests: HalieusFriendRequest[]; friendIds: string[] }>("/accounts/friends"),
+      accountApi<{ ok: true; players: HalieusPlayerDirectoryEntry[] }>("/accounts/directory"),
+    ]);
+    setFriendRequests(social.requests);
+    setFriendIds(social.friendIds);
+    setDirectory(people.players);
+  }
+
+  async function addFriendByHandle(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    if (friendBusy) return;
+    setFriendBusy(true);
+    setFriendNotice("");
+    try {
+      await accountApi("/accounts/friends/requests", {
+        method: "POST",
+        body: JSON.stringify({ handle: friendHandle.trim() }),
+      });
+      setFriendNotice("Friend request sent. They must accept before appearing in your Friends list.");
+      setFriendHandle("");
+      await refreshFriends();
+    } catch (error) {
+      setFriendNotice(error instanceof Error ? error.message : "Unable to send that request.");
+    } finally { setFriendBusy(false); }
+  }
+
+  async function respondToFriend(requestId: string, action: "accept" | "decline"): Promise<void> {
+    if (friendBusy) return;
+    setFriendBusy(true);
+    setFriendNotice("");
+    try {
+      await accountApi("/accounts/friends/requests/" + encodeURIComponent(requestId) + "/respond", {
+        method: "POST", body: JSON.stringify({ action }),
+      });
+      await refreshFriends();
+      setFriendNotice(action === "accept" ? "Friend added." : "Friend request declined.");
+    } catch (error) {
+      setFriendNotice(error instanceof Error ? error.message : "Unable to respond.");
+    } finally { setFriendBusy(false); }
+  }
+
+  async function removeFriend(accountId: string): Promise<void> {
+    if (friendBusy) return;
+    setFriendBusy(true);
+    setFriendNotice("");
+    try {
+      await accountApi("/accounts/friends/" + encodeURIComponent(accountId), {method:"DELETE"});
+      await refreshFriends();
+      setFriendNotice("Friend removed. Shared guild members can still appear in your list.");
+    } catch (error) {
+      setFriendNotice(error instanceof Error ? error.message : "Unable to remove friend.");
+    } finally { setFriendBusy(false); }
+  }
+
   function playerCardActions(person: HalieusPlayerDirectoryEntry): PlayerIdentityAction[] {
     const actions: PlayerIdentityAction[] = [];
     const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase()) ?? null;
@@ -542,6 +608,15 @@ export function HomeScreen(props: HomeScreenProps) {
       }
     }
 
+    if (friendIds.includes(person.id)) {
+      actions.push({
+        id: "remove-friend",
+        label: "Remove friend",
+        detail: "Stop sharing your Friends list connection",
+        disabled: friendBusy,
+        onSelect: () => void removeFriend(person.id),
+      });
+    }
     actions.push({
       id: "copy-username",
       label: "Copy username",
@@ -874,7 +949,7 @@ export function HomeScreen(props: HomeScreenProps) {
         <nav className="halieus-side-nav">
           <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="home" /></span><b>Home</b></button>
           <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Games</b></button>
-          <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Players</b></button>
+          <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Friends</b></button>
           <button type="button" className={view === "rankings" ? "is-active" : ""} onClick={() => { setView("rankings"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="leaderboard" /></span><b>Rankings</b></button>
           {account && <button type="button" className={view === "guilds" ? "is-active" : ""} onClick={() => { setView("guilds"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="guilds" /></span><b>Guilds</b></button>}
           {account && <button type="button" className={inboxOpen ? "is-active halieus-inbox-nav" : "halieus-inbox-nav"} onClick={() => { setInboxOpen(true); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="inbox" /></span><b>Inbox</b>{inboxCount > 0 && <span className="halieus-inbox-badge">{inboxCount > 99 ? "99+" : inboxCount}</span>}</button>}
@@ -917,7 +992,7 @@ export function HomeScreen(props: HomeScreenProps) {
                 </div>
                 <div className="halieus-showcase-status" aria-label="Game Room status">
                   <button type="button" onClick={() => { setView("games"); setMobileMenuOpen(false); }}><strong>{GAMES.length}</strong><span>games ready</span></button>
-                  <button type="button" onClick={() => { setView("players"); setMobileMenuOpen(false); }}><strong>{onlinePlayers.length}</strong><span>players online</span></button>
+                  <button type="button" onClick={() => { setView("players"); setMobileMenuOpen(false); }}><strong>{onlinePlayers.length}</strong><span>connections online</span></button>
                   <button type="button" onClick={() => savedSeats[0] ? savedSeats[0].resume() : setView("games")}><strong>{savedSeats.length}</strong><span>rooms to continue</span></button>
                 </div>
               </div>
@@ -1017,15 +1092,39 @@ export function HomeScreen(props: HomeScreenProps) {
               </>}
             </article>
           </div> : <>
-            <header className="halieus-page-heading"><div><p>HALIEUS SOCIAL</p><h1>Players</h1><span>Find friends, see who is in a room, and open a full player profile.</span></div><button type="button" className="button-outline halieus-open-guilds" onClick={() => { setView("guilds"); setSelectedPlayerId(null); }}>Guilds →</button></header>
+            <header className="halieus-page-heading"><div><p>HALIEUS SOCIAL</p><h1>Friends</h1><span>Friends and shared guild members. Add a person using their exact @handle.</span></div><button type="button" className="button-outline halieus-open-guilds" onClick={() => { setView("guilds"); setSelectedPlayerId(null); }}>Guilds →</button></header>
+            <section className="halieus-friends-access">
+              <form className="halieus-add-friend" onSubmit={(event) => void addFriendByHandle(event)}>
+                <label htmlFor="halieus-friend-handle">Add someone by their exact @handle</label>
+                <div><input id="halieus-friend-handle" autoComplete="off" spellCheck={false} maxLength={33}
+                  value={friendHandle} onChange={(event) => setFriendHandle(event.target.value)}
+                  placeholder="@their-handle" aria-label="Friend's exact @handle" />
+                <button type="submit" className="button-primary" disabled={friendBusy || !/^@[a-z0-9._-]{3,32}$/i.test(friendHandle.trim())}>
+                  {friendBusy ? "Working…" : "Send request"}
+                </button></div>
+                <small>People only appear as friends after they accept. Shared guild members also appear below.</small>
+              </form>
+              {friendNotice && <p className="halieus-friend-notice" role="status">{friendNotice}</p>}
+              {friendRequests.some((request) => request.recipientAccountId === account?.id && request.status === "pending") &&
+                <section className="halieus-friend-requests" aria-label="Incoming friend requests">
+                  <h3>Requests for you</h3>
+                  {friendRequests.filter((request) => request.recipientAccountId === account?.id && request.status === "pending").map((request) =>
+                    <article key={request.id}><span><strong>{request.senderDisplayName}</strong><small>@{request.senderUsername}</small></span>
+                      <div><button type="button" onClick={() => void respondToFriend(request.id, "accept")} disabled={friendBusy}>Accept</button>
+                        <button type="button" onClick={() => void respondToFriend(request.id, "decline")} disabled={friendBusy}>Decline</button></div>
+                    </article>)}
+                </section>}
+              {friendRequests.some((request) => request.senderAccountId === account?.id && request.status === "pending") &&
+                <p className="halieus-friend-pending">Pending requests: {friendRequests.filter((request) => request.senderAccountId === account?.id && request.status === "pending").map((request) => "@" + request.recipientUsername).join(", ")}</p>}
+            </section>
             <div className="halieus-player-tools">
-              <label><span>Search players</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
+              <label><span>Search friends and guild members</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
               <div className="halieus-player-filters" role="group" aria-label="Player status filter">
                 {(["all", "online", "in-game", "offline"] as const).map((filter) => <button type="button" key={filter} className={playerFilter === filter ? "is-active" : ""} onClick={() => { setPlayerFilter(filter); if (filter === "all" || filter === "online") setPlayerSearch(""); }}>{filter === "in-game" ? "In Game" : filter[0].toUpperCase() + filter.slice(1)}</button>)}
               </div>
             </div>
             <div className="halieus-player-result-summary" role="status" aria-live="polite">
-              <span>{filteredDirectory.length} of {directory.length} players shown · {onlinePlayers.length} online</span>
+              <span>{filteredDirectory.length} of {directory.length} connections shown · {onlinePlayers.length} online</span>
               {playerSearch.trim() && <button type="button" onClick={() => setPlayerSearch("")}>Clear search “{playerSearch.trim()}”</button>}
             </div>
             <div className="halieus-player-directory">
@@ -1042,7 +1141,7 @@ export function HomeScreen(props: HomeScreenProps) {
                   onClick={() => setSelectedPlayerId(person.id)}
                 />;
               })}
-              {filteredDirectory.length === 0 && <div className="halieus-player-empty">No players match this search or filter. Clear the search to see everyone.</div>}
+              {filteredDirectory.length === 0 && <div className="halieus-player-empty">No friends or guild members match. Add someone using their @handle, or change the filter.</div>}
             </div>
           </>}
         </section>}

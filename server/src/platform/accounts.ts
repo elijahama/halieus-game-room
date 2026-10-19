@@ -4,6 +4,7 @@ import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranke
 import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSkinPreferences, type HalieusSkinSlot } from "../../../shared/platform/skins.js";
 import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/themeProgression.js";
 import { readPlayerProgression } from "./progression.js";
+import { getGuildPeerAccountIds } from "./guilds.js";
 import type { Express, Request, Response } from "express";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -23,6 +24,7 @@ import type {
   HalieusInviteSummary,
   HalieusGameInviteSummary,
   HalieusGameRequestSummary,
+  HalieusFriendRequest,
   HalieusGamerScoreLeaderboardEntry,
   HalieusPlayerVisibility,
   HalieusPersonalStats,
@@ -107,6 +109,7 @@ interface AccountStore {
   passwordResets: StoredPasswordReset[];
   gameInvites: StoredGameInvite[];
   gameRequests: StoredGameRequest[];
+  friendRequests: HalieusFriendRequest[];
   accessRequests: HalieusAccessRequestSummary[];
   audit: HalieusAuditEntry[];
 }
@@ -159,6 +162,7 @@ function emptyStore(): AccountStore {
     passwordResets: [],
     gameInvites: [],
     gameRequests: [],
+    friendRequests: [],
     accessRequests: [],
     audit: [],
   };
@@ -305,6 +309,7 @@ export async function loadAccountStore(): Promise<void> {
       store = { ...emptyStore(), ...parsed, version: 1 } as AccountStore;
       store.gameInvites = Array.isArray(store.gameInvites) ? store.gameInvites : [];
       store.gameRequests = Array.isArray(store.gameRequests) ? store.gameRequests : [];
+      store.friendRequests = Array.isArray(store.friendRequests) ? store.friendRequests : [];
       for (const account of store.accounts) {
         account.visibility = account.visibility === "hidden" ? "hidden" : "visible";
         account.displayNameAliases = Array.isArray(account.displayNameAliases)
@@ -454,10 +459,32 @@ function lastSeenForAccount(accountId: string): number | null {
   return active ?? null;
 }
 
-function playerDirectory(viewer: StoredAccount): HalieusPlayerDirectoryEntry[] {
+
+function acceptedFriendIds(accountId: string): Set<string> {
+  return new Set((store.friendRequests ?? [])
+    .filter((friend) => friend.status === "accepted" &&
+      (friend.senderAccountId === accountId || friend.recipientAccountId === accountId))
+    .map((friend) => friend.senderAccountId === accountId ? friend.recipientAccountId : friend.senderAccountId));
+}
+
+function socialPeerIds(accountId: string): Set<string> {
+  return new Set([...acceptedFriendIds(accountId), ...getGuildPeerAccountIds(accountId)]);
+}
+
+function canViewSocialProfile(viewer: StoredAccount, target: StoredAccount): boolean {
+  if (viewer.id === target.id) return true;
+  if (target.visibility === "hidden") return false;
+  return socialPeerIds(viewer.id).has(target.id);
+}
+
+function playerDirectory(viewer: StoredAccount, scope: "social" | "global" | "admin" = "social"): HalieusPlayerDirectoryEntry[] {
   const now = Date.now();
+  const socialIds = scope === "social" ? socialPeerIds(viewer.id) : null;
   return store.accounts
-    .filter((account) => account.status === "active" && (viewer.role === "owner" || viewer.role === "admin" || account.visibility !== "hidden" || account.id === viewer.id))
+    .filter((account) => account.status === "active" && (scope === "social"
+      ? account.id !== viewer.id && account.visibility !== "hidden" && socialIds!.has(account.id)
+      : scope === "admin" ? viewer.role === "owner" || viewer.role === "admin"
+      : viewer.role === "owner" || viewer.role === "admin" || account.visibility !== "hidden" || account.id === viewer.id))
     .map((account) => {
       const lastSeenAt = lastSeenForAccount(account.id);
       return {
@@ -476,7 +503,7 @@ function playerDirectory(viewer: StoredAccount): HalieusPlayerDirectoryEntry[] {
 }
 
 async function gamerScoreLeaderboard(viewer: StoredAccount): Promise<HalieusGamerScoreLeaderboardEntry[]> {
-  const visiblePlayers = playerDirectory(viewer);
+  const visiblePlayers = playerDirectory(viewer, "global");
   const rows = await Promise.all(visiblePlayers.map(async (player) => {
     const progression = await readPlayerProgression(player.id);
     return {
@@ -920,6 +947,98 @@ export function registerAccountRoutes(app: Express): void {
     response.json({ ok: true, players: playerDirectory(auth.account) });
   });
 
+
+  // Social discovery is server-filtered for every ordinary session, including
+  // owners. An administrator-only diagnostic route is separate.
+  app.get("/admin/directory", (request, response) => {
+    const viewer = requireAdmin(request, response);
+    if (!viewer) return;
+    response.json({ ok: true, players: playerDirectory(viewer, "admin") });
+  });
+
+  app.get("/accounts/friends", (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ok:false, reason:"Sign in first."}); return; }
+    const accountId = auth.account.id;
+    const requests = store.friendRequests
+      .filter((friend) => friend.status === "pending" &&
+        (friend.senderAccountId === accountId || friend.recipientAccountId === accountId))
+      .map((friend) => {
+        const sender = store.accounts.find((account) => account.id === friend.senderAccountId);
+        const recipient = store.accounts.find((account) => account.id === friend.recipientAccountId);
+        return { ...friend,
+          senderDisplayName: sender?.displayName ?? friend.senderDisplayName,
+          senderUsername: sender?.username ?? friend.senderUsername,
+          recipientDisplayName: recipient?.displayName ?? friend.recipientDisplayName,
+          recipientUsername: recipient?.username ?? friend.recipientUsername,
+        };
+      });
+    response.json({ok:true, requests, friendIds:[...acceptedFriendIds(accountId)]});
+  });
+
+  app.post("/accounts/friends/requests", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ok:false, reason:"Sign in first."}); return; }
+    if (!allowAuthAttempt(request, response, "friend-request", 25)) return;
+    const raw = typeof request.body?.handle === "string" ? request.body.handle.trim() : "";
+    if (!/^@[a-z0-9._-]{3,32}$/i.test(raw)) {
+      response.status(400).json({ok:false, reason:"Enter an exact @handle (3–32 characters)."}); return;
+    }
+    const username = normaliseUsername(raw.slice(1));
+    const recipient = store.accounts.find((account) => account.username === username && account.status === "active");
+    if (!recipient) {response.status(404).json({ok:false, reason:"That @handle could not be found."}); return;}
+    if (recipient.id === auth.account.id) {response.status(400).json({ok:false, reason:"You cannot add yourself."}); return;}
+    if (acceptedFriendIds(auth.account.id).has(recipient.id)) {
+      response.status(409).json({ok:false, reason:"You are already friends."}); return;
+    }
+    const existing = store.friendRequests.find((friend) => friend.status === "pending" &&
+      ((friend.senderAccountId === auth.account.id && friend.recipientAccountId === recipient.id) ||
+       (friend.senderAccountId === recipient.id && friend.recipientAccountId === auth.account.id)));
+    if (existing) { response.status(409).json({ok:false, reason:existing.senderAccountId === auth.account.id
+      ? "Your request is already pending." : "That person has sent you a request. Accept it in Friends."}); return; }
+    if (store.friendRequests.filter((friend) => friend.status === "pending" && friend.senderAccountId === auth.account.id).length >= 25) {
+      response.status(429).json({ok:false, reason:"Too many pending friend requests."}); return;
+    }
+    const friend: HalieusFriendRequest = {
+      id: id("friend"), senderAccountId:auth.account.id,
+      senderDisplayName:auth.account.displayName, senderUsername:auth.account.username,
+      recipientAccountId:recipient.id, recipientDisplayName:recipient.displayName, recipientUsername:recipient.username,
+      status:"pending", createdAt:Date.now(), respondedAt:null,
+    };
+    store.friendRequests.push(friend);
+    await saveStore();
+    response.status(201).json({ok:true, request:friend});
+  });
+
+  app.post("/accounts/friends/requests/:requestId/respond", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) {response.status(401).json({ok:false, reason:"Sign in first."}); return;}
+    if (request.body?.action !== "accept" && request.body?.action !== "decline") {
+      response.status(400).json({ok:false, reason:"Choose accept or decline."}); return;
+    }
+    const friend = store.friendRequests.find((item) => item.id === request.params.requestId
+      && item.status === "pending" && item.recipientAccountId === auth.account.id);
+    if (!friend) {response.status(404).json({ok:false, reason:"Pending request not found."}); return;}
+    const sender = store.accounts.find((account) => account.id === friend.senderAccountId && account.status === "active");
+    if (!sender) {response.status(404).json({ok:false, reason:"Sender not available."}); return;}
+    friend.status = request.body.action === "accept" ? "accepted" : "declined";
+    friend.respondedAt = Date.now();
+    await saveStore();
+    response.json({ok:true, request:friend});
+  });
+
+  app.delete("/accounts/friends/:accountId", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) {response.status(401).json({ok:false, reason:"Sign in first."}); return;}
+    const before = store.friendRequests.length;
+    store.friendRequests = store.friendRequests.filter((friend) => !(friend.status === "accepted" &&
+      ((friend.senderAccountId === auth.account.id && friend.recipientAccountId === request.params.accountId) ||
+       (friend.recipientAccountId === auth.account.id && friend.senderAccountId === request.params.accountId))));
+    if (before === store.friendRequests.length) {response.status(404).json({ok:false, reason:"Friendship not found."}); return;}
+    await saveStore();
+    response.json({ok:true});
+  });
+
   app.get("/accounts/gamer-score/leaderboard", async (request, response) => {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
@@ -936,7 +1055,7 @@ export function registerAccountRoutes(app: Express): void {
     }
     try {
       const leaderboard = await buildRankedLeaderboard(game as "connect-four" | "ludo" | "ayo");
-      const visibleIds = new Set(playerDirectory(auth.account).map((player) => player.id));
+      const visibleIds = new Set(playerDirectory(auth.account, "global").map((player) => player.id));
       response.json({ ok: true, leaderboard: { ...leaderboard, entries: leaderboard.entries.filter((entry) => visibleIds.has(entry.accountId)) } });
     } catch {
       response.status(500).json({ ok: false, reason: "Unable to rebuild Ranked standings right now." });
@@ -1111,7 +1230,7 @@ export function registerAccountRoutes(app: Express): void {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     const account = store.accounts.find((candidate) => candidate.id === request.params.accountId && candidate.status === "active");
-    if (account && account.visibility === "hidden" && account.id !== auth.account.id && auth.account.role === "player") { response.status(404).json({ ok: false, reason: "Player not found." }); return; }
+    if (account && !canViewSocialProfile(auth.account, account)) { response.status(404).json({ ok: false, reason: "Player not found." }); return; }
     if (!account) { response.status(404).json({ ok: false, reason: "Player not found." }); return; }
     response.json({ ok: true, stats: await personalStats(account) });
   });

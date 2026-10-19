@@ -8,6 +8,7 @@ import type {
   HalieusAuditEntry,
   HalieusInviteSummary,
   HalieusPersonalStats,
+  HalieusPlayerDirectoryEntry,
 } from "../../../../shared/platform/accounts";
 import type { HalieusFeedbackStatus, HalieusFeedbackSummary } from "../../../../shared/platform/feedback";
 import { GAME_CATALOG } from "../games/catalog";
@@ -99,6 +100,9 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [snapshot, setSnapshot] = useState<HalieusAdminSnapshot | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [message, setMessage] = useState("");
+  const [devDirectory, setDevDirectory] = useState<HalieusPlayerDirectoryEntry[] | null>(null);
+  const [devDirectoryBusy, setDevDirectoryBusy] = useState(false);
+  const [devDirectoryError, setDevDirectoryError] = useState("");
   const [editingUsername, setEditingUsername] = useState(false);
   const [username, setUsername] = useState(account.username);
   const [displayName, setDisplayName] = useState(account.displayName);
@@ -125,6 +129,19 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackReplyDrafts, setFeedbackReplyDrafts] = useState<Record<string, string>>({});
   const [confirmRequest, setConfirmRequest] = useState<{ title: string; message: string; label: string; action: () => void } | null>(null);
+
+  async function openDeveloperDirectory() {
+    if (!isAdmin || !betaMode) return;
+    if (devDirectory) { setDevDirectory(null); return; }
+    setDevDirectoryBusy(true);
+    setDevDirectoryError("");
+    try {
+      const result = await accountApi<{ok:true; players:HalieusPlayerDirectoryEntry[]}>("/admin/directory");
+      setDevDirectory(result.players);
+    } catch (error) {
+      setDevDirectoryError(error instanceof Error ? error.message : "Developer directory unavailable.");
+    } finally { setDevDirectoryBusy(false); }
+  }
 
   async function refreshAdmin() {
     if (!isAdmin) return;
@@ -600,6 +617,18 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                   <article><strong>Admin-only</strong><small>Only Owner/Admin accounts can enter this mode. Exit at any time to restore your normal account identity and normal cosmetic locks.</small></article>
                 </div>
                 {betaMode && <BetaFontSelector />}
+                {betaMode && isAdmin && <section className="hgr-beta-developer-directory">
+                  <h4>Developer utility · All players</h4>
+                  <p>Administrator-only diagnostic list. Other players see only friends and shared guild members.</p>
+                  <button type="button" className="button-outline" disabled={devDirectoryBusy} onClick={() => void openDeveloperDirectory()}>
+                    {devDirectoryBusy ? "Loading…" : devDirectory ? "Hide developer directory" : "View all players"}
+                  </button>
+                  {devDirectoryError && <p role="alert">{devDirectoryError}</p>}
+                  {devDirectory && <div className="hgr-beta-developer-list" aria-label="Full administrator player directory">
+                    {devDirectory.map((player) => <div key={player.id}><strong>{player.displayName}</strong><span>@{player.username}</span><small>{player.online ? "Online" : "Offline"} · {player.role}</small></div>)}
+                    {devDirectory.length === 0 && <p>No active players found.</p>}
+                  </div>}
+                </section>}
                 <button type="button" className={betaMode ? "button-outline" : "button-primary"} onClick={() => { if (betaMode) onExitBetaMode(); else onEnterBetaMode(); onClose(); }}>{betaMode ? "Exit Test Lab" : "Enter Test Lab"}</button>
               </section>}
 

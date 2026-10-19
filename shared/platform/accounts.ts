@@ -1,3 +1,22 @@
+export type HalieusFriendRequestStatus = "pending" | "accepted" | "declined";
+
+export interface HalieusFriendRequest {
+  id: string;
+  senderAccountId: string;
+  senderDisplayName: string;
+  senderUsername: string;
+  recipientAccountId: string;
+  recipientDisplayName: string;
+  recipientUsername: string;
+  status: HalieusFriendRequestStatus;
+  createdAt: number;
+  respondedAt: number | null;
+}
+
+export interface HalieusFriendSnapshot {
+  requests: HalieusFriendRequest[];
+}
+
 export type HalieusAccountRole = "owner" | "admin" | "player";
 export type HalieusAccountStatus = "active" | "suspended" | "deleted";
 

@@ -9,8 +9,10 @@ assert.match(home, /const loadDirectory = async \(\) =>/, "Presence must refresh
 assert.match(home, /void loadDirectory\(\); void loadOtherData\(\)/, "Peripheral fetches cannot block directory");
 assert.match(home, /document\.addEventListener\("visibilitychange", refreshOnFocus\)/, "Resume must refresh");
 assert.match(home, /if \(filter === "all" \|\| filter === "online"\) setPlayerSearch\(""/, "All/Online must clear the stale name query");
-assert.match(home, /filteredDirectory\.length\} of \{directory\.length\} players shown/, "Reveal filtered count");
+assert.match(home, /filteredDirectory\.length\} of \{directory\.length\} connections shown/, "Reveal privacy-filtered connection count");
 assert.match(home, /Clear search/, "Offer clear-search action");
 assert.match(css, /\.halieus-player-result-summary/, "Style the result disclosure");
-assert.match(server, /account\.visibility !== "hidden" \|\| account\.id === viewer\.id/, "Keep visibility safeguards");
+assert.match(server, /socialPeerIds\(viewer\.id\)/, "Require server-side friends plus shared-guild visibility");
+assert.match(server, /account\.visibility !== "hidden" && socialIds!\.has\(account\.id\)/, "Hidden players stay undiscoverable");
+assert.match(server, /app\.get\("\/admin\/directory"/, "Administrator utility must have its own authenticated endpoint");
 console.log("PASS independent online presence refresh and clear Players search");

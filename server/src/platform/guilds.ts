@@ -336,6 +336,19 @@ function requireGuildMember(guildId: string, account: HalieusAccountSummary, res
  * creates and validates the actual live room. This keeps one authoritative
  * room/game stack instead of inventing a second multiplayer implementation.
  */
+/**
+ * Social discovery only. Read the authoritative current memberships, not
+ * frozen game-result snapshots or cached client Guild details.
+ */
+export function getGuildPeerAccountIds(accountId: string): Set<string> {
+  const peers = new Set<string>();
+  for (const guild of store.guilds) {
+    if (!guild.members.some((member) => member.accountId === accountId)) continue;
+    for (const member of guild.members) if (member.accountId !== accountId) peers.add(member.accountId);
+  }
+  return peers;
+}
+
 export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResolver, resolveAccountById: GuildAccountLookup): void {
   lookupAccountById = resolveAccountById;
   app.get("/guilds", (request, response) => {
