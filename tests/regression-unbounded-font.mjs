@@ -1,0 +1,20 @@
+import assert from "node:assert/strict";
+import { readFile, stat } from "node:fs/promises";
+import { resolve } from "node:path";
+
+const root = resolve(import.meta.dirname, "..");
+const main = await readFile(resolve(root, "client/src/main.tsx"), "utf8");
+const pilot = await readFile(resolve(root, "client/src/styles/hgr-4.5.5-unbounded.css"), "utf8");
+const pkg = JSON.parse(await readFile(resolve(root, "client/package.json"), "utf8"));
+assert.equal(pkg.dependencies["@fontsource-variable/unbounded"], "5.3.0");
+assert.ok(main.includes('import "@fontsource-variable/unbounded/wght.css";'));
+assert.ok(main.includes('import "./styles/hgr-4.5.5-unbounded.css";'));
+assert.ok(main.indexOf('import "./styles/hgr-4.5.5-unbounded.css";') > main.indexOf('import "./styles/hgr-4.5.5-mega-board-portfolio.css";'));
+assert.match(pilot, /--hgr-interface-font:\s*"Unbounded Variable"/);
+assert.match(pilot, /html,\s*body,\s*#root,\s*button,\s*input,\s*select,\s*textarea/);
+assert.match(pilot, /font-family:\s*var\(--hgr-interface-font\)\s*!important/);
+assert.ok(!/@import|fonts\.googleapis\.com/i.test(pilot),"Fonts must not require external Google servers");
+assert.match(pilot, /\.board-space-name,\s*\.board-centre-logo,\s*\.property-deed-card/,"Preserve narrow game-surface labels");
+assert.ok(!/\.halieus-theme-atmosphere/.test(pilot),"Do not modify ambient-theme symbols");
+await stat(resolve(root,"node_modules/@fontsource-variable/unbounded/wght.css"));
+console.log("PASS self-hosted Unbounded UI pilot, local font availability and specialist-label preservation");

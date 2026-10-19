@@ -7,6 +7,7 @@ import { PlatformMaintenanceBanner } from "./platform/components/PlatformMainten
 import { IdentityAssetGuard } from "./platform/identity/IdentityAssetGuard";
 import { WebKitConnectionRecovery } from "./platform/network/WebKitConnectionRecovery";
 import { APP_VERSION, RELEASE_FINGERPRINT } from "./version";
+import "@fontsource-variable/unbounded/wght.css";
 import "./index.css";
 import "./styles/hgr-theme.css";
 import "./styles/hgr-design-v1.css";
@@ -18,6 +19,7 @@ import "./styles/hgr-4.5.4.6-feature-rail.css";
 import "./styles/hgr-4.5.5-mobile-hub.css";
 import "./styles/hgr-4.5.5-part28-authority.css";
 import "./styles/hgr-4.5.5-mega-board-portfolio.css";
+import "./styles/hgr-4.5.5-unbounded.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.
