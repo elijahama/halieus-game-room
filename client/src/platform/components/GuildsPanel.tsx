@@ -464,7 +464,7 @@ export function GuildsPanel({
         <div className="halieus-guild-heading-actions">
           <button type="button" className="button-outline" onClick={() => setGuildAction("join")}>Join guild</button>
           <button type="button" className="button-primary" onClick={() => setGuildAction("create")}>Create guild</button>
-          <button type="button" className="button-muted" onClick={onBackToPlayers}>← Players</button>
+          <button type="button" className="button-muted" onClick={onBackToPlayers}>← Friends</button>
         </div>
       </header>
 

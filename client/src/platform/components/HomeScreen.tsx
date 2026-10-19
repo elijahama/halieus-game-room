@@ -253,7 +253,7 @@ export function HomeScreen(props: HomeScreenProps) {
           setFriendIds(social.friendIds);
         }
       } catch {
-        // Retry peripheral social data without hiding successfully loaded Players.
+        // Retry peripheral social data without hiding the authorised Friends roster.
       }
     };
     const load = () => { void loadDirectory(); void loadOtherData(); };
@@ -1046,11 +1046,11 @@ export function HomeScreen(props: HomeScreenProps) {
           <section className="halieus-home-social-grid">
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>ONLINE PLAYERS</p><h2>Who’s around</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
-              <div>{onlinePlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact status="Online" detail={liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In game" : undefined} className="is-online" actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No other players are online right now.</p>}</div>
+              <div>{onlinePlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact status="Online" detail={liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In game" : undefined} className="is-online" actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No friends or guild members are online right now.</p>}</div>
             </section>
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>RECENT PLAYERS</p><h2>Play together again</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
-              <div>{recentPlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact status={person.online ? "Online" : undefined} detail={person.online ? undefined : person.lastSeenAt ? `Last seen ${new Date(person.lastSeenAt).toLocaleDateString()}` : "Offline"} className={person.online ? "is-online" : "is-offline"} actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{recentPlayers.length === 0 && <p>Your recent players will appear here.</p>}</div>
+              <div>{recentPlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact status={person.online ? "Online" : undefined} detail={person.online ? undefined : person.lastSeenAt ? `Last seen ${new Date(person.lastSeenAt).toLocaleDateString()}` : "Offline"} className={person.online ? "is-online" : "is-offline"} actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{recentPlayers.length === 0 && <p>Your recent friends and guild members will appear here.</p>}</div>
             </section>
           </section>
           {savedSeats.length > 1 && <section className="halieus-section-card halieus-continue-home halieus-continue-secondary"><header><div><p>OTHER ROOMS</p><h2>Ready to rejoin</h2></div><span>{savedSeats.length - 1}</span></header><div className="halieus-continue-list">{savedSeats.slice(1).map((entry) => <div key={entry.id} className="halieus-continue-row"><button type="button" onClick={() => { selectGame(entry.id); entry.resume(); }} disabled={disabled}><GameBrandIcon game={entry.id} /><span><strong>{entry.game}</strong><small>Room {entry.session?.code}</small></span><b>Continue →</b></button><button type="button" onClick={entry.forget} aria-label={`Forget ${entry.game} room`}>×</button></div>)}</div></section>}
@@ -1199,7 +1199,7 @@ export function HomeScreen(props: HomeScreenProps) {
         <button type="button" className={view === "home" ? "is-active" : ""} onClick={() => { setView("home"); setMobileMenuOpen(false); }}><HgrIcon name="home" size={20} /><span>Home</span></button>
         <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><HgrIcon name="games" size={20} /><span>Games</span></button>
         <button type="button" className="halieus-mobile-join-game" onClick={() => { openJoin("join"); setMobileMenuOpen(false); }} aria-label="Join Game"><span className="halieus-mobile-join-game-icon"><HgrIcon name="plus" size={24} /></span><span>Join</span></button>
-        <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><HgrIcon name="players" size={20} /><span>Players</span></button>
+        <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><HgrIcon name="players" size={20} /><span>Friends</span></button>
         <button type="button" className={view === "guilds" ? "is-active" : ""} disabled={!account} onClick={() => { if (account) setView("guilds"); setMobileMenuOpen(false); }}><HgrIcon name="guilds" size={20} /><span>Guilds</span></button>
       </nav>
 
