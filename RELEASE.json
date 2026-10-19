@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.5",
-  "fingerprint": "hgr-4.5.5-bff84304b6380b2a",
+  "fingerprint": "hgr-4.5.5-da973f040e00bb2a",
   "algorithm": "sha256",
-  "sourceHash": "bff84304b6380b2a29d64d1d02c0cdb9498185fb19afbadf566a9d161e82bd1a",
-  "integrityFileCount": 498,
+  "sourceHash": "da973f040e00bb2ac095067a33dec6aec5adf7ec16e38258c8bf1e59dbbeeaaa",
+  "integrityFileCount": 499,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -234,6 +234,7 @@
     "client/src/styles/hgr-4.5.5-mega-board-portfolio.css",
     "client/src/styles/hgr-4.5.5-mobile-hub.css",
     "client/src/styles/hgr-4.5.5-part28-authority.css",
+    "client/src/styles/hgr-4.5.5-unbounded.css",
     "client/src/styles/hgr-design-v1.css",
     "client/src/styles/hgr-game-surfaces-v45.css",
     "client/src/styles/hgr-part17.css",
