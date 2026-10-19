@@ -1,0 +1,25 @@
+/* HGR 4.5.5i: Emotion Midnight (PS2-inspired) floating glyph palette.
+ * The reference-approved motif order is triangle, circle, cross, square.
+ * Treat ONLY inert, aria-hidden background glyphs; never redraw logos, icons,
+ * interface buttons, live game boards, or canonical HGR H geometry. */
+html .halieus-shell > .halieus-theme-atmosphere[data-theme-atmosphere="ps2-midnight"][data-atmosphere-engine="profile"] > span:nth-child(4n+1) {
+  color: #6bbf84 !important; /* triangle: green */
+  text-shadow: 0 8px 32px rgba(107,191,132,.19) !important;
+}
+html .halieus-shell > .halieus-theme-atmosphere[data-theme-atmosphere="ps2-midnight"][data-atmosphere-engine="profile"] > span:nth-child(4n+2) {
+  color: #d85a73 !important; /* circle: warm rose */
+  text-shadow: 0 8px 32px rgba(216,90,115,.19) !important;
+}
+html .halieus-shell > .halieus-theme-atmosphere[data-theme-atmosphere="ps2-midnight"][data-atmosphere-engine="profile"] > span:nth-child(4n+3) {
+  color: #315bd8 !important; /* cross: electric blue */
+  text-shadow: 0 8px 32px rgba(49,91,216,.20) !important;
+}
+html .halieus-shell > .halieus-theme-atmosphere[data-theme-atmosphere="ps2-midnight"][data-atmosphere-engine="profile"] > span:nth-child(4n) {
+  color: #9b79ce !important; /* square: cool violet */
+  text-shadow: 0 8px 32px rgba(155,121,206,.19) !important;
+}
+/* The ninth background motif is a sparkle, not another triangle. */
+html .halieus-shell > .halieus-theme-atmosphere[data-theme-atmosphere="ps2-midnight"][data-atmosphere-engine="profile"] > span:nth-child(9) {
+  color: #7989a8 !important;
+  text-shadow: 0 8px 32px rgba(121,137,168,.13) !important;
+}
