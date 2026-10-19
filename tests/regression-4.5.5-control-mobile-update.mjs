@@ -56,8 +56,8 @@ assert.match(cloudAgent, /if \(stopping \|\| terminalObserved\) return false/,"A
 
 assert.match(html, /id="operationStateIcon"/);
 assert.match(html, /data-operation="update" data-update-state="idle"[\s\S]*operation-action-icon/);
-assert.match(html, /control\.css\?v=4\.5\.5-force-live-1/,"Cloud Control CSS URL must move when status visuals change");
-assert.match(html, /control\.js\?v=4\.5\.5-force-live-1/,"Cloud Control script URL must move with the progress retry release");
+assert.match(html, /control\.css\?v=4\.5\.5f-mobile-ops-1/,"Mobile terminal operation panel requires a cache-busted Control stylesheet");
+assert.match(html, /control\.js\?v=4\.5\.5f-mobile-ops-1/,"Mobile operation behavior requires a cache-busted Control script");
 assert.match(cloudUi, /update\.dataset\.updateState = busy \? "running" : "idle"/);
 assert.doesNotMatch(cloudUi, /terminalState/,"Update action tile must not duplicate terminal status");
 assert.match(css, /@keyframes control-operation-spin/);

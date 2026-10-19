@@ -534,6 +534,7 @@
 
   function setOperation(value) {
     const operation = normaliseOperation(value);
+    const previous = state.activeOperation;
     state.activeOperation = operation;
     if (!operation) {
       $("operationToast").hidden = true;
@@ -543,15 +544,32 @@
     $("operationToast").dataset.state = operation.state;
     $("operationTitle").textContent = operation.state === "succeeded" ? "Update complete" : operation.state === "failed" ? "Update failed" : operation.state === "rejected" ? "Update not started" : operation.title;
     const terminalReason = operation.state === "failed" || operation.state === "rejected" ? operation.reason : "";
-    $("operationPhase").textContent = terminalReason || operation.phase;
-    $("operationPercent").textContent = `${Math.round(operation.progress)}%`;
-    $("operationProgressBar").style.width = `${operation.progress}%`;
+    // The header must stay short: the full rejection/failure reason belongs
+    // inside the user-expanded diagnostics, not across the mobile controls.
+    $("operationPhase").textContent = operation.state === "rejected"
+      ? "Not started · tap for reason"
+      : operation.state === "failed" ? "Stopped · tap for details" : operation.phase;
+    const displayedProgress = operation.state === "rejected" ? 0 : operation.progress;
+    $("operationPercent").textContent = operation.state === "rejected" ? "—" : `${Math.round(displayedProgress)}%`;
+    $("operationProgressBar").style.width = `${displayedProgress}%`;
+    $("operationToastToggle").title = terminalReason || operation.phase;
     $("operationDetailAction").textContent = operation.title;
     $("operationStarted").textContent = operation.startedAt ? formatWhen(operation.startedAt) : "Unavailable";
     $("operationUpdated").textContent = operation.updatedAt ? `Last update: ${formatWhen(operation.updatedAt)}` : "Awaiting progress timestamp";
     $("operationUpdated").dateTime = operation.updatedAt || "";
     $("operationState").textContent = operation.state[0].toUpperCase() + operation.state.slice(1);
     $("operationDismiss").hidden = operation.state === "running";
+    const newTerminal = operationToastIsMobile()
+      && operation.state !== "running"
+      && (!previous || previous.id !== operation.id || previous.state !== operation.state);
+    if (newTerminal) {
+      // Show a small status chip after failed, rejected or completed jobs.
+      // Do not rewrite the owner's saved layout preference on this transition.
+      const details = $("operationDetails");
+      details.hidden = true;
+      $("operationToastToggle").setAttribute("aria-expanded", "false");
+      setOperationToastMinimized(true, false);
+    }
   }
 
   function bindOperationChannels() {
@@ -582,6 +600,9 @@
       const toast = $("operationToast");
       if (toast.classList.contains("is-minimized")) {
         setOperationToastMinimized(false);
+        const details = $("operationDetails");
+        details.hidden = false;
+        $("operationToastToggle").setAttribute("aria-expanded", "true");
         return;
       }
       const details = $("operationDetails");

@@ -75,7 +75,7 @@ try{
  assert.equal(await navigation.getByRole('button',{name:'Resume fullscreen'}).count(),0,'Apple touch safety guard remains');
  await navigation.close();
  console.log('PASS fullscreen intent, explicit resume, return, dismissal and Apple touch safety');
- for(const [width,height] of [[1440,900],[1280,600],[820,1180],[390,844]]){
+ for(const [width,height] of (process.env.HGR_ONLY_320 ? [[320,720]] : [[1440,900],[1280,600],[820,1180],[390,844],[320,720]])){
   operation=null;online=true;
   const page=await browser.newPage({viewport:{width,height}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/control/');await page.locator('#accessState').waitFor({state:'hidden'});
@@ -125,6 +125,30 @@ try{
   await page.waitForFunction(()=>document.getElementById('operationTitle').textContent==='Update failed');
   assert.equal(await page.locator('#operationPercent').textContent(),'88%');
   assert.match(await page.locator('#controlOperationReason').textContent(),/verification failed/);
+  if (width <= 720) {
+    await page.waitForFunction(() => document.getElementById('operationToast').classList.contains('is-minimized'));
+    assert.equal(await page.locator('#operationPhase').textContent(),'Stopped · tap for details');
+    const position = await page.evaluate(() => {
+      const toast = document.getElementById('operationToast').getBoundingClientRect();
+      const nav = document.querySelector('.control-mobile-nav').getBoundingClientRect();
+      return { height:toast.height, overlap:toast.bottom>nav.top-5 };
+    });
+    assert.ok(position.height<=65,'Failed operation should collapse to a small chip: '+JSON.stringify(position));
+    assert.equal(position.overlap,false,'Failed operation chip must not cover fixed mobile navigation');
+    await page.locator('#operationToastToggle').click();
+    assert.equal(await page.locator('#operationDetails').isVisible(),true,'One tap reveals complete failure details');
+    assert.match(await page.locator('#controlOperationReason').textContent(),/verification failed/);
+    const detailsHeight = await page.locator('#operationDetails').evaluate(node=>node.getBoundingClientRect().height);
+    assert.ok(detailsHeight <= 340,'Expanded failure details must be bounded and internally scrollable');
+    operation={id:'run-rejected',action:'update',state:'rejected',title:'Updating HGR',phase:'Update was not started',progress:1,reason:'Remote Update refused because tracked source changes are present on the owner PC.',startedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+    await page.waitForFunction(() => document.getElementById('operationTitle').textContent==='Update not started');
+    await page.waitForFunction(() => document.getElementById('operationToast').classList.contains('is-minimized'));
+    assert.equal(await page.locator('#operationPercent').textContent(),'—','Rejected Update must never claim 1% progress');
+    await page.locator('#operationToastToggle').click();
+    assert.match(await page.locator('#controlOperationReason').textContent(),/tracked source changes/);
+    await page.locator('#operationDismiss').click();
+    await page.locator('#operationToast').waitFor({state:'hidden'});
+  }
   online=false;
   await page.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button')].find(b=>b.textContent.includes('Update HGR'))?.disabled===true);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Control content stays within viewport');
