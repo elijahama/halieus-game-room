@@ -1,6 +1,12 @@
 # HGR Control Cloud Foundation
 
-HGR Control now has one administrative UI that can be reached in two ways:
+## Current owner path — 4.5.5d (19 October 2026)
+
+The authoritative owner/admin interface is **https://halieus.remotewire.net/control/**. The owner PC runs a loopback-only authenticated Control Agent and an **outbound-only Cloud bridge**; it no longer requires the Tailscale client or private Serve URL. The former private phone/PWA pairing route has been retired and should not be recommended as the working HGR Control path. See [HGR Control Tailscale retirement](HGR_CONTROL_TAILSCALE_RETIREMENT.md) for the implementation and guarded migration. The original cloud protocol and rollout history below are preserved as a historical design record; claims that Cloud Control is still future work are superseded by current deployment records.
+
+## Archived 4.5.4.x cloud foundation (historical)
+
+The early foundation proposed one administrative UI reached in two ways:
 
 1. **Private owner route** — the existing Tailscale-backed Control PWA.
 2. **Cloud relay route** — HGR Control hosted on the HGR website, with the owner PC connecting outward to the relay.

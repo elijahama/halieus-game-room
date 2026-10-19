@@ -19,7 +19,7 @@ Set-Content (Join-Path $helpers 'stop-control.ps1') '$global:controlTestCalls++;
 Set-Content (Join-Path $helpers 'start-control.ps1') @'
 param([int]$HttpsPort)
 $global:controlTestCalls++
-if ($HttpsPort -ne 9443) { throw 'Saved Serve port was not preserved' }
+if ($HttpsPort -ne 0) { throw 'Updater must not pass the retired Tailscale Serve port to local Control' }
 if (-not $global:controlTestKeepToken) { Set-Content (Join-Path $global:controlTestRuntime '.hgr-control-token') 'fresh-test-credential' }
 $global:LASTEXITCODE=0
 '@
@@ -55,7 +55,7 @@ try {
     $rejected = $false
     try { & $helper } catch { $rejected = $_.Exception.Message -match 'rotate' }
     if (-not $rejected) { throw 'Unrotated credentials were accepted' }
-    Write-Output 'PASS isolated Control snapshot, Cloud deferral/finalizer handoff, stopped/replaced cases, port preservation and credential rotation'
+    Write-Output 'PASS isolated Control snapshot, Cloud deferral/finalizer handoff, stopped/replaced cases, private Serve port retirement and credential rotation'
 } finally {
     # Only this test's explicitly created temporary fixture is removed.
     if ([IO.Path]::GetFullPath($fixture).StartsWith([IO.Path]::GetTempPath()) -and (Split-Path $fixture -Leaf) -like 'hgr-control-update-*') { Remove-Item -LiteralPath $fixture -Recurse -Force }

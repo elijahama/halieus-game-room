@@ -21,7 +21,8 @@ try {
 }
 
 $localPort = [int]$state.localPort
-$httpsPort = [int]$state.httpsPort
+$httpsPort = if ($state.PSObject.Properties['httpsPort']) { [int]$state.httpsPort } else { 0 }
+$legacyPrivateServe = [int]$state.schema -lt 2 -and $httpsPort -gt 0
 $listenerPid = [int]$state.listenerPid
 $processPid = [int]$state.processPid
 
@@ -62,11 +63,13 @@ if ($tailscaleCommand) {
     $tailscale = Join-Path $env:ProgramFiles "Tailscale\tailscale.exe"
 }
 
-if (Test-Path -LiteralPath $tailscale) {
+# Only decommission a PRE-MIGRATION private Serve route. The current Cloud
+# Control Agent never invokes, installs or requires the Tailscale client.
+if ($legacyPrivateServe -and (Test-Path -LiteralPath $tailscale)) {
     try {
         & $tailscale serve "--https=$httpsPort" off | Out-Null
     } catch {
-        Write-Warning "Could not automatically remove the HGR Control Tailscale Serve route."
+        Write-Warning "The retired private Control Serve route could not be removed automatically."
     }
 }
 
@@ -75,4 +78,5 @@ Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "HGR Control stopped." -ForegroundColor Green
-Write-Host "The background agent, private Serve route and runtime credential have been closed." -ForegroundColor DarkGray
+Write-Host "The local Control Agent and its runtime credential have been closed." -ForegroundColor DarkGray
+if ($legacyPrivateServe) { Write-Host "The retired private Control route was also taken offline when available." -ForegroundColor DarkGray }

@@ -93,7 +93,8 @@ try {
     $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
     $listenerPid = [int]$state.listenerPid
     $localPort = [int]$state.localPort
-    $httpsPort = [int]$state.httpsPort
+    # 4.5.5d: the bootstrap uses only loopback and outbound Cloud Control.
+    # Historic HTTPS ports in state are irrelevant to restarted local agents.
 } catch {
     Write-Warning "HGR Control state was stale or unreadable. Clearing stale runtime state without starting Control."
     Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
@@ -138,7 +139,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Start-Sleep -Milliseconds 300
 
-& $startHelper -HttpsPort $httpsPort
+& $startHelper
 if ($LASTEXITCODE -ne 0) {
     throw "HGR Control could not be restarted from the updated source."
 }
@@ -163,7 +164,7 @@ if (-not $newListener -or [int]$newListener.OwningProcess -ne $newListenerPid) {
 }
 
 Write-Host "HGR Control restarted from the updated source." -ForegroundColor Green
-Write-Host "A fresh private pairing code/session boundary is now active." -ForegroundColor DarkGray
+Write-Host "A fresh loopback-only credential boundary is now active." -ForegroundColor DarkGray
 
 # Cloud Control is deliberately a separate outbound process. Starting it here
 # bootstraps the first cloud-capable release automatically when private Control
@@ -173,7 +174,7 @@ if (Test-Path -LiteralPath $startCloudHelper) {
     try {
         & $startCloudHelper
         if ($LASTEXITCODE -ne 0) {
-            Write-Warning "HGR Control restarted, but the outbound Cloud bridge did not start. Private/Tailscale Control remains available."
+            Write-Warning "HGR Control local agent restarted, but its outbound Cloud bridge did not start. Browser Control needs the Cloud bridge."
         }
     } catch {
         Write-Warning "HGR Control restarted, but the outbound Cloud bridge could not start: $($_.Exception.Message)"

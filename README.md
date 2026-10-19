@@ -366,48 +366,25 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/DEPLOYMENT_FIX_4.0.0.md](
 
 ## HGR Control
 
-**HGR Control** is the owner-side administration surface for the Halieus Game Room instance. It is intentionally separate from normal player/game controls.
-
-Current private-control path:
+**Current website Control (4.5.5d):** [Open HGR Control](https://halieus.remotewire.net/control/). The private Tailscale-backed Control client and QR pairing workflow are retired. The approved six Windows launchers remain Start, Restart, Close, Update, PowerShell and OpenShard; there are no redundant private Control shortcuts.
 
 ```text
-HGR - Control on the owner PC
-        ↓
-loopback-only Control Agent
-        ↓
-Tailscale Serve private HTTPS
-        ↓
-short-lived QR / 8-digit pairing
-        ↓
-HGR Control PWA on the owner's phone
+Owner phone / tablet / computer: HGR website /control/ over HTTPS
+                      |
+               Oracle Cloud relay
+                      |
+     outbound-only authenticated owner PC bridge
+                      |
+       Control Agent on 127.0.0.1:43127
 ```
 
-The phone can access only an allow-listed set of operations:
+On the owner PC, `Start HGR Control.cmd` starts the **loopback-only authenticated local agent** and outbound Cloud bridge. No Tailscale client, Serve route, private pairing QR or public inbound PC admin port is required. The existing cloud device registration and fixed allow-listed Control actions remain in place; this is not a remote shell. The HGR owner-PC local token stays in ignored runtime storage, is rotated on start/restart, and is never sent to the website as a normal browser credential.
 
-- status;
-- Start HGR;
-- Restart HGR;
-- Close HGR;
-- Update HGR;
-- recent Control audit logs.
+`Stop HGR Control.cmd` stops the Cloud bridge and authenticated local agent. Historical `Start/Stop HGR Control Mobile.cmd` paths are compatibility aliases; **do not treat them as private Tailscale clients**. For current architecture, retirement receipt, recovery steps and scope, see [HGR Control Tailscale retirement](docs/HGR_CONTROL_TAILSCALE_RETIREMENT.md).
 
-The API does **not** accept arbitrary shell commands, executable paths or free-form process arguments. Pairing provisions an HttpOnly, Secure, SameSite=Strict mobile session; the long random owner credential is not exposed in the browser.
-
-The Windows launcher set intentionally exposes only two Control entries:
-
-- **HGR - Control** — starts the background agent, verifies the private HTTPS route, copies the phone URL and opens the QR/pairing card;
-- **HGR - Stop Control** — closes the agent, its Tailscale Serve route and runtime credential.
-
-### Cloud status
-
-HGR Control is **not yet a fully deployed cloud service**.
-
-The working path is the private Tailscale-backed owner route above. A versioned cloud-relay protocol foundation exists in `shared/platform/control-cloud.ts` and is documented in [docs/HGR_CONTROL_CLOUD.md](docs/HGR_CONTROL_CLOUD.md), but the outbound PC relay client, hosted cloud Control PWA and live cloud device-registration service are still future delivery stages.
-
-The planned cloud model keeps the owner PC as the executor and uses an outbound authenticated connection; it does not expose a public Windows administration port or turn Control into a remote shell.
+The original private Tailscale Serve/PWA development and networking lab remains documented historically in [docs/HGR_MOBILE_CONTROL.md](docs/HGR_MOBILE_CONTROL.md). The unrelated legacy game-host Tailscale Funnel and potential private Oracle administration access are distinct from HGR Control; they are not changed by this migration.
 
 ---
-
 ## Testing and validation
 
 HGR uses both automated checks and real multiplayer testing.

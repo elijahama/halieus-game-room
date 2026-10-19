@@ -1,6 +1,5 @@
 @echo off
-setlocal EnableExtensions
-cd /d "%~dp0"
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows\start-control.ps1" %*
-set "HGR_EXIT=%ERRORLEVEL%"
-endlocal & exit /b %HGR_EXIT%
+rem Compatibility entrypoint: private phone Control/Tailscale is retired.
+rem The live phone/tablet Control UI is https://halieus.remotewire.net/control/
+call "%~dp0Start HGR Control.cmd" %*
+exit /b %ERRORLEVEL%

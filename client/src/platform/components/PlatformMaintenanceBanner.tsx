@@ -246,6 +246,10 @@ export function PlatformMaintenanceBanner() {
           ? `Restart in ~${secondsRemaining}s`
           : "Restart shortly";
 
+  const ribbonMessage = isReloading || isRefreshRequired
+    ? notice.reason
+    : `${notice.reason} · Keep your recovery key or room code handy.`;
+
   return (
     <aside
       className={`halieus-maintenance-banner ${isReloading || isRefreshRequired ? "is-complete" : isRestarting ? "is-restarting" : "is-scheduled"}`}
@@ -259,9 +263,9 @@ export function PlatformMaintenanceBanner() {
       <span className="halieus-maintenance-status">
         {status}{notice.targetVersion ? ` · HGR ${notice.targetVersion}` : ""}
       </span>
-      <div className="halieus-maintenance-ticker" aria-label={notice.reason}>
-        <strong className={notice.reason.length > 52 && !isReloading && !isRefreshRequired ? "is-scrolling" : ""}>
-          {notice.reason}
+      <div className="halieus-maintenance-ticker" aria-label={ribbonMessage} title={ribbonMessage}>
+        <strong className={ribbonMessage.length > 52 && !isReloading && !isRefreshRequired ? "is-scrolling" : ""}>
+          {ribbonMessage}
         </strong>
       </div>
       {releaseTarget && isRefreshRequired ? (

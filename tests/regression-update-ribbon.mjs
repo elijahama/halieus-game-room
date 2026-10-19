@@ -8,6 +8,7 @@ const [tsx,css]=await Promise.all([
 assert.match(tsx,/dismissedNoticeId === notice\.id/);
 assert.match(tsx,/setDismissedNoticeId\(notice\.id\)/);
 assert.match(tsx,/aria-label="Dismiss update ribbon"/);
+assert.match(tsx,/recovery key or room code/i,"Keep essential live-game recovery advice in the ticker");
 assert.match(tsx,/className="halieus-maintenance-ticker"/);
 assert.match(tsx,/isReloading \|\| isRefreshRequired \? "is-complete"/);
 assert.match(tsx,/navigateToRelease\(releaseTarget\)/);
