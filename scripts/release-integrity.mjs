@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, relative, resolve } from 'node:path';
+import { basename, dirname, extname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -203,11 +203,25 @@ for (const item of roots) {
 // The Windows packer also excludes them from every deployment archive.
 
 const uniqueFiles = [...new Set(files)].sort();
+// HGR 4.5.5g: release IDs must not change merely because Git checks out a
+// Windows .cmd/.ps1 with CRLF and Linux checks out the same text with LF.
+// Keep binaries byte-exact. Never normalize PNG, ICO, fonts or other artwork.
+const releaseTextExtensions = new Set([
+  '.bat', '.cmd', '.css', '.html', '.js', '.json', '.md', '.mjs',
+  '.ps1', '.sh', '.svg', '.ts', '.tsx', '.txt', '.webmanifest',
+  '.xml', '.yaml', '.yml',
+]);
+function releaseBytes(file) {
+  const data = readFileSync(resolve(root, file));
+  if (!releaseTextExtensions.has(extname(file).toLowerCase())
+    && basename(file) !== 'VERSION' && basename(file) !== '.gitignore') return data;
+  return Buffer.from(data.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
+}
 const hash = createHash('sha256');
 for (const file of uniqueFiles) {
   hash.update(file, 'utf8');
   hash.update('\0');
-  hash.update(readFileSync(resolve(root, file)));
+  hash.update(releaseBytes(file));
   hash.update('\0');
 }
 const fullHash = hash.digest('hex');

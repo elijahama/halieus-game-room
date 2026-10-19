@@ -56,6 +56,30 @@ try {
     copyFileSync(resolve(root, file), resolve(fixture, file));
   }
   assert.equal(run(fixture, '--verify').status, 0, 'Untouched deployment fixture');
+  // 4.5.5g: Windows CRLF and Linux LF checkouts of the same text must carry
+  // precisely the same release fingerprint. Artwork stays byte-exact.
+  for (const textFile of [
+    'scripts/windows/start-control.ps1',
+    'Start HGR Control.cmd',
+    '.github/workflows/release-identity.yml',
+  ]) {
+    const target = resolve(fixture, textFile);
+    const original = readFileSync(target);
+    const lf = original.toString('utf8').replace(/\r\n/g, '\n');
+    for (const variant of [lf, lf.replace(/\n/g, '\r\n')]) {
+      writeFileSync(target, variant, 'utf8');
+      const check = run(fixture, '--verify');
+      assert.equal(check.status, 0, `${textFile}: equivalent LF/CRLF must verify: ${check.stderr}`);
+    }
+    writeFileSync(target, original);
+  }
+  const binaryPath = resolve(fixture, 'client/public/app-icon-512.png');
+  const approvedPng = readFileSync(binaryPath);
+  const corruptPng = Buffer.from(approvedPng);
+  corruptPng[Math.floor(corruptPng.length / 2)] ^= 1;
+  writeFileSync(binaryPath, corruptPng);
+  assert.notEqual(run(fixture, '--verify').status, 0, 'Binary artwork corruption must remain detectable');
+  writeFileSync(binaryPath, approvedPng);
   const corruptions = [
     ['shared/version.ts', (s) => s.replace(version, '4.1.1')],
     ['package.json', (s) => s.replace(version, '4.1.1')],
