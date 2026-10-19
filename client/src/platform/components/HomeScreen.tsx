@@ -46,6 +46,16 @@ export interface SavedSessionSummary { code: string; reconnectToken: string; pla
 type HomeView = "home" | "games" | "players" | "rankings" | "guilds";
 type DiscoveryShelf = "featured" | "most-played" | "recommended" | "recent" | "friends";
 
+type GameLibraryLayout = "tiles" | "list";
+const GAME_LIBRARY_LAYOUT_KEY = "halieus-game-library-layout-v1";
+function initialGameLibraryLayout(): GameLibraryLayout {
+  try {
+    return window.localStorage.getItem(GAME_LIBRARY_LAYOUT_KEY) === "list" ? "list" : "tiles";
+  } catch {
+    return "tiles";
+  }
+}
+
 type PokerVariant = "texas-holdem" | "omaha" | "five-card-draw" | "seven-card-stud";
 
 interface HomeScreenProps {
@@ -126,6 +136,12 @@ export function HomeScreen(props: HomeScreenProps) {
   } = props;
 
   const [view, setView] = useState<HomeView>("home");
+  const [gameLibraryView, setGameLibraryView] = useState<GameLibraryLayout>(initialGameLibraryLayout);
+  function changeGameLibraryView(next: GameLibraryLayout): void {
+    setGameLibraryView(next);
+    try { window.localStorage.setItem(GAME_LIBRARY_LAYOUT_KEY, next); }
+    catch { /* Browser storage can be disabled; in-session choice still works. */ }
+  }
   const [joinOpen, setJoinOpen] = useState(false);
   const [rankedLeaderboardGame, setRankedLeaderboardGame] = useState<GameId | null>(null);
   const [genericRankedSnapshot, setGenericRankedSnapshot] = useState<HalieusRankedLeaderboardSnapshot | null>(null);
@@ -175,7 +191,6 @@ export function HomeScreen(props: HomeScreenProps) {
   const [classicAiDifficulty, setClassicAiDifficulty] = useState<ClassicAiDifficulty>("normal");
   const [featuredRotationIndex, setFeaturedRotationIndex] = useState(0);
   const [discoveryShelf, setDiscoveryShelf] = useState<DiscoveryShelf>("featured");
-
   const selected = GAME_BY_ID[selectedGame];
   const standardGameAtmosphere = themeMode === "system" || themeMode === "dark" || themeMode === "light";
   const customAtmosphereEngine = usesCustomAtmosphereEngine(themeMode, themeProfileId);
@@ -1058,8 +1073,18 @@ export function HomeScreen(props: HomeScreenProps) {
           {visibleDataError && <p className="halieus-data-note">{visibleDataError}</p>}
         </section>}
 
-        {view === "games" && <section className="halieus-view view-games panel-enter">
-          <header className="halieus-page-heading"><div><p>GAMES</p><h1>Choose your game</h1><span>Browse the library, then open a focused room setup when you are ready to play.</span></div></header>
+        {view === "games" && <section className="halieus-view view-games panel-enter" data-game-layout={gameLibraryView}>
+          <header className="halieus-page-heading halieus-game-library-heading">
+            <div><p>GAMES</p><h1>Choose your game</h1><span>Browse the library, then open a focused room setup when you are ready to play.</span></div>
+            <div className="halieus-game-layout-switch" role="group" aria-label="Game library display">
+              <button type="button" className={gameLibraryView === "tiles" ? "is-active" : ""} aria-pressed={gameLibraryView === "tiles"} onClick={() => changeGameLibraryView("tiles")}>
+                <span className="halieus-layout-glyph is-tiles" aria-hidden="true"><i /><i /><i /><i /></span> Tiles
+              </button>
+              <button type="button" className={gameLibraryView === "list" ? "is-active" : ""} aria-pressed={gameLibraryView === "list"} onClick={() => changeGameLibraryView("list")}>
+                <span className="halieus-layout-glyph is-list" aria-hidden="true"><i /><i /><i /></span> List
+              </button>
+            </div>
+          </header>
           <div className="halieus-games-layout is-library-only">
             <div className="halieus-game-library is-categorized">{GAME_GROUPS.map((group) => { const games = GAMES.filter((game) => game.category === group.id); if (!games.length) return null; return <section key={group.id} className={`halieus-game-category category-${group.id}`}><header><div><h2>{group.label}</h2><span>{group.description}</span></div><b>{games.length}</b></header><div>{games.map((game) => <button type="button" key={game.id} style={{ ["--game-card-accent" as string]: game.accent }} className={`halieus-library-card tone-${game.tone} ${selectedGame === game.id ? "is-selected" : ""}`} onClick={() => openCreate(game.id)}><span className="halieus-library-status">{game.status === "beta" ? "Beta" : "Available"}</span><span className="halieus-library-art"><GameBrandIcon game={game.id} /></span><span><strong>{game.name}</strong><small>{game.subtitle}</small></span><i>Create room →</i></button>)}</div></section>; })}</div>
             <section className="halieus-future-games" aria-label="Games in development"><header><div><p>IN DEVELOPMENT</p><h2>Coming next</h2><span>These are the requested replacement modules. They are visible as roadmap items only until real rooms, gameplay and QA exist.</span></div><b>{FUTURE_GAME_QUEUE.length}</b></header><div>{FUTURE_GAME_QUEUE.map((game) => <article key={game.name}><span aria-hidden="true">{game.glyph}</span><div><strong>{game.name}</strong><small>{game.subtitle}</small></div><b>Planned</b></article>)}</div></section>
