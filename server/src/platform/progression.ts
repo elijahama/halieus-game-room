@@ -5,6 +5,8 @@ import { ACHIEVEMENT_CATALOG, MAX_GAMER_SCORE, achievementDefinition, type Achie
 type Identity = { accountId: string; beta: boolean };
 const identities = new Map<string, () => Identity | null>();
 export function registerProgressionIdentity(socketId: string, identity: () => Identity | null): () => void { identities.set(socketId, identity); return () => { identities.delete(socketId); }; }
+/** Server-internal authenticated socket identity, never derived from player-entered display names. */
+export function getProgressionSocketIdentity(socketId: string): Identity | null { return identities.get(socketId)?.() ?? null; }
 /** Mutate server-owned players only, before persistence/archiving. Never infer identity from a name. */
 export function captureProgression(payload: any): void {
   const state = payload?.gameState ?? payload;
@@ -61,6 +63,7 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
 
   const sessions = new Set<string>();
   const awarded = new Set<string>();
+  const countedDailyWordPuzzles = new Set<string>();
   const specialEarned = new Set<string>();
   let kassTotal = 0;
   let completedTrades = 0;
@@ -113,6 +116,24 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
     if (!player || !(state.startedAt || state.gameStartedAt || state.started || record.state?.room?.started)) continue;
 
     const game = String(record.game);
+    if (game === "word-game") {
+      // Practice is for learning, not lifetime Gamer Score, win totals or
+      // achievement farming. Only the earliest COMPLETED daily attempt/day
+      // is eligible, including when rebuilding older historical archives.
+      if (state.wordGameMode === "practice") continue;
+      if (state.wordGameMode === "daily") {
+        const day = String(state.wordPuzzleKey ?? "");
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+        // New daily records require a real, server-assigned account identity
+        // and a successful durable one-attempt claim. Guest/Beta rooms do not
+        // earn progression, even if the display name matches a real account.
+        if ("wordDailyAccountId" in state && (
+          state.wordDailyAccountId !== accountId || state.wordDailyClaimed !== true
+        )) continue;
+        if (countedDailyWordPuzzles.has(day)) continue;
+        countedDailyWordPuzzles.add(day);
+      }
+    }
     const line = result.byGame[game] ??= { played: 0, wins: 0 };
     const winnerId =
       state.winnerPlayerId ??

@@ -614,20 +614,43 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
   };
 
   const recent: HalieusPersonalStats["recent"] = [];
-  const archives = await readFinalisedSessionFiles();
+  const countedWordGameDays = new Set<string>();
+  const archives = (await readFinalisedSessionFiles()).sort((a,b) => Number(a?.finalisedAt ?? 0) - Number(b?.finalisedAt ?? 0));
   for (const archive of archives) {
     const game = typeof archive?.game === "string" && GAME_TITLES[archive.game] ? archive.game : null;
     if (!game) continue;
     const state = archive?.state ?? {};
     const gameState = state?.gameState ?? state;
     const players = Array.isArray(gameState?.players) ? gameState.players : Array.isArray(state?.players) ? state.players : [];
-    const matched = players.find((player: any) => !player?.isAi && aliases.has(String(player?.name ?? "").trim().toLowerCase()));
+    let matched = players.find((player: any) => !player?.isAi && aliases.has(String(player?.name ?? "").trim().toLowerCase()));
+    if (game === "word-game") {
+      // Personal win/played totals must agree with the Daily leaderboard and
+      // Gamer Score. A guest must not spoof account stats by typing a name.
+      if (gameState.wordGameMode === "practice") continue;
+      if (gameState.wordGameMode === "daily") {
+        if (archive?.status !== "completed") continue;
+        const day = String(gameState.wordPuzzleKey ?? "");
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || countedWordGameDays.has(day)) continue;
+        if (Object.prototype.hasOwnProperty.call(gameState, "wordDailyAccountId")) {
+          if (gameState.wordDailyAccountId !== account.id || gameState.wordDailyClaimed !== true) continue;
+          matched = players.find((player: any) => !player?.isAi && player?.progressionIdentity?.accountId === account.id);
+        } else {
+          matched = players.find((player: any) => !player?.isAi
+            && (player?.progressionIdentity?.accountId === account.id
+              || (!player?.progressionIdentity?.accountId && aliases.has(String(player?.name ?? "").trim().toLowerCase()))));
+        }
+        if (!matched) continue;
+        countedWordGameDays.add(day);
+      }
+    }
     if (!matched) continue;
 
     const row = rows.get(game)!;
     row.played += 1;
     const winnerName = String(archive?.summary?.winner ?? gameState?.players?.find?.((player: any) => player?.id === gameState?.winnerPlayerId)?.name ?? "").trim();
-    const won = aliases.has(winnerName.toLowerCase());
+    const won = game === "word-game" && gameState.wordGameMode === "daily" && Object.prototype.hasOwnProperty.call(gameState, "wordDailyAccountId")
+      ? gameState.winnerPlayerId === matched.id && Number(matched.score ?? 0) > 0
+      : aliases.has(winnerName.toLowerCase());
     if (won) row.wins += 1;
 
     const rawMode = String(archive?.summary?.matchMode ?? gameState?.matchMode ?? state?.matchMode ?? "").toLowerCase();
@@ -699,11 +722,12 @@ function wordGameAliasMap(): Map<string, StoredAccount> {
 async function wordGameDailyRecords(): Promise<{ records: WordGameDailyRecord[]; archives: any[] }> {
   const archives = await readFinalisedSessionFiles();
   const aliases = wordGameAliasMap();
+  const accountsById = new Map(store.accounts.filter((item) => item.status === "active").map((item) => [item.id, item]));
   const records: WordGameDailyRecord[] = [];
   const seen = new Set<string>();
   const ordered = archives.slice().sort((a, b) => Number(a?.finalisedAt ?? 0) - Number(b?.finalisedAt ?? 0));
   for (const archive of ordered) {
-    if (archive?.game !== "word-game") continue;
+    if (archive?.game !== "word-game" || archive?.status !== "completed") continue;
     const state = archive?.state?.gameState ?? archive?.state ?? {};
     if (state?.wordGameMode !== "daily") continue;
     const puzzleKey = typeof state?.wordPuzzleKey === "string" ? state.wordPuzzleKey : "";
@@ -711,13 +735,28 @@ async function wordGameDailyRecords(): Promise<{ records: WordGameDailyRecord[];
     const players = Array.isArray(state?.players) ? state.players : [];
     const human = players.find((player: any) => !player?.isAi);
     if (!human) continue;
-    const account = aliases.get(String(human?.name ?? "").trim().toLowerCase());
+    const identifiedAccountId = typeof human?.progressionIdentity?.accountId === "string" ? human.progressionIdentity.accountId : null;
+    const securedDaily = Object.prototype.hasOwnProperty.call(state, "wordDailyAccountId");
+    const account = securedDaily
+      ? (state.wordDailyClaimed === true
+        && state.wordDailyAccountId === identifiedAccountId
+        && identifiedAccountId !== null
+          ? accountsById.get(identifiedAccountId)
+          : null)
+      // Older archives predate authenticated daily claims. Keep their prior
+      // history readable, but never use player-entered names for new results.
+      : identifiedAccountId
+        ? accountsById.get(identifiedAccountId)
+        : aliases.get(String(human?.name ?? "").trim().toLowerCase());
     if (!account) continue;
     const unique = `${account.id}:${puzzleKey}`;
     if (seen.has(unique)) continue; // Only the first daily attempt counts.
     seen.add(unique);
     const winnerName = String(archive?.summary?.winner ?? players.find((player: any) => player?.id === state?.winnerPlayerId)?.name ?? "").trim().toLowerCase();
-    const solved = accountAliases(account).has(winnerName) || Number(human?.score ?? 0) > 0 || (Array.isArray(state?.solvedPlayerIds) && state.solvedPlayerIds.includes(human?.id));
+    const solved = securedDaily
+      ? Number(human?.score ?? 0) > 0
+        && (state.winnerPlayerId === human.id || (Array.isArray(state.solvedPlayerIds) && state.solvedPlayerIds.includes(human.id)))
+      : accountAliases(account).has(winnerName) || Number(human?.score ?? 0) > 0 || (Array.isArray(state?.solvedPlayerIds) && state.solvedPlayerIds.includes(human?.id));
     const guesses = Math.max(0, Math.min(6, Array.isArray(human?.attempts) ? human.attempts.length : 0));
     const startedAt = Number(state?.startedAt ?? archive?.createdAt ?? 0);
     const finalisedAt = Number(archive?.finalisedAt ?? archive?.updatedAt ?? 0);

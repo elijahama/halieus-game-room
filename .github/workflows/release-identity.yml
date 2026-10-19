@@ -106,6 +106,9 @@ jobs:
       - name: Build current HGR release
         run: npm run build
 
+      - name: Verify Daily Word anti-farming in real sockets
+        run: node tests/runtime-daily-word-fair-play-4.5.5e.mjs
+
       - name: Check built release identity
         run: |
           npm run test:release:browser

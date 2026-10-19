@@ -1,4 +1,5 @@
-import { publicProgressionPlayer } from "../../platform/progression.js";
+import { publicProgressionPlayer, getProgressionSocketIdentity } from "../../platform/progression.js";
+import { existingDailyWordAttempt, reserveDailyWordAttempt } from "../../platform/dailyWordAttempt.js";
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
@@ -14,6 +15,7 @@ interface Room {
   secret: string | null; scramble: string | null; clue: string | null; clueGiverPlayerId: string | null;
   solvedPlayerIds: string[]; actionSequence: number; actionLog: WordArenaActionLogEntry[];
   wordGameMode: WordGameMode | null; wordPuzzleKey: string | null;
+  wordDailyAccountId: string | null; wordDailyClaimed: boolean;
   passwordActiveTeam: PasswordTeam | null; passwordTeamScores: Record<PasswordTeam,number>;
 }
 
@@ -61,7 +63,7 @@ function publicState(room:Room, viewerId:string|null, spectator:boolean):WordAre
   return { game:room.game,gameTitle:TITLES[room.game],code:room.code,createdAt:room.createdAt,startedAt:room.startedAt,updatedAt:room.updatedAt,phase:room.phase,matchMode:room.matchMode,players:room.players.map(publicPlayer),spectatorCount:room.spectators.size,viewerPlayerId:viewerId,isSpectator:spectator,roundNumber:room.roundNumber,targetScore:room.targetScore,aiCount:room.players.filter(p=>p.isAi).length,aiDifficulty:room.aiDifficulty,winnerPlayerId:room.winnerPlayerId,status:room.status,prompt:room.game==="word-game"?"Guess the five-letter word.":room.game==="password"?(room.clue?`Clue: ${room.clue}`:"Waiting for the clue giver."):"Unscramble the word before everyone else.",scramble:room.scramble,clue:room.clue,clueGiverPlayerId:room.clueGiverPlayerId,viewerSecret:revealSecret?room.secret:null,viewerAttempts:viewer?.attempts??[],attemptsRemaining,solvedPlayerIds:[...room.solvedPlayerIds],roundWinnerPlayerId:room.roundWinnerPlayerId,actionLog:room.actionLog.slice(-140),wordGameMode:room.wordGameMode,wordPuzzleKey:room.wordPuzzleKey,passwordActiveTeam:room.game==="password"?room.passwordActiveTeam:null,passwordTeamScores:room.game==="password"?{...room.passwordTeamScores}:null};
 }
 function emit(io:Server,room:Room){ room.updatedAt=Date.now(); recordWorkingSession(room.game,room.code,room.createdAt,archive(room)); for(const p of room.players) if(p.isConnected&&!p.isAi)io.to(p.id).emit(`${room.game}:state`,publicState(room,p.id,false)); for(const id of room.spectators.keys())io.to(id).emit(`${room.game}:state`,publicState(room,null,true)); }
-function finish(io:Server,room:Room,winner:Player|null,reason:string,winnerTeam:PasswordTeam|null=null, archiveStatus: "completed" | "host-ended" = "completed"){ room.phase="finished";room.winnerPlayerId=winner?.id??null;room.roundWinnerPlayerId=winner?.id??room.roundWinnerPlayerId;room.status=reason;for(const p of room.players)p.result=winnerTeam?(p.team===winnerTeam?"Winning team":"Runner-up"):p.id===winner?.id?"Winner":winner?"Runner-up":"Completed";log(room,{playerId:winner?.id??null,playerName:winner?.name??null,action:"finish",detail:reason});void finalizeSession(room.game,room.code,room.createdAt,archiveStatus,archive(room),{winner:winnerTeam?`Team ${winnerTeam}`:winner?.name??null,players:room.players.length,mode:room.matchMode,rounds:room.roundNumber,durationMs:Date.now()-room.createdAt});emit(io,room);io.emit("platform:game-finished",{id:`${room.game}-${room.code}-${room.actionSequence}`,game:room.game,gameTitle:TITLES[room.game],code:room.code,status:"game-finished",winner:winnerTeam?`Team ${winnerTeam}`:winner?.name??null,message:reason,at:room.updatedAt}); }
+function finish(io:Server,room:Room,winner:Player|null,reason:string,winnerTeam:PasswordTeam|null=null, archiveStatus: "completed" | "host-ended" = "completed"){ if(room.phase==="finished")return; room.phase="finished";room.winnerPlayerId=winner?.id??null;room.roundWinnerPlayerId=winner?.id??room.roundWinnerPlayerId;room.status=reason;for(const p of room.players)p.result=winnerTeam?(p.team===winnerTeam?"Winning team":"Runner-up"):p.id===winner?.id?"Winner":winner?"Runner-up":"Completed";log(room,{playerId:winner?.id??null,playerName:winner?.name??null,action:"finish",detail:reason});void finalizeSession(room.game,room.code,room.createdAt,archiveStatus,archive(room),{winner:winnerTeam?`Team ${winnerTeam}`:winner?.name??null,players:room.players.length,mode:room.matchMode,rounds:room.roundNumber,durationMs:Date.now()-room.createdAt});emit(io,room);io.emit("platform:game-finished",{id:`${room.game}-${room.code}-${room.actionSequence}`,game:room.game,gameTitle:TITLES[room.game],code:room.code,status:"game-finished",winner:winnerTeam?`Team ${winnerTeam}`:winner?.name??null,message:reason,at:room.updatedAt}); }
 function resetAttempts(room:Room){ for(const p of room.players)p.attempts=[];room.solvedPlayerIds=[];room.roundWinnerPlayerId=null;room.clue=null; }
 function aiReactionDelay(difficulty:WordArenaAiDifficulty, kind:"word"|"password"|"anagram"){
   const range = kind === "anagram"
@@ -114,7 +116,29 @@ function scheduleRoundAi(_io:Server,_room:Room){
 }
 function beginRound(io:Server,room:Room){ room.roundNumber++;resetAttempts(room);room.phase="playing";if(room.game==="word-game"){room.wordPuzzleKey=room.wordGameMode==="daily"?dailyPuzzleKey():null;room.secret=room.wordGameMode==="daily"?dailyWord():randomWord(WORDLE_WORDS);room.scramble=null;room.clueGiverPlayerId=null;room.status=room.wordGameMode==="daily"?`Daily Puzzle · ${room.wordPuzzleKey}`:"Practice Puzzle · six guesses, five letters.";}else if(room.game==="password"){room.secret=randomWord(PASSWORD_WORDS);room.scramble=null;const preferred:PasswordTeam=room.roundNumber%2===1?"violet":"gold";const preferredPlayers=room.players.filter(p=>p.isConnected&&p.team===preferred);const other:PasswordTeam=preferred==="violet"?"gold":"violet";room.passwordActiveTeam=preferredPlayers.length>=2?preferred:other;const teammates=room.players.filter(p=>p.isConnected&&p.team===room.passwordActiveTeam);const cycle=Math.floor((room.roundNumber-1)/2);room.clueGiverPlayerId=teammates[cycle%Math.max(1,teammates.length)]?.id??null;room.status=`Team ${room.passwordActiveTeam==="violet"?"Violet":"Gold"}: ${room.players.find(p=>p.id===room.clueGiverPlayerId)?.name??"clue giver"} is choosing a one-word clue.`;}else{room.secret=randomWord(ANAGRAM_WORDS);room.scramble=shuffle(room.secret);room.clueGiverPlayerId=null;room.status=`Round ${room.roundNumber}: first correct answer wins the point.`;}log(room,{playerId:null,playerName:null,action:"round",detail:room.status});emit(io,room);scheduleRoundAi(io,room); }
 function afterRound(io:Server,room:Room,winner:Player|null){ room.roundWinnerPlayerId=winner?.id??null;room.phase="round-over";if(winner&&room.game==="password"&&winner.team){const team=winner.team;room.passwordTeamScores[team]++;for(const player of room.players)if(player.team===team)player.score=room.passwordTeamScores[team];const label=team==="violet"?"Violet":"Gold";room.status=`Team ${label} wins round ${room.roundNumber}.`;if(room.passwordTeamScores[team]>=room.targetScore){finish(io,room,winner,`Team ${label} wins Password ${room.passwordTeamScores[team]}–${room.passwordTeamScores[team==="violet"?"gold":"violet"]}.`,team);return;}}else if(winner){winner.score++;room.status=`${winner.name} wins round ${room.roundNumber}.`;if(winner.score>=room.targetScore){finish(io,room,winner,`${winner.name} wins ${TITLES[room.game]} with ${winner.score} point${winner.score===1?"":"s"}.`);return;}}else room.status=`Round ${room.roundNumber} ended without a winner.`;emit(io,room); }
-function wordGameSubmit(io:Server,room:Room,p:Player,raw:unknown){ if(room.phase!=="playing"||room.game!=="word-game"||!room.secret)return "That puzzle is not accepting guesses.";if(p.attempts.length>=6)return "You have used all six guesses.";if(room.solvedPlayerIds.includes(p.id))return "You already solved this puzzle.";const guess=cleanWord(raw,5);if(guess.length!==5)return "Enter exactly five letters.";const result=feedback(room.secret,guess);p.attempts.push(result);log(room,{playerId:p.id,playerName:p.name,action:"guess",detail:`${p.name} submitted guess ${p.attempts.length}.`});if(guess===room.secret){room.solvedPlayerIds.push(p.id);afterRound(io,room,p);return null;}const active=room.players.filter(x=>x.isConnected);if(active.every(x=>x.attempts.length>=6)){if(room.wordGameMode==="daily")finish(io,room,null,`Daily puzzle complete. The answer was ${room.secret}.`);else afterRound(io,room,null);return null;}emit(io,room);return null; }
+function wordGameSubmit(io:Server,room:Room,p:Player,raw:unknown){
+  if(room.phase!=="playing"||room.game!=="word-game"||!room.secret)return "That puzzle is not accepting guesses.";
+  if(p.attempts.length>=6)return "You have used all six guesses.";
+  if(room.solvedPlayerIds.includes(p.id))return "You already solved this puzzle.";
+  const guess=cleanWord(raw,5);
+  if(guess.length!==5)return "Enter exactly five letters.";
+  if(room.wordGameMode==="daily"){
+    if(room.wordPuzzleKey!==dailyPuzzleKey()&&!room.wordDailyClaimed)return "Today's puzzle has changed. Return to the Game Room to start the new daily challenge.";
+    if(room.wordDailyAccountId){
+      const identity=getProgressionSocketIdentity(p.id);
+      if(identity?.accountId!==room.wordDailyAccountId)return "Sign back into the original HGR account to continue your daily attempt.";
+      const attemptId=`${room.code}:${room.createdAt}:${room.startedAt}`;
+      try {
+        if(!reserveDailyWordAttempt(room.wordDailyAccountId,room.wordPuzzleKey!,attemptId))
+          return "Today's Daily Puzzle has already been attempted. Practice remains available until the next UTC day.";
+        room.wordDailyClaimed=true;
+      } catch(error){
+        console.error("Daily Word attempt ledger failed; refusing unverified ranked submission:",error);
+        return "The Daily Puzzle scoring service is unavailable. Please try again later.";
+      }
+    }
+  }
+  const result=feedback(room.secret,guess);p.attempts.push(result);log(room,{playerId:p.id,playerName:p.name,action:"guess",detail:`${p.name} submitted guess ${p.attempts.length}.`});if(guess===room.secret){room.solvedPlayerIds.push(p.id);afterRound(io,room,p);return null;}const active=room.players.filter(x=>x.isConnected);if(active.every(x=>x.attempts.length>=6)){if(room.wordGameMode==="daily")finish(io,room,null,`Daily puzzle complete. The answer was ${room.secret}.`);else afterRound(io,room,null);return null;}emit(io,room);return null; }
 function passwordClue(io:Server,room:Room,p:Player,raw:unknown){ if(room.game!=="password"||room.phase!=="playing"||p.id!==room.clueGiverPlayerId||!room.secret)return "Only the current clue giver can submit the clue.";if(room.clue)return "A clue is already live.";const clue=cleanSingleWord(raw,18);if(!clue)return "Enter one word using letters only.";if(clue===room.secret||clue.includes(room.secret)||room.secret.includes(clue))return "The clue cannot contain the password.";room.clue=clue;room.status=`${p.name} gave the clue “${clue}”.`;log(room,{playerId:p.id,playerName:p.name,action:"clue",detail:room.status});emit(io,room);schedulePasswordGuessers(io,room);return null; }
 function passwordGuess(io:Server,room:Room,p:Player,raw:unknown){ if(room.game!=="password"||room.phase!=="playing"||!room.secret||!room.clue)return "Wait for a clue first.";if(p.team!==room.passwordActiveTeam)return "It is the other team’s turn.";if(p.id===room.clueGiverPlayerId)return "The clue giver cannot guess their own password.";const guess=cleanWord(raw,18);if(!guess)return "Enter a guess.";log(room,{playerId:p.id,playerName:p.name,action:"guess",detail:`${p.name} guessed ${guess}.`});if(guess===room.secret){afterRound(io,room,p);return null;}room.status=`${p.name} guessed ${guess}. Keep trying.`;emit(io,room);return null; }
 function anagramGuess(io:Server,room:Room,p:Player,raw:unknown){ if(room.game!=="anagrams-race"||room.phase!=="playing"||!room.secret)return "That anagram round is not active.";const guess=cleanWord(raw,18);if(!guess)return "Enter your answer.";log(room,{playerId:p.id,playerName:p.name,action:"guess",detail:`${p.name} submitted an answer.`});if(guess===room.secret){afterRound(io,room,p);return null;}room.status=`${p.name} missed. The race is still open.`;emit(io,room);return null; }
@@ -150,12 +174,12 @@ function registerGame(io:Server,socket:Socket,game:WordArenaGameId){
     // Word Game, Password and Anagrams Race are intentionally human-only in 3.6.8.
     const aiCount=0;
     const targetScore=game==="word-game"
-      ? clampInt(payload?.targetScore,1,5,defaultTarget)
+      ? (wordGameMode(payload?.wordGameMode)==="daily"?1:clampInt(payload?.targetScore,1,5,defaultTarget))
       : clampInt(payload?.targetScore,3,9,defaultTarget);
     const p:Player={id:socket.id,reconnectToken:token(),name:n,isHost:true,isConnected:true,seat:0,score:0,result:null,attempts:[],isAi:false,aiDifficulty:null,team:game==="password"?"violet":null};
     const bots: Player[]=[];
     const selectedWordMode=game==="word-game"?wordGameMode(payload?.wordGameMode):null;
-    const room:Room={game,code:c,createdAt:Date.now(),startedAt:null,updatedAt:Date.now(),phase:"lobby",matchMode:mode(payload?.matchMode),players:[p,...bots],spectators:new Map(),roundNumber:0,targetScore,aiDifficulty:difficulty,winnerPlayerId:null,roundWinnerPlayerId:null,status:game==="word-game"?(selectedWordMode==="daily"?"Daily puzzle ready. One ranked attempt per day.":"Practice puzzle ready. Practice does not affect the daily leaderboard."):`Waiting for ${minPlayers===1?"you to start":`at least ${minPlayers} players`}.`,secret:null,scramble:null,clue:null,clueGiverPlayerId:null,solvedPlayerIds:[],actionSequence:0,actionLog:[],wordGameMode:selectedWordMode,wordPuzzleKey:null,passwordActiveTeam:null,passwordTeamScores:{violet:0,gold:0}};
+    const room:Room={game,code:c,createdAt:Date.now(),startedAt:null,updatedAt:Date.now(),phase:"lobby",matchMode:mode(payload?.matchMode),players:[p,...bots],spectators:new Map(),roundNumber:0,targetScore,aiDifficulty:difficulty,winnerPlayerId:null,roundWinnerPlayerId:null,status:game==="word-game"?(selectedWordMode==="daily"?"Daily puzzle ready. One ranked attempt per day.":"Practice puzzle ready. Practice does not affect the daily leaderboard."):`Waiting for ${minPlayers===1?"you to start":`at least ${minPlayers} players`}.`,secret:null,scramble:null,clue:null,clueGiverPlayerId:null,solvedPlayerIds:[],actionSequence:0,actionLog:[],wordGameMode:selectedWordMode,wordPuzzleKey:null,wordDailyAccountId:null,wordDailyClaimed:false,passwordActiveTeam:null,passwordTeamScores:{violet:0,gold:0}};
     roomsByGame[game].set(c,room);
     log(room,{playerId:p.id,playerName:p.name,action:"room",detail:`${p.name} created the ${title} room${aiCount?` with ${aiCount} AI player${aiCount===1?"":"s"}`:""}.`});
     emit(io,room);
@@ -202,12 +226,31 @@ function registerGame(io:Server,socket:Socket,game:WordArenaGameId){
     if(room.players.filter(p=>p.isConnected).length<minPlayers)return ack({ok:false,reason:`${title} needs at least ${minPlayers} player${minPlayers===1?"":"s"}. Invite another person to join.`});
     if(game==="password"&&(room.players.filter(p=>p.isConnected&&p.team==="violet").length<2||room.players.filter(p=>p.isConnected&&p.team==="gold").length<2))return ack({ok:false,reason:"Password needs at least two connected players on each team."});
     if(room.phase!=="lobby"&&room.phase!=="finished")return ack({ok:false,reason:"The current match is already in progress."});
+    if(game==="word-game"&&room.wordGameMode==="daily"){
+      // A ranked daily attempt is bound at start to the authenticated account.
+      // A guest/Beta lobby remains playable but never creates ranked rewards.
+      if(room.phase!=="lobby")return ack({ok:false,reason:"Today's Daily Puzzle is finished. Choose Practice to keep playing."});
+      const identity=getProgressionSocketIdentity(socket.id);
+      if(identity&&!identity.beta){
+        try {
+          if(existingDailyWordAttempt(identity.accountId,dailyPuzzleKey()))
+            return ack({ok:false,reason:"Your Daily Puzzle attempt is already used for today. Practice stays available until tomorrow."});
+        } catch(error){
+          console.error("Daily Word attempt ledger could not be checked:",error);
+          return ack({ok:false,reason:"Daily Puzzle scoring is temporarily unavailable. Please try again later."});
+        }
+      }
+      room.wordDailyAccountId=identity&&!identity.beta?identity.accountId:null;
+      room.wordDailyClaimed=false;
+      room.targetScore=1;
+    }
     room.startedAt=Math.max(Date.now(),(room.startedAt??0)+1);room.players.forEach(p=>{p.score=0;p.result=null});room.passwordTeamScores={violet:0,gold:0};room.passwordActiveTeam=null;room.roundNumber=0;room.winnerPlayerId=null;
     log(room,{playerId:host.id,playerName:host.name,action:"start",detail:`${title} started.`});beginRound(io,room);ack({ok:true});
   });
   socket.on(`${game}:next-round`,(payload:any,ack:(r:any)=>void)=>{
     const room=findRoom(game,payload?.code);const host=room?.players.find(p=>p.id===socket.id&&p.isHost);
     if(!room||!host)return ack({ok:false,reason:"Only the host can start the next round."});
+    if(room.game==="word-game"&&room.wordGameMode==="daily")return ack({ok:false,reason:"Only one Daily Puzzle round is permitted. Choose Practice for more rounds."});
     if(room.phase!=="round-over")return ack({ok:false,reason:"The next round is not ready."});beginRound(io,room);ack({ok:true});
   });
   socket.on(`${game}:submit`,(payload:any,ack:(r:any)=>void)=>{
