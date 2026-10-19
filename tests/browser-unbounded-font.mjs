@@ -32,6 +32,8 @@ try {
     });
     await page.goto(base,{waitUntil:"domcontentloaded"});
     const result = await page.evaluate(async () => {
+      // Unbounded is now an individual owner Beta preview, not the normal mixed baseline.
+      document.documentElement.dataset.betaFont = "unbounded";
       await document.fonts.load('400 16px "Unbounded Variable"');
       await document.fonts.ready;
       const span = document.createElement("span");

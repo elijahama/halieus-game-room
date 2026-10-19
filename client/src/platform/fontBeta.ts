@@ -1,6 +1,7 @@
 /** Session-only, admin Test Lab typography previews. Never changes account cosmetics. */
 export const BETA_FONT_KEY = "halieus-beta-font-preview";
 export const BETA_FONT_OPTIONS = [
+  { id: "balanced", label: "Balanced HGR", note: "Unbounded headings · Righteous emphasis · Varela text · Alata small" },
   { id: "unbounded", label: "Unbounded", note: "Bold geometric · compacted 1px" },
   { id: "righteous", label: "Righteous", note: "Expressive, rounded display" },
   { id: "alata", label: "Alata", note: "Clear, compact editorial" },
@@ -16,9 +17,9 @@ function isBetaFont(value: string | null): value is BetaFontId {
 export function readBetaFont(): BetaFontId {
   try {
     const saved = sessionStorage.getItem(BETA_FONT_KEY);
-    return isBetaFont(saved) ? saved : "unbounded";
+    return isBetaFont(saved) ? saved : "balanced";
   } catch {
-    return "unbounded";
+    return "balanced";
   }
 }
 export function setBetaFont(font: BetaFontId): void {

@@ -1,0 +1,147 @@
+/*
+ * HGR 4.5.5c - Owner-reviewed mixed typography hierarchy.
+ *
+ * Display: Unbounded. Mid-sized emphasis: Righteous. General site/game UI:
+ * Varela Round. Dense UI descriptions: Alata.
+ *
+ * Five single-face comparisons remain intact in the owner-only Test Lab.
+ * This last-loaded layer changes text treatment ONLY, never HGR brand marks,
+ * board material, property-group colours, hitboxes or gameplay state.
+ */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"]) {
+  --hgr-interface-font: "Varela Round", "Segoe UI Variable Text", system-ui, sans-serif;
+  --hgr-font-heading: "Unbounded Variable", system-ui, sans-serif;
+  --hgr-font-medium: "Righteous", "Varela Round", system-ui, sans-serif;
+  --hgr-font-caption: "Alata", "Varela Round", system-ui, sans-serif;
+}
+
+/* A balanced Beta preview must match the real site, including the narrower
+ * 320px base. Explicit single-font Test Lab selections remain untouched. */
+html[data-beta-font="balanced"] { font-size: 15px; }
+@media (max-width: 360px) {
+  html[data-beta-font="balanced"] { font-size: 14px; }
+}
+
+/* Do not force display lettering onto tiny controls or inside game boards. */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  :is(#root h1, #root h2) {
+  font-family: var(--hgr-font-heading) !important;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+/* Medium hierarchy without replacing normal buttons and player messages. */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  :is(#root h3, #root h4, #root .halieus-home-games > header h2) {
+  font-family: var(--hgr-font-medium) !important;
+  letter-spacing: -0.018em;
+  font-weight: 500;
+}
+
+/* Alata is the compact descriptive voice; Varela Round stays in normal
+ * buttons, inputs, paragraphs, menus, player data and game prompts. */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  :is(.halieus-shell, .account-panel, .mega-live-page, .poker-page, .halieus-skins-dialog)
+  small {
+  font-family: var(--hgr-font-caption) !important;
+  letter-spacing: 0;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  :is(.halieus-feature-copy-stage > p, .halieus-page-heading p, .modal-eyebrow) {
+  font-family: var(--hgr-font-caption) !important;
+  letter-spacing: .055em;
+}
+
+/* The formerly oversized/visually clipped landing headline should remain
+ * readable and complete, including the owner's long Beta Test Lab headline.
+ * Override the earlier 32px phone rule without using page zoom. */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .halieus-feature-copy-stage > h1 {
+  font-family: var(--hgr-font-heading) !important;
+  font-size: clamp(28px, 3.3vw, 46px) !important;
+  font-weight: 650 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -.045em !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  text-wrap: balance;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .halieus-page-heading h1 {
+  font-size: clamp(26px, 3.5vw, 45px) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.038em !important;
+}
+
+/* Large slogans should not force a 320px display to wrap into three clipped
+ * lines. The rest of the existing mobile layout remains the source of truth. */
+@media (max-width: 760px) {
+  :is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+    .halieus-feature-copy-stage > h1 {
+    font-size: clamp(21px, 6.3vw, 30px) !important;
+    line-height: 1.16 !important;
+  }
+  :is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+    .halieus-page-heading h1 {
+    font-size: clamp(23px, 6.3vw, 30px) !important;
+  }
+}
+
+/* Player-facing Mega Board narration is Varela (not a huge geometric display
+ * headline). Board space labels, dice and deed lettering remain specialised. */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .mega-live-page :is(.centre-roll-readout, .centre-turn-status strong) {
+  font-family: "Varela Round", system-ui, sans-serif !important;
+  letter-spacing: 0 !important;
+  line-height: 1.28 !important;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .mega-live-page .centre-roll-readout > span {
+  font-family: "Varela Round", system-ui, sans-serif !important;
+  font-size: clamp(10px, 1.1vw, 12px) !important;
+  letter-spacing: 0 !important;
+  line-height: 1.25 !important;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .mega-live-page .centre-turn-status strong {
+  font-size: clamp(11px, 1.2vw, 13px) !important;
+  font-weight: 600 !important;
+}
+
+/* Preserve the strong visual distinction between board artifacts and UI
+ * text, including tiny property names and the existing approved H logo. */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  :is(.board-space-name, .board-centre-logo, .property-deed-card) {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif !important;
+}
+
+/* Actual multi-face preview in Beta Tools. */
+.hgr-beta-font-options .hgr-beta-balanced-preview {
+  display: grid;
+  gap: 2px;
+}
+.hgr-beta-balanced-preview > b {
+  font-family: "Unbounded Variable", sans-serif !important;
+  font-size: 12px;
+  font-weight: 650;
+}
+.hgr-beta-balanced-preview > i {
+  font-family: "Righteous", sans-serif !important;
+  font-size: 12px;
+  font-style: normal;
+}
+.hgr-beta-balanced-preview > em {
+  font-family: "Varela Round", sans-serif !important;
+  font-size: 11px;
+  font-style: normal;
+}
+.hgr-beta-balanced-preview > small {
+  font-family: "Alata", sans-serif !important;
+  font-size: 10px;
+}

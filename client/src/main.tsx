@@ -24,6 +24,7 @@ import "./styles/hgr-4.5.5-mobile-hub.css";
 import "./styles/hgr-4.5.5-part28-authority.css";
 import "./styles/hgr-4.5.5-mega-board-portfolio.css";
 import "./styles/hgr-4.5.5-unbounded.css";
+import "./styles/hgr-4.5.5c-type-hierarchy.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.

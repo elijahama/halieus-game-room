@@ -56,7 +56,7 @@ try {
     });
     assert.equal(unbounded,width<=360?"14px":"15px");
     await page.close();
-    console.log("PASS five self-hosted HGR fonts at "+width+"px; default Unbounded "+unbounded);
+    console.log("PASS five self-hosted HGR fonts at "+width+"px; baseline root scale "+unbounded);
   }
 }finally{
   await browser?.close();server.kill();
