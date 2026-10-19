@@ -1,0 +1,58 @@
+/* HGR 4.5.5j — owner-requested Achievement Bar typography refinement.
+ * Only the normal Balanced HGR font mix: beta single-font comparison must
+ * remain a genuine single-font experiment. No scoring logic changes. */
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .achievement-bar .achievement-bar-score > small {
+  font-family: "Alata", "Varela Round", system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .achievement-bar .achievement-bar-progress > strong {
+  font-family: "Varela Round", system-ui, sans-serif !important;
+  font-size: clamp(13px, 1.1vw, 15px) !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .achievement-bar .achievement-bar-progress > small {
+  font-family: "Alata", "Varela Round", system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .achievement-next > strong {
+  font-family: "Varela Round", system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+:is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+  .achievement-next > :is(p,span) {
+  font-family: "Alata", "Varela Round", system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1.45 !important;
+  letter-spacing: 0 !important;
+}
+@media (max-width: 380px) and (orientation: portrait) {
+  :is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+    .achievement-bar { gap: 8px; padding: 10px 11px; }
+  :is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+    .achievement-bar .achievement-bar-score > small { font-size: 10px !important; }
+  :is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+    .achievement-bar .achievement-bar-progress > strong { font-size: 12px !important; }
+  :is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+    .achievement-bar .achievement-bar-progress > small { font-size: 10px !important; }
+  :is(html:not([data-beta-font]), html[data-beta-font="balanced"])
+    .achievement-next > strong { font-size: 13px !important; }
+}
