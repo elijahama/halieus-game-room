@@ -1,120 +1,136 @@
+/* HGR 4.5.5b — compact, dismissible top-edge news ribbon.
+   Dismissal hides presentation only: socket recovery, timers and release
+   navigation remain owned by PlatformMaintenanceBanner.tsx. */
 .halieus-maintenance-banner {
   position: fixed;
   z-index: 10000;
-  top: max(12px, env(safe-area-inset-top));
-  left: 50%;
-  width: min(760px, calc(100vw - 24px));
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: calc(38px + env(safe-area-inset-top));
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 22px auto minmax(0, 1fr) auto 30px;
   align-items: center;
-  gap: 12px;
-  padding: 13px 14px;
-  border: 1px solid rgba(52, 117, 197, .55);
-  border-radius: 16px;
-  background: color-mix(in srgb, #111923 94%, transparent);
-  color: #f7fbff;
-  box-shadow: 0 18px 54px rgba(0, 0, 0, .34);
-  backdrop-filter: blur(18px);
+  gap: 9px;
+  padding: calc(4px + env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 4px max(8px, env(safe-area-inset-left));
+  border: none;
+  border-bottom: 1px solid rgba(64, 144, 204, .55);
+  border-radius: 0;
+  background: color-mix(in srgb, #101924 96%, transparent);
+  color: #f3f8ff;
+  box-shadow: 0 6px 17px rgba(0,0,0,.20);
+  backdrop-filter: blur(14px);
 }
-
-.halieus-maintenance-banner.is-scheduled {
-  border-color: rgba(52, 117, 197, .62);
-  box-shadow: 0 18px 54px rgba(17, 56, 105, .28);
-}
-
 .halieus-maintenance-banner.is-restarting {
-  border-color: rgba(215, 154, 24, .62);
-  box-shadow: 0 18px 54px rgba(94, 65, 8, .28);
+  border-bottom-color: rgba(232,173,67,.65);
 }
-
+.halieus-maintenance-banner.is-complete {
+  border-bottom-color: rgba(72,185,131,.65);
+}
 .halieus-maintenance-icon {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  background: rgba(52, 117, 197, .16);
-  color: #7eb2ef;
-  font-size: 22px;
-  font-weight: 950;
-}
-
-.is-restarting .halieus-maintenance-icon {
-  background: rgba(215, 154, 24, .16);
-  color: #efbd55;
-}
-
-.halieus-maintenance-copy {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-}
-
-.halieus-maintenance-copy small {
-  color: #79ade9;
-  font-size: 10px;
-  font-weight: 950;
-  letter-spacing: .12em;
-}
-
-.is-restarting .halieus-maintenance-copy small {
-  color: #efbd55;
-}
-
-.halieus-maintenance-copy strong {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(84,155,219,.16);
+  color: #a6d2fb;
   font-size: 13px;
-  line-height: 1.35;
+  font-weight: 900;
 }
-
-.halieus-maintenance-copy p {
-  margin: 1px 0 0;
-  color: #b4bfcb;
+.is-restarting .halieus-maintenance-icon {
+  color: #f3bc60;
+  background: rgba(243,188,96,.12);
+}
+.is-complete .halieus-maintenance-icon {
+  color: #8fe4b3;
+  background: rgba(75,184,125,.12);
+}
+.halieus-maintenance-status {
+  color: #a5c9ec;
   font-size: 10px;
-  line-height: 1.4;
+  font-weight: 800;
+  letter-spacing: .05em;
+  white-space: nowrap;
 }
-
+.is-restarting .halieus-maintenance-status { color: #edbd69; }
+.is-complete .halieus-maintenance-status { color: #91deb0; }
+.halieus-maintenance-ticker {
+  min-width: 0;
+  overflow: hidden;
+  display: block;
+  white-space: nowrap;
+  border-inline-start: 1px solid rgba(255,255,255,.15);
+  padding-inline-start: 9px;
+}
+.halieus-maintenance-ticker strong {
+  font-size: 10px;
+  font-weight: 550;
+  color: #e7eff7;
+  line-height: 1.2;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .halieus-maintenance-timing {
-  min-width: max-content;
-  padding: 7px 9px;
-  border-radius: 999px;
-  background: rgba(52, 117, 197, .13);
-  color: #91bced;
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 650;
+  color: #b3cde6;
+}
+.halieus-maintenance-dismiss,
+.halieus-maintenance-refresh {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 8px;
+  background: transparent;
+  color: #d2deeb;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+}
+.halieus-maintenance-refresh {
+  padding: 0 8px;
   font-size: 10px;
+  font-weight: 650;
 }
-
-.is-restarting .halieus-maintenance-timing {
-  background: rgba(215, 154, 24, .12);
-  color: #efbd55;
-}
-
+.halieus-maintenance-dismiss:hover,
+.halieus-maintenance-refresh:hover { background: rgba(255,255,255,.10); }
+.halieus-maintenance-dismiss:focus-visible,
+.halieus-maintenance-refresh:focus-visible { outline: 2px solid #aedbff; outline-offset: 2px; }
 @media (prefers-reduced-motion: no-preference) {
-  .halieus-maintenance-banner {
-    animation: halieus-maintenance-enter 260ms ease-out both;
+  .halieus-maintenance-banner { animation: hgr-ribbon-in 180ms ease-out both; }
+  .halieus-maintenance-ticker strong.is-scrolling {
+    width: max-content;
+    min-width: 100%;
+    overflow: visible;
+    text-overflow: clip;
+    padding-inline-start: 100%;
+    animation: hgr-ribbon-scroll 18s linear infinite;
   }
-
   .halieus-maintenance-banner.is-restarting .halieus-maintenance-icon {
-    animation: halieus-maintenance-spin 1.2s linear infinite;
+    animation: hgr-ribbon-pulse 1.8s ease-in-out infinite;
   }
-
-  @keyframes halieus-maintenance-enter {
-    from { opacity: 0; transform: translate(-50%, -10px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
-  }
-
-  @keyframes halieus-maintenance-spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes hgr-ribbon-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes hgr-ribbon-scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+  @keyframes hgr-ribbon-pulse { 50% { opacity: .45; } }
 }
-
-@media (max-width: 640px) {
+@media (prefers-reduced-motion: reduce) {
+  .halieus-maintenance-banner,
+  .halieus-maintenance-icon,
+  .halieus-maintenance-ticker strong { animation: none !important; }
+}
+@media (max-width: 580px) {
   .halieus-maintenance-banner {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: start;
+    grid-template-columns: 20px minmax(0,1fr) auto 30px;
+    gap: 5px;
   }
-
-  .halieus-maintenance-timing {
-    grid-column: 2;
-    justify-self: start;
-  }
+  .halieus-maintenance-status { display: none; }
+  .halieus-maintenance-ticker { padding-inline-start: 0; border-inline-start: none; }
+  .halieus-maintenance-timing { font-size: 8px; }
+  .halieus-maintenance-ticker strong { font-size: 9px; }
 }

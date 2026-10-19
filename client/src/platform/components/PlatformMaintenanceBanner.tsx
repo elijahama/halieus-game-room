@@ -70,6 +70,7 @@ function prepareForReleaseNavigation(ready: HalieusServerReadyPayload): void {
 export function PlatformMaintenanceBanner() {
   const [notice, setNotice] = useState<HalieusMaintenanceNotice | null>(null);
   const [mode, setMode] = useState<BannerMode>("maintenance");
+  const [dismissedNoticeId, setDismissedNoticeId] = useState<string | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [releaseTarget, setReleaseTarget] = useState<HalieusServerReadyPayload | null>(null);
   const reloadTimer = useRef<number | null>(null);
@@ -222,7 +223,7 @@ export function PlatformMaintenanceBanner() {
     return () => window.clearInterval(timer);
   }, [notice]);
 
-  if (!notice) return null;
+  if (!notice || dismissedNoticeId === notice.id) return null;
 
   const isReloading = mode === "reloading";
   const isRefreshRequired = mode === "refresh-required";
@@ -247,34 +248,37 @@ export function PlatformMaintenanceBanner() {
 
   return (
     <aside
-      className={`halieus-maintenance-banner ${isRestarting || isReloading ? "is-restarting" : "is-scheduled"}`}
-      role="alert"
-      aria-live="assertive"
+      className={`halieus-maintenance-banner ${isReloading || isRefreshRequired ? "is-complete" : isRestarting ? "is-restarting" : "is-scheduled"}`}
+      role="status"
+      aria-live="polite"
+      aria-label="HGR update status"
     >
       <span className="halieus-maintenance-icon" aria-hidden="true">
-        {isReloading ? "✓" : isRestarting ? "↻" : "↑"}
+        {isReloading || isRefreshRequired ? "✓" : isRestarting ? "•" : "↑"}
       </span>
-      <div className="halieus-maintenance-copy">
-        <small>{status}{notice.targetVersion ? ` · HGR ${notice.targetVersion}` : ""}</small>
-        <strong>{notice.reason}</strong>
-        {!isReloading && !isRefreshRequired && (
-          <p>
-            If you are in a live game, keep your recovery key or room code handy.
-            Your browser will reconnect and load the new release when it is ready.
-          </p>
-        )}
+      <span className="halieus-maintenance-status">
+        {status}{notice.targetVersion ? ` · HGR ${notice.targetVersion}` : ""}
+      </span>
+      <div className="halieus-maintenance-ticker" aria-label={notice.reason}>
+        <strong className={notice.reason.length > 52 && !isReloading && !isRefreshRequired ? "is-scrolling" : ""}>
+          {notice.reason}
+        </strong>
       </div>
       {releaseTarget && isRefreshRequired ? (
-        <button
-          type="button"
-          className="halieus-maintenance-refresh"
-          onClick={() => navigateToRelease(releaseTarget)}
-        >
-          Refresh now
+        <button type="button" className="halieus-maintenance-refresh" onClick={() => navigateToRelease(releaseTarget)}>
+          Refresh
         </button>
       ) : (
         <b className="halieus-maintenance-timing">{timing}</b>
       )}
+      <button
+        type="button"
+        className="halieus-maintenance-dismiss"
+        aria-label="Dismiss update ribbon"
+        onClick={() => setDismissedNoticeId(notice.id)}
+      >
+        ×
+      </button>
     </aside>
   );
 }
