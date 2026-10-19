@@ -15,6 +15,7 @@ import { accountApi } from "./api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DisplaySettingsPanel } from "../components/DisplaySettingsPanel";
 import { HgrIcon } from "../components/HgrIcon";
+import { BetaFontSelector } from "./BetaFontSelector";
 import { APP_RELEASE_LABEL } from "../../version";
 
 interface Props {
@@ -598,6 +599,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                   <article><strong>All cosmetics unlocked</strong><small>Every progression-gated theme, board, table and visual reward is selectable for this beta session. Real unlock requirements and permanent ownership stay unchanged.</small></article>
                   <article><strong>Admin-only</strong><small>Only Owner/Admin accounts can enter this mode. Exit at any time to restore your normal account identity and normal cosmetic locks.</small></article>
                 </div>
+                {betaMode && <BetaFontSelector />}
                 <button type="button" className={betaMode ? "button-outline" : "button-primary"} onClick={() => { if (betaMode) onExitBetaMode(); else onEnterBetaMode(); onClose(); }}>{betaMode ? "Exit Test Lab" : "Enter Test Lab"}</button>
               </section>}
 

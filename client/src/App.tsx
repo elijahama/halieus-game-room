@@ -1,5 +1,6 @@
 import { CORE_THEME_IDS } from "../../shared/platform/themeProgression";
 import { committedTheme, commitTheme, clearBetaThemePreview } from "./platform/themePreview";
+import { clearBetaFontPreview, syncBetaFont } from "./platform/fontBeta";
 import { type HgrLogoPreset } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
@@ -500,6 +501,7 @@ export default function App() {
     sessionStorage.removeItem("halieus-beta-test-mode");
     window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: false }));
     clearBetaThemePreview();
+    clearBetaFontPreview();
     sessionStorage.removeItem(INTRO_SESSION_KEY);
     setSiteIntroSeen(false);
     setBetaMode(false);
@@ -529,6 +531,7 @@ export default function App() {
     window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: false }));
     clearBetaThemePreview();
     clearBetaSkinPreview();
+    clearBetaFontPreview();
     setBetaMode(false);
     if (authStatus?.account) setPlayerName(authStatus.account.displayName);
     setMessage("Beta Test Lab closed. Your normal Halieus identity is restored.");
@@ -579,6 +582,13 @@ export default function App() {
     if (!betaMode) clearBetaSkinPreview();
     setSkinPreferences(readEffectiveSkinPreferences(betaMode));
   }, [betaMode]);
+
+  useEffect(() => {
+    const account = authStatus?.account;
+    const eligible = betaMode && (account?.role === "owner" || account?.role === "admin");
+    syncBetaFont(Boolean(eligible));
+    if (!betaMode) clearBetaFontPreview();
+  }, [betaMode, authStatus?.account?.role]);
 
   useEffect(() => {
     if (betaMode) return;
