@@ -6,7 +6,9 @@ import { join } from "node:path";
 
 const port=3198, data=await mkdtemp(join(tmpdir(),"hgr-friends-guild-"));
 const codeFile=join(data,"OWNER SETUP CODE.txt");
-const server=spawn(process.execPath,["dist/server/src/index.js"],{
+// Release CI deliberately runs regressions before building dist/.
+// Run the source server through tsx so this privacy test is independently runnable.
+const server=spawn(process.execPath,["--import","tsx","src/index.ts"],{
   cwd:new URL("../server/",import.meta.url),
   env:{...process.env,PORT:String(port),SERVE_CLIENT:"false",HALIEUS_DATA_DIR:data,
     HALIEUS_OWNER_BOOTSTRAP_FILE:codeFile},
