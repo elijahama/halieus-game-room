@@ -140,6 +140,9 @@ try{
     assert.match(await page.locator('#controlOperationReason').textContent(),/verification failed/);
     const detailsHeight = await page.locator('#operationDetails').evaluate(node=>node.getBoundingClientRect().height);
     assert.ok(detailsHeight <= 340,'Expanded failure details must be bounded and internally scrollable');
+    assert.equal(await page.locator('#operationToast').evaluate(n=>getComputedStyle(n).position),'relative','Expanded phone report must flow BELOW the action tiles');
+    assert.equal(await page.locator('#operationToast').evaluate(n=>n.parentElement?.dataset.panel),'operations','Expanded phone report must live on Operations page');
+    assert.ok(await page.evaluate(()=>document.getElementById('operationToast').getBoundingClientRect().top >= document.querySelector('.control-section[data-panel="operations"] .operation-grid').getBoundingClientRect().bottom - 2),'Expanded report must not cover the action tiles');
     operation={id:'run-rejected',action:'update',state:'rejected',title:'Updating HGR',phase:'Update was not started',progress:1,reason:'Remote Update refused because tracked source changes are present on the owner PC.',startedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
     await page.waitForFunction(() => document.getElementById('operationTitle').textContent==='Update not started');
     await page.waitForFunction(() => document.getElementById('operationToast').classList.contains('is-minimized'));

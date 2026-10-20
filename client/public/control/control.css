@@ -218,3 +218,34 @@
   .operation-toast.is-minimized .operation-copy strong,
   .operation-toast.is-minimized .operation-copy small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
+
+/* HGR 4.5.5o: expanded diagnostics are in the Operations document flow on
+ * portrait/mobile viewports. The collapsed operation stays global and
+ * draggable. Never cover action tiles or the fixed mobile tab bar. */
+@media (max-width:720px) {
+  .operation-toast.is-inline:not(.is-minimized) {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    min-width: 0;
+    max-height: none !important;
+    margin: 12px 0 18px;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .operation-toast.is-inline .operation-toast-details {
+    min-height: 0;
+    max-height: min(33dvh, 270px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .operation-toast.is-inline .operation-toast-head {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}

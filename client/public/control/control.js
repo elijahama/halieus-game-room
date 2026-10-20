@@ -103,6 +103,14 @@
   }
 
   function setSection(section) {
+    // The expanded mobile report lives inside Operations and must never float
+    // over unrelated pages. Going elsewhere restores the small status chip.
+    if (section !== "operations" && operationToastIsMobile()
+      && $("operationToast")?.classList.contains("is-inline")) {
+      $("operationDetails").hidden = true;
+      $("operationToastToggle").setAttribute("aria-expanded", "false");
+      setOperationToastMinimized(true, false);
+    }
     state.currentSection = section;
     queryAll(".control-section").forEach((panel) => panel.classList.toggle("is-active", panel.dataset.panel === section));
     queryAll("[data-section]").forEach((button) => button.classList.toggle("is-active", button.dataset.section === section));
@@ -453,6 +461,21 @@
     }
   }
 
+  function syncOperationToastHost() {
+    const toast = $("operationToast");
+    const operations = document.querySelector('.control-section[data-panel="operations"]');
+    if (!toast || !operations) return;
+    const inline = operationToastIsMobile() && !toast.hidden && !toast.classList.contains("is-minimized");
+    toast.classList.toggle("is-inline", inline);
+    if (inline) {
+      const grid = operations.querySelector(".operation-grid");
+      if (grid && grid.nextElementSibling !== toast) grid.after(toast);
+      if (state.currentSection !== "operations") setSection("operations");
+    } else if (toast.parentElement !== document.body) {
+      document.body.insertBefore(toast, document.querySelector(".control-mobile-nav"));
+    }
+  }
+
   function setOperationToastMinimized(value, persist = true) {
     const toast = $("operationToast");
     if (!toast) return;
@@ -466,6 +489,7 @@
     if (persist) {
       try { localStorage.setItem(OPERATION_TOAST_MINIMIZED_KEY, minimized ? "1" : "0"); } catch { /* Storage is optional. */ }
     }
+    syncOperationToastHost();
   }
 
   function restoreOperationToastLayout() {
@@ -538,6 +562,7 @@
     state.activeOperation = operation;
     if (!operation) {
       $("operationToast").hidden = true;
+      syncOperationToastHost();
       return;
     }
     $("operationToast").hidden = false;
@@ -562,13 +587,15 @@
     const newTerminal = operationToastIsMobile()
       && operation.state !== "running"
       && (!previous || previous.id !== operation.id || previous.state !== operation.state);
-    if (newTerminal) {
-      // Show a small status chip after failed, rejected or completed jobs.
-      // Do not rewrite the owner's saved layout preference on this transition.
+    if (newTerminal || (operationToastIsMobile() && (!previous || previous.id !== operation.id))) {
+      // Terminal results and fresh mobile updates start as a compact chip.
+      // Never re-expand a persistent, failed status across the action tiles.
       const details = $("operationDetails");
       details.hidden = true;
       $("operationToastToggle").setAttribute("aria-expanded", "false");
       setOperationToastMinimized(true, false);
+    } else {
+      syncOperationToastHost();
     }
   }
 
@@ -599,10 +626,11 @@
       if (Date.now() < operationToastClickSuppressedUntil) return;
       const toast = $("operationToast");
       if (toast.classList.contains("is-minimized")) {
-        setOperationToastMinimized(false);
+        setOperationToastMinimized(false, false);
         const details = $("operationDetails");
         details.hidden = false;
         $("operationToastToggle").setAttribute("aria-expanded", "true");
+        if (operationToastIsMobile()) toast.scrollIntoView({ block: "nearest" });
         return;
       }
       const details = $("operationDetails");
