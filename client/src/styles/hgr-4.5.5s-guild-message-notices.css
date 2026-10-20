@@ -1,0 +1,14 @@
+/* HGR 4.5.5s: message notices share the tested invitation dropdown chrome. */
+.hgr-guild-message-dropdown .hgr-guild-message-symbol {
+  display:grid;place-items:center;flex:0 0 44px;
+  width:44px;height:44px;border-radius:12px;
+  color:#9cc4fb;background:rgba(131,169,240,.13);font-size:24px;
+}
+.hgr-guild-message-dropdown .hgr-game-invite-dropdown-actions {
+  grid-template-columns: minmax(0,1fr) minmax(0,110px);
+}
+.hgr-guild-message-dropdown .hgr-game-invite-dropdown-head span:not(.hgr-guild-message-symbol) {
+  overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+  line-clamp:3;overflow:hidden;
+}

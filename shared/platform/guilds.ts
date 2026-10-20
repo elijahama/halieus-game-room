@@ -40,6 +40,18 @@ export interface HalieusGuildMessage {
   createdAt: number;
 }
 
+/** Authenticated, membership-scoped notification summary; never a public directory. */
+export interface HalieusGuildMessageNotification {
+  key: string;
+  id: string;
+  guildId: string;
+  guildName: string;
+  senderAccountId: string;
+  senderDisplayName: string;
+  preview: string;
+  createdAt: number;
+}
+
 export interface HalieusGuildMembershipSnapshotEntry {
   accountId: string;
   aliases: string[];

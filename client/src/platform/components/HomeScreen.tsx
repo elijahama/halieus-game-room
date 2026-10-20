@@ -23,7 +23,7 @@ import type { WhotAiDifficulty, WhotMatchMode } from "../../../../shared/games/w
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
 import { rankedFormatFor } from "../../../../shared/platform/rankedFormats";
 import type { HalieusRankedLeaderboardSnapshot } from "../../../../shared/platform/rankedLeaderboard";
-import type { HalieusGuildInvitation } from "../../../../shared/platform/guilds";
+import type { HalieusGuildInvitation, HalieusGuildMessageNotification } from "../../../../shared/platform/guilds";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaMatchMode, WordGameMode } from "../../../../shared/games/word-arena/types";
 import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicMatchMode } from "../../../../shared/games/classic-table/types";
 import { accountApi } from "../accounts/api";
@@ -35,6 +35,7 @@ import { SkinLibraryButton } from "./SkinLibraryButton";
 import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
 import { GameInviteDropdown } from "./GameInviteDropdown";
+import { GuildMessageDropdown } from "./GuildMessageDropdown";
 import { incomingGameNotifications, readSeenGameNotifications, saveSeenGameNotifications, type HgrIncomingGameNotification } from "./gameInviteNotifications";
 import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
@@ -176,6 +177,10 @@ export function HomeScreen(props: HomeScreenProps) {
   const [gameInvites, setGameInvites] = useState<HalieusGameInviteSummary[]>([]);
   const [gameRequests, setGameRequests] = useState<HalieusGameRequestSummary[]>([]);
   const [guildInvites, setGuildInvites] = useState<HalieusGuildInvitation[]>([]);
+  const [guildMessageNotices, setGuildMessageNotices] = useState<HalieusGuildMessageNotification[]>([]);
+  const [readGuildMessages, setReadGuildMessages] = useState(new Set<string>());
+  const [guildMessageNotice, setGuildMessageNotice] = useState<HalieusGuildMessageNotification | null>(null);
+  const [preferredGuildId, setPreferredGuildId] = useState<string | null>(null);
   const [inboxOpen, setInboxOpen] = useState(false);
   const [gameNotice, setGameNotice] = useState<HgrIncomingGameNotification | null>(null);
   const [gameNoticeBusy, setGameNoticeBusy] = useState(false);
@@ -280,6 +285,9 @@ export function HomeScreen(props: HomeScreenProps) {
       void accountApi<{ ok: true; requests: HalieusGameRequestSummary[] }>("/accounts/game-requests")
         .then((result) => { if (!cancelled) setGameRequests(result.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId))); })
         .catch(() => undefined);
+      void accountApi<{ok:true; messages:HalieusGuildMessageNotification[]}>("/guilds/message-notifications")
+        .then((result) => { if (!cancelled) setGuildMessageNotices(result.messages); })
+        .catch(() => undefined);
       void accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations")
         .then((result) => { if (!cancelled) setGuildInvites(result.invitations.filter((invitation) => invitation.status === "pending")); })
         .catch(() => undefined);
@@ -308,6 +316,7 @@ export function HomeScreen(props: HomeScreenProps) {
     setGameInvites([]);
     setGameRequests([]);
     setGuildInvites([]);
+    setGuildMessageNotices([]);
     const load = () => { void loadDirectory(); void loadOtherData(); void loadFriends(); loadInvitations(); };
     load();
     const timer = window.setInterval(load, 10000);
@@ -323,6 +332,9 @@ export function HomeScreen(props: HomeScreenProps) {
     setGameNotice(null);
     setGameNoticeBusy(false);
     setGameNoticeError("");
+    setGuildMessageNotice(null);
+    setReadGuildMessages(accountId ? readSeenGameNotifications(accountId, "messages") : new Set());
+    setPreferredGuildId(null);
   }, [account?.id]);
 
   useEffect(() => {
@@ -341,6 +353,38 @@ export function HomeScreen(props: HomeScreenProps) {
   }, [account?.id, gameRequests, gameInvites, inboxOpen, createOpen, joinOpen, gameNotice]);
 
   useEffect(() => {
+    if (!account?.id || document.visibilityState !== "visible"
+      || inboxOpen || createOpen || joinOpen || gameNotice || guildMessageNotice) return;
+    // Only one message banner per poll. A persistent Inbox holds every
+    // unread item; no message is silently marked read by showing a popup.
+    const alreadyPopped = readSeenGameNotifications(account.id, "message-popup");
+    const unseen = guildMessageNotices.filter((item) => !alreadyPopped.has(item.key));
+    if (!unseen.length) return;
+    const next = new Set([...alreadyPopped, ...unseen.map((item) => item.key)]);
+    saveSeenGameNotifications(account.id, "message-popup", next);
+    setGuildMessageNotice(unseen[0]);
+  }, [account?.id, guildMessageNotices, inboxOpen, createOpen, joinOpen, gameNotice, guildMessageNotice]);
+
+  function markGuildMessageRead(message: HalieusGuildMessageNotification): void {
+    if (!account?.id) return;
+    setReadGuildMessages((current) => {
+      const next = new Set(current);
+      next.add(message.key);
+      saveSeenGameNotifications(account.id, "messages", next);
+      return next;
+    });
+  }
+
+  function openGuildMessage(message: HalieusGuildMessageNotification): void {
+    markGuildMessageRead(message);
+    setPreferredGuildId(message.guildId);
+    setGuildMessageNotice(null);
+    setGameNotice(null);
+    setInboxOpen(false);
+    setView("guilds");
+  }
+
+  useEffect(() => {
     if (!account?.id || typeof Notification === "undefined"
       || Notification.permission !== "granted" || document.visibilityState === "visible"
       || !("serviceWorker" in navigator)) return;
@@ -350,20 +394,35 @@ export function HomeScreen(props: HomeScreenProps) {
     if (!newest) return;
     seen.add(newest.key);
     saveSeenGameNotifications(account.id, "system", seen);
-    void navigator.serviceWorker.ready.then((registration) => registration.showNotification(
-      newest.kind === "room" ? "Halieus room invitation" : "Halieus game request",
-      {
-        body: `${newest.sender} invited you to ${newest.gameTitle}.`,
-        icon: "/app-icon-192.png",
-        tag: `halieus-invite-${newest.key}`,
-        data: { url: "/?inbox=1" },
-      },
-    )).catch(() => undefined);
+    // A real Web Push subscription delivers in the closed PWA. Only use the
+    // old page-hidden fallback when this device has not registered push,
+    // otherwise one invitation could trigger two system notifications.
+    void navigator.serviceWorker.ready.then(async (registration) => {
+      const subscribed = await registration.pushManager?.getSubscription();
+      if (subscribed) return;
+      await registration.showNotification(
+        newest.kind === "room" ? "Halieus room invitation" : "Halieus game request",
+        {
+          body: `${newest.sender} invited you to ${newest.gameTitle}.`,
+          icon: "/app-icon-192.png",
+          tag: `halieus-invite-${newest.key}`,
+          data: { url: "/?inbox=1" },
+        },
+      );
+    }).catch(() => undefined);
   }, [gameRequests, gameInvites, account?.id]);
 
   useEffect(() => {
     if (!account?.id) return;
     const url = new URL(window.location.href);
+    const guildId = url.searchParams.get("guild");
+    if (guildId && /^[a-z0-9_-]{5,100}$/i.test(guildId)) {
+      setPreferredGuildId(guildId);
+      setView("guilds");
+      url.searchParams.delete("guild");
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+      return;
+    }
     if (url.searchParams.get("inbox") !== "1") return;
     setInboxOpen(true);
     url.searchParams.delete("inbox");
@@ -464,7 +523,12 @@ export function HomeScreen(props: HomeScreenProps) {
     .sort((a, b) => (b.lastSeenAt ?? 0) - (a.lastSeenAt ?? 0))
     .slice(0, 8), [account?.id, directory]);
   const activeGameRequests = useMemo(() => gameRequests.filter((request) => request.status === "pending" || request.status === "accepted"), [gameRequests]);
-  const inboxCount = activeGameRequests.length + gameInvites.length + guildInvites.length;
+  const unreadGuildMessages = useMemo(() => guildMessageNotices.filter((message) => !readGuildMessages.has(message.key)), [guildMessageNotices, readGuildMessages]);
+  const incomingFriendRequests = useMemo(() => friendRequests.filter((request) =>
+    request.status === "pending" && request.recipientAccountId === account?.id),
+  [friendRequests, account?.id]);
+  const inboxCount = activeGameRequests.length + gameInvites.length + guildInvites.length
+    + unreadGuildMessages.length + incomingFriendRequests.length;
   const discoveryGames = useMemo(() => {
     const mostPlayed = [...personalStats.byGame]
       .filter((row) => row.played > 0 && ACTIVE_GAME_IDS.has(row.game as GameId))
@@ -966,7 +1030,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <div><p>PLAYER INBOX</p><h2>Requests & invitations</h2><span>Game and guild requests stay inside Halieus, so you do not need to move codes through another app.</span></div>
           <button type="button" onClick={() => setInboxOpen(false)} aria-label="Close inbox">×</button>
         </header>
-        {inboxCount === 0 && <div className="halieus-inbox-empty"><strong>You’re all caught up.</strong><span>New game requests and guild invitations will appear here.</span></div>}
+        {inboxCount === 0 && <div className="halieus-inbox-empty"><strong>You’re all caught up.</strong><span>Game invitations and guild messages will appear here.</span></div>}
         {activeGameRequests.length > 0 && <section className="halieus-inbox-group"><header><strong>Game requests</strong><b>{activeGameRequests.length}</b></header>{activeGameRequests.map((request) => {
           const incoming = request.recipientAccountId === account?.id;
           const accepted = request.status === "accepted";
@@ -986,6 +1050,30 @@ export function HomeScreen(props: HomeScreenProps) {
             <div>{room?.joinable && <button type="button" className="button-primary" onClick={() => { setInboxOpen(false); openLiveRoom(room, "join"); }}>Join</button>}{room?.spectatable && <button type="button" className="button-outline" onClick={() => { setInboxOpen(false); openLiveRoom(room, "watch"); }}>Spectate</button>}<button type="button" className="button-muted" onClick={() => void dismissGameInvite(invite.id)}>Dismiss</button></div>
           </article>;
         })}</section>}
+        {unreadGuildMessages.length > 0 && <section className="halieus-inbox-group" aria-label="Unread guild messages">
+          <header><strong>Guild messages</strong><b>{unreadGuildMessages.length}</b></header>
+          {unreadGuildMessages.slice(0, 20).map((notice) => (
+            <article key={notice.key} className="halieus-inbox-item is-guild" style={{ ["--inbox-accent" as string]: "#83a9f0" }}>
+              <span className="halieus-inbox-guild-mark" aria-hidden="true">✉</span>
+              <span><small>{notice.guildName} · {notice.senderDisplayName}</small><strong>New guild message</strong><em>{notice.preview}</em></span>
+              <div><button type="button" className="button-primary" onClick={() => openGuildMessage(notice)}>View chat</button>
+                <button type="button" className="button-muted" onClick={() => markGuildMessageRead(notice)}>Mark read</button></div>
+            </article>
+          ))}
+        </section>}
+        {incomingFriendRequests.length > 0 && <section className="halieus-inbox-group" aria-label="Incoming friend requests">
+          <header><strong>Friend requests</strong><b>{incomingFriendRequests.length}</b></header>
+          {incomingFriendRequests.map((friend) => (
+            <article key={friend.id} className="halieus-inbox-item" style={{ ["--inbox-accent" as string]: "#83a9f0" }}>
+              <span className="halieus-inbox-guild-mark" aria-hidden="true">@</span>
+              <span><small>@{friend.senderUsername}</small><strong>{friend.senderDisplayName}</strong><em>Wants to add you as a friend</em></span>
+              <div><button type="button" className="button-primary" disabled={friendBusy}
+                  onClick={() => void respondToFriend(friend.id, "accept")}>Accept</button>
+                <button type="button" className="button-outline" disabled={friendBusy}
+                  onClick={() => void respondToFriend(friend.id, "decline")}>Decline</button></div>
+            </article>
+          ))}
+        </section>}
         {guildInvites.length > 0 && <section className="halieus-inbox-group"><header><strong>Guild invitations</strong><b>{guildInvites.length}</b></header>{guildInvites.map((invitation) => (
           <article key={invitation.id} className="halieus-inbox-item is-guild" style={{ ["--inbox-accent" as string]: "#8b5cf6" }}>
             {invitation.guildPicture ? <img className="halieus-inbox-guild-mark is-picture" src={invitation.guildPicture} alt="" /> : <span className="halieus-inbox-guild-mark">{invitation.guildName.slice(0, 2).toUpperCase()}</span>}
@@ -1372,6 +1460,7 @@ export function HomeScreen(props: HomeScreenProps) {
         {view === "guilds" && account && (
           <section className="halieus-view view-guilds panel-enter">
             <GuildsPanel
+            preferredGuildId={preferredGuildId}
               account={account}
               liveRooms={liveRooms}
               onBackToPlayers={() => setView("players")}
@@ -1390,6 +1479,15 @@ export function HomeScreen(props: HomeScreenProps) {
         <button type="button" className={view === "guilds" ? "is-active" : ""} disabled={!account} onClick={() => { if (account) setView("guilds"); setMobileMenuOpen(false); }}><HgrIcon name="guilds" size={20} /><span>Guilds</span></button>
       </nav>
 
+      {guildMessageNotice && account && !gameNotice && !inboxOpen && !createOpen && !joinOpen && overlayHost && createPortal(
+        <GuildMessageDropdown
+          message={guildMessageNotice}
+          onOpen={() => openGuildMessage(guildMessageNotice)}
+          onLater={() => setGuildMessageNotice(null)}
+          onOpenInbox={() => { setGuildMessageNotice(null); setInboxOpen(true); }}
+        />,
+        overlayHost,
+      )}
       {gameNotice && account && !inboxOpen && !createOpen && !joinOpen && overlayHost && createPortal(
         <GameInviteDropdown
           notification={gameNotice}

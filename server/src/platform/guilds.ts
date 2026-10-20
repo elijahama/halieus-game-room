@@ -15,6 +15,7 @@ import type {
   HalieusGuildMember,
   HalieusGuildMembershipSnapshotEntry,
   HalieusGuildMessage,
+  HalieusGuildMessageNotification,
   HalieusGuildRole,
   HalieusGuildRoom,
   HalieusGuildRoomPolicy,
@@ -349,7 +350,36 @@ export function getGuildPeerAccountIds(accountId: string): Set<string> {
   return peers;
 }
 
+/** Server-verified guild membership and join date gate every chat notice. */
+export function getGuildMessageNotifications(accountId: string, now = Date.now()): HalieusGuildMessageNotification[] {
+  const cutoff = now - 14 * 24 * 60 * 60 * 1000;
+  return store.guilds.flatMap((guild) => {
+    const member = guild.members.find((item) => item.accountId === accountId);
+    if (!member) return [];
+    return guild.messages
+      .filter((message) => message.senderAccountId !== accountId
+        && message.senderAccountId !== "system"
+        && message.createdAt >= Math.max(cutoff, member.joinedAt)
+        && message.createdAt <= now)
+      .map((message) => ({
+        key: "guild-message:" + message.id,
+        id: message.id,
+        guildId: guild.id,
+        guildName: guild.name,
+        senderAccountId: message.senderAccountId,
+        senderDisplayName: message.senderDisplayName,
+        preview: message.body.slice(0, 140),
+        createdAt: message.createdAt,
+      }));
+  }).sort((a, b) => b.createdAt - a.createdAt || a.key.localeCompare(b.key)).slice(0, 60);
+}
+
 export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResolver, resolveAccountById: GuildAccountLookup): void {
+  app.get("/guilds/message-notifications", (request, response) => {
+    const account = requireAccount(resolveAccount, request, response);
+    if (!account) return;
+    response.json({ ok: true, messages: getGuildMessageNotifications(account.id) });
+  });
   lookupAccountById = resolveAccountById;
   app.get("/guilds", (request, response) => {
     const account = requireAccount(resolveAccount, request, response);

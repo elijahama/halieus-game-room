@@ -22,6 +22,7 @@ interface GuildsPanelProps {
   account: HalieusAccountSummary;
   liveRooms: HalieusLiveRoomSummary[];
   onBackToPlayers: () => void;
+  preferredGuildId?: string | null;
   onCreateRoom: (game: GameId, roomCode: string) => void;
   onOpenLiveRoom: (room: HalieusLiveRoomSummary, intent: "join" | "watch") => void;
 }
@@ -61,6 +62,7 @@ export function GuildsPanel({
   account,
   liveRooms,
   onBackToPlayers,
+  preferredGuildId,
   onCreateRoom,
   onOpenLiveRoom,
 }: GuildsPanelProps) {
@@ -157,10 +159,14 @@ export function GuildsPanel({
   }
 
   useEffect(() => {
-    void loadGuilds();
-    const poll = window.setInterval(() => void loadGuilds(), 10_000);
+    void loadGuilds(preferredGuildId);
+    const poll = window.setInterval(() => void loadGuilds(preferredGuildId), 10_000);
     return () => window.clearInterval(poll);
-  }, []);
+  }, [preferredGuildId]);
+
+  useEffect(() => {
+    if (preferredGuildId) { setSelectedGuildId(preferredGuildId); setView("chat"); }
+  }, [preferredGuildId]);
 
   useEffect(() => {
     if (!selectedGuildId) {

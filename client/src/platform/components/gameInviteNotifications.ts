@@ -55,7 +55,7 @@ const STORAGE_PREFIX = "halieus-notices-v1";
 const MAX_REMEMBERED = 160;
 
 /** Seen keys only mute popup repeats. They never cancel persistent inbox items. */
-export function readSeenGameNotifications(accountId: string, channel: "in-app" | "system"): Set<string> {
+export function readSeenGameNotifications(accountId: string, channel: "in-app" | "system" | "messages" | "message-popup"): Set<string> {
   try {
     const raw = window.localStorage.getItem(`${STORAGE_PREFIX}:${channel}:${accountId}`);
     const values: unknown = raw ? JSON.parse(raw) : [];
@@ -69,7 +69,7 @@ export function readSeenGameNotifications(accountId: string, channel: "in-app" |
 
 export function saveSeenGameNotifications(
   accountId: string,
-  channel: "in-app" | "system",
+  channel: "in-app" | "system" | "messages" | "message-popup",
   keys: Set<string>,
 ): void {
   try {
