@@ -153,9 +153,12 @@ export function HomeScreen(props: HomeScreenProps) {
   const [directory, setDirectory] = useState<HalieusPlayerDirectoryEntry[]>([]);
   const [friendRequests, setFriendRequests] = useState<HalieusFriendRequest[]>([]);
   const [friendIds, setFriendIds] = useState<string[]>([]);
+  const [friendListReady, setFriendListReady] = useState(false);
+  const [friendListError, setFriendListError] = useState("");
   const [friendHandle, setFriendHandle] = useState("");
   const [friendBusy, setFriendBusy] = useState(false);
   const [friendNotice, setFriendNotice] = useState("");
+  const [socialListSection, setSocialListSection] = useState<"friends" | "guild-contacts">("friends");
   const [gamerScoreLeaderboard, setGamerScoreLeaderboard] = useState<HalieusGamerScoreLeaderboardEntry[]>([]);
   const [gamerScoreLoading, setGamerScoreLoading] = useState(false);
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
@@ -246,16 +249,30 @@ export function HomeScreen(props: HomeScreenProps) {
         if (!cancelled) setDataError(error instanceof Error ? error.message : "Player presence is temporarily unavailable.");
       }
     };
+    const loadFriends = async () => {
+      try {
+        const social = await accountApi<{ ok: true; requests: HalieusFriendRequest[]; friendIds: string[] }>("/accounts/friends");
+        if (!cancelled) {
+          setFriendRequests(social.requests);
+          setFriendIds(social.friendIds);
+          setFriendListReady(true);
+          setFriendListError("");
+        }
+      } catch {
+        // Keep previously confirmed relationships rather than classifying
+        // friends as guild contacts after a temporary API failure.
+        if (!cancelled) setFriendListError("The Friends list could not refresh. Your existing connections are unchanged.");
+      }
+    };
     const loadOtherData = async () => {
       try {
-        const [stats, quick, live, invites, requests, guildInvitations, social] = await Promise.all([
+        const [stats, quick, live, invites, requests, guildInvitations] = await Promise.all([
           accountApi<{ ok: true; stats: HalieusPersonalStats }>("/accounts/me/stats"),
           accountApi<{ ok: true; profile: HalieusQuickPlayProfile }>("/accounts/me/quick-play"),
           accountApi<{ ok: true; rooms: HalieusLiveRoomSummary[] }>("/accounts/live-games"),
           accountApi<{ ok: true; invites: HalieusGameInviteSummary[] }>("/accounts/game-invites"),
           accountApi<{ ok: true; requests: HalieusGameRequestSummary[] }>("/accounts/game-requests"),
           accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations"),
-          accountApi<{ ok: true; requests: HalieusFriendRequest[]; friendIds: string[] }>("/accounts/friends"),
         ]);
         if (!cancelled) {
           setPersonalStats(stats.stats);
@@ -264,14 +281,17 @@ export function HomeScreen(props: HomeScreenProps) {
           setGameInvites(invites.invites.filter((invite) => ACTIVE_GAME_IDS.has(invite.game as GameId)));
           setGameRequests(requests.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId)));
           setGuildInvites(guildInvitations.invitations.filter((invitation) => invitation.status === "pending"));
-          setFriendRequests(social.requests);
-          setFriendIds(social.friendIds);
         }
       } catch {
         // Retry peripheral social data without hiding the authorised Friends roster.
       }
     };
-    const load = () => { void loadDirectory(); void loadOtherData(); };
+    setFriendListReady(false);
+    setFriendListError("");
+    setFriendIds([]);
+    setFriendRequests([]);
+    setDirectory([]);
+    const load = () => { void loadDirectory(); void loadOtherData(); void loadFriends(); };
     load();
     const timer = window.setInterval(load, 10000);
     const refreshOnFocus = () => { if (document.visibilityState === "visible") load(); };
@@ -408,9 +428,21 @@ export function HomeScreen(props: HomeScreenProps) {
     liveRooms.forEach((room) => room.humanPlayers.forEach((name) => map.set(name.trim().toLowerCase(), room)));
     return map;
   }, [liveRooms]);
+  // Guild membership grants contact visibility, not automatic friendship.
+  // The normal directory remains server-filtered for privacy; this split
+  // simply separates accepted friends from other shared-guild contacts.
+  const socialRoster = useMemo(() => {
+    // Never guess a guild relationship while the friendship API is loading.
+    if (!friendListReady) return { friends: [], guildContacts: [] };
+    const accepted = new Set(friendIds);
+    const friends = directory.filter((person) => accepted.has(person.id));
+    const guildContacts = directory.filter((person) => !accepted.has(person.id));
+    return { friends, guildContacts };
+  }, [directory, friendIds, friendListReady]);
+  const selectedSocialRoster = socialListSection === "friends" ? socialRoster.friends : socialRoster.guildContacts;
   const filteredDirectory = useMemo(() => {
     const query = playerSearch.trim().toLowerCase();
-    return directory.filter((person) => {
+    return selectedSocialRoster.filter((person) => {
       const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase());
       const matchesFilter = playerFilter === "all"
         || (playerFilter === "online" && person.online)
@@ -419,7 +451,7 @@ export function HomeScreen(props: HomeScreenProps) {
       const matchesSearch = !query || `${person.displayName} ${person.username}`.toLowerCase().includes(query);
       return matchesFilter && matchesSearch;
     });
-  }, [directory, liveRoomByPlayerName, playerFilter, playerSearch]);
+  }, [selectedSocialRoster, liveRoomByPlayerName, playerFilter, playerSearch]);
   const selectedPlayerRoom = selectedPlayer ? liveRoomByPlayerName.get(selectedPlayer.displayName.trim().toLowerCase()) ?? null : null;
   const ownLiveRoom = useMemo(() => {
     const savedCodes = new Set(savedSeats.map((entry) => `${entry.id}:${entry.session?.code ?? ""}`));
@@ -529,6 +561,8 @@ export function HomeScreen(props: HomeScreenProps) {
     ]);
     setFriendRequests(social.requests);
     setFriendIds(social.friendIds);
+    setFriendListReady(true);
+    setFriendListError("");
     setDirectory(people.players);
   }
 
@@ -1093,7 +1127,7 @@ export function HomeScreen(props: HomeScreenProps) {
 
         {view === "players" && <section className="halieus-view view-players panel-enter">
           {selectedPlayer ? <div className="halieus-player-profile-page-shell">
-            <button type="button" className="halieus-profile-page-back" onClick={() => { setSelectedPlayerId(null); setInviteNotice(""); }}><HgrIcon name="chevron-left" size={17} /> Back to players</button>
+            <button type="button" className="halieus-profile-page-back" onClick={() => { setSelectedPlayerId(null); setInviteNotice(""); }}><HgrIcon name="chevron-left" size={17} /> Back to Friends</button>
             <article className="halieus-player-profile-page panel-enter">
               <header className="halieus-player-profile-hero">
                 <span className="halieus-profile-avatar halieus-avatar-media" style={selectedPlayer.profilePicture ? undefined : { background: selectedPlayer.playerColor }}>{selectedPlayer.profilePicture ? <img src={selectedPlayer.profilePicture} alt="" /> : selectedPlayer.avatar}</span>
@@ -1117,7 +1151,7 @@ export function HomeScreen(props: HomeScreenProps) {
               </>}
             </article>
           </div> : <>
-            <header className="halieus-page-heading"><div><p>HALIEUS SOCIAL</p><h1>Friends</h1><span>Friends and shared guild members. Add a person using their exact @handle.</span></div><button type="button" className="button-outline halieus-open-guilds" onClick={() => { setView("guilds"); setSelectedPlayerId(null); }}>Guilds →</button></header>
+            <header className="halieus-page-heading"><div><p>HALIEUS SOCIAL</p><h1>Friends</h1><span>Friendships and guild membership are separate. Browse each list below, or add someone by their @handle.</span></div><button type="button" className="button-outline halieus-open-guilds" onClick={() => { setView("guilds"); setSelectedPlayerId(null); }}>Guilds →</button></header>
             <section className="halieus-friends-access">
               <form className="halieus-add-friend" onSubmit={(event) => void addFriendByHandle(event)}>
                 <label htmlFor="halieus-friend-handle">Add someone by their exact @handle</label>
@@ -1127,7 +1161,7 @@ export function HomeScreen(props: HomeScreenProps) {
                 <button type="submit" className="button-primary" disabled={friendBusy || !/^@[a-z0-9._-]{3,32}$/i.test(friendHandle.trim())}>
                   {friendBusy ? "Working…" : "Send request"}
                 </button></div>
-                <small>People only appear as friends after they accept. Shared guild members also appear below.</small>
+                <small>A friendship requires acceptance. Sharing a guild does not automatically make you friends.</small>
               </form>
               {friendNotice && <p className="halieus-friend-notice" role="status">{friendNotice}</p>}
               {friendRequests.some((request) => request.recipientAccountId === account?.id && request.status === "pending") &&
@@ -1142,23 +1176,42 @@ export function HomeScreen(props: HomeScreenProps) {
               {friendRequests.some((request) => request.senderAccountId === account?.id && request.status === "pending") &&
                 <p className="halieus-friend-pending">Pending requests: {friendRequests.filter((request) => request.senderAccountId === account?.id && request.status === "pending").map((request) => "@" + request.recipientUsername).join(", ")}</p>}
             </section>
+            <div className="halieus-social-roster-switch">
+              <div className="halieus-social-roster-tabs" role="group" aria-label="Choose social list">
+                <button type="button" className={socialListSection === "friends" ? "is-active" : ""}
+                  aria-pressed={socialListSection === "friends"}
+                  onClick={() => { setSocialListSection("friends"); setPlayerSearch(""); setPlayerFilter("all"); }}>
+                  Friends <span>{socialRoster.friends.length}</span>
+                </button>
+                <button type="button" className={socialListSection === "guild-contacts" ? "is-active" : ""}
+                  aria-pressed={socialListSection === "guild-contacts"}
+                  onClick={() => { setSocialListSection("guild-contacts"); setPlayerSearch(""); setPlayerFilter("all"); }}>
+                  Guild contacts <span>{socialRoster.guildContacts.length}</span>
+                </button>
+              </div>
+              <p>{socialListSection === "friends"
+                ? "People who have accepted your friendship. Guild membership alone never adds them here."
+                : "Other members of your guilds who aren't already friends. Open Guilds to manage your guilds."}</p>
+            </div>
             <div className="halieus-player-tools">
-              <label><span>Search friends and guild members</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
+              <label><span>{socialListSection === "friends" ? "Search friends" : "Search guild contacts"}</span><input value={playerSearch} onChange={(event) => setPlayerSearch(event.target.value)} placeholder="Name or username" /></label>
               <div className="halieus-player-filters" role="group" aria-label="Player status filter">
                 {(["all", "online", "in-game", "offline"] as const).map((filter) => <button type="button" key={filter} className={playerFilter === filter ? "is-active" : ""} onClick={() => { setPlayerFilter(filter); if (filter === "all" || filter === "online") setPlayerSearch(""); }}>{filter === "in-game" ? "In Game" : filter[0].toUpperCase() + filter.slice(1)}</button>)}
               </div>
             </div>
             <div className="halieus-player-result-summary" role="status" aria-live="polite">
-              <span>{filteredDirectory.length} of {directory.length} connections shown · {onlinePlayers.length} online</span>
+              <span>{filteredDirectory.length} of {selectedSocialRoster.length} {socialListSection === "friends" ? "friends" : "guild contacts"} shown · {selectedSocialRoster.filter((person) => person.online).length} online</span>
               {playerSearch.trim() && <button type="button" onClick={() => setPlayerSearch("")}>Clear search “{playerSearch.trim()}”</button>}
             </div>
-            <div className="halieus-player-directory">
+            {friendListError && <p className="halieus-social-refresh-error" role="status">{friendListError}</p>}
+            <div className="halieus-player-directory is-social-list" aria-label={socialListSection === "friends" ? "Accepted friends" : "Guild contacts who are not friends"}>
               {filteredDirectory.map((person) => {
                 const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase()) ?? null;
                 const liveGame = liveRoom ? GAME_BY_ID[liveRoom.game] : null;
                 return <PlayerIdentityCard
                   key={person.id}
                   player={person}
+                  compact
                   className={`${person.online ? "is-online" : "is-offline"} ${liveRoom ? "is-in-game" : ""}`}
                   status={person.online ? "Online" : undefined}
                   detail={liveRoom && liveGame ? `Playing ${liveGame.name} · ${liveRoom.code}` : person.online ? undefined : "Offline"}
@@ -1166,7 +1219,7 @@ export function HomeScreen(props: HomeScreenProps) {
                   onClick={() => setSelectedPlayerId(person.id)}
                 />;
               })}
-              {filteredDirectory.length === 0 && <div className="halieus-player-empty">No friends or guild members match. Add someone using their @handle, or change the filter.</div>}
+              {filteredDirectory.length === 0 && <div className="halieus-player-empty">{!friendListReady ? (friendListError || "Loading your friends and guild contacts…") : selectedSocialRoster.length === 0 ? (socialListSection === "friends" ? "Your friends list is empty. Add someone by @handle and wait for them to accept." : "No guild-only contacts yet. Open Guilds to join or create a guild.") : "Nobody in this list matches your search or status filter."}</div>}
             </div>
           </>}
         </section>}

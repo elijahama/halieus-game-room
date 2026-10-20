@@ -1,0 +1,114 @@
+/*
+ * HGR 4.5.5p — Friends / Guild contacts as separate lists.
+ * This is presentation only. Accepted friendships and guild memberships
+ * remain independent persistent relationships on the existing server.
+ * Keep the full Guilds page available by its explicit link and navigation.
+ */
+.view-players .halieus-social-roster-switch {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 16px;
+  min-width: 0;
+}
+.view-players .halieus-social-roster-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  max-width: 520px;
+  width: 100%;
+  padding: 4px;
+  border: 1px solid var(--hgr-border, rgba(139,158,190,.30));
+  border-radius: 15px;
+  background: var(--hgr-surface, rgba(16,23,41,.82));
+  box-sizing: border-box;
+}
+.view-players .halieus-social-roster-tabs > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--hgr-text-muted, #b5bfd0);
+  font-family: "Varela Round", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.view-players .halieus-social-roster-tabs > button.is-active {
+  color: var(--hgr-text, #f1f4fc);
+  background: var(--hgr-surface-raised, rgba(52,67,97,.88));
+  border-color: var(--hgr-border, rgba(152,175,218,.32));
+}
+.view-players .halieus-social-roster-tabs > button:focus-visible {
+  outline: 2px solid var(--hgr-accent, #8db7f5);
+  outline-offset: 2px;
+}
+.view-players .halieus-social-roster-tabs > button > span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 23px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(127,149,186,.15);
+  font: 500 11px/1 "Alata", system-ui, sans-serif;
+  box-sizing: border-box;
+}
+.view-players .halieus-social-roster-switch > p {
+  margin: 0;
+  max-width: 750px;
+  color: var(--hgr-text-muted, #b5bfd0);
+  font: 400 12px/1.55 "Alata", system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.view-players .halieus-social-refresh-error {
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font: 400 12px/1.45 "Alata", system-ui, sans-serif;
+  color: var(--hgr-text-muted, #b5bfd0);
+  border: 1px solid var(--hgr-border, rgba(152,175,218,.25));
+}
+.view-players .halieus-player-directory.is-social-list {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) !important;
+  gap: 9px;
+  min-width: 0;
+}
+.view-players .halieus-player-directory.is-social-list .halieus-player-identity {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 64px !important;
+  width: 100%;
+  margin: 0;
+}
+@media (max-width: 390px) and (orientation: portrait) {
+  .view-players .halieus-social-roster-switch {
+    margin: 10px 0 13px;
+  }
+  .view-players .halieus-social-roster-tabs > button {
+    font-size: 12px;
+    gap: 5px;
+    padding-inline: 6px;
+    min-height: 44px;
+  }
+  .view-players .halieus-social-roster-tabs > button > span {
+    min-width: 21px;
+    height: 20px;
+  }
+  .view-players .halieus-social-roster-switch > p {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .view-players .halieus-social-roster-tabs > button {
+    transition: none;
+  }
+}
