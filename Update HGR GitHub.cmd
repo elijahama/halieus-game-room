@@ -489,6 +489,20 @@ if exist "%TRACKED_ORACLE_DIR%\deploy-from-windows.ps1" (
 set "PRIVATE_UPDATE_PS1=%HGR_PROJECT_ROOT%update-website.ps1"
 set "ORACLE_DEPLOY_PS1=%LOCAL_ORACLE_DIR%\deploy-from-windows.ps1"
 
+rem Cloud updates are non-interactive. Bypass the owner-private updater's
+rem recursive key search and GUI picker; use the saved, validated key path
+rem with the canonical tracked Oracle helper. Manual Update is unchanged.
+if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
+    echo [CLOUD] Using the approved unattended Oracle deployment path.
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\cloud-oracle-deploy.ps1"
+    if errorlevel 1 (
+        echo [STOPPED] The owner-PC Oracle deploy helper could not complete.
+        echo Cloud Update will not open a hidden picker or guess an SSH key.
+        goto :PAUSE_EXIT
+    )
+    goto :DEPLOY_DONE
+)
+
 if exist "%PRIVATE_UPDATE_PS1%" (
     echo Using owner website updater:
     echo   %PRIVATE_UPDATE_PS1%
