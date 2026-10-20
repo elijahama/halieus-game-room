@@ -1,6 +1,6 @@
 import { AdminControlLauncher } from "../control/AdminControlLauncher";
 import { PreGameShell } from "./PreGameShell";
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type {
@@ -34,6 +34,8 @@ import { fullscreenUnavailableMessage, stableFullscreenAvailable } from "../full
 import { SkinLibraryButton } from "./SkinLibraryButton";
 import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
+import { GameInviteDropdown } from "./GameInviteDropdown";
+import { incomingGameNotifications, readSeenGameNotifications, saveSeenGameNotifications, type HgrIncomingGameNotification } from "./gameInviteNotifications";
 import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
 import { HgrIcon } from "./HgrIcon";
@@ -175,6 +177,11 @@ export function HomeScreen(props: HomeScreenProps) {
   const [gameRequests, setGameRequests] = useState<HalieusGameRequestSummary[]>([]);
   const [guildInvites, setGuildInvites] = useState<HalieusGuildInvitation[]>([]);
   const [inboxOpen, setInboxOpen] = useState(false);
+  const [gameNotice, setGameNotice] = useState<HgrIncomingGameNotification | null>(null);
+  const [gameNoticeBusy, setGameNoticeBusy] = useState(false);
+  const [gameNoticeError, setGameNoticeError] = useState("");
+  const seenGameNotices = useRef(new Set<string>());
+  const seenGameNoticeAccount = useRef<string | null>(null);
   const [requestGameId, setRequestGameId] = useState<GameId>("mega-board");
   const [requestingPlayerId, setRequestingPlayerId] = useState<string | null>(null);
   const [invitingPlayerId, setInvitingPlayerId] = useState<string | null>(null);
@@ -264,26 +271,33 @@ export function HomeScreen(props: HomeScreenProps) {
         if (!cancelled) setFriendListError("The Friends list could not refresh. Your existing connections are unchanged.");
       }
     };
+    // Invitations are independent of stats, active rooms and guild services.
+    // A failure elsewhere must never prevent a game request from appearing.
+    const loadInvitations = () => {
+      void accountApi<{ ok: true; invites: HalieusGameInviteSummary[] }>("/accounts/game-invites")
+        .then((result) => { if (!cancelled) setGameInvites(result.invites.filter((invite) => ACTIVE_GAME_IDS.has(invite.game as GameId))); })
+        .catch(() => undefined);
+      void accountApi<{ ok: true; requests: HalieusGameRequestSummary[] }>("/accounts/game-requests")
+        .then((result) => { if (!cancelled) setGameRequests(result.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId))); })
+        .catch(() => undefined);
+      void accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations")
+        .then((result) => { if (!cancelled) setGuildInvites(result.invitations.filter((invitation) => invitation.status === "pending")); })
+        .catch(() => undefined);
+    };
     const loadOtherData = async () => {
       try {
-        const [stats, quick, live, invites, requests, guildInvitations] = await Promise.all([
+        const [stats, quick, live] = await Promise.all([
           accountApi<{ ok: true; stats: HalieusPersonalStats }>("/accounts/me/stats"),
           accountApi<{ ok: true; profile: HalieusQuickPlayProfile }>("/accounts/me/quick-play"),
           accountApi<{ ok: true; rooms: HalieusLiveRoomSummary[] }>("/accounts/live-games"),
-          accountApi<{ ok: true; invites: HalieusGameInviteSummary[] }>("/accounts/game-invites"),
-          accountApi<{ ok: true; requests: HalieusGameRequestSummary[] }>("/accounts/game-requests"),
-          accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations"),
         ]);
         if (!cancelled) {
           setPersonalStats(stats.stats);
           setQuickPlay(quick.profile);
           setLiveRooms(live.rooms.filter((room) => ACTIVE_GAME_IDS.has(room.game)));
-          setGameInvites(invites.invites.filter((invite) => ACTIVE_GAME_IDS.has(invite.game as GameId)));
-          setGameRequests(requests.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId)));
-          setGuildInvites(guildInvitations.invitations.filter((invitation) => invitation.status === "pending"));
         }
       } catch {
-        // Retry peripheral social data without hiding the authorised Friends roster.
+        // Retry peripheral data without hiding social or game invitations.
       }
     };
     setFriendListReady(false);
@@ -291,7 +305,10 @@ export function HomeScreen(props: HomeScreenProps) {
     setFriendIds([]);
     setFriendRequests([]);
     setDirectory([]);
-    const load = () => { void loadDirectory(); void loadOtherData(); void loadFriends(); };
+    setGameInvites([]);
+    setGameRequests([]);
+    setGuildInvites([]);
+    const load = () => { void loadDirectory(); void loadOtherData(); void loadFriends(); loadInvitations(); };
     load();
     const timer = window.setInterval(load, 10000);
     const refreshOnFocus = () => { if (document.visibilityState === "visible") load(); };
@@ -300,11 +317,58 @@ export function HomeScreen(props: HomeScreenProps) {
   }, [account?.id]);
 
   useEffect(() => {
-    const incoming = gameRequests.find((request) => request.recipientAccountId === account?.id && request.status === "pending");
-    if (!incoming || typeof Notification === "undefined" || Notification.permission !== "granted" || document.visibilityState === "visible") return;
-    const tag = `halieus-request-${incoming.id}`;
-    void navigator.serviceWorker?.ready.then((registration) => registration.showNotification("Halieus Game Request", { body: `${incoming.senderDisplayName} wants to play ${incoming.gameTitle}.`, icon: "/app-icon-192.png", tag, data: { url: "/" } })).catch(() => undefined);
-  }, [gameRequests, account?.id]);
+    const accountId = account?.id ?? null;
+    seenGameNoticeAccount.current = accountId;
+    seenGameNotices.current = accountId ? readSeenGameNotifications(accountId, "in-app") : new Set();
+    setGameNotice(null);
+    setGameNoticeBusy(false);
+    setGameNoticeError("");
+  }, [account?.id]);
+
+  useEffect(() => {
+    if (!account?.id || document.visibilityState !== "visible"
+      || inboxOpen || createOpen || joinOpen || gameNotice) return;
+    const notices = incomingGameNotifications(account.id, gameRequests, gameInvites);
+    const unseen = notices.filter((notice) => !seenGameNotices.current.has(notice.key));
+    if (!unseen.length) return;
+    // One concise dropdown per poll, even when several pending requests arrived.
+    // Every outstanding item remains actionable in the persistent Inbox.
+    const updated = new Set([...seenGameNotices.current, ...unseen.map((notice) => notice.key)]);
+    seenGameNotices.current = updated;
+    saveSeenGameNotifications(account.id, "in-app", updated);
+    setGameNoticeError("");
+    setGameNotice(unseen[0]);
+  }, [account?.id, gameRequests, gameInvites, inboxOpen, createOpen, joinOpen, gameNotice]);
+
+  useEffect(() => {
+    if (!account?.id || typeof Notification === "undefined"
+      || Notification.permission !== "granted" || document.visibilityState === "visible"
+      || !("serviceWorker" in navigator)) return;
+    const seen = readSeenGameNotifications(account.id, "system");
+    const newest = incomingGameNotifications(account.id, gameRequests, gameInvites)
+      .find((notice) => !seen.has(notice.key));
+    if (!newest) return;
+    seen.add(newest.key);
+    saveSeenGameNotifications(account.id, "system", seen);
+    void navigator.serviceWorker.ready.then((registration) => registration.showNotification(
+      newest.kind === "room" ? "Halieus room invitation" : "Halieus game request",
+      {
+        body: `${newest.sender} invited you to ${newest.gameTitle}.`,
+        icon: "/app-icon-192.png",
+        tag: `halieus-invite-${newest.key}`,
+        data: { url: "/?inbox=1" },
+      },
+    )).catch(() => undefined);
+  }, [gameRequests, gameInvites, account?.id]);
+
+  useEffect(() => {
+    if (!account?.id) return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("inbox") !== "1") return;
+    setInboxOpen(true);
+    url.searchParams.delete("inbox");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+  }, [account?.id]);
 
   useEffect(() => {
     const sync = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -690,6 +754,51 @@ export function HomeScreen(props: HomeScreenProps) {
       setGameRequests((current) => current.map((item) => item.id === requestId ? result.request : item));
       if (action === "accept") { onGameSelect(result.request.game as GameId); if (result.request.roomCode) onRoomCodeChange(result.request.roomCode); else onGenerateRoomCode(); setView("games"); setCreateOpen(true); }
     } catch (error) { setDataError(error instanceof Error ? error.message : "Unable to update that game request."); }
+  }
+
+  async function actOnGameNotice(action: "accept" | "decline"): Promise<void> {
+    if (!gameNotice || gameNoticeBusy) return;
+    const notice = gameNotice;
+    setGameNoticeBusy(true);
+    setGameNoticeError("");
+    try {
+      if (notice.kind === "request") {
+        // Same server-authoritative, recipient-only decision as the Inbox.
+        const result = await accountApi<{ ok: true; request: HalieusGameRequestSummary }>(
+          `/accounts/game-requests/${encodeURIComponent(notice.id)}/respond`,
+          { method: "POST", body: JSON.stringify({ action }) },
+        );
+        setGameRequests((current) => current.map((item) => item.id === notice.id ? result.request : item));
+        if (action === "accept") {
+          onGameSelect(result.request.game as GameId);
+          if (result.request.roomCode) onRoomCodeChange(result.request.roomCode);
+          else onGenerateRoomCode();
+          setView("games");
+          setCreateOpen(true);
+        }
+      } else if (action === "decline") {
+        // Room invitations use the existing recipient-only dismiss endpoint.
+        await accountApi<{ ok: true }>(
+          `/accounts/game-invites/${encodeURIComponent(notice.id)}/dismiss`,
+          { method: "POST" },
+        );
+        setGameInvites((current) => current.filter((item) => item.id !== notice.id));
+      } else {
+        // A room invitation is accepted by opening its authenticated join
+        // flow; the game server still decides whether a seat is available.
+        onGameSelect(notice.game as GameId);
+        onRoomCodeChange(notice.roomCode);
+        setJoinIntent("join");
+        setJoinOpen(true);
+        setShowRecovery(false);
+        setView("games");
+      }
+      setGameNotice(null);
+    } catch (error) {
+      setGameNoticeError(error instanceof Error ? error.message : "This invitation is no longer available.");
+    } finally {
+      setGameNoticeBusy(false);
+    }
   }
 
   async function cancelGameRequest(requestId: string) {
@@ -1281,6 +1390,18 @@ export function HomeScreen(props: HomeScreenProps) {
         <button type="button" className={view === "guilds" ? "is-active" : ""} disabled={!account} onClick={() => { if (account) setView("guilds"); setMobileMenuOpen(false); }}><HgrIcon name="guilds" size={20} /><span>Guilds</span></button>
       </nav>
 
+      {gameNotice && account && !inboxOpen && !createOpen && !joinOpen && overlayHost && createPortal(
+        <GameInviteDropdown
+          notification={gameNotice}
+          busy={gameNoticeBusy}
+          error={gameNoticeError}
+          onAccept={() => void actOnGameNotice("accept")}
+          onDecline={() => void actOnGameNotice("decline")}
+          onLater={() => setGameNotice(null)}
+          onOpenInbox={() => { setGameNotice(null); setInboxOpen(true); }}
+        />,
+        overlayHost,
+      )}
       {inboxOverlay}
       {createOverlay}
       {joinOverlay}

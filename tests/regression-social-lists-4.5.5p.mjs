@@ -22,8 +22,8 @@ assert.match(home, /if \(!friendListReady\) return \{ friends: \[\], guildContac
   "Never misclassify relationships before friend status is available");
 assert.match(home, /const loadFriends = async \(\) =>/,
   "Friendship fetch must be independent of game, guild invite, and stats requests");
-assert.match(home, /const load = \(\) => \{ void loadDirectory\(\); void loadOtherData\(\); void loadFriends\(\); \}/,
-  "Both directory and accepted-friend status must refresh");
+assert.match(home, /const load = \(\) => \{ void loadDirectory\(\); void loadOtherData\(\); void loadFriends\(\); loadInvitations\(\); \}/,
+  "Directory, friendship status and game invitations must refresh independently");
 assert.match(home, /aria-label="Choose social list"/);
 assert.match(home, /aria-pressed=\{socialListSection === "friends"\}/);
 assert.match(home, /aria-pressed=\{socialListSection === "guild-contacts"\}/);
