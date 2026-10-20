@@ -132,15 +132,22 @@ Write-Host ""
 Write-Host "HGR Control was running before this update." -ForegroundColor Cyan
 Write-Host "Restarting it from the newly updated source with fresh credentials..." -ForegroundColor DarkGray
 
+# A PowerShell helper that completes successfully without invoking a native
+# executable does NOT update $LASTEXITCODE. In a fresh finalizer process it can
+# remain $null, and '$null -ne 0' is true: the old check falsely failed right
+# after stopping the Control Agent, stranding the browser bridge at 98%.
+# Use PowerShell's invocation success flag immediately after each script.
 & $stopHelper
-if ($LASTEXITCODE -ne 0) {
+$stopSucceeded = $?
+if (-not $stopSucceeded) {
     throw "HGR Control could not be stopped cleanly after the update."
 }
 
 Start-Sleep -Milliseconds 300
 
 & $startHelper
-if ($LASTEXITCODE -ne 0) {
+$startSucceeded = $?
+if (-not $startSucceeded) {
     throw "HGR Control could not be restarted from the updated source."
 }
 
@@ -173,7 +180,8 @@ Write-Host "A fresh loopback-only credential boundary is now active." -Foregroun
 if (Test-Path -LiteralPath $startCloudHelper) {
     try {
         & $startCloudHelper
-        if ($LASTEXITCODE -ne 0) {
+        $cloudStarted = $?
+        if (-not $cloudStarted) {
             Write-Warning "HGR Control local agent restarted, but its outbound Cloud bridge did not start. Browser Control needs the Cloud bridge."
         }
     } catch {

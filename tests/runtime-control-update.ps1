@@ -15,13 +15,15 @@ $global:controlTestPid = 101
 $global:controlTestKeepToken = $false
 function global:Get-NetTCPConnection { [pscustomobject]@{ OwningProcess=$global:controlTestPid } }
 function global:Get-Process { [pscustomobject]@{ StartTime=[datetime]'2026-10-02T10:00:00Z' } }
-Set-Content (Join-Path $helpers 'stop-control.ps1') '$global:controlTestCalls++; $global:LASTEXITCODE=0'
+# Deliberately never set $LASTEXITCODE: the real Stop Control helper can
+# complete with only PowerShell cmdlets, leaving it $null (or a stale value).
+# Previously the finalizer misread that as failure AFTER taking Control offline.
+Set-Content (Join-Path $helpers 'stop-control.ps1') '$global:controlTestCalls++'
 Set-Content (Join-Path $helpers 'start-control.ps1') @'
 param([int]$HttpsPort)
 $global:controlTestCalls++
 if ($HttpsPort -ne 0) { throw 'Updater must not pass the retired Tailscale Serve port to local Control' }
 if (-not $global:controlTestKeepToken) { Set-Content (Join-Path $global:controlTestRuntime '.hgr-control-token') 'fresh-test-credential' }
-$global:LASTEXITCODE=0
 '@
 $helper = Join-Path $helpers 'refresh-control-after-update.ps1'
 function Assert-Calls($expected) { if ($global:controlTestCalls -ne $expected) { throw "Expected $expected lifecycle calls" } }
@@ -41,6 +43,9 @@ try {
         throw 'Cloud Update deferral must retain the captured Control snapshot'
     }
     Remove-Item Env:HGR_CONTROL_DEFER_REFRESH -ErrorAction SilentlyContinue
+    # Old code checks '$LASTEXITCODE -ne 0' and falsely fails here. The
+    # fixture intentionally models a successful PowerShell-only helper.
+    $global:LASTEXITCODE = $null
     & $helper
     Assert-Calls 2
     & $helper -Capture

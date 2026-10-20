@@ -342,18 +342,28 @@
 
     removeEnrollmentButtons();
     showRevokeButton(device);
-    const ready = device.approval === "approved" && device.online && device.localControlOnline;
-    if (badge) badge.textContent = device.online ? (device.localControlOnline ? "Online" : "Agent offline") : "Offline";
+    // These are agent/bridge health signals, NOT a test of whether the
+    // Windows computer is switched on or reachable through other apps.
+    const bridgeConnected = Boolean(device.online);
+    const controlConnected = Boolean(device.localControlOnline);
+    const ready = device.approval === "approved" && bridgeConnected && controlConnected;
+    if (badge) badge.textContent = !bridgeConnected
+      ? "Bridge disconnected"
+      : controlConnected ? "Online" : "Control disconnected";
     if (button) {
       button.disabled = !ready;
       const copy = button.querySelector("small");
-      if (copy) copy.textContent = ready ? "Runs the approved owner-PC updater" : "Owner PC must be online";
+      if (copy) copy.textContent = ready
+        ? "Runs the approved owner-PC updater"
+        : bridgeConnected ? "Reconnect local HGR Control Agent" : "Reconnect outbound HGR Control bridge";
     }
     setReadiness(
-      ready ? "Cloud Update ready" : "Owner PC unavailable",
+      ready ? "Cloud Update ready" : bridgeConnected ? "Control Agent disconnected" : "Cloud bridge disconnected",
       ready
         ? "Update HGR is enabled through the outbound owner-PC Control bridge. No arbitrary shell commands are accepted."
-        : "The cloud can see this enrolled PC, but Update stays disabled until its local HGR Control Agent is online.",
+        : bridgeConnected
+          ? "The enrolled PC bridge is connected, but the local HGR Control Agent is unavailable. The PC itself may be online."
+          : "The website has not received a recent heartbeat from the Control bridge. This does not mean the PC is turned off.",
       ready,
     );
   }

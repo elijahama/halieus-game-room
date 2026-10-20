@@ -149,6 +149,25 @@ try{
     await page.locator('#operationDismiss').click();
     await page.locator('#operationToast').waitFor({state:'hidden'});
   }
+  if (width === 390) {
+    const pcBadge = () => page.locator('#ownerPcDetail').locator('xpath=../..').locator('b');
+    device.localControlOnline = false;
+    await page.waitForFunction(() =>
+      document.getElementById('ownerPcDetail')?.parentElement?.parentElement?.querySelector('b')?.textContent === 'Control disconnected');
+    assert.equal(await pcBadge().textContent(), 'Control disconnected',
+      'Agent health must not claim the physical PC is offline');
+    assert.equal(await update.isDisabled(), true, 'Unsafe Update stays blocked while agent disconnected');
+    device.localControlOnline = true;
+    online = false;
+    await page.waitForFunction(() =>
+      document.getElementById('ownerPcDetail')?.parentElement?.parentElement?.querySelector('b')?.textContent === 'Bridge disconnected');
+    assert.equal(await pcBadge().textContent(), 'Bridge disconnected',
+      'Stale Cloud heartbeat must not claim the physical PC is offline');
+    online = true;
+    await page.waitForFunction(() =>
+      document.getElementById('ownerPcDetail')?.parentElement?.parentElement?.querySelector('b')?.textContent === 'Online');
+    assert.equal(await update.isDisabled(), false, 'Control becomes available again after both links recover');
+  }
   online=false;
   await page.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button')].find(b=>b.textContent.includes('Update HGR'))?.disabled===true);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Control content stays within viewport');
