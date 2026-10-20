@@ -22,6 +22,7 @@ import type {
   HalieusGuildSummary,
 } from "../../../shared/platform/guilds.js";
 import { getGuildDataDirectory } from "./dataPaths.js";
+import { sendHgrPush } from "./pushNotifications.js";
 
 type GuildAuthResolver = (request: Request) => HalieusAccountSummary | null;
 type GuildAccountLookup = (accountId: string) => HalieusAccountSummary | null;
@@ -539,6 +540,15 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
     membership.guild.messages = membership.guild.messages.slice(-MAX_MESSAGES_PER_GUILD);
     membership.guild.updatedAt = Date.now();
     await saveStore();
+    void sendHgrPush(membership.guild.members
+      .filter((member) => member.accountId !== account.id)
+      .map((member) => member.accountId), {
+      topic:"messages", title:"HGR guild message",
+      // Never include private chat content in lock-screen notifications.
+      body:`${account.displayName} messaged ${membership.guild.name}.`,
+      url:"/?guild="+encodeURIComponent(membership.guild.id),
+      tag:"hgr-message-"+message.id,
+    });
     response.status(201).json({ ok: true, message });
   });
 
@@ -707,6 +717,11 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
     membership.guild.invitations = membership.guild.invitations.slice(-200);
     membership.guild.updatedAt = Date.now();
     await saveStore();
+    void sendHgrPush([target.id], {
+      topic:"invites", title:"HGR guild invitation",
+      body:`${account.displayName} invited you to join ${membership.guild.name}.`,
+      url:"/?inbox=1",tag:"hgr-guild-"+invitation.id,
+    });
     response.status(201).json({ ok: true, invitation, guild: detailFor(membership.guild, account.id) });
   });
 

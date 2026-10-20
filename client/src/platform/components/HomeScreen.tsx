@@ -1181,7 +1181,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <div className="halieus-mobile-more-controls" aria-label="Display and app controls">
             <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
             <InstallAppButton />
-            <NotificationPermissionButton />
+            <NotificationPermissionButton accountId={account?.id} />
           </div>
           {fullscreenNotice && <small className="halieus-fullscreen-note" role="status">{fullscreenNotice}</small>}
           {betaMode && <div className="halieus-beta-badge"><strong>BETA TEST</strong><span>Stats excluded</span></div>}
@@ -1207,7 +1207,7 @@ export function HomeScreen(props: HomeScreenProps) {
         <div className="halieus-side-display-controls" aria-label="Display controls">
           <ThemeButton darkMode={darkMode} background={theme.secondaryBackground} colour={theme.text} borderColour={theme.border} onToggle={onToggleDarkMode} />
           <InstallAppButton />
-          <NotificationPermissionButton />
+          <NotificationPermissionButton accountId={account?.id} />
         </div>
         <button type="button" className="halieus-side-fullscreen-primary" onClick={() => void toggleFullscreen()} aria-label={isFullscreen ? "Exit full screen" : fullscreenSupported ? "Enter full screen" : "Full screen unavailable"}><span className="halieus-nav-icon"><HgrIcon name={isFullscreen ? "minimize" : "fullscreen"} /></span><b>{isFullscreen ? "Exit Full Screen" : fullscreenSupported ? "Full Screen" : "Full Screen unavailable"}</b></button>
         {fullscreenNotice && <small className="halieus-fullscreen-note" role="status">{fullscreenNotice}</small>}

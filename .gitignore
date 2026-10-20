@@ -100,6 +100,7 @@ server/client/
 server/data/feedback.json
 server/data/feedback.ndjson
 server/data/feedback/
+server/data/notifications/  # Private VAPID key + per-account PWA subscription endpoints
 server/data/rankings.json
 server/data/rooms.json
 

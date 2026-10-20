@@ -49,6 +49,7 @@ import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
+import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
 import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHandlers.js";
@@ -164,6 +165,7 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
 });
 registerAccountRoutes(app);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
+registerPushRoutes(app, getAuthenticatedAccount);
 registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);
 
 app.get(
@@ -586,6 +588,7 @@ io.on(
 await loadAccountStore();
 await loadGuildStore();
 await loadFeedbackStore();
+await initializePushNotifications();
 
 const recoveredRoomCount =
   await loadRoomsFromDisk();

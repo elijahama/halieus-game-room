@@ -5,6 +5,7 @@ import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSki
 import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/themeProgression.js";
 import { readPlayerProgression } from "./progression.js";
 import { getGuildPeerAccountIds } from "./guilds.js";
+import { sendHgrPush } from "./pushNotifications.js";
 import type { Express, Request, Response } from "express";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -1007,6 +1008,11 @@ export function registerAccountRoutes(app: Express): void {
     };
     store.friendRequests.push(friend);
     await saveStore();
+    void sendHgrPush([recipient.id], {
+      topic:"invites", title:"HGR friend request",
+      body:`${auth.account.displayName} sent you a friend request.`,
+      url:"/?inbox=1",tag:"hgr-friend-"+friend.id,
+    });
     response.status(201).json({ok:true, request:friend});
   });
 
@@ -1101,6 +1107,11 @@ export function registerAccountRoutes(app: Express): void {
     };
     store.gameInvites.push(invite);
     await saveStore();
+    void sendHgrPush([recipient.id], {
+      topic:"invites", title:"HGR room invitation",
+      body:`${auth.account.displayName} invited you to ${room.gameTitle}.`,
+      url:"/?inbox=1",tag:"hgr-room-"+invite.id,
+    });
     response.status(201).json({ ok: true, invite: (({ dismissedAt: _dismissedAt, ...item }) => item)(invite) });
   });
 
@@ -1144,6 +1155,11 @@ export function registerAccountRoutes(app: Express): void {
     store.gameRequests.push(item);
     addAudit(auth.account.id, "game-request.created", "account", recipient.id, `${auth.account.displayName} requested ${recipient.displayName} for ${item.gameTitle}.`);
     await saveStore();
+    void sendHgrPush([recipient.id], {
+      topic:"invites", title:"HGR game request",
+      body:`${auth.account.displayName} invited you to play ${item.gameTitle}.`,
+      url:"/?inbox=1",tag:"hgr-request-"+item.id,
+    });
     response.status(201).json({ ok: true, request: item });
   });
 
