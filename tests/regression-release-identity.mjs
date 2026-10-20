@@ -21,6 +21,11 @@ assert.ok(
   `engine.io must stay on the patched 6.6.10+ line; found ${engineIoVersion}`,
 );
 const manifest = JSON.parse(read('RELEASE.json'));
+const canonicalOraclePacker = read('tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1');
+assert.ok(canonicalOraclePacker.includes("'^server/data/feedback(?:/|\\.|$)'"),
+  'Oracle packager must independently exclude private player feedback, regardless of manifest contents');
+assert.ok(!manifest.integrityFiles.some(file => file.startsWith('server/data/feedback/')),
+  'Private feedback paths must never appear in published release inventory');
 const canonicalPwaSource = 'client/public/app-icon-512.png';
 const compatibilityPwaCopy = 'client/public/halieus-app-icon.png';
 const removedHistoricalGeneratedCopy = 'client/public/app-icon-reference.png';
@@ -56,6 +61,20 @@ try {
     copyFileSync(resolve(root, file), resolve(fixture, file));
   }
   assert.equal(run(fixture, '--verify').status, 0, 'Untouched deployment fixture');
+  // 4.5.5q: local user-submitted feedback must be invisible to the release
+  // fingerprint, even when the real Windows owner PC stores it on disk.
+  const privateFeedbackFile = resolve(fixture, 'server/data/feedback/feedback.json');
+  mkdirSync(dirname(privateFeedbackFile), { recursive: true });
+  writeFileSync(privateFeedbackFile, '{"privateFeedback":"HGR-NEVER-PACKAGE-THIS"}', 'utf8');
+  assert.equal(run(fixture, '--verify').status, 0,
+    'Private feedback in the runtime folder must not alter the source fingerprint');
+  assert.equal(run(fixture, '--write').status, 0,
+    'Generating a release must ignore local player feedback');
+  const privateExcluded = JSON.parse(readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8'));
+  assert.ok(!privateExcluded.integrityFiles.some((file) => file.startsWith('server/data/feedback/')),
+    'Private user feedback must never appear in the package integrity allowlist');
+  assert.equal(privateExcluded.fingerprint, manifest.fingerprint,
+    'Owner PC and CI must get the same fingerprint with or without local feedback');
   // 4.5.5g: Windows CRLF and Linux LF checkouts of the same text must carry
   // precisely the same release fingerprint. Artwork stays byte-exact.
   for (const textFile of [

@@ -193,6 +193,9 @@ if ([string]::IsNullOrWhiteSpace($SourceZip)) {
             Get-ChildItem -LiteralPath $base -File -Recurse | ForEach-Object {
                 $relative = $_.FullName.Substring($projectRoot.Length).TrimStart('\','/').Replace('\','/')
                 if ($relative -match '(^|/)(node_modules|dist|logs|\.runtime|\.history)(/|$)') { return }
+                # Server feedback is private owner/player data, never part of a
+                # deploy package, even if a future manifest includes it by mistake.
+                if ($relative -match '^server/data/feedback(?:/|\.|$)') { return }
                 # server/data mixes shipped static dictionaries with private/runtime state.
                 # Only release-signed server/data files are allowed into the Oracle archive.
                 if ($relative -match '^server/data(/|$)' -and -not $integrityFileSet.ContainsKey($relative)) { return }

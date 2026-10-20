@@ -159,6 +159,9 @@ const excludedRuntimePaths = new Set([
   'server/data/invites',
   'server/data/backups',
   'server/data/runtime',
+  // Private user-submitted feedback lives here on the owner PC and Oracle.
+  // Never hash local records or include them in a deploy manifest.
+  'server/data/feedback',
   'server/data/feedback.json',
   'server/data/feedback.ndjson',
   'server/data/rankings.json',
