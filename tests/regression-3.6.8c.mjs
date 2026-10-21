@@ -23,7 +23,7 @@ assert.deepEqual(rootPackage.overrides, {
 }, '3.6.8b dependency security floors must remain pinned');
 
 const clientPackage = json('client/package.json');
-assert.equal(clientPackage.dependencies?.vite, '7.3.6', 'Vite floor regressed');
+assert.equal(clientPackage.dependencies?.vite, '7.3.7', 'Vite patched security floor regressed');
 assert.equal(clientPackage.dependencies?.['@vitejs/plugin-react'], '5.2.0', 'React Vite plugin floor regressed');
 
 const oracleInstaller = read('tests/dev-tools/Oracle Quick Deploy/quick-install.sh');

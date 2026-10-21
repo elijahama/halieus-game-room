@@ -24,7 +24,7 @@ assert.deepEqual(rootPackage.overrides, {
 assert.equal(rootPackage.engines?.node, '>=20.19.0', 'Vite 7 Node floor must be enforced');
 
 const clientPackage = json('client/package.json');
-assert.equal(clientPackage.dependencies?.vite, '7.3.6', 'Vite security/toolchain floor regressed');
+assert.equal(clientPackage.dependencies?.vite, '7.3.7', 'Vite 7.3.7 security patch floor must remain pinned');
 assert.equal(clientPackage.dependencies?.['@vitejs/plugin-react'], '5.2.0', 'React Vite plugin floor regressed');
 
 const lock = json('package-lock.json');
@@ -35,7 +35,7 @@ for (const [name, version] of Object.entries({
   esbuild: '0.28.1',
   'proxy-addr': '2.0.8',
   'source-map-js': '1.2.2',
-  vite: '7.3.6',
+  vite: '7.3.7',
   '@vitejs/plugin-react': '5.2.0',
   '@rolldown/pluginutils': '1.0.0-rc.3',
   'react-refresh': '0.18.0',
