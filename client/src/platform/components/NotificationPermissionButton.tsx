@@ -10,6 +10,11 @@ function decodeApplicationKey(key: string): Uint8Array<ArrayBuffer> {
   return view;
 }
 
+function isPushServiceFailure(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /registration failed\s*[-–]\s*(?:push service (?:error|not available)|could not connect to push server)/i.test(message);
+}
+
 /** Only a direct user click may request browser/PWA notification permission. */
 export function NotificationPermissionButton({ accountId }: {accountId?: string | null}) {
   const supported = typeof Notification !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
@@ -18,10 +23,11 @@ export function NotificationPermissionButton({ accountId }: {accountId?: string 
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [pushServiceFailure, setPushServiceFailure] = useState(false);
 
   useEffect(() => {
     let active=true;
-    setEnabled(false); setError("");
+    setEnabled(false); setError(""); setPushServiceFailure(false);
     if (!supported || !accountId) return;
     void navigator.serviceWorker.getRegistration().then(async (registration) => {
       const existing=await registration?.pushManager.getSubscription();
@@ -38,7 +44,7 @@ export function NotificationPermissionButton({ accountId }: {accountId?: string 
   if (!supported || !accountId) return null;
   const toggle = async () => {
     if (busy) return;
-    setBusy(true);setError("");
+    setBusy(true);setError("");setPushServiceFailure(false);
     try {
       const registration=await navigator.serviceWorker.getRegistration();
       if (!registration) throw new Error("Install or reload HGR to activate its notification service.");
@@ -75,7 +81,12 @@ export function NotificationPermissionButton({ accountId }: {accountId?: string 
       }
       setEnabled(true);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not update notification settings.");
+      if (isPushServiceFailure(caught)) {
+        setPushServiceFailure(true);
+        setError("This browser could not register with its push service. PWA alerts are not enabled on this device.");
+      } else {
+        setError(caught instanceof Error ? caught.message : "Could not update notification settings.");
+      }
     } finally {setBusy(false);}
   };
   return <div className="hgr-notification-enrollment">
@@ -84,6 +95,15 @@ export function NotificationPermissionButton({ accountId }: {accountId?: string 
       <b>{busy ? "Updating alerts…" : permission==="denied" ? "Notifications blocked"
         : enabled ? "Disable PWA alerts" : "Enable PWA alerts"}</b>
     </button>
-    {error && <small role="alert">{error}</small>}
+    {error && <div role="alert" className="hgr-push-registration-help" style={{maxWidth:"100%",overflowWrap:"anywhere",marginTop:8,lineHeight:1.45}}>
+      <small>{error}</small>
+      {pushServiceFailure && <small style={{display:"block",marginTop:6}}>
+        On Brave desktop, open <strong>brave://settings/privacy</strong> and, if you choose,
+        enable <strong>Use Google services for push messaging</strong>. Restart Brave and retry.
+        On phones or other browsers, check connectivity and browser/OS notification settings;
+        if that fails, try a different supported browser. Your HGR Inbox and in-app alerts
+        still work while HGR is open.
+      </small>}
+    </div>}
   </div>;
 }
