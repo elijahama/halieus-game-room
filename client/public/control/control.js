@@ -16,6 +16,9 @@
   const queryAll = (selector) => Array.from(document.querySelectorAll(selector));
   const OPERATION_TOAST_MINIMIZED_KEY = "hgr-control-operation-toast-minimized";
   const OPERATION_TOAST_CORNER_KEY = "hgr-control-operation-toast-corner";
+  const OPERATION_DISMISSED_KEY_PREFIX = "hgr-control-operation-dismissals-v1:";
+  const CONTROL_SESSION_OPENED_AT = Date.now();
+  const observedRunningOperationIds = new Set();
   const OPERATION_TOAST_CORNERS = new Set(["top-left", "top-right", "bottom-left", "bottom-right"]);
   let operationToastClickSuppressedUntil = 0;
 
@@ -446,6 +449,46 @@
     };
   }
 
+  function operationDismissalKey() {
+    // UI dismissal is scoped to the signed-in administrator. It never affects
+    // the durable Control audit log or the owner's server-side operation state.
+    return OPERATION_DISMISSED_KEY_PREFIX + String(state.account?.id || "unauthenticated");
+  }
+
+  function dismissedOperationIds() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(operationDismissalKey()) || "[]");
+      return Array.isArray(stored)
+        ? stored.filter((id) => typeof id === "string" && id.length < 160).slice(-80)
+        : [];
+    } catch { return []; }
+  }
+
+  function acknowledgeOperation(operation) {
+    if (!operation || operation.state === "running" || !state.account) return;
+    const key = operation.id + ":" + operation.state;
+    const ids = dismissedOperationIds().filter((id) => id !== key);
+    ids.push(key);
+    try { localStorage.setItem(operationDismissalKey(), JSON.stringify(ids.slice(-80))); }
+    catch { /* Private browsing may disable storage; session still dismisses. */ }
+  }
+
+  function operationIsOldOrDismissed(operation) {
+    if (!operation || !state.account) return false;
+    if (operation.state === "running") {
+      observedRunningOperationIds.add(operation.id);
+      return false;
+    }
+    if (dismissedOperationIds().includes(operation.id + ":" + operation.state)) return true;
+    // The relay can replay its last *completed* operation on socket connect.
+    // Replay stays in Audit History; a toast is only for current-session work.
+    if (!observedRunningOperationIds.has(operation.id)) {
+      const changedAt = Date.parse(String(operation.updatedAt || operation.startedAt || ""));
+      if (!Number.isFinite(changedAt) || changedAt < CONTROL_SESSION_OPENED_AT - 10_000) return true;
+    }
+    return false;
+  }
+
   function operationToastIsMobile() {
     return window.matchMedia("(max-width: 720px)").matches;
   }
@@ -558,6 +601,7 @@
 
   function setOperation(value) {
     const operation = normaliseOperation(value);
+    if (operationIsOldOrDismissed(operation)) return;
     const previous = state.activeOperation;
     state.activeOperation = operation;
     if (!operation) {
@@ -606,13 +650,15 @@
       channel.addEventListener("message", (event) => setOperation(event.data));
     } catch { /* BroadcastChannel is optional. */ }
 
-    window.addEventListener("load", () => {
+    const connectOperationStream = () => {
       if (typeof window.io !== "function") return;
       try {
         const socket = window.io({ withCredentials: true });
         socket.on("control:operation", setOperation);
-      } catch { /* Future cloud relay event; safe to ignore for Batch 1. */ }
-    });
+      } catch { /* Optional realtime relay; Control remains usable. */ }
+    };
+    if (document.readyState === "complete") connectOperationStream();
+    else window.addEventListener("load", connectOperationStream, { once: true });
   }
 
   function bindUi() {
@@ -645,13 +691,15 @@
     });
     window.addEventListener("resize", restoreOperationToastLayout);
     $("operationDismiss")?.addEventListener("click", () => {
-      if (state.activeOperation?.state !== "running") setOperation(null);
+      if (state.activeOperation?.state !== "running") {
+        acknowledgeOperation(state.activeOperation);
+        setOperation(null);
+      }
     });
   }
 
   async function initialise() {
     bindUi();
-    bindOperationChannels();
     showAccess("Checking administrative access…", "Control uses your normal Halieus account. Owner or administrator access is required.");
     try {
       const auth = await api("/auth/status");
@@ -666,6 +714,7 @@
       state.account = auth.account;
       hideAccess();
       renderIdentity();
+      bindOperationChannels();
       await refreshCore();
       window.setInterval(() => void refreshHealthOnly(), 2000);
       window.setInterval(() => void refreshCore(), 10000);
