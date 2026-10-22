@@ -3515,7 +3515,7 @@ function handleLeaveSpectator() {
   if (!megaBoardParked && gameStarted && lobby && gameState) {
     return (
       <main
-        className="game-page mega-live-page"
+        className={`game-page mega-live-page ${viewerIsSpectator ? "mega-spectator-mode" : ""}`.trim()}
         style={{
           ...styles.gamePage,
           background: theme.pageBackground,
@@ -3622,7 +3622,14 @@ function handleLeaveSpectator() {
           </div>
         </header>
 
-        <button
+        {viewerIsSpectator && (
+          <div className="mega-spectator-banner" role="status" aria-label="Spectating live Mega Board">
+            <strong>Spectating</strong>
+            <span>Live Mega Board • Room {lobby.code} • Read-only view</span>
+          </div>
+        )}
+
+        {!viewerIsSpectator && <button
           type="button"
           className="tablet-players-trigger"
           aria-expanded={playersDrawerOpen}
@@ -3636,9 +3643,9 @@ function handleLeaveSpectator() {
           <span aria-hidden="true">👥</span>
           <strong>Players</strong>
           <small>{gameState.players.length}</small>
-        </button>
+        </button>}
 
-        {playersDrawerOpen && (
+        {!viewerIsSpectator && playersDrawerOpen && (
           <div
             className="tablet-players-backdrop"
             role="presentation"
@@ -3697,10 +3704,10 @@ function handleLeaveSpectator() {
         )}
 
         <div
-          className={`game-layout mega-live-layout-v3 ${autopilotActive ? "autopilot-active-layout" : ""}`}
+          className={`game-layout mega-live-layout-v3 ${viewerIsSpectator ? "mega-spectator-layout" : ""} ${autopilotActive ? "autopilot-active-layout" : ""}`}
           style={styles.gameLayout}
         >
-          <PlayerRail
+          {!viewerIsSpectator && <PlayerRail
             className="player-rail-side player-rail-side-left mega-live-player-rail"
             lobby={lobby}
             gameState={gameState}
@@ -3715,7 +3722,7 @@ function handleLeaveSpectator() {
               setSelectedPlayerDetailId(playerId);
             }}
             theme={theme}
-          />
+          />}
 
           <GameBoard
             roomCode={lobby.code}
@@ -3761,9 +3768,27 @@ function handleLeaveSpectator() {
             }}
           />
 
+          {viewerIsSpectator && (
+            <PlayerRail
+              className="mega-live-player-rail mega-spectator-player-rail"
+              lobby={lobby}
+              gameState={gameState}
+              players={nonBankruptPlayers}
+              headerTitle="Live players"
+              isSpectator
+              spectators={spectators}
+              showSpectators
+              onPlayerSelect={(playerId) => {
+                setGameMenuOpen(false);
+                setSelectedPlayerDetailId(playerId);
+              }}
+              theme={theme}
+            />
+          )}
+
           <LiveTradeOverlay gameState={gameState} livePreview={liveTradePreview} viewerPlayerId={lobby.playerId} />
 
-          {rightRailPlayers.length > 0 && (
+          {!viewerIsSpectator && rightRailPlayers.length > 0 && (
             <PlayerRail
               className="player-rail-side player-rail-side-right mega-live-player-rail"
               lobby={lobby}

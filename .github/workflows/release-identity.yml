@@ -113,6 +113,7 @@ jobs:
         run: |
           node tests/browser-push-enrollment-4.5.5v.mjs
           node tests/browser-guild-add-friend-4.5.5w.mjs
+          node tests/browser-mega-spectator-layout-4.5.5x.mjs
           npm run test:release:browser
           node tests/browser-theme-atmosphere.mjs
           node tests/browser-mega-board-portfolio.mjs

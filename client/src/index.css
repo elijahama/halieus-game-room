@@ -25955,3 +25955,153 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   .halieus-global-join,
   .halieus-mobile-join-game { transition: none !important; }
 }
+
+
+/* HGR Part 31 — Mega Board spectator presentation (4.5.5x).
+ * Only spectator / bankrupt-viewer sessions use this vertical arrangement.
+ * A square live board comes first, followed by one complete, readable roster;
+ * existing active-seat side rails and the game-authority logic are untouched.
+ */
+.mega-live-page.mega-spectator-mode {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  height: auto !important;
+  min-height: 100dvh !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+}
+.mega-live-page.mega-spectator-mode > .mega-active-header {
+  flex: 0 0 auto !important;
+  grid-row: auto !important;
+  max-height: none !important;
+  width: 100% !important;
+}
+.mega-live-page > .mega-spectator-banner {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb,var(--hgr-brand) 43%,var(--hgr-border));
+  border-radius: 12px;
+  background: color-mix(in srgb,var(--hgr-brand) 10%,var(--hgr-surface));
+  color: var(--hgr-text);
+}
+.mega-live-page .mega-spectator-banner strong {
+  font-size: .83rem;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+.mega-live-page .mega-spectator-banner span {
+  color: var(--hgr-muted);
+  font-size: .72rem;
+  font-weight: 650;
+}
+.mega-live-page.mega-spectator-mode > .game-layout.mega-live-layout-v3.mega-spectator-layout {
+  position: relative !important;
+  display: grid !important;
+  flex: 0 0 auto !important;
+  grid-template-columns: minmax(0,1fr) !important;
+  grid-template-rows: auto auto !important;
+  align-items: start !important;
+  justify-items: stretch !important;
+  gap: 10px !important;
+  width: min(100%,1120px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-width: 1120px !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+}
+.mega-live-page .mega-spectator-layout > .board-frame {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  justify-self: center !important;
+  align-self: start !important;
+  display: grid !important;
+  place-items: center !important;
+  container-type: normal !important;
+  width: min(100%, 64dvh, 790px) !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 2px !important;
+  overflow: visible !important;
+}
+.mega-live-page .mega-spectator-layout .board-grid {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  max-width: 100% !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  align-self: center !important;
+  justify-self: center !important;
+}
+.mega-live-page .mega-spectator-layout > .mega-spectator-player-rail {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 12px !important;
+}
+.mega-live-page .mega-spectator-layout .mega-spectator-player-rail .player-rail-list {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,235px),1fr)) !important;
+  align-items: stretch !important;
+  gap: 9px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+.mega-live-page .mega-spectator-layout .mega-spectator-player-rail .player-rail-card {
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+}
+.mega-live-page .mega-spectator-layout .mega-spectator-player-rail .player-property-strip {
+  max-height: 170px;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+.mega-live-page .mega-spectator-layout > .right-game-stack {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: visible !important;
+  pointer-events: none !important;
+}
+.mega-live-page .mega-spectator-layout > .right-game-stack > * {
+  pointer-events: auto !important;
+}
+@media (max-width: 600px) {
+  .mega-live-page.mega-spectator-mode > .mega-spectator-banner {
+    padding: 9px 10px;
+  }
+  .mega-live-page .mega-spectator-layout > .board-frame {
+    width: min(100%, 64dvh) !important;
+  }
+  .mega-live-page .mega-spectator-layout > .mega-spectator-player-rail {
+    padding: 9px !important;
+  }
+}
