@@ -7616,3 +7616,39 @@ html[data-theme="dark"] .mega-create-cosmetics p {
   padding:6px 10px; border:1px solid var(--hgr-border); border-radius:9px;
   background:var(--hgr-surface-soft); color:var(--hgr-text); cursor:pointer;
 }
+
+
+/* HGR 4.5.5w — Guild members can request friendship without changing
+   guild membership or moderator controls. Direct, touch-safe row action. */
+.halieus-guild-member-row .halieus-guild-friend-action {
+  min-height: 44px;
+  padding: 8px 11px;
+  border: 1px solid var(--hgr-border);
+  border-radius: 11px;
+  background: var(--hgr-surface-soft);
+  color: var(--hgr-text);
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.halieus-guild-member-row .halieus-guild-friend-action:disabled {
+  cursor: default;
+  opacity: .6;
+}
+.halieus-guild-member-row .halieus-guild-friend-state {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--hgr-muted);
+}
+@media (max-width: 640px) {
+  .halieus-guild-member-row.halieus-player-identity.is-compact {
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+  }
+  .halieus-guild-member-row > .halieus-player-identity-trailing {
+    grid-column: 2;
+    min-width: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

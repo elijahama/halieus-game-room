@@ -1463,7 +1463,7 @@ export function HomeScreen(props: HomeScreenProps) {
             preferredGuildId={preferredGuildId}
               account={account}
               liveRooms={liveRooms}
-              onBackToPlayers={() => setView("players")}
+              onBackToPlayers={() => { setSelectedPlayerId(null); setSocialListSection("friends"); setView("players"); }}
               onCreateRoom={openGuildCreate}
               onOpenLiveRoom={openLiveRoom}
             />

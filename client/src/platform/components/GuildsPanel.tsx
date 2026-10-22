@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
-import type { HalieusAccountSummary, HalieusPlayerDirectoryEntry } from "../../../../shared/platform/accounts";
+import type { HalieusAccountSummary, HalieusFriendRequest, HalieusPlayerDirectoryEntry } from "../../../../shared/platform/accounts";
 import type {
   HalieusGuildDetail,
   HalieusGuildInvitation,
@@ -92,6 +92,10 @@ export function GuildsPanel({
   const [incomingInvitations, setIncomingInvitations] = useState<HalieusGuildInvitation[]>([]);
   const [inviteSearch, setInviteSearch] = useState("");
   const [invitingAccountId, setInvitingAccountId] = useState<string | null>(null);
+  const [friendIds, setFriendIds] = useState<string[]>([]);
+  const [friendRequests, setFriendRequests] = useState<HalieusFriendRequest[]>([]);
+  const [friendStatusReady, setFriendStatusReady] = useState(false);
+  const [friendRequestingId, setFriendRequestingId] = useState<string | null>(null);
 
 
   const liveByGuildRoom = useMemo(() => {
@@ -168,6 +172,28 @@ export function GuildsPanel({
     if (preferredGuildId) { setSelectedGuildId(preferredGuildId); setView("chat"); }
   }, [preferredGuildId]);
 
+  // Guild membership alone is never friendship. Fetch the authoritative
+  // accepted IDs and pending requests independently of guild detail polling.
+  useEffect(() => {
+    let cancelled = false;
+    setFriendStatusReady(false);
+    setFriendIds([]);
+    setFriendRequests([]);
+    const refresh = () => {
+      void accountApi<{ok:true;friendIds:string[];requests:HalieusFriendRequest[]}>("/accounts/friends")
+        .then((social) => {
+          if (cancelled) return;
+          setFriendIds(social.friendIds);
+          setFriendRequests(social.requests);
+          setFriendStatusReady(true);
+        })
+        .catch(() => { if (!cancelled) setFriendStatusReady(false); });
+    };
+    refresh();
+    const interval = window.setInterval(refresh, 10_000);
+    return () => { cancelled = true; window.clearInterval(interval); };
+  }, [account.id]);
+
   useEffect(() => {
     if (!selectedGuildId) {
       setDetail(null);
@@ -177,6 +203,27 @@ export function GuildsPanel({
     const poll = window.setInterval(() => void loadDetail(selectedGuildId, true), 5000);
     return () => window.clearInterval(poll);
   }, [selectedGuildId]);
+
+  async function requestGuildFriend(member: HalieusGuildDetail["members"][number]) {
+    if (!friendStatusReady || friendRequestingId || member.accountId === account.id
+      || friendIds.includes(member.accountId)
+      || friendRequests.some((request) => request.status === "pending"
+        && (request.senderAccountId === member.accountId || request.recipientAccountId === member.accountId))) return;
+    setFriendRequestingId(member.accountId);
+    setNotice("");
+    setError("");
+    try {
+      const result = await accountApi<{ok:true;request:HalieusFriendRequest}>("/accounts/friends/requests", {
+        method: "POST", body: JSON.stringify({handle: "@" + member.username}),
+      });
+      setFriendRequests((current) => [result.request, ...current.filter((request) => request.id !== result.request.id)]);
+      setNotice(`Friend request sent to @${member.username}. They must accept before becoming a friend.`);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Unable to send friend request.");
+    } finally {
+      setFriendRequestingId(null);
+    }
+  }
 
   async function createGuild(event: FormEvent) {
     event.preventDefault();
@@ -633,6 +680,8 @@ export function GuildsPanel({
                 </section>}
                 {detail.members.map((member) => {
                   const canEditRole = detail.canManage && member.role !== "owner" && member.accountId !== account.id;
+                  const pendingFriend = friendRequests.find((request) => request.status === "pending"
+                    && (request.senderAccountId === member.accountId || request.recipientAccountId === member.accountId));
                   const canRemove = member.accountId !== account.id && member.role !== "owner" && (
                     detail.canManage || (detail.role === "moderator" && member.role === "member")
                   );
@@ -651,6 +700,18 @@ export function GuildsPanel({
                       }}
                       detail={`joined ${new Date(member.joinedAt).toLocaleDateString()}`}
                       trailing={<>
+                        {member.accountId !== account.id && (friendIds.includes(member.accountId)
+                          ? <span className="halieus-guild-friend-state">Friends</span>
+                          : pendingFriend?.senderAccountId === account.id
+                            ? <span className="halieus-guild-friend-state">Pending</span>
+                            : pendingFriend?.recipientAccountId === account.id
+                              ? <button type="button" className="halieus-guild-friend-action" onClick={onBackToPlayers}>Review request</button>
+                              : <button type="button" className="halieus-guild-friend-action" disabled={!friendStatusReady || friendRequestingId !== null}
+                                  title={!friendStatusReady ? "Friend status unavailable; retry when connected" : undefined}
+                                  onClick={() => void requestGuildFriend(member)}>
+                                  {friendRequestingId === member.accountId ? "Sending…" : friendStatusReady ? "+ Add friend" : "Checking…"}
+                                </button>
+                        )}
                         {canEditRole ? (
                           <select value={member.role} disabled={busy} onChange={(event) => void changeRole(member.accountId, event.target.value as Exclude<HalieusGuildRole, "owner">)}>
                             <option value="admin">Admin</option>

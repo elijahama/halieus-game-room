@@ -112,6 +112,7 @@ jobs:
       - name: Check built release identity
         run: |
           node tests/browser-push-enrollment-4.5.5v.mjs
+          node tests/browser-guild-add-friend-4.5.5w.mjs
           npm run test:release:browser
           node tests/browser-theme-atmosphere.mjs
           node tests/browser-mega-board-portfolio.mjs
