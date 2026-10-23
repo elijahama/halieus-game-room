@@ -286,8 +286,17 @@ try {
     # release-integrity gate because the browser-facing route can be temporarily
     # unavailable even when the new application is correctly active on Oracle.
     Write-Host "Verifying exact release on Oracle..." -ForegroundColor Cyan
-    $healthRaw = & ssh @sshArgs $target "curl -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health"
-    if ($LASTEXITCODE -ne 0 -or -not $healthRaw) { throw "Oracle application health check failed after deployment." }
+    # A previous successful deployment was followed by an unbounded second
+    # SSH verification call. Bound BOTH the SSH transport and remote curl.
+    # Never confuse a stalled receipt with a confirmed failed deployment.
+    $healthSshArgs = @($sshArgs) + @(
+        "-o", "ConnectTimeout=10",
+        "-o", "ConnectionAttempts=1",
+        "-o", "ServerAliveInterval=6",
+        "-o", "ServerAliveCountMax=2"
+    )
+    $healthRaw = & ssh @healthSshArgs $target "curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health"
+    if ($LASTEXITCODE -ne 0 -or -not $healthRaw) { throw "Oracle application health check was not confirmed after deployment; inspect the independent public fingerprint before retrying." }
     try { $oracleHealth = (($healthRaw -join "`n") | ConvertFrom-Json -ErrorAction Stop) } catch { throw "Oracle returned an unreadable /health response after deployment." }
     $actualVersion = [string]$oracleHealth.version
     $actualFingerprint = [string]$oracleHealth.releaseFingerprint
