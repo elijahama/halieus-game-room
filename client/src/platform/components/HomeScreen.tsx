@@ -179,6 +179,10 @@ export function HomeScreen(props: HomeScreenProps) {
   const [guildInvites, setGuildInvites] = useState<HalieusGuildInvitation[]>([]);
   const [guildMessageNotices, setGuildMessageNotices] = useState<HalieusGuildMessageNotification[]>([]);
   const [readGuildMessages, setReadGuildMessages] = useState(new Set<string>());
+  const [guildPopupKeys, setGuildPopupKeys] = useState(new Set<string>());
+  const [guildReceiptsReady, setGuildReceiptsReady] = useState(false);
+  const guildPopupClaimInFlight = useRef(false);
+  const migratedLegacyGuildReceipts = useRef(new Set<string>());
   const [guildMessageNotice, setGuildMessageNotice] = useState<HalieusGuildMessageNotification | null>(null);
   const [preferredGuildId, setPreferredGuildId] = useState<string | null>(null);
   const [inboxOpen, setInboxOpen] = useState(false);
@@ -285,8 +289,39 @@ export function HomeScreen(props: HomeScreenProps) {
       void accountApi<{ ok: true; requests: HalieusGameRequestSummary[] }>("/accounts/game-requests")
         .then((result) => { if (!cancelled) setGameRequests(result.requests.filter((request) => ACTIVE_GAME_IDS.has(request.game as GameId))); })
         .catch(() => undefined);
-      void accountApi<{ok:true; messages:HalieusGuildMessageNotification[]}>("/guilds/message-notifications")
-        .then((result) => { if (!cancelled) setGuildMessageNotices(result.messages); })
+      void accountApi<{ok:true; messages:HalieusGuildMessageNotification[]; readKeys:string[]; popupKeys:string[]}>("/guilds/message-notifications")
+        .then(async (initial) => {
+          if (cancelled || !account?.id) return;
+          let result = initial;
+          // One-time migration of old browser-local receipts to the durable
+          // account record. Do not re-popup messages this device already handled.
+          const accountId = account.id;
+          if (!migratedLegacyGuildReceipts.current.has(accountId)) {
+            migratedLegacyGuildReceipts.current.add(accountId);
+            try {
+              const locallyRead = readSeenGameNotifications(accountId, "messages");
+              const locallyPopped = readSeenGameNotifications(accountId, "message-popup");
+              const readKeys = initial.messages.filter(item => locallyRead.has(item.key)).map(item => item.key);
+              const popupKeys = initial.messages.filter(item => locallyPopped.has(item.key)).map(item => item.key);
+              if (readKeys.length) await accountApi("/guilds/message-notifications/ack", {
+                method:"POST",body:JSON.stringify({kind:"read",keys:readKeys}),
+              });
+              if (popupKeys.length) await accountApi("/guilds/message-notifications/ack", {
+                method:"POST",body:JSON.stringify({kind:"popup",keys:popupKeys}),
+              });
+              if (readKeys.length || popupKeys.length) result = await accountApi<typeof initial>(
+                "/guilds/message-notifications");
+            } catch {
+              migratedLegacyGuildReceipts.current.delete(accountId);
+              return; // A failed migration cannot authorize a fresh historical popup.
+            }
+          }
+          if (cancelled || account?.id !== accountId) return;
+          setReadGuildMessages(new Set(result.readKeys));
+          setGuildPopupKeys(new Set(result.popupKeys));
+          setGuildMessageNotices(result.messages);
+          setGuildReceiptsReady(true);
+        })
         .catch(() => undefined);
       void accountApi<{ ok: true; invitations: HalieusGuildInvitation[] }>("/guilds/invitations")
         .then((result) => { if (!cancelled) setGuildInvites(result.invitations.filter((invitation) => invitation.status === "pending")); })
@@ -333,7 +368,10 @@ export function HomeScreen(props: HomeScreenProps) {
     setGameNoticeBusy(false);
     setGameNoticeError("");
     setGuildMessageNotice(null);
-    setReadGuildMessages(accountId ? readSeenGameNotifications(accountId, "messages") : new Set());
+    setReadGuildMessages(new Set());
+    setGuildPopupKeys(new Set());
+    setGuildReceiptsReady(false);
+    guildPopupClaimInFlight.current = false;
     setPreferredGuildId(null);
   }, [account?.id]);
 
@@ -353,25 +391,48 @@ export function HomeScreen(props: HomeScreenProps) {
   }, [account?.id, gameRequests, gameInvites, inboxOpen, createOpen, joinOpen, gameNotice]);
 
   useEffect(() => {
-    if (!account?.id || document.visibilityState !== "visible"
-      || inboxOpen || createOpen || joinOpen || gameNotice || guildMessageNotice) return;
-    // Only one message banner per poll. A persistent Inbox holds every
-    // unread item; no message is silently marked read by showing a popup.
-    const alreadyPopped = readSeenGameNotifications(account.id, "message-popup");
-    const unseen = guildMessageNotices.filter((item) => !alreadyPopped.has(item.key));
+    if (!account?.id || !guildReceiptsReady || guildPopupClaimInFlight.current
+      || document.visibilityState !== "visible" || inboxOpen || createOpen || joinOpen
+      || gameNotice || guildMessageNotice) return;
+    // Server atomically claims a popup for this account, so simultaneous
+    // devices cannot independently replay the same message.
+    const unseen = guildMessageNotices.filter((item) =>
+      !guildPopupKeys.has(item.key) && !readGuildMessages.has(item.key));
     if (!unseen.length) return;
-    const next = new Set([...alreadyPopped, ...unseen.map((item) => item.key)]);
-    saveSeenGameNotifications(account.id, "message-popup", next);
-    setGuildMessageNotice(unseen[0]);
-  }, [account?.id, guildMessageNotices, inboxOpen, createOpen, joinOpen, gameNotice, guildMessageNotice]);
+    const accountId = account.id;
+    guildPopupClaimInFlight.current = true;
+    void accountApi<{ok:true;claimedKey:string|null;popupKeys:string[]}>("/guilds/message-notifications/ack", {
+      method:"POST",body:JSON.stringify({kind:"popup",keys:unseen.map(item=>item.key)}),
+    }).then((receipt) => {
+      if (seenGameNoticeAccount.current !== accountId) return;
+      setGuildPopupKeys(new Set(receipt.popupKeys));
+      const claimed = unseen.find(item => item.key === receipt.claimedKey);
+      if (claimed) setGuildMessageNotice(claimed);
+    }).catch(() => undefined).finally(() => { guildPopupClaimInFlight.current = false; });
+  }, [account?.id, guildMessageNotices, guildPopupKeys, readGuildMessages,
+    guildReceiptsReady, inboxOpen, createOpen, joinOpen, gameNotice, guildMessageNotice]);
 
   function markGuildMessageRead(message: HalieusGuildMessageNotification): void {
     if (!account?.id) return;
-    setReadGuildMessages((current) => {
-      const next = new Set(current);
-      next.add(message.key);
-      saveSeenGameNotifications(account.id, "messages", next);
-      return next;
+    const requestedAccountId = account.id;
+    setReadGuildMessages(current => new Set([...current, message.key]));
+    setGuildPopupKeys(current => new Set([...current, message.key]));
+    void accountApi<{ok:true;readKeys:string[];popupKeys:string[]}>("/guilds/message-notifications/ack", {
+      method:"POST",body:JSON.stringify({kind:"read",keys:[message.key]}),
+    }).then(receipt => {
+      if (seenGameNoticeAccount.current !== requestedAccountId) return;
+      setReadGuildMessages(new Set(receipt.readKeys));
+      setGuildPopupKeys(new Set(receipt.popupKeys));
+    }).catch(() => {
+      // Do not falsely persist a local acknowledgement when the server refused it.
+      if (seenGameNoticeAccount.current !== requestedAccountId) return;
+      void accountApi<{ok:true;messages:HalieusGuildMessageNotification[];readKeys:string[];popupKeys:string[]}>(
+        "/guilds/message-notifications",
+      ).then(result => {
+        if (seenGameNoticeAccount.current !== requestedAccountId) return;
+        setReadGuildMessages(new Set(result.readKeys));
+        setGuildPopupKeys(new Set(result.popupKeys));
+      }).catch(() => undefined);
     });
   }
 

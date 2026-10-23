@@ -23,6 +23,7 @@ import type {
 } from "../../../shared/platform/guilds.js";
 import { getGuildDataDirectory } from "./dataPaths.js";
 import { sendHgrPush } from "./pushNotifications.js";
+import { acknowledgeGuildMessages, loadGuildMessageReceipts, messageReceiptsFor } from "./guildMessageReceipts.js";
 
 type GuildAuthResolver = (request: Request) => HalieusAccountSummary | null;
 type GuildAccountLookup = (accountId: string) => HalieusAccountSummary | null;
@@ -281,6 +282,7 @@ async function saveStore(): Promise<void> {
 
 export async function loadGuildStore(): Promise<void> {
   await mkdir(dataDirectory, { recursive: true });
+  await loadGuildMessageReceipts();
   if (!existsSync(storePath)) {
     await saveStore();
     return;
@@ -379,7 +381,29 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
   app.get("/guilds/message-notifications", (request, response) => {
     const account = requireAccount(resolveAccount, request, response);
     if (!account) return;
-    response.json({ ok: true, messages: getGuildMessageNotifications(account.id) });
+    response.json({ ok: true, messages: getGuildMessageNotifications(account.id), ...messageReceiptsFor(account.id) });
+  });
+  app.post("/guilds/message-notifications/ack", async (request, response) => {
+    const account = requireAccount(resolveAccount, request, response);
+    if (!account) return;
+    const kind = request.body?.kind;
+    const keys = request.body?.keys;
+    if ((kind !== "read" && kind !== "popup") || !Array.isArray(keys) || keys.length > 60
+      || keys.some((key: unknown) => typeof key !== "string" || key.length > 130)) {
+      response.status(400).json({ ok: false, reason: "Invalid notification acknowledgement." });
+      return;
+    }
+    const permitted = new Set(getGuildMessageNotifications(account.id).map(item => item.key));
+    if (keys.some((key: string) => !permitted.has(key))) {
+      response.status(403).json({ ok: false, reason: "Notification not available to this account." });
+      return;
+    }
+    try {
+      const result = await acknowledgeGuildMessages(account.id, kind, keys);
+      response.json({ ok: true, ...result, ...messageReceiptsFor(account.id) });
+    } catch {
+      response.status(503).json({ ok: false, reason: "Notification acknowledgement could not be saved." });
+    }
   });
   lookupAccountById = resolveAccountById;
   app.get("/guilds", (request, response) => {
