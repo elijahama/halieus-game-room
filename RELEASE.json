@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
   "version": "4.5.5",
-  "fingerprint": "hgr-4.5.5-9461f2bd417b32c1",
+  "fingerprint": "hgr-4.5.5-371aa92da2b056a3",
   "algorithm": "sha256",
-  "sourceHash": "9461f2bd417b32c1c829bcaa7fcdc7f9f34e68e81effd33e349e52116ff483a9",
-  "integrityFileCount": 525,
+  "sourceHash": "371aa92da2b056a31b663e67d641f49388ecaa21264e4d9d820a54e96d57b873",
+  "integrityFileCount": 526,
   "integrityFiles": [
     ".github/workflows/release-identity.yml",
     ".gitignore",
@@ -417,6 +417,7 @@
     "server/src/platform/dailyWordAttempt.ts",
     "server/src/platform/dataPaths.ts",
     "server/src/platform/feedback.ts",
+    "server/src/platform/guildMessageReceipts.ts",
     "server/src/platform/guilds.ts",
     "server/src/platform/progression.ts",
     "server/src/platform/pushNotifications.ts",
