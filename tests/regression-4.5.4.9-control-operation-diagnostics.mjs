@@ -29,7 +29,7 @@ assert.match(cloudUi, /controlOperationReason/);
 assert.match(cloudUi, /Reason: \$\{reasonText\}/);
 assert.match(cloudUi, /operation\.localOperationId/);
 assert.match(cloudUi, /renderOperationDiagnostics\(operation\)/);
-assert.match(cloudUi, /renderOperationHistory\(operationHistory\.operations\)/);
+assert.match(cloudUi, /renderOperationHistory\(\[\.\.\.history\.values\(\)\]/, "Combined persistent Cloud and local Control audit must remain rendered");
 
 assert.match(ownerBridge, /localAuditFailureReason/);
 assert.match(ownerBridge, /localRequest\("\/api\/logs"\)/);

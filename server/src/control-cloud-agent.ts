@@ -123,12 +123,12 @@ async function localToken(): Promise<string | null> {
   }
 }
 
-async function localRequest(path: string, init: RequestInit = {}): Promise<Response> {
+async function localRequest(path: string, init: RequestInit = {}, timeoutMs = 8_000): Promise<Response> {
   const token = await localToken();
   if (!token) throw new Error("Local HGR Control credential is unavailable.");
   return fetch(`${localBase}${path}`, {
     ...init,
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(timeoutMs),
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
@@ -340,6 +340,83 @@ async function executeUpdate(identity: DeviceIdentity, request: HalieusCloudCont
   }
 }
 
+async function reportLifecycleTerminal(
+  identity: DeviceIdentity,
+  requestId: string,
+  state: "succeeded" | "failed" | "rejected",
+  progress: number,
+  phase: string,
+  reason: string | null,
+  localOperationId: string | null,
+): Promise<void> {
+  // Retry the *receipt*, never the completed Windows command.
+  for (let attempt = 0; attempt < 12 && !stopping; attempt += 1) {
+    if (await reportProgress(identity, requestId, state, progress, phase, reason, localOperationId)) return;
+    await delay(2_500);
+  }
+  console.error("HGR owner-PC lifecycle result could not be acknowledged by Cloud; inspect the local audit before retrying.");
+}
+
+type LifecycleAction = "start" | "restart" | "close";
+const LIFECYCLE_ACTIONS = new Set<LifecycleAction>(["start", "restart", "close"]);
+
+/** Dispatch exactly one fixed owner-PC Control Agent action. Never retry on
+ * timeout: a Windows launcher may have completed after the HTTP cutoff.
+ */
+async function executeLifecycle(identity: DeviceIdentity, request: HalieusCloudControlRequest): Promise<void> {
+  const action = request.action;
+  if (!LIFECYCLE_ACTIONS.has(action as LifecycleAction)) return;
+  if (inFlightRequestId) {
+    await reportLifecycleTerminal(identity, request.requestId, "rejected", 0, "Owner PC busy",
+      "Another Control action is already being handled.", null);
+    return;
+  }
+  inFlightRequestId = request.requestId;
+  let localOperationId: string | null = null;
+  const actionLabel = action[0].toUpperCase() + action.slice(1);
+  try {
+    const status = await localStatus();
+    if (!status || status.activeOperation) {
+      await reportLifecycleTerminal(identity, request.requestId, "rejected", 0, "Owner PC unavailable",
+        status ? "Another local Control operation is running." : "Authenticated local Control Agent is not available.", null);
+      return;
+    }
+    await reportProgress(identity, request.requestId, "running", 12, `Starting approved ${actionLabel} action`, null, null);
+    let body: string | undefined;
+    if (action === "close") {
+      const reply = await localRequest("/api/confirm", {
+        method: "POST", body: JSON.stringify({ action: "close" }),
+      });
+      const confirmation = await reply.json().catch(() => null) as { confirmation?: string; reason?: string } | null;
+      if (!reply.ok || !confirmation?.confirmation) {
+        await reportLifecycleTerminal(identity, request.requestId, "rejected", 0, "Local Close confirmation rejected",
+          confirmation?.reason || "Local Control Agent did not issue a Close confirmation.", null);
+        return;
+      }
+      body = JSON.stringify({ confirmation: confirmation.confirmation });
+    }
+    const result = await localRequest(`/api/actions/${action}`, {
+      method: "POST", ...(body ? { body } : {}),
+    }, 55_000);
+    const response = await result.json().catch(() => null) as { operationId?: string; reason?: string; ok?: boolean } | null;
+    localOperationId = response?.operationId || null;
+    if (!result.ok || !response?.ok) {
+      await reportLifecycleTerminal(identity, request.requestId, "failed", 0, `${actionLabel} not completed`,
+        response?.reason || "Approved owner-PC lifecycle action failed.", localOperationId);
+      return;
+    }
+    await reportLifecycleTerminal(identity, request.requestId, "succeeded", 100, `${actionLabel} completed on owner PC`,
+      null, localOperationId);
+  } catch {
+    // No automatic retries of mutable commands. State is explicit and auditable.
+    await reportLifecycleTerminal(identity, request.requestId, "failed", 0, `${actionLabel} completion unconfirmed`,
+      "Could not verify the owner's local Control Agent reply. Check the owner PC before retrying; the action may have run.",
+      localOperationId);
+  } finally {
+    inFlightRequestId = null;
+  }
+}
+
 async function resumePendingUpdate(identity: DeviceIdentity): Promise<void> {
   if (inFlightRequestId) return;
   let pending: PendingUpdate;
@@ -383,6 +460,8 @@ async function cycle(identity: DeviceIdentity): Promise<void> {
   const poll = await pollResponse.json() as { request?: HalieusCloudControlRequest | null };
   if (poll.request?.action === "update" && !inFlightRequestId) {
     void executeUpdate(identity, poll.request);
+  } else if (poll.request && LIFECYCLE_ACTIONS.has(poll.request.action as LifecycleAction) && !inFlightRequestId) {
+    void executeLifecycle(identity, poll.request);
   }
 }
 
@@ -390,7 +469,7 @@ async function main(): Promise<void> {
   const identity = await readOrCreateIdentity();
   console.log(`HGR Control Cloud bridge started for ${identity.deviceId}.`);
   console.log(`Cloud relay: ${cloudBase}`);
-  console.log("Outbound actions accepted from cloud: Update HGR only.");
+  console.log("Outbound actions accepted from cloud: approved Update, Start, Restart and Close HGR only.");
   while (!stopping) {
     await cycle(identity).catch((error) => console.error("HGR Control Cloud cycle failed:", error));
     await delay(pollDelayMs);

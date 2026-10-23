@@ -25,7 +25,7 @@ assert.match(cloudUi, /Reject enrollment/);
 assert.match(cloudUi, /\/control\/cloud\/devices\/\$\{encodeURIComponent\(device\.deviceId\)\}\/revoke/);
 assert.match(cloudUi, /window\.confirm/);
 assert.match(cloudUi, /Owner-PC enrollment revoked/);
-assert.doesNotMatch(cloudUi, /actions\/(start|restart|close)/, "4.5.4.7 must not quietly enable later Cloud Control actions");
+assert.match(cloudUi, /LIFECYCLE_ACTIONS\.includes\(action\)/, "Later lifecycle actions must be explicitly allowlisted");
 
 assert.match(cloudDoc, /revocation/i, "Cloud Control documentation must describe enrollment revocation");
 assert.match(cloudDoc, /fresh owner-PC enrollment/i, "Docs must explain that revoked credentials are not silently re-approved");

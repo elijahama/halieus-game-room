@@ -159,15 +159,15 @@
     </section>
 
     <section class="control-section" data-panel="operations">
-      <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Control operations</h2><p>Remote machine actions will remain allow-listed and administrator authenticated.</p></div></div>
-      <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Cloud action relay not enabled yet</strong><small>Batch 1 is read-only. Remote Start, Restart, Update and Close are enabled only after secure owner-PC enrollment.</small></p></div></article>
+      <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Control operations</h2><p>Only fixed, allow-listed operations run through the authenticated owner-PC bridge.</p></div></div>
+      <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Checking approved owner-PC bridge</strong><small>Start, Restart and Close require an owner account and a fresh action confirmation. Update retains its existing authorisation.</small></p></div></article>
       <div class="operation-grid">
-        <button data-operation="restart" disabled><span>↻</span><strong>Restart HGR</strong><small>Use owner-PC Control · cloud action not enabled</small></button>
-        <button data-operation="start" disabled><span>▶</span><strong>Start HGR</strong><small>Use owner-PC Control · cloud action not enabled</small></button>
-        <button data-operation="close" disabled><span>■</span><strong>Close HGR</strong><small>Use owner-PC Control · cloud action not enabled</small></button>
+        <button data-operation="restart" disabled><span>↻</span><strong>Restart HGR</strong><small>Owner confirmation and connected bridge required</small></button>
+        <button data-operation="start" disabled><span>▶</span><strong>Start HGR</strong><small>Owner confirmation and connected bridge required</small></button>
+        <button data-operation="close" disabled><span>■</span><strong>Close HGR</strong><small>Owner confirmation and connected bridge required</small></button>
         <button data-operation="update" data-update-state="idle" disabled><span class="operation-action-icon" aria-hidden="true"></span><strong>Update HGR</strong><small>Progress appears globally</small></button>
       </div>
-      <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent update progress</h2><p>When remote updates are enabled, the operation remains visible while you move around Control. On phones it drops down from the top with percentage, current phase and an expandable details view.</p></article>
+      <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent operation status</h2><p>Approved Start, Restart, Close and Update operations remain traceable while you move around Control. On phones, a compact status chip expands to show progress, phase and the server-verified result.</p></article>
     </section>
 
     <section class="control-section" data-panel="audit">

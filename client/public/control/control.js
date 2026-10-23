@@ -613,7 +613,11 @@
     }
     $("operationToast").hidden = false;
     $("operationToast").dataset.state = operation.state;
-    $("operationTitle").textContent = operation.state === "succeeded" ? "Update complete" : operation.state === "failed" ? "Update failed" : operation.state === "rejected" ? "Update not started" : operation.title;
+    const lifecycleLabel = ["start", "restart", "close"].includes(operation.action)
+      ? operation.action[0].toUpperCase() + operation.action.slice(1) : "Update";
+    $("operationTitle").textContent = operation.state === "succeeded" ? `${lifecycleLabel} complete`
+      : operation.state === "failed" ? `${lifecycleLabel} failed`
+      : operation.state === "rejected" ? `${lifecycleLabel} not started` : operation.title;
     const terminalReason = operation.state === "failed" || operation.state === "rejected" ? operation.reason : "";
     // The header must stay short: the full rejection/failure reason belongs
     // inside the user-expanded diagnostics, not across the mobile controls.

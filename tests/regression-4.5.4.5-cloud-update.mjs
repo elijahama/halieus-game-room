@@ -45,7 +45,7 @@ assert.match(ownerBridge, /\/api\/confirm/);
 assert.match(ownerBridge, /\/api\/actions\/update/);
 assert.match(ownerBridge, /action: "update"/);
 assert.doesNotMatch(ownerBridge, /node:child_process|execFile|spawn\(/, "Outbound bridge must delegate to the existing fixed local Control Agent");
-assert.doesNotMatch(ownerBridge, /actions\/(start|restart|close)/, "4.5.4.5 cloud bridge exposes Update only");
+assert.match(ownerBridge, /LIFECYCLE_ACTIONS\.has\(poll\.request\.action as LifecycleAction\)/, "Later approved lifecycle actions use an exact allowlist");
 
 assert.match(startCmd, /start-control\.ps1/);
 assert.match(startCmd, /start-control-cloud\.ps1/);
@@ -93,6 +93,6 @@ assert.match(cloudUi, /Cloud Update ready/);
 assert.match(cloudUi, /\/control\/cloud\/actions\/update\/confirm/);
 assert.match(cloudUi, /\/control\/cloud\/actions\/update/);
 assert.match(cloudUi, /window\.confirm/);
-assert.doesNotMatch(cloudUi, /actions\/(start|restart|close)/, "Cloud UI must not quietly enable later remote actions in this batch");
+assert.match(cloudUi, /actorRole !== "owner"/, "Remote lifecycle buttons require the owner role");
 
 console.log("PASS 4.5.4.5 + Part 28: Cloud Update remains fixed-action, survives self-rebase and safely re-pushes validated ahead commits");

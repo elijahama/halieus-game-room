@@ -33,7 +33,7 @@ interface StoredDevice {
 interface StoredRequest {
   requestId: string;
   deviceId: string;
-  action: "update";
+  action: "update" | "start" | "restart" | "close";
   state: CloudOperationState;
   requestedAt: string;
   dispatchedAt: string | null;
@@ -53,6 +53,7 @@ interface CloudStore {
 interface ConfirmationRecord {
   actorId: string;
   deviceId: string;
+  action: "update" | "start" | "restart" | "close";
   expiresAt: number;
 }
 
@@ -210,6 +211,16 @@ function requireAdmin(request: IncomingMessage, response: ServerResponse) {
   return account;
 }
 
+function requireOwner(request: IncomingMessage, response: ServerResponse) {
+  const actor = requireAdmin(request, response);
+  if (!actor) return null;
+  if (actor.role !== "owner") {
+    sendJson(response, 403, { ok: false, reason: "Owner approval is required for remote Start, Restart and Close." });
+    return null;
+  }
+  return actor;
+}
+
 function deviceOnline(device: StoredDevice): boolean {
   return Date.now() - Date.parse(device.lastSeenAt) <= ONLINE_WINDOW_MS;
 }
@@ -218,12 +229,14 @@ function publicOperation(request: StoredRequest | null) {
   if (!request) return null;
   return {
     id: request.requestId,
-    action: "update",
-    title: "Updating HGR",
+    action: request.action,
+    title: request.action === "update" ? "Updating HGR" : `${request.action[0].toUpperCase() + request.action.slice(1)} HGR`,
     phase: request.phase,
     progress: request.progress,
     state: request.state === "queued" ? "running" : request.state,
     startedAt: request.requestedAt,
+    updatedAt: request.updatedAt,
+    localOperationId: request.localOperationId,
     reason: request.reason,
   };
 }
@@ -314,7 +327,7 @@ async function handlePoll(request: IncomingMessage, response: ServerResponse): P
     const device = store.devices.find((candidate) => candidate.deviceId === auth.device.deviceId)!;
     device.lastSeenAt = new Date().toISOString();
     const queued = store.requests
-      .filter((entry) => entry.deviceId === device.deviceId && entry.action === "update" && entry.state === "queued")
+      .filter((entry) => entry.deviceId === device.deviceId && ["update", "start", "restart", "close"].includes(entry.action) && entry.state === "queued")
       .sort((left, right) => left.requestedAt.localeCompare(right.requestedAt))[0] ?? null;
     if (!queued) return null;
     queued.state = "running";
@@ -326,7 +339,7 @@ async function handlePoll(request: IncomingMessage, response: ServerResponse): P
       protocol: HGR_CONTROL_CLOUD_PROTOCOL,
       requestId: queued.requestId,
       deviceId: queued.deviceId,
-      action: "update",
+      action: queued.action,
       requestedAt: queued.requestedAt,
     };
     return cloudRequest;
@@ -345,7 +358,7 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
   const state = boundedText(body.state, 20) as CloudOperationState;
   const allowedStates = new Set<CloudOperationState>(["running", "succeeded", "failed", "rejected"]);
   if (!requestId || !allowedStates.has(state)) {
-    sendJson(response, 400, { ok: false, reason: "Invalid update operation state." });
+    sendJson(response, 400, { ok: false, reason: "Invalid Control operation state." });
     return;
   }
   const progress = Math.max(0, Math.min(100, Number(body.progress) || 0));
@@ -354,7 +367,7 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
   const localOperationId = boundedText(body.localOperationId, 96) || null;
 
   const found = await mutateStore((store) => {
-    const operation = store.requests.find((entry) => entry.requestId === requestId && entry.deviceId === auth.device.deviceId && entry.action === "update");
+    const operation = store.requests.find((entry) => entry.requestId === requestId && entry.deviceId === auth.device.deviceId);
     if (!operation) return false;
     // Late bridge reports must never reopen a completed or timed-out request.
     if (operation.state !== "running" && operation.state !== "queued") return true;
@@ -373,12 +386,18 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
 }
 
 async function handleStatus(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  if (!requireAdmin(request, response)) return;
+  const actor = requireAdmin(request, response);
+  if (!actor) return;
   const store = await mutateStore((store) => { expireUnreportedUpdates(store.requests, Date.now()); return store; });
   const active = latestLiveRequest(store);
+  const latest = store.requests.slice().sort((left, right) => right.requestedAt.localeCompare(left.requestedAt))[0] ?? null;
+  // A fresh terminal outcome remains observable by an already-open Control
+  // client. Historical outcomes are still in operations, not stale toasts.
+  const recentlyFinished = latest && Date.now() - Date.parse(latest.updatedAt) < 2 * 60_000 ? latest : null;
   sendJson(response, 200, {
     ok: true,
     protocol: HGR_CONTROL_CLOUD_PROTOCOL,
+    actorRole: actor.role,
     devices: store.devices.map((device) => ({
       deviceId: device.deviceId,
       machineName: device.machineName,
@@ -389,7 +408,8 @@ async function handleStatus(request: IncomingMessage, response: ServerResponse):
       revokedAt: device.revokedAt ?? null,
       localControlOnline: device.approval !== "revoked" && device.localControlOnline,
     })),
-    activeOperation: publicOperation(active),
+    activeOperation: publicOperation(active ?? recentlyFinished),
+    operations: store.requests.map((entry) => publicOperation(entry)),
   });
 }
 
@@ -456,6 +476,7 @@ async function handleConfirmUpdate(request: IncomingMessage, response: ServerRes
   confirmations.set(hashSecret(confirmationId), {
     actorId: actor.id,
     deviceId,
+    action: "update",
     expiresAt: Date.now() + CONFIRMATION_TTL_MS,
   });
   sendJson(response, 200, {
@@ -481,7 +502,7 @@ async function handleQueueUpdate(request: IncomingMessage, response: ServerRespo
   const confirmationKey = hashSecret(confirmationId);
   const confirmation = confirmations.get(confirmationKey);
   confirmations.delete(confirmationKey);
-  if (!confirmation || confirmation.expiresAt <= Date.now() || confirmation.actorId !== actor.id || confirmation.deviceId !== deviceId) {
+  if (!confirmation || confirmation.action !== "update" || confirmation.expiresAt <= Date.now() || confirmation.actorId !== actor.id || confirmation.deviceId !== deviceId) {
     sendJson(response, 409, { ok: false, reason: "Update HGR requires a fresh one-time confirmation." });
     return;
   }
@@ -509,6 +530,78 @@ async function handleQueueUpdate(request: IncomingMessage, response: ServerRespo
   sendJson(response, 202, { ok: true, operation: publicOperation(operation) });
 }
 
+type LifecycleAction = "start" | "restart" | "close";
+const LIFECYCLE_ACTIONS = new Set<LifecycleAction>(["start", "restart", "close"]);
+
+async function handleConfirmLifecycle(request: IncomingMessage, response: ServerResponse, action: LifecycleAction): Promise<void> {
+  const actor = requireOwner(request, response);
+  if (!actor) return;
+  let body: Record<string, unknown>;
+  try { body = await readJsonBody(request); }
+  catch { sendJson(response, 400, { ok: false, reason: "Invalid lifecycle confirmation." }); return; }
+  if (!exactKeys(body, ["deviceId"])) {
+    sendJson(response, 400, { ok: false, reason: "Lifecycle confirmation requires only a device ID." });
+    return;
+  }
+  const deviceId = boundedText(body.deviceId, 96);
+  const ready = await ensureUpdateReady(deviceId);
+  if (!ready.ok) { sendJson(response, ready.status, { ok: false, reason: ready.reason }); return; }
+  const confirmationId = randomBytes(24).toString("base64url");
+  confirmations.set(hashSecret(confirmationId), {
+    actorId: actor.id, deviceId, action, expiresAt: Date.now() + CONFIRMATION_TTL_MS,
+  });
+  sendJson(response, 200, {
+    ok: true, deviceId, action, confirmationId,
+    expiresAt: new Date(Date.now() + CONFIRMATION_TTL_MS).toISOString(),
+  });
+}
+
+async function handleQueueLifecycle(request: IncomingMessage, response: ServerResponse, action: LifecycleAction): Promise<void> {
+  const actor = requireOwner(request, response);
+  if (!actor) return;
+  let body: Record<string, unknown>;
+  try { body = await readJsonBody(request); }
+  catch { sendJson(response, 400, { ok: false, reason: "Invalid lifecycle operation." }); return; }
+  if (!exactKeys(body, ["deviceId", "confirmationId"])) {
+    sendJson(response, 400, { ok: false, reason: "Lifecycle action accepts only the device ID and one-time confirmation." });
+    return;
+  }
+  const deviceId = boundedText(body.deviceId, 96);
+  const confirmationId = boundedText(body.confirmationId, 128);
+  // Consume once regardless of success. Cross-action, cross-actor, stale and replayed
+  // confirmations are never valid.
+  const key = hashSecret(confirmationId);
+  const confirmed = confirmations.get(key);
+  confirmations.delete(key);
+  if (!confirmed || confirmed.action !== action || confirmed.deviceId !== deviceId
+    || confirmed.actorId !== actor.id || confirmed.expiresAt <= Date.now()) {
+    sendJson(response, 409, { ok: false, reason: "Fresh owner confirmation is required for this exact action." });
+    return;
+  }
+  const ready = await ensureUpdateReady(deviceId);
+  if (!ready.ok) { sendJson(response, ready.status, { ok: false, reason: ready.reason }); return; }
+  const queued = await mutateStore((store) => {
+    const device = store.devices.find((candidate) => candidate.deviceId === deviceId);
+    if (!device || device.approval !== "approved" || !deviceOnline(device) || !device.localControlOnline
+      || store.requests.some((entry) => entry.deviceId === deviceId && (entry.state === "queued" || entry.state === "running"))) {
+      return null;
+    }
+    const now = new Date().toISOString();
+    const operation: StoredRequest = {
+      requestId: randomUUID(), deviceId, action, state: "queued", requestedAt: now,
+      dispatchedAt: null, updatedAt: now, phase: "Waiting for approved owner PC",
+      progress: 0, reason: null, localOperationId: null,
+    };
+    store.requests.unshift(operation);
+    return operation;
+  });
+  if (!queued) {
+    sendJson(response, 409, { ok: false, reason: "Owner PC changed state or an operation is already running." });
+    return;
+  }
+  sendJson(response, 202, { ok: true, operation: publicOperation(queued) });
+}
+
 async function handleCloudRoute(request: IncomingMessage, response: ServerResponse): Promise<void> {
   const url = new URL(request.url || "/", "http://hgr-control.invalid");
   const path = url.pathname;
@@ -522,6 +615,12 @@ async function handleCloudRoute(request: IncomingMessage, response: ServerRespon
   if (request.method === "POST" && revoke) return handleRevoke(request, response, revoke[1]);
   if (request.method === "POST" && path === "/control/cloud/actions/update/confirm") return handleConfirmUpdate(request, response);
   if (request.method === "POST" && path === "/control/cloud/actions/update") return handleQueueUpdate(request, response);
+  // Exact allowlisted paths only. No arbitrary command, script or path input.
+  const lifecycle = path.match(/^\/control\/cloud\/actions\/(start|restart|close)(\/confirm)?$/);
+  if (request.method === "POST" && lifecycle && LIFECYCLE_ACTIONS.has(lifecycle[1] as LifecycleAction)) {
+    const action = lifecycle[1] as LifecycleAction;
+    return lifecycle[2] ? handleConfirmLifecycle(request, response, action) : handleQueueLifecycle(request, response, action);
+  }
   sendJson(response, 404, { ok: false, reason: "Unknown HGR Control Cloud endpoint." });
 }
 
