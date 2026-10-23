@@ -60,5 +60,48 @@ try {
   assert.ok(!(await api("/guilds/message-notifications",{cookie:sender.cookie})).json.messages.some(m=>m.id===sent.json.message.id),
     "No self-notification");
   assert.ok(mine.json.messages.every(m=>m.guildId===gid && m.key.startsWith("guild-message:")));
-  console.log("PASS 4.5.5s: authenticated guild messaging notifications, no stranger/self leakage, real message preview and guild identity");
+  const key=mine.json.messages.find(m=>m.id===sent.json.message.id).key;
+  assert.deepEqual(mine.json.readKeys,[],"New device starts with no read receipts");
+  assert.deepEqual(mine.json.popupKeys,[],"New device starts with no popup claims");
+  // Two concurrent devices can race for the same popup; only one receives it.
+  const claims=await Promise.all([1,2].map(()=>api("/guilds/message-notifications/ack",{
+    cookie:recipient.cookie,method:"POST",body:{kind:"popup",keys:[key]},
+  })));
+  assert.ok(claims.every(c=>c.status===200),JSON.stringify(claims));
+  assert.deepEqual(claims.map(c=>c.json.claimedKey).filter(Boolean),[key],
+    "Exactly one of two phone/laptop claims can pop a new message");
+  const anotherDevice=await api("/guilds/message-notifications",{cookie:recipient.cookie});
+  assert.deepEqual(anotherDevice.json.popupKeys,[key],"A second device inherits the popup acknowledgement");
+  assert.equal(anotherDevice.json.readKeys.length,0,"A popup does not automatically read the message");
+  const viewed=await api("/guilds/message-notifications/ack",{
+    cookie:recipient.cookie,method:"POST",body:{kind:"read",keys:[key]},
+  });
+  assert.equal(viewed.status,200);
+  const switchedDevice=await api("/guilds/message-notifications",{cookie:recipient.cookie});
+  assert.ok(switchedDevice.json.readKeys.includes(key),"Reading on phone marks the server account read");
+  assert.equal((await api("/guilds/message-notifications",{cookie:sender.cookie})).json.readKeys.length,0,
+    "No read acknowledgement leaks to another account");
+  const untrusted=await api("/guilds/message-notifications/ack",{
+    cookie:stranger.cookie,method:"POST",body:{kind:"read",keys:[key]},
+  });
+  assert.equal(untrusted.status,403,"Nonmembers cannot claim another guild message");
+  assert.equal((await api("/guilds/message-notifications/ack",{cookie:"",method:"POST",
+    body:{kind:"read",keys:[key]}})).status,401);
+  assert.equal((await api("/guilds/message-notifications/ack",{cookie:recipient.cookie,method:"POST",
+    body:{kind:"read",keys:new Array(61).fill(key)}})).status,400,"Bound request sizes");
+  const sentNext=await api("/guilds/"+gid+"/messages",{cookie:sender.cookie,method:"POST",body:{body:"Newly scheduled next match"}});
+  assert.equal(sentNext.status,201);
+  const nextFeed=await api("/guilds/message-notifications",{cookie:recipient.cookie});
+  const newKey=nextFeed.json.messages.find(m=>m.id===sentNext.json.message.id)?.key;
+  assert.ok(newKey && !nextFeed.json.readKeys.includes(newKey),"A genuinely new message remains unread");
+  const claimNext=await api("/guilds/message-notifications/ack",{
+    cookie:recipient.cookie,method:"POST",body:{kind:"popup",keys:[newKey,key]},
+  });
+  assert.equal(claimNext.json.claimedKey,newKey,"Old acknowledged messages cannot suppress new ones");
+  const receiptPath=join(data,"guilds","guild-message-receipts.json");
+  // The underlying durable file is account-scoped and contains keys only, never message bodies.
+  const receiptJson=JSON.stringify(await readFile(receiptPath,"utf8"));
+  assert.ok(receiptJson.includes(key),"A server restart can reload persisted receipts");
+  assert.ok(!receiptJson.includes("Next game night at seven"),"Receipt store must not contain message text");
+  console.log("PASS 4.5.5s: private authenticated feed, atomic cross-device popup claim, durable read receipts, new messages still arrive");
 } finally {server.kill("SIGTERM");await sleep(140);await rm(data,{recursive:true,force:true});}

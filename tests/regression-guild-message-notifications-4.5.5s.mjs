@@ -8,15 +8,17 @@ const [server,guild,home,ui,main,contract]=await Promise.all([
  "client/src/main.tsx","client/src/platform/components/gameInviteNotifications.ts"
 ].map(get));
 assert.match(server,/app\.get\("\/guilds\/message-notifications"/,"Server-scoped notification feed");
+assert.match(server,/app\.post\("\/guilds\/message-notifications\/ack"/,"Server-authoritative read and popup receipts");
+assert.match(server,/messageReceiptsFor\(account\.id\)/,"Per-account acknowledgment and claims");
 assert.match(server,/member\.joinedAt/,"Do not leak messages from before guild join date");
 assert.match(server,/message\.senderAccountId !== accountId/,"No self notifications");
 assert.match(server,/message\.senderAccountId !== "system"/,"No system pseudo-message alerts");
 assert.match(guild,/interface HalieusGuildMessageNotification/);
 assert.match(home,/setGuildMessageNotices\(result\.messages\)/,"Guild messages must poll independently of game/live data");
 assert.match(home,/const unreadGuildMessages = useMemo/,"Unread count must use seen keys");
-assert.match(home,/readSeenGameNotifications\(accountId, "messages"\)/);
-assert.match(home,/saveSeenGameNotifications\(account\.id, "messages", next\)/,"Read acknowledgement persists");
-assert.match(home,/readSeenGameNotifications\(account\.id, "message-popup"\)/,"Do not repeat the popup each poll");
+assert.match(home,/setReadGuildMessages\(new Set\(result\.readKeys\)\)/,"Server-derived read state across devices");
+assert.match(home,/kind:"read",keys:\[message\.key\]/,"Read events persist to server");
+assert.match(home,/kind:"popup",keys:unseen\.map\(item=>item\.key\)/,"Popups claimed once by server");
 assert.match(home,/aria-label="Unread guild messages"/);
 assert.match(home,/aria-label="Incoming friend requests"/,"Friend invitations are visible in the shared inbox");
 assert.match(home,/onClick=\{\(\) => openGuildMessage\(notice\)\}/,"Message must open relevant guild");
