@@ -24,10 +24,11 @@ const server=createServer(async(req,res)=>{
   try{
     if(path==='/'){res.setHeader('Content-Type','text/html');res.end('<script src="/control-navigation.js" defer></script><button id="enter" onclick="document.documentElement.requestFullscreen()">Enter fullscreen</button><a href="/control/">Control</a>');return;}
     const file=path==='/control/'?'/control/index.html':path;
-    if(!/^\/control\/[a-z0-9.-]+$/.test(file)&&!/^\/control-navigation\.(js|css)$/.test(file))throw Error('not found');
+    const approvedFont=/^\/control\/fonts\/(?:unbounded-latin-wght|righteous-latin-400|varela-round-latin-400|alata-latin-400)\.woff2$/.test(file);
+    if(!/^\/control\/[a-z0-9.-]+$/.test(file)&&!/^\/control-navigation\.(js|css)$/.test(file)&&!approvedFont)throw Error('not found');
     let body=await readFile(resolve(root,'client/public'+file));
     if(file==='/control/control.js') body=Buffer.concat([body,Buffer.from('\n'),await readFile(resolve(root,'client/public/control/cloud-update.js'))]);
-    res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':file.endsWith('.webmanifest')?'application/manifest+json':'text/html');
+    res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.woff2')?'font/woff2':file.endsWith('.png')?'image/png':file.endsWith('.webmanifest')?'application/manifest+json':'text/html');
     res.end(body);
   }catch{res.writeHead(404);res.end();}
 });
@@ -39,6 +40,17 @@ try{
  await installed.goto(base+'/control/');
  await installed.evaluate(async()=>{await navigator.serviceWorker.ready;const cache=await caches.open('halieus-shell-fixture');await cache.put('/main-sentinel',new Response('main'));});
  await installed.waitForFunction(()=>!!navigator.serviceWorker.controller);
+ const approvedFonts=await installed.evaluate(async()=>{
+   await document.fonts.ready;
+   return Promise.all([
+     '650 20px "Unbounded Variable"',
+     '400 16px "Varela Round"',
+     '400 16px "Righteous"',
+     '400 11px "Alata"',
+   ].map(async spec=>(await document.fonts.load(spec)).length));
+ });
+ assert.deepEqual(approvedFonts,[1,1,1,1],'Control must load all four self-hosted approved HGR font faces');
+ assert.match(await installed.locator('#sectionTitle').evaluate(e=>getComputedStyle(e).fontFamily),/Unbounded Variable/,'Control headings share the main HGR font hierarchy');
  const manifest=await installed.evaluate(async()=>await (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
  assert.equal(manifest.id,'/control/');assert.equal(manifest.display,'standalone');
  assert.deepEqual(manifest.icons.map(i=>i.sizes),['192x192','512x512']);
@@ -65,6 +77,15 @@ try{
  await navigation.getByRole('button',{name:'Resume fullscreen'}).click();
  await navigation.waitForFunction(()=>!!document.fullscreenElement);
  assert.equal(await navigation.evaluate(()=>!!document.fullscreenElement),true);
+ // A normal Control page also has its own explicit user-gesture fullscreen toggle.
+ const fullscreenToggle=navigation.locator('#controlFullscreen');
+ await fullscreenToggle.waitFor({state:'visible'});
+ assert.equal(await fullscreenToggle.getAttribute('aria-pressed'),'true');
+ await navigation.getByRole('button',{name:'Exit full screen'}).click();
+ await navigation.waitForFunction(()=>!document.fullscreenElement && document.getElementById('controlFullscreen')?.getAttribute('aria-pressed')==='false');
+ assert.equal(await fullscreenToggle.getAttribute('aria-pressed'),'false');
+ await navigation.getByRole('button',{name:'Enter full screen'}).click();
+ await navigation.waitForFunction(()=>!!document.fullscreenElement);
  await navigation.locator('.rail-return').click();
  await navigation.getByRole('button',{name:'Resume fullscreen'}).waitFor();
  await navigation.getByRole('button',{name:'Stay in window'}).click();

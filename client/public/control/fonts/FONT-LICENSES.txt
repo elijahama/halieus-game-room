@@ -1,0 +1,7 @@
+﻿Approved HGR type hierarchy assets from pinned @fontsource npm packages.
+Unbounded: @fontsource-variable/unbounded
+Righteous: @fontsource/righteous
+Varela Round: @fontsource/varela-round
+Alata: @fontsource/alata
+Fonts are licensed under SIL OPEN FONT LICENSE 1.1.
+License texts shipped in their respective npm package directories.

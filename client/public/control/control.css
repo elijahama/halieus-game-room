@@ -249,3 +249,21 @@
     flex: 0 0 auto;
   }
 }
+
+/* HGR 4.5.5z Control typography: same approved, self-hosted hierarchy as
+ * the Game Room. Keep specialist/log/monospace text and canonical H art intact. */
+@font-face{font-family:"Unbounded Variable";src:url("/control/fonts/unbounded-latin-wght.woff2") format("woff2");font-weight:200 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Righteous";src:url("/control/fonts/righteous-latin-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Varela Round";src:url("/control/fonts/varela-round-latin-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Alata";src:url("/control/fonts/alata-latin-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+:root{--hgr-font-heading:"Unbounded Variable",system-ui,sans-serif;--hgr-font-medium:"Righteous","Varela Round",system-ui,sans-serif;--hgr-font-caption:"Alata","Varela Round",system-ui,sans-serif;font-family:"Varela Round",system-ui,sans-serif}
+.control-main :is(h1,h2){font-family:var(--hgr-font-heading);font-weight:650;letter-spacing:-.032em;line-height:1.2;overflow-wrap:break-word}
+.control-main :is(h3,h4),.control-brand strong{font-family:var(--hgr-font-medium);font-weight:400;letter-spacing:-.015em}
+.control-main small,.control-brand small,.control-main .eyebrow,.control-mobile-nav b{font-family:var(--hgr-font-caption);letter-spacing:0}
+.control-main :is(button,input,select,textarea){font-family:"Varela Round",system-ui,sans-serif}
+/* User-gesture fullscreen control. Standalone PWA counts as app display mode,
+ * not a fabricated Fullscreen API state. Do not requestFullscreen on Apple. */
+.control-fullscreen-toggle{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;padding:10px 13px;font-size:12px;min-height:42px}
+.control-fullscreen-toggle[hidden]{display:none}
+.control-fullscreen-toggle:focus-visible{outline:2px solid #90b5ff;outline-offset:3px}
+@media(max-width:720px){.control-fullscreen-toggle{padding:9px 10px;font-size:11px;min-height:40px;max-width:40vw}.control-topbar{flex-wrap:wrap}.control-topbar h1{font-size:clamp(19px,5.5vw,23px)}.control-main :is(h2){letter-spacing:-.04em}}
