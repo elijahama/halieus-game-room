@@ -480,11 +480,13 @@
       return false;
     }
     if (dismissedOperationIds().includes(operation.id + ":" + operation.state)) return true;
-    // The relay can replay its last *completed* operation on socket connect.
-    // Replay stays in Audit History; a toast is only for current-session work.
+    // The relay can replay a *recently* completed operation after navigation.
+    // A completion without an observed running state must have STARTED in this
+    // Control document, not merely finished within a grace period before load.
+    // Historical/replayed completions remain available in the audit, not a toast.
     if (!observedRunningOperationIds.has(operation.id)) {
-      const changedAt = Date.parse(String(operation.updatedAt || operation.startedAt || ""));
-      if (!Number.isFinite(changedAt) || changedAt < CONTROL_SESSION_OPENED_AT - 10_000) return true;
+      const startedAt = Date.parse(String(operation.startedAt || ""));
+      if (!Number.isFinite(startedAt) || startedAt < CONTROL_SESSION_OPENED_AT) return true;
     }
     return false;
   }

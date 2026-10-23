@@ -120,6 +120,7 @@ jobs:
           node tests/browser-control-state.mjs
           node tests/browser-control-branding.mjs
           node tests/browser-control-polish.mjs
+          node tests/browser-control-operation-replay-4.5.5y.mjs
 
       - name: Commit generated release identity when changed
         shell: bash
