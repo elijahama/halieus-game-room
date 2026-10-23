@@ -17,7 +17,7 @@ const server=createServer(async(req,res)=>{
     '/admin/snapshot':{accounts:[account,{...account,id:'none',displayName:'No Photo',profilePicture:null},{...account,id:'broken',displayName:'Broken Photo',profilePicture:'data:image/png;base64,bm90LXBuZw=='}],onlineAccountIds:['owner'],audit:[]},
     '/accounts/live-games':{rooms:[]},'/accounts/me/stats':{stats:{played:0,wins:0,recent:[]}},
     '/health':{status:'online',version:'fixture',uptimeSeconds:1},
-    '/control/cloud/status':{devices:[{...device,online}],activeOperation:operation},
+    '/control/cloud/status':{devices:[{...device,online}],activeOperation:operation,actorRole:'owner'},
     '/control/operation-status':{operation},'/control/operation-history':{operations:operation?[operation]:[]},
   };
   if(path in fixtures){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(fixtures[path]));return;}
@@ -80,6 +80,7 @@ try{
  // A normal Control page also has its own explicit user-gesture fullscreen toggle.
  const fullscreenToggle=navigation.locator('#controlFullscreen');
  await fullscreenToggle.waitFor({state:'visible'});
+ await navigation.waitForFunction(()=>document.getElementById('controlFullscreen')?.getAttribute('aria-pressed')==='true');
  assert.equal(await fullscreenToggle.getAttribute('aria-pressed'),'true');
  await navigation.getByRole('button',{name:'Exit full screen'}).click();
  await navigation.waitForFunction(()=>!document.fullscreenElement && document.getElementById('controlFullscreen')?.getAttribute('aria-pressed')==='false');
@@ -119,16 +120,17 @@ try{
   const roleColors=await page.locator('.operation-grid button[data-operation] span').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).color));
   assert.equal(new Set(roleColors).size,4,'Four operation roles retain distinct colours');
   for(const action of ['start','restart','close']){
-    const unavailable=page.locator(`[data-operation="${action}"]`);
-    assert.equal(await unavailable.isDisabled(),true);
-    assert.match(await unavailable.textContent(),/cloud action not enabled/);
-    assert.equal(await unavailable.evaluate(b=>getComputedStyle(b).opacity),'1');
+    const lifecycle=page.locator(`[data-operation="${action}"]`);
+    await lifecycle.waitFor({state:'visible'});
+    assert.equal(await lifecycle.isDisabled(),false,'Enrolled owner may request '+action);
+    assert.match(await lifecycle.textContent(),/owner confirmation/i);
+    assert.equal(await lifecycle.evaluate(b=>getComputedStyle(b).opacity),'1');
   }
-
-  assert.equal(await page.getByRole('button',{name:/Start HGR/}).isDisabled(),true);
+  assert.equal(await page.getByRole('button',{name:/Start HGR/}).isDisabled(),false);
   operation={id:'run1',action:'update',state:'running',title:'Updating HGR',phase:'Building client',progress:38,startedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
   await page.waitForFunction(()=>document.getElementById('revokeCloudOwnerPc')?.disabled===true);
   assert.equal(await update.isDisabled(),true);
+  for(const action of ['start','restart','close']) assert.equal(await page.locator(`[data-operation="${action}"]`).isDisabled(),true,'Active Update must lock concurrent lifecycle controls');
   assert.equal(await page.locator('#operationPhase').textContent(),'Building client');
   assert.equal(await page.locator('#operationPercent').textContent(),'38%');
   assert.equal(await page.locator('#operationUpdated').getAttribute('datetime'),operation.updatedAt);
@@ -198,4 +200,55 @@ try{
   assert.deepEqual(errors,[]);
   await page.close();console.log(`PASS ${width}x${height}: available/running/complete/offline operation states`);
  }
+ // No real owner-PC command runs here: exercise the browser's exact two-step
+ // action binding with intercepted, bounded API replies.
+ operation=null;online=true;device.localControlOnline=true;
+ const actionsPage=await browser.newPage({viewport:{width:390,height:844}});
+ const requests=[];
+ actionsPage.on('dialog',dialog=>void dialog.accept());
+ await actionsPage.route('**/control/cloud/actions/**',async route=>{
+   const req=route.request();
+   const path=new URL(req.url()).pathname;
+   const match=path.match(/^\/control\/cloud\/actions\/(start|restart|close)(\/confirm)?$/);
+   if(!match){await route.fulfill({status:404});return;}
+   const action=match[1],confirm=Boolean(match[2]);
+   const body=JSON.parse(req.postData()||'{}');
+   requests.push({action,confirm,body,method:req.method()});
+   if(confirm){
+     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,confirmationId:'fixture-'+action})});
+   }else{
+     await route.fulfill({status:202,contentType:'application/json',body:JSON.stringify({ok:true,operation:{id:'test-'+action,action,state:'succeeded',startedAt:new Date().toISOString(),phase:'Complete',progress:100}})});
+   }
+ });
+ await actionsPage.goto(base+'/control/');
+ await actionsPage.locator('#accessState').waitFor({state:'hidden'});
+ await actionsPage.locator('[data-section="operations"]:visible').first().click();
+ await actionsPage.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button[data-operation]')].filter(b=>b.dataset.operation!=='update').every(b=>!b.disabled));
+ for(const action of ['start','restart','close']){
+   const prior=requests.length;
+   await actionsPage.locator('[data-operation="'+action+'"]').click();
+   for(let tries=0;tries<30 && requests.length<prior+2;tries++)await new Promise(done=>setTimeout(done,80));
+   assert.equal(requests.length,prior+2,action+' requires exactly confirmation then queue');
+   assert.deepEqual(requests.slice(prior).map(r=>({method:r.method,action:r.action,confirm:r.confirm})),[
+     {method:'POST',action,confirm:true},{method:'POST',action,confirm:false},
+   ]);
+   assert.deepEqual(Object.keys(requests[prior].body),['deviceId']);
+   assert.deepEqual(requests[prior+1].body,{deviceId:device.deviceId,confirmationId:'fixture-'+action});
+ }
+ // Terminal lifecycle receipts must not be mislabelled "Update complete".
+ await actionsPage.evaluate(()=>window.dispatchEvent(new CustomEvent('hgr-control-operation',{
+   detail:{id:'terminal-start',action:'start',state:'succeeded',title:'Start HGR',
+     startedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),phase:'Start completed',progress:100},
+ })));
+ await actionsPage.waitForFunction(()=>document.getElementById('operationTitle')?.textContent==='Start complete');
+ await actionsPage.route('**/control/cloud/status',route=>route.fulfill({
+   status:200,contentType:'application/json',
+   body:JSON.stringify({ok:true,actorRole:'admin',devices:[{...device,online:true}],activeOperation:null}),
+ }));
+ await actionsPage.reload();
+ await actionsPage.locator('#accessState').waitFor({state:'hidden'});
+ await actionsPage.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button[data-operation]')].filter(b=>b.dataset.operation!=='update').every(b=>b.disabled));
+ assert.equal(await actionsPage.locator('[data-operation="update"]').isDisabled(),false,'Admin can still request normal Update');
+ await actionsPage.close();
+ console.log('PASS owner-only Cloud lifecycle UI request sequence: Start / Restart / Close, admin refusal');
 }finally{await browser.close();await new Promise(r=>server.close(r));}

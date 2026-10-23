@@ -10,6 +10,10 @@
   let refreshTimer = null;
   let refreshInFlight = null;
   let updateInFlight = false;
+  let actorRole = null;
+  const LIFECYCLE_ACTIONS = ["start", "restart", "close"];
+  const lifecycleButtons = () => Array.from(document.querySelectorAll(".operation-grid button[data-operation]"))
+    .filter((button) => LIFECYCLE_ACTIONS.includes(button.dataset.operation));
 
   const $ = (id) => document.getElementById(id);
   const operationButtons = () => Array.from(document.querySelectorAll(".operation-grid button"));
@@ -146,7 +150,7 @@
     intro.style.color = "#78869e";
     intro.style.fontSize = "11px";
     intro.style.lineHeight = "1.55";
-    intro.textContent = "Cloud Update attempts, final state, phase and bounded failure diagnostics. Credentials and device secrets are never shown here.";
+    intro.textContent = "Approved owner-PC Update, Start, Restart and Close operations, with results and bounded failure diagnostics. Credentials and device secrets are never shown here.";
 
     const list = document.createElement("div");
     list.id = "controlOperationAuditList";
@@ -181,7 +185,9 @@
       const state = String(operation.state || "running");
       const stateLabel = state[0]?.toUpperCase() + state.slice(1);
       const strong = document.createElement("strong");
-      strong.textContent = `Update HGR · ${stateLabel}`;
+      const action = String(operation.action || "update");
+      const actionName = action[0].toUpperCase() + action.slice(1);
+      strong.textContent = `${actionName} HGR · ${stateLabel}`;
       const phase = document.createElement("small");
       phase.textContent = `${operation.phase || "Unknown phase"} · ${Math.round(Number(operation.progress) || 0)}%`;
       const identity = document.createElement("small");
@@ -207,6 +213,16 @@
     const busy = updateInFlight || lastOperation?.state === "running";
     const ready = selectedDevice?.approval === "approved" && selectedDevice.online && selectedDevice.localControlOnline;
     const update = updateButton();
+    for (const button of lifecycleButtons()) {
+      const enabled = ready && !busy && actorRole === "owner";
+      button.disabled = !enabled;
+      const copy = button.querySelector("small");
+      if (copy) copy.textContent = enabled ? "Ready · requires owner confirmation"
+        : actorRole !== "owner" ? "Owner account required"
+          : !ready ? "Reconnect approved owner-PC bridge" : "Control operation already running";
+      button.title = enabled ? "Runs this fixed owner-PC action after explicit confirmation."
+        : "Owner approval and a connected local Control Agent are required.";
+    }
     if (update) {
       update.disabled = !ready || busy;
       update.dataset.updateState = busy ? "running" : "idle";
@@ -383,8 +399,17 @@
         request("/control/operation-status").catch(() => ({ operation: null })),
         request("/control/operation-history").catch(() => ({ operations: [] })),
       ]);
+      actorRole = status.actorRole || null;
       renderDevice(chooseDevice(Array.isArray(status.devices) ? status.devices : []));
-      renderOperationHistory(operationHistory.operations);
+      // Cloud lifecycle receipts are durable on Oracle; local Control audit is
+      // supplementary, never a prerequisite for observing terminal success.
+      const history = new Map();
+      for (const entry of [...(Array.isArray(status.operations) ? status.operations : []),
+        ...(Array.isArray(operationHistory.operations) ? operationHistory.operations : [])]) {
+        if (entry?.id) history.set(entry.id, entry);
+      }
+      renderOperationHistory([...history.values()].sort((a, b) =>
+        String(b.startedAt || "").localeCompare(String(a.startedAt || ""))));
       const operation = operationStatus.operation || status.activeOperation || null;
       dispatchOperation(operation);
     } catch (error) {
@@ -417,6 +442,33 @@
     stopRefreshLoop();
     if (immediate) void refreshCloudControl();
     refreshTimer = window.setInterval(() => void refreshCloudControl(), REFRESH_INTERVAL_MS);
+  }
+
+  async function startLifecycle(action) {
+    if (!LIFECYCLE_ACTIONS.includes(action) || updateInFlight || lastOperation?.state === "running"
+      || actorRole !== "owner") return;
+    const device = selectedDevice;
+    if (!device || device.approval !== "approved" || !device.online || !device.localControlOnline) return;
+    const label = action[0].toUpperCase() + action.slice(1);
+    if (!window.confirm(`${label} HGR on the enrolled owner PC? This executes the existing fixed Windows HGR ${label} launcher; it cannot run arbitrary commands. Closing may interrupt local games.`)) return;
+    updateInFlight = true;
+    syncActionAvailability();
+    try {
+      const confirmation = await request(`/control/cloud/actions/${action}/confirm`, {
+        method: "POST", body: JSON.stringify({ deviceId: device.deviceId }),
+      });
+      const queued = await request(`/control/cloud/actions/${action}`, {
+        method: "POST", body: JSON.stringify({ deviceId: device.deviceId, confirmationId: confirmation.confirmationId }),
+      });
+      dismissedOperationId = null;
+      if (queued.operation) dispatchOperation(queued.operation);
+      await refreshCloudControl();
+    } catch (error) {
+      setReadiness(`${label} was not started`, error instanceof Error ? error.message : "Control action refused.", false);
+    } finally {
+      updateInFlight = false;
+      await refreshCloudControl();
+    }
   }
 
   async function startUpdate() {
@@ -455,6 +507,10 @@
     if (button) {
       button.disabled = true;
       button.addEventListener("click", () => void startUpdate());
+    }
+    for (const lifecycle of lifecycleButtons()) {
+      lifecycle.disabled = true;
+      lifecycle.addEventListener("click", () => void startLifecycle(lifecycle.dataset.operation));
     }
     $("operationDismiss")?.addEventListener("click", () => {
       if (lastOperation && lastOperation.state !== "running") dismissedOperationId = lastOperation.id;
