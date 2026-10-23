@@ -9,11 +9,11 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.5.5o-inline-ops-1" />
+  <link rel="stylesheet" href="/control/control.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/control/control.js?v=4.5.5o-inline-ops-1" defer></script>
-  <link rel="stylesheet" href="/control-navigation.css?v=4.5.4.16" />
-  <script src="/control-navigation.js?v=4.5.4.16" defer></script>
+  <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
+  <script src="/control-navigation.js?v=4.5.5z-fullscreen-1" defer></script>
   <link rel="manifest" href="/control/manifest.webmanifest?v=4.5.4.19" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="HGR Control" />
@@ -47,6 +47,7 @@
         <h1 id="sectionTitle">Control overview</h1>
       </div>
       <div class="topbar-actions">
+        <button id="controlFullscreen" type="button" class="secondary-action control-fullscreen-toggle" hidden aria-label="Enter full screen">Full Screen</button>
         <button id="installControl" type="button" class="secondary-action" hidden>Install Control</button>
         <a class="control-game-room-return" href="/">← Game Room</a>
         <div class="cloud-state" id="cloudState"><span></span><b>Checking HGR Cloud…</b></div>

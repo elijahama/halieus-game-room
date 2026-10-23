@@ -28,3 +28,39 @@
   window.addEventListener('pageshow',offerResume);
   if(document.readyState!=='loading')offerResume();else document.addEventListener('DOMContentLoaded',offerResume,{once:true});
 })();
+
+/* HGR 4.5.5z: a normal user-gesture fullscreen action for Control.
+ * Browser fullscreen cannot survive cross-document navigation automatically.
+ * iOS/iPadOS native WebKit input safety stays in force. Installed standalone
+ * PWAs already own their display frame, so don't pretend Fullscreen API is on.
+ */
+(() => {
+  'use strict';
+  const button = document.getElementById('controlFullscreen');
+  if (!button) return;
+  const apple = /iPad|iPhone|iPod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = window.matchMedia('(display-mode: standalone)').matches
+    || navigator.standalone === true;
+  const supported = !apple && !standalone
+    && typeof document.documentElement.requestFullscreen === 'function';
+  if (!supported) return;
+  button.hidden = false;
+  const sync = () => {
+    const active = Boolean(document.fullscreenElement);
+    button.textContent = active ? 'Exit Full Screen' : 'Full Screen';
+    button.setAttribute('aria-label', active ? 'Exit full screen' : 'Enter full screen');
+    button.setAttribute('aria-pressed', String(active));
+  };
+  button.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      button.textContent = 'Full screen unavailable';
+      button.setAttribute('aria-label', 'Full screen unavailable');
+    }
+  });
+  document.addEventListener('fullscreenchange', sync);
+  sync();
+})();
