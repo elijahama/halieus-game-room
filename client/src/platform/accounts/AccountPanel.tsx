@@ -12,6 +12,7 @@ import type {
 } from "../../../../shared/platform/accounts";
 import type { HalieusFeedbackStatus, HalieusFeedbackSummary } from "../../../../shared/platform/feedback";
 import { GAME_CATALOG } from "../games/catalog";
+import { GAME_DEVELOPMENT, GAME_MATURITY_LABEL } from "../games/development";
 import { accountApi } from "./api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DisplaySettingsPanel } from "../components/DisplaySettingsPanel";
@@ -497,6 +498,32 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                   <article><span>Test Lab</span><strong>{betaMode ? "On" : "Off"}</strong><small>Stats {betaMode ? "excluded" : "normal"}</small></article>
                 </div>
                 <div className="account-owner-actions"><button type="button" className="button-primary" onClick={() => setAdminTab("invites")}>Create invite</button><button type="button" className="button-outline" onClick={() => setAdminTab("players")}>Manage players</button><button type="button" className="button-outline" onClick={() => setAdminTab("audit")}>View audit log</button></div>
+              </section>}
+
+              {adminTab === "overview" && <section className="account-admin-content-card hgr-game-development" aria-label="Game development status">
+                <header className="account-content-heading">
+                  <div><p className="modal-eyebrow">Release readiness</p><h4>Game development status</h4>
+                    <small>Internal QA assessment, not Ranked results. Available does not mean fully developed.</small></div>
+                </header>
+                <div className="hgr-game-dev-counts">
+                  <span><strong>{GAME_CATALOG.length}</strong> Games tracked</span>
+                  <span><strong>{GAME_CATALOG.filter(game => GAME_DEVELOPMENT[game.id].maturity === "stable").length}</strong> Verified stable</span>
+                  <span><strong>{GAME_CATALOG.filter(game => GAME_DEVELOPMENT[game.id].maturity === "unassessed").length}</strong> Unassessed</span>
+                  <span><strong>{GAME_CATALOG.filter(game => GAME_DEVELOPMENT[game.id].maturity === "beta").length}</strong> Beta</span>
+                  <span><strong>{GAME_CATALOG.filter(game => GAME_DEVELOPMENT[game.id].maturity === "needs-repair").length}</strong> Needs repair</span>
+                </div>
+                <div className="hgr-game-dev-rows">
+                  {GAME_CATALOG.map(game => {
+                    const record = GAME_DEVELOPMENT[game.id];
+                    return <article className="hgr-game-dev-entry" key={game.id}>
+                      <img src={game.icon} alt="" />
+                      <div><strong>{game.name}</strong><small>{record.notes}</small></div>
+                      <div className="hgr-game-dev-version"><span>{record.version ? `v${record.version}` : "Not versioned"}</span>
+                        <b data-maturity={record.maturity}>{GAME_MATURITY_LABEL[record.maturity]}</b></div>
+                    </article>;
+                  })}
+                </div>
+                <small>Version numbers are assigned after a game-specific audited baseline. A zero stable count means no completion has been verified, not that every game is unfinished.</small>
               </section>}
 
               {adminTab === "rooms" && <section className="account-admin-content-card account-rooms-panel"><header className="account-content-heading"><div><p className="modal-eyebrow">Live operations</p><h4>Rooms</h4><small>Room lifecycle stays server-owned. Use individual game rooms for normal controls, or close every live room here when recovery is required.</small></div></header><div className="account-room-summary-card"><span className={`account-room-live-dot ${activeRoomCount ? "is-live" : ""}`} /><div><strong>{activeRoomCount ? `${activeRoomCount} room${activeRoomCount === 1 ? "" : "s"} currently live` : "No rooms are live"}</strong><small>Refresh to re-check the server before using the emergency close action.</small></div></div></section>}
