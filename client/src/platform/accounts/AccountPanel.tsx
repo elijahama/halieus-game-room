@@ -15,6 +15,7 @@ import { GAME_CATALOG } from "../games/catalog";
 import { accountApi } from "./api";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DisplaySettingsPanel } from "../components/DisplaySettingsPanel";
+import { NotificationPermissionButton } from "../components/NotificationPermissionButton";
 import { HgrIcon } from "../components/HgrIcon";
 import { BetaFontSelector } from "./BetaFontSelector";
 import { APP_RELEASE_LABEL } from "../../version";
@@ -398,6 +399,10 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
       <section className="account-appearance-card">
         <header className="account-appearance-heading"><div><p className="modal-eyebrow">Player settings</p><h3>Appearance</h3></div><small>Theme, text size and density follow you across HGR.</small></header>
         <DisplaySettingsPanel darkMode={false} onToggleDarkMode={() => {}} showFullscreen={false} onToggleFullscreen={() => {}} />
+      </section>
+      <section className="account-appearance-card" aria-label="Notification settings">
+        <header className="account-appearance-heading"><div><p className="modal-eyebrow">Player settings</p><h3>Notifications</h3></div><small>Manage background alerts for this browser or installed app.</small></header>
+        <NotificationPermissionButton accountId={account.id} mode="settings" />
       </section>
 
       {personalStats && <section className="account-game-record">

@@ -29,7 +29,7 @@ assert.match(button,/Notification\.requestPermission\(\)/,"Permission must follo
 assert.match(button,/onClick=\{\(\) => void toggle\(\)\}/);
 assert.match(button,/registration\.pushManager\.subscribe\(/);
 assert.match(button,/registration\.pushManager\.getSubscription\(\)/,"Allow safe rebind/unsubscribe");
-assert.match(button,/topics:\["invites","messages"\]/,"Both requested notice classes opt in");
+assert.match(button,/topics:\s*\["invites",\s*"messages"\]/,"Both requested notice classes opt in");
 assert.match(home,/const subscribed = await registration\.pushManager\?\.getSubscription\(\)/,
  "Do not double-fire hidden-tab fallback when push is active");
 assert.match(home,/url\.searchParams\.get\("guild"\)/,"Clicking message push navigates to guild chat");

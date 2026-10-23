@@ -15,7 +15,7 @@ const app = [
   'import React from "react";',
   'import {createRoot} from "react-dom/client";',
   'import {NotificationPermissionButton} from "./src/platform/components/NotificationPermissionButton";',
-  'createRoot(document.getElementById("app")).render(<NotificationPermissionButton accountId="qa-account" />);',
+  'createRoot(document.getElementById("app")).render(<><section id="enrollment"><NotificationPermissionButton accountId="qa-account" /></section><section id="settings"><NotificationPermissionButton accountId="qa-account" mode="settings" /></section></>);',
 ].join("\n");
 
 let preview, browser;
@@ -44,19 +44,23 @@ try {
       Notification.requestPermission = async () => "granted";
       window.PushManager = class PushManager {};
       window.__qaFailPush = true;
+      window.__qaSubscribed = false;
+      window.__qaHangPush = false;
       const subscription = {
         endpoint: "https://fcm.googleapis.com/fcm/send/qa-browser-valid-length",
         toJSON: () => ({
           endpoint: "https://fcm.googleapis.com/fcm/send/qa-browser-valid-length",
           keys: {p256dh: "A".repeat(87), auth: "B".repeat(22)},
         }),
-        unsubscribe: async () => true,
+        unsubscribe: async () => {window.__qaSubscribed=false;return true;},
       };
       const registration = {
         pushManager: {
-          getSubscription: async () => window.__qaFailPush ? null : null,
+          getSubscription: async () => window.__qaSubscribed ? subscription : null,
           subscribe: async () => {
+            if (window.__qaHangPush) return new Promise(() => {});
             if (window.__qaFailPush) throw new DOMException("Registration failed - push service error", "AbortError");
+            window.__qaSubscribed = true;
             return subscription;
           },
         },
@@ -67,23 +71,40 @@ try {
       status: 200, contentType: "application/json",
       body: JSON.stringify({ok:true,available:true,publicKey:"B".repeat(87)}),
     }));
+    await page.route("**/accounts/push/status", route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:true,enabled:true})}));
+    await page.route("**/accounts/push/unsubscribe", route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:true})}));
     await page.route("**/accounts/push/subscribe", route => {
       backendSubscribeCount++;
       return route.fulfill({status: 200, contentType: "application/json", body: JSON.stringify({ok:true})});
     });
     await page.goto(base + "/" + prefix + ".html", {waitUntil:"domcontentloaded"});
-    await page.getByRole("button", {name:"Enable PWA alerts"}).click();
+    await page.locator("#enrollment").getByRole("button", {name:"Enable PWA alerts"}).click();
     await page.getByRole("alert").getByText(/browser could not register with its push service/i).waitFor();
     assert.equal(await page.getByRole("alert").getByText(/Use Google services for push messaging/i).isVisible(), true);
     assert.equal(await page.getByRole("alert").getByText(/Inbox and in-app alerts still work/i).isVisible(), true);
     assert.equal(backendSubscribeCount, 0, "Never send failed browser subscription to account backend");
-    assert.equal(await page.getByRole("button", {name:"Enable PWA alerts"}).isEnabled(), true, "Allow explicit retry");
+    assert.equal(await page.locator("#enrollment").getByRole("button", {name:"Enable PWA alerts"}).isEnabled(), true, "Allow explicit retry");
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
     assert.equal(overflow, false, "Push recovery must not break narrow settings layout");
-    await page.evaluate(() => {window.__qaFailPush=false;});
-    await page.getByRole("button", {name:"Enable PWA alerts"}).click();
-    await page.getByRole("button", {name:"Disable PWA alerts"}).waitFor();
+    // An unresponsive browser push provider must time out and release the button.
+    if (width === 360) {
+      await page.evaluate(() => {window.__qaFailPush=false;window.__qaHangPush=true;});
+      await page.locator("#enrollment").getByRole("button", {name:"Enable PWA alerts"}).click();
+      await page.locator("#enrollment").getByRole("alert").getByText(/timed out/i).waitFor({timeout:16_000});
+      assert.equal(await page.locator("#enrollment").getByRole("button", {name:"Enable PWA alerts"}).isEnabled(),true,"A hung provider must release the enrolment control");
+      assert.equal(backendSubscribeCount,0,"A hung browser subscribe must never report enrolment to the server");
+    }
+    await page.evaluate(() => {window.__qaFailPush=false;window.__qaHangPush=false;});
+    await page.locator("#enrollment").getByRole("button", {name:"Enable PWA alerts"}).click();
+    const settings=page.locator("#settings");
+    const enrollment=page.locator("#enrollment");
+    await settings.getByRole("button", {name:"Disable PWA alerts"}).waitFor();
+    assert.equal(await enrollment.getByRole("button").count(), 0, "Main PWA enrollment bar disappears after verified opt-in");
+    assert.equal(await settings.getByText("Enabled on this device.").isVisible(), true, "Profile Settings reflects opt-in");
     assert.equal(backendSubscribeCount, 1, "Successful browser subscription must reach HGR account route exactly once");
+    await settings.getByRole("button", {name:"Disable PWA alerts"}).click();
+    await enrollment.getByRole("button", {name:"Enable PWA alerts"}).waitFor();
+    assert.equal(await settings.getByText("Not enabled on this device.").isVisible(), true, "Profile Settings reflects opt-out");
     assert.deepEqual(errors, [], "No React page errors");
     console.log("PASS 4.5.5v push-provider rejection, readable recovery, no false success, explicit retry at " + width + "px");
     await context.close();
