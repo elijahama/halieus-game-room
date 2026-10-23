@@ -16,6 +16,15 @@ function Read-HgrUpdateResult {
 
 function Write-HgrUpdateResult {
     param([Parameter(Mandatory = $true)][hashtable]$Value)
+    # A later update may already own this marker. A stale finalizer must not
+    # overwrite another operation's result, even after its own child exits.
+    if (Get-Variable -Name startedAt -Scope Script -ErrorAction SilentlyContinue) {
+        $current = Read-HgrUpdateResult
+        if (-not $current -or [string]$current.startedAt -ne [string]$script:startedAt -or
+            [string]$current.operationId -ne [string]$script:operationId) {
+            throw "Cloud Update marker ownership changed; stale finalizer will not overwrite it."
+        }
+    }
     $json = $Value | ConvertTo-Json
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($resultPath, $json, $utf8)
@@ -53,7 +62,14 @@ try {
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-File", "`"$refreshHelper`""
-    ) -WorkingDirectory $projectRoot -WindowStyle Hidden -Wait -PassThru
+    ) -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru
+    # The old -Wait could hang at 98% indefinitely when the restart helper
+    # stalled. Restrict only this spawned helper; never stop the running
+    # web/Oracle service or any unrelated Windows process.
+    if (-not $refresh.WaitForExit(180000)) {
+        try { $refresh.Kill() } catch {}
+        throw "HGR Control post-update restart did not complete in 180 seconds. Inspect local Control status before another update."
+    }
     $exitCode = $refresh.ExitCode
     if ($exitCode -ne 0) {
         $failureReason = "HGR Control post-update restart exited with code $exitCode."
