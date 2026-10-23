@@ -29,19 +29,19 @@ export interface GameCatalogEntry {
 }
 
 export const GAME_CATALOG: GameCatalogEntry[] = [
-  { id: "mega-board", name: "Mega Board", subtitle: "Build · trade · dominate", icon: megaBoardIcon, accent: "#16a34a", tone: "mega", motifs: ["⚄", "⌂", "£", "◆", "▣", "↗"], category: "board", status: "live" },
+  { id: "mega-board", name: "Mega Board", subtitle: "Build · Trade · Dominate", icon: megaBoardIcon, accent: "#16a34a", tone: "mega", motifs: ["⚄", "⌂", "£", "◆", "▣", "↗"], category: "board", status: "live" },
   { id: "ludo", name: "Ludo", subtitle: "Race to home", icon: ludoIcon, accent: "#d97706", tone: "ludo", motifs: ["●", "⚄", "↗", "★", "◎", "◆"], category: "board", status: "live" },
   { id: "connect-four", name: "Connect Four", subtitle: "Four in a row", icon: connectFourIcon, accent: "#2563eb", tone: "connect", motifs: ["●", "●", "●", "●", "↘", "◎"], category: "board", status: "live" },
   { id: "ayo", name: "Ayo", subtitle: "Traditional Yoruba seed game", icon: ayoIcon, accent: "#b87938", tone: "ayo", motifs: ["●", "●", "↻", "6", "6", "◆"], category: "board", status: "live" },
-  { id: "word-board", name: "Word Board", subtitle: "Build words · claim the board", icon: wordBoardIcon, accent: "#5b79a6", tone: "word-board", motifs: ["W", "O", "R", "D", "★", "×2"], category: "board", status: "live" },
+  { id: "word-board", name: "Word Board", subtitle: "Build words · Claim the board", icon: wordBoardIcon, accent: "#5b79a6", tone: "word-board", motifs: ["W", "O", "R", "D", "★", "×2"], category: "board", status: "live" },
   { id: "poker", name: "Poker", subtitle: "Texas Hold’em", icon: pokerIcon, accent: "#be123c", tone: "poker", motifs: ["♠", "♥", "♦", "♣", "●", "A"], category: "cards", status: "live" },
-  { id: "whot", name: "WHOT", subtitle: "Classic shedding · action cards", icon: whotIcon, accent: "#8b1e2d", tone: "whot", motifs: ["★", "●", "+", "△", "20", "W"], category: "cards", status: "live" },
-  { id: "blackjack", name: "Blackjack", subtitle: "Dealer table · hit to 21", icon: blackjackIcon, accent: "#2563eb", tone: "blackjack", motifs: ["A", "K", "♠", "♦", "21", "●"], category: "cards", status: "live" },
-  { id: "hidden-dictator", name: "Hidden Dictator", subtitle: "Read the room · hide your role", icon: hiddenDictatorIcon, accent: "#ea580c", tone: "dictator", motifs: ["◉", "?", "✓", "✕", "◆", "●"], category: "social", status: "beta" },
-  { id: "word-game", name: "Word Game", subtitle: "Six guesses · five letters", icon: wordGameIcon, accent: "#2563eb", tone: "word", motifs: ["W", "A", "R", "D", "✓", "?"], category: "social", status: "live" },
-  { id: "password", name: "Password", subtitle: "One clue · one hidden word", icon: passwordIcon, accent: "#7c3aed", tone: "password", motifs: ["#", "?", "●", "→", "!", "P"], category: "social", status: "live" },
+  { id: "whot", name: "WHOT", subtitle: "Classic shedding · Action cards", icon: whotIcon, accent: "#8b1e2d", tone: "whot", motifs: ["★", "●", "+", "△", "20", "W"], category: "cards", status: "live" },
+  { id: "blackjack", name: "Blackjack", subtitle: "Dealer table · Hit to 21", icon: blackjackIcon, accent: "#2563eb", tone: "blackjack", motifs: ["A", "K", "♠", "♦", "21", "●"], category: "cards", status: "live" },
+  { id: "hidden-dictator", name: "Hidden Dictator", subtitle: "Read the room · Hide your role", icon: hiddenDictatorIcon, accent: "#ea580c", tone: "dictator", motifs: ["◉", "?", "✓", "✕", "◆", "●"], category: "social", status: "beta" },
+  { id: "word-game", name: "Word Game", subtitle: "Six guesses · Five letters", icon: wordGameIcon, accent: "#2563eb", tone: "word", motifs: ["W", "A", "R", "D", "✓", "?"], category: "social", status: "live" },
+  { id: "password", name: "Password", subtitle: "One clue · One hidden word", icon: passwordIcon, accent: "#7c3aed", tone: "password", motifs: ["#", "?", "●", "→", "!", "P"], category: "social", status: "live" },
   { id: "anagrams-race", name: "Anagrams Race", subtitle: "Unscramble before the room", icon: anagramsRaceIcon, accent: "#ea580c", tone: "anagram", motifs: ["A", "↻", "R", "!", "G", "→"], category: "social", status: "live" },
-  { id: "cheat", name: "Cheat", subtitle: "Bluff · challenge · survive", icon: cheatIcon, accent: "#db2777", tone: "cheat", motifs: ["?", "♠", "!", "♦", "×", "A"], category: "cards", status: "live" },
+  { id: "cheat", name: "Cheat", subtitle: "Bluff · Challenge · Survive", icon: cheatIcon, accent: "#db2777", tone: "cheat", motifs: ["?", "♠", "!", "♦", "×", "A"], category: "cards", status: "live" },
   { id: "dominoes", name: "Dominoes", subtitle: "Match the ends", icon: dominoesIcon, accent: "#0f766e", tone: "dominoes", motifs: ["●", "│", "●", "◆", "↔", "6"], category: "board", status: "live" },
 ];
 
