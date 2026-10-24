@@ -58,6 +58,9 @@ async function snapshot(page) {
     });
     return {layout:root.dataset.gameLayout,count:buttons.length,groups:groups.length,
       planned:root.querySelectorAll(".halieus-future-games article").length,
+      plannedNames:[...root.querySelectorAll(".halieus-future-games article strong")].map(e=>e.textContent.trim()),
+      plannedButtons:root.querySelectorAll(".halieus-future-games button").length,
+      futureOverflow:Math.max(0,(root.querySelector(".halieus-future-games")?.scrollWidth??0)-(root.querySelector(".halieus-future-games")?.clientWidth??0)),
       games:buttons.map(b=>b.querySelector("strong")?.textContent?.trim()||"").sort(),
       controls:[...root.querySelectorAll(".halieus-game-layout-switch button")].map(b=>({
         name:b.textContent.trim(),pressed:b.getAttribute("aria-pressed"),height:b.getBoundingClientRect().height,
@@ -100,6 +103,10 @@ try{
     assert.equal(tiles.controls[1].pressed,"false");
     assert.ok(tiles.count>=10,"Active game catalogue unexpectedly missing");
     assert.equal(tiles.groups,3,"Categories should remain intact");
+    assert.equal(tiles.planned,7,"Coming Soon should contain four games and three Poker formats");
+    assert.deepEqual(tiles.plannedNames,["Tic-Tac-Toe","Villagers & Mafia","Settlers","Spot the Match","Omaha","Five-Card Draw","Seven-Card Stud"]);
+    assert.equal(tiles.plannedButtons,0,"Roadmap cards must not be mistaken for playable room controls");
+    assert.ok(tiles.futureOverflow<=6,"Coming Soon should not overflow at "+width);
 
     await page.locator(".halieus-game-layout-switch button").nth(1).click();
     await page.waitForFunction(()=>document.querySelector('.view-games')?.dataset.gameLayout==="list");
