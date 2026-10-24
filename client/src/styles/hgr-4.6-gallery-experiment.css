@@ -1,0 +1,164 @@
+/* HGR original discovery Gallery (inspired by general media-catalogue UX patterns).
+ * No copied Miruro code or images. Preserve canonical game artwork, room actions,
+ * per-game palette, current Tiles/List views and user-selected HGR theme. */
+.view-games .halieus-layout-glyph.is-gallery {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+.view-games .halieus-layout-glyph.is-gallery i:first-child { grid-row: 1 / span 2; }
+.view-games[data-game-layout="gallery"] .halieus-game-library.is-categorized {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: clamp(22px, 3vw, 36px) !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category {
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category > div {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 174px), 1fr)) !important;
+  grid-auto-flow: row !important;
+  grid-auto-columns: auto !important;
+  align-items: stretch !important;
+  gap: clamp(10px, 1.5vw, 18px) !important;
+  width: 100% !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  scroll-snap-type: none !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: auto auto 1fr !important;
+  align-content: start !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 10px 10px 14px !important;
+  border: 1px solid color-mix(in srgb, var(--game-card-accent) 24%, var(--mm-border, #777)) !important;
+  border-radius: 16px !important;
+  background: color-mix(in srgb, var(--game-card-accent) 3%, var(--hgr-surface, transparent)) !important;
+  box-shadow: 0 9px 25px rgba(0,0,0,.08);
+  scroll-snap-align: none !important;
+  text-align: left !important;
+  transition: transform .17s ease, border-color .17s ease, box-shadow .17s ease !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-art {
+  display: grid !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 4 / 5 !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 10px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: radial-gradient(ellipse at 45% 32%, color-mix(in srgb, var(--game-card-accent) 33%, transparent), transparent 66%),
+    linear-gradient(145deg, color-mix(in srgb, var(--game-card-accent) 12%, var(--hgr-surface, #151923)),
+      color-mix(in srgb, var(--game-card-accent) 3%, var(--hgr-surface, #151923))) !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-art :is(img,svg) {
+  display: block !important;
+  width: min(78%, 160px) !important;
+  height: min(78%, 160px) !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  filter: drop-shadow(0 12px 15px rgba(0,0,0,.2));
+  transform: none !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card > span:not(.halieus-library-art):not(.halieus-library-status) {
+  display: grid !important;
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  gap: 4px !important;
+  align-self: start !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 0 3px !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card strong {
+  font-size: clamp(12px, 1.05vw, 16px) !important;
+  line-height: 1.25 !important;
+  overflow-wrap: anywhere !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card small {
+  font-size: clamp(10px, .86vw, 12px) !important;
+  line-height: 1.35 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-status {
+  position: absolute !important;
+  top: 17px !important;
+  right: 17px !important;
+  z-index: 2 !important;
+  width: auto !important;
+  max-width: calc(100% - 34px) !important;
+  padding: 5px 7px !important;
+}
+.view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card > i {
+  display: block !important;
+  grid-column: 1 !important;
+  grid-row: 3 !important;
+  align-self: end !important;
+  padding: 0 3px !important;
+  margin: 0 !important;
+  font-size: 11px !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+@media (hover: hover) and (pointer: fine) {
+  .view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card:hover {
+    transform: translateY(-4px) !important;
+    border-color: color-mix(in srgb, var(--game-card-accent) 65%, transparent) !important;
+    box-shadow: 0 17px 32px rgba(0,0,0,.15) !important;
+  }
+}
+.view-games[data-game-layout="gallery"] .halieus-library-card:focus-visible {
+  outline: 3px solid var(--hgr-brand) !important;
+  outline-offset: 3px !important;
+}
+@media (max-width: 520px) {
+  .view-games .halieus-game-layout-switch > button { min-width: 78px; padding-inline: 8px; }
+  .view-games[data-game-layout="gallery"] .halieus-game-category > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card {
+    gap: 8px !important;
+    padding: 7px 7px 11px !important;
+    border-radius: 14px !important;
+  }
+  .view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-art {
+    border-radius: 10px !important;
+    padding: 7px !important;
+  }
+  .view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-art :is(img,svg) {
+    width: min(78%, 105px) !important;
+    height: min(78%, 105px) !important;
+  }
+  .view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-card strong { font-size: 12px !important; }
+  .view-games[data-game-layout="gallery"] .halieus-game-category .halieus-library-status {
+    top: 12px !important;
+    right: 12px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .view-games[data-game-layout="gallery"] .halieus-library-card,
+  .view-games[data-game-layout="gallery"] .halieus-library-art :is(img,svg) {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
