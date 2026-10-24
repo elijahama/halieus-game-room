@@ -49,10 +49,12 @@ export interface SavedSessionSummary { code: string; reconnectToken: string; pla
 type HomeView = "home" | "games" | "players" | "rankings" | "guilds";
 type DiscoveryShelf = "featured" | "most-played" | "recommended" | "recent" | "friends";
 
-type GameLibraryLayout = "tiles" | "list";
+type GameLibraryLayout = "tiles" | "list" | "gallery";
 const GAME_LIBRARY_LAYOUT_KEY = "halieus-game-library-layout-v1";
 function initialGameLibraryLayout(): GameLibraryLayout {
   try {
+    // Existing users retain Tiles/List; Gallery is an explicit opt-in only.
+    if (window.localStorage.getItem(GAME_LIBRARY_LAYOUT_KEY) === "gallery") return "gallery";
     return window.localStorage.getItem(GAME_LIBRARY_LAYOUT_KEY) === "list" ? "list" : "tiles";
   } catch {
     return "tiles";
@@ -1374,6 +1376,9 @@ export function HomeScreen(props: HomeScreenProps) {
               </button>
               <button type="button" className={gameLibraryView === "list" ? "is-active" : ""} aria-pressed={gameLibraryView === "list"} onClick={() => changeGameLibraryView("list")}>
                 <span className="halieus-layout-glyph is-list" aria-hidden="true"><i /><i /><i /></span> List
+              </button>
+              <button type="button" className={gameLibraryView === "gallery" ? "is-active" : ""} aria-pressed={gameLibraryView === "gallery"} onClick={() => changeGameLibraryView("gallery")}>
+                <span className="halieus-layout-glyph is-gallery" aria-hidden="true"><i /><i /><i /></span> Gallery
               </button>
             </div>
           </header>

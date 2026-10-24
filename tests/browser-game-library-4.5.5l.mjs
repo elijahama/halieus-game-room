@@ -95,7 +95,7 @@ try{
     await openGames(page);
     const tiles=await snapshot(page);
     assert.equal(tiles.layout,"tiles","Default presentation must stay Tiles");
-    assert.equal(tiles.controls.length,2);
+    assert.equal(tiles.controls.length,3,"Original Tiles/List and opt-in Gallery should be available");
     assert.equal(tiles.controls[0].pressed,"true");
     assert.equal(tiles.controls[1].pressed,"false");
     assert.ok(tiles.count>=10,"Active game catalogue unexpectedly missing");
@@ -137,9 +137,41 @@ try{
     await page.locator(".halieus-game-layout-switch button").nth(0).click();
     assert.equal((await snapshot(page)).layout,"tiles","Switching back to Tiles must work");
     assert.equal(await page.evaluate(()=>localStorage.getItem("halieus-game-library-layout-v1")),"tiles");
+    await page.locator(".halieus-game-layout-switch button").nth(2).click();
+    await page.waitForFunction(()=>document.querySelector(".view-games")?.dataset.gameLayout==="gallery");
+    const gallery=await snapshot(page);
+    assert.equal(gallery.controls.length,3,"All three display modes remain available");
+    assert.equal(gallery.controls[2].pressed,"true","Gallery button announces its selected state");
+    assert.deepEqual(gallery.games,tiles.games,"Gallery must use precisely the existing game catalogue");
+    assert.equal(gallery.groups,tiles.groups,"Gallery preserves game categories");
+    assert.equal(gallery.planned,tiles.planned,"Gallery leaves the future-game roadmap untouched");
+    assert.equal(await page.locator(".halieus-future-games button").count(),0,"Gallery cannot activate unfinished future games");
+    assert.ok(gallery.screenOverflow<=10,"Gallery viewport x-overflow at "+width+": "+gallery.screenOverflow);
+    for(const group of gallery.sizes) {
+      assert.equal(group.autoFlow,"row","Gallery must use a proper non-scrolling grid at "+width);
+      assert.ok(group.xOverflow<=6,"Gallery category must not scroll sideways at "+width);
+      for(const card of group.items) {
+        assert.ok(card.height>=160,"Gallery card too short or collapsed at "+width);
+        assert.ok(card.width>=100,"Gallery card too narrow at "+width);
+        assert.ok(card.overflow<=5,"Gallery card clips text at "+width);
+      }
+      if(width<=520 && group.items.length>=2){
+        assert.ok(Math.abs(group.items[0].top-group.items[1].top)<=6,
+          "Gallery should show two posters per row on phones at "+width);
+      }
+    }
+    assert.equal(await page.evaluate(()=>localStorage.getItem("halieus-game-library-layout-v1")),"gallery");
+    await page.reload({waitUntil:"domcontentloaded"});
+    await openGames(page);
+    assert.equal((await snapshot(page)).layout,"gallery","Gallery preference survives reload at "+width);
     await page.locator(".halieus-library-card").first().click();
     await page.locator(".halieus-create-modal").waitFor({state:"visible",timeout:8000});
-    console.log("PASS HGR 4.5.5l "+width+"px: tiles/list, 3 groups, "+tiles.count+" games, no list overflow, persisted choice, same room setup");
+    await page.reload({waitUntil:"domcontentloaded"});
+    await openGames(page);
+    await page.locator(".halieus-game-layout-switch button").nth(0).click();
+    assert.equal((await snapshot(page)).layout,"tiles","Existing Tiles remains restorable from Gallery");
+    assert.equal(await page.evaluate(()=>localStorage.getItem("halieus-game-library-layout-v1")),"tiles");
+    console.log("PASS HGR Gallery "+width+"px: tiles/list/gallery, 3 categories, "+tiles.count+" games, 2-column phone posters, no overflow, persistent preference, room creation");
     await ctx.close();
   }
 }finally{
