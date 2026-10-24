@@ -28,6 +28,8 @@ import type { WordArenaCreateOptions, WordArenaGameId, WordArenaMatchMode, WordG
 import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicMatchMode } from "../../../../shared/games/classic-table/types";
 import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, ACTIVE_GAME_IDS, FUTURE_GAME_QUEUE, GAME_BY_ID, type GameId } from "../games/catalog";
+import { filterGameLibrary, type GameLibraryCategory } from "../games/libraryDiscovery";
+import { GameLibrarySearchPanel } from "./GameLibrarySearchPanel";
 import { ThemeButton } from "./ThemeButton";
 import { AchievementBar } from "./AchievementBar";
 import { fullscreenUnavailableMessage, stableFullscreenAvailable } from "../fullscreen";
@@ -140,6 +142,10 @@ export function HomeScreen(props: HomeScreenProps) {
 
   const [view, setView] = useState<HomeView>("home");
   const [gameLibraryView, setGameLibraryView] = useState<GameLibraryLayout>(initialGameLibraryLayout);
+  const [gameLibrarySearch, setGameLibrarySearch] = useState("");
+  const [gameLibraryCategory, setGameLibraryCategory] = useState<GameLibraryCategory>("all");
+  const matchingLibraryGames = useMemo(() => filterGameLibrary(GAMES, gameLibrarySearch, gameLibraryCategory), [gameLibrarySearch, gameLibraryCategory]);
+  const matchingLibraryIds = useMemo(() => new Set(matchingLibraryGames.map((game) => game.id)), [matchingLibraryGames]);
   function changeGameLibraryView(next: GameLibraryLayout): void {
     setGameLibraryView(next);
     try { window.localStorage.setItem(GAME_LIBRARY_LAYOUT_KEY, next); }
@@ -1377,8 +1383,11 @@ export function HomeScreen(props: HomeScreenProps) {
               </button>
             </div>
           </header>
+          <GameLibrarySearchPanel query={gameLibrarySearch} category={gameLibraryCategory}
+            count={matchingLibraryGames.length} onQueryChange={setGameLibrarySearch}
+            onCategoryChange={setGameLibraryCategory} />
           <div className="halieus-games-layout is-library-only">
-            <div className="halieus-game-library is-categorized">{GAME_GROUPS.map((group) => { const games = GAMES.filter((game) => game.category === group.id); if (!games.length) return null; return <section key={group.id} className={`halieus-game-category category-${group.id}`}><header><div><h2>{group.label}</h2><span>{group.description}</span></div><b>{games.length}</b></header><div>{games.map((game) => <button type="button" key={game.id} style={{ ["--game-card-accent" as string]: game.accent }} className={`halieus-library-card tone-${game.tone} ${selectedGame === game.id ? "is-selected" : ""}`} onClick={() => openCreate(game.id)}><span className="halieus-library-status">{game.status === "beta" ? "Beta" : "Available"}</span><span className="halieus-library-art"><GameBrandIcon game={game.id} /></span><span><strong>{game.name}</strong><small>{game.subtitle}</small></span><i>Create room →</i></button>)}</div></section>; })}</div>
+            <div className="halieus-game-library is-categorized" id="hgr-filtered-game-library">{matchingLibraryGames.length === 0 && <div className="hgr-library-search-empty" role="status"><strong>No matching games</strong><span>Try another game name or category. The Coming Next roadmap is shown separately.</span><button type="button" onClick={() => { setGameLibrarySearch(""); setGameLibraryCategory("all"); }}>Show all games</button></div>}{GAME_GROUPS.map((group) => { const games = GAMES.filter((game) => game.category === group.id).filter((game) => matchingLibraryIds.has(game.id)); if (!games.length) return null; return <section key={group.id} className={`halieus-game-category category-${group.id}`}><header><div><h2>{group.label}</h2><span>{group.description}</span></div><b>{games.length}</b></header><div>{games.map((game) => <button type="button" key={game.id} style={{ ["--game-card-accent" as string]: game.accent }} className={`halieus-library-card tone-${game.tone} ${selectedGame === game.id ? "is-selected" : ""}`} onClick={() => openCreate(game.id)}><span className="halieus-library-status">{game.status === "beta" ? "Beta" : "Available"}</span><span className="halieus-library-art"><GameBrandIcon game={game.id} /></span><span><strong>{game.name}</strong><small>{game.subtitle}</small></span><i>Create room →</i></button>)}</div></section>; })}</div>
             <section className="halieus-future-games" aria-label="Games in development"><header><div><p>IN DEVELOPMENT</p><h2>Coming next</h2><span>These are the requested replacement modules. They are visible as roadmap items only until real rooms, gameplay and QA exist.</span></div><b>{FUTURE_GAME_QUEUE.length}</b></header><div>{FUTURE_GAME_QUEUE.map((game) => <article key={game.name}><span aria-hidden="true">{game.glyph}</span><div><strong>{game.name}</strong><small>{game.subtitle}</small></div><b>Planned</b></article>)}</div></section>
           </div>
         </section>}
