@@ -100,6 +100,19 @@ try{
     assert.equal(tiles.controls[1].pressed,"false");
     assert.ok(tiles.count>=10,"Active game catalogue unexpectedly missing");
     assert.equal(tiles.groups,3,"Categories should remain intact");
+    const search=page.getByRole("searchbox",{name:"Find a game"});
+    await search.fill("mega");
+    await page.getByText("1 game found").waitFor();
+    const filteredTiles=await snapshot(page);
+    assert.equal(filteredTiles.count,1,"Full Games view must apply its actual search query");
+    assert.equal(filteredTiles.groups,1,"Search hides empty categories without hiding the catalogue");
+    assert.equal(filteredTiles.planned,tiles.planned,"Search cannot change the nonplayable roadmap");
+    await page.getByRole("button",{name:"Cards",exact:true}).click();
+    await page.getByText("No matching games").waitFor();
+    assert.equal((await snapshot(page)).count,0,"Search and category must combine in the real app");
+    await page.getByRole("button",{name:"Show all games"}).click();
+    await page.getByText(tiles.count+" games found").waitFor();
+    assert.deepEqual((await snapshot(page)).games,tiles.games,"Clear search must restore every game");
 
     await page.locator(".halieus-game-layout-switch button").nth(1).click();
     await page.waitForFunction(()=>document.querySelector('.view-games')?.dataset.gameLayout==="list");
@@ -141,6 +154,14 @@ try{
     await page.waitForFunction(()=>document.querySelector(".view-games")?.dataset.gameLayout==="gallery");
     const gallery=await snapshot(page);
     assert.equal(gallery.controls.length,3,"All three display modes remain available");
+    await search.fill("poker");
+    await page.getByText("1 game found").waitFor();
+    const filteredGallery=await snapshot(page);
+    assert.equal(filteredGallery.layout,"gallery","Gallery layout persists during filtering");
+    assert.equal(filteredGallery.count,1,"Gallery filters actual game cards");
+    assert.equal(filteredGallery.screenOverflow<=10,true,"Filtered Gallery must not overflow at "+width);
+    await page.getByRole("button",{name:"Clear filters"}).click();
+    await page.getByText(tiles.count+" games found").waitFor();
     assert.equal(gallery.controls[2].pressed,"true","Gallery button announces its selected state");
     assert.deepEqual(gallery.games,tiles.games,"Gallery must use precisely the existing game catalogue");
     assert.equal(gallery.groups,tiles.groups,"Gallery preserves game categories");
