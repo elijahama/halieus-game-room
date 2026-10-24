@@ -26123,3 +26123,38 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 .hgr-game-dev-version b[data-maturity="needs-repair"]{border-color:#d98873;color:#ffbba5}
 .hgr-game-dev-version b[data-maturity="stable"]{border-color:#60d49f;color:#91e9bc}
 @media(max-width:430px){.hgr-game-dev-entry{flex-wrap:wrap}.hgr-game-dev-version{margin-left:auto}.hgr-game-dev-rows{grid-template-columns:1fr}}
+
+/* Part 32: Coming Soon roadmap is informational, including distinct poker formats. */
+.halieus-future-games > header > b {
+  padding: 8px 12px;
+  border-radius: 12px;
+  text-align: center;
+  white-space: normal;
+  font-size: .72rem;
+}
+.halieus-future-games > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.halieus-future-games article { grid-template-columns: 42px minmax(0, 1fr) auto; }
+.halieus-future-games article small { overflow-wrap: anywhere; }
+.halieus-future-subheading { font-size: .95rem; margin: 18px 0 10px; }
+@media (max-width: 720px) {
+  .halieus-future-games > div { grid-template-columns: minmax(0, 1fr); }
+  .halieus-future-games article { grid-template-columns: 38px minmax(0, 1fr); }
+  .halieus-future-games article > b { grid-column: 2; justify-self: start; }
+}
+
+/* Part 32: Coming Soon roadmap includes distinct poker formats. */
+.halieus-future-games > header > b {
+  padding: 8px 12px;
+  border-radius: 12px;
+  text-align: center;
+  white-space: normal;
+  font-size: .72rem;
+}
+.halieus-future-games > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.halieus-future-games article small { overflow-wrap: anywhere; }
+.halieus-future-subheading { font-size: .95rem; margin: 18px 0 10px; }
+@media (max-width: 720px) {
+  .halieus-future-games > div { grid-template-columns: minmax(0, 1fr); }
+  .halieus-future-games article { grid-template-columns: 38px minmax(0, 1fr); }
+  .halieus-future-games article > b { grid-column: 2; justify-self: start; }
+}

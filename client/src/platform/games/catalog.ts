@@ -48,10 +48,19 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
 export const ACTIVE_GAME_CATALOG = GAME_CATALOG.filter((game) => game.status !== "retired");
 export const ACTIVE_GAME_IDS = new Set<GameId>(ACTIVE_GAME_CATALOG.map((game) => game.id));
 
+/** Roadmap-only titles. Not in GAME_CATALOG, ACTIVE_GAME_IDS or any room selector. */
 export const FUTURE_GAME_QUEUE = [
-  { name: "Villagers & Mafia", subtitle: "Social deduction", glyph: "◉" },
-  { name: "Settlers", subtitle: "Original HGR settlement & trading", glyph: "⌂" },
-  { name: "Spot the Match", subtitle: "Fast visual matching", glyph: "◎" },
+  { name: "Tic-Tac-Toe", subtitle: "Noughts and Crosses · 3×3 / 4×4 / 5×5 · Casual / Ranked", glyph: "×", stage: "Rules foundation" },
+  { name: "Villagers & Mafia", subtitle: "Social deduction", glyph: "◉", stage: "Planned" },
+  { name: "Settlers", subtitle: "Original HGR settlement & trading", glyph: "⌂", stage: "Planned" },
+  { name: "Spot the Match", subtitle: "Fast visual matching", glyph: "◎", stage: "Planned" },
+] as const;
+
+/** Variants of an existing playable game, not independent game engines or rooms. */
+export const FUTURE_POKER_VARIANTS = [
+  { name: "Omaha", subtitle: "Poker variant · Separate engine and QA pending", glyph: "♠" },
+  { name: "Five-Card Draw", subtitle: "Poker variant · Separate engine and QA pending", glyph: "♦" },
+  { name: "Seven-Card Stud", subtitle: "Poker variant · Separate engine and QA pending", glyph: "♣" },
 ] as const;
 
 export const GAME_BY_ID = Object.fromEntries(GAME_CATALOG.map((game) => [game.id, game])) as Record<GameId, GameCatalogEntry>;

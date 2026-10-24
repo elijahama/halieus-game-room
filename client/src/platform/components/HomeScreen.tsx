@@ -27,7 +27,7 @@ import type { HalieusGuildInvitation, HalieusGuildMessageNotification } from "..
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaMatchMode, WordGameMode } from "../../../../shared/games/word-arena/types";
 import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicMatchMode } from "../../../../shared/games/classic-table/types";
 import { accountApi } from "../accounts/api";
-import { ACTIVE_GAME_CATALOG, ACTIVE_GAME_IDS, FUTURE_GAME_QUEUE, GAME_BY_ID, type GameId } from "../games/catalog";
+import { ACTIVE_GAME_CATALOG, ACTIVE_GAME_IDS, FUTURE_GAME_QUEUE, FUTURE_POKER_VARIANTS, GAME_BY_ID, type GameId } from "../games/catalog";
 import { ThemeButton } from "./ThemeButton";
 import { AchievementBar } from "./AchievementBar";
 import { fullscreenUnavailableMessage, stableFullscreenAvailable } from "../fullscreen";
@@ -1379,7 +1379,7 @@ export function HomeScreen(props: HomeScreenProps) {
           </header>
           <div className="halieus-games-layout is-library-only">
             <div className="halieus-game-library is-categorized">{GAME_GROUPS.map((group) => { const games = GAMES.filter((game) => game.category === group.id); if (!games.length) return null; return <section key={group.id} className={`halieus-game-category category-${group.id}`}><header><div><h2>{group.label}</h2><span>{group.description}</span></div><b>{games.length}</b></header><div>{games.map((game) => <button type="button" key={game.id} style={{ ["--game-card-accent" as string]: game.accent }} className={`halieus-library-card tone-${game.tone} ${selectedGame === game.id ? "is-selected" : ""}`} onClick={() => openCreate(game.id)}><span className="halieus-library-status">{game.status === "beta" ? "Beta" : "Available"}</span><span className="halieus-library-art"><GameBrandIcon game={game.id} /></span><span><strong>{game.name}</strong><small>{game.subtitle}</small></span><i>Create room →</i></button>)}</div></section>; })}</div>
-            <section className="halieus-future-games" aria-label="Games in development"><header><div><p>IN DEVELOPMENT</p><h2>Coming next</h2><span>These are the requested replacement modules. They are visible as roadmap items only until real rooms, gameplay and QA exist.</span></div><b>{FUTURE_GAME_QUEUE.length}</b></header><div>{FUTURE_GAME_QUEUE.map((game) => <article key={game.name}><span aria-hidden="true">{game.glyph}</span><div><strong>{game.name}</strong><small>{game.subtitle}</small></div><b>Planned</b></article>)}</div></section>
+            <section className="halieus-future-games" aria-label="Coming Soon games and variants"><header><div><p>IN DEVELOPMENT</p><h2>Coming Soon</h2><span>Planned games and future formats. These are roadmap previews, not playable rooms, until their own implementation and QA are complete.</span></div><b>{FUTURE_GAME_QUEUE.length} games · {FUTURE_POKER_VARIANTS.length} formats</b></header><div>{FUTURE_GAME_QUEUE.map((game) => <article key={game.name}><span aria-hidden="true">{game.glyph}</span><div><strong>{game.name}</strong><small>{game.subtitle}</small></div><b>{game.stage}</b></article>)}</div><h3 className="halieus-future-subheading">Planned Poker formats</h3><div>{FUTURE_POKER_VARIANTS.map((variant) => <article key={variant.name}><span aria-hidden="true">{variant.glyph}</span><div><strong>{variant.name}</strong><small>{variant.subtitle}</small></div><b>Planned</b></article>)}</div></section>
           </div>
         </section>}
 
