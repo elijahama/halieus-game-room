@@ -64,3 +64,9 @@ The Oracle installer builds outside `/opt/halieus-game-room`. The existing appli
 Persistent production data remain under:
 
 `/var/lib/halieus-game-room`
+
+## Windows Oracle SSH key location
+
+Keep private Oracle SSH credentials in `%USERPROFILE%\.ssh\halieus-game-room\oracle-deploy.key`, **outside the repository**, with filesystem access restricted to the owner (and Windows SYSTEM). The private owner config at `%LOCALAPPDATA%\Halieus Game Room\owner-update.json` may reference this location. Neither the key nor an SSH key backup belongs under `dev-tools` or any other HGR game folder, even when Git ignores it.
+
+Before publishing, verify the saved path exists, that SSH authentication to Oracle works, and that the exact `RELEASE.json` fingerprint is reproducible from the release files. If either gate fails, stop without attempting to bypass SSH or weaken the security audit. Documented source-only integration is not a production deployment.
