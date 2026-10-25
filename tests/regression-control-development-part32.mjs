@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const root = new URL("../", import.meta.url);
 const load = (path) => readFile(new URL(path, root), "utf8");
@@ -38,6 +39,6 @@ assert.match(documentation, /not a background process|not an assertion|GitHub ca
 const bottomNavigation = html.match(/<nav class="control-mobile-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1] || "";
 assert.equal([...bottomNavigation.matchAll(/<button /g)].length, 5,
   "The approved five-item Control mobile bottom bar must remain intact.");
-const checked = spawnSync(process.execPath, ["--check", new URL("client/public/control/development.js", root).pathname], { encoding: "utf8" });
+const checked = spawnSync(process.execPath, ["--check", fileURLToPath(new URL("client/public/control/development.js", root))], { encoding: "utf8" });
 assert.equal(checked.status, 0, "Development client JavaScript must parse: " + checked.stderr);
 console.log("PASS Part32 Control development status: role gate, real GitHub evidence, independent Operations, five-tab phone navigation, JS syntax");
