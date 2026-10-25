@@ -1163,3 +1163,9 @@ No changes to canonical HGR launcher art, main platform `VERSION`, Control allow
 
 **Release boundary:** Source-only review candidate. It is not merged, deployed, installed into the current owner's main checkout, integrated as an upstream OpenShard TUI tab, or wired to owner-facing HGR Control. An authenticated local-history read bridge, real task-ID propagation from external Codex hooks, and integration with GitHub status remain separate reviewed batches. Keep product `VERSION` unchanged at 4.5.6 until the cohesive release decision.
 
+
+## Owner-gated HGR Control development timeline (25 October 2026)
+
+The existing Control Development Monitor candidate is extended with an owner-only local evidence panel (desktop and phone/tablet in ordinary page flow) and a protected `GET /control/development-timeline` endpoint. The panel displays sanitized metadata from the two independent sources: Bridge instruction journal and OpenShard native receipts. It never maps one to the other without a real task ID, never treats a prompt as proof of execution, never exposes raw prompts, and never fabricates an agent heartbeat or completion percentage. Owner authorization is required; ordinary admin access is insufficient for the local history endpoint. The mobile bottom bar remains five items with Development reached via Ops.
+
+**Physical host constraint:** HGR Control on Oracle cannot access the owner's laptop files and must show **Local source unavailable**. This source-only candidate is a safe on-machine read path, not yet a remotely authenticated live receipt relay. Bridging owner-PC local records to the cloud needs a separately reviewed outbound sync protocol and privacy safeguards. No new listening port, blanket filesystem access, GitHub upload of the local journal, Update action integration, canonical H change or HGR version bump is approved here. See `docs/HGR_CONTROL_DEVELOPMENT_MONITOR.md` for implementation and test gates.

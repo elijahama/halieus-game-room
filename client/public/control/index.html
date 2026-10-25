@@ -9,10 +9,10 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=development-status-v1" />
+  <link rel="stylesheet" href="/control/control.css?v=development-timeline-v1" />
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/control/control.js?v=development-status-v1" defer></script>
-  <script src="/control/development.js?v=development-status-v1" defer></script>
+  <script src="/control/development.js?v=development-timeline-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=4.5.5z-fullscreen-1" defer></script>
   <link rel="manifest" href="/control/manifest.webmanifest?v=4.5.4.19" />
@@ -184,6 +184,16 @@
         <strong id="developmentSummary">Open Development to load GitHub activity.</strong>
         <small id="developmentTimestamp">Data is checked when this section opens and cached for up to five minutes.</small>
         <p>Draft or open pull requests are proposed changes, not background jobs. Tests and local work appear here only if GitHub publishes them.</p>
+      </article>
+      <article class="panel-card development-local" aria-labelledby="developmentLocalHeading">
+        <div class="card-heading">
+          <div><p class="eyebrow">LOCAL OPENSHARD EVIDENCE</p><h2 id="developmentLocalHeading">Development timeline</h2></div>
+        </div>
+        <p class="development-local-state" id="developmentLocalState" role="status" aria-live="polite">Local history has not been checked.</p>
+        <p class="development-local-hint" id="developmentLocalHint">A captured instruction is not proof a task ran. Local history requires a verified owner-PC source.</p>
+        <div id="developmentLocalEntries" class="development-list" aria-label="Recent local development evidence">
+          <p class="empty-state">Open Development to check local evidence availability.</p>
+        </div>
       </article>
       <div class="development-columns">
         <article class="panel-card"><div class="card-heading"><div><p class="eyebrow">REVIEW QUEUE</p><h2>Development batches</h2></div></div>

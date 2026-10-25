@@ -138,3 +138,111 @@
     if (document.visibilityState === "visible" && active()) void refresh();
   }, 120_000);
 })();
+/* Owner-only local evidence panel. Independent from GitHub snapshots and Update. */
+(() => {
+  "use strict";
+  const panel = document.querySelector('[data-panel="development"]');
+  const state = document.getElementById("developmentLocalState");
+  const hint = document.getElementById("developmentLocalHint");
+  const list = document.getElementById("developmentLocalEntries");
+  if (!panel || !state || !hint || !list) return;
+  let request = null;
+  const active = () => panel.classList.contains("is-active");
+  const when = (value) => {
+    const time = new Date(value);
+    return Number.isFinite(time.getTime()) ? time.toLocaleString() : "Time unavailable";
+  };
+  const text = (tag, content, className) => {
+    const result = document.createElement(tag);
+    if (className) result.className = className;
+    result.textContent = String(content ?? "");
+    return result;
+  };
+  const reset = () => {
+    while (list.firstChild) list.removeChild(list.firstChild);
+  };
+  const unavailable = (message) => {
+    reset();
+    state.textContent = message;
+    hint.textContent = "Remote HGR Control cannot directly access your laptop's private OpenShard files. No live task state is inferred.";
+    list.appendChild(text("p", "No verified local timeline data is available here.", "empty-state"));
+  };
+  function render(result) {
+    reset();
+    const events = Array.isArray(result.events) ? result.events.slice(0, 18) : [];
+    if (result.source === "unavailable") {
+      unavailable("Local OpenShard source unavailable");
+      return;
+    }
+    state.textContent = result.source === "partial"
+      ? "Partial local history on this server"
+      : "Local history available on this server";
+    hint.textContent = "Last recorded: " + (result.latestAt ? when(result.latestAt) : "No recorded events")
+      + ". This is historical evidence, not a live connection or task completion.";
+    if (!events.length) {
+      list.appendChild(text("p", "No recent local evidence found. This does not mean a task completed.", "empty-state"));
+      return;
+    }
+    for (const event of events) {
+      if (!event || typeof event !== "object") continue;
+      const row = document.createElement("div");
+      row.className = "development-entry development-local-entry";
+      const copy = document.createElement("div");
+      copy.className = "development-entry-copy";
+      const source = event.source === "openshard" ? "OpenShard receipt" : "Bridge record";
+      const status = event.status === "verification-passed" ? "Verification passed"
+        : event.status === "verification-failed" ? "Verification failed"
+        : event.status === "not-verified" ? "Not verified"
+        : event.status === "milestone-reported" ? "Milestone reported"
+        : event.status === "blocked" ? "Blocked"
+        : event.status === "started" ? "Started"
+        : event.status === "prompt" ? "Instruction recorded"
+        : "Checkpoint recorded";
+      copy.appendChild(text("strong", source + " · " + status));
+      copy.appendChild(text("small", when(event.at), "development-state"));
+      const id = String(event.id || "").slice(0, 160);
+      const task = event.taskId ? " · task " + String(event.taskId).slice(0, 128) : "";
+      copy.appendChild(text("small", id + task, "development-detail"));
+      row.appendChild(copy);
+      list.appendChild(row);
+    }
+  }
+  async function refresh() {
+    if (request) return request;
+    request = (async () => {
+      state.textContent = "Checking for local development records…";
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 9000);
+      try {
+        const response = await fetch("/control/development-timeline", {
+          cache: "no-store", credentials: "include",
+          headers: { Accept: "application/json" }, signal: controller.signal,
+        });
+        if (response.status === 403) {
+          unavailable("Owner sign-in is required for local evidence");
+          return;
+        }
+        if (!response.ok) throw new Error("Source unavailable");
+        const result = await response.json();
+        if (!result.ok) throw new Error("Source unavailable");
+        render(result);
+      } catch {
+        unavailable("Local development timeline could not be checked");
+      } finally {
+        window.clearTimeout(timer);
+      }
+    })().finally(() => { request = null; });
+    return request;
+  }
+  document.getElementById("refreshDevelopment")?.addEventListener("click", () => { void refresh(); });
+  document.addEventListener("click", (event) => {
+    if (event.target instanceof Element && event.target.closest('[data-section="development"],[data-jump="development"]'))
+      window.setTimeout(() => { if (active()) void refresh(); }, 0);
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && active()) void refresh();
+  });
+  window.setInterval(() => {
+    if (document.visibilityState === "visible" && active()) void refresh();
+  }, 120_000);
+})();
