@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("setup","doctor","last","history","stats","tui","telemetry-off")]
+    [ValidateSet("setup","doctor","last","history","stats","tui","timeline","telemetry-off")]
     [string]$Action = "doctor"
 )
 
@@ -48,6 +48,14 @@ try {
         }
         "tui" {
             & openshard tui
+        }
+        "timeline" {
+            $Node = Get-Command node -ErrorAction SilentlyContinue
+            if (-not $Node) {
+                Write-Error "The local development timeline needs Node.js 20 or later."
+                exit 1
+            }
+            & node (Join-Path $RepoRoot "scripts\hgr-development-timeline.mjs")
         }
         "telemetry-off" {
             & openshard telemetry off
