@@ -10,6 +10,12 @@ const readBinary = (path) => readFileSync(url(path));
 const pngSize = (buffer) => ({ width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) });
 
 const generator = read("scripts/windows/generate-launcher-icons.ps1");
+const runtimeFixture = read("tests/runtime-launcher-exports.ps1");
+// The Cloud Update clone is deliberately deep under LocalAppData. The nested
+// COM Start Menu fixture must use a short disposable OS temp path instead.
+assert.match(runtimeFixture, /\[IO\.Path\]::GetTempPath\(\)/, "Launcher validation must use a short OS-temp fixture");
+assert.match(runtimeFixture, /\$longestShortcut\.Length -gt 240/, "Launcher validation must guard Shell shortcut path limits");
+assert.doesNotMatch(runtimeFixture, /\$validationRoot = .*Join-Path \$sourceRoot 'server\/data\/runtime'/, "Launcher validation must not nest COM shortcuts inside the release clone");
 const shortcuts = read("scripts/windows/launcher-shortcuts.ps1");
 const stopControl = read("Stop HGR Control.cmd");
 const controlAuthority = readBinary("assets/branding/references/HGR Control Launcher.png");
