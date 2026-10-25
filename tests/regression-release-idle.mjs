@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
+import {readFileSync} from "node:fs";
+const run=input=>spawnSync(process.execPath,["scripts/assert-release-idle.mjs"],{input:JSON.stringify(input),encoding:"utf8"});
+assert.equal(run({status:"online",activeRooms:0,activePokerRooms:0}).status,0);
+for(const state of [{status:"online",activeRooms:1},{status:"online",activeRooms:0,activePokerRooms:1},{status:"online"},{status:"online",activeRooms:"0"},{status:"offline",activeRooms:0},{status:"online",activeRooms:0,activeNewGameRooms:3}])assert.notEqual(run(state).status,0);
+const source=readFileSync("tests/dev-tools/Oracle Quick Deploy/quick-install.sh","utf8");
+assert.ok(source.indexOf('assert-release-idle.mjs')<source.indexOf('MAINTENANCE_JSON='));
+assert.ok(source.lastIndexOf('assert-release-idle.mjs')<source.indexOf('systemctl stop halieus-game-room'));
+assert.equal(source.split('assert-release-idle.mjs').length-1,2);
+console.log("PASS deployment refuses active/malformed/unavailable room state before maintenance and activation");

@@ -18,6 +18,7 @@ interface RoomChatPanelProps {
   spectatorNames?: string[];
   embedded?: boolean;
   defaultOpen?: boolean;
+  obscured?: boolean;
 }
 
 type ActivityTab = "chat" | "log" | "spectators";
@@ -34,8 +35,18 @@ function formatMessageTime(value: number): string {
  * Game log entries must contain public information only; hidden cards/private state
  * remain owned by each game's normal viewer-safe state contract.
  */
-export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount = 0, spectatorNames = [], embedded = false, defaultOpen = embedded }: RoomChatPanelProps) {
+export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount = 0, spectatorNames = [], embedded = false, defaultOpen = embedded, obscured = false }: RoomChatPanelProps) {
   const [open, setOpen] = useState(defaultOpen);
+  const [compact, setCompact] = useState(() => window.matchMedia("(max-width: 1180px)").matches);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1180px)");
+    const update = () => setCompact(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  const concealed = obscured && compact && !embedded;
+  const concealedRef = useRef(concealed);
+  concealedRef.current = concealed;
   const [activeTab, setActiveTab] = useState<ActivityTab>("chat");
   const [messages, setMessages] = useState<RoomChatMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -84,7 +95,7 @@ export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount
     const onMessage = (message: RoomChatMessage) => {
       if (message.game !== game || message.code !== roomLabel) return;
       setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message].slice(-120));
-      if (!openRef.current || tabRef.current !== "chat") setUnread((value) => Math.min(99, value + 1));
+      if (concealedRef.current || !openRef.current || tabRef.current !== "chat") setUnread((value) => Math.min(99, value + 1));
     };
     const onConnect = () => join();
 
@@ -100,14 +111,14 @@ export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount
   }, [game, roomLabel]);
 
   useEffect(() => {
-    if (!open || activeTab !== "chat") return;
+    if (concealed || !open || activeTab !== "chat") return;
     setUnread(0);
     const frame = window.requestAnimationFrame(() => {
       const node = listRef.current;
       if (node) node.scrollTop = node.scrollHeight;
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [messages, open, activeTab]);
+  }, [messages, open, activeTab, concealed]);
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -125,7 +136,7 @@ export function RoomChatPanel({ game, code, accent, gameLog = [], spectatorCount
   }
 
   return (
-    <aside className={`room-chat-shell game-${game} ${embedded ? "is-embedded" : "is-floating"} ${open ? "is-open" : ""}`} style={{ ["--chat-accent" as string]: accent }} aria-label="Room activity">
+    <aside className={`room-chat-shell game-${game} ${embedded ? "is-embedded" : "is-floating"} ${open ? "is-open" : ""}`} style={{ ["--chat-accent" as string]: accent, ...(concealed ? { visibility: "hidden", pointerEvents: "none" } as const : {}) }} aria-label="Room activity" aria-hidden={concealed || undefined}>
       {open && (
         <section className="room-chat-panel glass-card" role="dialog" aria-label={`Room ${roomLabel} activity`}>
           <header>

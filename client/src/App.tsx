@@ -3,6 +3,7 @@ import { committedTheme, commitTheme, clearBetaThemePreview } from "./platform/t
 import { clearBetaFontPreview, syncBetaFont } from "./platform/fontBeta";
 import { type HgrLogoPreset } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { PlayersDrawer } from "./games/mega-board/components/PlayersDrawer";
 
 import type {
   AiDifficulty,
@@ -364,6 +365,7 @@ export default function App() {
     useState(false);
   const [availablePropertiesOpen, setAvailablePropertiesOpen] = useState(false);
   const [playersDrawerOpen, setPlayersDrawerOpen] = useState(false);
+  const [megaToolsOpen, setMegaToolsOpen] = useState(false);
   const [selectedPlayerDetailId, setSelectedPlayerDetailId] = useState<string | null>(null);
   const [turnActionsCloseSignal, setTurnActionsCloseSignal] = useState(0);
   const [turnActionsOpenSignal, setTurnActionsOpenSignal] = useState(0);
@@ -3309,7 +3311,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.5.7-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.5.8-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3646,50 +3648,15 @@ function handleLeaveSpectator() {
         </button>}
 
         {!viewerIsSpectator && playersDrawerOpen && (
-          <div
-            className="tablet-players-backdrop"
-            role="presentation"
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) {
-                setPlayersDrawerOpen(false);
-              }
+          <PlayersDrawer lobby={lobby} gameState={gameState} spectators={spectators} theme={theme}
+            onClose={() => setPlayersDrawerOpen(false)}
+            onPlayerSelect={(playerId) => {
+              setPlayersDrawerOpen(false);
+              setGameMenuOpen(false);
+              setTurnActionsCloseSignal((value) => value + 1);
+              setSelectedPlayerDetailId(playerId);
             }}
-          >
-            <aside
-              id="tablet-players-drawer"
-              className="tablet-players-drawer"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Players and spectators"
-            >
-              <header className="tablet-players-drawer-header">
-                <div>
-                  <span>Match</span>
-                  <strong>Players</strong>
-                </div>
-                <button
-                  type="button"
-                  aria-label="Close players"
-                  onClick={() => setPlayersDrawerOpen(false)}
-                >
-                  ×
-                </button>
-              </header>
-              <PlayerRail
-                lobby={lobby}
-                gameState={gameState}
-                isSpectator={viewerIsSpectator}
-                spectators={spectators}
-                onPlayerSelect={(playerId) => {
-                  setPlayersDrawerOpen(false);
-                  setGameMenuOpen(false);
-                  setTurnActionsCloseSignal((value) => value + 1);
-                  setSelectedPlayerDetailId(playerId);
-                }}
-                theme={theme}
-              />
-            </aside>
-          </div>
+          />
         )}
 
         {lobby.hostDisconnectDeadline && (
@@ -3839,6 +3806,7 @@ function handleLeaveSpectator() {
               openSignal={turnActionsOpenSignal}
               openPanel={turnActionPanel}
               onOpenChange={(open, panel) => {
+                setMegaToolsOpen(open);
                 if (open) {
                   setPlayersDrawerOpen(false);
                   setGameMenuOpen(false);
@@ -3850,7 +3818,7 @@ function handleLeaveSpectator() {
           </div>
         </div>
         <ConfirmDialog open={bankruptcyConfirmOpen} title="Declare bankruptcy?" message="You will leave active play, surrender the remaining estate according to the game rules, and continue watching as a spectator." confirmLabel="Declare bankruptcy" destructive onCancel={() => setBankruptcyConfirmOpen(false)} onConfirm={() => { setBankruptcyConfirmOpen(false); handleDebtAction("game:declare-bankruptcy", "Declaring bankruptcy..."); }} />
-        <RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
+        <RoomChatPanel obscured={megaToolsOpen || playersDrawerOpen} game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
       </main>
     );
   }
