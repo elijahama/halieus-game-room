@@ -7,6 +7,8 @@ import { resolve } from "node:path";
 import type { Request as ExpressRequest } from "express";
 import { getAuthenticatedAccount } from "./accounts.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
+import { loadLocalDevelopmentTimeline } from "./control-development-timeline.js";
+import { readOwnerRelay } from "./control-development-relay.js";
 
 interface StoredRequest {
   requestId: string;
@@ -106,6 +108,151 @@ async function serveOperationHistory(request: IncomingMessage, response: ServerR
   }
 }
 
+
+/**
+ * Read-only development visibility for authenticated Control users.
+ * GitHub is a public evidence source, not a process executor or a substitute
+ * for local test receipts. Never send personal tokens or owner-PC credentials.
+ */
+const DEVELOPMENT_REPO = "elijahama/halieus-game-room";
+const DEVELOPMENT_TTL_MS = 5 * 60_000; // Public GitHub unauthenticated API budget.
+interface DevelopmentSnapshot {
+  fetchedAt: string;
+  pullsAvailable: boolean;
+  runsAvailable: boolean;
+  pulls: Array<{ number: number; title: string; state: string; updatedAt: string; branch: string }>;
+  runs: Array<{ id: number; name: string; status: string; conclusion: string | null; branch: string; updatedAt: string }>;
+}
+let developmentCache: { timestamp: number; snapshot: DevelopmentSnapshot } | null = null;
+let developmentRequest: Promise<DevelopmentSnapshot> | null = null;
+
+async function githubPublicJson(path: string): Promise<unknown> {
+  const response = await fetch(`https://api.github.com/repos/${DEVELOPMENT_REPO}/${path}`, {
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "User-Agent": "Halieus-Game-Room-Control-ReadOnly",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+    signal: AbortSignal.timeout(8000),
+    redirect: "error",
+  });
+  if (!response.ok) throw new Error(`GitHub response ${response.status}`);
+  return response.json();
+}
+
+async function fetchDevelopmentSnapshot(): Promise<DevelopmentSnapshot> {
+  const [pullResult, runResult] = await Promise.allSettled([
+    githubPublicJson("pulls?state=all&sort=updated&direction=desc&per_page=100"),
+    githubPublicJson("actions/runs?per_page=20"),
+  ]);
+  const rawPulls = pullResult.status === "fulfilled" && Array.isArray(pullResult.value)
+    ? pullResult.value : null;
+  const runData = runResult.status === "fulfilled" && runResult.value && typeof runResult.value === "object"
+    ? runResult.value as { workflow_runs?: unknown } : null;
+  const rawRuns = Array.isArray(runData?.workflow_runs) ? runData.workflow_runs : null;
+  // Only bounded, known public metadata leaves this endpoint; no arbitrary API
+  // URLs, token fields, PR bodies, logs or untrusted HTML are returned.
+  const pulls = (rawPulls ?? []).filter((item): item is Record<string, unknown> =>
+    Boolean(item && typeof item === "object")).map(item => {
+      const number = Number(item.number);
+      const state = item.merged_at ? "merged" : item.state === "closed" ? "closed"
+        : item.draft === true ? "draft" : "open";
+      const head = item.head && typeof item.head === "object"
+        ? item.head as { ref?: unknown } : null;
+      return {
+        number, state, title: String(item.title ?? "").slice(0, 160),
+        updatedAt: String(item.updated_at ?? ""), branch: String(head?.ref ?? "").slice(0, 120),
+      };
+    }).filter(item => Number.isSafeInteger(item.number) && item.number > 0)
+      .filter((item, index) => index < 60);
+  const runs = (rawRuns ?? []).filter((item): item is Record<string, unknown> =>
+    Boolean(item && typeof item === "object")).map(item => ({
+      id: Number(item.id), name: String(item.name ?? "Workflow").slice(0, 120),
+      status: String(item.status ?? "unknown").slice(0, 40),
+      conclusion: item.conclusion == null ? null : String(item.conclusion).slice(0, 40),
+      branch: String(item.head_branch ?? "").slice(0, 120),
+      updatedAt: String(item.updated_at ?? ""),
+    })).filter(item => Number.isSafeInteger(item.id) && item.id > 0).slice(0, 15);
+  return {
+    fetchedAt: new Date().toISOString(),
+    pullsAvailable: rawPulls !== null, runsAvailable: rawRuns !== null,
+    pulls, runs,
+  };
+}
+
+async function serveDevelopmentStatus(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  if (!hasAdmin(request)) {
+    sendJson(response, 403, { ok: false, reason: "Owner or administrator access is required." });
+    return;
+  }
+  const now = Date.now();
+  if (developmentCache && now - developmentCache.timestamp < DEVELOPMENT_TTL_MS) {
+    sendJson(response, 200, { ok: true, stale: false, ...developmentCache.snapshot });
+    return;
+  }
+  if (!developmentRequest) {
+    developmentRequest = fetchDevelopmentSnapshot().then(snapshot => {
+      // Cache only at least one successful source. Do not confuse unavailable
+      // GitHub with an empty queue of completed projects.
+      if (snapshot.pullsAvailable || snapshot.runsAvailable)
+        developmentCache = { timestamp: Date.now(), snapshot };
+      return snapshot;
+    }).finally(() => { developmentRequest = null; });
+  }
+  try {
+    const snapshot = await developmentRequest;
+    if (!snapshot.pullsAvailable && !snapshot.runsAvailable) {
+      if (developmentCache) {
+        sendJson(response, 200, { ok: true, stale: true, ...developmentCache.snapshot });
+      } else {
+        sendJson(response, 503, { ok: false, reason: "GitHub development status is unavailable." });
+      }
+      return;
+    }
+    sendJson(response, 200, { ok: true, stale: false, ...snapshot });
+  } catch {
+    if (developmentCache) sendJson(response, 200, { ok: true, stale: true, ...developmentCache.snapshot });
+    else sendJson(response, 503, { ok: false, reason: "GitHub development status is unavailable." });
+  }
+}
+
+async function serveLocalDevelopmentTimeline(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  const account = getAuthenticatedAccount(request as unknown as ExpressRequest);
+  // Private prompt and receipt metadata require an owner session, not simply admin access.
+  if (!account || account.role !== "owner") {
+    sendJson(response, 403, { ok: false, reason: "Owner access is required." });
+    return;
+  }
+  try {
+    const local = loadLocalDevelopmentTimeline();
+    if (local.source !== "unavailable") {
+      sendJson(response, 200, { ...local, transport: "on-machine", stale: false, lastReceivedAt: null });
+      return;
+    }
+    const remote = await readOwnerRelay();
+    if (remote.state === "unavailable" || !remote.snapshot) {
+      sendJson(response, 200, { ...local, transport: "disconnected", stale: true, lastReceivedAt: null });
+      return;
+    }
+    sendJson(response, 200, {
+      ok: true,
+      transport: "cloud-relay",
+      source: remote.state === "stale" ? "stale" : remote.snapshot.source,
+      stale: remote.state === "stale",
+      checkedAt: new Date().toISOString(),
+      lastReceivedAt: remote.lastReceivedAt,
+      latestAt: remote.snapshot.latestAt,
+      events: remote.snapshot.events,
+      note: remote.state === "stale"
+        ? "Last-known owner PC evidence. Sync is stale and must not be treated as live activity."
+        : "Recent approved owner-PC snapshot. This is historical metadata, not an agent heartbeat.",
+    });
+  } catch {
+    // No local paths, raw input or stack traces may escape to the client.
+    sendJson(response, 503, { ok: false, reason: "Local development history is unavailable." });
+  }
+}
+
 async function serveCombinedControlScript(response: ServerResponse): Promise<void> {
   try {
     const [base, cloud] = await Promise.all([
@@ -128,6 +275,14 @@ function wrapListener(listener: RequestListener): RequestListener {
       try { return new URL(request.url || "/", "http://hgr-control.invalid").pathname; }
       catch { return ""; }
     })();
+    if (request.method === "GET" && path === "/control/development-timeline") {
+      void serveLocalDevelopmentTimeline(request, response);
+      return;
+    }
+    if (request.method === "GET" && path === "/control/development-status") {
+      void serveDevelopmentStatus(request, response);
+      return;
+    }
     if (request.method === "GET" && path === "/control/operation-status") {
       void serveOperationStatus(request, response);
       return;

@@ -191,3 +191,38 @@ https://github.com/openshard/openshard
 Upstream project metadata credits **Michael Obasa** and licenses Openshard under **Apache-2.0**.
 
 HGR uses the installed tool; it does not vendor Openshard source or claim it as part of HGR's own implementation.
+
+## Local HGR development timeline — instruction journal and execution receipts
+
+The **local, read-only** timeline joins two deliberately separate Git-ignored evidence sources inside the same checked-out HGR repository:
+
+- `.openshard/bridge/prompt-journal.jsonl`: instructions and milestone reports deliberately submitted via **HGR OpenShard Bridge** (invocation-based, not passive ChatGPT capture).
+- `.openshard/runs.jsonl`: native OpenShard-observed agent receipts (not proof of completed coding or successful verification).
+
+Run on your Windows HGR development PC after pulling this feature:
+
+```powershell
+.\scripts\windows\OpenShard-HGR.cmd timeline
+```
+
+For structured output or a bounded recent view:
+
+```powershell
+node scripts/hgr-development-timeline.mjs --json --limit 20
+node scripts/hgr-development-timeline.mjs --limit 20 --show-text
+npm run test:timeline
+```
+
+Default output exposes timestamps, source, event kind, trustworthy status, real IDs, linked task IDs **only when present**, and changed-file counts. Prompt and task excerpts are hidden unless `--show-text` is explicitly requested. A bridge `completed` event means a **reported milestone**, not proof of successful verification; native receipts with no actual verification are labelled **not verified**. A receipt without a task ID is **not guessed** to belong to any bridge instruction. Local CLI reads a bounded tail from each source, ignores malformed records, and reports missing or truncated sources rather than inventing a clean history. `--json` is a local machine-readable contract for future authenticated display work. No network, Oracle server, new launcher artwork, credentials, GitHub uploads or HGR Update side effects are involved.
+
+This is a **local timeline command**, not a new tab in upstream OpenShard's `tui` and not a live view in HGR Control. The separately reviewed HGR Control development-monitor proposal currently sees GitHub PR/CI activity only. Publishing this local history to owner-facing Control will need separate authenticated, scoped, read-only transport with owner access, stale detection, privacy review and acceptance testing. Do not expose `.openshard` directly from the website or make the Update command start an agent.
+
+## Control owner-only timeline access — source candidate
+
+The HGR Control Development panel can read local Bridge and OpenShard metadata **only when the authenticated Control server is running where those files already exist**. The endpoint is owner-only, never returns prompt bodies, source paths or secret material, and caps file reads and result counts. The Oracle-hosted Control app must report the laptop-local source as unavailable; it does not have a persistent remote OpenShard tunnel. Promoting a remote readout requires a separately authenticated, owner-consented outbound bridge and independent security testing. The existing local `OpenShard-HGR.cmd timeline` command remains unchanged.
+
+## Privacy-limited outbound Control development timeline (review candidate)
+
+The on-PC HGR Control Cloud Agent can optionally send a **sanitized metadata-only** timeline to the already configured HGR HTTPS site. This is not an OpenShard-native sync service. The implementation reuses an approved, revocable Control Cloud device identity and requires `HGR_DEVELOPMENT_TIMELINE_SYNC=1` in the owner's cloud-bridge process environment; it is **off by default**. Never enable this on the owner's behalf, disclose the existing device secret, or start an unreviewed background job.
+
+At most 12 bounded events per request travel from Lagz: safe IDs, observed timestamps, record source, and honest verification states; **prompt text, task text, OpenShard JSONL files, local paths, costs/tokens and secret material are not transmitted**. Unknown fields are rejected and stale uploads cannot pretend to be fresh. Owner-only Control displays the last received snapshot (fresh or stale), never inventing an active agent. See `docs/HGR_CONTROL_DEVELOPMENT_MONITOR.md` for the actual security and deployment gates.

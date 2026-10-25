@@ -13,6 +13,7 @@ import type { Request as ExpressRequest } from "express";
 import { getAuthenticatedAccount } from "./accounts.js";
 import { expireUnreportedUpdates } from "./control-operation-recovery.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
+import { storeRelaySnapshot } from "./control-development-relay.js";
 
 type DeviceApproval = "pending" | "approved" | "revoked";
 type CloudOperationState = "queued" | "running" | "succeeded" | "failed" | "rejected";
@@ -316,6 +317,37 @@ async function authenticatedAgent(
   return { store, device };
 }
 
+async function handleDevelopmentEvidence(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  let body: Record<string, unknown>;
+  try { body = await readJsonBody(request); }
+  catch { sendJson(response, 400, { ok: false, reason: "Invalid development evidence upload." }); return; }
+  // The same approved, revocable, per-device Control Cloud credential is used.
+  // No separate token, command execution, or public owner-PC endpoint.
+  const auth = await authenticatedAgent(body);
+  if (!auth) {
+    sendJson(response, 403, { ok: false, reason: "Approved Control Agent credential required." });
+    return;
+  }
+  if (!exactKeys(body, ["protocol", "deviceId", "secret", "sentAt", "nonce", "snapshot"])) {
+    sendJson(response, 400, { ok: false, reason: "Unexpected development evidence fields." });
+    return;
+  }
+  try {
+    const outcome = await storeRelaySnapshot(auth.device.deviceId, {
+      sentAt: body.sentAt, nonce: body.nonce, snapshot: body.snapshot,
+    });
+    if (outcome !== "accepted") {
+      sendJson(response, outcome === "replay" ? 409 : 400, {
+        ok: false, reason: outcome === "replay" ? "Evidence upload was already received." : "Invalid evidence snapshot.",
+      });
+      return;
+    }
+    sendJson(response, 202, { ok: true, accepted: true });
+  } catch {
+    sendJson(response, 503, { ok: false, reason: "Development evidence storage is unavailable." });
+  }
+}
+
 async function handlePoll(request: IncomingMessage, response: ServerResponse): Promise<void> {
   let body: Record<string, unknown>;
   try { body = await readJsonBody(request); }
@@ -606,6 +638,7 @@ async function handleCloudRoute(request: IncomingMessage, response: ServerRespon
   const url = new URL(request.url || "/", "http://hgr-control.invalid");
   const path = url.pathname;
   if (request.method === "POST" && path === "/control/cloud/agent/heartbeat") return handleHeartbeat(request, response);
+  if (request.method === "POST" && path === "/control/cloud/agent/development-evidence") return handleDevelopmentEvidence(request, response);
   if (request.method === "POST" && path === "/control/cloud/agent/poll") return handlePoll(request, response);
   if (request.method === "POST" && path === "/control/cloud/agent/progress") return handleProgress(request, response);
   if (request.method === "GET" && path === "/control/cloud/status") return handleStatus(request, response);
