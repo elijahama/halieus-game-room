@@ -210,8 +210,8 @@ const uniqueFiles = [...new Set(files)].sort();
 // Windows .cmd/.ps1 with CRLF and Linux checks out the same text with LF.
 // Keep binaries byte-exact. Never normalize PNG, ICO, fonts or other artwork.
 const releaseTextExtensions = new Set([
-  '.bat', '.cmd', '.css', '.html', '.js', '.json', '.md', '.mjs',
-  '.ps1', '.sh', '.svg', '.ts', '.tsx', '.txt', '.webmanifest',
+  '.bat', '.cmd', '.conf', '.css', '.dic', '.example', '.html', '.js', '.json', '.md', '.mjs',
+  '.ps1', '.service', '.sh', '.svg', '.ts', '.tsx', '.txt', '.webmanifest',
   '.xml', '.yaml', '.yml',
 ]);
 function releaseBytes(file) {
