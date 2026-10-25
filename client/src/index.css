@@ -26207,3 +26207,55 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     padding: 7px !important;
   }
 }
+
+/* Mega Board phone/tablet Players is a true modal layer. Its portal now sits
+   above transient board toasts (1400) and the closed room dock (1450). Keep
+   the roster independently scrollable and the spectators footer visible. */
+@media (max-width: 1180px) {
+  .tablet-players-backdrop {
+    z-index: 2000 !important;
+    isolation: isolate;
+  }
+  .tablet-players-backdrop > .tablet-players-drawer {
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  .tablet-players-backdrop .tablet-players-drawer > .player-rail {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .tablet-players-backdrop .player-rail-header,
+  .tablet-players-backdrop .spectator-rail-section {
+    flex: 0 0 auto !important;
+  }
+  .tablet-players-backdrop .player-rail-list {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@media (max-width: 680px) {
+  /* The fixed Chat trigger otherwise covers the right-hand end of this
+     destructive host action when the waiting room is scrolled to its bottom. */
+  .mega-lobby-poker-standard .mega-poker-lobby-actions > .button-danger {
+    width: calc(100% - 64px) !important;
+    max-width: calc(100% - 64px) !important;
+    justify-self: start !important;
+  }
+}
+
+/* Optional gameplay decisions take priority over the floating chat launcher.
+   Chat remains mounted and resumes after closing the Properties/Trade sheet. */
+@media (max-width: 1180px) {
+  .mega-live-page:has(.turn-actions-popup-layer) > .room-chat-shell.is-floating {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}

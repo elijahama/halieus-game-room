@@ -3,6 +3,7 @@ import { committedTheme, commitTheme, clearBetaThemePreview } from "./platform/t
 import { clearBetaFontPreview, syncBetaFont } from "./platform/fontBeta";
 import { type HgrLogoPreset } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import type {
   AiDifficulty,
@@ -3645,7 +3646,7 @@ function handleLeaveSpectator() {
           <small>{gameState.players.length}</small>
         </button>}
 
-        {!viewerIsSpectator && playersDrawerOpen && (
+        {!viewerIsSpectator && playersDrawerOpen && createPortal(
           <div
             className="tablet-players-backdrop"
             role="presentation"
@@ -3689,7 +3690,8 @@ function handleLeaveSpectator() {
                 theme={theme}
               />
             </aside>
-          </div>
+          </div>,
+          document.fullscreenElement ?? document.body,
         )}
 
         {lobby.hostDisconnectDeadline && (
