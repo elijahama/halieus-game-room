@@ -1267,3 +1267,39 @@ Owner-PC audit: all registered worktrees were inspected. The active feature chec
 The canonical Oracle installer now refuses activation if loopback health cannot establish zero rooms, including newly added game room counters. It checks after candidate build and again after the maintenance grace period immediately before service stop. A failed second check clears the scheduled maintenance notice and leaves production running. The check has no bypass flag; separate provisioning/recovery remains separate. Fixture tests cover active Mega/Poker/new-game rooms, malformed/missing counts and offline health.
 
 Lagz local gates passed: complete HGR regression chain, client/server TypeScript, production client/server build, canonical launcher/PWA asset checks and npm audit (zero vulnerabilities). Combined production CSS tests passed at all five requested sizes. Real-component browser coverage also includes the actual GameBoard and Roll Dice callback after panels close. Final branch CI, merge and deployment evidence are recorded separately below; the initial local passes do not imply publication.
+
+## Mobile UI release integration evidence (25 October 2026)
+
+### Approved source and verification
+
+- PR #149 is merged: https://github.com/elijahama/halieus-game-room/pull/149 ; merge commit dc28ba5594618c80e74a215cfc1c7180c30e551e.
+- PR #150 is merged: https://github.com/elijahama/halieus-game-room/pull/150 ; merge commit 0ec5d1826b34e9a0666f159dfb296bfb01fcb307. Its final reviewed head was b34930d73f29f61b2302236201475bbaff4fecec; the final main tree matches that tested tree.
+- Both were marked ready, received engineering review comments and merged normally at the expected heads. No force push or protection bypass was used. These comments are not an independent human approval.
+- Verified release: 4.5.8, fingerprint hgr-4.5.8-7cf92030339b60e1, 540 integrity inputs. The exact deployment checkout is detached at 0ec5d1826b34e9a0666f159dfb296bfb01fcb307.
+- Premerge Windows and Linux validation passed: https://github.com/elijahama/halieus-game-room/actions/runs/40236817884 .
+- Postmerge main Windows smoke and Linux full release validation passed: https://github.com/elijahama/halieus-game-room/actions/runs/40237326164 .
+- Lagz and CI passed client/server TypeScript, complete HGR regression suite, production client/server build, protected launcher artwork and PWA identity checks, release-manifest verification, and npm audit (zero vulnerabilities).
+- Browser acceptance passed at 320 x 568, 360 x 740, 390 x 844, 430 x 932 and 820 x 900. Actual production React components and CSS cover waiting room, eight-seat drawer, independent roster/spectator footer, notification precedence, Properties/mortgage, Trade, hidden chat unread preservation and send/receive, fullscreen entry/exit, rotation, and board controls after dismissal. A supplemental actual valid Send trade proposal callback check also passed at all five sizes.
+- No canonical H emblem, launcher-family image geometry or approved role colours were regenerated. The owner feature checkout and its private untracked artwork/runtime data remain unchanged.
+
+### Acceptance limits and operational observations
+
+These are browser-emulated Chromium checks with synthetic game state and a test-only socket transport, not authenticated physical-phone or installed-PWA acceptance. Fullscreen was exercised in Chromium; iOS standalone/PWA device behaviour still needs owner-device acceptance. The Test Lab badge layout fixture uses production CSS; its beta-mode isolation and cosmetic override remain unchanged and covered by regressions.
+
+Public read-only browser smoke on the existing live website passed at 320 x 568, 390 x 844 and 820 x 900: HTTP 200, expected title, no uncaught page errors or 5xx responses. The live manifest and both PWA icons returned 200, and /control/ returned 200 with title HGR Control. This checks the live version reported below, not an assertion that the candidate has shipped. No authenticated public Control action or phone acceptance was performed.
+
+The dedicated owner Control listener and outbound bridge were started using their existing approved scripts after preserving previous private runtime evidence. Authenticated loopback status was online with no active operation; it correctly reports the preserved owner game checkout at 4.5.6 / fa244d4. This is distinct from the Oracle website version. No successful Cloud Update receipt or reboot persistence is claimed.
+
+The health-advertised alternate hostname play.halieus.net did not resolve from Lagz. The primary https://halieus.remotewire.net remained accessible. Existing running 4.5.7 server logs showed repeated MaxListenersExceededWarning messages for disconnect listeners; no error/uncaught/unhandled/fatal pattern was found in the bounded recent journal check. These warnings precede any candidate activation and remain a separate investigation item.
+
+### Deployment attempt and safety outcome
+
+The initial canonical deployment helper attempt stopped during PowerShell 5.1 native stderr capture (NativeCommandError), before activation. Read-only Oracle inspection confirmed no installer remained and that 4.5.7 was still running. The same exact source was retried using the canonical helper with operating-system output capture, without changing or bypassing the deployment procedure. Two active Mega Board rooms appeared while the candidate was building; activation remained subject to both zero-room checks.
+
+The retry completed its Oracle client/server build, canonical PWA artwork comparison and dependency audit, then exited with: "Deployment blocked: active games or unverifiable room counts. Production remains running." There is no activation-success marker. At 22:08 UTC public health still reported 4.5.7 / hgr-4.5.7-9109a84f3b9f0487 and one active Mega room. No further deployment retry is scheduled or running. The verified 4.5.8 candidate is NOT live.
+
+A separate serious event occurred during that attempt: at 22:08:51 UTC the existing 4.5.7 Node process exhausted its JavaScript heap; systemd recorded ABRT/core-dump and automatically restarted it at 22:08:55 UTC. Startup logged one recovered room. This was not candidate activation or the deployment helper's service-stop path. The timing overlaps candidate building, but the available evidence does not establish the cause or prove uninterrupted player sessions. Earlier zero-error log sampling must not be read as the final result. Do not claim a disruption-free attempt. Preserve the existing service and investigate heap growth/listener warnings before another production attempt; do not raise limits or change service settings speculatively while a room is active.
+
+Release status: both requested PRs are integrated and their required checks passed; production deployment is blocked by the active-room safety gate and the observed live-server heap failure needs follow-up. Resume only with fresh health/room checks, an audited stable release and the existing authorised mechanism. Physical-device acceptance and the alternate-host DNS issue remain open. No rollback was necessary because no candidate activation occurred.
+
+This follow-up Masterbook record is intentionally on a separate evidence branch. Its regenerated source fingerprint describes that documentation revision only, not the verified deployment candidate above. Keep main pinned to the tested candidate while the production gate is unresolved. OpenShard instruction/checkpoint evidence remains private on Lagz and is not a native OpenShard run receipt.
