@@ -1147,7 +1147,7 @@ The requirement to validate actual closed PWA push delivery on the user's phone 
 **QA and publishing:** Documentation-only addition to the HGR project. No shipped website feature, no Oracle deployment or HGR release verification is claimed by this entry.
 
 
-## Part 32 — Control development-activity monitor
+## Control development-activity monitor
 
 **Source-only candidate; pending CI, merge, release preparation, deployment and owner-device verification.**
 
