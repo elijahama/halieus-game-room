@@ -7,6 +7,7 @@ import { resolve } from "node:path";
 import type { Request as ExpressRequest } from "express";
 import { getAuthenticatedAccount } from "./accounts.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
+import { loadLocalDevelopmentTimeline } from "./control-development-timeline.js";
 
 interface StoredRequest {
   requestId: string;
@@ -108,7 +109,7 @@ async function serveOperationHistory(request: IncomingMessage, response: ServerR
 
 
 /**
- * Part 32: read-only development visibility for authenticated Control users.
+ * Read-only development visibility for authenticated Control users.
  * GitHub is a public evidence source, not a process executor or a substitute
  * for local test receipts. Never send personal tokens or owner-PC credentials.
  */
@@ -214,6 +215,21 @@ async function serveDevelopmentStatus(request: IncomingMessage, response: Server
   }
 }
 
+async function serveLocalDevelopmentTimeline(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  const account = getAuthenticatedAccount(request as unknown as ExpressRequest);
+  // Private prompt and receipt metadata require an owner session, not simply admin access.
+  if (!account || account.role !== "owner") {
+    sendJson(response, 403, { ok: false, reason: "Owner access is required." });
+    return;
+  }
+  try {
+    sendJson(response, 200, loadLocalDevelopmentTimeline());
+  } catch {
+    // No local paths, raw input or stack traces may escape to the client.
+    sendJson(response, 503, { ok: false, reason: "Local development history is unavailable." });
+  }
+}
+
 async function serveCombinedControlScript(response: ServerResponse): Promise<void> {
   try {
     const [base, cloud] = await Promise.all([
@@ -236,6 +252,10 @@ function wrapListener(listener: RequestListener): RequestListener {
       try { return new URL(request.url || "/", "http://hgr-control.invalid").pathname; }
       catch { return ""; }
     })();
+    if (request.method === "GET" && path === "/control/development-timeline") {
+      void serveLocalDevelopmentTimeline(request, response);
+      return;
+    }
     if (request.method === "GET" && path === "/control/development-status") {
       void serveDevelopmentStatus(request, response);
       return;

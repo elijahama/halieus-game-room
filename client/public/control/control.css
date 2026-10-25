@@ -269,7 +269,7 @@
 @media(max-width:720px){.control-fullscreen-toggle{padding:9px 10px;font-size:11px;min-height:40px;max-width:40vw}.control-topbar{flex-wrap:wrap}.control-topbar h1{font-size:clamp(19px,5.5vw,23px)}.control-main :is(h2){letter-spacing:-.04em}}
 
 
-/* Part 32: development evidence sits inside normal Control document flow.
+/* Development evidence sits inside normal Control document flow.
    No percentage is implied for PRs, and no overlay can cover mobile actions. */
 .control-rail nav{min-height:0;overflow-y:auto}
 .development-jump{margin:14px 0 6px;width:100%;text-align:center}
@@ -297,4 +297,16 @@
  .development-source-link{min-height:34px;display:inline-flex;align-items:center}
  [data-panel="development"] .section-heading-large{align-items:flex-start;flex-wrap:wrap}
  [data-panel="development"] .section-heading-large .secondary-action{min-height:40px}
+}
+
+/* Owner-only local development evidence: ordinary document flow, no overlays. */
+.development-local{margin-bottom:16px;display:grid;gap:12px;min-width:0}
+.development-local .card-heading{margin-bottom:0}
+.development-local-state{font-weight:700;color:#d7e5ff;font-size:13px;line-height:1.5;margin:0}
+.development-local-hint{color:#b2bfd4;font-size:12px;line-height:1.65;margin:0;overflow-wrap:break-word}
+.development-local-entry{min-width:0}
+.development-local-entry .development-detail{overflow-wrap:anywhere}
+@media(max-width:720px){
+ .development-local{gap:10px;padding:16px}
+ .development-local-entry{padding:12px 0}
 }

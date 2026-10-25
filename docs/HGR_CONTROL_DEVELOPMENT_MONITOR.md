@@ -34,3 +34,13 @@ Proposed future controlled integration: expose explicit machine-produced progres
 ## Rollback
 
 Remove the standalone Development script, Control section and navigation entries, scoped stylesheet block, and read-only preloader route. Keep all existing Control action/operation logic untouched.
+
+## Owner-only local timeline panel — audited source candidate
+
+The existing Development view now includes a responsive, in-flow **Development timeline** panel. It is a separate evidence source from GitHub PRs and Actions; the five-button phone bottom bar, Operations navigation, Update progress and desktop rail are unchanged. `client/public/control/development.js` independently refreshes `GET /control/development-timeline` when Development is visible or Refresh is requested. Owner-only response states are **available**, **partial** and **unavailable**, with a timestamp but no invented heartbeat. A 403 displays **Owner sign-in is required**; transport errors do not leave stale activity visible as live.
+
+The new endpoint in `server/src/platform/control-cloud-ui-preload.ts` requires an authenticated **owner** account (an ordinary admin is deliberately insufficient for private local development metadata). It reads only fixed project-relative, read-only sources when a verified HGR checkout is physically accessible **on the same machine as the Control server**. `server/src/platform/control-development-timeline.ts` returns at most 18 sanitized entries from bounded JSONL tails: source, type, timestamp, safe IDs, available task ID and accurate verification status. It excludes raw prompts, native task text, credentials, arbitrary paths, local network addresses, filesystem location, and any client-provided source URL. Responses use the existing no-store security headers.
+
+**Important hosting boundary:** Oracle-hosted Control cannot see the owner's Windows `.openshard` directory. It therefore **must** display local history as unavailable unless independently validated local evidence exists on that host; this is not a remote synchronization system or agent command channel. Real-time sync needs a separate authenticated outbound owner-PC transport design, security review, TTL/stale detection and owner/device acceptance. Do **not** open a PC port, read the journal from the public site, or upload private instructions to GitHub.
+
+Validation: `npm run test:timeline-control`, `npm run test:browser:control:timeline`, the existing `regression-control-development-status` test, server typecheck and Control regressions. Test on actual PWA desktop/phone/tablet devices and owner account before merge. This remains a draft, not a release or production activation.
