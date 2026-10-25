@@ -267,3 +267,34 @@
 .control-fullscreen-toggle[hidden]{display:none}
 .control-fullscreen-toggle:focus-visible{outline:2px solid #90b5ff;outline-offset:3px}
 @media(max-width:720px){.control-fullscreen-toggle{padding:9px 10px;font-size:11px;min-height:40px;max-width:40vw}.control-topbar{flex-wrap:wrap}.control-topbar h1{font-size:clamp(19px,5.5vw,23px)}.control-main :is(h2){letter-spacing:-.04em}}
+
+
+/* Part 32: development evidence sits inside normal Control document flow.
+   No percentage is implied for PRs, and no overlay can cover mobile actions. */
+.control-rail nav{min-height:0;overflow-y:auto}
+.development-jump{margin:14px 0 6px;width:100%;text-align:center}
+.development-overview{margin-bottom:16px;display:grid;gap:8px}
+.development-overview>strong{font-size:15px;line-height:1.4;color:#f0f5ff}
+.development-overview>small,.development-overview>p{color:#b0bfd6;line-height:1.6;font-size:12px}
+.development-overview>p{margin:0}
+.development-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.development-columns>.panel-card{min-width:0}
+.development-list{display:grid;gap:10px}
+.development-entry{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.development-entry:last-child{border-bottom:0}
+.development-entry-copy{display:grid;gap:5px;min-width:0}
+.development-entry-copy strong{font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+.development-entry-copy small{font-size:11px;line-height:1.45;color:#aebfd8;overflow-wrap:anywhere}
+.development-entry-copy .development-state{color:#d8e5ff;font-weight:700}
+.development-source-link{flex:0 0 auto;color:#a6c7ff;text-decoration:underline;text-underline-offset:3px;font-size:11px;line-height:1.5}
+.development-source-link:focus-visible,.development-jump:focus-visible{outline:2px solid #90b5ff;outline-offset:3px}
+.development-footnote{color:#adbdd5;font-size:12px;line-height:1.6;margin:18px 0 0}
+.development-footnote .text-action{color:#b7d0ff;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:1050px){.development-columns{grid-template-columns:1fr}}
+@media(max-width:720px){
+ .development-overview{margin-bottom:12px}
+ .development-entry{flex-direction:column;gap:8px}
+ .development-source-link{min-height:34px;display:inline-flex;align-items:center}
+ [data-panel="development"] .section-heading-large{align-items:flex-start;flex-wrap:wrap}
+ [data-panel="development"] .section-heading-large .secondary-action{min-height:40px}
+}
