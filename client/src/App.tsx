@@ -4,6 +4,7 @@ import { clearBetaFontPreview, syncBetaFont } from "./platform/fontBeta";
 import { type HgrLogoPreset } from "../../shared/platform/brand";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { PlayersDrawer } from "./games/mega-board/components/PlayersDrawer";
+import { readMegaTurnTimer } from "./games/mega-board/utils/turnTimer";
 
 import type {
   AiDifficulty,
@@ -3240,17 +3241,11 @@ function handleLeaveSpectator() {
       currentGamePlayer.autopilotEnabled,
     );
   const activeMegaTurnPlayer = gameState?.players[gameState.currentPlayerIndex];
-  const megaRollTimerSeconds = gameState?.turnRollDeadline &&
-    gameState.turnRollDeadlinePlayerId === activeMegaTurnPlayer?.id &&
-    gameState.turnPhase === "roll" &&
-    activeMegaTurnPlayer &&
-    !activeMegaTurnPlayer.isAi &&
-    !activeMegaTurnPlayer.autopilotEnabled
-      ? Math.max(0, Math.ceil((gameState.turnRollDeadline - localClock.getTime()) / 1000))
-      : null;
-  const megaRollTimerLabel = megaRollTimerSeconds == null
-    ? null
-    : `${Math.floor(megaRollTimerSeconds / 60)}:${String(megaRollTimerSeconds % 60).padStart(2, "0")}`;
+  // The header remains useful to active players and spectators in every phase.
+  // This only formats authoritative deadlines already present in gameState.
+  const megaTurnTimer = gameState
+    ? readMegaTurnTimer(gameState, activeMegaTurnPlayer, localClock.getTime())
+    : null;
   const viewerIsSpectator = Boolean(isSpectator || currentGamePlayer?.isBankrupt);
   const nonBankruptPlayers = gameState?.players.filter((player) => !player.isBankrupt) ?? [];
   // Desktop Mega Board uses balanced player rails so the square board stays centred
@@ -3311,7 +3306,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.5.8-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.5.9-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3606,16 +3601,16 @@ function handleLeaveSpectator() {
             <span><small>Match</small><strong>{blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual"}</strong></span>
             <span><small>Players</small><strong>{gameState.players.length}</strong></span>
             <span><small>Duration</small><strong>{formatDuration(Math.max(0, localClock.getTime() - (gameState.gameStartedAt ?? localClock.getTime())))}</strong></span>
-            {megaRollTimerLabel && activeMegaTurnPlayer ? (
+            {megaTurnTimer && (
               <span
-                className={`mega-roll-timer ${megaRollTimerSeconds != null && megaRollTimerSeconds <= 10 ? "is-urgent" : ""}`}
-                title={`${activeMegaTurnPlayer.name} has until this timer reaches zero to roll before Autopilot takes over.`}
+                className={`mega-turn-timer ${megaTurnTimer.urgent ? "is-urgent" : ""}`}
+                data-timer-status={megaTurnTimer.status}
+                title={megaTurnTimer.title}
+                aria-label={`Turn timer: ${megaTurnTimer.value}. ${megaTurnTimer.title}`}
               >
-                <small>{activeMegaTurnPlayer.id === lobby.playerId ? "Roll timer" : `${activeMegaTurnPlayer.name} · auto in`}</small>
-                <strong>{megaRollTimerLabel}</strong>
+                <small>Turn timer</small>
+                <strong>{megaTurnTimer.value}</strong>
               </span>
-            ) : (
-              <span><small>Time</small><strong>{localClock.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</strong></span>
             )}
             <span className={connectionStatus === "Connected" ? "is-online" : ""}><small>Status</small><strong>{connectionStatus}</strong></span>
             {!viewerIsSpectator && currentGamePlayer && !currentGamePlayer.isAi && !currentGamePlayer.isBankrupt && (

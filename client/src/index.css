@@ -26307,3 +26307,118 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     pointer-events: none !important;
   }
 }
+
+
+/* HGR Part 33: desktop spectator page fits the viewport. Preserve the approved
+ * board-above-roster composition; scroll roster/cards, not the entire page.
+ * Phone/tablet keep their existing natural-scrolling arrangement. */
+.mega-live-page.mega-spectator-mode .mega-game-meta > span {
+  text-align: center !important;
+  justify-items: center !important;
+}
+.mega-live-page.mega-spectator-mode .mega-game-meta > span.mega-turn-timer {
+  border-color: color-mix(in srgb, var(--hgr-brand) 55%, var(--mm-border)) !important;
+}
+.mega-live-page.mega-spectator-mode .mega-game-meta > span.mega-turn-timer.is-urgent > strong {
+  color: #f87171 !important;
+}
+.mega-live-page .mega-game-meta > span.mega-turn-timer[data-timer-status="paused"] > strong {
+  color: var(--mm-muted) !important;
+}
+@media (min-width: 1181px) {
+  .game-page.mega-live-page.mega-spectator-mode {
+    position: fixed !important;
+    inset: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    width: 100dvw !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    gap: 6px !important;
+    padding: 7px 12px max(8px,env(safe-area-inset-bottom)) !important;
+  }
+  .mega-live-page.mega-spectator-mode > .mega-active-header {
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    max-height: 80px !important;
+    margin: 0 !important;
+  }
+  .mega-live-page.mega-spectator-mode > .mega-spectator-banner {
+    flex: 0 0 auto !important;
+    padding: 6px 12px !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  .mega-live-page.mega-spectator-mode > .game-layout.mega-live-layout-v3.mega-spectator-layout {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    grid-template-rows: minmax(0,1fr) clamp(150px,25dvh,230px) !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    overflow: hidden !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout > .board-frame {
+    display: grid !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    place-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: auto !important;
+    container-type: size !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout .board-grid {
+    width: min(100cqw,100cqh) !important;
+    height: min(100cqw,100cqh) !important;
+    max-height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout > .mega-spectator-player-rail {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 8px !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-header {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) !important;
+    align-items: center !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-header > div {
+    grid-column: 2 !important;
+    text-align: center !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-header > span {
+    grid-column: 3 !important;
+    justify-self: end !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit,minmax(min(100%,235px),1fr)) !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-property-strip {
+    max-height: 120px !important;
+  }
+}
