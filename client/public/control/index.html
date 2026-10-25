@@ -9,9 +9,10 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.5.5z-fonts-fullscreen-1" />
+  <link rel="stylesheet" href="/control/control.css?v=development-status-v1" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.5.5o-inline-ops-1" defer></script>
+  <script src="/control/control.js?v=development-status-v1" defer></script>
+  <script src="/control/development.js?v=development-status-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=4.5.5z-fullscreen-1" defer></script>
   <link rel="manifest" href="/control/manifest.webmanifest?v=4.5.4.19" />
@@ -34,6 +35,7 @@
       <button class="rail-item" data-section="players"><span>♟</span><b>Players</b></button>
       <button class="rail-item" data-section="performance"><span>⌁</span><b>Performance</b></button>
       <button class="rail-item" data-section="operations"><span>↻</span><b>Operations</b></button>
+      <button class="rail-item" data-section="development"><span>▤</span><b>Development</b></button>
       <button class="rail-item" data-section="audit"><span>≡</span><b>Audit</b></button>
     </nav>
     <div class="rail-spacer"></div>
@@ -167,7 +169,31 @@
         <button data-operation="close" disabled><span>■</span><strong>Close HGR</strong><small>Owner confirmation and connected bridge required</small></button>
         <button data-operation="update" data-update-state="idle" disabled><span class="operation-action-icon" aria-hidden="true"></span><strong>Update HGR</strong><small>Progress appears globally</small></button>
       </div>
+      <button type="button" class="secondary-action development-jump" data-jump="development">View development batches &amp; GitHub checks</button>
       <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent operation status</h2><p>Approved Start, Restart, Close and Update operations remain traceable while you move around Control. On phones, a compact status chip expands to show progress, phase and the server-verified result.</p></article>
+    </section>
+
+    <section class="control-section" data-panel="development" aria-label="Development activity">
+      <div class="section-heading-large">
+        <div><p class="eyebrow">DEVELOPMENT</p><h2>Work in progress</h2>
+          <p>Read-only GitHub changes and workflow checks. Owner-PC deployment progress remains in Operations.</p>
+        </div>
+        <button class="secondary-action" id="refreshDevelopment" type="button">Refresh</button>
+      </div>
+      <article class="panel-card development-overview" aria-live="polite">
+        <strong id="developmentSummary">Open Development to load GitHub activity.</strong>
+        <small id="developmentTimestamp">Data is checked when this section opens and cached for up to five minutes.</small>
+        <p>Draft or open pull requests are proposed changes, not background jobs. Tests and local work appear here only if GitHub publishes them.</p>
+      </article>
+      <div class="development-columns">
+        <article class="panel-card"><div class="card-heading"><div><p class="eyebrow">REVIEW QUEUE</p><h2>Development batches</h2></div></div>
+          <div class="development-list" id="developmentPulls"><p class="empty-state">Open this section to check for development batches.</p></div>
+        </article>
+        <article class="panel-card"><div class="card-heading"><div><p class="eyebrow">AUTOMATED CHECKS</p><h2>GitHub Actions</h2></div></div>
+          <div class="development-list" id="developmentRuns"><p class="empty-state">No workflow data loaded yet.</p></div>
+        </article>
+      </div>
+      <p class="development-footnote">Updates, local tests and manual QA are not inferred from commits. For the live owner-PC updater, use <button type="button" class="text-action" data-jump="operations">Operations</button>.</p>
     </section>
 
     <section class="control-section" data-panel="audit">
