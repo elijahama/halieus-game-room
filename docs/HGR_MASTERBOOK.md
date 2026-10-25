@@ -4,6 +4,19 @@
 >
 > This document is the high-level source of truth for understanding Halieus Game Room (HGR). It does not replace detailed implementation docs; it connects them.
 
+## Tic-Tac-Toe state-integrity checkpoint (25 October 2026)
+
+**Status:** source-only GitHub review branch; not deployed or declared released. The authoritative HGR platform `VERSION` remains **4.5.6**.
+
+- The previously implemented Miruro-inspired optional Gallery and game-library search/filter remain unchanged. Reference study: [Miruro GUI research](MIRURO_REFERENCE_GUI_RESEARCH_2026-10-24.md). Do not import third-party branding or noncommercial source.
+- Independent game-version and maturity metadata already exists in `client/src/platform/games/development.ts`. Its unassigned versions are intentional until each game has evidence-based version and owner QA; do not assign every game the platform's version.
+- Existing Tic-Tac-Toe / Noughts and Crosses rules cover 3×3, 4×4 and 5×5, Casual and Ranked **format labels**, turn validation, wins, draws and immutable state. They are not yet wired into authenticated multiplayer rooms or server-rated awards.
+- This batch strengthens saved/reconnected Tic-Tac-Toe state validation: board/turn counts, starting mark parity, final square, revision, winner, terminal outcome and canonical winning lines must agree before a move or result candidate is accepted. This protects against internally inconsistent snapshots; it is **not** a substitute for server authentication or an authoritative action log.
+- Targeted isolated TypeScript compilation and the expanded Tic-Tac-Toe runtime suite were run locally and passed, including 900 deterministic full-game sequences spanning board sizes and both starting marks. Full repository typecheck, release-integrity gate, CI and owner real-device acceptance remain separate pending checks.
+- No catalogue availability, launcher identities, canonical H geometry, atmosphere themes, production Control path, platform version or release fingerprint are intentionally changed.
+
+**Next independent batch:** multiplayer room and seat ownership integration for Tic-Tac-Toe, followed by UI, Ranked result authority and responsive/real-device tests. Do not advertise it as playable in the HGR catalogue until these gates pass.
+
 ## Current Part 26 checkpoint
 
 [Part 26 acceptance record](HGR_PART26_ACCEPTANCE.md) records the Control lifecycle/PWA/launcher repairs, launcher-derived website H, compact appearance and desktop sidebar changes, Parts 20–26/Drive reference decisions, exact commits and outstanding real-device acceptance. Keep source validation separate from owner acceptance.

@@ -39,27 +39,71 @@ export function newGame(size: BoardSize, mode: MatchMode = "casual", starting: M
     winningLine: [], moves: 0, revision: 0, lastMove: null,
   };
 }
+function winningLines(board: readonly Cell[], size: BoardSize): number[][] {
+  const lines: number[][] = [];
+  for (let row = 0; row < size; row++) lines.push(Array.from({ length: size }, (_, col) => row * size + col));
+  for (let col = 0; col < size; col++) lines.push(Array.from({ length: size }, (_, row) => row * size + col));
+  lines.push(Array.from({ length: size }, (_, i) => i * size + i));
+  lines.push(Array.from({ length: size }, (_, i) => i * size + size - 1 - i));
+  return lines.filter(line => {
+    const first = board[line[0]];
+    return (first === "X" || first === "O") && line.every(i => board[i] === first);
+  });
+}
 export function findWinningLine(board: readonly Cell[], size: BoardSize): number[] {
   if (!validSizes.includes(size) || board.length !== size * size) throw new Error("Invalid board.");
-  const lines: number[][] = [];
-  for (let row=0; row<size; row++) lines.push(Array.from({length:size},(_,col)=>row*size+col));
-  for (let col=0; col<size; col++) lines.push(Array.from({length:size},(_,row)=>row*size+col));
-  lines.push(Array.from({length:size},(_,i)=>i*size+i));
-  lines.push(Array.from({length:size},(_,i)=>i*size+size-1-i));
-  return lines.find(line => {
-    const first = board[line[0]];
-    return (first === "X" || first === "O") && line.every(i=>board[i]===first);
-  }) ?? [];
+  return winningLines(board, size)[0] ?? [];
+}
+/** Validate saved/reconnected state before accepting moves or preparing a result.
+ * This is integrity checking, not player authentication or proof of a server action log.
+ */
+export function assertValidGameState(state: GameState): void {
+  const invalid = (): never => { throw new Error("Invalid game state."); };
+  if (!state || !validSizes.includes(state.size) || !Array.isArray(state.board)
+    || state.board.length !== state.size * state.size || !Array.isArray(state.winningLine)
+    || (state.mode !== "casual" && state.mode !== "ranked")
+    || (state.starting !== "X" && state.starting !== "O")
+    || (state.next !== "X" && state.next !== "O")
+    || (state.winner !== null && state.winner !== "X" && state.winner !== "O")
+    || !["playing", "won", "draw"].includes(state.outcome)
+    || !Number.isInteger(state.moves) || state.moves < 0 || state.moves > state.board.length
+    || !Number.isInteger(state.revision) || state.revision !== state.moves
+    || state.board.some(cell => cell !== null && cell !== "X" && cell !== "O")) invalid();
+
+  const xs = state.board.filter(cell => cell === "X").length;
+  const os = state.board.filter(cell => cell === "O").length;
+  if (xs + os !== state.moves) invalid();
+  const firstCount = state.starting === "X" ? xs : os;
+  const secondCount = state.starting === "X" ? os : xs;
+  if (firstCount !== Math.ceil(state.moves / 2) || secondCount !== Math.floor(state.moves / 2)) invalid();
+
+  const last = state.moves === 0 ? null : state.moves % 2 ? state.starting : other(state.starting);
+  if (last === null) {
+    if (state.lastMove !== null || state.next !== state.starting) invalid();
+  } else if (!Number.isInteger(state.lastMove) || state.lastMove === null
+    || state.lastMove < 0 || state.lastMove >= state.board.length
+    || state.board[state.lastMove] !== last) invalid();
+
+  const lines = winningLines(state.board, state.size);
+  if (lines.length) {
+    // A legal terminal move may complete multiple lines, but every newly completed
+    // line must belong to that player and include the final square.
+    if (state.outcome !== "won" || state.winner !== last
+      || lines.some(line => state.board[line[0]] !== last || !line.includes(state.lastMove!))) invalid();
+    const primary = lines[0];
+    if (state.winningLine.length !== primary.length
+      || primary.some((cell, i) => state.winningLine[i] !== cell)
+      || state.next !== last) invalid();
+  } else {
+    if (state.winner !== null || state.winningLine.length !== 0) invalid();
+    const expectedOutcome = state.moves === state.board.length ? "draw" : "playing";
+    if (state.outcome !== expectedOutcome || state.next !== (last === null ? state.starting :
+      expectedOutcome === "playing" ? other(last) : last)) invalid();
+  }
 }
 /** Immutable move. Rejects duplicate turns, out-of-range and finished games. */
 export function play(state: GameState, mark: Mark, index: number): GameState {
-  if (!validSizes.includes(state.size) || state.board.length !== state.size * state.size
-    || !Number.isInteger(state.moves) || state.moves < 0
-    || state.board.filter(cell=>cell!==null).length !== state.moves
-    || state.revision !== state.moves || !Number.isInteger(state.revision)
-    || state.board.some(cell => cell!==null && cell!=="X" && cell!=="O")) {
-    throw new Error("Invalid game state.");
-  }
+  assertValidGameState(state);
   if (state.outcome !== "playing") throw new Error("Game already finished.");
   if (mark !== state.next) throw new Error("Not this player's turn.");
   if (!Number.isInteger(index) || index < 0 || index >= state.board.length) {
@@ -79,11 +123,8 @@ export function play(state: GameState, mark: Mark, index: number): GameState {
 }
 /** Not a Ranked award or verified server result; this is only a result candidate. */
 export function finalResultCandidate(state: GameState): FinalResultCandidate {
+  assertValidGameState(state);
   if (state.outcome === "playing") throw new Error("Live games cannot finalize.");
-  if (state.outcome === "won" && (!state.winner || state.winningLine.length !== state.size))
-    throw new Error("Unverified winner.");
-  if (state.outcome === "draw" && (state.winner || state.moves !== state.size * state.size))
-    throw new Error("Unverified draw.");
   return {
     format: `${state.size}x${state.size}` as FinalResultCandidate["format"],
     mode: state.mode, winner: state.winner, draw: state.outcome === "draw",
