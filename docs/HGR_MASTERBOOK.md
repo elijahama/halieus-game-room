@@ -4,9 +4,9 @@
 >
 > This document is the high-level source of truth for understanding Halieus Game Room (HGR). It does not replace detailed implementation docs; it connects them.
 
-## Part 32 — Tic-Tac-Toe state-integrity checkpoint (25 October 2026)
+## Tic-Tac-Toe state-integrity checkpoint (25 October 2026)
 
-**Status:** source-only review branch `feat/part32-tic-tac-toe-state-validation`; not deployed or declared released. The authoritative HGR platform `VERSION` remains **4.5.6**.
+**Status:** source-only GitHub review branch; not deployed or declared released. The authoritative HGR platform `VERSION` remains **4.5.6**.
 
 - The previously implemented Miruro-inspired optional Gallery and game-library search/filter remain unchanged. Reference study: [Miruro GUI research](MIRURO_REFERENCE_GUI_RESEARCH_2026-10-24.md). Do not import third-party branding or noncommercial source.
 - Independent game-version and maturity metadata already exists in `client/src/platform/games/development.ts`. Its unassigned versions are intentional until each game has evidence-based version and owner QA; do not assign every game the platform's version.
