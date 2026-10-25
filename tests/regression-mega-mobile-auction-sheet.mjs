@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+const root=resolve(import.meta.dirname,"..");
+const source=readFileSync(resolve(root,"client/src/games/mega-board/components/GameBoard.tsx"),"utf8");
+const auction=readFileSync(resolve(root,"client/src/games/mega-board/components/AuctionPanel.tsx"),"utf8");
+const css=readFileSync(resolve(root,"client/src/index.css"),"utf8");
+assert.match(source,/mobileAuctionSheet && auctionPanel && createPortal\(/,"Phone auction must portal out of square board");
+assert.match(source,/document\.fullscreenElement \?\? document\.body/,"Auction must work in and out of fullscreen");
+assert.match(source,/\(gameState\.pendingAuction && !mobileAuctionSheet\)/,"No empty behind-board auction layer on phones");
+assert.match(source,/gameState\.turnPhase === "roll"[\s\S]{0,170}"Roll dice to begin your turn"/,"Current player must not wait for self");
+assert.match(source,/Waiting for/,"Opponent waiting status still exists");
+assert.match(auction,/className="auction-player-list"/);
+assert.match(css,/\.mega-mobile-auction-sheet \.auction-presentation \.auction-player-list\s*\{[^}]*overflow-y:\s*auto/s);
+assert.match(css,/\.mega-mobile-auction-sheet \.auction-presentation button\s*\{[^}]*min-height:\s*42px/s);
+console.log("PASS Mega Board mobile auction portal, roster scrolling, bid actions, turn messaging and fullscreen fallback");
