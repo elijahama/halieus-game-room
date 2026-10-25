@@ -28,6 +28,7 @@ import { registerDepotHandlers } from "./games/mega-board/handlers/depotHandlers
 import { registerGameplayHandlers } from "./games/mega-board/handlers/gameplayHandlers.js";
 import { registerJailHandlers } from "./games/mega-board/handlers/jailHandlers.js";
 import { registerLobbyHandlers } from "./games/mega-board/handlers/lobbyHandlers.js";
+import { registerMegaSavedGameHandlers } from "./games/mega-board/handlers/savedGameHandlers.js";
 import { registerMegaSpaceHandlers } from "./games/mega-board/handlers/megaSpaceHandlers.js";
 import { registerOrderHandlers } from "./games/mega-board/handlers/orderHandlers.js";
 import { registerPurchaseHandlers } from "./games/mega-board/handlers/purchaseHandlers.js";
@@ -563,6 +564,7 @@ io.on(
   registerAyoHandlers(io, socket);
   registerWordBoardHandlers(io, socket);
   registerLobbyHandlers(io, socket);
+  registerMegaSavedGameHandlers(io, socket);
   registerAiLobbyHandlers(io, socket);
   registerOrderHandlers(io, socket);
   registerGameplayHandlers(io, socket);

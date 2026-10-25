@@ -14,6 +14,7 @@ import type {
 import { STARTING_CASH } from "../../../../../shared/games/mega-board/game-rules";
 import { getMatchAwards } from "../../../../../shared/games/mega-board/ranked";
 import { APP_VERSION } from "../../../version";
+import { buildMegaMoveTranscript } from "./moveNotation";
 
 const RULE = "=".repeat(72);
 const SUBRULE = "-".repeat(72);
@@ -392,6 +393,7 @@ export function buildGameReport(gameState: GameState): string {
   lines.push(...section("BANKRUPTCIES / FORFEITS", activityLines(bankruptcyActivity)));
   lines.push(...section("DIAGNOSTICS", diagnosticLines(gameState)));
   lines.push(...section("RECENT GLOBAL NOTICES", noticeLines(gameState)));
+  lines.push(...section("MOVE-BY-MOVE RECORD — COPY / PASTE", buildMegaMoveTranscript(gameState.roomCode, activity, gameState.players).split("\n")));
   lines.push(...section("FULL MATCH ACTIVITY", activityLines(activity)));
 
   lines.push("", RULE, "END OF MEGA BOARD MATCH REPORT", "");

@@ -61,7 +61,7 @@ import { AvailablePropertiesModal } from "./games/mega-board/components/Availabl
 import { WinnerScreen } from "./games/mega-board/components/WinnerScreen";
 import { LeaderboardModal } from "./games/mega-board/components/LeaderboardModal";
 import { PokerLeaderboardModal } from "./games/poker/components/PokerLeaderboardModal";
-import { downloadGameReport } from "./games/mega-board/utils/gameReport";
+import { buildGameReport, downloadGameReport } from "./games/mega-board/utils/gameReport";
 import { styles } from "./games/mega-board/styles/gameStyles";
 import { clearCustomThemeVariables, customThemeVariables, readableInk, isDarkColour, readDensity, readLogoPreset, readTextScale, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
 import { saveSkinPreferences, clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
@@ -3306,7 +3306,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.5.9-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.5.10-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3502,6 +3502,7 @@ function handleLeaveSpectator() {
           }
           onLeave={isSpectator ? handleLeaveSpectator : handleLeaveGame}
           onExportReport={() => downloadGameReport(gameState)}
+          onCopyReport={() => navigator.clipboard.writeText(buildGameReport(gameState))}
           onEndRoom={handleEndRoom}
         />
         <RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
@@ -3551,6 +3552,8 @@ function handleLeaveSpectator() {
           }
           onLeave={isSpectator ? handleLeaveSpectator : handleLeaveGame}
           onForfeit={handleForfeitGame}
+          replayFrames={gameState.replayFrames ?? []}
+          replayActivities={gameState.activityLog ?? []}
           onOpenHistory={() => {
             setGameMenuOpen(false);
             setPlayersDrawerOpen(false);
@@ -3558,6 +3561,7 @@ function handleLeaveSpectator() {
             setTurnActionsOpenSignal((value) => value + 1);
           }}
           onExportReport={() => downloadGameReport(gameState)}
+          onCopyReport={() => navigator.clipboard.writeText(buildGameReport(gameState))}
           onEndRoom={handleEndRoom}
         />
 

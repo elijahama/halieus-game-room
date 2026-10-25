@@ -103,6 +103,7 @@ function prepareLoadedRoom(
 
   if (room.gameState) {
     room.gameState.activityLog ??= [];
+    room.gameState.replayFrames ??= [];
     room.gameState.freeParkingJackpotEnabled ??=
       room.freeParkingJackpotEnabled;
     room.gameState.rollSequence ??= 0;
