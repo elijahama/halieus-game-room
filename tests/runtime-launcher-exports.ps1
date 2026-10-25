@@ -1,7 +1,15 @@
 $ErrorActionPreference = 'Stop'
 $sourceRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$validationRoot = [IO.Path]::GetFullPath((Join-Path $sourceRoot 'server/data/runtime'))
-$fixture = Join-Path $validationRoot ('launcher-exports, validation-' + [guid]::NewGuid().ToString('N'))
+# The isolated Cloud Update checkout already lives deep under LocalAppData.
+# A nested runtime fixture plus fake Windows Start Menu can exceed MAX_PATH
+# in Windows Shell COM .lnk creation. Put only the disposable test fixture in
+# the short OS temp root, never under the release or owner's live runtime.
+$validationRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([IO.Path]::DirectorySeparatorChar)
+$fixture = Join-Path $validationRoot ('hgr-launcher-exports, validation-' + [guid]::NewGuid().ToString('N'))
+$longestShortcut = Join-Path $fixture 'appdata/Microsoft/Windows/Start Menu/Programs/Halieus Game Room/HGR - PowerShell.lnk'
+if ($longestShortcut.Length -gt 240) {
+    throw 'Windows HGR launcher validation temp directory is too long for Shell shortcut creation.'
+}
 $savedAppData = $env:APPDATA
 function Assert-Rejected([scriptblock]$Action, [string]$Reason, [string]$MessagePattern) {
     $rejected = $false
