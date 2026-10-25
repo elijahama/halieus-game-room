@@ -40,6 +40,13 @@ if (-not $existing -or [string]$existing.state -ne "running" -or [string]::IsNul
 }
 $startedAt = [string]$existing.startedAt
 $operationId = if ($null -ne $existing.operationId) { [string]$existing.operationId } else { "" }
+$handoffProperty = $existing.PSObject.Properties["handoff"]
+$handoff = if ($handoffProperty) { [string]$handoffProperty.Value } else { "" }
+$isolatedFlag = $env:HGR_CONTROL_UPDATE_ISOLATED_MAIN -eq "1"
+if (($handoff -eq "isolated-main") -ne $isolatedFlag) {
+    throw "Cloud Update handoff mode does not match its authenticated finalizer; cannot mark success."
+}
+$isIsolatedMain = $handoff -eq "isolated-main"
 $currentProgress = 97
 try {
     if ($null -ne $existing.progress) { $currentProgress = [Math]::Max(97, [Math]::Min(99, [int]$existing.progress)) }
@@ -52,11 +59,19 @@ try {
     $env:HGR_CONTROL_UPDATE_FINALIZER = "1"
     Remove-Item Env:HGR_CONTROL_DEFER_REFRESH -ErrorAction SilentlyContinue
     $currentProgress = [Math]::Max($currentProgress, 98)
+    $phase = "Restarting Control after update"
+    if ($isIsolatedMain) { $phase = "Finalizing verified website release" }
     Write-HgrUpdateResult -Value @{
         state = "running"; startedAt = $startedAt; finishedAt = $null; exitCode = $null; reason = $null
         operationId = $operationId
-        progress = $currentProgress; phase = "Restarting Control after update"
+        progress = $currentProgress
+        phase = $phase
     }
+    if ($isIsolatedMain) {
+        # Oracle validation already completed in the isolated release process.
+        # Do not restart Control from the owner's unchanged feature branch.
+        $exitCode = 0
+    } else {
     $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
     $refresh = Start-Process -FilePath $powershell -ArgumentList @(
         "-NoProfile",
@@ -73,6 +88,7 @@ try {
     $exitCode = $refresh.ExitCode
     if ($exitCode -ne 0) {
         $failureReason = "HGR Control post-update restart exited with code $exitCode."
+    }
     }
 } catch {
     $exitCode = 1
@@ -101,7 +117,11 @@ if ($exitCode -eq 0 -and [string]::IsNullOrWhiteSpace($failureReason)) {
         progress = 100
         phase = "Update complete"
     }
-    Write-Output "HGR Control final handoff completed; Cloud Update may report 100%."
+    if ($isIsolatedMain) {
+        Write-Output "Verified main website release finalized; owner Control stayed on its original checkout."
+    } else {
+        Write-Output "HGR Control final handoff completed; Cloud Update may report 100%."
+    }
     exit 0
 }
 
