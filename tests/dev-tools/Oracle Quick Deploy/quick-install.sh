@@ -201,6 +201,8 @@ chmod 640 "$ENV_DIR/halieus.env"
 # Candidate has passed install/build validation. Warn connected players before
 # the production service is stopped. This talks only to the current server over
 # Oracle loopback; it does not expose a public maintenance-control endpoint.
+# Refuse disruption when any live game remains or health cannot be verified.
+curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health | node "$CANDIDATE_DIR/scripts/assert-release-idle.mjs"
 MAINTENANCE_GRACE_SECONDS="${MAINTENANCE_GRACE_SECONDS:-12}"
 MAINTENANCE_JSON="$(node -e 'const version=process.argv[1];const seconds=Number(process.argv[2])||12;process.stdout.write(JSON.stringify({state:"scheduled",reason:"HGR is about to restart for an update.",targetVersion:version,estimatedSeconds:seconds}))' "$EXPECTED_VERSION" "$MAINTENANCE_GRACE_SECONDS")"
 if curl -fsS -X POST   -H 'Content-Type: application/json'   --data "$MAINTENANCE_JSON"   http://127.0.0.1:3000/internal/maintenance >/dev/null 2>&1; then
@@ -210,6 +212,12 @@ else
   echo "Current server does not support maintenance notices yet; continuing activation."
 fi
 
+# Recheck after the maintenance grace period, immediately before stopping production.
+if ! curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health | node "$CANDIDATE_DIR/scripts/assert-release-idle.mjs"; then
+  curl --connect-timeout 4 --max-time 8 -fsS -X POST -H 'Content-Type: application/json' --data '{"state":"clear"}' http://127.0.0.1:3000/internal/maintenance >/dev/null 2>&1 || true
+  echo "Activation cancelled; existing production service remains running." >&2
+  exit 1
+fi
 echo "Activating validated Halieus candidate..."
 systemctl stop halieus-game-room 2>/dev/null || true
 if [[ -d "$APP_DIR" ]]; then
