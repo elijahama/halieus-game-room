@@ -220,3 +220,9 @@ This is a **local timeline command**, not a new tab in upstream OpenShard's `tui
 ## Control owner-only timeline access — source candidate
 
 The HGR Control Development panel can read local Bridge and OpenShard metadata **only when the authenticated Control server is running where those files already exist**. The endpoint is owner-only, never returns prompt bodies, source paths or secret material, and caps file reads and result counts. The Oracle-hosted Control app must report the laptop-local source as unavailable; it does not have a persistent remote OpenShard tunnel. Promoting a remote readout requires a separately authenticated, owner-consented outbound bridge and independent security testing. The existing local `OpenShard-HGR.cmd timeline` command remains unchanged.
+
+## Privacy-limited outbound Control development timeline (review candidate)
+
+The on-PC HGR Control Cloud Agent can optionally send a **sanitized metadata-only** timeline to the already configured HGR HTTPS site. This is not an OpenShard-native sync service. The implementation reuses an approved, revocable Control Cloud device identity and requires `HGR_DEVELOPMENT_TIMELINE_SYNC=1` in the owner's cloud-bridge process environment; it is **off by default**. Never enable this on the owner's behalf, disclose the existing device secret, or start an unreviewed background job.
+
+At most 12 bounded events per request travel from Lagz: safe IDs, observed timestamps, record source, and honest verification states; **prompt text, task text, OpenShard JSONL files, local paths, costs/tokens and secret material are not transmitted**. Unknown fields are rejected and stale uploads cannot pretend to be fresh. Owner-only Control displays the last received snapshot (fresh or stale), never inventing an active agent. See `docs/HGR_CONTROL_DEVELOPMENT_MONITOR.md` for the actual security and deployment gates.

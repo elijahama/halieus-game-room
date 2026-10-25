@@ -174,11 +174,16 @@
       unavailable("Local OpenShard source unavailable");
       return;
     }
-    state.textContent = result.source === "partial"
-      ? "Partial local history on this server"
-      : "Local history available on this server";
+    state.textContent = result.stale || result.source === "stale"
+      ? "Owner-PC timeline stale · laptop sync unavailable"
+      : result.transport === "cloud-relay"
+        ? (result.source === "partial" ? "Partial owner-PC timeline received" : "Owner-PC timeline received")
+        : result.source === "partial"
+          ? "Partial local history on this server"
+          : "Local history available on this server";
     hint.textContent = "Last recorded: " + (result.latestAt ? when(result.latestAt) : "No recorded events")
-      + ". This is historical evidence, not a live connection or task completion.";
+      + (result.lastReceivedAt ? " · Last sync: " + when(result.lastReceivedAt) : "")
+      + (result.stale ? " · This is stale history, not current laptop activity." : " · Historical evidence, not proof of task completion.");
     if (!events.length) {
       list.appendChild(text("p", "No recent local evidence found. This does not mean a task completed.", "empty-state"));
       return;

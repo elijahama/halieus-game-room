@@ -1,4 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
+import { loadLocalDevelopmentTimeline } from "./platform/control-development-timeline.js";
+import { validateRelaySnapshot, RELAY_MAX_EVENTS } from "./platform/control-development-relay.js";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { hostname } from "node:os";
@@ -84,6 +86,11 @@ const cloudBase = (process.env.HGR_CONTROL_CLOUD_URL?.trim() || "https://halieus
 const pollDelayMs = 2_500;
 let stopping = false;
 let inFlightRequestId: string | null = null;
+// Privacy: local evidence sync is disabled unless the owner explicitly enables it.
+// No new agent process, inbound PC port, or dynamic destination is added.
+const evidenceSyncEnabled = process.env.HGR_DEVELOPMENT_TIMELINE_SYNC === "1";
+const EVIDENCE_INTERVAL_MS = 60_000;
+let lastEvidenceAttempt = 0;
 
 function delay(milliseconds: number): Promise<void> {
   return new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
@@ -178,6 +185,43 @@ async function cloudRequest(path: string, body: Record<string, unknown>): Promis
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+}
+
+async function publishDevelopmentEvidence(identity: DeviceIdentity): Promise<void> {
+  if (!evidenceSyncEnabled) return;
+  // Credentials and sanitized metadata must never be posted over cleartext HTTP.
+  const destination = new URL(cloudBase);
+  if (destination.protocol !== "https:" || destination.hostname !== "halieus.remotewire.net") return;
+  const now = Date.now();
+  if (now - lastEvidenceAttempt < EVIDENCE_INTERVAL_MS) return;
+  lastEvidenceAttempt = now;
+  const local = loadLocalDevelopmentTimeline(projectRoot);
+  if (local.source === "unavailable") return;
+  // Strictly reconstruct the allowlisted schema rather than forwarding the journal.
+  const events = local.events.slice(0, RELAY_MAX_EVENTS).map(entry => ({
+    at: entry.at, source: entry.source, kind: entry.kind,
+    status: entry.status, id: entry.id, taskId: entry.taskId,
+    ...(entry.source === "openshard" ? { changedFiles: entry.changedFiles } : {}),
+  }));
+  const snapshot = validateRelaySnapshot({
+    source: local.source, latestAt: events[0]?.at ?? null, events,
+  });
+  if (!snapshot) return;
+  try {
+    const result = await cloudRequest("/control/cloud/agent/development-evidence", {
+      protocol: HGR_CONTROL_CLOUD_PROTOCOL,
+      deviceId: identity.deviceId,
+      secret: identity.secret,
+      sentAt: new Date().toISOString(),
+      nonce: randomBytes(16).toString("hex"),
+      snapshot,
+    });
+    if (!result.ok && result.status !== 404) {
+      console.error("HGR Control development evidence sync unavailable (HTTP " + result.status + ").");
+    }
+  } catch {
+    console.error("HGR Control development evidence sync could not connect.");
+  }
 }
 
 async function reportProgress(
@@ -450,6 +494,8 @@ async function cycle(identity: DeviceIdentity): Promise<void> {
   }
   const heartbeat = await heartbeatResponse.json().catch(() => null) as { approved?: boolean; enrollment?: string } | null;
   if (!heartbeatResponse.ok || !heartbeat?.approved) return;
+
+  await publishDevelopmentEvidence(identity);
 
   const pollResponse = await cloudRequest("/control/cloud/agent/poll", {
     protocol: HGR_CONTROL_CLOUD_PROTOCOL,
