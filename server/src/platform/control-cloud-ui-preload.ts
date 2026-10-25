@@ -8,6 +8,7 @@ import type { Request as ExpressRequest } from "express";
 import { getAuthenticatedAccount } from "./accounts.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
 import { loadLocalDevelopmentTimeline } from "./control-development-timeline.js";
+import { readOwnerRelay } from "./control-development-relay.js";
 
 interface StoredRequest {
   requestId: string;
@@ -223,7 +224,29 @@ async function serveLocalDevelopmentTimeline(request: IncomingMessage, response:
     return;
   }
   try {
-    sendJson(response, 200, loadLocalDevelopmentTimeline());
+    const local = loadLocalDevelopmentTimeline();
+    if (local.source !== "unavailable") {
+      sendJson(response, 200, { ...local, transport: "on-machine", stale: false, lastReceivedAt: null });
+      return;
+    }
+    const remote = await readOwnerRelay();
+    if (remote.state === "unavailable" || !remote.snapshot) {
+      sendJson(response, 200, { ...local, transport: "disconnected", stale: true, lastReceivedAt: null });
+      return;
+    }
+    sendJson(response, 200, {
+      ok: true,
+      transport: "cloud-relay",
+      source: remote.state === "stale" ? "stale" : remote.snapshot.source,
+      stale: remote.state === "stale",
+      checkedAt: new Date().toISOString(),
+      lastReceivedAt: remote.lastReceivedAt,
+      latestAt: remote.snapshot.latestAt,
+      events: remote.snapshot.events,
+      note: remote.state === "stale"
+        ? "Last-known owner PC evidence. Sync is stale and must not be treated as live activity."
+        : "Recent approved owner-PC snapshot. This is historical metadata, not an agent heartbeat.",
+    });
   } catch {
     // No local paths, raw input or stack traces may escape to the client.
     sendJson(response, 503, { ok: false, reason: "Local development history is unavailable." });
