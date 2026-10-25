@@ -1145,3 +1145,15 @@ The requirement to validate actual closed PWA push delivery on the user's phone 
 **Logic learning checkpoint:** `¬(x<6 ∨ x>10)` transforms through De Morgan's law to `x≥6 ∧ x≤10`. Within `S={2,4,6,8,10,12}`, the answer is `{6,8,10}`; `x≠6 ∧ x≠10` is **not** a valid transformation because it would incorrectly exclude the boundary elements. Follow up with inequality negation and the second De Morgan law before moving to actual supervisor conditions.
 
 **QA and publishing:** Documentation-only addition to the HGR project. No shipped website feature, no Oracle deployment or HGR release verification is claimed by this entry.
+
+## Private remote OpenShard integration and instruction journal (25 October 2026)
+
+The owner has created a private **HGR OpenShard Bridge 0.2.0** ChatGPT workflow, using an existing authenticated Remote Desktop Commander device connection, not a new public Control command endpoint. The initial read-only capability check confirmed OpenShard 0.4.7 on the owner PC; available `mcp serve` is read-only local stdio, while `run` is the separate execution path requiring explicit scoped user intent and approvals. The private plugin's creation does not install it or guarantee access to the owner's PC in later chats.
+
+The owner PC now has an invocation-scoped, Git-ignored bridge journal at `.openshard/bridge/prompt-journal.jsonl`. A successful prompt journal append records instruction provenance **but does not** create an OpenShard native execution receipt or automatically capture uninvoked ChatGPT messages. Native receipts require supported execution/capture and separate verification. The plugin can be implicitly selected on applicable HGR requests; coverage remains best-effort and requires the owner PC online. Do not duplicate, invent, or silently backfill messages.
+
+Current limitation: the Control development-monitor PR reports GitHub PR/CI activity, **not live local OpenShard process execution**. An authenticated receipt/heartbeat viewer in Control remains a later, separately audited implementation and must not expose arbitrary PC commands. Protect release deployment, secrets, canonical H, user-owned Git history, and ongoing test sessions. [Details and release boundaries](OPENSHARD.md#private-chatgpt-remote-openshard-workflow-25-october-2026).
+
+## GitHub naming policy — project milestones, not chat indices (25 October 2026)
+
+**Durable owner instruction:** Chat conversation sequence numbers belong to the conversation only. GitHub branches, pull requests, new file paths, test IDs, source comments and Masterbook feature headings must use product/feature scope and actual application release versions, **not chat-session numbering**. Legacy technical tests, historical links and existing branch references must be migrated in small validated batches without breaking release contracts, discarding history or obscuring past work. Do not force-push or rewrite signed/historical commits as a cosmetic cleanup. Preserve user-owned local files and approved HGR art.
