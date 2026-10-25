@@ -118,6 +118,7 @@ jobs:
           node tests/browser-theme-atmosphere.mjs
           node tests/browser-mega-board-portfolio.mjs
           node tests/browser-mega-auction-real-react.mjs
+          node tests/browser-mobile-lobby-testlab-layout.mjs
           node tests/browser-control-state.mjs
           node tests/browser-control-branding.mjs
           node tests/browser-control-polish.mjs
