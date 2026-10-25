@@ -55,6 +55,15 @@ function findProjectRoot(): string {
 }
 
 const projectRoot = findProjectRoot();
+// The owner-PC Control listener can run approved Control code from an isolated
+// checkout without changing which HGR game installation Start/Restart/Close
+// operate. This is set only by the owner-local startup process, never the
+// remotely submitted Cloud operation.
+const configuredGameRoot = process.env.HGR_CONTROL_GAME_ROOT?.trim();
+const gameRoot = configuredGameRoot ? resolve(configuredGameRoot) : projectRoot;
+if (!isHgrRepositoryRoot(gameRoot)) {
+  throw new Error("The owner-local HGR game checkout override is invalid.");
+}
 const host = process.env.HGR_CONTROL_HOST?.trim() || "127.0.0.1";
 const port = Number.parseInt(process.env.HGR_CONTROL_PORT || "43127", 10);
 const token = process.env.HGR_CONTROL_TOKEN?.trim() || "";
@@ -78,13 +87,13 @@ if (remoteBinding && !token) {
 const auditDirectory = resolve(projectRoot, "server", "data", "runtime");
 const auditFile = resolve(auditDirectory, "hgr-control-audit.ndjson");
 const updateResultFile = resolve(auditDirectory, "hgr-control-update-result.json");
-const startScript = resolve(projectRoot, "Start Halieus Game Room.cmd");
-const restartScript = resolve(projectRoot, "Restart Halieus Game Room.cmd");
-const closeScript = resolve(projectRoot, "Close Halieus Game Room.cmd");
+const startScript = resolve(gameRoot, "Start Halieus Game Room.cmd");
+const restartScript = resolve(gameRoot, "Restart Halieus Game Room.cmd");
+const closeScript = resolve(gameRoot, "Close Halieus Game Room.cmd");
 const updateScript = resolve(projectRoot, "Update HGR GitHub.cmd");
-const startBridge = resolve(projectRoot, "scripts", "windows", "control-start.ps1");
-const restartBridge = resolve(projectRoot, "scripts", "windows", "control-restart.ps1");
-const closeBridge = resolve(projectRoot, "scripts", "windows", "control-close.ps1");
+const startBridge = resolve(gameRoot, "scripts", "windows", "control-start.ps1");
+const restartBridge = resolve(gameRoot, "scripts", "windows", "control-restart.ps1");
+const closeBridge = resolve(gameRoot, "scripts", "windows", "control-close.ps1");
 const updateBridge = resolve(projectRoot, "scripts", "windows", "control-update.ps1");
 const controlUiDirectory = resolve(projectRoot, "server", "control-ui");
 const controlIconPng = resolve(controlUiDirectory, "control-icon.png");
@@ -380,7 +389,7 @@ function consumeActionConfirmation(
 async function gitValue(args: string[], allowEmpty = false): Promise<string | null> {
   try {
     const { stdout } = await execFileAsync("git", args, {
-      cwd: projectRoot,
+      cwd: gameRoot,
       timeout: 2500,
       windowsHide: true,
       encoding: "utf8",
@@ -419,7 +428,7 @@ async function readRecentAudit(limit = 20): Promise<HalieusControlAuditEntry[]> 
 
 async function buildStatus(): Promise<HalieusControlStatus> {
   const [version, branch, commit, porcelain] = await Promise.all([
-    readFile(resolve(projectRoot, "VERSION"), "utf8").then((value) => value.trim()),
+    readFile(resolve(gameRoot, "VERSION"), "utf8").then((value) => value.trim()),
     gitValue(["rev-parse", "--abbrev-ref", "HEAD"]),
     gitValue(["rev-parse", "--short", "HEAD"]),
     gitValue(["status", "--porcelain", "--untracked-files=no"], true),
@@ -1192,7 +1201,8 @@ const server = createServer(async (request, response) => {
 
 server.listen(port, host, () => {
   console.log(`HGR Control listening on http://${host}:${port}`);
-  console.log(`Project root: ${projectRoot}`);
+  console.log(`Control source root: ${projectRoot}`);
+  console.log(`Owner game root: ${gameRoot}`);
   console.log(token ? "Bearer-token authentication: ON" : "Bearer-token authentication: OFF (status only)");
   console.log(pairCode ? "Mobile pairing: ON (short-lived code supplied by launcher)" : "Mobile pairing: OFF");
   console.log("Mutable actions: Start, Restart, Close and Update are available only with authenticated Control access.");
