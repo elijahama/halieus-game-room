@@ -1,4 +1,4 @@
-# HGR Control — Development activity monitor (Part 32)
+# HGR Control — Development activity monitor
 
 **Status:** Source-only, pending full CI, merge, deployment and owner-device acceptance. This is not a new HGR platform release. Current VERSION remains 4.5.6.
 
