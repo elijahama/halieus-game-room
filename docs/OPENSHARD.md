@@ -191,3 +191,19 @@ https://github.com/openshard/openshard
 Upstream project metadata credits **Michael Obasa** and licenses Openshard under **Apache-2.0**.
 
 HGR uses the installed tool; it does not vendor Openshard source or claim it as part of HGR's own implementation.
+
+## Part 32 — Private ChatGPT remote OpenShard workflow (25 October 2026)
+
+A private, personal **HGR OpenShard Bridge** plugin (initial version 0.1.0) has been created as a **skills-only workflow**. It uses the separately connected Remote Desktop Commander service to reach an authorized Windows PC; it does not install a daemon, grant access to new devices, ship OpenShard binaries or expose a network shell. The owner must enable/connect the requisite apps in ChatGPT and keep the authorized remote device online.
+
+During the initial remote-capability audit, the authorized device `Lagz` was reported online and `openshard --version` reported **0.4.7**. The CLI supports `run`, `plan`, `history`, `proof` and `mcp serve`; the **MCP server is read-only stdio** (recent shards, receipts, searchable history and relevant context), whereas `openshard run` is a distinct task-execution command. This is time-specific evidence, not a promise of future online availability or that a particular provider/model is configured.
+
+**Execution contract:**
+
+- Read-only status/receipt/history and repository inspection are the default. Verify actual device connectivity and the HGR repository path each session; never assume the Desktop Commander startup directory is the repository.
+- Starting a provider-backed task or editing files requires an explicit scoped instruction and the relevant approval, then real remote process observation. Prefer `--dry-run` when previewing; for an approved write use OpenShard's `--write --verify --approval ask` and respect human approval prompts.
+- Protect canonical HGR launcher artwork and the Masterbook; work on isolated review branches in audited batches; no automatic deployment, forced push, credential handling or shell/network exposure through Control.
+- GitHub PR/CI monitoring in HGR Control is *not* a live OpenShard heartbeat. Genuine local OpenShard progress/receipts require a separate authenticated, allow-listed task-readout bridge, stale detection, and validation before showing as live.
+- Receipt evidence never substitutes for regression tests, actual app build, production fingerprint checks or physical device QA.
+
+The private ChatGPT plugin itself is maintained in the user's plugin library, not committed to the public HGR repository. The associated personal account plugin installation/connection is a separate user-controlled action. No `VERSION`, `RELEASE.json`, production server or Control action changes arise from this documentation batch.
