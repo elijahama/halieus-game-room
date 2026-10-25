@@ -26207,3 +26207,51 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     padding: 7px !important;
   }
 }
+
+/* Phone QA: keep the Test Lab status legible as one word. Global badge
+   containment allows arbitrary breaks elsewhere, but ACTIVE/OFF cannot be
+   stacked vertically within this narrow admin-card heading. */
+.account-test-lab .account-content-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: start;
+  gap: 10px;
+}
+.account-test-lab .account-content-heading > div { min-width: 0; }
+.account-test-lab .account-content-heading > .account-status-badge {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: max-content !important;
+  max-width: none !important;
+  padding: 6px 10px;
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  writing-mode: horizontal-tb !important;
+}
+
+/* Mega Board waiting room only. The shared Poker header reserves 64px
+   above every game on tablets; it is unnecessary under Mega's mobile
+   navbar and pushes the private room far down the screen. */
+@media (max-width: 980px) {
+  .mega-lobby-poker-standard.poker-page {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+    display: block !important;
+    padding-top: max(12px, env(safe-area-inset-top)) !important;
+  }
+  .mega-lobby-poker-standard.poker-page > .mega-poker-header {
+    min-height: 0 !important;
+    padding-top: 0 !important;
+    margin: 0 auto 8px !important;
+  }
+  .mega-lobby-poker-standard.poker-page .poker-lobby-shell {
+    margin-top: 10px !important;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  .mega-lobby-poker-standard .poker-lobby-card {
+    min-height: 0 !important;
+  }
+}
