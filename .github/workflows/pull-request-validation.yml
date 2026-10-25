@@ -28,5 +28,6 @@ jobs:
       - run: npm run test:browser:mega-mobile-overlays
       - run: npm run test:browser:mobile-integration
       - run: npm run test:browser:mega-auction
+      - run: npm run test:browser:mega-spectator
       - run: npm run test:release:browser
       - run: npm run validate:release

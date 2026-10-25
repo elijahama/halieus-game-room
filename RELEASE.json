@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
-  "version": "4.5.8",
-  "fingerprint": "hgr-4.5.8-7cf92030339b60e1",
+  "version": "4.5.9",
+  "fingerprint": "hgr-4.5.9-4958bdd7527b19b0",
   "algorithm": "sha256",
-  "sourceHash": "7cf92030339b60e116916a49bcb8c30590cde2df3a7ca967b4e0d8200f9ab4d3",
-  "integrityFileCount": 540,
+  "sourceHash": "4958bdd7527b19b04f842fc5a71feac4fabaebd7704b11a83bccb7318f560fd3",
+  "integrityFileCount": 541,
   "integrityFiles": [
     ".github/workflows/pull-request-validation.yml",
     ".github/workflows/release-identity.yml",
@@ -181,6 +181,7 @@
     "client/src/games/mega-board/types/lobby.ts",
     "client/src/games/mega-board/types/trade.ts",
     "client/src/games/mega-board/utils/gameReport.ts",
+    "client/src/games/mega-board/utils/turnTimer.ts",
     "client/src/games/poker/PokerScreen.tsx",
     "client/src/games/poker/components/PokerLeaderboardModal.tsx",
     "client/src/games/poker/types.ts",

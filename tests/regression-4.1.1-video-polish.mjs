@@ -70,7 +70,7 @@ assert.match(css,/html\[data-theme="light"\][\s\S]*?--hgr-action-bg:\s*var\(--hg
 assert.match(css,/html\[data-theme="red"\][\s\S]*?--hgr-action-bg:\s*#c9444d/s,'Red must be a first-class coordinated colour profile');
 assert.match(css,/html\[data-theme="green"\][\s\S]*?--hgr-action-bg:\s*#428e59/s,'Green must be a first-class coordinated colour profile');
 assert.match(css,/\.modern-player-list-v2[\s\S]*?max-height:\s*348px !important;[\s\S]*?overflow-y:\s*auto !important/s,'Mega Board lobby roster must scroll internally instead of growing past room controls');
-assert.match(app,/className="card-game-meta game-header-details mega-game-meta"[\s\S]*?className={`mega-roll-timer[\s\S]*?<small>Status<\/small>/s,'Live Mega Board countdown must live in the match metadata row beside room/match/duration/status');
+assert.match(app,/className="card-game-meta game-header-details mega-game-meta"[\s\S]*?className={`mega-turn-timer[\s\S]*?<small>Status<\/small>/s,'Live Mega Board countdown must live in the match metadata row beside room/match/duration/status');
 assert.match(megaMenu,/Turn timer settings/,'Game menu must label its timer control as settings rather than the live countdown');
 assert.ok(account.indexOf('account-game-record') < account.indexOf('account-feedback-card'),'Personal game record must appear before feedback in the account hierarchy');
 assert.match(css,/\.account-owner-nav[\s\S]*?background:\s*var\(--hgr-surface-soft\) !important/s,'Owner navigation must inherit the active HGR theme rather than a fixed blue admin palette');
