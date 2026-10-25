@@ -124,6 +124,7 @@
       players: "Players",
       performance: "Performance centre",
       operations: "Operations",
+      development: "Development activity",
       audit: "Audit history",
     };
     $("sectionTitle").textContent = titles[section] || "HGR Control";
