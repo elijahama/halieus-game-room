@@ -6,8 +6,8 @@ import {build} from "esbuild";
 import {chromium} from "playwright";
 
 const root=resolve(import.meta.dirname,"..");
-const source=readFileSync(resolve(root,"client/src/App.tsx"),"utf8");
-assert.match(source,/playersDrawerOpen && createPortal\(/,"Players drawer must portal out of transformed game shell");
+const source=readFileSync(resolve(root,"client/src/games/mega-board/components/PlayersDrawer.tsx"),"utf8");
+assert.match(source,/return createPortal\(/,"Players drawer must portal out of transformed game shell");
 assert.match(source,/document\.fullscreenElement \?\? document\.body/,"Players drawer must target fullscreen when active");
 const imports=readFileSync(resolve(root,"client/src/main.tsx"),"utf8");
 const styles=["index.css",...Array.from(imports.matchAll(/import "\.\/styles\/([^"]+\.css)";/g),m=>"styles/"+m[1])];

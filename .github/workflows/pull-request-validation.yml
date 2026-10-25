@@ -1,0 +1,32 @@
+name: HGR pull request validation
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run prepare:release
+      - run: npm run typecheck
+      - run: npm run test:regression
+      - run: npm audit --audit-level=high
+      - run: npm run build
+      - run: npm run test:browser:mobile-lobby
+      - run: npm run test:browser:mega-mobile-overlays
+      - run: npm run test:browser:mobile-integration
+      - run: npm run test:browser:mega-auction
+      - run: npm run test:release:browser
+      - run: npm run validate:release

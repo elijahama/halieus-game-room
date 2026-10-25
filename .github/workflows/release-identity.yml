@@ -120,6 +120,7 @@ jobs:
           node tests/browser-mega-auction-real-react.mjs
           node tests/browser-mobile-lobby-testlab-layout.mjs
           npm run test:browser:mega-mobile-overlays
+          npm run test:browser:mobile-integration
           node tests/browser-control-state.mjs
           node tests/browser-control-branding.mjs
           node tests/browser-control-polish.mjs

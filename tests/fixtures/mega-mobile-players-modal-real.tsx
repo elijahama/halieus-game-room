@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { createPortal } from "react-dom";
+import { PlayersDrawer } from "../../client/src/games/mega-board/components/PlayersDrawer";
 import { PlayerRail } from "../../client/src/games/mega-board/components/PlayerRail";
 
 const names=["Milo","Nova","Echo","Atlas","Pixel","Lagz","Rook","Sage"];
@@ -28,23 +28,9 @@ function Fixture(){
       </aside>
       <div style={{height:900}} aria-hidden="true">Board background</div>
     </main>
-    {createPortal(
-      <div className="tablet-players-backdrop" role="presentation">
-        <aside id="tablet-players-drawer" className="tablet-players-drawer" role="dialog" aria-modal="true" aria-label="Players and spectators">
-          <header className="tablet-players-drawer-header">
-            <div><span>Match</span><strong>Players</strong></div>
-            <button type="button" aria-label="Close players" onClick={()=>{window.hgrClosed=true}}>×</button>
-          </header>
-          <PlayerRail
-            lobby={{playerId:"player-5"} as any}
-            gameState={state as any}
-            spectators={[]}
-            onPlayerSelect={(id)=>{window.hgrSelected=id;}}
-            theme={theme}
-          />
-        </aside>
-      </div>, document.fullscreenElement ?? document.body
-    )}
+    <PlayersDrawer lobby={{playerId:"player-5"} as any} gameState={state as any}
+      spectators={[{id:"observer",name:"Observer"}]} theme={theme}
+      onPlayerSelect={id=>{window.hgrSelected=id;}} onClose={()=>{window.hgrClosed=true;}} />
   </>;
 }
 declare global{interface Window{hgrClosed?:boolean;hgrSelected?:string;}}
