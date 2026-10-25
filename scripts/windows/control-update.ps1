@@ -7,6 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $updateLauncher = Join-Path $projectRoot "Update HGR GitHub.cmd"
+$isolatedMainHelper = Join-Path $PSScriptRoot "control-update-isolated-main.ps1"
 $runtimeDir = Join-Path $projectRoot "server\data\runtime"
 $resultPath = Join-Path $runtimeDir "hgr-control-update-result.json"
 $updateOutputLog = Join-Path $runtimeDir "hgr-control-update.out.log"
@@ -23,8 +24,11 @@ function Write-HgrUpdateResult {
 
 $progressMarkers = @(
     @{ Match = "STEP 1 - Updating LOCAL files from GitHub"; Phase = "Syncing from GitHub"; Progress = 10 },
+    @{ Match = "STEP 1 - Fetching isolated main release from GitHub"; Phase = "Isolating the approved main release"; Progress = 10 },
     @{ Match = "STEP 2 - Preparing release identity"; Phase = "Preparing release identity"; Progress = 22 },
     @{ Match = "STEP 3 - HGR validation"; Phase = "Typecheck, build and regressions"; Progress = 38 },
+    @{ Match = "STEP 3 - Installing isolated release dependencies"; Phase = "Installing isolated release dependencies"; Progress = 22 },
+    @{ Match = "STEP 4 - Checking security and HGR release"; Phase = "Release validation and regression tests"; Progress = 38 },
     @{ Match = "STEP 3B - Validating the real Oracle deployment package"; Phase = "Oracle package preflight"; Progress = 54 },
     @{ Match = "STEP 4 - Reviewing local SOURCE changes"; Phase = "Reviewing source state"; Progress = 62 },
     @{ Match = "STEP 8 - Regenerating final release identity"; Phase = "Final release identity"; Progress = 70 },
@@ -143,6 +147,22 @@ if (-not (Test-Path -LiteralPath $finalizerPath)) {
     throw "The HGR Control update finalizer is missing."
 }
 
+# Cloud Update must not switch or rebase an owner's unfinished feature branch.
+# When the PC is not on main, use a fresh, independent, canonical main clone.
+$currentBranch = (& git -C $projectRoot branch --show-current | Out-String).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($currentBranch)) {
+    throw "Control could not identify the current Git branch; no update started."
+}
+$useIsolatedMain = $currentBranch -ne "main"
+if ($useIsolatedMain) {
+    if ($OperationId -notmatch '^[A-Za-z0-9_-]{8,80}$') {
+        throw "Cloud operation ID is not valid for isolated release checkout."
+    }
+    if (-not (Test-Path -LiteralPath $isolatedMainHelper -PathType Leaf)) {
+        throw "Isolated Cloud Update helper is missing. Owner worktree was left unchanged."
+    }
+}
+
 New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
 $startedAt = [DateTimeOffset]::UtcNow.ToString("o")
 Write-HgrUpdateResult -Value @{
@@ -158,6 +178,7 @@ Write-HgrUpdateResult -Value @{
 
 $previousMode = $env:HGR_UPDATE_NONINTERACTIVE
 $previousDeferRefresh = $env:HGR_CONTROL_DEFER_REFRESH
+$previousIsolatedFinalizer = $env:HGR_CONTROL_UPDATE_ISOLATED_MAIN
 $exitCode = 1
 $failureReason = $null
 $finalizerStarted = $false
@@ -173,8 +194,16 @@ try {
     # stderr line into a terminating ErrorRecord before STEP 1 runs. Merge stderr
     # inside cmd.exe instead, so Control sees ordinary text and the real CMD exit code.
     $cmdExe = (Get-Command cmd.exe -ErrorAction Stop).Source
-    $escapedLauncher = $updateLauncher.Replace('"', '""')
-    $cmdCommand = "call `"$escapedLauncher`" 2>&1"
+    if ($useIsolatedMain) {
+        # Never invoke the normal Git push/rebase/launcher-refresh sequence from
+        # a feature checkout. The helper validates and deploys a clean main
+        # source and does not mutate the running owner-PC Control installation.
+        $escapedHelper = $isolatedMainHelper.Replace('"', '""')
+        $cmdCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$escapedHelper`" -OperationId $OperationId 2>&1"
+    } else {
+        $escapedLauncher = $updateLauncher.Replace('"', '""')
+        $cmdCommand = "call `"$escapedLauncher`" 2>&1"
+    }
     & $cmdExe /d /s /c $cmdCommand |
         Tee-Object -FilePath $updateOutputLog |
         ForEach-Object {
@@ -186,7 +215,28 @@ try {
     if ($exitCode -ne 0) {
         $failureReason = Get-HgrUpdateFailureReason -Path $updateOutputLog -ExitCode $exitCode
     } else {
-        Write-HgrUpdateCheckpoint -Progress 97 -Phase "Finalizing Control handoff"
+        if ($useIsolatedMain) {
+            # A separate finalizer remains the sole authority for success. Mark
+            # the validated Oracle-only handoff explicitly in its owned receipt
+            # and use a matching process-local flag. Never restart the original
+            # owner's feature-checkout Control from the isolated website release.
+            $script:currentProgress = 97
+            $script:currentPhase = "Finalizing isolated website release"
+            Write-HgrUpdateResult -Value @{
+                state = "running"
+                startedAt = $startedAt
+                finishedAt = $null
+                exitCode = $null
+                reason = $null
+                operationId = $OperationId
+                progress = 97
+                phase = $script:currentPhase
+                handoff = "isolated-main"
+            }
+            $env:HGR_CONTROL_UPDATE_ISOLATED_MAIN = "1"
+        } else {
+            Write-HgrUpdateCheckpoint -Progress 97 -Phase "Finalizing Control handoff"
+        }
         Remove-Item -LiteralPath $finalizerStdout -Force -ErrorAction SilentlyContinue
         Remove-Item -LiteralPath $finalizerStderr -Force -ErrorAction SilentlyContinue
         $powershell = (Get-Command powershell.exe -ErrorAction Stop).Source
@@ -218,6 +268,11 @@ try {
     } else {
         $env:HGR_CONTROL_DEFER_REFRESH = $previousDeferRefresh
     }
+    if ($null -eq $previousIsolatedFinalizer) {
+        Remove-Item Env:HGR_CONTROL_UPDATE_ISOLATED_MAIN -ErrorAction SilentlyContinue
+    } else {
+        $env:HGR_CONTROL_UPDATE_ISOLATED_MAIN = $previousIsolatedFinalizer
+    }
 
     if ($exitCode -ne 0 -or -not [string]::IsNullOrWhiteSpace($failureReason)) {
         Write-HgrUpdateResult -Value @{
@@ -246,4 +301,8 @@ if (-not $finalizerStarted) {
 # Deliberately leave hgr-control-update-result.json in the running state here.
 # The detached finalizer owns the Control restart and is the only process that
 # can authoritatively write the final succeeded/failed marker after that restart.
-Write-Output "HGR update/deploy core completed. Independent Control handoff finalizer is running."
+if ($useIsolatedMain) {
+    Write-Output "Verified main website deployment completed from isolated checkout. Owner Control and feature branch remain unchanged."
+} else {
+    Write-Output "HGR update/deploy core completed. Independent Control handoff finalizer is running."
+}
