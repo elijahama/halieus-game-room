@@ -1145,3 +1145,11 @@ The requirement to validate actual closed PWA push delivery on the user's phone 
 **Logic learning checkpoint:** `¬(x<6 ∨ x>10)` transforms through De Morgan's law to `x≥6 ∧ x≤10`. Within `S={2,4,6,8,10,12}`, the answer is `{6,8,10}`; `x≠6 ∧ x≠10` is **not** a valid transformation because it would incorrectly exclude the boundary elements. Follow up with inequality negation and the second De Morgan law before moving to actual supervisor conditions.
 
 **QA and publishing:** Documentation-only addition to the HGR project. No shipped website feature, no Oracle deployment or HGR release verification is claimed by this entry.
+
+## Local development timeline viewer (25 October 2026)
+
+**Owner decision:** HGR development history is made of distinct evidence: ChatGPT instructions journaled via the private OpenShard Bridge, native OpenShard coding-session receipts, and separately verified GitHub/CI and deployment states. Do not mark a task complete from a prompt, a reported milestone, a captured session, or an open pull request alone. Keep each source attribution and task ID exact; do not infer a task link.
+
+**First audited implementation batch:** `scripts/hgr-development-timeline.mjs` reads the two private local JSONL stores without modifying them, sorts bounded recent events, hides raw instruction text by default, emits a JSON schema for a later GUI, and reports whether native verification was actually observed. The existing `scripts/windows/OpenShard-HGR.cmd timeline` entry point exposes the view without altering `HGR Update` or the canonical HGR launcher-family artwork. Fixture-driven regression `tests/runtime-development-timeline.mjs` covers missing/corrupted records, source secrecy, task IDs, sorting, verification truth, capped reads and no mutation; included in the `test:regression` chain.
+
+**Release boundary:** Source-only review candidate. It is not merged, deployed, installed into the current owner's main checkout, integrated as an upstream OpenShard TUI tab, or wired to owner-facing HGR Control. An authenticated local-history read bridge, real task-ID propagation from external Codex hooks, and integration with GitHub status remain separate reviewed batches. Keep product `VERSION` unchanged at 4.5.6 until the cohesive release decision.
