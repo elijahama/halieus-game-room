@@ -302,6 +302,7 @@ export function AuctionPanel({
       </div>
 
       <div
+        className="auction-player-list"
         style={styles.auctionPlayers}
       >
         {gameState.players

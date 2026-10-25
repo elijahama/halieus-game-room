@@ -6,6 +6,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
+import { createPortal } from "react-dom";
 import type { GameState } from "../../../../../shared/games/mega-board/game-state";
 import { getGameCard } from "../../../../../shared/games/mega-board/cards";
 import {
@@ -1088,6 +1089,19 @@ export function GameBoard({
       gameState.pendingSpeedDieAction.type !== "bus"),
   );
 
+  // Mobile auctions cannot be contained in the square board: the timer,
+  // eight-seat roster and bid controls need the actual viewport height.
+  const [mobileAuctionSheet, setMobileAuctionSheet] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const onChange = () => setMobileAuctionSheet(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
   const boardFrameRef = useRef<HTMLElement | null>(null);
   const [desktopBoardSize, setDesktopBoardSize] = useState<number | null>(null);
 
@@ -1175,6 +1189,18 @@ export function GameBoard({
     showDiceOverlay,
     isTokenTravelling,
   ]);
+
+  const auctionPanel = !showDiceOverlay && !isTokenTravelling && gameState.pendingAuction
+    ? <AuctionPanel
+        playerId={playerId}
+        gameState={gameState}
+        isResolving={isResolvingAuction}
+        isSpectator={isSpectator}
+        theme={theme}
+        onBid={onAuctionBid}
+        onWithdraw={onAuctionWithdraw}
+      />
+    : null;
 
   return (
     <section
@@ -1596,7 +1622,13 @@ export function GameBoard({
                   </span>
                 </>
               ) : (
-                <span>{gameState.turnPhase === "jail-decision" ? "Jail decision pending" : `Waiting for ${activeGamePlayer?.name ?? "the next player"} to roll`}</span>
+                <span>{gameState.turnPhase === "jail-decision"
+                  ? "Jail decision pending"
+                  : gameState.turnPhase === "roll"
+                    ? isMyTurn && !isSpectator
+                      ? "Roll dice to begin your turn"
+                      : `Waiting for ${activeGamePlayer?.name ?? "the next player"} to roll`
+                    : "Turn in progress"}</span>
               )}
             </div>
           </div>
@@ -1607,7 +1639,7 @@ export function GameBoard({
           (gameState.pendingSpeedDieAction &&
             gameState.pendingSpeedDieAction.type !== "mr-monopoly") ||
           (activeGamePlayer?.inJail && gameState.turnPhase === "jail-decision") ||
-          gameState.pendingAuction ||
+          (gameState.pendingAuction && !mobileAuctionSheet) ||
           (gameState.pendingCard?.playerId === playerId) ||
           pendingPurchase
         ) && (
@@ -1681,17 +1713,7 @@ export function GameBoard({
                 />
               )}
 
-            {!showDiceOverlay && gameState.pendingAuction && (
-              <AuctionPanel
-                playerId={playerId}
-                gameState={gameState}
-                isResolving={isResolvingAuction}
-                isSpectator={isSpectator}
-                theme={theme}
-                onBid={onAuctionBid}
-                onWithdraw={onAuctionWithdraw}
-              />
-            )}
+            {!mobileAuctionSheet && auctionPanel}
 
             {!showDiceOverlay && gameState.pendingCard?.playerId === playerId && (
               <CardPanel
@@ -1719,6 +1741,12 @@ export function GameBoard({
           </div>
         )}
       </div>
+      {mobileAuctionSheet && auctionPanel && createPortal(
+        <div className="mega-mobile-auction-layer" role="dialog" aria-modal="true" aria-label="Mega Board auction">
+          <div className="mega-mobile-auction-sheet">{auctionPanel}</div>
+        </div>,
+        document.fullscreenElement ?? document.body,
+      )}
       {transientCardDraw && !gameState.pendingCard && (
         <CardEventPopup
           draw={transientCardDraw}

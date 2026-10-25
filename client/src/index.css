@@ -26123,3 +26123,87 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 .hgr-game-dev-version b[data-maturity="needs-repair"]{border-color:#d98873;color:#ffbba5}
 .hgr-game-dev-version b[data-maturity="stable"]{border-color:#60d49f;color:#91e9bc}
 @media(max-width:430px){.hgr-game-dev-entry{flex-wrap:wrap}.hgr-game-dev-version{margin-left:auto}.hgr-game-dev-rows{grid-template-columns:1fr}}
+
+/* Mega Board mobile live auction: a viewport sheet, never a 1:1 board-sized
+   overlay. Only the player roster scrolls; bidding and timer stay reachable. */
+.mega-mobile-auction-layer {
+  position: fixed;
+  z-index: 95000;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: max(12px, env(safe-area-inset-top)) 10px max(12px, env(safe-area-inset-bottom));
+  background: rgba(5, 10, 16, .66);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+.mega-mobile-auction-sheet {
+  display: flex;
+  flex: 0 1 540px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: min(88dvh, 690px);
+}
+.mega-mobile-auction-sheet > .auction-presentation {
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column;
+  width: 100% !important;
+  min-width: 0;
+  min-height: 0;
+  height: min(88dvh, 690px);
+  max-height: 100% !important;
+  gap: 8px !important;
+  padding: 12px !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+}
+.mega-mobile-auction-sheet .auction-presentation > :not(.auction-player-list) {
+  flex: 0 0 auto;
+}
+.mega-mobile-auction-sheet .auction-presentation .auction-player-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+  align-content: start;
+  grid-auto-rows: min-content;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.mega-mobile-auction-sheet .auction-presentation .auction-player-list strong,
+.mega-mobile-auction-sheet .auction-presentation .auction-player-list small {
+  overflow-wrap: anywhere;
+}
+.mega-mobile-auction-sheet .auction-presentation .auction-player-list > div {
+  padding: 7px !important;
+}
+.mega-mobile-auction-sheet .auction-presentation button {
+  min-height: 42px;
+}
+@media (max-height: 650px) {
+  .mega-mobile-auction-sheet,
+  .mega-mobile-auction-sheet > .auction-presentation {
+    max-height: calc(100dvh - 20px) !important;
+  }
+  .mega-mobile-auction-sheet > .auction-presentation {
+    height: calc(100dvh - 20px);
+    gap: 5px !important;
+    padding: 9px !important;
+  }
+  .mega-mobile-auction-sheet .auction-presentation h3 {
+    font-size: 17px !important;
+  }
+  .mega-mobile-auction-sheet .auction-presentation > div:nth-child(2),
+  .mega-mobile-auction-sheet .auction-presentation > div:nth-child(3) {
+    padding: 7px !important;
+  }
+}
