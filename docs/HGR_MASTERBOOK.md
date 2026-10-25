@@ -1145,3 +1145,12 @@ The requirement to validate actual closed PWA push delivery on the user's phone 
 **Logic learning checkpoint:** `¬(x<6 ∨ x>10)` transforms through De Morgan's law to `x≥6 ∧ x≤10`. Within `S={2,4,6,8,10,12}`, the answer is `{6,8,10}`; `x≠6 ∧ x≠10` is **not** a valid transformation because it would incorrectly exclude the boundary elements. Follow up with inequality negation and the second De Morgan law before moving to actual supervisor conditions.
 
 **QA and publishing:** Documentation-only addition to the HGR project. No shipped website feature, no Oracle deployment or HGR release verification is claimed by this entry.
+
+
+## Part 32 — Control development-activity monitor
+
+**Source-only candidate; pending CI, merge, release preparation, deployment and owner-device verification.**
+
+The HGR Control **Development** view is read-only and displays public GitHub PR and workflow evidence alongside the existing Operations screen for actual owner-PC Start/Restart/Close/Update history. Desktop has a Development rail destination; phone retains the approved five-button bottom bar and reaches it through **Ops → View development batches & GitHub checks**. The server-side endpoint is owner/admin-gated, uses fixed public GitHub URLs, caches for five minutes and explicitly labels unavailable/stale evidence. It does not assign progress percentages to PRs, infer running work from an open branch or claim ChatGPT's internal activity is observable. The full security boundary, implementation map, release gate and rollback are in [Control Development Monitor](HGR_CONTROL_DEVELOPMENT_MONITOR.md).
+
+No changes to canonical HGR launcher art, main platform `VERSION`, Control allow-listed actions, mobile bottom nav, game rules or existing Cloud Update progress are part of this batch.
