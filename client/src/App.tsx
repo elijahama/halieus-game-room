@@ -3306,7 +3306,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.5.12-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.6.0-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>

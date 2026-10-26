@@ -8,10 +8,10 @@ const root = resolve(import.meta.dirname, '..');
 const read = (p) => readFileSync(resolve(root, p), 'utf8');
 // Intent, not a generated consumer: keep the release family deliberate without
 // duplicating VERSION's patch number. Exact patch identity is validated below
-// through the generated consumers. A self-consistent rollback to 4.1.1 must
-// still fail this gate.
+// through generated consumers. Pre-5.0 HGR development milestones are 4.6–4.9.
+// The 5.0.0 gate must be deliberately updated after accepted full Tournament Mode.
 const version = read('VERSION').trim();
-assert.match(version, /^4\.5\.\d+[a-z]?$/, `Approved HGR 4.5.x release intent (got ${version})`);
+assert.match(version, /^4\.(?:6|7|8|9)\.\d+[a-z]?$/, `Approved HGR pre-5.0 tournament development intent (got ${version})`);
 
 const packageLockJson = JSON.parse(read('package-lock.json'));
 const engineIoVersion = packageLockJson.packages?.['node_modules/engine.io']?.version;
@@ -137,7 +137,7 @@ try {
   const stable = readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8');
   assert.equal(run(fixture, '--write').status, 0);
   assert.equal(readFileSync(resolve(fixture, 'RELEASE.json'), 'utf8'), stable, 'Generation must be idempotent');
-  console.log(`PASS: canonical ${version} intent on approved 4.5.x release family, canonical HGR install identity, ${corruptions.length} corrupted-consumer rejections, same-version identity and idempotent generation`);
+  console.log(`PASS: canonical ${version} intent on owner-approved 4.6–4.9 development families, canonical HGR install identity, ${corruptions.length} corrupted-consumer rejections, same-version identity and idempotent generation`);
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }

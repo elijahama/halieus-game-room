@@ -91,6 +91,9 @@ jobs:
       - name: Run HGR regression chain
         run: npm run test:regression
 
+      - name: Validate tournament ratings and HGR-wide replay archive foundation
+        run: npm run test:replays:all
+
       - name: Reproduce owner Cloud Update deferred-Control regression environment
         env:
           HGR_CONTROL_DEFER_REFRESH: "1"
