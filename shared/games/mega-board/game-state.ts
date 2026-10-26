@@ -487,6 +487,14 @@ export interface GameState {
   /** Player whose manual roll window owns turnRollDeadline. */
   turnRollDeadlinePlayerId: PlayerId | null;
   optionalActionDeadline: number | null;
+  /** Server-owned suspended room (not a client timer or ranked override). */
+  pauseState?: {
+    pausedAt: number;
+    turn: number;
+    turnPhase: TurnPhase;
+    remainingRollMs: number | null;
+    remainingOptionalMs: number | null;
+  } | null;
   winnerId: PlayerId | null;
 
   /** Match mode copied into the authoritative state for reports/results. */

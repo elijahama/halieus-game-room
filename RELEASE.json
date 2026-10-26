@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
-  "version": "4.5.10",
-  "fingerprint": "hgr-4.5.10-699611db6241a817",
+  "version": "4.5.11",
+  "fingerprint": "hgr-4.5.11-8b24425a818aef71",
   "algorithm": "sha256",
-  "sourceHash": "699611db6241a8175610fa1f81d8d07d771c29e54ab10d39cc909b6ae500c493",
-  "integrityFileCount": 547,
+  "sourceHash": "8b24425a818aef717ad1882b7a0b1f506d5c2a49fb50ff8212954d7a541d8bed",
+  "integrityFileCount": 548,
   "integrityFiles": [
     ".github/workflows/pull-request-validation.yml",
     ".github/workflows/release-identity.yml",
@@ -403,6 +403,7 @@
     "server/src/games/mega-board/utils/mega-actions.ts",
     "server/src/games/mega-board/utils/mega-rules.ts",
     "server/src/games/mega-board/utils/mortgage-transfer.ts",
+    "server/src/games/mega-board/utils/pause-room.ts",
     "server/src/games/mega-board/utils/persistence.ts",
     "server/src/games/mega-board/utils/rankings.ts",
     "server/src/games/mega-board/utils/reconnection.ts",

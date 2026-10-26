@@ -25,6 +25,7 @@ interface GameMenuProps {
   darkMode: boolean;
   soundEnabled: boolean;
   turnTimerSeconds?: number;
+  pausedAt?: number | null;
   isUpdatingTurnTimer?: boolean;
   onToggleDarkMode: () => void;
   onToggleSound: () => void;
@@ -70,6 +71,7 @@ export function GameMenu({
   darkMode,
   soundEnabled,
   turnTimerSeconds,
+  pausedAt = null,
   isUpdatingTurnTimer = false,
   onToggleDarkMode,
   onToggleSound,
@@ -92,6 +94,8 @@ export function GameMenu({
   const [saveStatus, setSaveStatus] = useState("");
   const [copyReportStatus, setCopyReportStatus] = useState("");
   const [saveBusy, setSaveBusy] = useState(false);
+  const [pauseStatus, setPauseStatus] = useState("");
+  const [pauseBusy, setPauseBusy] = useState(false);
   const [saveSlots, setSaveSlots] = useState<Array<{slot:string;at:number;turn:number;players:number}>>([]);
   const [
     feedbackCategory,
@@ -170,6 +174,16 @@ export function GameMenu({
       if (action === "game:restore-slot") { setSaveStatus("Checkpoint restored for this room."); return; }
       setSaveSlots(items => [...items.filter(item => item.slot !== slot), reply.saved!]);
       setSaveStatus("Saved on the game server.");
+    });
+  };
+
+  const toggleRoomPause = () => {
+    const action = pausedAt ? "game:resume-room" : "game:pause-room";
+    setPauseBusy(true);
+    setPauseStatus(pausedAt ? "Resuming server timers…" : "Pausing server timers…");
+    socket.timeout(12000).emit(action, { code: roomCode }, (error: Error | null, reply: { ok: boolean; reason?: string }) => {
+      setPauseBusy(false);
+      setPauseStatus(error || !reply?.ok ? (reply?.reason ?? "The pause request failed.") : pausedAt ? "Match resumed." : "Match paused. Players may reconnect before resuming.");
     });
   };
 
@@ -311,9 +325,9 @@ export function GameMenu({
             >
               <span>▶</span>
               <span>
-                <strong>Resume game</strong>
+                <strong>{pausedAt ? "View paused board" : "Resume game"}</strong>
                 <small>
-                  Return to the board
+                  {pausedAt ? "This closes the menu; the game remains paused" : "Return to the board"}
                 </small>
               </span>
             </button>
@@ -339,7 +353,18 @@ export function GameMenu({
               </div>
             )}
 
+            {gameStarted && pausedAt != null && (
+              <p role="status" className="mega-pause-indicator">⏸ Match paused since {new Date(pausedAt).toLocaleTimeString("en-GB")}. Game actions are locked until the host resumes.</p>
+            )}
             {gameStarted && !isSpectator && isHost && (
+              <>
+                <button type="button" disabled={pauseBusy} className="menu-action" onClick={toggleRoomPause}>
+                  <span>{pausedAt ? "▶" : "⏸"}</span><span><strong>{pausedAt ? "Resume match" : "Pause match"}</strong><small>{pausedAt ? "Requires every active player to reconnect first" : "Unranked human-only pilot · other seats must be offline"}</small></span>
+                </button>
+                {pauseStatus && <p role="status">{pauseStatus}</p>}
+              </>
+            )}
+            {gameStarted && !isSpectator && isHost && !pausedAt && (
               <button type="button" className="menu-action" onClick={openSaves}>
                 <span>💾</span><span><strong>Saved Games</strong><small>Three private server checkpoints · host controls</small></span>
               </button>

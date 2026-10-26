@@ -26506,3 +26506,17 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 .mega-replay-show-all{justify-self:start;border:1px solid var(--hgr-border);
  border-radius:9px;padding:7px 12px;background:var(--hgr-surface-soft);
  color:var(--hgr-text);font-size:.75rem;cursor:pointer}
+
+/* Part 35: single authoritative suspended-match status across live board/menu. */
+.mega-pause-live-banner{
+  display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
+  position:relative;z-index:16;margin:8px auto;max-width:min(1050px,calc(100% - 24px));
+  padding:11px 16px;border:1px solid var(--hgr-border);border-radius:12px;
+  background:var(--hgr-surface-raised);color:var(--hgr-text);
+  font-size:.8rem;text-align:center;box-shadow:0 2px 12px #0003;
+}
+.mega-pause-live-banner strong{font-size:.86rem;font-weight:750}
+.mega-pause-indicator{padding:11px;border:1px solid var(--hgr-border);
+ border-radius:10px;background:var(--hgr-surface-soft);
+ line-height:1.5;font-size:.82rem}
+@media(max-width:600px){.mega-pause-live-banner{margin:6px auto;padding:9px 11px;gap:4px;font-size:.73rem}}

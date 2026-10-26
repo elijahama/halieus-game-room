@@ -34,6 +34,7 @@ export function isSaveSlot(value: unknown): value is SaveSlot {
 export function canSaveRoom(room: GameRoom): string | null {
   const state = room.gameState;
   if (room.ranked || state?.ranked) return "Ranked games cannot be rolled back.";
+  if (state?.pauseState) return "Resume the suspended match before changing save slots.";
   if (!room.started || !state || state.phase !== "playing") return "Only an ongoing match can be saved.";
   if (state.turnPhase !== "roll" && state.turnPhase !== "optional-actions") {
     return "Save between decisions, after the current auction, debt or card has resolved.";

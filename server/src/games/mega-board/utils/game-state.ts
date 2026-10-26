@@ -22,6 +22,7 @@ export function syncTurnRollDeadline(gameState: GameState): boolean {
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const shouldCountDown = Boolean(
     gameState.phase === "playing" &&
+    !gameState.pauseState &&
     gameState.turnPhase === "roll" &&
     currentPlayer &&
     !currentPlayer.isAi &&
@@ -73,6 +74,7 @@ function expireOptionalActionTurn(
 
   if (
     !current ||
+    Boolean(current.pauseState) ||
     current.turnPhase !== "optional-actions" ||
     current.optionalActionDeadline !== deadline
   ) {
@@ -130,7 +132,7 @@ export function syncOptionalActionTimer(
   code: string,
   gameState: GameState,
 ): void {
-  if (gameState.turnPhase !== "optional-actions") {
+  if (gameState.pauseState || gameState.turnPhase !== "optional-actions") {
     clearOptionalActionTimer(code);
     gameState.optionalActionDeadline = null;
     return;
