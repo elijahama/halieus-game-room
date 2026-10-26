@@ -6,6 +6,7 @@ import {
 } from "./game-rules.js";
 import type { CardDeckType } from "./cards.js";
 import type { RankedMatchPlayerResult } from "./ranked.js";
+import type { MegaReplayFrame } from "./replay.js";
 
 export type PlayerId = string;
 
@@ -499,6 +500,8 @@ export interface GameState {
   /** Rating breakdown captured at ranked match completion. */
   rankedResults: RankedMatchPlayerResult[];
 
+  /** Bounded public-safe read-only checkpoints for the recent-match replay viewer. */
+  replayFrames?: MegaReplayFrame[];
   activityLog: GameActivityEntry[];
   aiDecisionLog: AiDecisionEvent[];
   playerStats: Record<PlayerId, PlayerMatchStats>;

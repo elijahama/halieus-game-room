@@ -5,6 +5,7 @@ import { BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS, OPTIONAL_ACTION_DURATION_MS, TUR
 import { rooms } from "../state/rooms.js";
 import { queueRoomSave } from "./persistence.js";
 import { syncSpeedDieRetirement } from "./speed-die-lifecycle.js";
+import { captureMegaReplayFrame } from "./replay.js";
 import { pushGlobalNotice, recordActivity } from "./activity.js";
 import { syncBlockingTurnPhase } from "./turn-engine.js";
 import { finalizeRankedMatch } from "./rankings.js";
@@ -278,6 +279,7 @@ export function emitGameState(
 
   syncTurnRollDeadline(gameState);
   syncOptionalActionTimer(io, code, gameState);
+  captureMegaReplayFrame(gameState);
   queueRoomSave();
 
   io.to(code).emit("game:state", {

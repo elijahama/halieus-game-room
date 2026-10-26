@@ -9,6 +9,10 @@ import {
 import { DisplaySettingsPanel } from "../../../platform/components/DisplaySettingsPanel";
 import { accountApi } from "../../../platform/accounts/api";
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
+import type { MegaReplayFrame } from "../../../../../shared/games/mega-board/replay";
+import type { GameActivityEntry } from "../../../../../shared/games/mega-board/game-state";
+import { MegaReplayViewer } from "./MegaReplayViewer";
+import { socket } from "../../../platform/network/sockets";
 
 interface GameMenuProps {
   open: boolean;
@@ -31,7 +35,10 @@ interface GameMenuProps {
   onForfeit?: () => void;
   onOpenHistory?: () => void;
   onExportReport?: () => void;
+  onCopyReport?: () => Promise<void>;
   onEndRoom: () => void;
+  replayFrames?: MegaReplayFrame[];
+  replayActivities?: GameActivityEntry[];
 }
 
 type MenuView =
@@ -39,7 +46,9 @@ type MenuView =
   | "leave"
   | "forfeit"
   | "end"
-  | "feedback";
+  | "feedback"
+  | "saves"
+  | "replay";
 
 const FEEDBACK_CATEGORIES = [
   "Bug",
@@ -71,12 +80,19 @@ export function GameMenu({
   onForfeit,
   onOpenHistory,
   onExportReport,
+  onCopyReport,
   onEndRoom,
+  replayFrames = [],
+  replayActivities = [],
 }: GameMenuProps) {
   const [view, setView] =
     useState<MenuView>("menu");
   const [copied, setCopied] =
     useState(false);
+  const [saveStatus, setSaveStatus] = useState("");
+  const [copyReportStatus, setCopyReportStatus] = useState("");
+  const [saveBusy, setSaveBusy] = useState(false);
+  const [saveSlots, setSaveSlots] = useState<Array<{slot:string;at:number;turn:number;players:number}>>([]);
   const [
     feedbackCategory,
     setFeedbackCategory,
@@ -134,6 +150,28 @@ export function GameMenu({
   }, [open, onClose, view]);
 
   if (!open) return null;
+
+  type SaveReply = { ok: boolean; reason?: string; saved?: {slot:string;at:number;turn:number;players:number}; saves?: Array<{slot:string;at:number;turn:number;players:number}> };
+  const openSaves = () => {
+    setSaveStatus("Checking saved games…");
+    setView("saves");
+    socket.timeout(9000).emit("game:saves-list", { code: roomCode }, (error: Error | null, reply: SaveReply) => {
+      if (error || !reply?.ok) return setSaveStatus(reply?.reason ?? "Could not read saved games.");
+      setSaveSlots(reply.saves ?? []);
+      setSaveStatus("");
+    });
+  };
+  const saveAction = (action: "game:save-slot" | "game:restore-slot", slot: string) => {
+    setSaveBusy(true);
+    setSaveStatus(action === "game:save-slot" ? "Saving server checkpoint…" : "Restoring server checkpoint…");
+    socket.timeout(12000).emit(action, { code: roomCode, slot }, (error: Error | null, reply: SaveReply) => {
+      setSaveBusy(false);
+      if (error || !reply?.ok) return setSaveStatus(reply?.reason ?? "The saved game operation failed.");
+      if (action === "game:restore-slot") { setSaveStatus("Checkpoint restored for this room."); return; }
+      setSaveSlots(items => [...items.filter(item => item.slot !== slot), reply.saved!]);
+      setSaveStatus("Saved on the game server.");
+    });
+  };
 
   const copyRecoveryKey = async () => {
     if (!recoveryKey) return;
@@ -219,6 +257,31 @@ export function GameMenu({
       >
         <div className="modal-handle" />
 
+        {view === "saves" && (
+          <section className="mega-saves-view">
+            <header className="modal-heading-row"><div><p className="modal-eyebrow">Mega Board · Server saves</p><h2>Saved Games</h2></div><button className="icon-button" type="button" onClick={() => setView("menu")}>×</button></header>
+            <p>Three private server save slots. Save between decisions; this does not pause a live match. Only the host can restore, only in an unranked human-only room with all other players disconnected.</p>
+            <div className="mega-saves-slots">
+              {["slot-1","slot-2","slot-3"].map(slot => {
+                const saved = saveSlots.find(entry => entry.slot === slot);
+                return <div key={slot} className="mega-save-slot">
+                  <div><strong>Save {slot.slice(-1)}</strong><small>{saved ? `Turn ${saved.turn} · ${new Date(saved.at).toLocaleString("en-GB")}` : "Empty"}</small></div>
+                  <button type="button" disabled={saveBusy} onClick={() => saveAction("game:save-slot", slot)}>{saved ? "Overwrite" : "Save"}</button>
+                  {saved && <button type="button" disabled={saveBusy} onClick={() => { if (window.confirm("Restore this older checkpoint? Only use when other players have disconnected. This overwrites the current board progress.")) saveAction("game:restore-slot", slot); }}>Restore</button>}
+                </div>;
+              })}
+            </div>
+            {saveStatus && <p role="status">{saveStatus}</p>}
+            <button className="menu-action" type="button" onClick={() => setView("menu")}>Back to game menu</button>
+          </section>
+        )}
+        {view === "replay" && (
+          <section className="mega-replay-view">
+            <header className="modal-heading-row"><div><p className="modal-eyebrow">Mega Board · Read-only</p><h2>Recent Replay</h2></div><button className="icon-button" type="button" onClick={() => setView("menu")}>×</button></header>
+            <MegaReplayViewer frames={replayFrames} activity={replayActivities} roomCode={roomCode}/>
+            <button className="menu-action" type="button" onClick={() => setView("menu")}>Back to game menu</button>
+          </section>
+        )}
         {view === "menu" && (
           <>
             <header className="modal-heading-row">
@@ -276,6 +339,16 @@ export function GameMenu({
               </div>
             )}
 
+            {gameStarted && !isSpectator && isHost && (
+              <button type="button" className="menu-action" onClick={openSaves}>
+                <span>💾</span><span><strong>Saved Games</strong><small>Three private server checkpoints · host controls</small></span>
+              </button>
+            )}
+            {gameStarted && (
+              <button type="button" className="menu-action" onClick={() => setView("replay")}>
+                <span>⏪</span><span><strong>Recent Replay</strong><small>Review recorded board states without changing the game</small></span>
+              </button>
+            )}
             {gameStarted && onOpenHistory && (
               <button
                 type="button"
@@ -290,6 +363,17 @@ export function GameMenu({
               </button>
             )}
 
+            {gameStarted && onCopyReport && (
+              <button type="button" className="menu-action" onClick={() => {
+                void onCopyReport().then(() =>
+                  setCopyReportStatus("Match report copied. Paste it into a message or document.")
+                ).catch(() => setCopyReportStatus("Clipboard unavailable. Use Export Match Report instead."));
+              }}>
+                <span>📋</span>
+                <span><strong>Copy Match Report</strong><small>Copy the complete report, including numbered moves</small></span>
+              </button>
+            )}
+            {copyReportStatus && <p role="status">{copyReportStatus}</p>}
             {gameStarted && onExportReport && (
               <button
                 type="button"
