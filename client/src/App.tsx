@@ -3306,7 +3306,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.5.10-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.5.11-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3492,6 +3492,7 @@ function handleLeaveSpectator() {
           darkMode={darkMode}
           soundEnabled={soundEnabled}
           turnTimerSeconds={gameState?.turnTimerSeconds}
+          pausedAt={gameState?.pauseState?.pausedAt ?? null}
           isUpdatingTurnTimer={isUpdatingTurnTimer}
           onToggleDarkMode={toggleDarkMode}
           onToggleSound={toggleSound}
@@ -3520,6 +3521,12 @@ function handleLeaveSpectator() {
           color: theme.text,
         }}
       >
+        {gameState.pauseState && !viewerIsSpectator && (
+          <div className="mega-pause-live-banner" role="status">
+            <strong>⏸ Mega Board is paused</strong>
+            <span>Moves and timers are frozen. The host can resume after all players reconnect.</span>
+          </div>
+        )}
         <GameChrome
           accent="var(--hgr-brand)"
           className="mega-game-chrome"
@@ -3542,6 +3549,7 @@ function handleLeaveSpectator() {
           darkMode={darkMode}
           soundEnabled={soundEnabled}
           turnTimerSeconds={gameState?.turnTimerSeconds}
+          pausedAt={gameState?.pauseState?.pausedAt ?? null}
           isUpdatingTurnTimer={isUpdatingTurnTimer}
           onToggleDarkMode={toggleDarkMode}
           onToggleSound={toggleSound}

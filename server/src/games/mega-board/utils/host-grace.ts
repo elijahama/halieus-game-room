@@ -16,6 +16,9 @@ import {
 
 export const HOST_RECONNECT_GRACE_MS =
   90_000;
+// Paused matches retain host recovery for up to one day; they still count as
+// active rooms for the Oracle release safety gate.
+export const PAUSED_HOST_RECONNECT_GRACE_MS = 24 * 60 * 60 * 1000;
 
 const hostGraceTimers = new Map<
   string,
@@ -67,7 +70,7 @@ export function scheduleHostGrace(
     host.disconnectedAt ?? Date.now();
   const deadline =
     disconnectedAt +
-    HOST_RECONNECT_GRACE_MS;
+    (room.gameState?.pauseState ? PAUSED_HOST_RECONNECT_GRACE_MS : HOST_RECONNECT_GRACE_MS);
   const delay = Math.max(
     0,
     deadline - Date.now(),
