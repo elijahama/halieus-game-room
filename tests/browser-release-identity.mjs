@@ -7,7 +7,8 @@ import { chromium } from 'playwright';
 
 const root = resolve(import.meta.dirname, '..');
 const version = (await readFile(resolve(root, 'VERSION'), 'utf8')).trim();
-assert.match(version, /^4\.5\.\d+[a-z]?$/, `Approved HGR 4.5.x release intent (got ${version})`);
+// HGR 5.0.0 requires a separately accepted complete Tournament Mode milestone.
+assert.match(version, /^4\.(?:6|7|8|9)\.\d+[a-z]?$/, `Approved HGR pre-5.0 tournament development intent (got ${version})`);
 const label = version.replace(/\.0$/, '');
 const release = JSON.parse(await readFile(resolve(root, 'RELEASE.json'), 'utf8'));
 const data = await mkdtemp(resolve(tmpdir(), 'hgr-built-identity-'));

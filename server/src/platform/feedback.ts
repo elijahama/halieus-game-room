@@ -193,9 +193,19 @@ export function registerFeedbackRoutes(app: Express, getAccount: AccountResolver
     });
   });
 
+  app.get("/admin/feedback/notifications", (request, response) => {
+    response.setHeader("Cache-Control", "no-store");
+    if (!requireAdmin(request, response, hasAdmin, getAccount)) return;
+    const pending = store.entries.filter(entry => entry.status === "open" || entry.status === "reviewing");
+    response.json({ count: pending.length, firstId: pending[0]?.id ?? null });
+  });
+
   app.get("/admin/feedback", (request, response) => {
     if (!requireAdmin(request, response, hasAdmin, getAccount)) return;
-    response.json({ ok: true, feedback: store.entries.slice(0, 500) });
+    const pending = (entry: HalieusFeedbackSummary) => entry.status === "open" || entry.status === "reviewing";
+    response.json({ ok: true, feedback: [
+      ...store.entries.filter(pending), ...store.entries.filter(entry => !pending(entry)),
+    ].slice(0, 500) });
   });
 
   app.post("/admin/feedback/:feedbackId/reply", async (request, response) => {

@@ -104,3 +104,23 @@
   .view-games .hgr-library-search-top input[type="search"] { max-width: none; flex-basis: 100%; }
   .view-games .hgr-library-filter-chips button { min-height: 44px; }
 }
+
+/* Portrait discovery filters form one swipeable row, never a second line. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .halieus-main .halieus-discovery-tabs {
+    width: 100% !important;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: 4px;
+  }
+  .halieus-main .halieus-discovery-tabs button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 44px !important;
+  }
+}

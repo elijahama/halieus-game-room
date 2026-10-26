@@ -321,6 +321,7 @@ export default function App() {
     catch { return directGuestRoute; }
   });
   const [accountPanelOpen, setAccountPanelOpen] = useState(false);
+  const [feedbackFocusId, setFeedbackFocusId] = useState<string | null>(null);
   const [betaMode, setBetaMode] = useState(() => sessionStorage.getItem("halieus-beta-test-mode") === "1");
   const [bankruptcyConfirmOpen, setBankruptcyConfirmOpen] = useState(false);
   const [authLoadError, setAuthLoadError] = useState("");
@@ -3306,7 +3307,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.5.12-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.6.3-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -4000,7 +4001,8 @@ function handleLeaveSpectator() {
       darkMode={darkMode}
       account={authStatus?.account ?? null}
       betaMode={betaMode}
-      onOpenAccount={() => setAccountPanelOpen(true)}
+      onOpenAccount={() => { setFeedbackFocusId(null); setAccountPanelOpen(true); }}
+      onOpenFeedback={(id) => { setFeedbackFocusId(id); setAccountPanelOpen(true); }}
       theme={theme}
       themeMode={themeMode}
       themeProfileId={themeProfileId}
@@ -4117,7 +4119,7 @@ function handleLeaveSpectator() {
       onResumeWordArenaSession={(game) => { const session = wordArenaSavedSessions[game]; if (session) recoverWordArena(game, session); }}
       onForgetWordArenaSession={(game) => { updateWordArenaSavedSession(game, null); setMessage(`Saved ${GAME_BY_ID[game].name} seat forgotten.`); }}
     />
-    {accountPanelOpen && authStatus?.account && <AccountPanel account={authStatus.account} betaMode={betaMode} onEnterBetaMode={enterBetaTestMode} onExitBetaMode={exitBetaTestMode} onClose={() => setAccountPanelOpen(false)} onAccountChange={(account) => { const previousName = authStatus.account?.displayName; applyAuthenticatedAccount(account); if (!betaMode && (!playerName.trim() || playerName === previousName)) setPlayerName(account.displayName); }} onLogout={() => void signOutAccount()} />}
+    {accountPanelOpen && authStatus?.account && <AccountPanel feedbackFocusId={feedbackFocusId} account={authStatus.account} betaMode={betaMode} onEnterBetaMode={enterBetaTestMode} onExitBetaMode={exitBetaTestMode} onClose={() => setAccountPanelOpen(false)} onAccountChange={(account) => { const previousName = authStatus.account?.displayName; applyAuthenticatedAccount(account); if (!betaMode && (!playerName.trim() || playerName === previousName)) setPlayerName(account.displayName); }} onLogout={() => void signOutAccount()} />}
     {leaderboardOpen && (
       <LeaderboardModal
         entries={leaderboardEntries}

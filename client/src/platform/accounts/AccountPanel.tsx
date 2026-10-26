@@ -1,3 +1,4 @@
+import { GameHistory } from "./GameHistory";
 import { AchievementBar } from "../components/AchievementBar";
 import { ModalPortal } from "../components/ModalPortal";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
@@ -22,6 +23,7 @@ import { BetaFontSelector } from "./BetaFontSelector";
 import { APP_RELEASE_LABEL } from "../../version";
 
 interface Props {
+  feedbackFocusId?: string | null;
   account: HalieusAccountSummary;
   onClose: () => void;
   onAccountChange: (account: HalieusAccountSummary) => void;
@@ -95,7 +97,7 @@ async function copyText(value: string): Promise<void> {
   textarea.remove();
 }
 
-export function AccountPanel({ account, onClose, onAccountChange, onLogout, betaMode, onEnterBetaMode, onExitBetaMode }: Props) {
+export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChange, onLogout, betaMode, onEnterBetaMode, onExitBetaMode }: Props) {
   const isAdmin = account.role === "owner" || account.role === "admin";
   const isOwner = account.role === "owner";
   const [adminTab, setAdminTab] = useState<AdminTab>("account");
@@ -131,6 +133,17 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackReplyDrafts, setFeedbackReplyDrafts] = useState<Record<string, string>>({});
   const [confirmRequest, setConfirmRequest] = useState<{ title: string; message: string; label: string; action: () => void } | null>(null);
+
+  useEffect(() => {
+    if (feedbackFocusId && isAdmin) setAdminTab("feedback");
+  }, [feedbackFocusId, isAdmin]);
+  useEffect(() => {
+    if (feedbackFocusId && adminTab === "feedback") {
+      const target = document.getElementById("admin-" + feedbackFocusId);
+      target?.scrollIntoView({ block: "nearest" });
+      target?.focus({ preventScroll: true });
+    }
+  }, [feedbackFocusId, adminTab, adminFeedback]);
 
   async function openDeveloperDirectory() {
     if (!isAdmin || !betaMode) return;
@@ -320,6 +333,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
       setAdminFeedback((current) => current.map((entry) => entry.id === feedbackId ? result.feedback : entry));
       setFeedbackReplyDrafts((current) => ({ ...current, [feedbackId]: "" }));
       setMessage("Feedback reply sent.");
+      window.dispatchEvent(new Event("hgr:feedback-updated"));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to reply to feedback.");
     }
@@ -333,6 +347,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
         body: JSON.stringify({ status }),
       });
       setAdminFeedback((current) => current.map((entry) => entry.id === feedbackId ? result.feedback : entry));
+      window.dispatchEvent(new Event("hgr:feedback-updated"));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to update feedback.");
     }
@@ -361,7 +376,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
 
   const pendingCount = useMemo(() => snapshot?.accessRequests.filter((request) => request.status === "pending").length ?? 0, [snapshot]);
   const activeInviteCount = useMemo(() => snapshot?.invites.filter((invite) => inviteStatus(invite) === "active").length ?? 0, [snapshot]);
-  const openFeedbackCount = useMemo(() => adminFeedback.filter((entry) => entry.status !== "closed").length, [adminFeedback]);
+  const openFeedbackCount = useMemo(() => adminFeedback.filter((entry) => entry.status === "open" || entry.status === "reviewing").length, [adminFeedback]);
   const freshInviteUrl = freshCode && freshCodeKind === "invite" ? `${window.location.origin}/?account-invite=${encodeURIComponent(freshCode)}` : null;
   const filteredInvites = useMemo(() => (snapshot?.invites ?? []).filter((invite) => inviteFilter === "all" || inviteStatus(invite) === inviteFilter), [snapshot, inviteFilter]);
   const personalFavourite = useMemo(() => personalStats?.byGame.slice().sort((a, b) => b.played - a.played || b.wins - a.wins)[0] ?? null, [personalStats]);
@@ -378,6 +393,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const profileSettings = (
     <section className="account-self-service">
       <AchievementBar progression={personalStats?.progression} />
+      <GameHistory key={account.id} />
       {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div><button type="button" className="button-outline account-open-owner-tools" onClick={() => setAdminTab("overview")}>Owner tools →</button></header>}
       <div className="account-profile-grid">
         <form className="account-settings-card" onSubmit={saveProfile}>
@@ -630,7 +646,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
                 <header className="account-content-heading"><div><p className="modal-eyebrow">Player feedback</p><h4>Feedback inbox</h4><small>Game feedback and profile feedback arrive here with player, room and build context. Reply from HGR and the player sees it in their profile.</small></div><span>{openFeedbackCount} active</span></header>
                 <div className="account-feedback-admin-list">
                   {adminFeedback.length === 0 && <div className="account-empty-state"><strong>No feedback yet</strong><small>Submitted game and profile feedback will appear here.</small></div>}
-                  {adminFeedback.map((entry) => <article key={entry.id} className={`feedback-status-${entry.status}`}>
+                  {adminFeedback.map((entry) => <article key={entry.id} id={"admin-" + entry.id} tabIndex={-1} className={`feedback-status-${entry.status}`}>
                     <header><div><strong>{entry.gameName ?? "Halieus Game Room"}</strong><small>{entry.source === "game" ? "In-game feedback" : "Profile feedback"} · {entry.category}</small></div><select value={entry.status} onChange={(event) => void updateFeedbackStatus(entry.id, event.target.value as HalieusFeedbackStatus)}><option value="open">Open</option><option value="reviewing">Reviewing</option><option value="answered">Answered</option><option value="closed">Closed</option></select></header>
                     <div className="account-feedback-admin-meta"><span><b>{entry.submitterDisplayName}</b>{entry.submitterUsername ? ` @${entry.submitterUsername}` : ""}</span><span>{when(entry.submittedAt)}</span>{entry.roomCode && <span>Room {entry.roomCode}</span>}<span>Build {entry.appVersion}</span></div>
                     <p>{entry.details}</p>
