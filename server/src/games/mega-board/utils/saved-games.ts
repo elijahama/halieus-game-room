@@ -44,20 +44,29 @@ export function canSaveRoom(room: GameRoom): string | null {
   }
   return null;
 }
-function validateSave(document: SaveDocument, room: GameRoom): void {
-  if (document.version !== 1 || document.code !== room.code ||
-      document.gameStartedAt !== room.gameState?.gameStartedAt ||
-      document.room.code !== room.code || !document.room.gameState ||
+function validateSave(document: SaveDocument, room: GameRoom): boolean {
+  if (!document || document.version !== 1 || document.code !== room.code ||
+      document.room?.code !== room.code || !document.room.gameState ||
       canSaveRoom(document.room)) {
-    throw new Error("This saved game does not match this active match or uses an unsupported format.");
+    throw new Error("This saved game uses an unsupported or invalid format.");
   }
+  // The same public room code can be reused for a later match. Earlier
+  // private checkpoints belong to their original seats and must not show in
+  // the new host's slot list or be restored into a different match.
+  return document.gameStartedAt === room.gameState?.gameStartedAt &&
+    document.room.players.length === room.players.length &&
+    document.room.players.every(savedPlayer =>
+      room.players.some(current =>
+        current.reconnectToken === savedPlayer.reconnectToken &&
+        current.isAi === savedPlayer.isAi
+      )
+    );
 }
 async function readSlot(room: GameRoom, slot: SaveSlot): Promise<SaveDocument | null> {
   try {
     const text = await readFile(slotPath(room.code, slot), "utf8");
     const doc = JSON.parse(text) as SaveDocument;
-    validateSave(doc, room);
-    return doc;
+    return validateSave(doc, room) ? doc : null;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw error;

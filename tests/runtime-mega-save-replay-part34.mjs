@@ -37,6 +37,14 @@ try {
   await createSaveSlot(room,"slot-1");
   const listed=await listSaveSlots(room);
   assert.equal(listed.length,1);
+  const reusedRoom = {
+    ...room,
+    gameState: {...room.gameState, gameStartedAt: room.gameState.gameStartedAt + 86400000 },
+  };
+  assert.equal((await listSaveSlots(reusedRoom)).length,0,"A reused code does not expose earlier match slots");
+  await assert.rejects(()=>restoreSaveSlot(reusedRoom,"slot-1"),/No saved game exists/);
+  const replacedSeats = {...room,players:room.players.map(p => ({...p,reconnectToken:"new-"+p.reconnectToken}))};
+  assert.equal((await listSaveSlots(replacedSeats)).length,0,"Save slots belong to original private seats");
   assert.equal(listed[0].turn,1);
   assert.equal(canSaveRoom({...room,ranked:true})!==null,true);
   room.gameState.players[0].cash=100;
