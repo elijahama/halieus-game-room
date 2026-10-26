@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.5.11",
+  "version": "4.5.12",
   "private": true,
   "workspaces": [
     "client",
@@ -22,6 +22,7 @@
     "test:browser:control:timeline": "node tests/browser-control-local-timeline.mjs",
     "test:browser:mega-auction": "node tests/browser-mega-mobile-auction-sheet.mjs && node tests/browser-mega-auction-real-react.mjs",
     "test:browser:mega-spectator": "node tests/browser-mega-spectator-layout-4.5.5x.mjs",
+    "test:browser:mega-portrait": "node tests/browser-mega-player-portrait-part36.mjs",
     "test:browser:mega-replay": "node tests/browser-mega-replay-moves-part34.mjs",
     "test:browser:mobile-lobby": "node tests/browser-mobile-lobby-testlab-layout.mjs",
     "test:browser:mega-mobile-overlays": "node tests/browser-mega-mobile-players-modal.mjs && node tests/browser-mega-chat-end-room.mjs",
