@@ -1,4 +1,6 @@
 import { AdminFeedbackNotice } from "./AdminFeedbackNotice";
+import { ActiveMatchNotice } from "./ActiveMatchNotice";
+import type { ActiveMatch } from "../../../../shared/platform/active-match";
 import { AdminControlLauncher } from "../control/AdminControlLauncher";
 import { PreGameShell } from "./PreGameShell";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -67,6 +69,7 @@ function initialGameLibraryLayout(): GameLibraryLayout {
 type PokerVariant = "texas-holdem" | "omaha" | "five-card-draw" | "seven-card-stud";
 
 interface HomeScreenProps {
+  onReturnActiveMatch?: (match: ActiveMatch) => Promise<string | null>;
   connectionStatus: string; selectedGame: GameSelection; playerName: string; roomCode: string; ranked: boolean; blitz: boolean; freeParkingJackpotEnabled: boolean; message: string;
   recoveryCode: string; pokerRecoveryCode: string; blackjackRecoveryCode: string; whotRecoveryCode: string; ludoRecoveryCode: string; connectFourRecoveryCode: string; ayoRecoveryCode: string; wordBoardRecoveryCode: string; hiddenDictatorRecoveryCode: string;
   savedSession: SavedSessionSummary | null; pokerSavedSession: SavedSessionSummary | null; blackjackSavedSession: SavedSessionSummary | null; whotSavedSession: SavedSessionSummary | null; ludoSavedSession: SavedSessionSummary | null; connectFourSavedSession: SavedSessionSummary | null; ayoSavedSession: SavedSessionSummary | null; wordBoardSavedSession: SavedSessionSummary | null; hiddenDictatorSavedSession: SavedSessionSummary | null;
@@ -126,7 +129,7 @@ export function HomeScreen(props: HomeScreenProps) {
     recoveryCode, pokerRecoveryCode, blackjackRecoveryCode, whotRecoveryCode, ludoRecoveryCode, connectFourRecoveryCode, ayoRecoveryCode, wordBoardRecoveryCode, hiddenDictatorRecoveryCode,
     savedSession, pokerSavedSession, blackjackSavedSession, whotSavedSession, ludoSavedSession, connectFourSavedSession, ayoSavedSession, wordBoardSavedSession, hiddenDictatorSavedSession,
     pokerStartingChips, pokerSmallBlind, pokerBigBlind, pokerMatchMode, pokerVariant, whotMatchMode, ludoMatchMode, blackjackMatchMode, connectFourMatchMode, connectFourBestOf, ayoMatchMode, hiddenDictatorMatchMode,
-    isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, onOpenFeedback, theme, themeMode, themeProfileId, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
+    isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, onOpenFeedback, onReturnActiveMatch, theme, themeMode, themeProfileId, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
     onRecoveryCodeChange, onPokerRecoveryCodeChange, onBlackjackRecoveryCodeChange, onWhotRecoveryCodeChange, onLudoRecoveryCodeChange, onConnectFourRecoveryCodeChange, onAyoRecoveryCodeChange, onWordBoardRecoveryCodeChange, onHiddenDictatorRecoveryCodeChange,
     onPokerStartingChipsChange, onPokerSmallBlindChange, onPokerBigBlindChange, onPokerMatchModeChange, onPokerVariantChange, onWhotMatchModeChange, onLudoMatchModeChange, onBlackjackMatchModeChange, onConnectFourMatchModeChange, onConnectFourBestOfChange, onAyoMatchModeChange, onHiddenDictatorMatchModeChange,
     onGenerateRoomCode, onOpenLeaderboard, onOpenPokerLeaderboard, onMatchModeChange, onFreeParkingJackpotChange,
@@ -1215,7 +1218,7 @@ export function HomeScreen(props: HomeScreenProps) {
               <input value={activeRecovery} onChange={(event) => recoveryChange(event.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ""))} placeholder="Enter saved key" autoCapitalize="characters" />
               <small>This reclaims your previous player seat. It is not needed for a normal room join.</small>
             </label>
-            <button type="button" className="button-muted" disabled={disabled || !activeRecovery.trim() || !roomCode.trim()} onClick={manualReconnect}>Recover seat</button>
+            <button type="button" className="button-muted" disabled={disabled || !activeRecovery.trim() || !roomCode.trim()} onClick={manualReconnect}>{selectedGame === "mega-board" ? "Take Over Session" : "Recover seat"}</button>
           </div>}
         </section>
 
@@ -1295,6 +1298,7 @@ export function HomeScreen(props: HomeScreenProps) {
         </header>
 
         {account && (account.role === "owner" || account.role === "admin") && <AdminFeedbackNotice key={account.id} accountId={account.id} onOpen={id => onOpenFeedback ? onOpenFeedback(id) : onOpenAccount()} />}
+        {account && onReturnActiveMatch && <ActiveMatchNotice key={account.id} accountId={account.id} onReturn={onReturnActiveMatch} />}
 
         {view === "home" && <section className="halieus-view view-home panel-enter">
           <section className="halieus-showcase halieus-feature-carousel" style={{ ["--feature-accent" as string]: featuredGame.accent }}>

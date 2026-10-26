@@ -22,6 +22,7 @@ import { emitGameState } from "../utils/game-state.js";
 import { initialiseCardDecks } from "../utils/cards.js";
 import { queueRoomSave } from "../utils/persistence.js";
 import { reconnectRoomPlayer } from "../utils/reconnection.js";
+import { activeMegaMatch } from "../../../platform/active-match.js";
 import { cancelHostGrace } from "../utils/host-grace.js";
 import { toPublicGameRoom } from "../utils/room-view.js";
 import { syncAuctionTimer } from "../utils/auction-timer.js";
@@ -353,7 +354,16 @@ export function registerLobbyHandlers(
           reconnectToken,
       );
       const oldSocketId =
-        existingPlayer?.id;
+          existingPlayer?.id;
+
+      if (payload.activeMatchId !== undefined || payload.activeAccountId !== undefined) {
+        const account = getAuthenticatedAccount(socket.request as Request);
+        const active = account && existingPlayer && activeMegaMatch(room, existingPlayer, account.id);
+        if (!active || account?.id !== payload.activeAccountId || active.matchId !== payload.activeMatchId || payload.force) {
+          acknowledge({ ok: false, reason: "This active game is no longer available for this account. Refresh your saved session." });
+          return;
+        }
+      }
 
       const result = reconnectRoomPlayer(
         room,

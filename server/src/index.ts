@@ -1,5 +1,6 @@
 import { archiveCompletedMegaGame } from "./games/mega-board/utils/mega-history.js";
 import { registerGameHistoryRoutes } from "./platform/game-history.js";
+import { registerActiveMatchRoutes } from "./platform/active-match.js";
 import { registerProgressionIdentity } from "./platform/progression.js";
 import cors from "cors";
 import express, {
@@ -168,6 +169,7 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
 });
 registerAccountRoutes(app);
 registerGameHistoryRoutes(app, getAuthenticatedAccount);
+registerActiveMatchRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 registerPushRoutes(app, getAuthenticatedAccount);
 registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);

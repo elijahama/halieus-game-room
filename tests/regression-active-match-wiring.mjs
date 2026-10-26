@@ -1,0 +1,28 @@
+// Source wiring guard only. Runtime security and rendered component tests are separate;
+// this does not exercise App navigation or claim full-App end-to-end coverage.
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = file => readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+const app = read("client/src/App.tsx");
+const home = read("client/src/platform/components/HomeScreen.tsx");
+const start = app.indexOf("async function returnToActiveMatch(");
+const end = app.indexOf("function handleResumeSavedSession()", start);
+assert(start >= 0 && end > start, "App retains the live return handler");
+const handler = app.slice(start, end);
+assert.match(app, /<HomeScreen\s+onReturnActiveMatch=\{returnToActiveMatch\}/);
+assert.match(home, /account && onReturnActiveMatch && <ActiveMatchNotice key=\{account.id\} accountId=\{account.id\} onReturn=\{onReturnActiveMatch\}/);
+assert.match(handler, /session\.code !== match\.code/, "Local recovery slot must match the selected room");
+assert.match(handler, /activeReturnAccount\.current !== accountId/, "Account changes invalidate return");
+assert.match(handler, /"game:reconnect",\s*\{\s*\.\.\.session, force: false, activeMatchId: match\.matchId, activeAccountId: accountId\s*\}/);
+assert.match(handler, /applyRecoveredGame\(response, session\)/, "Use existing recovery/navigation");
+assert.doesNotMatch(handler, /force:\s*true|game:spectate|game:join/);
+const manual = app.slice(app.indexOf("function handleManualReconnect()"), app.indexOf("function handleSpectateGame()"));
+assert.match(manual, /if \(\s*!trimmedName \|\|\s*!trimmedCode \|\|\s*!trimmedRecoveryCode/);
+assert.match(manual, /megaTakeover\.request\(/);
+assert.doesNotMatch(manual, /window\.confirm|recoverGame\(/, "Opening confirmation must not recover");
+assert.match(app, /useMegaTakeoverConfirmation\(authStatus\?\.account\?\.id, session => recoverGame\(session, true\)\)/);
+assert.match(app, /<ConfirmDialog open=\{Boolean\(megaTakeover.target\)\}[\s\S]*?onCancel=\{megaTakeover.cancel\} onConfirm=\{megaTakeover.confirm\}/);
+const notice = read("client/src/platform/components/ActiveMatchNotice.tsx");
+assert.match(notice, /result\.matches\.find\(item => item\.matchId === match\.matchId\)/, "Revalidate discovery before return");
+assert.match(notice, /if \(!mounted\.current\) return/, "Unmounted account cannot initiate return");
+console.log("PASS active-match App/HomeScreen source wiring guards (not full-App E2E)");

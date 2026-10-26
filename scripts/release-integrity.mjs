@@ -69,6 +69,9 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
+  'tests/runtime-active-match.mjs', 'tests/browser-active-match-notice.mjs',
+  'tests/regression-active-match-wiring.mjs', 'tests/fixtures/active-match-notice.tsx',
+  'docs/HGR_ACTIVE_GAME_RETURN.md', 'docs/HGR_PWA_NOTIFICATIONS.md',
   'tests/browser-mega-compact-layout.mjs', 'tests/fixtures/mega-mobile-auction-real.tsx',
   'docs/HGR_VERSION_ROADMAP.md',
   'scripts/assert-release-idle.mjs', 'tests/regression-release-idle.mjs',

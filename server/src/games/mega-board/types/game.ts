@@ -63,6 +63,9 @@ export interface JoinGamePayload {
 }
 
 export interface ReconnectGamePayload {
+  /** Account notice return adds live identity validation; token remains mandatory. */
+  activeMatchId?: string;
+  activeAccountId?: string;
   code: string;
   reconnectToken: string;
   playerName?: string;
