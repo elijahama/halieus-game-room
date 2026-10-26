@@ -3306,7 +3306,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.5.11-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.5.12-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3514,7 +3514,7 @@ function handleLeaveSpectator() {
   if (!megaBoardParked && gameStarted && lobby && gameState) {
     return (
       <main
-        className={`game-page mega-live-page ${viewerIsSpectator ? "mega-spectator-mode" : ""}`.trim()}
+        className={`game-page mega-live-page ${viewerIsSpectator ? "mega-spectator-mode" : "mega-mobile-participant-mode"}`.trim()}
         style={{
           ...styles.gamePage,
           background: theme.pageBackground,
@@ -3678,7 +3678,7 @@ function handleLeaveSpectator() {
         )}
 
         <div
-          className={`game-layout mega-live-layout-v3 ${viewerIsSpectator ? "mega-spectator-layout" : ""} ${autopilotActive ? "autopilot-active-layout" : ""}`}
+          className={`game-layout mega-live-layout-v3 ${viewerIsSpectator ? "mega-spectator-layout" : "mega-mobile-participant-layout"} ${autopilotActive ? "autopilot-active-layout" : ""}`}
           style={styles.gameLayout}
         >
           {!viewerIsSpectator && <PlayerRail
@@ -3754,6 +3754,25 @@ function handleLeaveSpectator() {
               showSpectators
               onPlayerSelect={(playerId) => {
                 setGameMenuOpen(false);
+                setSelectedPlayerDetailId(playerId);
+              }}
+              theme={theme}
+            />
+          )}
+
+          {!viewerIsSpectator && (
+            <PlayerRail
+              className="mega-live-player-rail mega-mobile-participant-player-rail"
+              lobby={lobby}
+              gameState={gameState}
+              players={nonBankruptPlayers}
+              headerTitle="Players"
+              isSpectator={false}
+              spectators={spectators}
+              showSpectators
+              onPlayerSelect={(playerId) => {
+                setGameMenuOpen(false);
+                setTurnActionsCloseSignal((value) => value + 1);
                 setSelectedPlayerDetailId(playerId);
               }}
               theme={theme}

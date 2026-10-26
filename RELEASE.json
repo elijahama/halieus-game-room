@@ -1,9 +1,9 @@
 {
   "product": "Halieus Game Room",
-  "version": "4.5.11",
-  "fingerprint": "hgr-4.5.11-8b24425a818aef71",
+  "version": "4.5.12",
+  "fingerprint": "hgr-4.5.12-7c3a343fcb650659",
   "algorithm": "sha256",
-  "sourceHash": "8b24425a818aef717ad1882b7a0b1f506d5c2a49fb50ff8212954d7a541d8bed",
+  "sourceHash": "7c3a343fcb650659edf9fe7324c8f20be26288f6db193a2271c81e1602a55205",
   "integrityFileCount": 548,
   "integrityFiles": [
     ".github/workflows/pull-request-validation.yml",
