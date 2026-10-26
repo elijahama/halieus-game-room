@@ -23,7 +23,7 @@ assert.match(app,/onOpenActionPanel=\{\(panel\) =>/,"The board retains the real 
 const browser = await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try {
   for (const v of [{width:320,height:568},{width:360,height:780},{width:390,height:844},{width:430,height:932},{width:600,height:960},{width:844,height:390},{width:820,height:900},{width:1440,height:900}]) {
-    const portrait = v.width<=600 && v.height>v.width;
+    const portrait = v.width<=1180 && v.height>v.width;
     const page=await browser.newPage({viewport:v});
     const cards=Array.from({length:8},(_,i)=>'<article role="button" tabindex="0" class="player-rail-card" data-player="'+i+'"><div class="player-rail-main-row"><strong>Player '+(i+1)+'</strong></div><div class="player-property-strip">'+
       Array.from({length:7},(_,j)=>'<span class="player-property-chip">Property '+(j+1)+'</span>').join("")+
@@ -70,7 +70,7 @@ try {
       assert.ok(result.board.width>=250&&result.board.width<=v.width,"Viewport-fitted board "+JSON.stringify({v,result}));
       assert.ok(result.board.bottom<=result.rail.top+1,"Board precedes roster "+JSON.stringify({v,result}));
       assert.ok(result.first.top>=result.board.bottom-1,"First player follows board "+JSON.stringify({v,result}));
-      assert.ok(result.first.top < v.height-15,"First player starts on the initial phone viewport "+JSON.stringify({v,result}));
+      assert.ok(v.width>600 || result.first.top < v.height-15,"First player starts on the initial phone viewport "+JSON.stringify({v,result}));
       assert.ok(result.lastCard<=result.documentHeight+1,"Last player reachable by page scroll");
       assert.equal(result.cards,8,"Entire roster must render");
       assert.equal(result.hasSidebar,true,"Actions panel stays in DOM");

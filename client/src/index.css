@@ -8455,7 +8455,7 @@ textarea {
   align-items: center;
   justify-content: center;
   width: min(580px, calc(100vw - 32px));
-  min-height: 42px;
+  min-height: 0;
   padding: 9px 14px !important;
   gap: 0 !important;
 }
@@ -26157,8 +26157,8 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   width: 100% !important;
   min-width: 0;
   min-height: 0;
-  height: min(88dvh, 690px);
-  max-height: 100% !important;
+  height: auto;
+  max-height: min(88dvh, 690px) !important;
   gap: 8px !important;
   padding: 12px !important;
   overflow: hidden !important;
@@ -26168,7 +26168,7 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   flex: 0 0 auto;
 }
 .mega-mobile-auction-sheet .auction-presentation .auction-player-list {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   max-height: none !important;
   align-content: start;
@@ -26195,7 +26195,7 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     max-height: calc(100dvh - 20px) !important;
   }
   .mega-mobile-auction-sheet > .auction-presentation {
-    height: calc(100dvh - 20px);
+    height: auto;
     gap: 5px !important;
     padding: 9px !important;
   }
@@ -26531,7 +26531,7 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 .mega-live-page .mega-mobile-participant-player-rail {
   display: none !important;
 }
-@media (max-width: 600px) and (orientation: portrait) {
+@media (max-width: 1180px) and (orientation: portrait) {
   .game-page.mega-live-page.mega-mobile-participant-mode {
     display: flex !important;
     flex-direction: column !important;
@@ -26644,5 +26644,53 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   }
   .mega-live-page .mega-mobile-participant-layout > .right-game-stack > * {
     pointer-events: auto !important;
+  }
+}
+/* 4.6.4: shared board-first roster, with readable two-column phone cards. */
+@media (max-width: 1180px) {
+  .mega-live-page .game-layout :is(.mega-spectator-player-rail, .mega-mobile-participant-player-rail) .player-rail-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+  .mega-live-page .game-layout :is(.mega-spectator-player-rail, .mega-mobile-participant-player-rail) .player-rail-card {
+    padding: 7px !important;
+  }
+  .mega-live-page .game-layout :is(.mega-spectator-player-rail, .mega-mobile-participant-player-rail) .player-rail-main-row {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .mega-live-page .game-layout :is(.mega-spectator-player-rail, .mega-mobile-participant-player-rail) .player-rail-copy {
+    flex: 1 1 70px;
+    min-width: 0;
+  }
+  .mega-live-page .game-layout :is(.mega-spectator-player-rail, .mega-mobile-participant-player-rail) :is(.player-rail-copy strong, .player-property-chip-name, .player-rail-location) {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  .mega-live-page .game-layout :is(.mega-spectator-player-rail, .mega-mobile-participant-player-rail) .player-rail-stats {
+    flex-wrap: wrap;
+  }
+  .mega-live-page .game-layout :is(.mega-spectator-player-rail, .mega-mobile-participant-player-rail) .player-property-chip {
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+}
+.global-game-notice.is-single-line > span {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+/* Short landscape fallback when fixed content alone exceeds the viewport. */
+@media (max-height: 450px) {
+  .mega-mobile-auction-sheet > .auction-presentation {
+    overflow-y: auto !important;
+    max-height: calc(100dvh - 24px) !important;
+  }
+  .mega-mobile-auction-sheet .auction-presentation .auction-player-list {
+    flex-shrink: 0;
+    max-height: 100px !important;
   }
 }

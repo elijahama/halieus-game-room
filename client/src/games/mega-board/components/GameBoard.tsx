@@ -1094,6 +1094,14 @@ export function GameBoard({
   const [mobileAuctionSheet, setMobileAuctionSheet] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches,
   );
+  const [auctionPortalTarget, setAuctionPortalTarget] = useState(
+    () => document.fullscreenElement ?? document.body,
+  );
+  useEffect(() => {
+    const updateTarget = () => setAuctionPortalTarget(document.fullscreenElement ?? document.body);
+    document.addEventListener("fullscreenchange", updateTarget);
+    return () => document.removeEventListener("fullscreenchange", updateTarget);
+  }, []);
   useEffect(() => {
     const media = window.matchMedia("(max-width: 900px)");
     const onChange = () => setMobileAuctionSheet(media.matches);
@@ -1745,7 +1753,7 @@ export function GameBoard({
         <div className="mega-mobile-auction-layer" role="dialog" aria-modal="true" aria-label="Mega Board auction">
           <div className="mega-mobile-auction-sheet">{auctionPanel}</div>
         </div>,
-        document.fullscreenElement ?? document.body,
+        auctionPortalTarget,
       )}
       {transientCardDraw && !gameState.pendingCard && (
         <CardEventPopup
