@@ -24,6 +24,8 @@ export interface ConnectFourRoundResult {
   winnerName: string | null;
   draw: boolean;
   moves: number;
+  /** Winning line for this completed round (legacy rounds may omit it). */
+  winningCells?: number[];
 }
 
 export interface ConnectFourActionLogEntry {
@@ -58,6 +60,8 @@ export interface ConnectFourPublicState {
   draw: boolean;
   turnNumber: number;
   lastDropIndex: number | null;
+  /** Verified four-in-a-row cells. Empty on draws, forfeits and active rounds. */
+  winningCells?: number[];
   status: string;
   actionLog: ConnectFourActionLogEntry[];
 }

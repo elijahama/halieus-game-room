@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 export interface GameResultMetric {
   label: string;
@@ -63,6 +63,8 @@ interface GameResultsScreenProps {
   graph?: GameResultGraph;
   finalEventTitle?: string;
   finalEventSteps?: string[];
+  /** Optional read-only, game-owned evidence such as a Connect Four winning board. */
+  resultDetail?: ReactNode;
   onDownloadReport: () => void;
   onBackToGameRoom: () => void;
   onPlayAgain?: () => void;
@@ -150,6 +152,7 @@ export function GameResultsScreen({
   graph,
   finalEventTitle = "Match complete",
   finalEventSteps,
+  resultDetail,
   onDownloadReport,
   onBackToGameRoom,
   onPlayAgain,
@@ -214,6 +217,7 @@ export function GameResultsScreen({
         <div className="results-tab-body halieus-results-tab-body">
           {activeTab === "results" && (
             <div className="halieus-results-results-tab">
+              {resultDetail}
               <section className={`halieus-results-podium has-${podium.length}`} aria-label="Podium">
                 {podium.map((row) => (
                   <article key={`podium-${row.id}`} className={`is-rank-${row.rank} ${row.winner ? "is-winner" : ""}`} style={{ ["--player-accent" as string]: row.accent ?? accent }}>

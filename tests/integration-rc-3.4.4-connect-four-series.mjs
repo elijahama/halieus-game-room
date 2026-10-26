@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve } from 'node:path';
 import { io } from 'socket.io-client';
 
 const port = 3153;
+const dataRoot = mkdtempSync(resolve(tmpdir(), 'hgr-c4-winning-line-'));
 const server = spawn(process.execPath, ['dist/server/src/index.js'], {
   cwd: new URL('../server/', import.meta.url),
-  env: { ...process.env, PORT: String(port), SERVE_CLIENT: 'false' },
+  env: { ...process.env, PORT: String(port), SERVE_CLIENT: 'false', HALIEUS_DATA_DIR: dataRoot },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 let output = '';
@@ -82,6 +86,8 @@ try {
   state = await winVertical(host, guest, code);
   assert.equal(state.phase, 'round-over');
   assert.equal(state.roundNumber, 1);
+  assert.deepEqual(state.winningCells, [14,21,28,35]);
+  assert.deepEqual(state.roundHistory[0].winningCells, [14,21,28,35]);
   assert.equal(state.roundHistory.length, 1);
   assert.equal(state.players.find((p) => p.name === 'SeriesHost')?.seriesWins, 1);
   assert.equal(state.players.find((p) => p.name === 'SeriesGuest')?.seriesWins, 0);
@@ -91,6 +97,7 @@ try {
   assert.equal((await emitAck(host, 'connect-four:next-round', { code })).ok, true);
   state = await round2P;
   assert.equal(state.currentTurnPlayerId, joined.playerId);
+  assert.deepEqual(state.winningCells, [], 'Winning cells reset between rounds');
   state = await winVertical(guest, host, code);
   assert.equal(state.phase, 'round-over');
   assert.equal(state.roundHistory.length, 2);
@@ -104,6 +111,9 @@ try {
   assert.equal(state.currentTurnPlayerId, created.playerId);
   state = await winVertical(host, guest, code);
   assert.equal(state.phase, 'finished');
+  assert.deepEqual(state.winningCells, [14,21,28,35]);
+  assert.equal(state.roundHistory.length, 3);
+  assert.deepEqual(state.roundHistory.map(round => round.winningCells), [[14,21,28,35],[14,21,28,35],[14,21,28,35]]);
   assert.equal(state.bestOf, 3);
   assert.equal(state.roundHistory.length, 3);
   assert.equal(state.winnerPlayerId, created.playerId);
@@ -112,9 +122,23 @@ try {
   assert.match(state.status, /wins the Connect Four series 2-1/i);
   assert.equal(state.actionLog.at(-1)?.action, 'finish');
 
+  // Forfeits are match wins without an actual connected-four pattern.
+  const forfeitCode = "C4FF01";
+  assert.equal((await emitAck(host, 'connect-four:create', {code:forfeitCode,playerName:"ForfeitHost",bestOf:1})).ok, true);
+  assert.equal((await emitAck(guest, 'connect-four:join', {code:forfeitCode,playerName:"ForfeitGuest"})).ok, true);
+  const ready = waitForState(guest, s => s.phase === "playing" && s.code === forfeitCode);
+  assert.equal((await emitAck(host, 'connect-four:start', {code:forfeitCode})).ok, true);
+  const active = await ready;
+  assert.deepEqual(active.winningCells, []);
+  const ended = waitForState(guest, s => s.phase === "finished" && s.code === forfeitCode);
+  assert.equal((await emitAck(host, 'connect-four:forfeit', {code:forfeitCode})).ok, true);
+  assert.deepEqual((await ended).winningCells, [], "Forfeit must not present an invented winning pattern");
+
   console.log('RC 3.4.4 Connect Four best-of-3 series integration passed.');
 } finally {
   host?.disconnect();
   guest?.disconnect();
   server.kill('SIGTERM');
+  if (server.exitCode === null) await new Promise(resolve => server.once('exit', resolve));
+  rmSync(dataRoot, { recursive: true, force: true });
 }
