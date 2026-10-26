@@ -18,6 +18,7 @@ import { HomeScreen } from "./platform/components/HomeScreen";
 import { AccountPortal } from "./platform/accounts/AccountPortal";
 import { AccountPanel } from "./platform/accounts/AccountPanel";
 import { accountApi } from "./platform/accounts/api";
+import type { ActiveMatch } from "../../shared/platform/active-match";
 import type { HalieusAccountSummary, HalieusAuthStatus } from "../../shared/platform/accounts";
 import { PokerScreen } from "./games/poker/PokerScreen";
 import { BlackjackRebuildScreen as BlackjackScreen } from "./games/blackjack/BlackjackRebuildScreen";
@@ -49,6 +50,7 @@ import { GameBrandIcon } from "./platform/components/GameBrandIcon";
 import { HalieusIntro } from "./platform/components/HalieusIntro";
 import { GAME_BY_ID, type GameId } from "./platform/games/catalog";
 import { ConfirmDialog } from "./platform/components/ConfirmDialog";
+import { useMegaTakeoverConfirmation } from "./platform/components/useMegaTakeoverConfirmation";
 import { AutopilotControl } from "./platform/components/AutopilotControl";
 import { RoomChatPanel } from "./platform/components/RoomChatPanel";
 import { useGameSound } from "./games/mega-board/hooks/useGameSound";
@@ -316,6 +318,8 @@ export default function App() {
   const [classicRecoveryCodes, setClassicRecoveryCodes] = useState<Record<ClassicGameId, string>>(() => ({ cheat: readCardSavedSession(CLASSIC_SESSION_KEYS.cheat)?.reconnectToken ?? "", dominoes: readCardSavedSession(CLASSIC_SESSION_KEYS.dominoes)?.reconnectToken ?? "" }));
   const [classicMatchModes, setClassicMatchModes] = useState<Record<ClassicGameId, ClassicMatchMode>>({ cheat: "casual", dominoes: "casual" });
   const [authStatus, setAuthStatus] = useState<HalieusAuthStatus | null>(null);
+  const activeReturnAccount = useRef<string | undefined>(undefined);
+  activeReturnAccount.current = authStatus?.account?.id;
   const [siteIntroSeen, setSiteIntroSeen] = useState(() => {
     try { return directGuestRoute || sessionStorage.getItem(INTRO_SESSION_KEY) === "1"; }
     catch { return directGuestRoute; }
@@ -324,6 +328,7 @@ export default function App() {
   const [feedbackFocusId, setFeedbackFocusId] = useState<string | null>(null);
   const [betaMode, setBetaMode] = useState(() => sessionStorage.getItem("halieus-beta-test-mode") === "1");
   const [bankruptcyConfirmOpen, setBankruptcyConfirmOpen] = useState(false);
+  const megaTakeover = useMegaTakeoverConfirmation(authStatus?.account?.id, session => recoverGame(session, true));
   const [authLoadError, setAuthLoadError] = useState("");
   const [pokerMatchMode, setPokerMatchMode] = useState<"casual" | "ranked">("casual");
   const [pokerVariant, setPokerVariant] = useState<"texas-holdem" | "omaha" | "five-card-draw" | "seven-card-stud">("texas-holdem");
@@ -1301,6 +1306,23 @@ export default function App() {
     );
   }
 
+  async function returnToActiveMatch(match: ActiveMatch): Promise<string | null> {
+    const session = readSavedSession();
+    const accountId = authStatus?.account?.id;
+    if (!session || session.code !== match.code) return "Return is available only in the browser with this game's saved recovery session. Account-only cross-device return is not supported.";
+    if (!accountId || activeReturnAccount.current !== accountId || !socket.connected) return "Reconnect to HGR and try again.";
+    return new Promise(resolve => {
+      socket.timeout(7000).emit("game:reconnect", { ...session, force: false, activeMatchId: match.matchId, activeAccountId: accountId },
+        (error: Error | null, response: GameResponse) => {
+          if (activeReturnAccount.current !== accountId) { resolve(null); return; }
+          if (error) { resolve("Could not reach the game. Try again."); return; }
+          if (!response.ok) { resolve(response.reason ?? "This seat could not be recovered."); return; }
+          setSelectedGame("mega-board");
+          resolve(applyRecoveredGame(response, session) ? null : "This seat could not be recovered.");
+        });
+    });
+  }
+
   function handleResumeSavedSession() {
     const session =
       readSavedSession();
@@ -1323,7 +1345,7 @@ export default function App() {
       return;
     }
 
-    recoverGame(session, true);
+    recoverGame(session, false);
   }
 
   function handleManualReconnect() {
@@ -1345,14 +1367,13 @@ export default function App() {
       return;
     }
 
-    recoverGame(
+    megaTakeover.request(
       {
         code: trimmedCode,
         playerName: trimmedName,
         reconnectToken:
           trimmedRecoveryCode,
       },
-      true,
     );
   }
 
@@ -3307,7 +3328,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.6.4-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.6.5-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3957,6 +3978,7 @@ function handleLeaveSpectator() {
     {/* Mount the real destination before starting any intro fade. */}
     <div ref={(node) => node?.toggleAttribute("inert", showSiteIntro)} aria-hidden={showSiteIntro || undefined}>
     <HomeScreen
+      onReturnActiveMatch={returnToActiveMatch}
       connectionStatus={connectionStatus}
       selectedGame={selectedGame}
       playerName={playerName}
@@ -4119,6 +4141,9 @@ function handleLeaveSpectator() {
       onResumeWordArenaSession={(game) => { const session = wordArenaSavedSessions[game]; if (session) recoverWordArena(game, session); }}
       onForgetWordArenaSession={(game) => { updateWordArenaSavedSession(game, null); setMessage(`Saved ${GAME_BY_ID[game].name} seat forgotten.`); }}
     />
+    <ConfirmDialog open={Boolean(megaTakeover.target)} title="Take over Mega Board session?"
+      message={`Take over ${megaTakeover.target?.session.playerName ?? "this seat"} in room ${megaTakeover.target?.session.code ?? ""}? If connected in another browser, that session will be disconnected.`}
+      confirmLabel="Take Over Session" onCancel={megaTakeover.cancel} onConfirm={megaTakeover.confirm} />
     {accountPanelOpen && authStatus?.account && <AccountPanel feedbackFocusId={feedbackFocusId} account={authStatus.account} betaMode={betaMode} onEnterBetaMode={enterBetaTestMode} onExitBetaMode={exitBetaTestMode} onClose={() => setAccountPanelOpen(false)} onAccountChange={(account) => { const previousName = authStatus.account?.displayName; applyAuthenticatedAccount(account); if (!betaMode && (!playerName.trim() || playerName === previousName)) setPlayerName(account.displayName); }} onLogout={() => void signOutAccount()} />}
     {leaderboardOpen && (
       <LeaderboardModal

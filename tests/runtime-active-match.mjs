@@ -1,0 +1,95 @@
+import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { createServer } from "node:http";
+import express from "express";
+import { Server } from "socket.io";
+import { io as connect } from "socket.io-client";
+const root = await mkdtemp(path.join(tmpdir(), "hgr-active-"));
+process.env.HALIEUS_DATA_DIR = root;
+process.env.HALIEUS_OWNER_BOOTSTRAP_FILE = path.join(root, "owner.txt");
+process.env.ROOM_SAVE_PATH = path.join(root, "rooms.json");
+const { loadAccountStore, registerAccountRoutes, getAuthenticatedAccount } = await import("../server/src/platform/accounts.ts");
+const { registerActiveMatchRoutes } = await import("../server/src/platform/active-match.ts");
+const { registerLobbyHandlers } = await import("../server/src/games/mega-board/handlers/lobbyHandlers.ts");
+const { rooms } = await import("../server/src/games/mega-board/state/rooms.ts");
+const { createInitialGameState } = await import("../shared/games/mega-board/game-state.ts");
+await loadAccountStore();
+const app = express(); app.use(express.json()); registerAccountRoutes(app); registerActiveMatchRoutes(app, getAuthenticatedAccount);
+const server = createServer(app), io = new Server(server), sockets = [];
+io.on("connection", socket => registerLobbyHandlers(io, socket));
+await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+const base = "http://127.0.0.1:" + server.address().port;
+async function api(url, cookie = "", body) {
+  const res = await fetch(base + url, { method: body ? "POST" : "GET", headers: { Cookie: cookie, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+  return { status: res.status, body: await res.json(), cookie: res.headers.get("set-cookie")?.split(";")[0] ?? cookie, cache: res.headers.get("cache-control") };
+}
+async function socket(cookie = "") {
+  const s = connect(base, { transports: ["websocket"], forceNew: true, extraHeaders: { Cookie: cookie } }); sockets.push(s);
+  await new Promise((resolve, reject) => { s.once("connect", resolve); s.once("connect_error", reject); }); return s;
+}
+const send = (s, event, payload) => new Promise((resolve, reject) => s.timeout(5000).emit(event, payload, (err, value) => err ? reject(err) : resolve(value)));
+try {
+  const bootstrapCode = (await readFile(process.env.HALIEUS_OWNER_BOOTSTRAP_FILE, "utf8")).match(/OWNER-[A-Z0-9-]+/)[0];
+  const owner = await api("/auth/setup-owner", "", { bootstrapCode, username: "activeowner", displayName: "Owner", password: "Test-only-password-2026" });
+  assert.equal(owner.status, 201);
+  const invite = await api("/admin/invites", owner.cookie, { label: "Other" });
+  const other = await api("/auth/redeem-invite", "", { inviteCode: invite.body.code, username: "activeother", displayName: "Owner", password: "Test-only-password-2026" });
+  assert.equal(other.status, 201);
+  const host = await socket(owner.cookie), guest = await socket(), stranger = await socket(other.cookie);
+  const created = await send(host, "game:create", { code: "ACTIVE", playerName: "Seat", ranked: false });
+  assert.equal(created.ok, true);
+  await send(guest, "game:join", { code: "ACTIVE", playerName: "Owner", replayAccountId: owner.body.account.id });
+  const room = rooms.get("ACTIVE"); room.started = true; room.gameState = createInitialGameState(room.code, room.players);
+  const state = room.gameState;
+  state.globalNotices = [{ id: "public", kind: "purchase-complete", title: "Purchased", message: "Public decision", createdAt: Date.now(), playerId: host.id }];
+  state.lastGlobalNotice = { id: "private", kind: "card-event", title: "Hidden card", message: "private-sentinel", createdAt: Date.now() + 1 };
+  const listed = await api("/accounts/active-matches", owner.cookie);
+  assert.equal(listed.cache, "no-store"); assert.equal(listed.body.matches.length, 1);
+  const match = listed.body.matches[0];
+  assert.deepEqual(Object.keys(match).sort(), ["code", "gameId", "matchId", "notice", "paused"]);
+  for (const secret of [host.id, created.reconnectToken, owner.body.account.id, "private-sentinel", "replayAccountId", "propertyOwners"]) assert(!JSON.stringify(listed.body).includes(secret), secret);
+  assert.equal((await api("/accounts/active-matches")).status, 401);
+  assert.deepEqual((await api("/accounts/active-matches", other.cookie)).body.matches, [], "Name spoofing cannot discover seats");
+  const payload = { code: room.code, reconnectToken: created.reconnectToken, activeMatchId: match.matchId, activeAccountId: owner.body.account.id, force: false };
+  for (const s of [guest, stranger]) assert.equal((await send(s, "game:reconnect", payload)).ok, false);
+  const second = await socket(owner.cookie);
+  assert.match((await send(second, "game:reconnect", payload)).reason, /Take Over Session/);
+  assert.equal(host.connected, true); assert.equal(room.players[0].id, host.id);
+  assert.equal((await send(second, "game:reconnect", { ...payload, force: true })).ok, false);
+  assert.equal((await send(host, "game:reconnect", { ...payload, activeMatchId: "stale" })).ok, false);
+  assert.equal((await send(host, "game:reconnect", { ...payload, reconnectToken: "invalid" })).ok, false);
+  for (const [object, key, value] of [[room.players[0], "hasLeft", true], [state.players[0], "isBankrupt", true], [state, "phase", "finished"], [room, "hostDisconnectDeadline", Date.now() - 1], [state, "roomCode", "OTHER"]]) {
+    const old = object[key]; object[key] = value;
+    assert.deepEqual((await api("/accounts/active-matches", owner.cookie)).body.matches, [], key);
+    assert.equal((await send(host, "game:reconnect", payload)).ok, false, key);
+    object[key] = old;
+  }
+  state.pauseState = { pausedAt: Date.now(), turn: 1, turnPhase: state.turnPhase, remainingRollMs: null, remainingOptionalMs: null };
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).body.matches[0].paused, true);
+  assert.equal((await send(host, "game:reconnect", payload)).ok, true);
+  assert(state.pauseState, "Return must not resume a paused match");
+  assert.equal(room.players[0].replayAccountId, owner.body.account.id, "Reconnect must not mutate account ownership");
+  assert.equal(room.players[1].replayAccountId, undefined, "Guest name spoof cannot acquire account ownership");
+  host.disconnect(); room.players[0].isConnected = false;
+  const recovered = await send(second, "game:reconnect", payload);
+  assert.equal(recovered.ok, true, recovered.reason);
+  assert.equal(room.players[0].id, second.id);
+  assert(!JSON.stringify(recovered).includes("replayAccountId"), "Reconnect response must not leak ownership");
+  assert.equal(room.players[0].replayAccountId, owner.body.account.id);
+  const guestKey = room.players[1].reconnectToken;
+  guest.disconnect(); room.players[1].isConnected = false;
+  const guestRecovery = await socket();
+  assert.equal((await send(guestRecovery, "game:reconnect", { code: room.code, reconnectToken: "invalid" })).ok, false);
+  assert.equal((await send(guestRecovery, "game:reconnect", { code: room.code, reconnectToken: guestKey })).ok, true);
+  assert.equal(room.players[1].replayAccountId, undefined, "Ordinary guest recovery remains token-only and does not bind ownership");
+  await api("/auth/logout", owner.cookie, {});
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).status, 401);
+  assert.equal((await send(second, "game:reconnect", payload)).ok, false, "Revoked socket session");
+  rooms.delete(room.code);
+  console.log("PASS active match account cookies, name spoofing, private projection, stale/finished/forfeited/expired guards, token checks, no takeover, pause and logout");
+} finally {
+  for (const s of sockets) s.disconnect(); rooms.clear(); await new Promise(resolve => io.close(resolve));
+  await new Promise(resolve => setTimeout(resolve, 1200)); await rm(root, { recursive: true, force: true });
+}

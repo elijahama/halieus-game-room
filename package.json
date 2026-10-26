@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.6.4",
+  "version": "4.6.5",
   "private": true,
   "workspaces": [
     "client",
@@ -53,7 +53,10 @@
     "test:browser:history": "node tests/browser-game-history.mjs",
     "test:feedback:notifications": "node --import tsx tests/runtime-admin-feedback-notifications.mjs && node tests/browser-admin-feedback-notifications.mjs",
     "test:browser:discovery-portrait": "node tests/browser-discovery-portrait.mjs",
-    "test:browser:mega-compact": "node tests/browser-mega-compact-layout.mjs"
+    "test:browser:mega-compact": "node tests/browser-mega-compact-layout.mjs",
+    "test:active-match:wiring": "node tests/regression-active-match-wiring.mjs",
+    "test:active-match": "npm run test:active-match:wiring && node --import tsx tests/runtime-active-match.mjs",
+    "test:browser:active-match": "node tests/browser-active-match-notice.mjs"
   },
   "engines": {
     "node": ">=20.19.0"

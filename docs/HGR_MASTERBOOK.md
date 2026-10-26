@@ -6,6 +6,12 @@
 
 ## Current Part 26 checkpoint
 
+### Active-game return source batch after 4.6.4
+
+The separate owner-authorized Mega Board active-game notice is a **4.6.5 review candidate** using authenticated persisted seat ownership, the hub notification area and existing recovery tokens. It provides foreground public-decision context and non-forcing same-device return; account-only cross-device reclaim and background game push remain unfinished. Package scripts and Windows/Ubuntu PR CI include the tests and an explicitly source-only App wiring guard; established tooling prepares 4.6.5 identity. See [scope, security review, exact evidence and parent gates](HGR_ACTIVE_GAME_RETURN.md). No 4.6.4 layout changes are replaced; no merge or deployment is claimed.
+
+Final parent evidence: standard full regression, active-match runtime/wiring, active browser, compact browser **52 cases**, history and pause socket regressions passed. Updated in-app ConfirmDialog component tests passed at **390/820px**, including Cancel/Escape, snapshot, one-use guest confirmation and account-switch/logout cancellation; inspected `../hgr-465-confirmation-browser.log` corroborates those PASS lines. Standard build/integrity/browser-release checks passed **before the final dialog correction**; final identity production rebuild and 4.6.5 CI are still pending. Full-App E2E and physical-PWA acceptance remain unperformed. Baseline **4.6.4 PR159 Windows+Ubuntu CI passed at `25429b7`, run `40413060729`**, as reported by parent; this is not candidate CI evidence. Receipt `rcpt_bf69d18797384553936bc243a4c631dd` remains observational capture, not independent attestation.
+
 [Part 26 acceptance record](HGR_PART26_ACCEPTANCE.md) records the Control lifecycle/PWA/launcher repairs, launcher-derived website H, compact appearance and desktop sidebar changes, Parts 20–26/Drive reference decisions, exact commits and outstanding real-device acceptance. Keep source validation separate from owner acceptance.
 
 ## 1. What HGR is

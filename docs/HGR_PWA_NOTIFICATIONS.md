@@ -27,6 +27,10 @@ Already implemented/CI published. The authenticated recipient's pending game and
 - The release includes opt-out in the same UI. Push data is private, not part of account data export, developer-directory lists or public responses.
 
 ## Validation and release discipline
+
+### Subsequent active-game return source candidate
+
+See [Mega Board foreground return](HGR_ACTIVE_GAME_RETURN.md) for the separate 4.6.5 review candidate and exact verification limits. Parent runtime security and 390/820px component tests passed; observational receipt `rcpt_bf69d18797384553936bc243a4c631dd` is not independent attestation, full-App E2E or physical-PWA acceptance. This card needs no OS notification permission and polls only while the hub is visible; focus/online refresh reconciles current account-owned live seats. It reuses browser recovery credentials and never forces another device out. Existing invites/messages push consent does **not** authorize game decision push. Background game alerts, new match-topic preferences and account-only cross-device reclaim remain unfinished separate work. No new service-worker background behavior is shipped; candidate preparation is not merge/deployment evidence.
 Tested real isolated server membership/privacy (guild sender/recipient/stranger), web-push subscription registration, invalid provider/SSRF rejection, private VAPID secrecy, cross-account binding and revocation, and source-level delivery hooks. Full production typechecking, regressions and browser viewport QA must pass before publication. Actual closed-PWA push arrival on an owner device still requires user acceptance; local mocks are **not** that evidence.
 
 Release as independently audited commits `4.5.5s` and `4.5.5t` if the index can separate source safely; never force-push or stage generated `RELEASE.json` / `shared/release.ts` from a dirty worktree. Document GitHub CI, Oracle deployment and live fingerprint **separately**. The active HGR server, canonical icon family, beta font/test labs, Daily Word scores, Ayo and tournaments are untouched by these notification patches.
