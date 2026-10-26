@@ -26646,3 +26646,72 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     pointer-events: auto !important;
   }
 }
+
+/* Part 33 / 4.6.4 — Connect Four: visibly identify server-confirmed winning four. */
+.connect-four-cell.is-winning-cell > span {
+  box-shadow: inset 0 0 0 5px #fff, 0 0 0 2px #0b162c, 0 0 14px 3px rgba(250, 204, 21, .62);
+  animation: connect-four-win-glow 1.4s ease-in-out infinite;
+}
+.connect-four-cell.is-winning-cell > span.is-last-drop {
+  /* Preserve the accepted dropping-disc animation; the ring stays visible. */
+  box-shadow: inset 0 0 0 5px #fff, 0 0 0 2px #0b162c, 0 0 14px 3px rgba(250, 204, 21, .62);
+}
+@keyframes connect-four-win-glow {
+  0%, 100% { box-shadow: inset 0 0 0 5px #fff, 0 0 0 2px #0b162c, 0 0 10px 2px rgba(250, 204, 21, .45); }
+  50% { box-shadow: inset 0 0 0 5px #fff, 0 0 0 2px #0b162c, 0 0 20px 5px rgba(250, 204, 21, .88); }
+}
+.connect-four-winning-note, .connect-four-winning-caption {
+  margin: 0;
+  text-align: center;
+  color: inherit;
+  font-size: .85rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+.connect-four-winning-note {
+  border: 1px solid color-mix(in srgb, #facc15 55%, var(--mm-border));
+  background: color-mix(in srgb, #facc15 12%, var(--mm-surface-1));
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+.connect-four-final-board {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  margin: 0 auto 20px;
+  border: 1px solid var(--mm-border);
+  border-radius: 18px;
+  background: var(--mm-surface-1);
+  width: min(100%, 560px);
+  box-sizing: border-box;
+}
+.connect-four-final-board h2 { margin: 0; font-size: 1.05rem; }
+.connect-four-board-review { width: 100%; display: grid; justify-items: center; gap: 10px; min-width: 0; }
+.connect-four-board.is-review {
+  width: min(100%, 490px);
+  max-width: 100%;
+  box-sizing: border-box;
+  aspect-ratio: 7 / 6;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  gap: clamp(3px, .8vw, 6px);
+  padding: clamp(6px, 1vw, 10px);
+}
+.connect-four-board.is-review .connect-four-cell { min-width: 0; min-height: 0; padding: 3px; cursor: default; }
+.connect-four-board.is-review .connect-four-cell > span { animation: none; }
+@media (max-width: 620px) {
+  .connect-four-final-board { padding: 9px; }
+  .connect-four-board.is-review {
+    width: min(100%, 420px);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    aspect-ratio: 7 / 6;
+  }
+  .connect-four-cell.is-winning-cell > span { box-shadow: inset 0 0 0 3px #fff, 0 0 0 1px #0b162c, 0 0 8px 2px rgba(250, 204, 21, .62); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .connect-four-cell.is-winning-cell > span { animation: none !important; }
+}

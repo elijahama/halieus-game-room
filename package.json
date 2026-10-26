@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.6.3",
+  "version": "4.6.4",
   "private": true,
   "workspaces": [
     "client",
@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "test:replays:all": "node --import tsx tests/runtime-hgr-game-replay-archive-part37.mjs && node --import tsx tests/runtime-mega-tournament-ratings-part37.mjs",
+    "test:connect-four:winning-line": "node --import tsx tests/runtime-connect-four-winning-line-4.6.4.mjs",
     "typecheck": "npm --workspace client run typecheck && npm --workspace server run typecheck",
     "build": "npm --workspace client run build && npm --workspace server run build",
     "start": "npm --workspace server run start",

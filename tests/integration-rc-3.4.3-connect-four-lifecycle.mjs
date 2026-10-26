@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve } from 'node:path';
 import { io } from 'socket.io-client';
 
 const port = 3151;
+const dataRoot = mkdtempSync(resolve(tmpdir(), 'hgr-c4-winning-line-'));
 const server = spawn(process.execPath, ['dist/server/src/index.js'], {
   cwd: new URL('../server/', import.meta.url),
-  env: { ...process.env, PORT: String(port), SERVE_CLIENT: 'false' },
+  env: { ...process.env, PORT: String(port), SERVE_CLIENT: 'false', HALIEUS_DATA_DIR: dataRoot },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 let output = '';
@@ -49,10 +53,10 @@ try {
   guest = await connect();
   const code = `C${Math.random().toString(36).slice(2,7).toUpperCase()}`.slice(0,6);
 
-  const created = await emitAck(host, 'connect-four:create', { code, playerName: 'RedHost', matchMode: 'ranked' });
+  const created = await emitAck(host, 'connect-four:create', { code, playerName: 'RedHost', matchMode: 'casual', bestOf: 1 });
   assert.equal(created.ok, true);
   assert.equal(created.state.phase, 'lobby');
-  assert.equal(created.state.matchMode, 'ranked');
+  assert.equal(created.state.matchMode, 'casual');
   assert.equal(created.state.players.length, 1);
   assert.equal(created.state.players[0].colour, 'red');
   assert.ok(created.reconnectToken);
@@ -116,6 +120,8 @@ try {
   assert.equal(finished.phase, 'finished');
   assert.equal(finished.winnerPlayerId, restored.playerId);
   assert.equal(finished.draw, false);
+  assert.deepEqual(finished.winningCells, [14,21,28,35], "Recovered player should still expose the true winning line");
+  assert.deepEqual(finished.roundHistory[0].winningCells, [14,21,28,35]);
   assert.match(finished.status, /connects four/i);
   assert.equal(finished.board.filter((disc) => disc === 1).length, 4);
   assert.equal(finished.actionLog.at(-1)?.action, 'finish');
@@ -128,4 +134,6 @@ try {
   recovered?.disconnect();
   spectator?.disconnect();
   server.kill('SIGTERM');
+  if (server.exitCode === null) await new Promise(resolve => server.once('exit', resolve));
+  rmSync(dataRoot, { recursive: true, force: true });
 }
