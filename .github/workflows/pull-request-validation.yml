@@ -26,6 +26,7 @@ jobs:
       - run: npm run test:feedback:notifications
       - run: npm run test:history
       - run: npm run test:browser:history
+      - run: npm run test:browser:discovery-portrait
       - run: npm audit --audit-level=high
       - run: npm run build
       - run: npm run test:browser:mobile-lobby

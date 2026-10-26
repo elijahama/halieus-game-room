@@ -47,3 +47,6 @@ Mega Board completion → independent replay archive → authenticated personal 
 ### Part 33 follow-up candidate 4.6.2
 
 Separate small patch for owner/admin unanswered-feedback notifications in the HGR hub, actionable inbox focus and response-driven count refresh. This does not change the tournament roadmap or activate additional replay adapters. 4.6.1 remains the independently validated replay/history batch beneath it.
+
+### 4.6.3 portrait hotfix
+Single-row, horizontally scrollable discovery filters on portrait phones/tablets. No change to tournament milestones or replay coverage.
