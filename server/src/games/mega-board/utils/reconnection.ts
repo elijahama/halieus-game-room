@@ -228,6 +228,16 @@ export function replacePlayerId(
   }
 
 
+  // Historical checkpoints must follow the same seat through socket changes.
+  for (const frame of gameState.replayFrames ?? []) {
+    frame.activePlayerId = replace(frame.activePlayerId);
+    frame.winnerId = replace(frame.winnerId);
+    for (const seat of frame.players) if (seat.id === oldId) seat.id = newId;
+    for (const [space, owner] of Object.entries(frame.propertyOwners)) {
+      if (owner === oldId) frame.propertyOwners[Number(space)] = newId;
+    }
+  }
+
   // A browser refresh gives the player a new socket ID. The absolute deadline
   // belongs to the seat/turn, not to the old socket, so migrate only its owner
   // ID and keep the timestamp unchanged. Otherwise syncTurnRollDeadline would

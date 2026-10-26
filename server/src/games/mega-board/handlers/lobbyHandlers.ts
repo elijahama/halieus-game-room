@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { roomCosmeticState } from "../../../platform/accounts.js";
+import { getAuthenticatedAccount, roomCosmeticState } from "../../../platform/accounts.js";
 import { SKIN_CATALOG } from "../../../../../shared/platform/skins.js";
 import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
@@ -202,6 +202,7 @@ export function registerLobbyHandlers(
       const reconnectToken = createRecoveryKey();
       const now = Date.now();
       const hostPlayer: RoomPlayer = {
+        replayAccountId: getAuthenticatedAccount(socket.request as Request)?.id,
         id: socket.id,
         name: playerName,
         isHost: true,
@@ -298,6 +299,7 @@ export function registerLobbyHandlers(
 
       const reconnectToken = createRecoveryKey();
       const newPlayer: RoomPlayer = {
+        replayAccountId: getAuthenticatedAccount(socket.request as Request)?.id,
         id: socket.id,
         name: playerName,
         isHost: false,

@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.6.0",
+  "version": "4.6.1",
   "private": true,
   "workspaces": [
     "client",
@@ -48,7 +48,9 @@
     "test:part18:browser": "node tests/browser-part18.mjs",
     "control:dev": "npm --workspace server run control:dev",
     "control:start": "npm --workspace server run control:start",
-    "test:browser:mobile-integration": "node tests/browser-mega-mobile-integration.mjs"
+    "test:browser:mobile-integration": "node tests/browser-mega-mobile-integration.mjs",
+    "test:history": "node --import tsx tests/runtime-game-history.mjs && node --import tsx tests/runtime-game-history-auth.mjs",
+    "test:browser:history": "node tests/browser-game-history.mjs"
   },
   "engines": {
     "node": ">=20.19.0"

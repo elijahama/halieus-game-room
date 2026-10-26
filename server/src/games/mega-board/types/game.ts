@@ -14,6 +14,8 @@ export interface LobbyPlayer {
 }
 
 export interface RoomPlayer extends LobbyPlayer {
+  /** Server-only identity captured from the authenticated join, never a display-name lookup. */
+  replayAccountId?: string;
   reconnectToken: string;
   disconnectedAt: number | null;
 }

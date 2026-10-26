@@ -1,3 +1,5 @@
+import { archiveCompletedMegaGame } from "./games/mega-board/utils/mega-history.js";
+import { registerGameHistoryRoutes } from "./platform/game-history.js";
 import { registerProgressionIdentity } from "./platform/progression.js";
 import cors from "cors";
 import express, {
@@ -165,6 +167,7 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
   next();
 });
 registerAccountRoutes(app);
+registerGameHistoryRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 registerPushRoutes(app, getAuthenticatedAccount);
 registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);
@@ -599,6 +602,9 @@ const recoveredRankedPlayers =
 
 let recoveredRankedMatches = 0;
 for (const room of rooms.values()) {
+  if (room.gameState?.phase === "finished" && room.gameState.winnerId) {
+    await archiveCompletedMegaGame(room).catch(() => console.error("Unable to recover completed Mega Board replay."));
+  }
   if (room.ranked && room.gameState?.phase === "finished" && !room.gameState.rankedProcessed) {
     if (finalizeRankedMatch(room.gameState)) recoveredRankedMatches += 1;
   }

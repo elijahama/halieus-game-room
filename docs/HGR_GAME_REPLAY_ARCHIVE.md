@@ -26,3 +26,11 @@ Games in current HGR catalog (14): Mega Board, Poker, Blackjack, WHOT, Ludo, Hid
 5. `tests/runtime-hgr-game-replay-archive-part37.mjs`: tests all 14 game IDs, JSON+TXT, privacy whitelisting, immutability/concurrency, path traversal and finished-only guards.
 
 **Release gate:** Do not claim this foundation makes all game histories downloadable on the website. No in-game controls, retrieval API, multi-game visual adapters or end-of-game lifecycle triggers ship in this batch. Each subsequent adapter needs persisted immutable completion, consent/permissions for viewing, checkpoint and event coverage, tests and a release identity audit before declaring live. Continue game-by-game in mini-batches, protecting working owner data and canonical HGR launcher art.
+
+## Part 33 — 4.6.1 integration candidate
+
+The earlier foundation-only boundary is superseded for Mega Board only: the server finish handler now records actual matches, canonical session identity binds server-only replayAccountId at create/join, and private ownership receipts authorize personal history and exports. Reconnect updates historical frame seat IDs; account ownership remains independent of display names. No guest/legacy name-based backfill. Duplicate completions do not add owners or overwrite the original archive. Recovered finished rooms are retried at startup. No unauthenticated room lookup or sharing endpoint exists.
+
+Account panel Game History reuses the native Mega Board viewer and exposes JSON/TXT downloads, outcomes and basic match metrics. Partial checkpoint coverage is labelled in UI and text exports. First/Previous/Next/Last and Play/Pause/speed are available. Paste/upload .txt reports (up to 1 MB) are escaped, unverified browser-memory text review, never server results, saved history or visual reconstruction.
+
+Ownership receipts are private under replays/_ownership; portable per-game archives retain the universal format. Listing is paged (20 entries) but currently scans receipts; account indexing is a future scalability batch. Failed storage writes are observable in server logs and retryable from finished room emission/recovery; full durable event recording remains future work. Tests: runtime-game-history.mjs, runtime-game-history-auth.mjs and browser-game-history.mjs. All other game adapters and permission-controlled sharing remain unimplemented.

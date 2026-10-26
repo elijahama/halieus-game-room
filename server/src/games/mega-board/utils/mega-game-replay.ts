@@ -40,7 +40,7 @@ export function createMegaBoardGameReplayArchive(state: GameState,
     })),
     propertyOwners: Object.fromEntries(Object.entries(f.propertyOwners).map(([space, id]) => [space, alias(id)])),
     developments: { ...f.developments }, mortgages: { ...f.mortgages },
-    pot: f.pot, dice: f.dice ? { ...f.dice } : null, winnerId: alias(f.winnerId),
+    pot: f.pot, dice: f.dice ? { white1: f.dice.white1, white2: f.dice.white2, speed: f.dice.speed, movementTotal: f.dice.movementTotal, ...(f.dice.doublesStage !== undefined ? { doublesStage: f.dice.doublesStage } : {}) } : null, winnerId: alias(f.winnerId),
   }));
   return {
     format: HGR_REPLAY_FORMAT,
@@ -49,7 +49,7 @@ export function createMegaBoardGameReplayArchive(state: GameState,
     matchId: tournamentBoard?.boardMatchId ?? `mega-${state.roomCode}-${state.gameStartedAt}`,
     roomCode: state.roomCode,
     startedAt: state.gameStartedAt,
-    finishedAt: tournamentBoard?.completedAt ?? Date.now(),
+    finishedAt: tournamentBoard?.completedAt ?? state.replayFrames?.at(-1)?.at ?? Date.now(),
     players: state.players.map((p) => ({
       id: anonymousIds.get(p.id) ?? "unassigned", name: p.name,
       result: p.id === state.winnerId ? "winner" : p.isBankrupt ? "bankrupt" : "finished",

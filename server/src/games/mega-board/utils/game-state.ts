@@ -1,3 +1,4 @@
+import { archiveCompletedMegaGame } from "./mega-history.js";
 import { publicProgressionState } from "../../../platform/progression.js";
 import type { Server } from "socket.io";
 import type { GameState } from "../../../../../shared/games/mega-board/game-state.js";
@@ -282,6 +283,9 @@ export function emitGameState(
   syncTurnRollDeadline(gameState);
   syncOptionalActionTimer(io, code, gameState);
   captureMegaReplayFrame(gameState);
+  if (room && gameState.phase === "finished" && gameState.winnerId) {
+    void archiveCompletedMegaGame(room).catch(() => console.error("Mega Board replay archive could not be persisted; retry on next finished-state emission."));
+  }
   queueRoomSave();
 
   io.to(code).emit("game:state", {

@@ -77,7 +77,7 @@ export function serializeHgrReplay(archive: HgrGameReplayArchive): string {
         })),
         propertyOwners: { ...f.propertyOwners },
         developments: { ...f.developments }, mortgages: { ...f.mortgages },
-        pot: f.pot, dice: f.dice ? { ...f.dice } : null,
+        pot: f.pot, dice: f.dice ? { white1: f.dice.white1, white2: f.dice.white2, speed: f.dice.speed, movementTotal: f.dice.movementTotal, ...(f.dice.doublesStage !== undefined ? { doublesStage: f.dice.doublesStage } : {}) } : null,
         winnerId: f.winnerId,
       })),
     }
@@ -117,6 +117,7 @@ export function replayAsPlainText(archive: HgrGameReplayArchive): string {
     `Replay: ${archive.track.kind}`,
   ];
   if (archive.tournament) lines.push(`Tournament: ${archive.tournament.tournamentId} / ${archive.tournament.fixtureId}`);
+  lines.push(archive.track.truncated ? "Coverage: Partial; earlier checkpoints are not retained." : "Coverage: Retained checkpoints and recorded events only; not a deterministic full-game recording.");
   lines.push("", "Game events:");
   for (const e of archive.events) {
     lines.push(`${String(e.sequence).padStart(4, "0")}. ${e.turn === null ? "" : `Turn ${e.turn}: `}${e.description}`);

@@ -39,3 +39,7 @@ Before changing `VERSION` to `5.0.0`, require a dedicated **HGR 5.0 Tournament A
 ## Current status
 
 Last verified GitHub `main` at the start of Part 37 was the **4.5.12 source line**. Owner designates **4.6.x** as active development. The isolated Part 37 branch proposes **4.6.0**; until PR review, CI and separately evidenced deployment, do not describe 4.6.0 as publicly released. The earlier documentation-only PR #157 is incorporated in this branch; its isolated design decision remains authoritative, without changing the live game.
+
+### Part 33 candidate 4.6.1
+
+Mega Board completion → independent replay archive → authenticated personal history/viewer/downloads is implemented in the review branch. Paste/upload TXT report review is read-only and unverified. This patch stays in 4.6.x; it does not activate tournament fixtures, brackets, sharing or other game adapters. Candidate validation and known storage/coverage limits are documented in the Masterbook. No public-release claim. Next separately audited work: unanswered-feedback admin notification; durable full recording and audited universal adapters; then approved 4.7.x Guild fixtures.

@@ -3,8 +3,8 @@
  * No HTTP or Socket.IO handlers here: authorization and per-game privacy
  * policy belong to each server adapter before calling put or get.
  */
-import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { mkdir, readFile, link, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getHalieusDataRoot } from "./dataPaths.js";
 import {
@@ -49,10 +49,15 @@ export function createHgrReplayStore(root: string = HGR_REPLAY_DIRECTORY) {
         return existing;
       }
       await mkdir(path.dirname(target), { recursive: true });
-      const temp = target + ".tmp";
-      await writeFile(temp, serialized, "utf8");
-      await rename(temp, target);
-      return structuredClone(archive);
+      const temp = target + "." + randomUUID() + ".tmp";
+      await writeFile(temp, serialized, { encoding: "utf8", flag: "wx" });
+      try { await link(temp, target); }
+      catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+        const winner = await get(archive.gameId, archive.matchId);
+        if (!winner || serializeHgrReplay(winner) !== serialized) throw new Error("Replay archive already exists with different contents");
+      } finally { await unlink(temp); }
+      return JSON.parse(serialized) as HgrGameReplayArchive;
     });
     operations = operation.then(() => undefined, () => undefined);
     return operation;

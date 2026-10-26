@@ -1,3 +1,4 @@
+import { GameHistory } from "./GameHistory";
 import { AchievementBar } from "../components/AchievementBar";
 import { ModalPortal } from "../components/ModalPortal";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
@@ -378,6 +379,7 @@ export function AccountPanel({ account, onClose, onAccountChange, onLogout, beta
   const profileSettings = (
     <section className="account-self-service">
       <AchievementBar progression={personalStats?.progression} />
+      <GameHistory key={account.id} />
       {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div><button type="button" className="button-outline account-open-owner-tools" onClick={() => setAdminTab("overview")}>Owner tools →</button></header>}
       <div className="account-profile-grid">
         <form className="account-settings-card" onSubmit={saveProfile}>

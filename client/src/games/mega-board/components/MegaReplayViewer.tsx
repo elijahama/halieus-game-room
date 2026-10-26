@@ -142,6 +142,7 @@ export function MegaReplayViewer({ frames, activity, roomCode }: ReplayViewerPro
         <button type="button" onClick={() => { setPlaying(false); setIndex(i => Math.max(0, i - 1)); }}>Previous</button>
         <button type="button" onClick={() => { if (availableIndex >= frames.length - 1) setIndex(0); setPlaying(x => !x); }} aria-pressed={playing}>{playing ? "Pause" : "Play"}</button>
         <button type="button" onClick={() => { setPlaying(false); setIndex(i => Math.min(frames.length - 1, i + 1)); }}>Next</button>
+        <button type="button" onClick={() => { setPlaying(false); setIndex(frames.length - 1); }}>Last</button>
         <select aria-label="Playback speed" value={speed} onChange={event => setSpeed(Number(event.target.value))}>
           <option value={0.5}>0.5×</option><option value={1}>1×</option><option value={2}>2×</option>
         </select>
