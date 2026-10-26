@@ -359,7 +359,7 @@ export function GameMenu({
             {gameStarted && !isSpectator && isHost && (
               <>
                 <button type="button" disabled={pauseBusy} className="menu-action" onClick={toggleRoomPause}>
-                  <span>{pausedAt ? "▶" : "⏸"}</span><span><strong>{pausedAt ? "Resume match" : "Pause match"}</strong><small>{pausedAt ? "Requires every player to reconnect first" : "Unranked human-only pilot · other seats must be offline"}</small></span>
+                  <span>{pausedAt ? "▶" : "⏸"}</span><span><strong>{pausedAt ? "Resume match" : "Pause match"}</strong><small>{pausedAt ? "Requires every active player to reconnect first" : "Unranked human-only pilot · other seats must be offline"}</small></span>
                 </button>
                 {pauseStatus && <p role="status">{pauseStatus}</p>}
               </>

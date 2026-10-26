@@ -40,12 +40,14 @@ export function resumeMegaRoom(room: GameRoom, now = Date.now()): void {
       state.turnPhase !== paused.turnPhase || room.ranked || state.ranked) {
     throw new Error("The paused match changed and cannot resume safely.");
   }
-  if (room.players.some(player => player.isAi || player.hasLeft) ||
+  if (room.players.some(player => player.isAi) ||
       state.players.some(player => player.isAi || player.autopilotEnabled)) {
-    throw new Error("The player roster changed while paused. Manual recovery is required.");
+    throw new Error("Turn automation changed while paused. Manual recovery is required.");
   }
-  if (room.players.some(player => !player.isConnected)) {
-    throw new Error("All players must reconnect before resuming.");
+  // Seats that had already forfeited before the pause do not need to reconnect.
+  // A live forfeit/leave packet while paused is blocked by Socket.IO middleware.
+  if (room.players.some(player => !player.hasLeft && !player.isConnected)) {
+    throw new Error("All active players must reconnect before resuming.");
   }
   const currentPlayer = state.players[state.currentPlayerIndex];
   if (state.turnPhase === "roll" && (!currentPlayer || currentPlayer.isAi || currentPlayer.isBankrupt)) {

@@ -44,6 +44,12 @@ try {
   assert.equal(reply.ok,false,"Non-participant cannot pause");
   players[1].isConnected=false;
   state.players[1].isConnected=false;
+  // A malformed client omitting the Socket.IO acknowledgement must not start
+  // an untracked state mutation or create an unhandled rejected promise.
+  host.emit("game:pause-room",{code:"PAUS35"});
+  host.emit("game:save-slot",{code:"PAUS35",slot:"slot-2"});
+  await new Promise(resolve=>setTimeout(resolve,75));
+  assert.equal(state.pauseState,undefined,"No-ACK pause cannot mutate a room");
   reply=await rpc(host,"game:pause-room",{code:"PAUS35"});
   assert.equal(reply.ok,true,reply.reason);
   assert.ok(state.pauseState);

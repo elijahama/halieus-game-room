@@ -36,6 +36,7 @@ export function registerMegaSavedGameHandlers(io: Server, socket: Socket): void 
   });
 
   socket.on("game:pause-room", async (payload: SlotPayload, acknowledge: (reply: Reply) => void) => {
+    if (typeof acknowledge !== "function") return;
     try {
       const room = ownedRoom(socket, payload);
       pauseMegaRoom(room);
@@ -45,6 +46,7 @@ export function registerMegaSavedGameHandlers(io: Server, socket: Socket): void 
     } catch (error) { acknowledge({ ok: false, reason: (error as Error).message }); }
   });
   socket.on("game:resume-room", async (payload: SlotPayload, acknowledge: (reply: Reply) => void) => {
+    if (typeof acknowledge !== "function") return;
     try {
       const room = ownedRoom(socket, payload);
       resumeMegaRoom(room);
@@ -55,6 +57,7 @@ export function registerMegaSavedGameHandlers(io: Server, socket: Socket): void 
   });
 
   socket.on("game:saves-list", async (payload: SlotPayload, acknowledge: (reply: Reply) => void) => {
+    if (typeof acknowledge !== "function") return;
     try {
       const room = ownedRoom(socket, payload);
       acknowledge({ ok: true, saves: await listSaveSlots(room) });
@@ -63,6 +66,7 @@ export function registerMegaSavedGameHandlers(io: Server, socket: Socket): void 
     }
   });
   socket.on("game:save-slot", async (payload: SlotPayload, acknowledge: (reply: Reply) => void) => {
+    if (typeof acknowledge !== "function") return;
     try {
       const room = ownedRoom(socket, payload);
       if (!isSaveSlot(payload.slot)) throw new Error("Choose a valid save slot.");
@@ -73,6 +77,7 @@ export function registerMegaSavedGameHandlers(io: Server, socket: Socket): void 
     }
   });
   socket.on("game:restore-slot", async (payload: SlotPayload, acknowledge: (reply: Reply) => void) => {
+    if (typeof acknowledge !== "function") return;
     try {
       const room = ownedRoom(socket, payload);
       if (!isSaveSlot(payload.slot)) throw new Error("Choose a valid save slot.");

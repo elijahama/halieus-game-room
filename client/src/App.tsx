@@ -3524,7 +3524,7 @@ function handleLeaveSpectator() {
         {gameState.pauseState && !viewerIsSpectator && (
           <div className="mega-pause-live-banner" role="status">
             <strong>⏸ Mega Board is paused</strong>
-            <span>Moves and timers are frozen. The host can resume after all players reconnect.</span>
+            <span>Moves and timers are frozen. The host can resume after all active players reconnect.</span>
           </div>
         )}
         <GameChrome
