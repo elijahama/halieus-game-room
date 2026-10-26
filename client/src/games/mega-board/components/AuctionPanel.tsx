@@ -467,7 +467,9 @@ export function AuctionPanel({
         >
           {timerExpired
             ? "Time expired. Waiting for the server to finalise the result."
-            : "You have withdrawn. Waiting for the remaining bidders."}
+            : isSpectator
+              ? "Spectating. Waiting for the remaining bidders."
+              : "You have withdrawn. Waiting for the remaining bidders."}
         </p>
       )}
     </section>

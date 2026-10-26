@@ -50,3 +50,9 @@ Separate small patch for owner/admin unanswered-feedback notifications in the HG
 
 ### 4.6.3 portrait hotfix
 Single-row, horizontally scrollable discovery filters on portrait phones/tablets. No change to tournament milestones or replay coverage.
+
+### 4.6.4 compact mobile layout candidate
+
+Scoped Mega Board patch: shared two-column phone rosters with long-name/property wrapping; board-first participant portrait tablets; intrinsic auction sheet height, spectator/withdrawn footer distinction, short-landscape scrolling and fullscreen portal tracking; text-sized routine notices. New real-component geometry coverage joins review/release browser CI. Local typechecks, focused browser/gameplay and alternative Vite runner production builds passed, with explicit sandbox harness qualifications in the Masterbook. The original sandbox failures were subsequently resolved by standard parent-run typecheck, full regression, all 52 compact browser cases, default production build, release integrity and built-browser identity checks (reported exit 0), with bounded log tails corroborated in this documentation follow-up. These commands ran through Desktop Commander outside native capture. CI and physical-device acceptance remain distinct requirements. Parent will rebuild the final identity generated after these documentation edits. No deployment or milestone advancement is implied.
+
+Active-match notifications and reconnect reconciliation are a **separate already owner-authorized batch pending implementation, not awaiting new permission and not implemented in 4.6.4**. Native receipt `rcpt_fc27b6506bfc45d3826cdbaa860b5d4a` records observational Codex capture, not independent test attestation; Git setup and standard parent verification occurred outside that capture. See the 4.6.4 Masterbook entry for exact dimensions, evidence and limitations.

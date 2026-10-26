@@ -118,6 +118,7 @@ jobs:
           node tests/browser-guild-add-friend-4.5.5w.mjs
           node tests/browser-mega-spectator-layout-4.5.5x.mjs
           npm run test:browser:mega-portrait
+          npm run test:browser:mega-compact
           npm run test:release:browser
           node tests/browser-theme-atmosphere.mjs
           node tests/browser-mega-board-portfolio.mjs

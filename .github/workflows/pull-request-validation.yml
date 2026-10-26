@@ -35,6 +35,7 @@ jobs:
       - run: npm run test:browser:mega-auction
       - run: npm run test:browser:mega-spectator
       - run: npm run test:browser:mega-portrait
+      - run: npm run test:browser:mega-compact
       - run: npm run test:browser:mega-replay
       - run: npm run test:release:browser
       - run: npm run validate:release

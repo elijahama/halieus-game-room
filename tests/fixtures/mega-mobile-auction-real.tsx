@@ -9,9 +9,11 @@ declare global {
   }
 }
 
-const players = Array.from({ length: 8 }, (_, i) => ({
+const params = new URLSearchParams(location.search);
+const role = params.get("role") || "active";
+const players = Array.from({ length: Number(params.get("players") || 8) }, (_, i) => ({
   id: `seat-${i + 1}`,
-  name: ["Rook", "Milo", "Atlas", "Lagz", "Nova", "Sage", "Echo", "Pixel"][i],
+  name: params.has("long") ? `Alexandria Longpropertyname Seat ${i+1}` : ["Rook", "Milo", "Atlas", "Lagz", "Nova", "Sage", "Echo", "Pixel"][i],
   colour: ["#ae8b2c", "#fcda00", "#003ef9", "#ed2042", "#08793a", "#169da0", "#820076", "#eaa9b9"][i],
   cash: 2500,
   isBankrupt: false,
@@ -24,7 +26,7 @@ const state = {
     currentBid: 150,
     minimumIncrement: 10,
     highestBidderId: "seat-3",
-    activeBidderIds: players.map(p => p.id),
+    activeBidderIds: players.filter(p => role !== "withdrawn" || p.id !== "seat-4").map(p => p.id),
     bidsByPlayerId: { "seat-3": 150, "seat-1": 100 },
     endsAt: Date.now() + 90000,
   },
@@ -41,7 +43,8 @@ function TestAuction() {
     <div className="mega-mobile-auction-layer" role="dialog" aria-modal="true" aria-label="Mega Board auction">
       <div className="mega-mobile-auction-sheet">
         <AuctionPanel
-          playerId="seat-4"
+          playerId={role === "spectator" ? "observer" : "seat-4"}
+          isSpectator={role === "spectator"}
           gameState={state as any}
           isResolving={false}
           theme={theme}

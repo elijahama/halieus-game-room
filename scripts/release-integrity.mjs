@@ -69,6 +69,8 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
+  'tests/browser-mega-compact-layout.mjs', 'tests/fixtures/mega-mobile-auction-real.tsx',
+  'docs/HGR_VERSION_ROADMAP.md',
   'scripts/assert-release-idle.mjs', 'tests/regression-release-idle.mjs',
   '.github/workflows/pull-request-validation.yml', 'tests/browser-mega-mobile-integration.mjs',
   'tests/fixtures/mega-mobile-integration-real.tsx', 'tests/fixtures/mobile-chat-socket.ts',
