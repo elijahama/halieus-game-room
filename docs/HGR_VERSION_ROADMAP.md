@@ -43,3 +43,7 @@ Last verified GitHub `main` at the start of Part 37 was the **4.5.12 source line
 ### Part 33 candidate 4.6.1
 
 Mega Board completion → independent replay archive → authenticated personal history/viewer/downloads is implemented in the review branch. Paste/upload TXT report review is read-only and unverified. This patch stays in 4.6.x; it does not activate tournament fixtures, brackets, sharing or other game adapters. Candidate validation and known storage/coverage limits are documented in the Masterbook. No public-release claim. Next separately audited work: unanswered-feedback admin notification; durable full recording and audited universal adapters; then approved 4.7.x Guild fixtures.
+
+### Part 33 follow-up candidate 4.6.2
+
+Separate small patch for owner/admin unanswered-feedback notifications in the HGR hub, actionable inbox focus and response-driven count refresh. This does not change the tournament roadmap or activate additional replay adapters. 4.6.1 remains the independently validated replay/history batch beneath it.

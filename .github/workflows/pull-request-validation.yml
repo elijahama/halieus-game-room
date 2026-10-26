@@ -23,6 +23,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:regression
       - run: npm run test:replays:all
+      - run: npm run test:feedback:notifications
       - run: npm run test:history
       - run: npm run test:browser:history
       - run: npm audit --audit-level=high

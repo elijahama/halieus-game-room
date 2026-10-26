@@ -1,3 +1,4 @@
+import { AdminFeedbackNotice } from "./AdminFeedbackNotice";
 import { AdminControlLauncher } from "../control/AdminControlLauncher";
 import { PreGameShell } from "./PreGameShell";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -70,7 +71,7 @@ interface HomeScreenProps {
   recoveryCode: string; pokerRecoveryCode: string; blackjackRecoveryCode: string; whotRecoveryCode: string; ludoRecoveryCode: string; connectFourRecoveryCode: string; ayoRecoveryCode: string; wordBoardRecoveryCode: string; hiddenDictatorRecoveryCode: string;
   savedSession: SavedSessionSummary | null; pokerSavedSession: SavedSessionSummary | null; blackjackSavedSession: SavedSessionSummary | null; whotSavedSession: SavedSessionSummary | null; ludoSavedSession: SavedSessionSummary | null; connectFourSavedSession: SavedSessionSummary | null; ayoSavedSession: SavedSessionSummary | null; wordBoardSavedSession: SavedSessionSummary | null; hiddenDictatorSavedSession: SavedSessionSummary | null;
   pokerStartingChips: number; pokerSmallBlind: number; pokerBigBlind: number; pokerMatchMode: "casual" | "ranked"; pokerVariant: PokerVariant; whotMatchMode: WhotMatchMode; ludoMatchMode: LudoMatchMode; blackjackMatchMode: BlackjackMatchMode; connectFourMatchMode: ConnectFourMatchMode; connectFourBestOf: ConnectFourBestOf; ayoMatchMode: AyoMatchMode; hiddenDictatorMatchMode: HiddenDictatorMatchMode;
-  isCreating: boolean; isJoining: boolean; isRecovering: boolean; darkMode: boolean; account: HalieusAccountSummary | null; betaMode: boolean; onOpenAccount: () => void;
+  isCreating: boolean; isJoining: boolean; isRecovering: boolean; darkMode: boolean; account: HalieusAccountSummary | null; betaMode: boolean; onOpenAccount: () => void; onOpenFeedback?: (id: string) => void;
   theme: { pageBackground: string; cardBackground: string; secondaryBackground: string; inputBackground: string; text: string; mutedText: string; border: string; };
   themeMode: HalieusThemeMode; themeProfileId: HalieusThemeProfileId;
   onToggleDarkMode: () => void; onGameSelect: (game: GameSelection) => void; onPlayerNameChange: (value: string) => void; onRoomCodeChange: (value: string) => void;
@@ -125,7 +126,7 @@ export function HomeScreen(props: HomeScreenProps) {
     recoveryCode, pokerRecoveryCode, blackjackRecoveryCode, whotRecoveryCode, ludoRecoveryCode, connectFourRecoveryCode, ayoRecoveryCode, wordBoardRecoveryCode, hiddenDictatorRecoveryCode,
     savedSession, pokerSavedSession, blackjackSavedSession, whotSavedSession, ludoSavedSession, connectFourSavedSession, ayoSavedSession, wordBoardSavedSession, hiddenDictatorSavedSession,
     pokerStartingChips, pokerSmallBlind, pokerBigBlind, pokerMatchMode, pokerVariant, whotMatchMode, ludoMatchMode, blackjackMatchMode, connectFourMatchMode, connectFourBestOf, ayoMatchMode, hiddenDictatorMatchMode,
-    isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, theme, themeMode, themeProfileId, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
+    isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, onOpenFeedback, theme, themeMode, themeProfileId, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
     onRecoveryCodeChange, onPokerRecoveryCodeChange, onBlackjackRecoveryCodeChange, onWhotRecoveryCodeChange, onLudoRecoveryCodeChange, onConnectFourRecoveryCodeChange, onAyoRecoveryCodeChange, onWordBoardRecoveryCodeChange, onHiddenDictatorRecoveryCodeChange,
     onPokerStartingChipsChange, onPokerSmallBlindChange, onPokerBigBlindChange, onPokerMatchModeChange, onPokerVariantChange, onWhotMatchModeChange, onLudoMatchModeChange, onBlackjackMatchModeChange, onConnectFourMatchModeChange, onConnectFourBestOfChange, onAyoMatchModeChange, onHiddenDictatorMatchModeChange,
     onGenerateRoomCode, onOpenLeaderboard, onOpenPokerLeaderboard, onMatchModeChange, onFreeParkingJackpotChange,
@@ -1292,6 +1293,8 @@ export function HomeScreen(props: HomeScreenProps) {
             {account && <button type="button" className="halieus-mobile-account" onClick={onOpenAccount} aria-label={`Open ${account.displayName} profile`}><span className="halieus-avatar-media" style={account.profilePicture ? undefined : { background: account.playerColor }}>{account.profilePicture ? <img src={account.profilePicture} alt="" /> : account.avatar}</span><i aria-hidden="true" /></button>}
           </div>
         </header>
+
+        {account && (account.role === "owner" || account.role === "admin") && <AdminFeedbackNotice key={account.id} accountId={account.id} onOpen={id => onOpenFeedback ? onOpenFeedback(id) : onOpenAccount()} />}
 
         {view === "home" && <section className="halieus-view view-home panel-enter">
           <section className="halieus-showcase halieus-feature-carousel" style={{ ["--feature-accent" as string]: featuredGame.accent }}>
