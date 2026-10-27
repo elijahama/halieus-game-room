@@ -31,4 +31,5 @@ if (process.platform==="win32") {
   assert.equal(run.status,0,(run.stdout||"")+(run.stderr||""));
   assert.match(run.stdout||"",/PASS 4\.5\.5n/);
 }
+await import("./runtime-manual-oracle-credentials-4.6.6.mjs");
 console.log("PASS 4.5.5n tracked noninteractive Oracle fast path, owner-private updater preserved");
