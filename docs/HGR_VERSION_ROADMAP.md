@@ -23,7 +23,7 @@
 
 ## Patch-level rollout examples (not unconditionally reserved or promised)
 
-- **4.6.0 candidate — Part 37:** The tested backend tournament ratings ledger and shared HGR replay/archive format and store. Tests, Masterbook and identity only. Not yet a playable tournament or downloadable in-app game history.
+- **4.6.0 candidate — Tournament/replay foundation:** The tested backend tournament ratings ledger and shared HGR replay/archive format and store. Tests, Masterbook and identity only. Not yet a playable tournament or downloadable in-app game history.
 - **4.6.1+ candidates:** Attach server-authoritative identity/authentication, durable completion ingestion, proper archive retention, game-specific replay adapters and safe read APIs in audited mini-batches. Exact patch number assigned only when scope and gates are verified.
 - **4.7.x+ patches:** One testable slice at a time (fixture creator, lineup, board linkage, score confirmation, spectator/history UI). Nothing silently changes normal Ranked or grants extra teammate economic rights.
 - **4.8.x/4.9.x patches:** One bracket/replay/UX/recovery module per audited mini-batch, with feature flags and rollback until acceptance.
@@ -42,13 +42,13 @@ Before changing `VERSION` to `5.0.0`, require a dedicated **HGR 5.0 Tournament A
 
 Separate from 4.6.4/PR159, Mega Board authenticated foreground notice and token-backed same-device return form the **4.6.5 review candidate**. [Exact scope and validation](HGR_ACTIVE_GAME_RETURN.md): typecheck passed; parent standard account/HTTP/socket tests and 390/820px component tests passed outside the sandbox, corroborated by inspected logs. Observational receipt `rcpt_bf69d18797384553936bc243a4c631dd` is not independent attestation. Tests and a source-only App wiring guard are wired into package scripts and Windows/Ubuntu PR CI; 4.6.5 identity is prepared with established tooling. Parent full regression/build/final browser checks, full-App and physical-PWA acceptance remain outstanding. No universal adapter, account-only cross-device reclaim, background decision push, merge or deployment claim. This does not advance tournament milestones.
 
-Last verified GitHub `main` at the start of Part 37 was the **4.5.12 source line**. Owner designates **4.6.x** as active development. The isolated Part 37 branch proposes **4.6.0**; until PR review, CI and separately evidenced deployment, do not describe 4.6.0 as publicly released. The earlier documentation-only PR #157 is incorporated in this branch; its isolated design decision remains authoritative, without changing the live game.
+Last verified GitHub `main` at the start of the tournament/replay foundation was the **4.5.12 source line**. Owner designates **4.6.x** as active development. The isolated foundation branch proposes **4.6.0**; until PR review, CI and separately evidenced deployment, do not describe 4.6.0 as publicly released. The earlier documentation-only PR #157 is incorporated in this branch; its isolated design decision remains authoritative, without changing the live game.
 
-### Part 33 candidate 4.6.1
+### 4.6.1 — Game-history integration
 
 Mega Board completion → independent replay archive → authenticated personal history/viewer/downloads is implemented in the review branch. Paste/upload TXT report review is read-only and unverified. This patch stays in 4.6.x; it does not activate tournament fixtures, brackets, sharing or other game adapters. Candidate validation and known storage/coverage limits are documented in the Masterbook. No public-release claim. Next separately audited work: unanswered-feedback admin notification; durable full recording and audited universal adapters; then approved 4.7.x Guild fixtures.
 
-### Part 33 follow-up candidate 4.6.2
+### 4.6.2 — Admin feedback notifications
 
 Separate small patch for owner/admin unanswered-feedback notifications in the HGR hub, actionable inbox focus and response-driven count refresh. This does not change the tournament roadmap or activate additional replay adapters. 4.6.1 remains the independently validated replay/history batch beneath it.
 

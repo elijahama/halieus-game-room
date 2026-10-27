@@ -1,4 +1,4 @@
-# HGR universal game replays — owner direction and Part 37 foundation
+# HGR universal game replays — owner direction and 4.6.0 foundation
 
 **26 October 2026. Owner approved global scope. Version: 4.6.0 foundation candidate in the 4.6.x development series; 5.0.0 is reserved for fully realized Tournament Mode. Status: isolated source foundation, NOT LIVE or fully integrated.**
 
@@ -17,7 +17,7 @@ Games in current HGR catalog (14): Mega Board, Poker, Blackjack, WHOT, Ludo, Hid
 - No game replay restores or mutates a live match. Downloadable JSON is an archive, **never** a save-slot or resumption token. Only expose sanitised results/frames and account identity when appropriate; future share links need explicit owner consent, scope and revocation.
 - Current Mega Board in-room replay keeps up to **240 checkpoints**. Early checkpoints may be lost in long matches. Do **not** mislabel that as a full-game visual replay or full deterministic action record. Before global launch, replace bounded in-room presentation history with a durable complete server action/event stream and accurately represent incomplete legacy records.
 
-## Part 37 implementation (foundation only)
+## 4.6.0 implementation (foundation only)
 
 1. `shared/platform/game-replay.ts`: shared typed archive contract supporting all 14 catalog game IDs, text and JSON export, separate native-checkpoint and event-timeline tracks; optional fixture references.
 2. `server/src/platform/game-replay-timeline.ts`: strictly whitelisted completed-match public-event adapter contract usable by every game's handler in subsequent small batches.
@@ -27,7 +27,7 @@ Games in current HGR catalog (14): Mega Board, Poker, Blackjack, WHOT, Ludo, Hid
 
 **Release gate:** Do not claim this foundation makes all game histories downloadable on the website. No in-game controls, retrieval API, multi-game visual adapters or end-of-game lifecycle triggers ship in this batch. Each subsequent adapter needs persisted immutable completion, consent/permissions for viewing, checkpoint and event coverage, tests and a release identity audit before declaring live. Continue game-by-game in mini-batches, protecting working owner data and canonical HGR launcher art.
 
-## Part 33 — 4.6.1 integration candidate
+## 4.6.1 — Game-history integration candidate
 
 The earlier foundation-only boundary is superseded for Mega Board only: the server finish handler now records actual matches, canonical session identity binds server-only replayAccountId at create/join, and private ownership receipts authorize personal history and exports. Reconnect updates historical frame seat IDs; account ownership remains independent of display names. No guest/legacy name-based backfill. Duplicate completions do not add owners or overwrite the original archive. Recovered finished rooms are retried at startup. No unauthenticated room lookup or sharing endpoint exists.
 

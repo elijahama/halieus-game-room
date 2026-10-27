@@ -26309,7 +26309,7 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 }
 
 
-/* HGR Part 33: desktop spectator page fits the viewport. Preserve the approved
+/* HGR 4.6.x: desktop spectator page fits the viewport. Preserve the approved
  * board-above-roster composition; scroll roster/cards, not the entire page.
  * Phone/tablet keep their existing natural-scrolling arrangement. */
 .mega-live-page.mega-spectator-mode .mega-game-meta > span {
@@ -26695,7 +26695,7 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   }
 }
 
-/* HGR Part 33 · v4.6.6 · Gallery-first adaptive mobile presentation.
+/* HGR v4.6.6 · Gallery-first adaptive mobile presentation.
  * One shared collection layout for ALL 14 catalog games. Boards, live hands,
  * private roles and primary action controls remain game-specific and untouched.
  * The gallery is an enhancement to the actual game DOM (not a mock overlay).
