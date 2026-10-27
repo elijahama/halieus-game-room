@@ -45,7 +45,7 @@ const fixtures = [
 ];
 assert.equal(gameIds.length, 14, "All 14 currently catalogued games are included");
 assert.deepEqual(new Set(fixtures.map(f=>f.id)), new Set(gameIds), "Gallery audit covers the entire current game catalog");
-assert.match(css, /HGR Part 33 · v4\.6\.6 · Gallery-first adaptive mobile/);
+assert.match(css, /HGR v4\.6\.6 · Gallery-first adaptive mobile/);
 
 const browser = await chromium.launch({ headless: true, executablePath: process.env.HGR_BROWSER_EXECUTABLE || undefined });
 try {

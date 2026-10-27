@@ -1,4 +1,4 @@
-# HGR gallery-first adaptive mobile design — Part 33
+# HGR gallery-first adaptive mobile design — 4.6.6
 
 **Decision: owner-approved 26 October 2026. Candidate version 4.6.6. Applies to every current and future HGR game.**
 
