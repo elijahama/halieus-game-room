@@ -529,8 +529,9 @@ set "PRIVATE_UPDATE_PS1=%HGR_PROJECT_ROOT%update-website.ps1"
 set "ORACLE_DEPLOY_PS1=%LOCAL_ORACLE_DIR%\deploy-from-windows.ps1"
 
 rem Cloud updates are non-interactive. Bypass the owner-private updater's
-rem recursive key search and GUI picker; use the saved, validated key path
-rem with the canonical tracked Oracle helper. Manual Update is unchanged.
+rem recursive key search and GUI picker; use the saved, validated key path.
+rem Manual updates without a private wrapper use the SAME saved-key source,
+rem never a default ssh-agent identity that might not be loaded.
 if /i "%HGR_UPDATE_NONINTERACTIVE%"=="1" (
     echo [CLOUD] Using the approved unattended Oracle deployment path.
     powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\cloud-oracle-deploy.ps1"
@@ -556,9 +557,8 @@ if exist "%PRIVATE_UPDATE_PS1%" (
 )
 
 if exist "%ORACLE_DEPLOY_PS1%" (
-    echo Owner wrapper was not found. Falling back to the Oracle deployment helper:
-    echo   %ORACLE_DEPLOY_PS1%
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%ORACLE_DEPLOY_PS1%" -UseDefaultSshAuth
+    echo Owner wrapper was not found. Using saved-key Oracle deploy fallback.
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%HGR_PROJECT_ROOT%scripts\windows\manual-oracle-deploy.ps1" -DeployHelperPath "%ORACLE_DEPLOY_PS1%"
     if errorlevel 1 (
         echo.
         echo [STOPPED] GitHub sync succeeded, but Oracle deployment could not complete.
