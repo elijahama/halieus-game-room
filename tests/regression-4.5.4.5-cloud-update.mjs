@@ -95,4 +95,5 @@ assert.match(cloudUi, /\/control\/cloud\/actions\/update/);
 assert.match(cloudUi, /window\.confirm/);
 assert.match(cloudUi, /actorRole !== "owner"/, "Remote lifecycle buttons require the owner role");
 
+await import("./runtime-windows-update-dependency-bootstrap.mjs");
 console.log("PASS 4.5.4.5 + Part 28: Cloud Update remains fixed-action, survives self-rebase and safely re-pushes validated ahead commits");

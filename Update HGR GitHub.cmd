@@ -206,6 +206,45 @@ if defined HGR_REPAIRED_PROTECTED_ASSET (
     echo.
 )
 
+rem A clean isolated main checkout is a Git worktree, not an npm installation.
+rem Update used to fail with "'tsc' is not recognized" at STEP 3 because
+rem node_modules is intentionally untracked and absent in a new worktree.
+rem Install only when the local dependency tree is missing or incomplete.
+rem Never alter dependencies in another checkout, install global tools, or
+rem continue into GitHub push/Oracle deployment after a failed npm install.
+echo STEP 1B - Verifying LOCAL release build dependencies...
+set "HGR_RELEASE_DEPS_MISSING="
+if not exist "node_modules\.bin\tsc.cmd" set "HGR_RELEASE_DEPS_MISSING=1"
+if not exist "node_modules\.bin\vite.cmd" set "HGR_RELEASE_DEPS_MISSING=1"
+if not exist "node_modules\tsx\package.json" set "HGR_RELEASE_DEPS_MISSING=1"
+if not defined HGR_RELEASE_DEPS_MISSING (
+    call npm ls --depth=0 --silent >nul 2>&1
+    if errorlevel 1 set "HGR_RELEASE_DEPS_MISSING=1"
+)
+if defined HGR_RELEASE_DEPS_MISSING (
+    echo [SYNC] Installing lockfile-approved build tools into THIS checkout...
+    call npm ci --include=dev --no-audit --no-fund
+    if errorlevel 1 (
+        echo [STOPPED] Local dependency installation failed. No commit, push or deployment was attempted.
+        echo Retry after resolving the npm error; no other checkout was changed.
+        goto :PAUSE_EXIT
+    )
+)
+if not exist "node_modules\.bin\tsc.cmd" (
+    echo [STOPPED] TypeScript is still unavailable after dependency verification. No deployment was attempted.
+    goto :PAUSE_EXIT
+)
+if not exist "node_modules\.bin\vite.cmd" (
+    echo [STOPPED] Vite is still unavailable after dependency verification. No deployment was attempted.
+    goto :PAUSE_EXIT
+)
+if not exist "node_modules\tsx\package.json" (
+    echo [STOPPED] TSX is still unavailable after dependency verification. No deployment was attempted.
+    goto :PAUSE_EXIT
+)
+echo [OK] Local build tools are available before typecheck.
+echo.
+
 echo STEP 2 - Preparing release identity BEFORE the browser build...
 echo This regenerates RELEASE.json and shared/release.ts from the canonical VERSION file
 echo so the compiled website cannot embed an older build fingerprint.
