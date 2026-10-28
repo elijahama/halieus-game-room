@@ -1495,3 +1495,12 @@ Release tooling prepares VERSION 4.6.4 and generated identity/cache/package cons
 **Separate owner proposal — NOT implemented or approved as downtime:** A future **Close Public Game Room / Reopen Public Game Room** cloud maintenance mode may show a visitor maintenance message while preserving authenticated Control. It needs a distinct owner-only control, server-authoritative mode state, live-room protection, rollback/reopen, cache/PWA treatment and an operations audit. Do not conflate this with local window Close or silently stop the Oracle process. No production downtime was initiated in this batch.
 
 **Validation:** Focused progression and browser Control-spinner checks plus full typecheck, HGR regression, Windows/Ubuntu CI, built browser release fingerprint and canonical artwork/integrity gates are required before merge. The first isolated candidate uses version **4.6.7** and a descriptive GitHub branch without chat installment identifiers. Do not claim live deployment from a local source-only PR.
+
+
+## 4.6.8 — HGR notification delivery parity and activity roadmap (28 October 2026)
+
+The owner approved learning from the independently hosted **Logic & Philo** v1.3.0 notification experience, especially its opt-in reminders, test button, inbox and service-worker deep links. HGR has a different multi-account, multi-game use case: **friend online**, **friend joined game**, **room invitation**, **your turn** and event-based notifications. HGR already supports opt-in per-account VAPID push for invitations and guild messages, but lacks a user-triggered delivery test and dedicated account-safe presence and turn alert classes.
+
+First, introduce a **Test notification** button in existing HGR device settings and a 30-second-limited, authenticated test route that can target only the current signed-in account's registered push endpoint; never copy Logic & Philo keys, storage, users or timing. The test only confirms acceptance by the browser gateway, not actual device display.
+
+Follow-up work must use authoritative identity/room membership with privacy and deduplication: don't identify account holders from nonunique player display names, don't alert for hidden/unknown friends, don't announce historical online state on startup, and don't leak private chat/roles in lock-screen notifications. Preserve current 14-game rules. See [HGR_NOTIFICATION_DELIVERY_PARITY.md](HGR_NOTIFICATION_DELIVERY_PARITY.md). This is a deliberately isolated first batch; public gameplay and production deploy remain unchanged until audited acceptance.

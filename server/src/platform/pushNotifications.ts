@@ -107,6 +107,7 @@ export async function initializePushNotifications(): Promise<boolean> {
 type AccountResolver = (request: Request) => HalieusAccountSummary | null;
 
 export function registerPushRoutes(app: Express, accountFor: AccountResolver): void {
+  const lastTestByDevice = new Map<string, number>();
   function loggedIn(request: Request, response: Response): HalieusAccountSummary | null {
     const account = accountFor(request);
     if (!account) response.status(401).json({ok:false,reason:"Sign in first."});
@@ -147,6 +148,51 @@ export function registerPushRoutes(app: Express, accountFor: AccountResolver): v
     state.subscriptions=state.subscriptions.filter(item=>item.accountId!==account.id).concat(mine);
     await save();
     response.json({ok:true,topics:duplicates});
+  });
+  /** The owner opts in first. A test can target only the current account's
+   * existing browser subscription; it never accepts arbitrary push recipients. */
+  app.post("/accounts/push/test", async (request,response) => {
+    const account=loggedIn(request,response);
+    if (!account) return;
+    if (!state) {response.status(503).json({ok:false,reason:"Push is temporarily unavailable."});return;}
+    const endpoint=request.body?.endpoint;
+    if (!isTrustedPushEndpoint(endpoint)) {
+      response.status(400).json({ok:false,reason:"Provide a valid browser push endpoint."});return;
+    }
+    const device=state.subscriptions.find(item=>item.accountId===account.id && item.endpoint===endpoint);
+    if (!device) {
+      response.status(404).json({ok:false,reason:"This device has no active subscription for your account."});return;
+    }
+    const now=Date.now(),key=account.id+"|"+endpoint;
+    if (now-(lastTestByDevice.get(key)??0)<30_000) {
+      response.status(429).json({ok:false,reason:"A test was sent recently. Try again shortly."});return;
+    }
+    lastTestByDevice.set(key,now);
+    if (lastTestByDevice.size>2000) {
+      for (const [deviceKey,when] of lastTestByDevice) {
+        if (now-when>60_000) lastTestByDevice.delete(deviceKey);
+      }
+    }
+    try {
+      await webPush.sendNotification({endpoint:device.endpoint,keys:device.keys},JSON.stringify({
+        title:"HGR test notification",
+        body:"HGR push alerts are enabled on this device. Tap to open your Inbox.",
+        url:"/?inbox=1",
+        tag:"hgr-push-test-"+Math.floor(now/30_000),
+      }),{TTL:90,urgency:"high"});
+      response.json({ok:true,accepted:true,
+        message:"Test submitted to the browser push gateway. Check your device notifications."});
+    } catch (error) {
+      const status=typeof error==="object" && error && "statusCode" in error
+        ? Number((error as {statusCode:unknown}).statusCode) : 0;
+      if (status===404 || status===410) {
+        state.subscriptions=state.subscriptions.filter(item=>item!==device);
+        await save();
+        response.status(410).json({ok:false,reason:"Device subscription expired. Re-enable PWA alerts on this device."});return;
+      }
+      response.status(502).json({ok:false,
+        reason:"The push gateway could not accept the test. Check your browser connection and retry later."});
+    }
   });
   app.post("/accounts/push/unsubscribe", async (request,response) => {
     const account=loggedIn(request,response);

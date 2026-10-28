@@ -12,6 +12,9 @@ assert.match(push,/chmod\(file, 0o600\)/,"Private VAPID keys must have strict Un
 assert.match(push,/registerPushRoutes/);
 assert.match(push,/app\.post\("\/accounts\/push\/subscribe"/);
 assert.match(push,/app\.post\("\/accounts\/push\/unsubscribe"/);
+assert.match(push,/app\.post\("\/accounts\/push\/test"/,"Signed-in push delivery test must exist");
+assert.match(push,/accountId===account\.id && item\.endpoint===endpoint/,"Only test the enrolled account's own device");
+assert.match(push,/lastTestByDevice/,"Bounded test notification cooldown");
 assert.match(push,/item\.accountId===account\.id && item\.endpoint===endpoint/,"Account-specific device status");
 assert.match(push,/knownProviders\.includes\(host\)/,"Server push endpoint allowlist");
 assert.match(push,/state\.subscriptions=state\.subscriptions\.filter\(item=>item\.endpoint!==endpoint\)/,
@@ -29,6 +32,7 @@ assert.match(button,/Notification\.requestPermission\(\)/,"Permission must follo
 assert.match(button,/onClick=\{\(\) => void toggle\(\)\}/);
 assert.match(button,/registration\.pushManager\.subscribe\(/);
 assert.match(button,/registration\.pushManager\.getSubscription\(\)/,"Allow safe rebind/unsubscribe");
+assert.match(button,/Send test notification/,"Like Logic & Philo, HGR gives users a real device push test");
 assert.match(button,/topics:\s*\["invites",\s*"messages"\]/,"Both requested notice classes opt in");
 assert.match(home,/const subscribed = await registration\.pushManager\?\.getSubscription\(\)/,
  "Do not double-fire hidden-tab fallback when push is active");

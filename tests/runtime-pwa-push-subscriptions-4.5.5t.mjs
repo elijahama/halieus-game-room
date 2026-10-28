@@ -39,6 +39,8 @@ try {
   }
   assert.ok(ready,"Push integration server not ready: "+log);
   assert.equal((await api("/accounts/push/config")).status,401,"Require authenticated session");
+  assert.equal((await api("/accounts/push/test",{method:"POST",body:{endpoint:"https://web.push.apple.com/not-subscribed"}})).status,401,
+    "Guest cannot trigger a notification");
   const bootstrap=(await readFile(bootstrapFile,"utf8")).match(/OWNER-[A-Z0-9-]+/)?.[0];assert.ok(bootstrap);
   const owner=await api("/auth/setup-owner",{method:"POST",body:{
     bootstrapCode:bootstrap,username:"owner",displayName:"Owner",password:"secure-owner-password-2026"}});
@@ -73,6 +75,10 @@ try {
   assert.equal((await api("/accounts/push/status",{cookie:a.cookie,method:"POST",body:{endpoint}})).json.enabled,true);
   assert.equal((await api("/accounts/push/status",{cookie:b.cookie,method:"POST",body:{endpoint}})).json.enabled,false,
     "Another account may not impersonate a device subscription");
+  assert.equal((await api("/accounts/push/test",{cookie:b.cookie,method:"POST",body:{endpoint}})).status,404,
+    "Another account cannot test or learn whether this device can be reached");
+  assert.equal((await api("/accounts/push/test",{cookie:a.cookie,method:"POST",body:{endpoint:"https://127.0.0.1/private"}})).status,400,
+    "Test notifications must reject arbitrary/local endpoints");
   assert.ok(stored.vapid.privateKey && stored.vapid.publicKey);
   assert.equal((await api("/accounts/push/subscribe",{cookie:b.cookie,method:"POST",body:valid})).status,200,
     "Switching signed-in account rebinds browser subscription to current account");
