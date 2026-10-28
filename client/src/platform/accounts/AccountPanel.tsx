@@ -15,6 +15,7 @@ import type { HalieusFeedbackStatus, HalieusFeedbackSummary } from "../../../../
 import { GAME_CATALOG } from "../games/catalog";
 import { GAME_DEVELOPMENT, GAME_MATURITY_LABEL } from "../games/development";
 import { accountApi } from "./api";
+import { subscribeToProgressionUpdates } from "../progressionRefresh";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { DisplaySettingsPanel } from "../components/DisplaySettingsPanel";
 import { NotificationPermissionButton } from "../components/NotificationPermissionButton";
@@ -125,6 +126,7 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
   const [activeRoomCount, setActiveRoomCount] = useState(0);
   const [closingRooms, setClosingRooms] = useState(false);
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats | null>(null);
+  const [progressionRefreshKey, setProgressionRefreshKey] = useState(0);
   const [myFeedback, setMyFeedback] = useState<HalieusFeedbackSummary[]>([]);
   const [adminFeedback, setAdminFeedback] = useState<HalieusFeedbackSummary[]>([]);
   const [feedbackSubject, setFeedbackSubject] = useState("general");
@@ -203,12 +205,19 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
   }, [adminTab, isAdmin, snapshot]);
 
   useEffect(() => {
+    return subscribeToProgressionUpdates(() => setProgressionRefreshKey((key) => key + 1));
+  }, [account.id]);
+
+  useEffect(() => {
     let cancelled = false;
     void accountApi<{ ok: true; stats: HalieusPersonalStats }>("/accounts/me/stats")
       .then((result) => { if (!cancelled) setPersonalStats(result.stats); })
-      .catch(() => { if (!cancelled) setPersonalStats(null); });
+      .catch(() => {
+        // Network errors must not erase the last verified Gamer Score.
+        // Keep it displayed until a successful server response supersedes it.
+      });
     return () => { cancelled = true; };
-  }, [account.id, account.displayName]);
+  }, [account.id, account.displayName, progressionRefreshKey]);
 
   useEffect(() => {
     let cancelled = false;

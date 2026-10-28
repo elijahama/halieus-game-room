@@ -449,7 +449,7 @@ async function executeLifecycle(identity: DeviceIdentity, request: HalieusCloudC
         response?.reason || "Approved owner-PC lifecycle action failed.", localOperationId);
       return;
     }
-    await reportLifecycleTerminal(identity, request.requestId, "succeeded", 100, `${actionLabel} completed on owner PC`,
+    await reportLifecycleTerminal(identity, request.requestId, "succeeded", 100, `${actionLabel} HGR window complete on owner PC · Public site unchanged`,
       null, localOperationId);
   } catch {
     // No automatic retries of mutable commands. State is explicit and auditable.

@@ -26,6 +26,8 @@ jobs:
       - run: npm run prepare:release
       - run: npm run typecheck
       - run: npm run test:regression
+      - run: npm run test:progression:refresh
+      - run: npm run test:browser:control:window-operations
       - run: npm run test:replays:all
       - run: npm run test:feedback:notifications
       - run: npm run test:history

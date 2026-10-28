@@ -10,6 +10,7 @@
   let refreshTimer = null;
   let refreshInFlight = null;
   let updateInFlight = false;
+  let pendingRequestAction = null;
   let actorRole = null;
   const LIFECYCLE_ACTIONS = ["start", "restart", "close"];
   const lifecycleButtons = () => Array.from(document.querySelectorAll(".operation-grid button[data-operation]"))
@@ -186,8 +187,10 @@
       const stateLabel = state[0]?.toUpperCase() + state.slice(1);
       const strong = document.createElement("strong");
       const action = String(operation.action || "update");
-      const actionName = action[0].toUpperCase() + action.slice(1);
-      strong.textContent = `${actionName} HGR · ${stateLabel}`;
+      const actionName = action === "start" ? "Open HGR window"
+        : action === "restart" ? "Restart HGR window"
+          : action === "close" ? "Close HGR window" : "Update HGR";
+      strong.textContent = `${actionName} · ${stateLabel}`;
       const phase = document.createElement("small");
       phase.textContent = `${operation.phase || "Unknown phase"} · ${Math.round(Number(operation.progress) || 0)}%`;
       const identity = document.createElement("small");
@@ -211,6 +214,10 @@
 
   function syncActionAvailability() {
     const busy = updateInFlight || lastOperation?.state === "running";
+    // All Control actions share one audit channel, but only Update can animate
+    // the Update tile. Start/Restart/Close must never impersonate deployment.
+    const updateBusy = (updateInFlight && pendingRequestAction === "update")
+      || (lastOperation?.action === "update" && lastOperation.state === "running");
     const ready = selectedDevice?.approval === "approved" && selectedDevice.online && selectedDevice.localControlOnline;
     const update = updateButton();
     for (const button of lifecycleButtons()) {
@@ -225,10 +232,13 @@
     }
     if (update) {
       update.disabled = !ready || busy;
-      update.dataset.updateState = busy ? "running" : "idle";
+      update.dataset.updateState = updateBusy ? "running" : "idle";
       const copy = update.querySelector("small");
-      if (copy && ready) copy.textContent = busy ? "Update in progress · awaiting owner PC" : "Ready · run the approved updater";
-      update.title = busy ? "An update is already being tracked. See its progress above." : ready ? "Update HGR on the owner PC" : "Approve enrollment and connect owner-PC Control first.";
+      if (copy && ready) copy.textContent = updateBusy ? "Update in progress · awaiting owner PC"
+        : busy ? "Another owner-PC action is running" : "Ready · run the approved updater";
+      update.title = updateBusy ? "An update is already being tracked. See its progress above."
+        : busy ? "Wait for the current owner-PC action to finish."
+          : ready ? "Update HGR on the owner PC" : "Approve enrollment and connect owner-PC Control first.";
     }
     const revoke = $("revokeCloudOwnerPc");
     if (revoke) {
@@ -374,7 +384,7 @@
         : bridgeConnected ? "Reconnect local HGR Control Agent" : "Reconnect outbound HGR Control bridge";
     }
     setReadiness(
-      ready ? "Cloud Update ready" : bridgeConnected ? "Control Agent disconnected" : "Cloud bridge disconnected",
+      ready ? "Owner-PC Control ready" : bridgeConnected ? "Control Agent disconnected" : "Cloud bridge disconnected",
       ready
         ? "Update HGR is enabled through the outbound owner-PC Control bridge. No arbitrary shell commands are accepted."
         : bridgeConnected
@@ -450,8 +460,9 @@
     const device = selectedDevice;
     if (!device || device.approval !== "approved" || !device.online || !device.localControlOnline) return;
     const label = action[0].toUpperCase() + action.slice(1);
-    if (!window.confirm(`${label} HGR on the enrolled owner PC? This executes the existing fixed Windows HGR ${label} launcher; it cannot run arbitrary commands. Closing may interrupt local games.`)) return;
+    if (!window.confirm(`${label} the dedicated HGR browser window on the enrolled owner PC? This only changes the local Edge app window. It does NOT start, stop or restart the Oracle website or game server.`)) return;
     updateInFlight = true;
+    pendingRequestAction = action;
     syncActionAvailability();
     try {
       const confirmation = await request(`/control/cloud/actions/${action}/confirm`, {
@@ -467,6 +478,7 @@
       setReadiness(`${label} was not started`, error instanceof Error ? error.message : "Control action refused.", false);
     } finally {
       updateInFlight = false;
+      pendingRequestAction = null;
       await refreshCloudControl();
     }
   }
@@ -479,6 +491,7 @@
     if (!accepted) return;
 
     updateInFlight = true;
+    pendingRequestAction = "update";
     syncActionAvailability();
     try {
       const confirmation = await request("/control/cloud/actions/update/confirm", {
@@ -496,6 +509,7 @@
       setReadiness("Update was not started", error instanceof Error ? error.message : "Cloud Update request failed.", false);
     } finally {
       updateInFlight = false;
+      pendingRequestAction = null;
       await refreshCloudControl();
     }
   }
