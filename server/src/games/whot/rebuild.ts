@@ -1,3 +1,4 @@
+import { verifiedRoomAccountIds } from "../../platform/progression.js";
 // Halieus Game Room 3.6.7 — isolated WHOT rebuild engine.
 // This module is the active implementation; pre-3.6.7 source is retained only under docs/archive.
 import { randomBytes } from "node:crypto";
@@ -524,7 +525,8 @@ export function getWhotLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     .map((room) => ({
       game: "whot", gameTitle: "WHOT", code: room.code, phase: room.phase, matchMode: room.matchMode, started: room.started,
       createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt, playerCount: room.players.length, maximumPlayers: 8,
-      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
+      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name),
+    verifiedAccountIds: verifiedRoomAccountIds(room.players), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
       joinable: room.phase === "lobby" && (room.players.length < 8 || room.players.some((player) => player.isAi)), spectatable: true,
     }));
 }

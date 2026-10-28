@@ -7,6 +7,21 @@ const identities = new Map<string, () => Identity | null>();
 export function registerProgressionIdentity(socketId: string, identity: () => Identity | null): () => void { identities.set(socketId, identity); return () => { identities.delete(socketId); }; }
 /** Server-internal authenticated socket identity, never derived from player-entered display names. */
 export function getProgressionSocketIdentity(socketId: string): Identity | null { return identities.get(socketId)?.() ?? null; }
+
+/** For internal live-room social presence only: no name-matching, no AI, no guests.
+ * Consumers MUST strip the resulting account IDs from general room listings.
+ */
+export function verifiedRoomAccountIds(
+  players: ReadonlyArray<{ id: string; isAi?: boolean; isConnected?: boolean; hasLeft?: boolean }>,
+): string[] {
+  const accountIds = new Set<string>();
+  for (const player of players) {
+    if (player.isAi || player.isConnected === false || player.hasLeft) continue;
+    const identity = getProgressionSocketIdentity(player.id);
+    if (identity && !identity.beta) accountIds.add(identity.accountId);
+  }
+  return [...accountIds];
+}
 /** Mutate server-owned players only, before persistence/archiving. Never infer identity from a name. */
 export function captureProgression(payload: any): void {
   const state = payload?.gameState ?? payload;

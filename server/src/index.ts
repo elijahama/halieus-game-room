@@ -1,7 +1,7 @@
 import { archiveCompletedMegaGame } from "./games/mega-board/utils/mega-history.js";
 import { registerGameHistoryRoutes } from "./platform/game-history.js";
 import { registerActiveMatchRoutes } from "./platform/active-match.js";
-import { registerProgressionIdentity } from "./platform/progression.js";
+import {registerProgressionIdentity, verifiedRoomAccountIds } from "./platform/progression.js";
 import cors from "cors";
 import express, {
   type NextFunction,
@@ -471,6 +471,7 @@ const getMegaBoardLiveRoomSummaries = () => [...rooms.values()]
     playerCount: room.players.filter((player) => !player.hasLeft).length,
     maximumPlayers: 8,
     humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected && !player.hasLeft).map((player) => player.name),
+    verifiedAccountIds: verifiedRoomAccountIds(room.players),
     aiCount: room.players.filter((player) => player.isAi && !player.hasLeft).length,
     spectatorCount: listSpectators(room.code).length,
     joinable: !room.started && room.players.filter((player) => !player.hasLeft).length < 8,

@@ -39,6 +39,7 @@ import { fullscreenUnavailableMessage, stableFullscreenAvailable } from "../full
 import { SkinLibraryButton } from "./SkinLibraryButton";
 import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
+import { useSocialActivityNotifications } from "../socialActivityNotifications";
 import { GameInviteDropdown } from "./GameInviteDropdown";
 import { GuildMessageDropdown } from "./GuildMessageDropdown";
 import { incomingGameNotifications, readSeenGameNotifications, saveSeenGameNotifications, type HgrIncomingGameNotification } from "./gameInviteNotifications";
@@ -198,6 +199,7 @@ export function HomeScreen(props: HomeScreenProps) {
   const [guildMessageNotice, setGuildMessageNotice] = useState<HalieusGuildMessageNotification | null>(null);
   const [preferredGuildId, setPreferredGuildId] = useState<string | null>(null);
   const [inboxOpen, setInboxOpen] = useState(false);
+  const socialActivity = useSocialActivityNotifications(account?.id ?? null);
   const [gameNotice, setGameNotice] = useState<HgrIncomingGameNotification | null>(null);
   const [gameNoticeBusy, setGameNoticeBusy] = useState(false);
   const [gameNoticeError, setGameNoticeError] = useState("");
@@ -589,7 +591,8 @@ export function HomeScreen(props: HomeScreenProps) {
   function previousFeature() { setFeaturedRotationIndex((current) => (current - 1 + featureRotation.length) % Math.max(1, featureRotation.length)); }
   function nextFeature() { setFeaturedRotationIndex((current) => (current + 1) % Math.max(1, featureRotation.length)); }
 
-  const onlinePlayers = directory.filter((person) => person.online);
+  const onlineSocialIds = new Set(socialActivity.active.filter((person) => person.online).map((person) => person.accountId));
+  const onlinePlayers = directory.filter((person) => person.online || onlineSocialIds.has(person.id));
   const recentPlayers = useMemo(() => directory
     .filter((person) => person.id !== account?.id)
     .slice()
@@ -601,7 +604,7 @@ export function HomeScreen(props: HomeScreenProps) {
     request.status === "pending" && request.recipientAccountId === account?.id),
   [friendRequests, account?.id]);
   const inboxCount = activeGameRequests.length + gameInvites.length + guildInvites.length
-    + unreadGuildMessages.length + incomingFriendRequests.length;
+    + unreadGuildMessages.length + incomingFriendRequests.length + socialActivity.unreadCount;
   const discoveryGames = useMemo(() => {
     const mostPlayed = [...personalStats.byGame]
       .filter((row) => row.played > 0 && ACTIVE_GAME_IDS.has(row.game as GameId))
@@ -609,10 +612,11 @@ export function HomeScreen(props: HomeScreenProps) {
       .map((row) => row.game as GameId);
     const recent = [...new Set(personalStats.recent.map((item) => item.game as GameId))]
       .filter((game) => ACTIVE_GAME_IDS.has(game));
-    // Friend relationships are not yet a canonical platform data source.
-    // Do not infer "friends" from every live room: an empty shelf is more truthful
-    // than recommending unrelated active games under a Friends label.
-    const friends: GameId[] = [];
+    // Only canonical friend IDs + authenticated socket room identities qualify.
+    const acceptedFriendIds = new Set(friendIds);
+    const friends = socialActivity.active.filter((contact) => acceptedFriendIds.has(contact.accountId)
+      && contact.game && ACTIVE_GAME_IDS.has(contact.game.id as GameId))
+      .map((contact) => contact.game!.id as GameId);
     const unplayed = GAMES.filter((game) => !personalStats.byGame.some((row) => row.game === game.id && row.played > 0)).map((game) => game.id);
     const recommended = [...unplayed, ...quickGames].filter((game, index, values) => values.indexOf(game) === index);
     const shelves: Record<DiscoveryShelf, GameId[]> = {
@@ -623,12 +627,21 @@ export function HomeScreen(props: HomeScreenProps) {
       friends,
     };
     return shelves[discoveryShelf].slice(0, 4);
-  }, [discoveryShelf, liveRooms, personalStats.byGame, personalStats.recent, quickGames]);
+  }, [discoveryShelf, liveRooms, personalStats.byGame, personalStats.recent, quickGames, friendIds, socialActivity.active]);
   const liveRoomByPlayerName = useMemo(() => {
     const map = new Map<string, HalieusLiveRoomSummary>();
     liveRooms.forEach((room) => room.humanPlayers.forEach((name) => map.set(name.trim().toLowerCase(), room)));
     return map;
   }, [liveRooms]);
+  const verifiedSocialRoomByAccountId = useMemo(() => {
+    const rooms = new Map<string, HalieusLiveRoomSummary>();
+    for (const contact of socialActivity.active) {
+      if (!contact.game) continue;
+      const room = liveRooms.find((entry) => entry.game === contact.game?.id && entry.code === contact.game?.code);
+      if (room) rooms.set(contact.accountId, room);
+    }
+    return rooms;
+  }, [socialActivity.active, liveRooms]);
   // Guild membership grants contact visibility, not automatic friendship.
   // The normal directory remains server-filtered for privacy; this split
   // simply separates accepted friends from other shared-guild contacts.
@@ -644,16 +657,16 @@ export function HomeScreen(props: HomeScreenProps) {
   const filteredDirectory = useMemo(() => {
     const query = playerSearch.trim().toLowerCase();
     return selectedSocialRoster.filter((person) => {
-      const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase());
+      const liveRoom = verifiedSocialRoomByAccountId.get(person.id);
       const matchesFilter = playerFilter === "all"
-        || (playerFilter === "online" && person.online)
+        || (playerFilter === "online" && (person.online || onlineSocialIds.has(person.id)))
         || (playerFilter === "in-game" && Boolean(liveRoom))
-        || (playerFilter === "offline" && !person.online);
+        || (playerFilter === "offline" && !person.online && !onlineSocialIds.has(person.id));
       const matchesSearch = !query || `${person.displayName} ${person.username}`.toLowerCase().includes(query);
       return matchesFilter && matchesSearch;
     });
-  }, [selectedSocialRoster, liveRoomByPlayerName, playerFilter, playerSearch]);
-  const selectedPlayerRoom = selectedPlayer ? liveRoomByPlayerName.get(selectedPlayer.displayName.trim().toLowerCase()) ?? null : null;
+  }, [selectedSocialRoster, verifiedSocialRoomByAccountId, playerFilter, playerSearch, socialActivity.active]);
+  const selectedPlayerRoom = selectedPlayer ? verifiedSocialRoomByAccountId.get(selectedPlayer.id) ?? null : null;
   const ownLiveRoom = useMemo(() => {
     const savedCodes = new Set(savedSeats.map((entry) => `${entry.id}:${entry.session?.code ?? ""}`));
     return liveRooms.find((room) => savedCodes.has(`${room.game}:${room.code}`))
@@ -815,7 +828,7 @@ export function HomeScreen(props: HomeScreenProps) {
 
   function playerCardActions(person: HalieusPlayerDirectoryEntry): PlayerIdentityAction[] {
     const actions: PlayerIdentityAction[] = [];
-    const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase()) ?? null;
+    const liveRoom = verifiedSocialRoomByAccountId.get(person.id) ?? null;
 
     actions.push({
       id: "view-profile",
@@ -1100,10 +1113,28 @@ export function HomeScreen(props: HomeScreenProps) {
     <div className="halieus-inbox-backdrop" role="presentation" onMouseDown={(event) => event.currentTarget === event.target && setInboxOpen(false)}>
       <section className="halieus-inbox-panel panel-enter" role="dialog" aria-modal="true" aria-label="Halieus inbox">
         <header>
-          <div><p>PLAYER INBOX</p><h2>Requests & invitations</h2><span>Game and guild requests stay inside Halieus, so you do not need to move codes through another app.</span></div>
+          <div><p>PLAYER INBOX</p><h2>Notifications & activity</h2><span>Requests, invitations and verified friends or guild contacts joining games appear here.</span></div>
           <button type="button" onClick={() => setInboxOpen(false)} aria-label="Close inbox">×</button>
         </header>
-        {inboxCount === 0 && <div className="halieus-inbox-empty"><strong>You’re all caught up.</strong><span>Game invitations and guild messages will appear here.</span></div>}
+        {inboxCount === 0 && <div className="halieus-inbox-empty"><strong>You’re all caught up.</strong><span>Game invitations, guild messages and friend activity will appear here.</span></div>}
+        {socialActivity.items.length > 0 && <section className="halieus-inbox-group hgr-social-activity-group" aria-label="Friends and guild activity">
+          <header><strong>Friends &amp; guild activity</strong><b>{socialActivity.unreadCount ? socialActivity.unreadCount + " new" : socialActivity.items.length + " saved"}</b>
+            <button type="button" className="button-muted" onClick={socialActivity.markRead}>Mark all read</button>
+            <button type="button" className="button-muted" onClick={socialActivity.clear}>Clear</button>
+          </header>
+          {socialActivity.items.slice(0, 20).map((notice) => {
+            const room = notice.gameId && notice.roomCode
+              ? liveRooms.find((candidate) => candidate.game === notice.gameId && candidate.code === notice.roomCode) : null;
+            return <article key={notice.id} className={"halieus-inbox-item is-guild hgr-social-activity-item" + (notice.read ? "" : " is-unread")}
+              style={{ ["--inbox-accent" as string]: notice.kind === "game" ? "#65d9ae" : "#83a9f0" }}>
+              <span className="halieus-inbox-guild-mark" aria-hidden="true">{notice.kind === "game" ? "🎮" : "●"}</span>
+              <span><small>{notice.kind === "game" ? "IN A GAME" : "ONLINE NOW"} · {new Date(notice.at).toLocaleString()}</small>
+                <strong>{notice.title}</strong><em>{notice.detail}</em></span>
+              <div>{room?.joinable && <button type="button" className="button-primary" onClick={() => { socialActivity.markRead(); setInboxOpen(false); openLiveRoom(room, "join"); }}>Join</button>}
+                {room?.spectatable && <button type="button" className="button-outline" onClick={() => { socialActivity.markRead(); setInboxOpen(false); openLiveRoom(room, "watch"); }}>Watch</button>}</div>
+            </article>;
+          })}
+        </section>}
         {activeGameRequests.length > 0 && <section className="halieus-inbox-group"><header><strong>Game requests</strong><b>{activeGameRequests.length}</b></header>{activeGameRequests.map((request) => {
           const incoming = request.recipientAccountId === account?.id;
           const accepted = request.status === "accepted";
@@ -1368,7 +1399,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <section className="halieus-home-social-grid">
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>ONLINE PLAYERS</p><h2>Who’s around</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
-              <div>{onlinePlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact status="Online" detail={liveRoomByPlayerName.has(person.displayName.trim().toLowerCase()) ? "In game" : undefined} className="is-online" actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No friends or guild members are online right now.</p>}</div>
+              <div>{onlinePlayers.slice(0, 3).map((person) => <PlayerIdentityCard key={person.id} player={person} compact status="Online" detail={verifiedSocialRoomByAccountId.has(person.id) ? "In game" : undefined} className="is-online" actions={playerCardActions(person)} onClick={() => { setSelectedPlayerId(person.id); setView("players"); }} />)}{onlinePlayers.length === 0 && <p>No friends or guild members are online right now.</p>}</div>
             </section>
             <section className="halieus-section-card halieus-home-player-strip">
               <header><div><p>RECENT PLAYERS</p><h2>Play together again</h2></div><button type="button" onClick={() => setView("players")}>View all →</button></header>
@@ -1485,14 +1516,14 @@ export function HomeScreen(props: HomeScreenProps) {
             {friendListError && <p className="halieus-social-refresh-error" role="status">{friendListError}</p>}
             <div className="halieus-player-directory is-social-list" aria-label={socialListSection === "friends" ? "Accepted friends" : "Guild contacts who are not friends"}>
               {filteredDirectory.map((person) => {
-                const liveRoom = liveRoomByPlayerName.get(person.displayName.trim().toLowerCase()) ?? null;
+                const liveRoom = verifiedSocialRoomByAccountId.get(person.id) ?? null;
                 const liveGame = liveRoom ? GAME_BY_ID[liveRoom.game] : null;
                 return <PlayerIdentityCard
                   key={person.id}
                   player={person}
                   compact
-                  className={`${person.online ? "is-online" : "is-offline"} ${liveRoom ? "is-in-game" : ""}`}
-                  status={person.online ? "Online" : undefined}
+                  className={`${person.online || onlineSocialIds.has(person.id) ? "is-online" : "is-offline"} ${liveRoom ? "is-in-game" : ""}`}
+                  status={person.online || onlineSocialIds.has(person.id) ? "Online" : undefined}
                   detail={liveRoom && liveGame ? `Playing ${liveGame.name} · ${liveRoom.code}` : person.online ? undefined : "Offline"}
                   actions={playerCardActions(person)}
                   onClick={() => setSelectedPlayerId(person.id)}

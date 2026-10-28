@@ -1,3 +1,4 @@
+import { verifiedRoomAccountIds } from "../../platform/progression.js";
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
@@ -47,7 +48,8 @@ export function getHiddenDictatorLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     .map((room) => ({
       game: "hidden-dictator", gameTitle: "Hidden Dictator", code: room.code, phase: room.phase, matchMode: room.matchMode, started: room.phase !== "lobby",
       createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt, playerCount: room.players.length, maximumPlayers: 10,
-      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
+      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name),
+    verifiedAccountIds: verifiedRoomAccountIds(room.players), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
       joinable: room.phase === "lobby" && room.players.length < 10, spectatable: true,
     }));
 }

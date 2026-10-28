@@ -1,3 +1,4 @@
+import { verifiedRoomAccountIds } from "../../platform/progression.js";
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
@@ -712,7 +713,8 @@ export function getPokerLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     .map((room) => ({
       game: "poker", gameTitle: "Poker", code: room.code, phase: room.started ? room.hand.phase : "lobby", matchMode: room.matchMode,
       started: room.started, createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt, playerCount: room.players.length, maximumPlayers: 8,
-      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
+      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name),
+    verifiedAccountIds: verifiedRoomAccountIds(room.players), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
       joinable: !room.started && (room.players.length < 8 || room.players.some((player) => player.isAi)), spectatable: true,
     }));
 }

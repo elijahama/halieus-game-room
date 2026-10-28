@@ -910,7 +910,7 @@ function visibleNameForViewer(name: string, viewer: StoredAccount): string {
 }
 
 function liveRoomsForViewer(viewer: StoredAccount): HalieusLiveRoomSummary[] {
-  return (adminRuntimeControls?.getLiveRooms() ?? []).map((room) => ({
+  return (adminRuntimeControls?.getLiveRooms() ?? []).map(({ verifiedAccountIds: _internalIds, ...room }) => ({
     ...room,
     humanPlayers: room.humanPlayers.map((name) => visibleNameForViewer(name, viewer)),
   }));
@@ -1073,7 +1073,29 @@ export function registerAccountRoutes(app: Express): void {
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     const rooms = liveRoomsForViewer(auth.account)
       .sort((a, b) => Number(b.started) - Number(a.started) || b.updatedAt - a.updatedAt);
+    response.setHeader("Cache-Control", "private, no-store");
     response.json({ ok: true, rooms });
+  });
+
+  // Uses authenticated socket account IDs, not matching player-entered names.
+  // Friends and guild peers with hidden profiles are excluded by the existing
+  // social directory. Never return internal account-to-room mapping or codes.
+  app.get("/accounts/social/activity", (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    const contacts = playerDirectory(auth.account, "social");
+    const rooms = adminRuntimeControls?.getLiveRooms() ?? [];
+    const entries = contacts.map((contact) => {
+      const room = rooms.find((entry) => entry.verifiedAccountIds?.includes(contact.id));
+      return {
+        accountId: contact.id,
+        displayName: contact.displayName,
+        online: contact.online || Boolean(room),
+        game: room ? { id: room.game, title: room.gameTitle, started: room.started, code: room.code } : null,
+      };
+    });
+    response.setHeader("Cache-Control", "private, no-store");
+    response.json({ ok: true, entries });
   });
 
 
