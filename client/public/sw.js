@@ -1,4 +1,4 @@
-const CACHE = 'halieus-shell-v4-6-9-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
+const CACHE = 'halieus-shell-v4-6-10-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
 const SHELL = ['/', '/site.webmanifest?identity=install-h6', '/app-icon-192.png?identity=install-h6', '/app-icon-512.png?identity=install-h6'];
 const IDENTITY_PATHS = new Set(['/site.webmanifest', '/halieus-mark.svg', '/halieus-app-icon.svg', '/halieus-app-icon.png', '/app-icon.svg', '/app-icon-180.png', '/app-icon-192.png', '/app-icon-512.png', '/favicon-32.png', '/favicon.ico']);
 self.addEventListener('install', (event) => {
@@ -24,7 +24,13 @@ self.addEventListener('fetch', (event) => {
   }
   if (event.request.mode === 'navigate') {
     event.respondWith(fetch(event.request).then((response) => {
-      const copy = response.clone(); caches.open(CACHE).then((cache) => cache.put('/', copy)); return response;
+      // A maintenance 503 is authoritative and must never overwrite the
+      // healthy offline shell cache with a stale "closed" document.
+      if (response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE).then((cache) => cache.put('/', copy));
+      }
+      return response;
     }).catch(() => caches.match('/')));
     return;
   }

@@ -21,6 +21,8 @@
   const observedRunningOperationIds = new Set();
   const OPERATION_TOAST_CORNERS = new Set(["top-left", "top-right", "bottom-left", "bottom-right"]);
   let operationToastClickSuppressedUntil = 0;
+  let publicAccessState = null;
+  let publicAccessBusy = false;
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -661,7 +663,7 @@
     const connectOperationStream = () => {
       if (typeof window.io !== "function") return;
       try {
-        const socket = window.io({ withCredentials: true });
+        const socket = window.io({ withCredentials: true, auth: { hgrControl: true } });
         socket.on("control:operation", setOperation);
       } catch { /* Optional realtime relay; Control remains usable. */ }
     };
@@ -669,8 +671,80 @@
     else window.addEventListener("load", connectOperationStream, { once: true });
   }
 
+  async function refreshPublicAccess() {
+    if (state.account?.role !== "owner" || publicAccessBusy) return;
+    const card = $("publicAccessCard");
+    if (!card) return;
+    card.hidden = false;
+    try {
+      const result = await api("/admin/public-access");
+      publicAccessState = result.state;
+      const closed = publicAccessState?.closed === true;
+      const active = Number(result.activeRooms || 0);
+      $("publicAccessStatus").textContent = closed
+        ? "Public Game Room is closed for visitors. Control remains accessible."
+        : "Public Game Room is open.";
+      $("publicAccessRooms").textContent = active + " live room" + (active === 1 ? "" : "s") + ".";
+      if (document.activeElement !== $("publicAccessReason") && closed) {
+        $("publicAccessReason").value = publicAccessState.reason || "";
+      }
+      const button = $("publicAccessToggle");
+      button.textContent = closed ? "Reopen Public Game Room" : "Close Public Game Room";
+      button.disabled = !closed && active > 0;
+      button.title = !closed && active > 0 ? "Close is blocked while live rooms are occupied." : "";
+      button.dataset.state = closed ? "closed" : "open";
+    } catch (error) {
+      $("publicAccessStatus").textContent = error instanceof Error ? error.message : "Unable to read public access state.";
+      $("publicAccessToggle").disabled = true;
+    }
+  }
+  async function togglePublicAccess() {
+    if (state.account?.role !== "owner" || publicAccessBusy || !publicAccessState) return;
+    const closing = !publicAccessState.closed;
+    const phrase = closing ? "CLOSE PUBLIC GAME ROOM" : "REOPEN PUBLIC GAME ROOM";
+    const typed = window.prompt(
+      (closing ? "Visitors will see a temporary closure page. Owner Control will remain available."
+        : "The public Game Room will reopen for everyone.") +
+      "\\nType " + phrase + " to confirm:", "",
+    );
+    if (typed !== phrase) return;
+    if (!window.confirm(closing
+      ? "Confirm public maintenance closure now? This will refuse new game connections and is blocked if any live room exists."
+      : "Confirm reopen the public Game Room for everyone?")) return;
+    publicAccessBusy = true;
+    let failureReason = "";
+    $("publicAccessToggle").disabled = true;
+    $("publicAccessStatus").textContent = closing ? "Applying public closure…" : "Reopening the Game Room…";
+    try {
+      const response = await fetch("/admin/public-access", {
+        method: "POST", credentials: "include", cache: "no-store",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          state: closing ? "closed" : "open",
+          confirmation: phrase,
+          reason: $("publicAccessReason").value.trim(),
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) throw Error(result.reason || "Public access could not be changed.");
+      publicAccessState = result.state;
+      $("publicAccessStatus").textContent = closing
+        ? "Public visitor access is closed. Reopen from this panel when ready."
+        : "Public access reopened successfully.";
+    } catch (error) {
+      failureReason = error instanceof Error ? error.message : "The public access request failed.";
+    } finally {
+      publicAccessBusy = false;
+      await refreshPublicAccess();
+      // Do not erase the actionable 409 reason with the normal "site open"
+      // status. The owner needs to know that a live match blocked closure.
+      if (failureReason) $("publicAccessStatus").textContent = failureReason;
+    }
+  }
+
   function bindUi() {
     queryAll("[data-section]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.section)));
+    $("publicAccessToggle")?.addEventListener("click", () => void togglePublicAccess());
     queryAll("[data-jump]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.jump)));
     $("refreshLive")?.addEventListener("click", () => void refreshCore());
     $("refreshAudit")?.addEventListener("click", () => void refreshCore());
@@ -723,6 +797,11 @@
       hideAccess();
       renderIdentity();
       bindOperationChannels();
+      if (auth.account.role === "owner") {
+        $("publicAccessCard").hidden = false;
+        void refreshPublicAccess();
+        window.setInterval(() => void refreshPublicAccess(), 10000);
+      }
       await refreshCore();
       window.setInterval(() => void refreshHealthOnly(), 2000);
       window.setInterval(() => void refreshCore(), 10000);

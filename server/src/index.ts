@@ -54,6 +54,7 @@ import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthent
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
+import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage } from "./platform/publicAccess.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
 import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHandlers.js";
@@ -408,6 +409,27 @@ const io = new Server(httpServer, {
 
 let activeMaintenanceNotice: HalieusMaintenanceNotice | null = null;
 
+// A closed public Game Room is distinct from the short deploy/restart notice.
+// An authenticated owner Control socket alone can remain connected, and only
+// the owner can reopen the visitor gate. No game or HTTP process is terminated.
+function isOwnerControlSocket(socket: Socket): boolean {
+  if (socket.handshake.auth?.hgrControl !== true) return false;
+  const account = getAuthenticatedAccount(socket.request as Request);
+  return account?.role === "owner";
+}
+io.use((socket, next) => {
+  if (!getPublicAccessState().closed || isOwnerControlSocket(socket)) return next();
+  next(new Error("The Game Room is temporarily closed. Please return after maintenance."));
+});
+onPublicAccessChanged((state) => {
+  if (!state.closed) return;
+  for (const connected of io.sockets.sockets.values()) {
+    if (isOwnerControlSocket(connected)) continue;
+    connected.emit("platform:public-closed", { message: state.reason });
+    connected.disconnect(true);
+  }
+});
+
 function isLoopbackRequest(request: Request): boolean {
   const address = request.socket.remoteAddress ?? "";
   return address === "127.0.0.1" || address === "::1" || address === "::ffff:127.0.0.1";
@@ -518,6 +540,12 @@ configureAccountAdminRuntimeControls({
 io.on(
   "connection",
   (socket: Socket) => {
+  // A socket connected before the owner closes visitor access must not
+  // create a new room during the brief durable-write/disconnect interval.
+  socket.use((_packet, next) => {
+    if (!getPublicAccessState().closed || isOwnerControlSocket(socket)) return next();
+    next(new Error("Public game creation is paused for maintenance."));
+  });
   let progressionBeta = socket.handshake.auth?.betaMode === true;
   socket.data.betaMode = progressionBeta;
   const clearProgressionIdentity = registerProgressionIdentity(socket.id, () => { const account = getAuthenticatedAccount(socket.request as Request); return account ? { accountId: account.id, beta: progressionBeta } : null; });
@@ -594,6 +622,7 @@ io.on(
 );
 
 await loadAccountStore();
+await loadPublicAccessState();
 await loadGuildStore();
 await loadFeedbackStore();
 await initializePushNotifications();
@@ -655,6 +684,20 @@ process.on("SIGTERM", async () => {
   await new Promise((resolvePromise) => setTimeout(resolvePromise, 750));
   await Promise.all([flushRoomSave(), flushRankingsSave()]);
   process.exit(0);
+});
+
+// Keep authentication, Control, API health and account-owned recovery routes
+// available. Only ordinary visitor HTML navigations become a 503 notice.
+app.use((request: Request, response: Response, next: NextFunction) => {
+  const gate = getPublicAccessState();
+  if (!gate.closed || request.method !== "GET" ||
+      request.path === "/control" || request.path.startsWith("/control/")) return next();
+  const hasFileExtension = /\.[a-z0-9]{1,8}$/i.test(request.path);
+  if (hasFileExtension && !request.path.endsWith(".html")) return next();
+  response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  response.setHeader("Pragma", "no-cache");
+  response.setHeader("X-Robots-Tag", "noindex,nofollow,noarchive");
+  response.status(503).type("html").send(renderPublicClosedPage(gate.reason));
 });
 
 const shouldServeClient =

@@ -1515,3 +1515,9 @@ The mobile-friendly HGR Inbox gets per-account recent friend-online and friend-e
 This follows the existing Logic & Philo opt-in notification experience's useful Inbox and delivery-verification conventions without importing its separate credentials, data, VAPID keys or subscriptions. HGR's signed-in device push test was independently merged in 4.6.8. A future separate owner-approved maintenance control may show a public visitor-closed screen without stopping Control; **the owner-PC Close command still closes only its isolated browser window**.
 
 See [HGR_SOCIAL_ACTIVITY_NOTIFICATIONS.md](HGR_SOCIAL_ACTIVITY_NOTIFICATIONS.md) and `tests/runtime-social-activity-notifications-4.6.9.mjs`. Source-only candidate; release and device acceptance require audited typecheck, tests, Windows/Ubuntu CI and separate safe deployment. No active public rooms were closed by this change.
+
+## 4.6.10 — Owner-confirmed public visitor maintenance mode
+
+A separate public website closure/reopen control has been designed and implemented independently of the existing Open/Restart/Close **HGR Window** buttons. Closing changes the Oracle server's **visitor gate** to an uncached HTTP 503 maintenance page and rejects new public game sockets, without stopping the server or authenticated owner Control. The service refuses closure when any of the 14 game types has an active room. The owner can log in via the maintenance page and reopen from Control; private persisted state survives process restarts. Typed confirmation, same-origin JSON, owner-only authentication, audit and private data storage are required. No live site closure is performed in source development.
+
+See [HGR_PUBLIC_MAINTENANCE.md](HGR_PUBLIC_MAINTENANCE.md). The public gate must be audited and accepted after Windows/Ubuntu CI and real mobile/desktop testing, and must not replace or contradict the existing transient deploy/restart maintenance notification mechanism.

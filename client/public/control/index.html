@@ -169,6 +169,17 @@
         <button data-operation="close" disabled><span>■</span><strong>Close HGR Window</strong><small>Owner confirmation and connected bridge required</small></button>
         <button data-operation="update" data-update-state="idle" disabled><span class="operation-action-icon" aria-hidden="true"></span><strong>Update HGR</strong><small>Progress appears globally</small></button>
       </div>
+      <article id="publicAccessCard" class="panel-card hgr-public-access-card" hidden>
+        <div class="card-heading"><div><p class="eyebrow">PUBLIC WEBSITE · OWNER ONLY</p>
+          <h2>Public Game Room access</h2></div></div>
+        <p>This is separate from Close HGR Window on Lagz. Closing the public Game Room shows a maintenance page to visitors without stopping Oracle or HGR Control.</p>
+        <p id="publicAccessStatus" role="status">Checking public access…</p>
+        <p id="publicAccessRooms">Checking live rooms…</p>
+        <label for="publicAccessReason">Reason shown to visitors</label>
+        <textarea id="publicAccessReason" rows="2" maxlength="220" placeholder="The Game Room is temporarily closed for maintenance."></textarea>
+        <button type="button" id="publicAccessToggle" class="secondary-action" disabled>Checking status…</button>
+        <small>Closing is refused if any game or lobby is active. A confirmed Reopen action is always available from Control. The server stays running.</small>
+      </article>
       <button type="button" class="secondary-action development-jump" data-jump="development">View development batches &amp; GitHub checks</button>
       <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent operation status</h2><p>Approved Start, Restart, Close and Update operations remain traceable while you move around Control. On phones, a compact status chip expands to show progress, phase and the server-verified result.</p></article>
     </section>

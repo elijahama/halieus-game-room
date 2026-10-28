@@ -6,6 +6,7 @@ import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/them
 import { readPlayerProgression } from "./progression.js";
 import { getGuildPeerAccountIds } from "./guilds.js";
 import { sendHgrPush } from "./pushNotifications.js";
+import { getPublicAccessState, setPublicAccessState } from "./publicAccess.js";
 import type { Express, Request, Response } from "express";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -934,6 +935,63 @@ function publicGameInvites(accountId: string): HalieusGameInviteSummary[] {
 }
 
 export function registerAccountRoutes(app: Express): void {
+  // Public closure is a distinct, persisted Oracle visitor mode. It never
+  // invokes the Windows HGR Close launcher or terminates the Oracle process.
+  app.get("/admin/public-access", (request, response) => {
+    const owner = requireOwner(request, response);
+    if (!owner) return;
+    response.setHeader("Cache-Control", "no-store");
+    response.json({ ok: true, state: getPublicAccessState(), activeRooms: adminRuntimeControls?.getRoomCount() ?? 0 });
+  });
+  app.post("/admin/public-access", async (request, response) => {
+    const owner = requireOwner(request, response);
+    if (!owner) return;
+    if (!request.is("application/json")) {
+      response.status(415).json({ ok: false, reason: "JSON is required for public access changes." }); return;
+    }
+    const origin = request.get("origin");
+    if (origin) {
+      let sameOrigin = false;
+      try { sameOrigin = new URL(origin).host === request.get("host"); } catch { /* invalid origin */ }
+      if (!sameOrigin) { response.status(403).json({ ok: false, reason: "Cross-site public access changes are forbidden." }); return; }
+    }
+    const requestedState = request.body?.state;
+    const closed = requestedState === "closed";
+    if (!closed && requestedState !== "open") {
+      response.status(400).json({ ok: false, reason: "Choose closed or open." }); return;
+    }
+    const expected = closed ? "CLOSE PUBLIC GAME ROOM" : "REOPEN PUBLIC GAME ROOM";
+    if (request.body?.confirmation !== expected) {
+      response.status(409).json({ ok: false, reason: "The owner confirmation phrase was not accepted." }); return;
+    }
+    const activeRooms = adminRuntimeControls?.getRoomCount();
+    // A missing room registry is NOT proof that no one is playing.
+    if (closed && (!Number.isInteger(activeRooms) || activeRooms! > 0)) {
+      response.status(409).json({
+        ok: false, reason: "Close refused: confirm that all games and lobbies are empty before maintenance.",
+        activeRooms: activeRooms ?? null,
+      }); return;
+    }
+    let state;
+    try {
+      state = await setPublicAccessState(closed, request.body?.reason, owner.id);
+    } catch {
+      response.status(500).json({ ok: false, reason: "Could not persist public access. The change was not applied." }); return;
+    }
+    // The persisted visitor gate is authoritative even if the supplementary
+    // account audit later fails. Never falsely report a successful close as failed.
+    try {
+      addAudit(owner.id, closed ? "public-access.closed" : "public-access.reopened",
+        "system", null, closed ? "Owner closed public visitor access while keeping Control online."
+          : "Owner reopened public visitor access.");
+      await saveStore();
+    } catch (error) {
+      console.error("[HGR] Public access changed but its audit entry could not be saved.", error);
+    }
+    response.setHeader("Cache-Control", "no-store");
+    response.json({ ok: true, state, activeRooms: adminRuntimeControls?.getRoomCount() ?? 0 });
+  });
+
   app.get("/auth/status", (request, response) => response.json(authStatus(request)));
 
   app.post("/auth/heartbeat", (request, response) => {
