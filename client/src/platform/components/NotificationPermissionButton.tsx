@@ -58,6 +58,8 @@ export function NotificationPermissionButton({
   const [enabled, setEnabled] = useState(false);
   const [checking, setChecking] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState("");
   const [error, setError] = useState("");
   const [pushServiceFailure, setPushServiceFailure] = useState(false);
   const currentAccount = useRef(accountId);
@@ -71,6 +73,8 @@ export function NotificationPermissionButton({
     setEnabled(false);
     setChecking(true);
     setBusy(false);
+    setTesting(false);
+    setTestResult("");
     setError("");
     setPushServiceFailure(false);
     if (!supported || !accountId) {
@@ -191,6 +195,27 @@ export function NotificationPermissionButton({
     }
   };
 
+  const testDelivery = async () => {
+    if (!accountId || !enabled || checking || busy || testing) return;
+    const requestedAccount = accountId;
+    const run = generation.current;
+    const valid = () => currentAccount.current === requestedAccount && generation.current === run;
+    setTesting(true);
+    setTestResult("");
+    try {
+      const registration = await bounded(navigator.serviceWorker.getRegistration(), "Notification service check");
+      const subscription = await bounded(registration?.pushManager.getSubscription() ?? Promise.resolve(null),
+        "Notification subscription check");
+      if (!subscription) throw new Error("This browser has no active push subscription. Re-enable PWA alerts.");
+      const result = await pushApi<{ok:true;message:string}>("/accounts/push/test", {
+        method:"POST",body:JSON.stringify({endpoint:subscription.endpoint}),
+      });
+      if (valid()) setTestResult(result.message);
+    } catch (error) {
+      if (valid()) setTestResult(error instanceof Error ? error.message : "The test notification could not be submitted.");
+    } finally { if (valid()) setTesting(false); }
+  };
+
   return <div className={mode === "settings" ? "hgr-push-settings" : "hgr-notification-enrollment"}>
     {mode === "settings" && <div>
       <strong>Background PWA alerts</strong>
@@ -204,6 +229,14 @@ export function NotificationPermissionButton({
       <b>{busy ? "Updating alerts…" : checking ? "Checking alerts…" : enabled
         ? "Disable PWA alerts" : permission === "denied" ? "Notifications blocked" : "Enable PWA alerts"}</b>
     </button>
+    {mode === "settings" && enabled && <div className="hgr-push-test-controls">
+      <button type="button" className="button-outline"
+        disabled={checking || busy || testing || permission !== "granted"}
+        onClick={() => void testDelivery()}>
+        {testing ? "Sending test…" : "Send test notification"}
+      </button>
+      <small role="status">{testResult || "Checks background delivery to this device, including when HGR is closed."}</small>
+    </div>}
     {error && <div role="alert" className="hgr-push-registration-help"
       style={{ maxWidth: "100%", overflowWrap: "anywhere", marginTop: 8, lineHeight: 1.45 }}>
       <small>{error}</small>

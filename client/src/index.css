@@ -26928,3 +26928,10 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   line-height: 1.4;
   font-size: 11px;
 }
+
+
+/* HGR 4.6.8 — on-device push delivery test. Keep account settings compact
+   and touch-safe in mobile and tablet gallery layouts. */
+.hgr-push-test-controls{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:10px;min-width:0}
+.hgr-push-test-controls>button{min-height:42px;max-width:100%;white-space:normal}
+.hgr-push-test-controls>small{flex:1 1 160px;min-width:0;overflow-wrap:anywhere;line-height:1.4}
