@@ -89,7 +89,7 @@ assert.match(uiRelay, /cloud-update\.js/);
 assert.match(uiRelay, /\/control\/operation-status/);
 
 assert.match(cloudUi, /Approve owner PC/);
-assert.match(cloudUi, /Cloud Update ready/);
+assert.match(cloudUi, /Owner-PC Control ready/,"Owner-PC window commands must not be presented as an active deployment");
 assert.match(cloudUi, /\/control\/cloud\/actions\/update\/confirm/);
 assert.match(cloudUi, /\/control\/cloud\/actions\/update/);
 assert.match(cloudUi, /window\.confirm/);
