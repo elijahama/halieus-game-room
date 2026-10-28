@@ -1,4 +1,4 @@
-import { publicProgressionPlayer } from "../../platform/progression.js";
+import { publicProgressionPlayer, verifiedRoomAccountIds } from "../../platform/progression.js";
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -105,5 +105,5 @@ export function registerWordBoardHandlers(io:Server,socket:Socket){
  socket.on("word-board:leave",(payload:any,ack?:(r:any)=>void)=>{const room=rooms.get(cleanCode(payload?.code));const p=room?.players.find((x)=>x.id===socket.id);if(p)p.isConnected=false;room?.spectators.delete(socket.id);if(room)emit(io,room);ack?.({ok:true});});
  socket.on("disconnect",()=>{for(const room of rooms.values()){const p=room.players.find((x)=>x.id===socket.id);if(p){p.isConnected=false;emit(io,room);}if(room.spectators.delete(socket.id))emit(io,room);}});
 }
-export function getWordBoardLiveRoomSummaries():HalieusLiveRoomSummary[]{return [...rooms.values()].filter((room)=>room.phase!=="finished"&&(room.players.some((p)=>!p.isAi&&p.isConnected)||room.spectators.size>0)).map((room)=>({game:"word-board",gameTitle:"Word Board",code:room.code,phase:room.phase,matchMode:room.matchMode,started:room.phase!=="lobby",createdAt:room.createdAt,startedAt:room.startedAt,updatedAt:room.updatedAt,playerCount:room.players.length,maximumPlayers:4,humanPlayers:room.players.filter((p)=>!p.isAi&&p.isConnected).map((p)=>p.name),aiCount:room.players.filter((p)=>p.isAi).length,spectatorCount:room.spectators.size,joinable:room.phase==="lobby"&&room.players.length<4,spectatable:true}));}
+export function getWordBoardLiveRoomSummaries():HalieusLiveRoomSummary[]{return [...rooms.values()].filter((room)=>room.phase!=="finished"&&(room.players.some((p)=>!p.isAi&&p.isConnected)||room.spectators.size>0)).map((room)=>({game:"word-board",gameTitle:"Word Board",code:room.code,phase:room.phase,matchMode:room.matchMode,started:room.phase!=="lobby",createdAt:room.createdAt,startedAt:room.startedAt,updatedAt:room.updatedAt,playerCount:room.players.length,maximumPlayers:4,humanPlayers:room.players.filter((p)=>!p.isAi&&p.isConnected).map((p)=>p.name),verifiedAccountIds:verifiedRoomAccountIds(room.players),aiCount:room.players.filter((p)=>p.isAi).length,spectatorCount:room.spectators.size,joinable:room.phase==="lobby"&&room.players.length<4,spectatable:true}));}
 export function closeAllWordBoardRooms(){const count=getWordBoardRoomCount();for(const timer of aiTimers.values())clearTimeout(timer);aiTimers.clear();rooms.clear();return count;}

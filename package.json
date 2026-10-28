@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.6.8",
+  "version": "4.6.9",
   "private": true,
   "workspaces": [
     "client",
@@ -10,6 +10,7 @@
   "scripts": {
     "test:replays:all": "node --import tsx tests/runtime-hgr-game-replay-archive-part37.mjs && node --import tsx tests/runtime-mega-tournament-ratings-part37.mjs",
     "test:browser:gallery-all": "node tests/browser-gallery-all-games-4.6.6.mjs",
+    "test:social:activity": "node --import tsx tests/runtime-social-activity-notifications-4.6.9.mjs",
     "test:progression:refresh": "node --import tsx tests/runtime-progression-refresh.mjs",
     "test:browser:control:window-operations": "node tests/browser-control-window-operations.mjs",
     "typecheck": "npm --workspace client run typecheck && npm --workspace server run typecheck",

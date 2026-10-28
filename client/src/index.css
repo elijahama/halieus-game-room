@@ -26935,3 +26935,39 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 .hgr-push-test-controls{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:10px;min-width:0}
 .hgr-push-test-controls>button{min-height:42px;max-width:100%;white-space:normal}
 .hgr-push-test-controls>small{flex:1 1 160px;min-width:0;overflow-wrap:anywhere;line-height:1.4}
+
+/* HGR 4.6.9 · Verified friend/guild activity in the existing Inbox.
+ * Compact mobile-friendly rows, not another fullscreen or floating overlay.
+ */
+.hgr-social-activity-group > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.hgr-social-activity-group > header strong { margin-right: auto; }
+.hgr-social-activity-group > header button {
+  min-height: 36px;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+.hgr-social-activity-item {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.hgr-social-activity-item.is-unread {
+  border-left: 3px solid var(--inbox-accent,#65d9ae);
+}
+.hgr-social-activity-item > span:nth-child(2) {
+  min-width: 0;
+}
+.hgr-social-activity-item > span:nth-child(2) strong,
+.hgr-social-activity-item > span:nth-child(2) em {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media(max-width:520px) {
+  .hgr-social-activity-group > header { column-gap: 6px; row-gap: 9px; }
+  .hgr-social-activity-group > header strong { flex: 1 1 100%; }
+  .hgr-social-activity-group > header button { flex: 1 1 auto; }
+}

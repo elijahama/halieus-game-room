@@ -19,6 +19,8 @@ export interface HalieusLiveRoomSummary {
   playerCount: number;
   maximumPlayers: number;
   humanPlayers: string[];
+  /** SERVER-ONLY authenticated socket identities; never include in public room JSON. */
+  verifiedAccountIds?: string[];
   aiCount: number;
   spectatorCount: number;
   joinable: boolean;

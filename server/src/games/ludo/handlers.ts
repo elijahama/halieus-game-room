@@ -1,3 +1,4 @@
+import { verifiedRoomAccountIds } from "../../platform/progression.js";
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
@@ -421,7 +422,8 @@ export function getLudoLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     .map((room) => ({
       game: "ludo", gameTitle: "Ludo", code: room.code, phase: room.phase, matchMode: room.matchMode, started: room.started,
       createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt, playerCount: room.players.length, maximumPlayers: 4,
-      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
+      humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name),
+    verifiedAccountIds: verifiedRoomAccountIds(room.players), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
       joinable: room.phase === "lobby" && (room.players.length < 4 || room.players.some((player) => player.isAi)), spectatable: true,
     }));
 }

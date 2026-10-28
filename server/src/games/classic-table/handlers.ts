@@ -1,4 +1,4 @@
-import { captureProgression } from "../../platform/progression.js";
+import {captureProgression, verifiedRoomAccountIds } from "../../platform/progression.js";
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
@@ -434,7 +434,8 @@ export function getClassicRoomCount(): number { return [...rooms.values()].filte
 export function getClassicLiveRoomSummaries(): HalieusLiveRoomSummary[] {
   return [...rooms.values()].filter((room) => room.phase !== "finished" && (room.players.some((player) => !player.isAi && player.isConnected) || room.spectators.size > 0)).map((room) => ({
     game: room.game, gameTitle: room.game === "cheat" ? "Cheat" : "Dominoes", code: room.code, phase: room.phase, matchMode: room.matchMode, started: room.phase !== "lobby", createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
-    playerCount: room.players.length, maximumPlayers: MAX_PLAYERS[room.game], humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
+    playerCount: room.players.length, maximumPlayers: MAX_PLAYERS[room.game], humanPlayers: room.players.filter((player) => !player.isAi && player.isConnected).map((player) => player.name),
+    verifiedAccountIds: verifiedRoomAccountIds(room.players), aiCount: room.players.filter((player) => player.isAi).length, spectatorCount: room.spectators.size,
     joinable: room.phase === "lobby" && (room.players.length < MAX_PLAYERS[room.game] || room.players.some((player) => player.isAi)), spectatable: true,
   }));
 }
