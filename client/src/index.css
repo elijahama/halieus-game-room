@@ -26892,3 +26892,39 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 }
 /* Portrait-only density enhancement; landscape board sizing and all interaction
    permissions remain under their existing game-specific layout rules. */
+
+/* HGR 4.6.7 — earned theme and cosmetic access is server-verified.
+ * Refresh controls must remain readable and usable in narrow mobile modals. */
+.halieus-unlock-refresh-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 10px 0;
+  min-width: 0;
+}
+.halieus-unlock-refresh-actions > button {
+  appearance: none;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid var(--mm-border, #71829a);
+  border-radius: 10px;
+  background: var(--mm-surface-2, #1a2939);
+  color: var(--mm-text, #f1f5f9);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.halieus-unlock-refresh-actions > button:focus-visible {
+  outline: 2px solid #8fbaff;
+  outline-offset: 2px;
+}
+.halieus-unlock-refresh-actions > button:disabled { cursor: progress; opacity: .65; }
+.halieus-unlock-refresh-actions > small {
+  flex: 1 1 180px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  font-size: 11px;
+}

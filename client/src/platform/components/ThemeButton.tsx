@@ -1,5 +1,6 @@
 import { CORE_LIBRARY_THEME_IDS, CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
 import { accountApi } from "../accounts/api";
+import { subscribeToProgressionUpdates } from "../progressionRefresh";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -104,6 +105,8 @@ const THEME_LIBRARY_GROUPS = [
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
   const [entitlements, setEntitlements] = useState<string[]>(CORE_THEME_IDS);
+  const [entitlementRefreshKey, setEntitlementRefreshKey] = useState(0);
+  const [checkingEntitlements, setCheckingEntitlements] = useState(false);
   const [themeError, setThemeError] = useState("");
   const [applying, setApplying] = useState(false);
   const pending = useRef<ThemeSelection | null>(null);
@@ -134,11 +137,26 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
 
   useEffect(() => {
     if (!menuOpen) return;
-    let live = true;
-    setThemeError("");
-    void accountApi<{entitlements:string[]}>("/accounts/me/themes").then(r=>{if(live)setEntitlements([...CORE_THEME_IDS, ...r.entitlements]);}).catch(()=>{if(live)setEntitlements(CORE_THEME_IDS);});
-    return ()=>{live=false;};
+    return subscribeToProgressionUpdates(() => setEntitlementRefreshKey((key) => key + 1));
   }, [menuOpen]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    let live = true;
+    setCheckingEntitlements(true);
+    void accountApi<{entitlements:string[]}>("/accounts/me/themes")
+      .then((result) => {
+        if (!live) return;
+        setEntitlements([...new Set([...CORE_THEME_IDS, ...result.entitlements])]);
+        setThemeError("");
+      })
+      .catch(() => {
+        // An intermittent network failure is NOT evidence that earned
+        // server-side access has been revoked. Keep the last verified list.
+        if (live) setThemeError("Could not check earned themes. Retry when connected.");
+      })
+      .finally(() => { if (live) setCheckingEntitlements(false); });
+    return () => { live = false; };
+  }, [menuOpen, entitlementRefreshKey]);
   const menuRef = useRef<HTMLDivElement>(null), editorRef = useRef<HTMLElement>(null);
   useModalLifecycle(menuOpen, menuRef, () => { setMenuOpen(false); setLibraryOpen(false); });
   useModalLifecycle(editorOpen, editorRef, () => setEditorOpen(false));
@@ -307,6 +325,10 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
               <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HSL</button>
+              <div className="halieus-unlock-refresh-actions">
+                <button type="button" disabled={checkingEntitlements} onClick={() => setEntitlementRefreshKey((key) => key + 1)}>Refresh earned themes</button>
+                <small role="status">{checkingEntitlements ? "Checking verified Gamer Score and achievements…" : "Only completed, verified matches count toward unlocks."}</small>
+              </div>
               <div className="halieus-theme-library-grid">
                 {THEME_LIBRARY_GROUPS.map((group) => (
                   <Fragment key={group.id}>

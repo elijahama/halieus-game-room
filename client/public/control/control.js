@@ -614,8 +614,9 @@
     }
     $("operationToast").hidden = false;
     $("operationToast").dataset.state = operation.state;
-    const lifecycleLabel = ["start", "restart", "close"].includes(operation.action)
-      ? operation.action[0].toUpperCase() + operation.action.slice(1) : "Update";
+    const lifecycleLabel = operation.action === "start" ? "Open HGR window"
+      : operation.action === "restart" ? "Restart HGR window"
+        : operation.action === "close" ? "Close HGR window" : "Update";
     $("operationTitle").textContent = operation.state === "succeeded" ? `${lifecycleLabel} complete`
       : operation.state === "failed" ? `${lifecycleLabel} failed`
       : operation.state === "rejected" ? `${lifecycleLabel} not started` : operation.title;

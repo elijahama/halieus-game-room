@@ -693,7 +693,7 @@ async function runRestart(response: ServerResponse): Promise<void> {
       operationId: operation.id,
       startedAt: operation.startedAt,
       finishedAt,
-      message: "HGR restart command completed successfully.",
+      message: "Dedicated HGR browser window restart completed. The public website remains online.",
     });
   } catch (error) {
     const finishedAt = new Date().toISOString();
@@ -1093,7 +1093,7 @@ const server = createServer(async (request, response) => {
       startBridge,
       startScript,
       response,
-      "HGR start command completed successfully.",
+      "Dedicated HGR browser window launch completed. The public website remains online.",
     );
     return;
   }
@@ -1160,7 +1160,7 @@ const server = createServer(async (request, response) => {
       closeBridge,
       closeScript,
       response,
-      "HGR close command completed successfully.",
+      "Dedicated HGR browser window close command completed. The public website remains online.",
     );
     return;
   }

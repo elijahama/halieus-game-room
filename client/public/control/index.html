@@ -161,12 +161,12 @@
     </section>
 
     <section class="control-section" data-panel="operations">
-      <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Control operations</h2><p>Only fixed, allow-listed operations run through the authenticated owner-PC bridge.</p></div></div>
-      <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Checking approved owner-PC bridge</strong><small>Start, Restart and Close require an owner account and a fresh action confirmation. Update retains its existing authorisation.</small></p></div></article>
+      <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Owner PC window controls</h2><p>Start, Restart and Close control only the dedicated HGR browser window on the owner PC. The public Oracle website stays online. Update uses a separate deployment workflow.</p></div></div>
+      <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Checking approved owner-PC bridge</strong><small>These commands open, reopen or close Lagz’s dedicated HGR browser window—not the Oracle server. Each action requires owner confirmation.</small></p></div></article>
       <div class="operation-grid">
-        <button data-operation="restart" disabled><span>↻</span><strong>Restart HGR</strong><small>Owner confirmation and connected bridge required</small></button>
-        <button data-operation="start" disabled><span>▶</span><strong>Start HGR</strong><small>Owner confirmation and connected bridge required</small></button>
-        <button data-operation="close" disabled><span>■</span><strong>Close HGR</strong><small>Owner confirmation and connected bridge required</small></button>
+        <button data-operation="restart" disabled><span>↻</span><strong>Restart HGR Window</strong><small>Owner confirmation and connected bridge required</small></button>
+        <button data-operation="start" disabled><span>▶</span><strong>Open HGR Window</strong><small>Owner confirmation and connected bridge required</small></button>
+        <button data-operation="close" disabled><span>■</span><strong>Close HGR Window</strong><small>Owner confirmation and connected bridge required</small></button>
         <button data-operation="update" data-update-state="idle" disabled><span class="operation-action-icon" aria-hidden="true"></span><strong>Update HGR</strong><small>Progress appears globally</small></button>
       </div>
       <button type="button" class="secondary-action development-jump" data-jump="development">View development batches &amp; GitHub checks</button>

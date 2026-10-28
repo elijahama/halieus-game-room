@@ -1,5 +1,6 @@
 import { ModalPortal } from "./ModalPortal";
 import { accountApi } from "../accounts/api";
+import { subscribeToProgressionUpdates } from "../progressionRefresh";
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 
@@ -61,7 +62,28 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
 
   const [entitlements, setEntitlements] = useState<string[]>([]);
   const [error, setError] = useState("");
-  useEffect(() => { if (betaMode) return; let live = true; void accountApi<{ preferences: HalieusSkinPreferences; entitlements: string[] }>("/accounts/me/cosmetics").then(result => { if (live) { setEntitlements(result.entitlements); setPreferences(result.preferences); saveSkinPreferences(result.preferences); } }).catch(() => { if (live) setError("Sign in to save earned cosmetics."); }); return () => { live = false; }; }, [betaMode, open]);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [checking, setChecking] = useState(false);
+  useEffect(() => {
+    if (!open || betaMode) return;
+    return subscribeToProgressionUpdates(() => setRefreshKey((key) => key + 1));
+  }, [open, betaMode]);
+  useEffect(() => {
+    if (!open || betaMode) return;
+    let live = true;
+    setChecking(true);
+    void accountApi<{ preferences: HalieusSkinPreferences; entitlements: string[] }>("/accounts/me/cosmetics")
+      .then((result) => {
+        if (!live) return;
+        setEntitlements(result.entitlements);
+        setPreferences(result.preferences);
+        saveSkinPreferences(result.preferences);
+        setError("");
+      }).catch(() => {
+        if (live) setError("Unable to check earned cosmetics. Retry when connected.");
+      }).finally(() => { if (live) setChecking(false); });
+    return () => { live = false; };
+  }, [betaMode, open, refreshKey]);
   const skins = useMemo(() => skinsForSlot(slot), [slot]);
 
   const choose = async (skinId: string, unlocked: boolean) => {
@@ -98,6 +120,10 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
               ))}
             </nav>
 
+            {!betaMode && <div className="halieus-unlock-refresh-actions">
+              <button type="button" disabled={checking} onClick={() => setRefreshKey((key) => key + 1)}>Refresh earned cosmetics</button>
+              <small role="status">{checking ? "Checking verified match and rating requirements…" : "Unlocks require the listed verified match, rating or achievement."}</small>
+            </div>}
             <div className="halieus-skins-grid">
               {skins.map((skin) => {
                 const unlocked = betaMode || entitlements.includes(skin.id);

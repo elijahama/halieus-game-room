@@ -5,14 +5,17 @@ import { socket } from "../network/sockets";
 const STORAGE_KEY = "halieus-game-activity-v1";
 
 function storeNotice(notice: HalieusGameFinishedNotice) {
+  let next: HalieusGameFinishedNotice[] = [notice];
   try {
     const existing = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]") as HalieusGameFinishedNotice[];
-    const next = [notice, ...existing.filter((item) => item.id !== notice.id)].slice(0, 20);
+    next = [notice, ...existing.filter((item) => item.id !== notice.id)].slice(0, 20);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    window.dispatchEvent(new CustomEvent("halieus:game-activity", { detail: next }));
   } catch {
-    // Activity notices are convenience UI only; storage failure must never affect gameplay.
+    // Activity notices are convenience UI; private-mode storage can fail.
   }
+  // Refresh verified progression even when localStorage is blocked. A finish
+  // notice itself never grants an award; the API remains authoritative.
+  window.dispatchEvent(new CustomEvent("halieus:game-activity", { detail: next }));
 }
 
 function formatDuration(ms?: number): string | null {
