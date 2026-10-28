@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
+const dir = await mkdtemp(resolve(tmpdir(), "hgr-maintenance-test-"));
+process.env.HALIEUS_DATA_DIR = dir;
+const root = resolve(import.meta.dirname, "..");
+try {
+  const {
+    cleanMaintenanceReason, getPublicAccessState, loadPublicAccessState,
+    setPublicAccessState, renderPublicClosedPage, onPublicAccessChanged,
+  } = await import("../server/src/platform/publicAccess.ts");
+  assert.equal((await loadPublicAccessState()).closed,false,"New HGR installation defaults public");
+  assert.equal(cleanMaintenanceReason(""),"The Game Room is temporarily closed. Please check back later.");
+  const events = [];
+  const detach = onPublicAccessChanged(state=>events.push(state.closed));
+  const closed=await setPublicAccessState(true,'Planned maintenance <script>alert("x")</script>','owner-test');
+  assert.equal(closed.closed,true);
+  assert.equal(getPublicAccessState().closed,true);
+  assert.match(renderPublicClosedPage(closed.reason),/&lt;script&gt;/,"HTML escapes owner text");
+  assert(!renderPublicClosedPage(closed.reason).includes('<script>alert("x")</script>'),"No injected executable code");
+  const html=renderPublicClosedPage("Maintenance & recovery");
+  assert.match(html,/<title>Game Room temporarily closed/);
+  assert.match(html,/href="\/control\/"/);
+  assert.match(html,/id="controlLogin"/,"Owner can log in when site is closed");
+  assert.match(html,/fetch\("\/auth\/login"/,"Owner sign-in uses canonical auth");
+  assert.match(html,/Maintenance &amp; recovery/);
+  const path=resolve(dir,"accounts","public-access.json");
+  assert.equal(JSON.parse(await readFile(path,"utf8")).closed,true);
+  assert.equal((await loadPublicAccessState()).closed,true,"Closure persists through reload");
+  assert.equal((await setPublicAccessState(false,"Reopened","owner-test")).closed,false);
+  assert.deepEqual(events,[true,false]);
+  await writeFile(path,'{BROKEN','utf8');
+  assert.equal((await loadPublicAccessState()).closed,true,"Corrupt existing file fails closed");
+  assert.equal((await setPublicAccessState(false,"Recovered","owner-test")).closed,false,"Owner can repair corrupt file");
+  detach();
+  const accounts=readFileSync(resolve(root,"server/src/platform/accounts.ts"),"utf8");
+  const index=readFileSync(resolve(root,"server/src/index.ts"),"utf8");
+  const control=readFileSync(resolve(root,"client/public/control/control.js"),"utf8");
+  const ui=readFileSync(resolve(root,"client/public/control/index.html"),"utf8");
+  const worker=readFileSync(resolve(root,"client/public/sw.js"),"utf8");
+  assert.match(accounts,/app\.get\("\/admin\/public-access"/);
+  assert.match(accounts,/app\.post\("\/admin\/public-access"/);
+  assert.match(accounts,/requireOwner\(request, response\)/);
+  assert.match(accounts,/CLOSE PUBLIC GAME ROOM/);
+  assert.match(accounts,/REOPEN PUBLIC GAME ROOM/);
+  assert.match(accounts,/!Number\.isInteger\(activeRooms\) \|\| activeRooms! > 0/,"Absent and occupied room lists reject closure");
+  assert.match(accounts,/Cross-site public access changes are forbidden/);
+  assert.match(index,/io\.use\(\(socket, next\)/,"All Socket.IO connections checked");
+  assert.match(index,/socket\.use\(\(_packet, next\)/,"Preexisting sockets must not perform game actions during closure");
+  assert.match(index,/isOwnerControlSocket\(socket\)/);
+  assert.match(index,/connected\.disconnect\(true\)/);
+  assert.match(index,/response\.status\(503\)\.type\("html"\)/);
+  assert.match(index,/await loadPublicAccessState\(\)/,"Server restores state before listening");
+  assert.match(control,/auth: \{ hgrControl: true \}/);
+  assert.match(control,/typed !== phrase/,"UI requires typed confirmation");
+  assert.match(ui,/id="publicAccessCard"/);
+  assert.match(ui,/id="publicAccessToggle"/);
+  assert.match(worker,/if \(response\.ok\)/,"Maintenance 503 never cached as live PWA home");
+  console.log("PASS HGR 4.6.10 public maintenance: default open, private persistence, corrupt fail closed, owner recovery, escaped page, routes, room/socket gates and Control UI");
+} finally {await rm(dir,{recursive:true,force:true})}

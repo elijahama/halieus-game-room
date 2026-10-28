@@ -310,3 +310,25 @@
  .development-local{gap:10px;padding:16px}
  .development-local-entry{padding:12px 0}
 }
+
+/* 4.6.10 · Owner-only public site availability, separate from PC window actions. */
+.hgr-public-access-card {display:grid;gap:12px;min-width:0;margin-top:14px}
+.hgr-public-access-card[hidden] {display:none!important}
+.hgr-public-access-card .card-heading h2 {margin:4px 0}
+.hgr-public-access-card p {overflow-wrap:anywhere;line-height:1.55;margin:0}
+.hgr-public-access-card > label {font-weight:700;font-size:.9rem}
+.hgr-public-access-card textarea {
+ display:block;width:100%;max-width:100%;box-sizing:border-box;min-height:78px;resize:vertical;
+ border:1px solid #50617b;border-radius:12px;padding:12px;background:#0c1727;
+ color:#eef4ff;font:inherit;line-height:1.5;
+}
+.hgr-public-access-card textarea:focus-visible,
+.hgr-public-access-card button:focus-visible {outline:2px solid #94c1ff;outline-offset:3px}
+.hgr-public-access-card > button {
+ width:max-content;max-width:100%;min-height:44px;padding:11px 16px;
+ border:1px solid #6b9ce4;border-radius:12px;white-space:normal;
+}
+.hgr-public-access-card > button[data-state="open"] {border-color:#fa9297;color:#ffc1c4}
+.hgr-public-access-card > button[data-state="closed"] {border-color:#64ce9a;color:#a2f8c9}
+.hgr-public-access-card > button:disabled {opacity:.54;cursor:not-allowed}
+@media(max-width:520px){.hgr-public-access-card{gap:10px}.hgr-public-access-card > button{width:100%}}
