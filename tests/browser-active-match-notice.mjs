@@ -98,8 +98,8 @@ try {
     assert.deepEqual(JSON.parse(await takeoverResults.innerText()), bothRecoveries, "Logout cancels pending account takeover");
     // A lock-screen push opens a match-scoped authenticated return route,
     // not an automatic session takeover or a guessed room join.
-    matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-123", paused: false, yourTurn: true, notice: null }];
-    await page.goto("http://notice.test/?resumeMatch=mega-ROOM-123");
+    matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-1800000000000", paused: false, yourTurn: true, notice: null }];
+    await page.goto("http://notice.test/?resumeMatch=mega-ROOM-1800000000000");
     await page.addStyleTag({ path: bundle.replace(/\.js$/, ".css") });
     await page.addScriptTag({ path: bundle });
     await page.getByRole("button", { name: "Continue game" }).waitFor();
