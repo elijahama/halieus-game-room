@@ -31,6 +31,14 @@ try {
   const rendered = new Map();
   for (const size of [16, 32, 48, 64, 128, 180, 192, 256, 512]) rendered.set(size, await render(size));
 
+  // Android's compact notification badge is a monochrome alpha mask.
+  // Render ONLY the existing approved H path, never the coloured launcher
+  // tile or a redrawn surrogate geometry.
+  await page.setViewportSize({ width: 96, height: 96 });
+  await page.setContent(`<style>html,body{margin:0;background:transparent}svg{display:block;width:96px;height:96px}</style><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="#ffffff" d="${canonicalPath}"/></svg>`);
+  const notificationBadge = await page.screenshot({ omitBackground: true });
+  await writeFile(resolve(output, 'notification-badge-96.png'), notificationBadge);
+
   for (const size of [180, 192, 512]) {
     await writeFile(resolve(output, `app-icon-${size}.png`), rendered.get(size));
   }
