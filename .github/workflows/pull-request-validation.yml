@@ -35,9 +35,11 @@ jobs:
       - run: npm run test:control:actions
       - run: npm run test:control:public-access
       - run: npm run test:control:overview
+      - run: npm run test:control:priorities
       - run: npm run test:browser:public-maintenance
       - run: npm run test:browser:control:window-operations
       - run: npm run test:browser:control:design
+      - run: npm run test:browser:control:priorities
       - run: npm run test:replays:all
       - run: npm run test:feedback:notifications
       - run: npm run test:history
