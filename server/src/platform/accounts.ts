@@ -914,7 +914,11 @@ function visibleNameForViewer(name: string, viewer: StoredAccount): string {
 }
 
 function liveRoomsForViewer(viewer: StoredAccount): HalieusLiveRoomSummary[] {
-  return (adminRuntimeControls?.getLiveRooms() ?? []).map(({ verifiedAccountIds: _internalIds, ...room }) => ({
+  return (adminRuntimeControls?.getLiveRooms() ?? [])
+    .filter((room) => room.game !== "mega-board" ||
+      megaBoardRooms.get(room.code)?.betaTournamentTest !== true ||
+      canViewBetaTournamentRoom(viewer.id, room.code))
+    .map(({ verifiedAccountIds: _internalIds, ...room }) => ({
     ...room,
     humanPlayers: room.humanPlayers.map((name) => visibleNameForViewer(name, viewer)),
   }));
@@ -927,6 +931,13 @@ function expireGameRequests(): void {
   }
 }
 
+/** Keep invitation-only Beta sessions out of normal discovery and public spectator listings. */
+export function canViewBetaTournamentRoom(accountId: string, roomCode: string): boolean {
+  const room = megaBoardRooms.get(roomCode);
+  if (!room?.betaTournamentTest) return false;
+  if (room.players.some((player) => !player.isAi && !player.hasLeft && player.replayAccountId === accountId)) return true;
+  return hasBetaTournamentRoomInvitation(accountId, roomCode);
+}
 /** An invitation is explicit opt-in to a private practice room, not Beta/admin access. */
 export function hasBetaTournamentRoomInvitation(accountId: string, roomCode: string): boolean {
   const room = megaBoardRooms.get(roomCode);
@@ -1155,7 +1166,8 @@ export function registerAccountRoutes(app: Express): void {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     const contacts = playerDirectory(auth.account, "social");
-    const rooms = adminRuntimeControls?.getLiveRooms() ?? [];
+    const rooms = (adminRuntimeControls?.getLiveRooms() ?? [])
+      .filter((room) => room.game !== "mega-board" || megaBoardRooms.get(room.code)?.betaTournamentTest !== true);
     const entries = contacts.map((contact) => {
       const room = rooms.find((entry) => entry.verifiedAccountIds?.includes(contact.id));
       return {
