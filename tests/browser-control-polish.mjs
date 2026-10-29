@@ -52,7 +52,7 @@ try{
  assert.deepEqual(approvedFonts,[1,1,1,1],'Control must load all four self-hosted approved HGR font faces');
  assert.match(await installed.locator('#sectionTitle').evaluate(e=>getComputedStyle(e).fontFamily),/Unbounded Variable/,'Control headings share the main HGR font hierarchy');
  const manifest=await installed.evaluate(async()=>await (await fetch(document.querySelector('link[rel="manifest"]').href)).json());
- assert.equal(manifest.id,'/control/');assert.equal(manifest.display,'standalone');
+ assert.equal(manifest.id,'/control/');assert.equal(manifest.display,'fullscreen');assert.deepEqual(manifest.display_override,['fullscreen','standalone','minimal-ui']);
  assert.deepEqual(manifest.icons.map(i=>i.sizes),['192x192','512x512']);
  assert.match(await installed.locator('link[rel="apple-touch-icon"]').getAttribute('href'),/control-icon.png/);
  await installed.evaluate(()=>fetch('/control/cloud/status'));
