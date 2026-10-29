@@ -239,9 +239,9 @@ export function hgrControlPushMilestone(progress: number): number {
   if (progress >= 25) return 25;
   return 0;
 }
-function notifyOperationUpdate(operation: StoredRequest, milestone: number | null): void {
+function notifyOperationUpdate(operation: StoredRequest): void {
   const actorId = operation.requestedByAccountId;
-  if (!actorId || operation.action !== "update" || milestone === null) return;
+  if (!actorId || operation.action !== "update") return;
   const actor = getAccountSummaryById(actorId);
   if (!actor || (actor.role !== "owner" && actor.role !== "admin")) return;
   const terminal = ["succeeded", "failed", "rejected"].includes(operation.state);
@@ -459,7 +459,7 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
   });
   if (!result.found) { sendJson(response, 404, { ok: false, reason: "Unknown cloud Update request." }); return; }
   sendJson(response, 200, { ok: true });
-  if (result.notification) notifyOperationUpdate(result.notification, result.notification.milestone);
+  if (result.notification) notifyOperationUpdate(result.notification);
 }
 
 async function handleStatus(request: IncomingMessage, response: ServerResponse): Promise<void> {
