@@ -13,6 +13,9 @@ import {
   type HalieusTextScale,
 } from "../theme";
 
+const TEXT_SCALE_LEVELS: HalieusTextScale[] = ["small", "standard", "large"];
+const DENSITY_LEVELS: HalieusDensity[] = ["compact", "standard", "comfortable"];
+
 interface DisplaySettingsPanelProps {
   darkMode: boolean;
   soundEnabled?: boolean;
@@ -128,22 +131,22 @@ export function DisplaySettingsPanel({
         <header><div><strong>Readability</strong><small>Shared player settings used across the Game Room and in-game menus.</small></div></header>
         <div className="halieus-preference-row">
           <span><strong>Text size</strong><small>Small, standard or large interface text</small></span>
-          <div role="group" aria-label="Text size">
-            {(["small", "standard", "large"] as HalieusTextScale[]).map((value) => (
-              <button type="button" key={value} className={textScale === value ? "is-active" : ""} aria-pressed={textScale === value} onClick={() => changeTextScale(value)}>
-                {value[0].toUpperCase() + value.slice(1)}
-              </button>
-            ))}
+          <div className="halieus-preference-slider">
+            <input id="hgr-text-size-slider" type="range" min={0} max={2} step={1}
+              value={TEXT_SCALE_LEVELS.indexOf(textScale)}
+              aria-label="Text size" aria-valuetext={textScale}
+              onChange={(event) => changeTextScale(TEXT_SCALE_LEVELS[Number(event.currentTarget.value)] ?? "standard")} />
+            <div aria-hidden="true"><span>Small</span><strong>{textScale}</strong><span>Large</span></div>
           </div>
         </div>
         <div className="halieus-preference-row">
           <span><strong>Interface density</strong><small>Compact, standard or comfortable spacing</small></span>
-          <div role="group" aria-label="Interface density">
-            {(["compact", "standard", "comfortable"] as HalieusDensity[]).map((value) => (
-              <button type="button" key={value} className={density === value ? "is-active" : ""} aria-pressed={density === value} onClick={() => changeDensity(value)}>
-                {value[0].toUpperCase() + value.slice(1)}
-              </button>
-            ))}
+          <div className="halieus-preference-slider">
+            <input id="hgr-density-slider" type="range" min={0} max={2} step={1}
+              value={DENSITY_LEVELS.indexOf(density)}
+              aria-label="Interface density" aria-valuetext={density}
+              onChange={(event) => changeDensity(DENSITY_LEVELS[Number(event.currentTarget.value)] ?? "standard")} />
+            <div aria-hidden="true"><span>Compact</span><strong>{density}</strong><span>Comfortable</span></div>
           </div>
         </div>
       </div>
