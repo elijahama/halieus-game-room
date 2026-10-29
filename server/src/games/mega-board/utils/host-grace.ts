@@ -5,6 +5,7 @@ import type {
 import {
   rooms,
 } from "../state/rooms.js";
+import type { GameRoom } from "../types/game.js";
 
 import {
   endRoom,
@@ -16,9 +17,17 @@ import {
 
 export const HOST_RECONNECT_GRACE_MS =
   90_000;
-// Paused matches retain host recovery for up to one day; they still count as
-// active rooms for the Oracle release safety gate.
+// A phone background/force-close must not end an already-started live match
+// after the old 90-second lobby-only reconnect window. Persisted active and
+// paused rooms remain protected by Oracle's active-room release safety gate.
+export const ACTIVE_HOST_RECONNECT_GRACE_MS = 24 * 60 * 60 * 1000;
 export const PAUSED_HOST_RECONNECT_GRACE_MS = 24 * 60 * 60 * 1000;
+
+export function hostReconnectGraceMs(room: GameRoom): number {
+  return room.gameState?.pauseState ? PAUSED_HOST_RECONNECT_GRACE_MS
+    : room.started && room.gameState?.phase !== "finished"
+      ? ACTIVE_HOST_RECONNECT_GRACE_MS : HOST_RECONNECT_GRACE_MS;
+}
 
 const hostGraceTimers = new Map<
   string,
@@ -70,7 +79,7 @@ export function scheduleHostGrace(
     host.disconnectedAt ?? Date.now();
   const deadline =
     disconnectedAt +
-    (room.gameState?.pauseState ? PAUSED_HOST_RECONNECT_GRACE_MS : HOST_RECONNECT_GRACE_MS);
+    hostReconnectGraceMs(room);
   const delay = Math.max(
     0,
     deadline - Date.now(),
