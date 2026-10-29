@@ -1640,3 +1640,22 @@ unchanged. Cache-busting of Control JS/CSS forces the corrected user interface
 to be fetched on the next deployment. The new runtime UI test exercises
 start/restart/close/update/unknown states and runs on both CI platforms.
 This does not mean the public site has been deployed or phone-tested.
+## 4.7.0 — Public maintenance control usability and verified visitor closure (29 October 2026)
+
+The owner confirmed that typing a maintenance reason into Android's separate
+browser confirmation prompt silently prevented closing public visitor access.
+Control previously required the exact literal `CLOSE PUBLIC GAME ROOM` in
+that prompt despite showing an independent **Reason shown to visitors** field.
+The 4.7.0 correction removes the misleading prompt: the reason remains in the
+textarea, and the owner performs one explicit confirm dialog. The secure
+owner-only server endpoint retains its exact action confirmation token, the
+same-origin mutation guard, live-room refusal, persisted closure and reopen
+semantics; neither button runs a software Update or closes the laptop window.
+After the server acknowledges closing, Control performs a fresh same-origin
+HTML request and requires an actual HTTP 503 maintenance response before
+presenting the closure as verified. Reopen likewise checks for ordinary HTTP
+success. Probe discrepancies and server 409 failures remain visible after
+status refresh; the app does not claim that visitors are blocked if the public
+proxy still serves a normal game page. Source tests exercise a real click
+sequence and a local HTTP/Socket.IO server, not Oracle production. Deployment,
+owner/mobile acceptance and restoration of public access remain explicit steps.
