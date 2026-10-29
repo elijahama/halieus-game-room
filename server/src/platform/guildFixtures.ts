@@ -169,7 +169,15 @@ export function createGuildFixtureCoordinator(
         throw new FixtureError(403, "A participating guild manager must cancel this fixture.");
       }
       if (existing.status === "cancelled") throw new FixtureError(409, "Fixture already cancelled.");
-      if (existing.status === "rooms-bound") throw new FixtureError(409, "Bound fixture cannot be cancelled while live games may exist.");
+      if (existing.status === "rooms-bound") {
+        const safelyUnstarted = existing.boards?.length === 2 && existing.boards.every((link) => {
+          const room = megaRooms.get(link.roomCode);
+          return room && room.createdAt === link.roomCreatedAt && !room.started && !room.gameState;
+        });
+        if (!safelyUnstarted) {
+          throw new FixtureError(409, "A bound fixture may only be cancelled while both original lobbies still exist and neither has started.");
+        }
+      }
       const now = Date.now();
       const fixture: HgrGuildFixture = { ...existing, status: "cancelled", cancelledAt: now, updatedAt: now };
       const next = new Map(current); next.set(fixtureId, fixture);
