@@ -94,10 +94,11 @@ assert.match(home,/Copy username/,"Player menu must expose a useful identity act
 
 assert.match(brand,/halieus-brand-mark-h-shape/,"4.5 H must use the approved launcher-family silhouette");
 assert.doesNotMatch(brand,/halieus-brand-mark-h-pillar|halieus-brand-mark-h-bridge/,"Retired faceted H geometry must not return");
-for (const preset of ["brand","gold","mono-light","mono-dark","white-glyph","black-glyph","light","blue","adaptive","launcher-default"]) {
+for (const preset of ["brand","gold","mono-light","mono-dark","light","blue","adaptive","launcher-default"]) {
   assert.ok(display.includes(`["${preset}"`), `Personal logo panel must expose ${preset}`);
 }
-for (const group of ["Core styles","Launcher styles","Additional options"]) {
+assert.doesNotMatch(display,/\["white-glyph"|\["black-glyph"/,"Duplicate glyph-only choices must be removed, keeping true Mono Light/Dark.");
+for (const group of ["Core styles","Launcher-inspired looks","Additional options"]) {
   assert.ok(display.includes(group), `Personal logo panel must group choices under ${group}`);
 }
 assert.match(release451Css,/halieus-logo-preset-section\.is-additional/,"Logo panel must use the lower space for explicit additional options rather than leave a large empty region");
