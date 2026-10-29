@@ -60,3 +60,13 @@ Single-row, horizontally scrollable discovery filters on portrait phones/tablets
 Scoped Mega Board patch: shared two-column phone rosters with long-name/property wrapping; board-first participant portrait tablets; intrinsic auction sheet height, spectator/withdrawn footer distinction, short-landscape scrolling and fullscreen portal tracking; text-sized routine notices. New real-component geometry coverage joins review/release browser CI. Local typechecks, focused browser/gameplay and alternative Vite runner production builds passed, with explicit sandbox harness qualifications in the Masterbook. The original sandbox failures were subsequently resolved by standard parent-run typecheck, full regression, all 52 compact browser cases, default production build, release integrity and built-browser identity checks (reported exit 0), with bounded log tails corroborated in this documentation follow-up. These commands ran through Desktop Commander outside native capture. CI and physical-device acceptance remain distinct requirements. Parent will rebuild the final identity generated after these documentation edits. No deployment or milestone advancement is implied.
 
 Active-match notifications and reconnect reconciliation are a **separate already owner-authorized batch, not implemented in 4.6.4**; the subsequent [4.6.5 candidate](HGR_ACTIVE_GAME_RETURN.md) has parent runtime/component verification with full-App/physical-PWA gates still outstanding. Native receipt `rcpt_fc27b6506bfc45d3826cdbaa860b5d4a` records observational Codex capture of the 4.6.4 work, not independent test attestation; Git setup and standard parent verification occurred outside that capture. See the 4.6.4 Masterbook entry for exact dimensions, evidence and limitations.
+
+### 29 October 2026 — Independent 4.6.11 Control hotfix candidate
+
+While 4.7.0 Guild fixtures remain a separate draft, a focused Control
+regression repair targets two owner-observed issues: portrait Full Screen
+action visibility, and optional server-sent background Update stage/final
+notifications on Android/PWA when the owner switches apps. The 4.6.10
+version remains authoritative until checks and owner acceptance. This
+candidate must not merge or deploy merely because its number is newer.
+See [Control Update notification acceptance](HGR_CONTROL_BACKGROUND_UPDATES.md).
