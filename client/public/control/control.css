@@ -371,3 +371,146 @@
 .hgr-public-access-card > button[data-state="closed"] {border-color:#64ce9a;color:#a2f8c9}
 .hgr-public-access-card > button:disabled {opacity:.54;cursor:not-allowed}
 @media(max-width:520px){.hgr-public-access-card{gap:10px}.hgr-public-access-card > button{width:100%}}
+
+
+/* HGR 4.7.1 — Control uses the *same* role-based, self-hosted HGR website
+ * typography. No replacement wordmark/launcher geometry or new font binaries. */
+:root {
+  --hgr-interface-font: "Varela Round", "Segoe UI Variable Text", system-ui, sans-serif;
+  --hgr-font-heading: "Unbounded Variable", system-ui, sans-serif;
+  --hgr-font-medium: "Righteous", "Varela Round", system-ui, sans-serif;
+  --hgr-font-caption: "Alata", "Varela Round", system-ui, sans-serif;
+  font-family: var(--hgr-interface-font);
+}
+html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
+.control-topbar,.profile-chip,.cloud-state,.control-section,
+.control-section :is(button,input,select,textarea),
+.operation-toast :is(button,small,strong,time) {
+  font-family: var(--hgr-interface-font);
+}
+.control-main :is(h1,h2),.access-card h2 {
+  font-family: var(--hgr-font-heading);
+  font-weight: 650;
+  letter-spacing: -.035em;
+}
+.control-main :is(h3,h4),.control-brand strong {
+  font-family: var(--hgr-font-medium);
+  letter-spacing: -.018em;
+}
+.control-rail :is(b,button),.control-mobile-nav button,
+.control-main :is(.operation-grid button,.primary-action,.secondary-action) {
+  font-family: var(--hgr-interface-font);
+}
+.control-rail small,.control-main .eyebrow,.control-main small,
+.control-brand small,.control-mobile-nav b,.operation-toast time,
+.control-operation-scope,.operation-effect {
+  font-family: var(--hgr-font-caption);
+}
+/* Explicit effects are immutable descriptions of each operation.
+ * The separate <small> element is reserved for live bridge readiness. */
+.control-operation-cluster {
+  border: 1px solid rgba(136,160,200,.19);
+  border-radius: 18px;
+  background: linear-gradient(165deg,rgba(20,30,46,.88),rgba(11,17,29,.94));
+  padding: clamp(13px,2vw,19px);
+  margin: 16px 0;
+  min-width:0;
+}
+.control-operation-cluster--pc {border-top:2px solid rgba(99,211,148,.62)}
+.control-operation-cluster--software {border-top:2px solid rgba(131,177,255,.68)}
+.control-operation-cluster-head {
+  display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;
+  gap:10px;margin-bottom:12px;
+}
+.control-operation-cluster-head>div {min-width:0;flex:1 1 220px}
+.control-operation-cluster-head h3 {
+  font-family:var(--hgr-font-medium);
+  font-weight:400;
+  font-size:clamp(17px,2vw,20px);
+  margin:2px 0 6px;
+}
+.control-operation-cluster-head p:not(.eyebrow) {
+  font-family:var(--hgr-interface-font);
+  font-size:12px;
+  line-height:1.55;
+  color:#c3d1e6;
+  margin:0;
+  max-width:70ch;
+}
+.control-operation-scope{
+  display:inline-flex;align-items:center;flex:0 0 auto;
+  max-width:100%;padding:6px 10px;border-radius:999px;
+  background:rgba(99,211,148,.09);color:#a3f0c5;
+  border:1px solid rgba(99,211,148,.28);
+  font-size:11px;white-space:normal;text-align:center;
+}
+.control-operation-cluster--software .control-operation-scope{
+  background:rgba(131,177,255,.11);color:#c1d5ff;
+  border-color:rgba(131,177,255,.35);
+}
+.control-operation-scope--public{
+  background:rgba(250,146,151,.09);color:#ffc1c4;
+  border-color:rgba(250,146,151,.28);
+}
+.control-operation-cluster .operation-grid {margin-top:0;gap:10px;min-width:0}
+.control-operation-cluster .operation-grid--laptop{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.control-operation-cluster .operation-grid--software{
+  display:grid;grid-template-columns:minmax(0,1fr);
+}
+.control-operation-cluster .operation-grid button[data-operation]{
+  min-width:0;min-height:132px;display:flex;
+  flex-direction:column;align-items:flex-start;justify-content:flex-start;
+  gap:5px;padding:14px 15px;
+  text-align:left;border-radius:13px;
+}
+.control-operation-cluster .operation-grid--software button[data-operation]{
+  min-height:114px;
+}
+.control-operation-cluster .operation-grid button[data-operation]>span:first-child{
+  display:inline-grid;place-items:center;min-height:24px;
+  font-size:20px;line-height:1;color:var(--action-color);
+}
+.control-operation-cluster .operation-grid button[data-operation] strong{
+  margin:2px 0 0;font-size:14px;line-height:1.34;
+  font-weight:800;color:inherit;overflow-wrap:anywhere;
+}
+.control-operation-cluster .operation-grid button[data-operation] .operation-effect{
+  font-style:normal;font-weight:400;font-size:12px;
+  line-height:1.45;color:#dae5f7;overflow-wrap:anywhere;
+}
+.control-operation-cluster .operation-grid button[data-operation] small{
+  font-size:11px;line-height:1.35;margin-top:auto;
+}
+.control-operation-cluster button:focus-visible,
+.hgr-public-access-card button:focus-visible {
+  outline:3px solid #8bbcff;outline-offset:3px;
+}
+.hgr-control-update-alerts{margin:12px 0 0}
+.hgr-public-access-card{border-top:2px solid rgba(255,136,145,.56)}
+.hgr-public-access-card .card-heading{align-items:center;flex-wrap:wrap}
+.hgr-public-access-card .card-heading h2{font-size:clamp(17px,2.4vw,22px)}
+.hgr-public-access-card p strong{font-weight:750;color:#f0f6ff}
+.hgr-public-access-card #publicAccessStatus{font-weight:700;color:#c5dcff}
+.hgr-public-access-card #publicAccessRooms{font-size:12px;color:#adc0d9}
+@media (min-width:721px) and (max-width:1100px){
+  .control-operation-cluster .operation-grid--laptop{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:720px){
+  .control-operation-cluster .operation-grid--laptop,
+  .control-operation-cluster .operation-grid--software{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .control-operation-cluster{padding:13px;margin:12px 0}
+  .control-operation-cluster .operation-grid button[data-operation]{
+    min-height:106px;gap:3px;padding:13px!important;
+  }
+  .control-operation-cluster .operation-grid button[data-operation] strong{
+    font-size:14px;margin-top:2px;
+  }
+  .control-operation-cluster .operation-grid button[data-operation] small{font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  .control-operation-cluster .operation-grid button[data-operation]{transition:none}
+}

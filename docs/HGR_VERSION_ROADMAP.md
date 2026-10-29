@@ -152,3 +152,17 @@ Both operations continue to refuse unsafe server states and keep Control
 available. Add dedicated UI and full HTTP/Socket.IO runtime regressions on
 both CI operating systems. Never claim production is closed or version 4.7.0
 deployed from GitHub source changes alone.
+
+### 29 October 2026 — Focused 4.7.1 Control typography and operation clarity
+
+The owner has visually confirmed that the live 4.7.0 **Close Public Game
+Room** control shows a separate visitor maintenance page, while the main
+Game Room may remain rendered in a browser tab loaded before closure.
+Version 4.7.1 is a narrow Control-only layout patch: reconcile its font
+hierarchy with the approved website (Unbounded, Righteous, Varela Round,
+Alata), and separate owner-PC window actions from release deployment and
+the public visitor maintenance gate. No endpoint contract, game logic,
+tournament ledger, icon geometry, account privilege or maintenance safety
+guard changes. Add audited 320–1440px browser checks and preserve all
+existing Control regression suites before release. This is a development
+candidate until validation, merge and live Oracle fingerprint verification.

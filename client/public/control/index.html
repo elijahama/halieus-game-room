@@ -9,9 +9,9 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.7.0-action-isolation" />
+  <link rel="stylesheet" href="/control/control.css?v=4.7.1-operations-typography" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.7.0-maintenance-confirmation" defer></script>
+  <script src="/control/control.js?v=4.7.1-operations-typography" defer></script>
   <script src="/control/development.js?v=development-timeline-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
@@ -164,13 +164,34 @@
     <section class="control-section" data-panel="operations">
       <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Owner PC window controls</h2><p>Start, Restart and Close control only the dedicated HGR browser window on the owner PC. The public Oracle website stays online. Update uses a separate deployment workflow.</p></div></div>
       <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Checking approved owner-PC bridge</strong><small>These commands open, reopen or close Lagz’s dedicated HGR browser window—not the Oracle server. Each action requires owner confirmation.</small></p></div></article>
-      <div class="operation-grid">
-        <button data-operation="restart" disabled><span>↻</span><strong>Restart HGR Window</strong><small>Owner confirmation and connected bridge required</small></button>
-        <button data-operation="start" disabled><span>▶</span><strong>Open HGR Window</strong><small>Owner confirmation and connected bridge required</small></button>
-        <button data-operation="close" disabled><span>■</span><strong>Close HGR Window</strong><small>Owner confirmation and connected bridge required</small></button>
-        <button data-operation="update" data-update-state="idle" disabled><span class="operation-action-icon" aria-hidden="true"></span><strong>Update HGR</strong><small>Progress appears globally</small></button>
-      </div>
-      <section class="panel-card hgr-control-update-alerts" aria-label="Update notifications">
+      <section class="control-operation-cluster control-operation-cluster--pc" aria-labelledby="pcWindowActionsHeading">
+        <header class="control-operation-cluster-head">
+          <div>
+            <p class="eyebrow">LAPTOP · LAGZ</p>
+            <h3 id="pcWindowActionsHeading">Game Room window</h3>
+            <p>These three actions affect the browser window on your laptop, not the public server or its version.</p>
+          </div>
+          <span class="control-operation-scope">Laptop only</span>
+        </header>
+        <div class="operation-grid operation-grid--laptop">
+          <button data-operation="start" disabled><span aria-hidden="true">▶</span><strong>Open HGR Window</strong><em class="operation-effect">Launch the HGR website window on Lagz.</em><small>Owner confirmation and connected bridge required</small></button>
+          <button data-operation="restart" disabled><span aria-hidden="true">↻</span><strong>Restart HGR Window</strong><em class="operation-effect">Close and relaunch that browser window.</em><small>Owner confirmation and connected bridge required</small></button>
+          <button data-operation="close" disabled><span aria-hidden="true">■</span><strong>Close HGR Window</strong><em class="operation-effect">Close only the browser window on Lagz.</em><small>Owner confirmation and connected bridge required</small></button>
+        </div>
+      </section>
+      <section class="control-operation-cluster control-operation-cluster--software" aria-labelledby="softwareUpdateHeading">
+        <header class="control-operation-cluster-head">
+          <div>
+            <p class="eyebrow">RELEASE MANAGEMENT</p>
+            <h3 id="softwareUpdateHeading">Software update</h3>
+            <p>Deploy the approved HGR release to the public server, with checks and rollback. This is not a window restart.</p>
+          </div>
+          <span class="control-operation-scope">Website release</span>
+        </header>
+        <div class="operation-grid operation-grid--software">
+          <button data-operation="update" data-update-state="idle" disabled><span class="operation-action-icon" aria-hidden="true"></span><strong>Update HGR</strong><em class="operation-effect">Run the approved updater, then verify the release.</em><small>Progress appears globally</small></button>
+        </div>
+        <section class="panel-card hgr-control-update-alerts" aria-label="Update notifications">
         <div>
           <p class="eyebrow">BACKGROUND UPDATES</p>
           <h2>Update notifications</h2>
@@ -181,11 +202,12 @@
           <button class="secondary-action" id="controlUpdateAlerts" type="button" disabled>Enable update alerts</button>
           <button class="secondary-action" id="controlUpdateAlertsTest" type="button" hidden>Send test alert</button>
         </div>
+        </section>
       </section>
       <article id="publicAccessCard" class="panel-card hgr-public-access-card" hidden>
         <div class="card-heading"><div><p class="eyebrow">PUBLIC WEBSITE · OWNER ONLY</p>
-          <h2>Public Game Room access</h2></div></div>
-        <p>This is separate from Close HGR Window on Lagz. Closing the public Game Room shows a maintenance page to visitors without stopping Oracle or HGR Control.</p>
+          <h2>Public Game Room access</h2></div><span class="control-operation-scope control-operation-scope--public">Visitors</span></div>
+        <p><strong>This blocks visitor access to the website, not the laptop window.</strong> Closing the public Game Room shows your maintenance message and refuses new games while keeping Oracle and HGR Control online. Reopen here when finished.</p>
         <p id="publicAccessStatus" role="status">Checking public access…</p>
         <p id="publicAccessRooms">Checking live rooms…</p>
         <label for="publicAccessReason">Reason shown to visitors</label>
