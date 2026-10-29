@@ -19,3 +19,33 @@ self.addEventListener('fetch', event => {
     event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
   }
 });
+
+/* Background Control progress: notifications are delivered by the cloud
+ * server, not page polling. Never expose credentials or external URLs. */
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try { payload = event.data?.json() || {}; } catch { /* Safe default. */ }
+  const title = typeof payload.title === 'string' ? payload.title.slice(0,100) : 'HGR Control update';
+  const body = typeof payload.body === 'string' ? payload.body.slice(0,160) : 'Open Control for update status.';
+  const tag = typeof payload.tag === 'string' ? payload.tag.slice(0,120) : 'hgr-control-update';
+  event.waitUntil(self.registration.showNotification(title, {
+    body,
+    tag,
+    renotify: true,
+    icon: '/control/control-icon.png?v=part26-control-approved2',
+    badge: '/control/control-icon.png?v=part26-control-approved2',
+    data: { url: '/control/' },
+  }));
+});
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+    const control = clients.find((client) => {
+      try {
+        const url = new URL(client.url);
+        return url.origin === self.location.origin && (url.pathname === '/control' || url.pathname.startsWith('/control/'));
+      } catch { return false; }
+    });
+    return control ? control.focus() : self.clients.openWindow('/control/');
+  }));
+});
