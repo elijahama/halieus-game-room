@@ -61,6 +61,17 @@ Scoped Mega Board patch: shared two-column phone rosters with long-name/property
 
 Active-match notifications and reconnect reconciliation are a **separate already owner-authorized batch, not implemented in 4.6.4**; the subsequent [4.6.5 candidate](HGR_ACTIVE_GAME_RETURN.md) has parent runtime/component verification with full-App/physical-PWA gates still outstanding. Native receipt `rcpt_fc27b6506bfc45d3826cdbaa860b5d4a` records observational Codex capture of the 4.6.4 work, not independent test attestation; Git setup and standard parent verification occurred outside that capture. See the 4.6.4 Masterbook entry for exact dimensions, evidence and limitations.
 
+### 29 October 2026 — 4.7.0 real-match fixture linking candidate
+
+The staged source candidate now links manager-approved Guild lineups
+to two existing **real Mega Board** unstarted lobbies by authenticated
+account roster and distinct board identity. The ordinary Mega Board start
+handlers can run both games, while post-binding join/AI changes are
+rejected. This is more than a design-only foundation, but it is not
+complete 4.7.0 until result settlement, team scoring, UI, reconnect
+and owner end-to-end acceptance are complete. No Oracle deployment
+is implied; VERSION remains 4.6.10.
+
 ### 28 October 2026 — 4.6.10 merged; 4.7.0 Guild fixture candidate opened
 
 The source mainline has now merged 4.6.7 Control/unlock refresh, 4.6.8
