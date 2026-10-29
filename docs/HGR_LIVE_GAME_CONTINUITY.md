@@ -1,7 +1,7 @@
 # HGR Live Game Continuity (owner-requested design)
 
 **Recorded:** 29 October 2026  
-**Status:** Requirement / specification only; not implemented, merged, tested on devices or deployed. No release number reserved.  
+**Status:** Planned universal feature. Mega Board A1 turn-aware return has passed Ubuntu/Windows PR CI but remains a separate draft; A2 opt-in turn Web Push is a subsequent unmerged implementation candidate. Neither is deployed or physically accepted on mobile. No release number reserved.  
 **Scope:** HGR platform and all fourteen games, with game-specific capability adapters; preserve existing game rules, player permissions, notifications, PWA icon family, branded H, Control, and ongoing tournament work.
 
 ## User experience and intent
@@ -16,7 +16,7 @@ For opted-in installed devices, send real **Web Push** for actionable changes wh
 
 - `client/src/platform/components/ActiveMatchNotice.tsx` and `server/src/platform/active-match.ts`: authenticated **Mega Board-only** match card, polled at 10 s while visible, most recent explicitly public completed decision, token-backed same-device return, no forced seat takeover.
 - `client/src/platform/socialActivityNotifications.ts` and `docs/HGR_SOCIAL_ACTIVITY_NOTIFICATIONS.md`: account-scoped foreground social presence/activity feed; this is **not** an in-game turn-alert pipeline.
-- `server/src/platform/pushNotifications.ts`: durable opt-in per-device VAPID push topics `invites`, `messages`, and owner/admin `operations`; **no gameplay-turn topic**. Preserve existing subscription security and revocation.
+- Baseline `server/src/platform/pushNotifications.ts`: durable opt-in per-device VAPID push topics `invites`, `messages`, and owner/admin `operations`. A2 proposes a separately consented `turns` topic for eligible Mega Board seats; existing enrollment must never turn it on implicitly. Preserve subscription security and revocation.
 - `client/public/sw.js`: push handler and notification click routing are available. Need match-specific tags/deep-link validation, account/session reconciliation and stale-notice handling.
 - `docs/HGR_NOTIFICATION_DELIVERY_PARITY.md`, `docs/HGR_PWA_NOTIFICATIONS.md`, `docs/HGR_ACTIVE_GAME_RETURN.md`: existing constraints and incomplete future work. No claim of actual device receipt or general cross-game resume.
 
@@ -45,5 +45,9 @@ For opted-in installed devices, send real **Web Push** for actionable changes wh
 - **B — In-app game events and Inbox:** Define server-confirmed game event schema, public/recipient visibility, event history/unread and actionable turn banners. Start with Mega Board plus one simple turn-based game, then additional game adapters in small tested groups. Do not mislabel partial adapters as “all games completed.”
 - **C — Optional game-action Web Push:** Add dedicated gameplay topic(s) to existing VAPID subscription system, recipient routing, coalescing/dedupe, deep links and preference UI. Never add a hidden OS-push feature to an existing invites/messages consent.
 - **D — Device acceptance and expansion:** Test switching apps, locked Android, installed Android PWA, tablets, denied permission, app terminated, cross-account and cross-device, paused/ended/forfeited match, stale push click, no network, duplicate events, secret-information rules, and normal timeouts. Run regression/typecheck/build/Windows+Ubuntu CI, release integrity and final Oracle fingerprint checks before any delivery claims.
+
+## Mega Board A2 implementation candidate — pending CI and phone acceptance
+
+The proposed next audited branch adds a new per-device `turns` Web Push topic, explicit account-settings Enable/Disable turn alerts control, server-side turn-key deduplication persisted on the private room, and a `/?resumeMatch=<matchId>` notification-click return route that always revalidates the authenticated match. Only non-AI, non-autopilot, persisted account-owned active Mega Board seats may receive alerts; no guest, expired, paused, finished, Beta, pending-private-decision or other-player push is allowed. The copy never includes recovery tokens or other private player state. The opt-in is *not* included in existing invitation/message consent, and the ordinary test notification remains available. Server registration and actual lock-screen delivery must be validated separately. For the initial candidate no quiet-hours scheduler, cross-game turn adapter, public-action background digest, or cross-device credential-free reclaim is claimed. Alert TTL is 90 seconds; clicking a stale notification displays match-unavailable status instead of force-joining.
 
 **Release:** Do not attach an implementation version simply because this requirement is documented. Keep it separate from 4.7.3 Control changes and 5.0.0 tournament acceptance; choose a version only for a validated implementation batch.
