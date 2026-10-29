@@ -101,6 +101,10 @@ try {
   assert.equal(inbox.body.invites.length, 1);
   assert.equal(inbox.body.invites[0].betaTournamentTest, true);
   assert.equal((await api("/auth/status", invited.cookie)).body.account.role, "player");
+  const stolenHostSeat = await send(outsider, "game:reconnect", {
+    code: "BETAW4", reconnectToken: created.reconnectToken, playerName: "Stolen seat",
+  });
+  assert.equal(stolenHostSeat.ok, false, "An invited practice host seat cannot be stolen by a signed-in outsider.");
   const joined = await send(member, "game:join", { code: "BETAW4", playerName: "Regular Player" });
   assert.equal(joined.ok, true, joined.reason);
   assert.equal(joined.room.betaTournamentTest, true);
@@ -125,6 +129,11 @@ try {
   assert.equal((await api("/accounts/me/stats", invited.cookie)).body.stats.played, 0);
   assert.equal((await api("/accounts/me/stats", owner.cookie)).body.stats.played, 0);
   assert.equal((await api("/accounts/me/quick-play", invited.cookie)).body.profile.preferences.length, 0);
+  const { gameHistory } = await import("../server/src/platform/game-history.ts");
+  assert.equal((await gameHistory.list(invited.id)).matches.length, 0,
+    "The Beta match must not appear as an official downloadable replay.");
+  const { readPlayerProgression } = await import("../server/src/platform/progression.ts");
+  assert.equal((await readPlayerProgression(invited.id)).gamerScore, 0);
   const ordinary = await send(member, "game:create", { code: "NORMAL4", playerName: "Regular Player", ranked: false });
   assert.equal(ordinary.ok, true);
   assert.equal(ordinary.room.betaTournamentTest, false);
