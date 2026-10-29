@@ -1,0 +1,22 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
+const index=read("client/src/index.css");
+const older=read("client/src/styles/hgr-4.5.1.css");
+const flat=read("client/src/styles/hgr-flat-mobile-join.css");
+const main=read("client/src/main.tsx");
+const home=read("client/src/platform/components/HomeScreen.tsx");
+const physical=index.slice(index.indexOf("/* Main HGR Join control"),index.indexOf("/* Desktop/mobile selected destinations stay"));
+assert(physical.startsWith("/* Main"),"Legacy physical Join section exists");
+assert(!physical.includes(".halieus-mobile-join-game"),"Physical gradient and bevel must not target mobile Join");
+assert.match(older,/\.halieus-mobile-join-game-icon\s*\{[^}]*border: 0 !important;[^}]*box-shadow: none !important;/);
+assert.match(flat,/\.halieus-mobile-nav \.halieus-mobile-join-game:active:not\(:disabled\)/);
+assert.match(flat,/\.halieus-mobile-nav \.halieus-mobile-join-game-icon/);
+assert.match(flat,/background-image: none !important/);
+assert.match(flat,/box-shadow: none !important/);
+assert.match(flat,/transform: none !important/);
+assert.match(flat,/focus-visible/,"Keep keyboard accessibility");
+assert.match(home,/className="halieus-mobile-join-game"/,"Existing Join click action retained");
+assert(main.lastIndexOf("hgr-flat-mobile-join.css")>main.lastIndexOf("hgr-library-discovery.css"),
+  "Flat mobile Join override must load last");
+console.log("PASS mobile Join uses flat solid colour, no gloss/emboss in normal, hover, pressed or icon states");
