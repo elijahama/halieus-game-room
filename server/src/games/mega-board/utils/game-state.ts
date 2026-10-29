@@ -12,6 +12,7 @@ import { syncBlockingTurnPhase } from "./turn-engine.js";
 import { finalizeRankedMatch } from "./rankings.js";
 import { getMatchAwards } from "../../../../../shared/games/mega-board/ranked.js";
 import { finalizeSession, recordWorkingSession } from "../../../platform/sessionArchive.js";
+import { getGuildFixtureBoundRoom, recordFinishedGuildFixtureBoard } from "../../../platform/guildFixtures.js";
 
 const optionalActionTimers = new Map<
   string,
@@ -219,6 +220,12 @@ export function emitGameState(
       gameState,
     });
     if (gameState.phase === "finished") {
+      // Only server-owned, verified real Mega Board results can settle Guild
+      // fixture boards; never accept a client-posted winner or a Beta room.
+      if (!room.betaTournamentTest && getGuildFixtureBoundRoom(code)) {
+        void recordFinishedGuildFixtureBoard(room, gameState).catch((error) =>
+          console.error("[HGR] Guild fixture board result could not be persisted; retry on next verified finish emission:", error));
+      }
       const surviving = gameState.players.filter((player) => !player.isBankrupt);
       const winner = surviving.length === 1 ? surviving[0]?.name ?? null : null;
       if (!room.betaTournamentTest) void finalizeSession("mega-board", room.code, room.createdAt, "completed", { room, gameState }, {
