@@ -1820,3 +1820,28 @@ The audited candidate removes the mobile selector from the shared physical-butto
 - The design builds on the independently reviewed flat mobile Join control; no effect on gameplay, session identity or global mobile bottom-bar order. 390/820/1280px rendered component validation and 360/390/820px computed Join-style checks were added to PR CI. The artwork, launcher-family H, permissions, PWA URLs and release versions have not been changed.
 - Source candidate only. Not deployed or owner-accepted on a real phone until both platform CI passes and an active-room-safe release window is available.
 
+## Live Game Continuity — Batch A1: Mega Board authenticated turn awareness (29 October 2026)
+
+**Windows/Ubuntu source CI passed; no Oracle deployment or physical PWA acceptance claim.** The existing
+authenticated, hub-visible active-match return card is retained, with a
+single new `yourTurn` Boolean in `/accounts/active-matches`. Only the
+verified owner of the actual persisted Mega Board player seat can see
+**Your turn — Continue game to make your move.** Turn status is true only
+in the server-authoritative live `playing` phase when the current player
+matches the persisted account-owned seat, the match is not paused, and
+the turn is in ordinary `roll` or `optional-actions` phase.
+Ordering, auctions, pending decisions, other players' turns, paused,
+expired, bankrupt, finished, and unrelated accounts do not advertise a
+normal actionable turn. Other sensitive room/game state is not projected.
+
+The return button retains its existing action and label, including
+revalidation, token-backed recovery, and `force: false` behavior.
+No new push notification topic, permission request, hidden-tab polling,
+gameplay timer change, account takeover, icon asset, or Control code is
+included. Runtime account/seat/phase/paused checks and 390/820px rendered
+UI assertions were added to the already existing active-match test suites.
+Tests, PR CI, safe release preparation, and actual PWA acceptance must
+be verified independently. This is the first narrowly scoped step toward
+the cross-game **Live Game Continuity** feature, not completed universal
+game support or OS turn push. Full user requirement is documented
+separately in the live-game continuity design.
