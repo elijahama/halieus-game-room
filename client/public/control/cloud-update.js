@@ -326,6 +326,8 @@
     const row = ownerRow();
     const detail = $("ownerPcDetail");
     const checkout = $("ownerPcCheckout");
+    const release = $("ownerReleaseCheckout");
+    const releaseBadge = $("ownerReleaseBadge");
     const badge = row?.querySelector("b");
     const button = updateButton();
     selectedDevice = device || null;
@@ -333,7 +335,9 @@
     if (!device) {
       removeEnrollmentButtons();
       if (detail) detail.textContent = "Start HGR Control on the owner PC to enroll it";
-      if (checkout) { checkout.hidden = true; checkout.textContent = ""; }
+      if (checkout) { checkout.textContent = "Awaiting source report"; }
+      if (release) release.textContent = "Awaiting live laptop report";
+      if (releaseBadge) { releaseBadge.textContent = "Unverified"; releaseBadge.classList.add("muted"); }
       if (badge) { badge.textContent = "Not linked"; badge.classList.add("muted"); }
       if (button) button.disabled = true;
       setReadiness("Cloud Update waiting for owner PC", "Start HGR Control on the owner PC. Its outbound bridge will appear here for approval.", false);
@@ -345,10 +349,22 @@
     // and must not be presented as the installed/released Game Room version.
     if (detail) detail.textContent = `${device.machineName || "Owner PC"} · Control bridge`;
     if (checkout) {
-      checkout.hidden = !device.hgrVersion;
-      checkout.textContent = device.hgrVersion
-        ? `Local development source: ${device.hgrVersion} · not the public release`
-        : "";
+      checkout.textContent = device.hgrVersion && device.hgrVersion !== "unknown"
+        ? `Version ${device.hgrVersion} · preserved original source`
+        : "Version not reported by the original checkout";
+    }
+    // This value is signed-in agent-reported VERSION from the actual release
+    // checkout, not an alias for the website or the development worktree.
+    const reportedRelease = typeof device.releaseCheckoutVersion === "string"
+      && /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$/.test(device.releaseCheckoutVersion)
+      ? device.releaseCheckoutVersion : null;
+    const fresh = device.online === true && device.localControlOnline === true;
+    if (release) release.textContent = reportedRelease
+      ? `${fresh ? "Version" : "Last reported"} ${reportedRelease}`
+      : "Not reported by the current laptop bridge";
+    if (releaseBadge) {
+      releaseBadge.textContent = reportedRelease ? (fresh ? "Reported" : "Stale") : "Unverified";
+      releaseBadge.classList.toggle("muted", !fresh || !reportedRelease);
     }
     if (badge) badge.classList.remove("muted");
 
