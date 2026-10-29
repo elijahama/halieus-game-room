@@ -986,8 +986,10 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
 .halieus-brand-mark { --logo-bg: var(--hgr-logo-bg); --logo-glyph: var(--hgr-logo-ink); --logo-accent: var(--hgr-logo-border); }
 .halieus-brand-mark .halieus-brand-mark-tile { fill: var(--logo-bg); stroke: var(--logo-accent); }
 .halieus-brand-mark .halieus-brand-mark-h-shape { fill: var(--logo-glyph); }
+.halieus-brand-mark[data-logo-preset="mono-light"] .halieus-brand-mark-tile,
+.halieus-brand-mark[data-logo-preset="mono-dark"] .halieus-brand-mark-tile,
 .halieus-brand-mark[data-logo-preset="white-glyph"] .halieus-brand-mark-tile,
-.halieus-brand-mark[data-logo-preset="black-glyph"] .halieus-brand-mark-tile { display: none; }
+.halieus-brand-mark[data-logo-preset="black-glyph"] .halieus-brand-mark-tile { display: none !important; }
 
 /* Personal logo choices all use the launcher-family H geometry. Only the
  * treatment changes: tile/glyph colour and whether a tile is present. */
@@ -998,14 +1000,14 @@ html[data-theme="dark"] .mario-results-card .results-awards-grid article p { col
   --logo-accent: #d59d18;
 }
 .halieus-brand-mark[data-logo-preset="mono-light"] {
-  --logo-bg: #f7f8fa;
-  --logo-glyph: #101318;
-  --logo-accent: #d7dbe0;
+  --logo-bg: transparent;
+  --logo-glyph: #ffffff;
+  --logo-accent: transparent;
 }
 .halieus-brand-mark[data-logo-preset="mono-dark"] {
-  --logo-bg: #101318;
-  --logo-glyph: #f7f8fa;
-  --logo-accent: #343a44;
+  --logo-bg: transparent;
+  --logo-glyph: #000000;
+  --logo-accent: transparent;
 }
 .halieus-brand-mark[data-logo-preset="white-glyph"] {
   --logo-bg: transparent;
