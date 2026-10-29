@@ -58,6 +58,21 @@
 @keyframes control-operation-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.operation-toast[data-state="running"] .operation-icon::before{animation:none;border-top-color:#8da8ff;border-right-color:#8da8ff}}
 
+/* Start/Restart/Close are owner-PC window actions, NOT software deployment.
+   Suppress the Update progress track/percentage and any rotating ring on
+   lifecycle operations even if a cached Control JS version is active. */
+.operation-toast:not([data-action="update"]) .operation-progress,
+.operation-toast:not([data-action="update"]) #operationPercent{display:none!important}
+.operation-toast[data-action="start"] .operation-icon::before{
+  content:"▶";width:auto;height:auto;border:0;border-radius:0;animation:none!important;transform:none!important;font-size:16px;font-weight:800
+}
+.operation-toast[data-action="restart"] .operation-icon::before{
+  content:"↻";width:auto;height:auto;border:0;border-radius:0;animation:none!important;transform:none!important;font-size:20px;font-weight:800
+}
+.operation-toast[data-action="close"] .operation-icon::before{
+  content:"■";width:auto;height:auto;border:0;border-radius:0;animation:none!important;transform:none!important;font-size:16px;font-weight:800
+}
+.operation-toast[data-action="unknown"] .operation-icon::before{content:"•";border:0;animation:none!important}
 /* Motion indicates a running operation; only server reports change progress width. */
 .operation-copy #operationPhase{font-size:14px;line-height:1.4;color:#eef4ff;overflow-wrap:anywhere}
 .operation-copy #operationTitle{font-size:11px;color:#b6c8e8}
