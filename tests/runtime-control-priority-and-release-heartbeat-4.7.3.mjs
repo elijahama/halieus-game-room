@@ -35,7 +35,7 @@ assert.match(oracle, /releaseCheckoutVersion: device\.releaseCheckoutVersion \?\
 assert.match(browser, /releaseCheckoutVersion/);
 assert.match(browser, /Not reported by the current laptop bridge/);
 assert.match(browser, /Last reported/);
-assert.match(browser, /Local development source:/);
+assert.match(browser, /preserved original source/);
 assert.match(frontend, /setOperationCategory\("maintenance"\)/);
 assert.match(frontend, /event\.key === "ArrowRight"/);
 assert.match(template, /data-operation-tab="maintenance" aria-selected="true"/);
