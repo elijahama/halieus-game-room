@@ -1,4 +1,5 @@
 import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
+import { rooms as megaBoardRooms } from "../games/mega-board/state/rooms.js";
 import { buildRankedLeaderboard } from "./ranked.js";
 import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranked.js";
 import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSkinPreferences, type HalieusSkinSlot } from "../../../shared/platform/skins.js";
@@ -924,13 +925,23 @@ function expireGameRequests(): void {
   }
 }
 
+/** An invitation is explicit opt-in to a private practice room, not Beta/admin access. */
+export function hasBetaTournamentRoomInvitation(accountId: string, roomCode: string): boolean {
+  const room = megaBoardRooms.get(roomCode);
+  if (!room?.betaTournamentTest || room.started) return false;
+  return store.gameInvites.some((invite) =>
+    invite.game === "mega-board" && invite.roomCode === roomCode &&
+    invite.recipientAccountId === accountId && !invite.dismissedAt &&
+    invite.expiresAt > Date.now());
+}
 function publicGameInvites(accountId: string): HalieusGameInviteSummary[] {
   const now = Date.now();
   const activeRooms = adminRuntimeControls?.getLiveRooms() ?? [];
   const roomKeys = new Set(activeRooms.map((room) => `${room.game}:${room.code}`));
   return store.gameInvites
     .filter((invite) => invite.recipientAccountId === accountId && !invite.dismissedAt && invite.expiresAt > now && roomKeys.has(`${invite.game}:${invite.roomCode}`))
-    .map(({ dismissedAt: _dismissedAt, ...invite }) => invite)
+    .map(({ dismissedAt: _dismissedAt, ...invite }) => ({ ...invite,
+      betaTournamentTest: invite.game === "mega-board" && megaBoardRooms.get(invite.roomCode)?.betaTournamentTest === true }))
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
@@ -1175,7 +1186,9 @@ export function registerAccountRoutes(app: Express): void {
     const room = activeRoomForInvite(game, roomCode);
     if (!room) { response.status(404).json({ ok: false, reason: "That game room is no longer active." }); return; }
     const aliases = accountAliases(auth.account);
-    if (!room.humanPlayers.some((name) => aliases.has(name.trim().toLowerCase()))) {
+    const betaHost = game === "mega-board" && megaBoardRooms.get(roomCode)?.betaTournamentTest === true &&
+      megaBoardRooms.get(roomCode)?.players.some((player) => player.isHost && player.replayAccountId === auth.account.id);
+    if (!betaHost && !room.humanPlayers.some((name) => aliases.has(name.trim().toLowerCase()))) {
       response.status(403).json({ ok: false, reason: "You can only invite friends to a room you are currently playing in." }); return;
     }
     const now = Date.now();
@@ -1189,10 +1202,10 @@ export function registerAccountRoutes(app: Express): void {
     await saveStore();
     void sendHgrPush([recipient.id], {
       topic:"invites", title:"HGR room invitation",
-      body:`${auth.account.displayName} invited you to ${room.gameTitle}.`,
+      body: betaHost ? `${auth.account.displayName} invited you to a non-scoring Beta practice match.` : `${auth.account.displayName} invited you to ${room.gameTitle}.`,
       url:"/?inbox=1",tag:"hgr-room-"+invite.id,
     });
-    response.status(201).json({ ok: true, invite: (({ dismissedAt: _dismissedAt, ...item }) => item)(invite) });
+    response.status(201).json({ ok: true, invite: { ...((({ dismissedAt: _dismissedAt, ...item }) => item)(invite)), betaTournamentTest: Boolean(betaHost) } });
   });
 
   app.post("/accounts/game-invites/:inviteId/dismiss", async (request, response) => {
