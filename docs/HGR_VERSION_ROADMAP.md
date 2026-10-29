@@ -66,7 +66,7 @@ Active-match notifications and reconnect reconciliation are a **separate already
 While 4.7.0 Guild fixtures remain a separate draft, a focused Control
 regression repair targets two owner-observed issues: portrait Full Screen
 action visibility, and optional server-sent background Update stage/final
-notifications on Android/PWA when the owner switches apps. The 4.6.10
-version remains authoritative until checks and owner acceptance. This
-candidate must not merge or deploy merely because its number is newer.
+notifications on Android/PWA when the owner switches apps. The 4.6.11 candidate VERSION is staged in its isolated branch; 4.6.10
+remains the merged public-source baseline until checks and owner acceptance.
+This candidate must not merge or deploy merely because its number is newer.
 See [Control Update notification acceptance](HGR_CONTROL_BACKGROUND_UPDATES.md).
