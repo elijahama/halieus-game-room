@@ -1,5 +1,33 @@
 # HGR 4.7.0 Guild-v-Guild fixture — staged implementation
 
+## Second audited slice — real-room binding (source only)
+
+After both Guild managers lock their lineups, a participating manager may
+bind two **existing, independently created** ordinary Mega Board lobbies
+using `POST /guild-fixtures/:fixtureId/bind-rooms` with
+`{"roomCodes":["CODE01","CODE02"]}`. Both lobbies must have the exact
+authenticated human account-ID rosters approved by both Guilds, have no AI,
+no extra players, no active game, and no Ranked/Blitz rules. Each binding
+records a unique boardMatchId, the actual room creation timestamp, room code
+and verified account IDs. An already-bound fixture or room cannot be silently
+reassigned.
+
+The real Mega Board join and AI-add handlers now refuse attempts to alter the
+locked roster; the normal host-owned start handler rechecks room identity,
+connected seats and locked account IDs. Once that guard passes, it starts
+the **ordinary Mega Board engine** for each board independently. The game
+does not give teammates joint wallets, exempt them from rent, or change
+normal economic gameplay. An owner/admin cannot cancel a bound fixture via
+the pre-launch cancellation route, because a game may already be in progress.
+
+Dedicated runtime tests launch both rooms through the real Mega Board start
+handlers and reject tampered rosters, AI additions, duplicate assignment and
+unauthorised operations. This is a substantive step towards 4.7.0, **not a
+completed competitive fixture**: team outcome aggregation, tournament rating
+settlement, automatic finished-game receipts, Guild-facing launcher/status
+UI and end-to-end reconnect/forfeit acceptance remain pending. VERSION stays
+at 4.6.10 until the playable milestone is complete.
+
 ## Scope of first audited slice (source only)
 
 This is the **first 4.7.0 candidate batch**, not a released playable Guild tournament.
@@ -29,9 +57,11 @@ clients nor unapproved Guild members may create/accept/cancel fixtures.
 
 ### Boundaries
 
-No game rooms are created here; locked lineups do not assign boardMatchIds,
-change ratings, emit wins, trigger game launches or claim live tournament
-functionality. No production deployment, shutdown or downtime occurs. No
+This early proposal-only boundary is superseded by the real-room binding
+slice above. Rooms are still created via the existing standard Mega Board
+lobby flow; no automatic room creation or tournament result finalisation
+is included. Binding does not change ratings, emit team victories or claim
+a complete tournament. No production deployment, shutdown or downtime occurs. No
 launcher, H geometry, colour family, canonical PNG or icon reference is changed.
 The source version stays 4.6.10 until the **complete playable 4.7.0
 milestone** passes end-to-end tests, Windows/Ubuntu CI, live acceptance and
