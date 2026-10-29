@@ -38,10 +38,10 @@ try {
     assert.equal(await personal.getByRole("tab",{name:/Profile/}).getAttribute("aria-selected"),"true");
     assert.equal(await dialog.getByRole("heading",{name:"Your Halieus identity"}).count(),1);
     await personal.getByRole("tab",{name:/Appearance/}).click();
-    await dialog.getByRole("heading",{name:"Appearance"}).waitFor();
+    await dialog.getByRole("heading",{name:"Appearance"}).first().waitFor();
     assert.equal(await dialog.getByRole("heading",{name:"Your Halieus identity"}).count(),0,"Profile form hidden on another section");
     await personal.getByRole("tab",{name:/Notifications/}).click();
-    await dialog.getByRole("heading",{name:"Notifications"}).waitFor();
+    await dialog.getByRole("heading",{name:"Notifications"}).first().waitFor();
     await personal.getByRole("tab",{name:/Feedback/}).click();
     await dialog.getByRole("heading",{name:"Send feedback"}).waitFor();
     await dialog.getByRole("button",{name:"Owner settings"}).click();
@@ -57,7 +57,7 @@ try {
       pageOverflow:document.documentElement.scrollWidth>innerWidth+1,
       accountWidth:document.querySelector(".account-panel").getBoundingClientRect().width,
       scroll: getComputedStyle(document.querySelector(".account-panel-scroll")).overflowY,
-      nav: getComputedStyle(document.querySelector(".account-owner-nav")).overflowX,
+      focusedTab: document.querySelector(".hgr-account-personal-nav button.is-active")?.textContent,
     }));
     assert.equal(sizes.pageOverflow,false,"No body-level horizontal overflow");
     assert(sizes.accountWidth<=width+1,"Account modal fits viewport");
