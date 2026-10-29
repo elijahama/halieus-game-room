@@ -25,7 +25,7 @@ export const PAUSED_HOST_RECONNECT_GRACE_MS = 24 * 60 * 60 * 1000;
 
 export function hostReconnectGraceMs(room: GameRoom): number {
   return room.gameState?.pauseState ? PAUSED_HOST_RECONNECT_GRACE_MS
-    : room.started && room.gameState?.phase !== "finished"
+    : room.started && room.gameState && room.gameState.phase !== "finished"
       ? ACTIVE_HOST_RECONNECT_GRACE_MS : HOST_RECONNECT_GRACE_MS;
 }
 
