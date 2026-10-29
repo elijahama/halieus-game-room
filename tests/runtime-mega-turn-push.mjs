@@ -22,13 +22,14 @@ const room = {
 const events = [];
 const deliver = async (recipients, notice) => events.push({ recipients, notice });
 const expectNoSend = (reason, change) => {
-  const state = room.gameState;
-  const before = events.length, key = room.lastTurnPushKey;
+  const before = events.length, priorKey = room.lastTurnPushKey;
+  room.lastTurnPushKey = undefined; // Remove dedup so each guard is independently tested.
   const undo = change();
   assert.equal(notifyNewMegaTurn(room, deliver), false, reason);
   assert.equal(events.length, before, reason + ": no gateway call");
-  assert.equal(room.lastTurnPushKey, key, reason + ": no marker mutation");
+  assert.equal(room.lastTurnPushKey, undefined, reason + ": no marker mutation");
   undo();
+  room.lastTurnPushKey = priorKey;
 };
 assert.equal(notifyNewMegaTurn(room, deliver), true, "First eligible turn notification");
 assert.equal(events.length, 1);
@@ -46,7 +47,7 @@ expectNoSend("Ordering", () => { const old = room.gameState.phase; room.gameStat
 expectNoSend("Blocking pending auction", () => { room.gameState.pendingAuction = { id:"auction" }; return () => { room.gameState.pendingAuction = null; }; });
 expectNoSend("Hidden pending trade", () => { room.gameState.pendingTrade = { id:"trade" }; return () => { room.gameState.pendingTrade = null; }; });
 expectNoSend("Autopilot", () => { room.gameState.players[0].autopilotEnabled = true; return () => { room.gameState.players[0].autopilotEnabled = false; }; });
-expectNoSend("Expired match", () => { room.hostDisconnectDeadline = startedAt - 1; return () => { room.hostDisconnectDeadline = null; }; });
+expectNoSend("Expired match", () => { room.hostDisconnectDeadline = Date.now() - 1; return () => { room.hostDisconnectDeadline = null; }; });
 expectNoSend("Finished", () => { room.gameState.phase = "finished"; return () => { room.gameState.phase = "playing"; }; });
 expectNoSend("Beta fixture", () => { room.betaTournamentTest = true; return () => { room.betaTournamentTest = false; }; });
 room.gameState.currentPlayerIndex = 1;
