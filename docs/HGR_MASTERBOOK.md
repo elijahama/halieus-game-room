@@ -1521,3 +1521,23 @@ See [HGR_SOCIAL_ACTIVITY_NOTIFICATIONS.md](HGR_SOCIAL_ACTIVITY_NOTIFICATIONS.md)
 A separate public website closure/reopen control has been designed and implemented independently of the existing Open/Restart/Close **HGR Window** buttons. Closing changes the Oracle server's **visitor gate** to an uncached HTTP 503 maintenance page and rejects new public game sockets, without stopping the server or authenticated owner Control. The service refuses closure when any of the 14 game types has an active room. The owner can log in via the maintenance page and reopen from Control; private persisted state survives process restarts. Typed confirmation, same-origin JSON, owner-only authentication, audit and private data storage are required. No live site closure is performed in source development.
 
 See [HGR_PUBLIC_MAINTENANCE.md](HGR_PUBLIC_MAINTENANCE.md). The public gate must be audited and accepted after Windows/Ubuntu CI and real mobile/desktop testing, and must not replace or contradict the existing transient deploy/restart maintenance notification mechanism.
+
+## 4.7.0 milestone development — authenticated two-board Guild fixture proposals (28 October 2026)
+
+The first isolated **4.7.0 candidate batch** adds a durable Guild-v-Guild
+Mega Board fixture proposal and two-board roster locking service, using the
+existing Guild membership authority. A Guild owner/admin submits its own
+lineups; the opposing Guild owner/admin must separately authenticate and
+approve its own members. Duplicate people, cross-team overlap, invalid Guilds
+and over-capacity boards are refused. Either Guild manager can cancel before
+actual board launch. The fixture file is separate from normal Guild messages,
+sessions, and all Ranked/tournament scoring stores. It is source-only and
+does **not** create a live game or claim a 4.7.0 public release.
+
+The **4.7.0 advancement gate remains unchanged**: two independent real
+Mega Board matches per locked Guild fixture, trusted seat and game IDs,
+normal rent/property rules, verified outcomes, team scoring and tie policy,
+safe reconnect/cancellation, usable Guild UI, full regression and
+owner/physical-device acceptance. The repository VERSION remains 4.6.10
+during this staged work. See [4.7 fixture implementation](HGR_GUILD_FIXTURES_4_7.md)
+and [version roadmap](HGR_VERSION_ROADMAP.md).
