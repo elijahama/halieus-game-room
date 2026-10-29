@@ -108,10 +108,10 @@ try {
   assert.equal(first.started, false);
   first.players[1].replayAccountId = "gold-a";
   assert.equal(emit(hostA, "game:start", { code: first.code }).ok, true);
-  assert.equal(first.gameState?.phase, "playing");
+  assert.equal(first.gameState?.phase, "ordering");
   const hostB = handlersFor("socket-c");
   assert.equal(emit(hostB, "game:start", { code: second.code }).ok, true);
-  assert.equal(second.gameState?.phase, "playing");
+  assert.equal(second.gameState?.phase, "ordering");
   assert.notEqual(first.gameState, second.gameState);
   assert.equal(first.gameState.ranked, false);
   assert.equal(second.gameState.blitz, false);
@@ -119,6 +119,7 @@ try {
   console.log("PASS HGR 4.7.0: two real Mega Board boards linked, locked account seats, actual independent starts, uninvited/AI/roster-change rejection");
 } finally {
   await new Promise((resolve) => server.close(resolve));
+  await flushRoomSave();
   rooms.clear();
-  await rm(directory, { recursive: true, force: true });
+  await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
 }
