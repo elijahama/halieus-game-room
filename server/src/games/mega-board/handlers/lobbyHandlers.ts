@@ -23,6 +23,7 @@ import { initialiseCardDecks } from "../utils/cards.js";
 import { queueRoomSave } from "../utils/persistence.js";
 import { reconnectRoomPlayer } from "../utils/reconnection.js";
 import { activeMegaMatch } from "../../../platform/active-match.js";
+import { getGuildFixtureBoundRoom, getGuildFixtureStartBlock } from "../../../platform/guildFixtures.js";
 import { cancelHostGrace } from "../utils/host-grace.js";
 import { toPublicGameRoom } from "../utils/room-view.js";
 import { syncAuctionTimer } from "../utils/auction-timer.js";
@@ -269,6 +270,10 @@ export function registerLobbyHandlers(
       const room = rooms.get(code);
       if (!room) {
         acknowledge({ ok: false, reason: "That game room does not exist." });
+        return;
+      }
+      if (getGuildFixtureBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "This Guild fixture lineup is locked. Only registered seats can reconnect." });
         return;
       }
       if (room.started) {
@@ -518,6 +523,11 @@ socket.on(
         return;
       }
 
+      const fixtureBlock = getGuildFixtureStartBlock(room);
+      if (fixtureBlock) {
+        acknowledge({ ok: false, reason: fixtureBlock });
+        return;
+      }
       const connectedPlayers = room.players.filter(
         (player) =>
           player.isAi ||
