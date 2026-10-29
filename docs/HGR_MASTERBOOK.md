@@ -1739,3 +1739,55 @@ regressions, production build, release integrity, browser identity and
 both operating-system CI jobs before declaring 4.7.2 ready. This
 documentation describes a development candidate until merged/deployed
 and independently verified on the public website.
+
+## 4.7.3 — Owner Control mobile priorities, theme isolation and three source identities (29 October 2026)
+
+Owner accepted 4.7.2 and clarified the desired presentation. HGR Control's
+Operations must prioritize visitor-facing **Maintenance**, then the approved
+software **Update** process, with lower-priority **Laptop** window actions in
+a third distinct tab. The three operation categories are accessible
+`role=tab`/`tabpanel` groups with the current category in
+`aria-selected`, one keyboard focus target, arrow/Home/End keyboard
+navigation, at least 44px touch areas, and a mobile viewport that does not
+overflow. The default is Maintenance. Tabs are **presentation only**:
+switching never issues an operation; existing owner confirmations, live-room
+maintenance refusal, separate update spinner, Cloud receipts, browser
+notifications, and the approved desktop-only Open/Restart/Close commands
+remain untouched. Non-owner Control admins can see the category navigation
+but cannot unhide or invoke the owner-only Public Game Room gate.
+
+The in-game authenticated Owner/Admin Control shortcut is a direct link
+to the existing /control/ application, not a second controls backend.
+Its CSS now explicitly matches the Control-family navy/blue surfaces,
+Unbounded/Righteous/Varela Round/Alata font roles and accessible focus
+style, independent of any selected player Game Room theme. The approved
+Control launcher artwork reference and H geometry are *not replaced,
+redrawn or adjusted*. Other player UI continues respecting game themes.
+
+The Control Overview infrastructure area distinguishes **three real
+version sources** in separate rows, while preserving the online Cloud and
+Owner PC bridge statuses:
+1. **Public website**: actual server /health.version, not the laptop.
+2. **Laptop release checkout**: authenticated owner Cloud agent-reported
+   local VERSION from the dedicated Release Checkout. The agent reads the
+   independently installed local path under LOCALAPPDATA or the explicit
+   HGR_RELEASE_CHECKOUT_ROOT environment variable only if it validates as
+   an HGR repository; a missing or invalid version remains *Not reported*
+   or *Unverified*, never guessed from the website. Offline heartbeat data
+   is labelled *Last reported*, not live or automatically synced.
+3. **Original laptop development checkout**: existing
+   HGR_CONTROL_GAME_ROOT-reported source version, preserved independently.
+   Its older version is expected and must never be silently reset.
+
+The heartbeat's optional `releaseCheckoutVersion` field is authenticated
+by the same Cloud-agent device credential and saved separately from the
+legacy `hgrVersion`. Previous agents cannot yet report this field:
+the new Release Checkout row must display *Unverified* until a compatible
+outbound bridge actually reports it. Do not claim parity merely because
+the public website is current.
+
+Implementation version 4.7.3 is a **candidate** until all client/server
+checks, Control lifecycle/maintenance/release checks, 320–1440px real
+browser layout tests, artwork integrity, both CI operating systems, and
+an explicit zero-room Oracle deployment are verified. Document any
+agent-activation step required to make the new local version visible.
