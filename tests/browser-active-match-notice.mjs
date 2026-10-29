@@ -14,7 +14,7 @@ try {
     const page = await browser.newPage({ viewport: { width, height: 900 } });
     await page.clock.install();
     let requests = 0;
-    let matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-123", paused: false, notice: { id: "n1", title: "Purchase complete", message: "Public purchase." } }];
+    let matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-123", paused: false, yourTurn: false, notice: { id: "n1", title: "Purchase complete", message: "Public purchase." } }];
     await page.route("http://notice.test/**", route => {
       if (new URL(route.request().url()).pathname === "/accounts/active-matches") { requests++; return route.fulfill({ json: { matches } }); }
       return route.fulfill({ contentType: "text/html", body: '<html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><main id="root"></main></body></html>' });
@@ -27,6 +27,10 @@ try {
     await page.getByLabel("Focus target").focus();
     await Promise.all([page.waitForResponse("**/accounts/active-matches"), page.evaluate(() => window.dispatchEvent(new Event("focus")))]);
     assert.equal(await page.getByText(/Latest public decision/).count(), 1);
+    assert.equal(await page.getByText(/Your turn — Continue game/).count(), 0);
+    matches = [{ ...matches[0], yourTurn: true }];
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await page.getByText("Your turn — Continue game to make your move.").waitFor();
     assert(await page.getByLabel("Focus target").evaluate(el => el === document.activeElement));
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     await page.getByRole("button", { name: "Return to game" }).click();
@@ -39,6 +43,7 @@ try {
     matches = [{ ...matches[0], paused: true }];
     await page.evaluate(() => { Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" }); document.dispatchEvent(new Event("visibilitychange")); });
     await page.getByText(/Moves and timers are frozen/).waitFor();
+    assert.equal(await page.getByText(/Your turn — Continue game/).count(), 0, "Paused match suppresses turn call-to-action");
     matches = [{ ...matches[0], notice: { id: "n2", title: "Rent paid", message: "New public decision." } }];
     await page.evaluate(() => window.dispatchEvent(new Event("online")));
     await page.getByText(/New public decision/).waitFor();
@@ -47,7 +52,7 @@ try {
     await page.getByRole("button", { name: "Return to game" }).click();
     await notice.waitFor({ state: "detached" });
     assert.equal(await page.locator("output").innerText(), "mega-ROOM-123", "Stale match cannot initiate another return");
-    matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-456", paused: false, notice: null }];
+    matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-456", paused: false, yourTurn: false, notice: null }];
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
     await notice.waitFor();
     matches = [];
@@ -92,7 +97,7 @@ try {
     await dialog.waitFor({ state: "detached" });
     assert.deepEqual(JSON.parse(await takeoverResults.innerText()), bothRecoveries, "Logout cancels pending account takeover");
     console.log(`PASS takeover dialog ${width}: Cancel/Escape, snapshot, explicit one-use guest confirm, account switch/logout cancellation (component coverage)`);
-    console.log(`PASS active notice ${width}: correct return, no forced takeover UI, dedup, focus, hidden/resume, account switch/logout`);
+    console.log(`PASS active notice ${width}: your-turn status, paused suppression, correct return, no forced takeover UI, dedup, focus, hidden/resume, account switch/logout`);
     await page.close();
   }
 } finally { if (browser) await browser.close(); rmSync(temp, { recursive: true, force: true }); }
