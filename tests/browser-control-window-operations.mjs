@@ -12,7 +12,7 @@ const css=await readFile(resolve(root,"client/public/control/control.css"),"utf8
 const closeCmd=await readFile(resolve(root,"Close Halieus Game Room.cmd"),"utf8");
 assert.match(html,/Close HGR Window/,"Cloud Control must accurately label local Close");
 assert.match(controlJs,/Close HGR window/,"Persistent Control status must explain the actual local window action");
-assert.match(html,/public Oracle website stays online/,"Control must explain separate cloud hosting");
+assert.match(html,/This never closes the public website\.|public Oracle website stays online/i,"Control must explain that window actions leave the public website online");
 assert.match(closeCmd,/msedge\.exe/,"Close currently targets the local dedicated Edge app");
 assert.doesNotMatch(closeCmd,/ssh|systemctl|oracle|cloudflare/i,"Close is not an Oracle shutdown");
 
