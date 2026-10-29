@@ -54,7 +54,10 @@ try {
   assert.match(index,/response\.status\(503\)\.type\("html"\)/);
   assert.match(index,/await loadPublicAccessState\(\)/,"Server restores state before listening");
   assert.match(control,/auth: \{ hgrControl: true \}/);
-  assert.match(control,/typed !== phrase/,"UI requires typed confirmation");
+  assert.doesNotMatch(control,/window\.prompt\(/,"Maintenance reason must never be confused with a hidden phrase prompt");
+  assert.match(control,/window\.confirm\(closing/,"Owner must explicitly approve close or reopen");
+  assert.match(control,/hgr-public-access-check=/,"Owner must verify actual visitor-gate HTTP response");
+  assert.match(control,/gateCheck\.status !== 503/,"Successful close needs an actual public maintenance response");
   assert.match(ui,/id="publicAccessCard"/);
   assert.match(ui,/id="publicAccessToggle"/);
   assert.match(worker,/if \(response\.ok\)/,"Maintenance 503 never cached as live PWA home");
