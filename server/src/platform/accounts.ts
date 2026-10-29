@@ -1306,8 +1306,19 @@ export function registerAccountRoutes(app: Express): void {
 
   app.get("/accounts/me/themes", async (request, response) => {
     const auth = currentSession(request);
-    const entitlements = auth ? themeEntitlements(await readPlayerProgression(auth.account.id)) : CORE_THEME_IDS;
-    response.json({ ok: true, entitlements, selected: auth?.account.themeProfile && entitlements.includes(auth.account.themeProfile) ? auth.account.themeProfile : "blue-circuit" });
+    // One authoritative progression snapshot powers both the entitlement list
+    // and the progress explanation. Never infer unlocks from client Gamer Score.
+    const progression = auth ? await readPlayerProgression(auth.account.id) : null;
+    const entitlements = progression ? themeEntitlements(progression) : CORE_THEME_IDS;
+    response.setHeader("Cache-Control", "private, no-store");
+    response.json({
+      ok: true, authenticated: Boolean(auth),
+      gamerScore: progression?.gamerScore ?? null,
+      verifiedGames: progression?.played ?? null,
+      achievementIds: progression?.awards.map((award) => award.id) ?? [],
+      entitlements,
+      selected: auth?.account.themeProfile && entitlements.includes(auth.account.themeProfile) ? auth.account.themeProfile : "blue-circuit",
+    });
   });
   app.post("/accounts/me/themes", async (request, response) => {
     const auth = currentSession(request);
