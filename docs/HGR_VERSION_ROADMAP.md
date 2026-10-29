@@ -74,6 +74,17 @@ tournament. The version stays **4.6.10** while the playable 4.7 milestone
 and owner-device acceptance remain incomplete. See
 [Beta Tournament Practice](HGR_BETA_TOURNAMENT_PRACTICE.md).
 
+### 29 October 2026 — 4.7.0 two-board real results added
+
+The development branch now records verifiable, once-only finished-game
+receipts for both independent Mega Board boards and derives the number
+of board wins for each Guild. A 1–1 split remains unresolved; no unsupported
+F1 points, tie-break ranking or tournament rating is invented. This
+milestone is still unmerged, un-deployed and not yet fully owner-playable
+because Guild-facing fixture controls, mobile tests and release acceptance
+remain. 4.6.11 Control fixes are isolated in draft PR #170 and must be
+integrated safely before any unified later-version release.
+
 ### 29 October 2026 — 4.7.0 real-match fixture linking candidate
 
 The staged source candidate now links manager-approved Guild lineups
