@@ -1,0 +1,44 @@
+/* HGR — approved flat mobile Join treatment.
+ * The full-area button is transparent and the raised centre glyph is a flat
+ * solid accent. No bevel, inset highlight, glossy gradient, ring or shadow.
+ * Loaded AFTER all legacy theme/toolbar styles to prevent regression.
+ * Desktop global Join and protected HGR branding remain untouched. */
+.halieus-mobile-nav .halieus-mobile-join-game,
+.halieus-mobile-nav .halieus-mobile-join-game:hover:not(:disabled),
+.halieus-mobile-nav .halieus-mobile-join-game:active:not(:disabled),
+.halieus-mobile-nav .halieus-mobile-join-game.is-active {
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--hgr-text) !important;
+  border: 0 !important;
+  outline-offset: 2px;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.halieus-mobile-nav .halieus-mobile-join-game::before,
+.halieus-mobile-nav .halieus-mobile-join-game::after,
+.halieus-mobile-join-game-icon::before,
+.halieus-mobile-join-game-icon::after {
+  content: none !important;
+  display: none !important;
+}
+.halieus-mobile-nav .halieus-mobile-join-game-icon,
+.halieus-mobile-nav .halieus-mobile-join-game:hover .halieus-mobile-join-game-icon,
+.halieus-mobile-nav .halieus-mobile-join-game:active .halieus-mobile-join-game-icon {
+  background: var(--hgr-brand) !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+.halieus-mobile-nav .halieus-mobile-join-game:focus-visible {
+  outline: 2px solid var(--hgr-brand) !important;
+}

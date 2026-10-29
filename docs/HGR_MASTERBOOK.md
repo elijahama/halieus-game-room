@@ -1792,9 +1792,37 @@ browser layout tests, artwork integrity, both CI operating systems, and
 an explicit zero-room Oracle deployment are verified. Document any
 agent-activation step required to make the new local version visible.
 
+## Mobile Mega Board — preserve the match when the host backgrounds or returns (29 October 2026)
+
+**Owner field report:** During a six-seat portrait Mega Board test (one human host with CPU opponents), leaving the app caused an obstructing interruption and the player could not rejoin. Exact trigger/message remains unconfirmed from the screenshot; two independently verified source defects warrant a narrow recovery hotfix.
+
+- The ordinary unpaused **host-disconnect grace was 90 seconds**, identical to a waiting lobby. After this timer the server ends the entire room. For a **started, unfinished Mega Board match**, retain the host recovery slot for **24 hours**, matching the existing paused-match grace; keep unstarted waiting lobbies and finished rooms on the previous 90-second policy. Authoritative game/turn timers still apply during absence; this is not a pause, infinite room retention or a rule change. Keep the room in the active-game release-protection gate, including after server recovery. Explicit End game and Forfeit retain their existing semantics.
+- The authenticated active-match return card used `game:reconnect` even for a **parked, still-connected session in the same socket**. The server correctly rejects this as an already-active seat, stranding the user on the hub. A revalidated match now **unparks the original board without a new socket call** *only* when the local saved session, room, state and connected player socket all agree, the viewer is not a spectator and the account remains unchanged. Different/disconnected sockets retain the normal token-backed `force:false` server recovery; never auto-takeover another session.
+- Tests were added to the existing Mega Board pause/recovery regression chain to confirm active and paused grace versus lobby grace, and to the active-match wiring guard for same-socket identity and unpark behavior. Typecheck, socket runtime, rendered mobile tests and complete Windows/Ubuntu CI remain explicit independent gates until confirmed.
+- Do not restart Oracle to test a UI change while matches are active. A dev/static preview is separate from the live production Socket.IO room, and deploying a new browser bundle mid-turn is **not** equivalent to hot-reloading a joined live game. Observe owner-requested portrait gallery, theme, auction/decision/notice scaling improvements in subsequent audited UI-only batches. No launcher H art or theme asset geometry was changed in this hotfix.
+
+**Status:** Narrow source branch only. Not merged or deployed until validation and safe maintenance; public version stays 4.7.3.
+
+## Mobile navigation — flat Join control (29 October 2026)
+
+**Owner reaffirmation:** The mobile centred Join action must have **zero glossy or embossed treatment**. The old shared physical-button rules in `index.css` improperly targeted both global and mobile Join, giving the mobile control a layered gradient, inset lip and pressed shadow. The older mobile stylesheet also added a heavy circular rim and glow.
+
+The audited candidate removes the mobile selector from the shared physical-button rules while preserving the independently approved desktop global Join. The older icon loses its rim/shadow. A final-loaded scoped mobile stylesheet guarantees **flat transparent nav surface plus a flat solid brand-colour circular icon** for normal, hover, active and focus states. The button's action, middle mobile-nav location, keyboard outline, touch dimensions, HGR logo family, other themes and PWA artwork are unchanged. A targeted regression runs in normal CI. **Windows and Ubuntu source CI passed. Public deployment and physical on-device acceptance remain separate release gates.**
+
+## Account and Owner Settings — navigation-first redesign candidate (29 October 2026)
+
+**Approved owner direction:** Profile picture → Settings/Owner Settings must be a coherent responsive workspace, not a long unbounded page or oversized grid of administrative controls. This redesign is deliberately separate from protected HGR logo/icon artwork and game presentation.
+
+- Owner/Admin mode switch: **My settings / Owner settings**. Player accounts retain their existing non-admin personal workspace; no owner-only action is surfaced to them. Profile remains the default.
+- My settings uses **Profile**, **Appearance**, **Notifications**, **Game history**, **Feedback** as mutually exclusive sections. Existing profile/password forms, themed appearance controls, PWA notifications, achievements/history/records and feedback history remain mounted when their section is selected; their data and action handlers are retained.
+- Owner settings retains all seven routes: **Overview, Players, Invites, Rooms, Feedback, Audit, Test Lab**; invite-code/request subtabs, confirmation dialogs, role checks and destructive actions are unchanged. Navigation is compact with horizontally scrollable destinations rather than tall card rows on mobile. Preserve original account-backed data, all danger confirmations and the **Close all rooms** restriction.
+- On phones the account panel uses the entire viewport with a compact identity header, one vertical scroll owner, two-column personal navigation, large enough tap areas and a horizontal owner route strip. Tablet/desktop use a bounded dialog. Keyboard visible-focus states, text wrapping, dark/light theme tokens and existing font choices remain protected.
+- The design builds on the independently reviewed flat mobile Join control; no effect on gameplay, session identity or global mobile bottom-bar order. 390/820/1280px rendered component validation and 360/390/820px computed Join-style checks were added to PR CI. The artwork, launcher-family H, permissions, PWA URLs and release versions have not been changed.
+- Source candidate only. Not deployed or owner-accepted on a real phone until both platform CI passes and an active-room-safe release window is available.
+
 ## Live Game Continuity — Batch A1: Mega Board authenticated turn awareness (29 October 2026)
 
-**Source candidate only; no deployment or completed test claim.** The existing
+**Windows/Ubuntu source CI passed; no Oracle deployment or physical PWA acceptance claim.** The existing
 authenticated, hub-visible active-match return card is retained, with a
 single new `yourTurn` Boolean in `/accounts/active-matches`. Only the
 verified owner of the actual persisted Mega Board player seat can see

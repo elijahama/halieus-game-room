@@ -61,7 +61,8 @@ assert.match(guilds,/Invite HGR players/,'Guild settings must surface native pla
 assert.match(guilds,/setView\("members"\)/,'Native guild invitation shortcut must open Members');
 
 assert.match(account,/useState<AdminTab>\("account"\)/,'Owner account should open on personal profile/security');
-assert.match(account,/Owner tools →/,'Owner administration must remain explicitly reachable');
+assert.match(account,/isAdmin && <nav className="hgr-account-workspace-switch"/,'Owner administration remains admin-only');
+assert.match(account,/Owner settings/,'Owner administration must remain explicitly reachable via workspace switch');
 assert.match(account,/adminTab !== "account"/,'Administration must not permanently occupy the account profile');
 assert.match(account,/← My profile/,'Owner tools must provide a clear route back to personal profile');
 assert.match(css,/\.account-panel \.account-owner-nav[\s\S]*?grid-template-columns:\s*repeat\(6,minmax\(0,1fr\)\)/s,'Owner tools must use the compact HGR segmented navigation');

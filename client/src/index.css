@@ -25869,8 +25869,7 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 /* ========================================================================== */
 
 /* Main HGR Join control: bright upper face, stable midtone, darker lower lip. */
-.halieus-global-join,
-.halieus-mobile-join-game {
+.halieus-global-join {
   position: relative;
   overflow: hidden;
   border: 1px solid color-mix(in srgb,var(--hgr-brand) 74%,#6d4b00 26%) !important;
@@ -25893,14 +25892,11 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   transition: transform .15s ease, filter .15s ease, box-shadow .15s ease !important;
 }
 .halieus-global-join::before,
-.halieus-global-join::after,
-.halieus-mobile-join-game::before,
-.halieus-mobile-join-game::after {
+.halieus-global-join::after {
   content: none !important;
   display: none !important;
 }
-.halieus-global-join:hover:not(:disabled),
-.halieus-mobile-join-game:hover:not(:disabled) {
+.halieus-global-join:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.035) saturate(1.025);
   box-shadow:
@@ -25908,8 +25904,7 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     inset 0 -3px 0 rgba(69,45,0,.25),
     0 12px 24px rgba(0,0,0,.21) !important;
 }
-.halieus-global-join:active:not(:disabled),
-.halieus-mobile-join-game:active:not(:disabled) {
+.halieus-global-join:active:not(:disabled) {
   transform: translateY(1px);
   filter: brightness(.97);
   box-shadow:
