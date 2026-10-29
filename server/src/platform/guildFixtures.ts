@@ -3,7 +3,9 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { Express, Request, Response } from "express";
 import type { HalieusAccountSummary } from "../../../shared/platform/accounts.js";
-import type { HgrGuildBoardLineups, HgrGuildFixture } from "../../../shared/platform/guildFixtures.js";
+import type { HgrGuildBoardLineups, HgrGuildFixture, HgrGuildFixtureBoardLink } from "../../../shared/platform/guildFixtures.js";
+import { rooms as megaRooms } from "../games/mega-board/state/rooms.js";
+import type { GameRoom } from "../games/mega-board/types/game.js";
 import { getGuildDataDirectory } from "./dataPaths.js";
 
 export interface GuildFixtureAuthority { id: string; memberIds: string[]; managerIds: string[] }
@@ -34,16 +36,48 @@ function validateLineups(input: unknown, roster: GuildFixtureAuthority): HgrGuil
 function ensureManager(roster: GuildFixtureAuthority | null, accountId: string): asserts roster is GuildFixtureAuthority {
   if (!roster || !roster.managerIds.includes(accountId)) throw new FixtureError(403, "A guild owner or admin must approve this fixture.");
 }
+/** The server-owned actual seat roster must equal the locked two-Guild roster. */
+function validateRealBoardRoom(room: GameRoom | undefined, link: HgrGuildFixtureBoardLink): void {
+  if (!room || room.code !== link.roomCode || room.createdAt !== link.roomCreatedAt) {
+    throw new FixtureError(409, "The bound Mega Board lobby is missing or was replaced.");
+  }
+  if (room.ranked || room.blitz) {
+    throw new FixtureError(409, "Guild fixtures require ordinary, independent Mega Board economy rules.");
+  }
+  if (room.players.length < 2 || room.players.length > 8 ||
+      room.players.length !== link.seatAccountIds.length ||
+      room.players.some((seat) => seat.isAi || seat.hasLeft || !seat.isConnected || !seat.replayAccountId)) {
+    throw new FixtureError(409, "A fixture board needs every verified human participant connected.");
+  }
+  const actual = room.players.map((seat) => seat.replayAccountId!);
+  const expected = link.seatAccountIds;
+  if (new Set(actual).size !== actual.length || new Set(expected).size !== expected.length ||
+      actual.some((id) => !expected.includes(id))) {
+    throw new FixtureError(409, "The actual room roster does not match its locked Guild fixture.");
+  }
+}
+function roomCode(input: unknown): string {
+  if (typeof input !== "string") throw new FixtureError(400, "Two valid Mega Board room codes are required.");
+  const code = input.trim().toUpperCase();
+  if (!/^[A-Z0-9]{4,12}$/.test(code)) throw new FixtureError(400, "A valid Mega Board room code is required.");
+  return code;
+}
 function ensureValidDocument(raw: unknown): asserts raw is Document {
   if (!raw || typeof raw !== "object" || (raw as Document).version !== 1 ||
       !Array.isArray((raw as Document).fixtures)) throw new Error("Unsupported fixture store format");
   const seen = new Set<string>();
   for (const row of (raw as Document).fixtures) {
     if (!row || typeof row.id !== "string" || !row.id || seen.has(row.id) ||
-        !["proposed", "lineups-locked", "cancelled"].includes(row.status) ||
+        !["proposed", "lineups-locked", "rooms-bound", "cancelled"].includes(row.status) ||
         typeof row.homeGuildId !== "string" || typeof row.awayGuildId !== "string" ||
         !Array.isArray(row.homeLineups) || row.homeLineups.length !== 2) {
       throw new Error("Invalid persisted fixture record; refusing to overwrite");
+    }
+    if (row.status === "rooms-bound" && (!Array.isArray(row.boards) ||
+        row.boards.length !== 2 || row.boards.some((board: HgrGuildFixtureBoardLink) =>
+          typeof board.roomCode !== "string" || !Number.isSafeInteger(board.roomCreatedAt) ||
+          typeof board.boardMatchId !== "string" || !Array.isArray(board.seatAccountIds)))) {
+      throw new Error("Malformed bound fixture; refusing to rewrite it.");
     }
     seen.add(row.id);
   }
@@ -135,11 +169,63 @@ export function createGuildFixtureCoordinator(
         throw new FixtureError(403, "A participating guild manager must cancel this fixture.");
       }
       if (existing.status === "cancelled") throw new FixtureError(409, "Fixture already cancelled.");
+      if (existing.status === "rooms-bound") throw new FixtureError(409, "Bound fixture cannot be cancelled while live games may exist.");
       const now = Date.now();
       const fixture: HgrGuildFixture = { ...existing, status: "cancelled", cancelledAt: now, updatedAt: now };
       const next = new Map(current); next.set(fixtureId, fixture);
       return { next, value: fixture };
     });
+  }
+  async function bindRooms(accountId: string, fixtureId: string, suppliedCodes: unknown, guild: GuildLookup) {
+    return transact((current) => {
+      const existing = current.get(fixtureId);
+      if (!existing) throw new FixtureError(404, "Fixture not found.");
+      const home = guild(existing.homeGuildId), away = guild(existing.awayGuildId);
+      if (!home || !away || (!home.managerIds.includes(accountId) && !away.managerIds.includes(accountId))) {
+        throw new FixtureError(403, "Only a participating Guild manager can bind the boards.");
+      }
+      if (existing.status !== "lineups-locked" || !existing.awayLineups) {
+        throw new FixtureError(409, "Approve and lock both Guild lineups before binding live rooms.");
+      }
+      validateLineups(existing.homeLineups, home);
+      validateLineups(existing.awayLineups, away);
+      if (!Array.isArray(suppliedCodes) || suppliedCodes.length !== 2) {
+        throw new FixtureError(400, "Two different live Mega Board room codes are required.");
+      }
+      const codes = suppliedCodes.map(roomCode);
+      if (codes[0] === codes[1]) throw new FixtureError(400, "The two boards must be independent rooms.");
+      if ([...current.values()].some((other) => other.id !== fixtureId && other.status === "rooms-bound" &&
+        other.boards?.some((board) => codes.includes(board.roomCode)))) {
+        throw new FixtureError(409, "One of the rooms already belongs to a different fixture.");
+      }
+      const boards = codes.map((code, i): HgrGuildFixtureBoardLink => {
+        const expectedIds = [...existing.homeLineups[i]!, ...existing.awayLineups![i]!];
+        const room = megaRooms.get(code);
+        if (!room || room.started || room.gameState) {
+          throw new FixtureError(409, "Both rooms must already exist as unstarted Mega Board lobbies.");
+        }
+        const link: HgrGuildFixtureBoardLink = {
+          roomCode: code, roomCreatedAt: room.createdAt,
+          boardMatchId: randomUUID(), seatAccountIds: expectedIds,
+        };
+        validateRealBoardRoom(room, link);
+        return link;
+      }) as [HgrGuildFixtureBoardLink, HgrGuildFixtureBoardLink];
+      const fixture: HgrGuildFixture = {
+        ...existing, status: "rooms-bound", boards, updatedAt: Date.now(),
+      };
+      const next = new Map(current); next.set(fixtureId, fixture);
+      return { next, value: fixture };
+    });
+  }
+  function boundRoom(code: string): { fixtureId: string; link: HgrGuildFixtureBoardLink } | null {
+    if (!loaded) return null;
+    for (const fixture of fixtures.values()) {
+      if (fixture.status !== "rooms-bound") continue;
+      const link = fixture.boards?.find((board) => board.roomCode === code);
+      if (link) return { fixtureId: fixture.id, link: structuredClone(link) };
+    }
+    return null;
   }
   function list(accountId: string, guild: GuildLookup) {
     if (!loaded) throw Error("Fixture coordinator not loaded.");
@@ -147,10 +233,18 @@ export function createGuildFixtureCoordinator(
       guild(f.homeGuildId)?.memberIds.includes(accountId) || guild(f.awayGuildId)?.memberIds.includes(accountId))
       .sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 100).map((f) => structuredClone(f));
   }
-  return { load, propose, accept, cancel, list };
+  return { load, propose, accept, bindRooms, boundRoom, cancel, list };
 }
 const coordinator = createGuildFixtureCoordinator();
 export const loadGuildFixtures = () => coordinator.load();
+/** Read-only lobby guards; regular non-fixture games remain unchanged. */
+export function getGuildFixtureBoundRoom(code: string) { return coordinator.boundRoom(code); }
+export function getGuildFixtureStartBlock(room: GameRoom): string | null {
+  const binding = coordinator.boundRoom(room.code);
+  if (!binding) return null;
+  try { validateRealBoardRoom(room, binding.link); return null; }
+  catch (error) { return error instanceof Error ? error.message : "Fixture room validation failed."; }
+}
 
 export function registerGuildFixtureRoutes(app: Express, resolveAccount: AccountLookup, guild: GuildLookup) {
   const run = (handler: (request: Request, account: HalieusAccountSummary) => Promise<unknown> | unknown) =>
@@ -179,5 +273,7 @@ export function registerGuildFixtureRoutes(app: Express, resolveAccount: Account
   app.get("/guild-fixtures", run((_r, account) => coordinator.list(account.id, guild)));
   app.post("/guild-fixtures", run((r, a) => coordinator.propose(a.id, r.body?.homeGuildId, r.body?.awayGuildId, r.body?.homeLineups, guild)));
   app.post("/guild-fixtures/:fixtureId/accept", run((r, a) => coordinator.accept(a.id, String(r.params.fixtureId), r.body?.awayLineups, guild)));
+  app.post("/guild-fixtures/:fixtureId/bind-rooms", run((r, a) =>
+    coordinator.bindRooms(a.id, String(r.params.fixtureId), r.body?.roomCodes, guild)));
   app.post("/guild-fixtures/:fixtureId/cancel", run((r, a) => coordinator.cancel(a.id, String(r.params.fixtureId), guild)));
 }
