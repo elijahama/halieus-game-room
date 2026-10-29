@@ -71,7 +71,9 @@
     "test:browser:mega-compact": "node tests/browser-mega-compact-layout.mjs",
     "test:active-match:wiring": "node tests/regression-active-match-wiring.mjs",
     "test:active-match": "npm run test:active-match:wiring && node --import tsx tests/runtime-active-match.mjs",
-    "test:browser:active-match": "node tests/browser-active-match-notice.mjs"
+    "test:browser:active-match": "node tests/browser-active-match-notice.mjs",
+    "test:browser:account-workspace": "node tests/browser-account-workspace.mjs",
+    "test:browser:flat-mobile-join": "node tests/browser-flat-mobile-join.mjs"
   },
   "engines": {
     "node": ">=20.19.0"
