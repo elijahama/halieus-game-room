@@ -177,10 +177,13 @@ export function registerPushRoutes(app: Express, accountFor: AccountResolver): v
       }
     }
     try {
+      const controlTest = device.topics.includes("operations");
       await webPush.sendNotification({endpoint:device.endpoint,keys:device.keys},JSON.stringify({
-        title:"HGR test notification",
-        body:"HGR push alerts are enabled on this device. Tap to open your Inbox.",
-        url:"/?inbox=1",
+        title:controlTest?"HGR Control test notification":"HGR test notification",
+        body:controlTest
+          ?"Control update alerts are enabled on this device. Tap to open Control."
+          :"HGR push alerts are enabled on this device. Tap to open your Inbox.",
+        url:controlTest?"/control/":"/?inbox=1",
         tag:"hgr-push-test-"+Math.floor(now/30_000),
       }),{TTL:90,urgency:"high"});
       response.json({ok:true,accepted:true,
