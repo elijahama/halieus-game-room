@@ -254,6 +254,9 @@ export function readLogoPreset(): HgrLogoPreset {
     "adaptive",
     "launcher-default",
   ]);
+  // Migrate old duplicate glyph choices to the correctly named mono presets.
+  if (value === "white-glyph") return "mono-light";
+  if (value === "black-glyph") return "mono-dark";
   return value && presets.has(value) ? value : "brand";
 }
 
