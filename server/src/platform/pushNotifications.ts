@@ -11,7 +11,7 @@ import { getHalieusDataRoot } from "./dataPaths.js";
  * VAPID private key and subscriptions live in durable, untracked runtime
  * data, never in Git, client bundles, or the public account store.
  */
-export type HgrPushTopic = "invites" | "messages" | "operations";
+export type HgrPushTopic = "invites" | "messages" | "operations" | "turns";
 export interface HgrPushMessage {
   topic: HgrPushTopic;
   title: string;
@@ -64,7 +64,7 @@ function validKeys(keys: unknown): keys is DeviceSubscription["keys"] {
     && typeof obj.auth === "string" && /^[A-Za-z0-9_-]{14,64}$/.test(obj.auth);
 }
 const supportedTopic = (item: unknown): item is HgrPushTopic =>
-  item === "invites" || item === "messages" || item === "operations";
+  item === "invites" || item === "messages" || item === "operations" || item === "turns";
 
 async function save(): Promise<void> {
   if (!state) return;
@@ -133,7 +133,7 @@ export function registerPushRoutes(app: Express, accountFor: AccountResolver): v
     const topicsInput=request.body?.topics;
     if (!sub || !isTrustedPushEndpoint(sub.endpoint) || !validKeys(sub.keys)
       || !Array.isArray(topicsInput) || topicsInput.length === 0
-      || topicsInput.length > 3 || !topicsInput.every(supportedTopic)) {
+      || topicsInput.length > 4 || !topicsInput.every(supportedTopic)) {
       response.status(400).json({ok:false,reason:"Use a valid browser push subscription and notification topics."});return;
     }
     if (topicsInput.includes("operations") && account.role !== "owner" && account.role !== "admin") {
@@ -233,7 +233,7 @@ export async function sendHgrPush(accountIds: readonly string[], notice: HgrPush
   const expired=new Set<string>();
   await Promise.allSettled(subscriptions.map(async (item) => {
     try {
-      await webPush.sendNotification({endpoint:item.endpoint,keys:item.keys},payload,{TTL:notice.topic==="operations"?300:7200,urgency:notice.topic==="operations"?"high":"normal"});
+      await webPush.sendNotification({endpoint:item.endpoint,keys:item.keys},payload,{TTL:notice.topic==="operations"?300:notice.topic==="turns"?90:7200,urgency:notice.topic==="operations"||notice.topic==="turns"?"high":"normal"});
     } catch (e) {
       const status=typeof e==="object" && e && "statusCode" in e
         ? Number((e as {statusCode:unknown}).statusCode) : 0;
