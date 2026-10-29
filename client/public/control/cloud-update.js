@@ -325,6 +325,7 @@
   function renderDevice(device) {
     const row = ownerRow();
     const detail = $("ownerPcDetail");
+    const checkout = $("ownerPcCheckout");
     const badge = row?.querySelector("b");
     const button = updateButton();
     selectedDevice = device || null;
@@ -332,13 +333,23 @@
     if (!device) {
       removeEnrollmentButtons();
       if (detail) detail.textContent = "Start HGR Control on the owner PC to enroll it";
+      if (checkout) { checkout.hidden = true; checkout.textContent = ""; }
       if (badge) { badge.textContent = "Not linked"; badge.classList.add("muted"); }
       if (button) button.disabled = true;
       setReadiness("Cloud Update waiting for owner PC", "Start HGR Control on the owner PC. Its outbound bridge will appear here for approval.", false);
       return;
     }
 
-    if (detail) detail.textContent = `${device.machineName}${device.hgrVersion ? ` · HGR ${device.hgrVersion}` : ""}`;
+    // This device.hgrVersion comes from HGR_CONTROL_GAME_ROOT, the separate
+    // owner-PC development checkout. It is not the publicly deployed version
+    // and must not be presented as the installed/released Game Room version.
+    if (detail) detail.textContent = `${device.machineName || "Owner PC"} · Control bridge`;
+    if (checkout) {
+      checkout.hidden = !device.hgrVersion;
+      checkout.textContent = device.hgrVersion
+        ? `Local development source: ${device.hgrVersion} · not the public release`
+        : "";
+    }
     if (badge) badge.classList.remove("muted");
 
     if (device.approval === "pending") {
