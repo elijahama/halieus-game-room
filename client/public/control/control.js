@@ -77,6 +77,14 @@
     return date.toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
   }
 
+  function formatUkMaintenanceDeadline(timestamp) {
+    if (!Number.isFinite(Number(timestamp))) return "—";
+    return new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+    }).format(new Date(Number(timestamp)));
+  }
+
   function normalise(value) {
     return String(value || "").trim().toLocaleLowerCase();
   }
@@ -706,9 +714,16 @@
       publicAccessState = result.state;
       const closed = publicAccessState?.closed === true;
       const active = Number(result.activeRooms || 0);
+      const deadline = closed && Number.isSafeInteger(publicAccessState?.reopenAt)
+        ? publicAccessState.reopenAt : null;
       $("publicAccessStatus").textContent = closed
         ? "Public Game Room is closed for visitors. Control remains accessible."
         : "Public Game Room is open.";
+      $("publicAccessDeadline").hidden = !deadline;
+      $("publicAccessDeadline").textContent = deadline
+        ? "Automatic reopening: " + formatUkMaintenanceDeadline(deadline)
+        : "";
+      $("publicAccessDuration").disabled = closed;
       $("publicAccessRooms").textContent = active + " live room" + (active === 1 ? "" : "s") + ".";
       if (document.activeElement !== $("publicAccessReason") && closed) {
         $("publicAccessReason").value = publicAccessState.reason || "";
@@ -748,6 +763,8 @@
           state: closing ? "closed" : "open",
           confirmation: phrase,
           reason: $("publicAccessReason").value.trim(),
+          reopenAt: closing && $("publicAccessDuration").value !== "manual"
+            ? Date.now() + Number($("publicAccessDuration").value) * 60_000 : null,
         }),
       });
       const result = await response.json().catch(() => ({}));
