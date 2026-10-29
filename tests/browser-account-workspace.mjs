@@ -11,6 +11,7 @@ try {
   const bundle=join(dir,"account.js");
   await build({ entryPoints:[join(root,"tests/fixtures/account-workspace.tsx")],
     bundle:true,platform:"browser",format:"iife",outfile:bundle,jsx:"automatic",logLevel:"silent",
+    loader:{".svg":"dataurl",".png":"dataurl",".webp":"dataurl",".jpg":"dataurl",".jpeg":"dataurl"},
     define:{"process.env.NODE_ENV":'"production"',"import.meta.env.VITE_SERVER_URL":'""'} });
   browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
   for(const width of [390,820,1280]){
