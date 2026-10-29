@@ -5,7 +5,8 @@
   "description": "Halieus Game Room owner and administrator Control",
   "start_url": "/control/?installed=1",
   "scope": "/control/",
-  "display": "standalone",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "background_color": "#080b11",
   "theme_color": "#0a0d14",
   "icons": [
