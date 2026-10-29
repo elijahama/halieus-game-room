@@ -182,3 +182,17 @@ invisible). These are display-only changes; do not reset/force-update
 the original checkout, alter live metrics, or change game/maintenance
 operations. Gate via tests, CI, signed release validation and separate
 production acceptance.
+
+### 29 October 2026 — Focused 4.7.3 Control priority and owner-theme coherence
+
+Owner feedback after 4.7.2: on mobile show **Maintenance**, **Update**,
+**Laptop** tabs in that order, with maintenance the default; laptop window
+actions are lower priority than public operations. Only the in-game
+Owner/Admin Control launcher receives a fixed Control-family look.
+Regular Game Room themes must remain unchanged. Overview adds independently
+reported Public website, Laptop Release Checkout and preserved Original
+Development Checkout identities. The new authenticated Cloud heartbeat may
+report a real local release VERSION; missing/old bridge fields remain
+explicitly Unverified. No made-up match with Oracle. Preserve game rules,
+identity security, PWA art, existing maintenance, updater and release
+safeguards. 4.7.3 is a source candidate, not deployed by documentation.
