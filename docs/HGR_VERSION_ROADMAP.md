@@ -61,6 +61,19 @@ Scoped Mega Board patch: shared two-column phone rosters with long-name/property
 
 Active-match notifications and reconnect reconciliation are a **separate already owner-authorized batch, not implemented in 4.6.4**; the subsequent [4.6.5 candidate](HGR_ACTIVE_GAME_RETURN.md) has parent runtime/component verification with full-App/physical-PWA gates still outstanding. Native receipt `rcpt_fc27b6506bfc45d3826cdbaa860b5d4a` records observational Codex capture of the 4.6.4 work, not independent test attestation; Git setup and standard parent verification occurred outside that capture. See the 4.6.4 Masterbook entry for exact dimensions, evidence and limitations.
 
+### 29 October 2026 — Multiplayer Beta tournament practice
+
+Source-only 4.7 development adds an explicitly server-authorised
+non-scoring Mega Board Beta room. Owner/admin testers can invite ordinary
+player accounts or AI into test games. Joining does not grant admin rights,
+and practice match completion must not change permanent game history, Gamer
+Score, normal or tournament ratings, statistics, Guild results or rewards.
+This mode is separate from official Guild fixtures (which require eligible
+Guild-only human rosters); it is not an implemented test bracket or 5.0.0
+tournament. The version stays **4.6.10** while the playable 4.7 milestone
+and owner-device acceptance remain incomplete. See
+[Beta Tournament Practice](HGR_BETA_TOURNAMENT_PRACTICE.md).
+
 ### 29 October 2026 — 4.7.0 real-match fixture linking candidate
 
 The staged source candidate now links manager-approved Guild lineups
