@@ -1802,3 +1802,9 @@ agent-activation step required to make the new local version visible.
 - Do not restart Oracle to test a UI change while matches are active. A dev/static preview is separate from the live production Socket.IO room, and deploying a new browser bundle mid-turn is **not** equivalent to hot-reloading a joined live game. Observe owner-requested portrait gallery, theme, auction/decision/notice scaling improvements in subsequent audited UI-only batches. No launcher H art or theme asset geometry was changed in this hotfix.
 
 **Status:** Narrow source branch only. Not merged or deployed until validation and safe maintenance; public version stays 4.7.3.
+
+## Mobile navigation — flat Join control (29 October 2026)
+
+**Owner reaffirmation:** The mobile centred Join action must have **zero glossy or embossed treatment**. The old shared physical-button rules in `index.css` improperly targeted both global and mobile Join, giving the mobile control a layered gradient, inset lip and pressed shadow. The older mobile stylesheet also added a heavy circular rim and glow.
+
+The audited candidate removes the mobile selector from the shared physical-button rules while preserving the independently approved desktop global Join. The older icon loses its rim/shadow. A final-loaded scoped mobile stylesheet guarantees **flat transparent nav surface plus a flat solid brand-colour circular icon** for normal, hover, active and focus states. The button's action, middle mobile-nav location, keyboard outline, touch dimensions, HGR logo family, other themes and PWA artwork are unchanged. A targeted regression runs in normal CI. **Windows and Ubuntu source CI passed. Public deployment and physical on-device acceptance remain separate release gates.**

@@ -2565,11 +2565,11 @@ html[data-theme-mode="custom"] .halieus-game-atmosphere span:nth-child(3n) {
     display: grid !important;
     place-items: center !important;
     margin-top: -24px !important;
-    border: 5px solid var(--hgr-surface) !important;
+    border: 0 !important;
     border-radius: 50% !important;
-    background: var(--hgr-action-bg) !important;
+    background: var(--hgr-brand) !important;
     color: var(--hgr-action-ink) !important;
-    box-shadow: 0 8px 20px color-mix(in srgb,var(--hgr-brand) 28%,transparent) !important;
+    box-shadow: none !important;
   }
 
   .halieus-mobile-nav .halieus-mobile-join-game:active .halieus-mobile-join-game-icon {
