@@ -1188,7 +1188,7 @@ export function registerAccountRoutes(app: Express): void {
     const room = activeRoomForInvite(game, roomCode);
     if (!room) { response.status(404).json({ ok: false, reason: "That game room is no longer active." }); return; }
     const aliases = accountAliases(auth.account);
-    const betaHost = game === "mega-board" && megaBoardRooms.get(roomCode)?.betaTournamentTest === true &&
+    const betaHost = game === "mega-board" && auth.account.role !== "player" && megaBoardRooms.get(roomCode)?.betaTournamentTest === true &&
       megaBoardRooms.get(roomCode)?.players.some((player) => player.isHost && player.replayAccountId === auth.account.id);
     if (!betaHost && !room.humanPlayers.some((name) => aliases.has(name.trim().toLowerCase()))) {
       response.status(403).json({ ok: false, reason: "You can only invite friends to a room you are currently playing in." }); return;
