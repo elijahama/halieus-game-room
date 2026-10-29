@@ -52,7 +52,9 @@ export function ActiveMatchNotice({ accountId, onReturn }: {
   }
   return <>{matches.map(match => <aside key={match.matchId} className="hgr-admin-feedback-notice" aria-label="Active Mega Board game">
     <div><strong>Mega Board · {match.code} · {match.paused ? "Paused" : "Game in progress"}</strong>
-      <small>{match.paused ? "Moves and timers are frozen. Returning does not resume the game." : "Your seat is still in this game."}</small>
+      <small>{match.paused ? "Moves and timers are frozen. Returning does not resume the game."
+        : match.yourTurn ? "Your turn — Continue game to make your move."
+        : "Your seat is still in this game."}</small>
       {match.notice && <small key={match.notice.id}>Latest public decision: {match.notice.title} — {match.notice.message}</small>}
       {error && <small role="status">{error}</small>}
     </div>
