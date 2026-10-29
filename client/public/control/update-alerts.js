@@ -61,7 +61,7 @@
         ? "Enabled for this device. Android may group milestone alerts; tap one to return to Control."
         : Notification.permission === "denied"
           ? "Notifications are blocked in your browser or Android settings."
-          : "Get verified 0%, 25%, 50%, 75%, 95% and final Update alerts outside the app.");
+          : "Get verified stage, quarter-progress and final Update alerts outside the app.");
     } catch (error) {
       show(error instanceof Error ? error.message : "Could not check update notifications.");
     }
@@ -70,6 +70,11 @@
     if (!supported || busy) return;
     busy = true; show("Checking notifications…");
     try {
+      // The permission prompt must be triggered directly by this click.
+      // Waiting on service-worker setup first can lose user activation.
+      const permission = enabled ? "granted" : Notification.permission === "granted"
+        ? "granted" : await Notification.requestPermission();
+      if (permission !== "granted") throw new Error("Enable notifications in browser and phone settings first.");
       const service = await currentRegistration();
       subscription = await service.pushManager.getSubscription();
       if (enabled) {
@@ -83,9 +88,6 @@
         enabled = false;
         show("Control update alerts disabled on this device.");
       } else {
-        const permission = Notification.permission === "granted"
-          ? "granted" : await Notification.requestPermission();
-        if (permission !== "granted") throw new Error("Enable notifications in browser and phone settings first.");
         const config = await api("/accounts/push/config");
         if (!config.available || !config.publicKey) throw new Error("HGR notification service is unavailable.");
         const created = !subscription;
