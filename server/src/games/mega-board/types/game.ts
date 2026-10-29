@@ -30,6 +30,8 @@ export interface GameRoom {
   players: RoomPlayer[];
   started: boolean;
   gameState: GameState | null;
+  /** Server-only persisted dedup key: a player is notified once per seat turn. */
+  lastTurnPushKey?: string;
   createdAt: number;
   updatedAt: number;
   hostDisconnectDeadline: number | null;
