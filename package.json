@@ -16,6 +16,7 @@
     "test:beta:tournament": "node --import tsx tests/runtime-beta-tournament-invites-4.7.0.mjs",
     "test:control:background": "node tests/runtime-control-portrait-background-updates.mjs",
     "test:control:actions": "node tests/runtime-control-operation-action-isolation.mjs",
+    "test:control:public-access": "node tests/runtime-control-public-access-ui-4.7.0.mjs",
     "test:social:activity": "node --import tsx tests/runtime-social-activity-notifications-4.6.9.mjs",
     "test:progression:refresh": "node --import tsx tests/runtime-progression-refresh.mjs",
     "test:browser:control:window-operations": "node tests/browser-control-window-operations.mjs",
