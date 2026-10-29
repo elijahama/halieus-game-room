@@ -175,6 +175,7 @@ export function createGuildFixtureCoordinator(
         throw new FixtureError(403, "A participating guild manager must cancel this fixture.");
       }
       if (existing.status === "cancelled") throw new FixtureError(409, "Fixture already cancelled.");
+      if (existing.status === "completed") throw new FixtureError(409, "Completed Guild fixture receipts are immutable.");
       if (existing.status === "rooms-bound") {
         const safelyUnstarted = existing.boards?.length === 2 && existing.boards.every((link) => {
           const room = megaRooms.get(link.roomCode);
