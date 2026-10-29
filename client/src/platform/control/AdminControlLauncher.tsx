@@ -7,7 +7,7 @@ export function AdminControlLauncher({ account }: { account?: HalieusAccountSumm
   return (
     <a className="hgr-admin-control-launcher" href="/control/" aria-label="Open HGR Control administration hub">
       <img className="hgr-admin-control-mark" src="/control/control-icon.png?v=part26-control-approved2" alt="" aria-hidden="true" />
-      <span><small>ADMIN</small><strong>Control</strong></span>
+      <span><small>{account.role === "owner" ? "OWNER CONTROLS" : "ADMIN CONTROLS"}</small><strong>HGR Control</strong><em>Independent control theme</em></span>
     </a>
   );
 }

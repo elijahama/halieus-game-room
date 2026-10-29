@@ -62,6 +62,18 @@ function isHgrRepositoryRoot(candidate: string): boolean {
   }
 }
 
+/** Report only the local Release Checkout's real VERSION. Never derive
+ * this field from Oracle, the original gameRoot, or a presumed match. */
+function localReleaseCheckoutVersion(): string | null {
+  const base = process.env.HGR_RELEASE_CHECKOUT_ROOT?.trim()
+    || (process.env.LOCALAPPDATA ? resolve(process.env.LOCALAPPDATA, "Halieus Game Room", "Release Checkout") : "");
+  if (!base || !isHgrRepositoryRoot(base)) return null;
+  try {
+    const version = readFileSync(resolve(base, "VERSION"), "utf8").trim();
+    return /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version) ? version : null;
+  } catch { return null; }
+}
+
 function findProjectRoot(): string {
   const candidates = [process.cwd(), resolve(process.cwd(), ".."), resolve(here, "../.."), resolve(here, "../../..")];
   const root = candidates.find(isHgrRepositoryRoot);
@@ -486,6 +498,7 @@ async function cycle(identity: DeviceIdentity): Promise<void> {
       secret: identity.secret,
       machineName: hostname(),
       hgrVersion: status?.hgrVersion || "unknown",
+      releaseCheckoutVersion: localReleaseCheckoutVersion(),
       localControlOnline: Boolean(status),
     });
   } catch (error) {

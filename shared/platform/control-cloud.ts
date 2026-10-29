@@ -55,4 +55,5 @@ export interface HalieusCloudDeviceStatus {
   online: boolean;
   lastSeenAt: string;
   hgrVersion: string | null;
+  releaseCheckoutVersion?: string | null;
 }

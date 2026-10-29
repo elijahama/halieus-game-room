@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.7.2",
+  "version": "4.7.3",
   "private": true,
   "workspaces": [
     "client",
@@ -18,10 +18,12 @@
     "test:control:actions": "node tests/runtime-control-operation-action-isolation.mjs",
     "test:control:public-access": "node tests/runtime-control-public-access-ui-4.7.0.mjs",
     "test:control:overview": "node tests/runtime-control-overview-truth-4.7.2.mjs",
+    "test:control:priorities": "node tests/runtime-control-priority-and-release-heartbeat-4.7.3.mjs",
     "test:social:activity": "node --import tsx tests/runtime-social-activity-notifications-4.6.9.mjs",
     "test:progression:refresh": "node --import tsx tests/runtime-progression-refresh.mjs",
     "test:browser:control:window-operations": "node tests/browser-control-window-operations.mjs",
     "test:browser:control:design": "node tests/browser-control-operation-design-4.7.1.mjs",
+    "test:browser:control:priorities": "node tests/browser-control-mobile-priority-owner-theme-4.7.3.mjs",
     "typecheck": "npm --workspace client run typecheck && npm --workspace server run typecheck",
     "build": "npm --workspace client run build && npm --workspace server run build",
     "start": "npm --workspace server run start",

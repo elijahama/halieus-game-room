@@ -9,9 +9,9 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.7.2-source-label-activity-chart" />
+  <link rel="stylesheet" href="/control/control.css?v=4.7.3-control-mobile-ops" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.7.2-source-label-activity-chart" defer></script>
+  <script src="/control/control.js?v=4.7.3-control-mobile-ops" defer></script>
   <script src="/control/development.js?v=development-timeline-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
@@ -91,8 +91,10 @@
           <div class="card-heading"><div><p class="eyebrow">INFRASTRUCTURE</p><h2>HGR network</h2></div><span class="status-dot is-live"></span></div>
           <div class="infrastructure-list">
             <div><span>☁</span><p><strong>HGR Cloud</strong><small id="cloudDetail">Checking…</small></p><b id="cloudBadge">—</b></div>
-            <div><span>🖥</span><p><strong>Owner PC</strong><small id="ownerPcDetail">Cloud agent enrollment comes next</small><small id="ownerPcCheckout" class="owner-pc-checkout" hidden></small></p><b class="muted">Not linked</b></div>
-            <div><span>🌐</span><p><strong>Public Game Room</strong><small id="serverVersion">Version —</small></p><b id="serverBadge">Checking</b></div>
+            <div><span>🖥</span><p><strong>Owner PC</strong><small id="ownerPcDetail">Cloud agent enrollment comes next</small></p><b class="muted">Not linked</b></div>
+            <div><span>🌐</span><p><strong>Public website</strong><small id="serverVersion">Version —</small></p><b id="serverBadge">Checking</b></div>
+            <div><span>💻</span><p><strong>Laptop release checkout</strong><small id="ownerReleaseCheckout">Awaiting verified laptop report</small></p><b id="ownerReleaseBadge" class="muted">Unverified</b></div>
+            <div><span>📂</span><p><strong>Original laptop development checkout</strong><small id="ownerPcCheckout" class="owner-pc-checkout">Awaiting source report</small></p><b class="source-tag">Source</b></div>
           </div>
         </article>
       </section>
@@ -162,23 +164,28 @@
     </section>
 
     <section class="control-section" data-panel="operations">
-      <div class="section-heading-large"><div><p class="eyebrow">OPERATIONS</p><h2>Owner PC window controls</h2><p>Start, Restart and Close control only the dedicated HGR browser window on the owner PC. The public Oracle website stays online. Update uses a separate deployment workflow.</p></div></div>
-      <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Checking approved owner-PC bridge</strong><small>These commands open, reopen or close Lagz’s dedicated HGR browser window—not the Oracle server. Each action requires owner confirmation.</small></p></div></article>
-      <section class="control-operation-cluster control-operation-cluster--pc" aria-labelledby="pcWindowActionsHeading">
-        <header class="control-operation-cluster-head">
-          <div>
-            <p class="eyebrow">LAPTOP · LAGZ</p>
-            <h3 id="pcWindowActionsHeading">Game Room window</h3>
-            <p>These three actions affect the browser window on your laptop, not the public server or its version.</p>
-          </div>
-          <span class="control-operation-scope">Laptop only</span>
-        </header>
-        <div class="operation-grid operation-grid--laptop">
-          <button data-operation="start" disabled><span aria-hidden="true">▶</span><strong>Open HGR Window</strong><em class="operation-effect">Launch the HGR website window on Lagz.</em><small>Owner confirmation and connected bridge required</small></button>
-          <button data-operation="restart" disabled><span aria-hidden="true">↻</span><strong>Restart HGR Window</strong><em class="operation-effect">Close and relaunch that browser window.</em><small>Owner confirmation and connected bridge required</small></button>
-          <button data-operation="close" disabled><span aria-hidden="true">■</span><strong>Close HGR Window</strong><em class="operation-effect">Close only the browser window on Lagz.</em><small>Owner confirmation and connected bridge required</small></button>
-        </div>
+      <div class="section-heading-large"><div><p class="eyebrow">OWNER CONTROLS</p><h2>Manage HGR</h2><p>Public maintenance and releases are primary. Laptop window commands are separate and do not stop Oracle.</p></div></div>
+      <div id="controlOperationTabs" class="control-operation-tabs" role="tablist" aria-label="Operation categories">
+        <button type="button" id="operationTabMaintenance" role="tab" data-operation-tab="maintenance" aria-selected="true" aria-controls="operationPanelMaintenance" tabindex="0"><span aria-hidden="true">🌐</span>Maintenance</button>
+        <button type="button" id="operationTabUpdate" role="tab" data-operation-tab="update" aria-selected="false" aria-controls="operationPanelUpdate" tabindex="-1"><span aria-hidden="true">↥</span>Update</button>
+        <button type="button" id="operationTabLaptop" role="tab" data-operation-tab="laptop" aria-selected="false" aria-controls="operationPanelLaptop" tabindex="-1"><span aria-hidden="true">▣</span>Laptop</button>
+      </div>
+      <section id="operationPanelMaintenance" role="tabpanel" aria-labelledby="operationTabMaintenance" data-operation-panel="maintenance">
+        <p class="control-operation-intro">Block visitor access with a maintenance page, or reopen the public Game Room. HGR Control stays available.</p>
+      <article id="publicAccessCard" class="panel-card hgr-public-access-card" hidden>
+        <div class="card-heading"><div><p class="eyebrow">PUBLIC WEBSITE · OWNER ONLY</p>
+          <h2>Public Game Room access</h2></div><span class="control-operation-scope control-operation-scope--public">Visitors</span></div>
+        <p><strong>This blocks visitor access to the website, not the laptop window.</strong> Closing the public Game Room shows your maintenance message and refuses new games while keeping Oracle and HGR Control online. Reopen here when finished.</p>
+        <p id="publicAccessStatus" role="status">Checking public access…</p>
+        <p id="publicAccessRooms">Checking live rooms…</p>
+        <label for="publicAccessReason">Reason shown to visitors</label>
+        <textarea id="publicAccessReason" rows="2" maxlength="220" placeholder="The Game Room is temporarily closed for maintenance."></textarea>
+        <button type="button" id="publicAccessToggle" class="secondary-action" disabled>Checking status…</button>
+        <small>The reason above is shown to visitors. Tap Close and confirm once; there is no second phrase to type. Closure is refused if any game or lobby is active. Successful closure checks for an HTTP 503 maintenance page. Reopen is always available from Control. This never runs Update or closes your laptop window.</small>
+      </article>
       </section>
+      <section id="operationPanelUpdate" role="tabpanel" aria-labelledby="operationTabUpdate" data-operation-panel="update" hidden>
+        <p class="control-operation-intro">Run the approved release updater and follow its genuine progress and notifications.</p>
       <section class="control-operation-cluster control-operation-cluster--software" aria-labelledby="softwareUpdateHeading">
         <header class="control-operation-cluster-head">
           <div>
@@ -204,17 +211,26 @@
         </div>
         </section>
       </section>
-      <article id="publicAccessCard" class="panel-card hgr-public-access-card" hidden>
-        <div class="card-heading"><div><p class="eyebrow">PUBLIC WEBSITE · OWNER ONLY</p>
-          <h2>Public Game Room access</h2></div><span class="control-operation-scope control-operation-scope--public">Visitors</span></div>
-        <p><strong>This blocks visitor access to the website, not the laptop window.</strong> Closing the public Game Room shows your maintenance message and refuses new games while keeping Oracle and HGR Control online. Reopen here when finished.</p>
-        <p id="publicAccessStatus" role="status">Checking public access…</p>
-        <p id="publicAccessRooms">Checking live rooms…</p>
-        <label for="publicAccessReason">Reason shown to visitors</label>
-        <textarea id="publicAccessReason" rows="2" maxlength="220" placeholder="The Game Room is temporarily closed for maintenance."></textarea>
-        <button type="button" id="publicAccessToggle" class="secondary-action" disabled>Checking status…</button>
-        <small>The reason above is shown to visitors. Tap Close and confirm once; there is no second phrase to type. Closure is refused if any game or lobby is active. Successful closure checks for an HTTP 503 maintenance page. Reopen is always available from Control. This never runs Update or closes your laptop window.</small>
-      </article>
+      </section>
+      <section id="operationPanelLaptop" role="tabpanel" aria-labelledby="operationTabLaptop" data-operation-panel="laptop" hidden>
+        <p class="control-operation-intro">Only control the dedicated HGR browser window on Lagz. This never closes the public website.</p>
+      <article class="panel-card operation-readiness"><div><span class="status-dot"></span><p><strong>Checking approved owner-PC bridge</strong><small>These commands open, reopen or close Lagz’s dedicated HGR browser window—not the Oracle server. Each action requires owner confirmation.</small></p></div></article>
+      <section class="control-operation-cluster control-operation-cluster--pc" aria-labelledby="pcWindowActionsHeading">
+        <header class="control-operation-cluster-head">
+          <div>
+            <p class="eyebrow">LAPTOP · LAGZ</p>
+            <h3 id="pcWindowActionsHeading">Game Room window</h3>
+            <p>These three actions affect the browser window on your laptop, not the public server or its version.</p>
+          </div>
+          <span class="control-operation-scope">Laptop only</span>
+        </header>
+        <div class="operation-grid operation-grid--laptop">
+          <button data-operation="start" disabled><span aria-hidden="true">▶</span><strong>Open HGR Window</strong><em class="operation-effect">Launch the HGR website window on Lagz.</em><small>Owner confirmation and connected bridge required</small></button>
+          <button data-operation="restart" disabled><span aria-hidden="true">↻</span><strong>Restart HGR Window</strong><em class="operation-effect">Close and relaunch that browser window.</em><small>Owner confirmation and connected bridge required</small></button>
+          <button data-operation="close" disabled><span aria-hidden="true">■</span><strong>Close HGR Window</strong><em class="operation-effect">Close only the browser window on Lagz.</em><small>Owner confirmation and connected bridge required</small></button>
+        </div>
+      </section>
+      </section>
       <button type="button" class="secondary-action development-jump" data-jump="development">View development batches &amp; GitHub checks</button>
       <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent operation status</h2><p>Approved Start, Restart, Close and Update operations remain traceable while you move around Control. On phones, a compact status chip expands to show progress, phase and the server-verified result.</p></article>
     </section>

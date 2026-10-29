@@ -60,6 +60,10 @@ try {
       document.querySelector('[data-panel="overview"]')?.classList.remove("is-active");
       document.querySelector('[data-panel="operations"]')?.classList.add("is-active");
       document.querySelector("#publicAccessCard").hidden = false;
+      // Measure typography/layout for each category individually without
+      // changing the genuine maintenance-first default in the new tab test.
+      document.querySelector("#operationPanelUpdate").hidden = false;
+      document.querySelector("#operationPanelLaptop").hidden = false;
       document.querySelector("#accessState").hidden = true;
     });
     await page.evaluate(async () => {
