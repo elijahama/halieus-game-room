@@ -91,6 +91,9 @@ try {
   assert.equal(created.room.blitz, false);
   assert.equal((await send(guest, "game:join", { code: "BETAW4", playerName: "Guest" })).ok, false);
   assert.equal((await send(outsider, "game:join", { code: "BETAW4", playerName: "No invite" })).ok, false);
+  assert.equal((await api("/accounts/live-games", bystander.cookie)).body.rooms.some(r => r.code === "BETAW4"), false,
+    "An uninvited viewer cannot discover private practice rooms.");
+  assert.equal((await send(outsider, "game:preview", { code: "BETAW4" })).ok, false);
   const betaInvitation = await api("/accounts/game-invites", owner.cookie, {
     game: "mega-board", roomCode: "BETAW4", recipientAccountId: invited.id,
   });
@@ -100,6 +103,8 @@ try {
   assert.equal(inbox.status, 200);
   assert.equal(inbox.body.invites.length, 1);
   assert.equal(inbox.body.invites[0].betaTournamentTest, true);
+  assert.equal((await api("/accounts/live-games", invited.cookie)).body.rooms.some(r => r.code === "BETAW4"), true);
+  assert.equal((await send(member, "game:preview", { code: "BETAW4" })).ok, true);
   assert.equal((await api("/auth/status", invited.cookie)).body.account.role, "player");
   const stolenHostSeat = await send(outsider, "game:reconnect", {
     code: "BETAW4", reconnectToken: created.reconnectToken, playerName: "Stolen seat",
@@ -113,6 +118,8 @@ try {
   const started = await send(host, "game:start", { code: "BETAW4" });
   assert.equal(started.ok, true, started.reason);
   const practice = rooms.get("BETAW4");
+  assert.equal((await send(outsider, "game:spectate", { code: "BETAW4", playerName: "Spy" })).ok, false,
+    "A non-invited account cannot spectate a private Beta game.");
   assert.equal(practice.gameState.ranked, false);
   assert.equal(practice.gameState.players.some(p => p.isAi), true);
   practice.gameState.phase = "finished";
