@@ -1845,3 +1845,26 @@ be verified independently. This is the first narrowly scoped step toward
 the cross-game **Live Game Continuity** feature, not completed universal
 game support or OS turn push. Full user requirement is documented
 separately in the live-game continuity design.
+
+
+## Public Game Room timed maintenance — approved design, implementation candidate (29 October 2026)
+
+The owner needs duration-based public visitor closures and later future-date
+maintenance windows and scheduled software releases. The existing public
+visitor gate is authoritative; it is **not** the laptop browser-window Close
+operation and does not stop the Oracle process. Owner Control remains
+reachable, and active rooms must block closure.
+
+The initial source candidate adds optional 30m, 1h, 2h or 6h expiry to an
+owner-confirmed public closure, with manual reopening preserved as default.
+Oracle stores UTC deadlines outside deployable source, automatically reopens
+when due, and recovers the schedule after a service restart. The visitor page
+and Control show the UK-local reopening time. Safety invariants include no
+forced interruption to active games, serialized state writes, invalid-date
+rejection, browser-independent operation, and separate release-update controls.
+
+Subsequent audited work must implement future start/end windows with safe
+room-draining, then scheduled approved releases through the existing
+authenticated owner-PC Control bridge. Neither future scheduling nor automatic
+updates are implemented by this source candidate. **No real website closure,
+remote deployment, or production schedule has been initiated.**
