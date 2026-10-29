@@ -42,10 +42,22 @@
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const standalone = window.matchMedia('(display-mode: standalone)').matches
     || navigator.standalone === true;
-  const supported = !apple && !standalone
+  // Android installed PWAs may support Fullscreen API too. The old
+  // standalone guard hid the action in portrait even when it worked.
+  const supported = !apple
     && typeof document.documentElement.requestFullscreen === 'function';
-  if (!supported) return;
+  // Keep the action discoverable on phones. Unsupported browsers show a
+  // truthful explanation instead of removing the control entirely.
   button.hidden = false;
+  if (!supported) {
+    button.disabled = true;
+    button.textContent = standalone ? 'App display' : 'Full screen unavailable';
+    button.title = standalone
+      ? 'Installed app display is managed by your browser and device.'
+      : 'This browser does not support fullscreen on this device.';
+    button.setAttribute('aria-label', button.title);
+    return;
+  }
   const sync = () => {
     const active = Boolean(document.fullscreenElement);
     button.textContent = active ? 'Exit Full Screen' : 'Full Screen';

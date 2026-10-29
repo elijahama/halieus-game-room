@@ -11,7 +11,7 @@ import { getHalieusDataRoot } from "./dataPaths.js";
  * VAPID private key and subscriptions live in durable, untracked runtime
  * data, never in Git, client bundles, or the public account store.
  */
-export type HgrPushTopic = "invites" | "messages";
+export type HgrPushTopic = "invites" | "messages" | "operations";
 export interface HgrPushMessage {
   topic: HgrPushTopic;
   title: string;
@@ -64,7 +64,7 @@ function validKeys(keys: unknown): keys is DeviceSubscription["keys"] {
     && typeof obj.auth === "string" && /^[A-Za-z0-9_-]{14,64}$/.test(obj.auth);
 }
 const supportedTopic = (item: unknown): item is HgrPushTopic =>
-  item === "invites" || item === "messages";
+  item === "invites" || item === "messages" || item === "operations";
 
 async function save(): Promise<void> {
   if (!state) return;
@@ -133,8 +133,11 @@ export function registerPushRoutes(app: Express, accountFor: AccountResolver): v
     const topicsInput=request.body?.topics;
     if (!sub || !isTrustedPushEndpoint(sub.endpoint) || !validKeys(sub.keys)
       || !Array.isArray(topicsInput) || topicsInput.length === 0
-      || topicsInput.length > 2 || !topicsInput.every(supportedTopic)) {
+      || topicsInput.length > 3 || !topicsInput.every(supportedTopic)) {
       response.status(400).json({ok:false,reason:"Use a valid browser push subscription and notification topics."});return;
+    }
+    if (topicsInput.includes("operations") && account.role !== "owner" && account.role !== "admin") {
+      response.status(403).json({ok:false,reason:"Control update alerts require an owner or administrator account."});return;
     }
     const endpoint = sub.endpoint;
     // A browser subscription belongs to only one current account. Account
@@ -174,10 +177,13 @@ export function registerPushRoutes(app: Express, accountFor: AccountResolver): v
       }
     }
     try {
+      const controlTest = device.topics.includes("operations");
       await webPush.sendNotification({endpoint:device.endpoint,keys:device.keys},JSON.stringify({
-        title:"HGR test notification",
-        body:"HGR push alerts are enabled on this device. Tap to open your Inbox.",
-        url:"/?inbox=1",
+        title:controlTest?"HGR Control test notification":"HGR test notification",
+        body:controlTest
+          ?"Control update alerts are enabled on this device. Tap to open Control."
+          :"HGR push alerts are enabled on this device. Tap to open your Inbox.",
+        url:controlTest?"/control/":"/?inbox=1",
         tag:"hgr-push-test-"+Math.floor(now/30_000),
       }),{TTL:90,urgency:"high"});
       response.json({ok:true,accepted:true,
@@ -219,13 +225,15 @@ export async function sendHgrPush(accountIds: readonly string[], notice: HgrPush
   const payload=JSON.stringify({
     title:String(notice.title).slice(0,100),
     body:String(notice.body).slice(0,160),
-    url:notice.url.startsWith("/?") ? notice.url.slice(0,250) : "/?inbox=1",
+    url:notice.topic === "operations"
+      ? (notice.url.startsWith("/control/") ? notice.url.slice(0,250) : "/control/")
+      : notice.url.startsWith("/?") ? notice.url.slice(0,250) : "/?inbox=1",
     tag:String(notice.tag).slice(0,120),
   });
   const expired=new Set<string>();
   await Promise.allSettled(subscriptions.map(async (item) => {
     try {
-      await webPush.sendNotification({endpoint:item.endpoint,keys:item.keys},payload,{TTL:7200,urgency:"normal"});
+      await webPush.sendNotification({endpoint:item.endpoint,keys:item.keys},payload,{TTL:notice.topic==="operations"?300:7200,urgency:notice.topic==="operations"?"high":"normal"});
     } catch (e) {
       const status=typeof e==="object" && e && "statusCode" in e
         ? Number((e as {statusCode:unknown}).statusCode) : 0;

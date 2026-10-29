@@ -1582,3 +1582,46 @@ safe reconnect/cancellation, usable Guild UI, full regression and
 owner/physical-device acceptance. The repository VERSION remains 4.6.10
 during this staged work. See [4.7 fixture implementation](HGR_GUILD_FIXTURES_4_7.md)
 and [version roadmap](HGR_VERSION_ROADMAP.md).
+## Control 4.6.11 candidate — Portrait fullscreen and off-app Update progress (29 October 2026)
+
+Separate focused 4.6.11 VERSION candidate from the draft 4.7.0
+tournament branch. Merged main remains 4.6.10 pending validation.
+Control must expose its Full Screen action in portrait on Android, even when
+opened as an installed PWA and the Fullscreen API exists. Unsupported
+devices keep an honest disabled explanation. Owner/admins can optionally
+enable Control-scoped Android/browser Web Push alerts from Operations,
+reporting actual owner-PC update progress milestones and terminal outcomes
+after switching apps. This requires permission, a valid account-bound device
+subscription, and authenticated agent reports; there is no fabricated
+background polling or continuously running OS progress indicator. The
+persistent Control operation status/history remains authoritative.
+The push title/body omit local paths, credentials and failure diagnostics;
+an unprivileged player cannot subscribe. Control art, launcher H, unrelated
+games and 4.7.0 Guild fixture work are untouched. See
+[Control portrait and off-app update acceptance](HGR_CONTROL_BACKGROUND_UPDATES.md).
+
+## 29 October 2026 — Unified 4.7.0 release candidate (supersedes staged-slice status)
+
+The previously separately reviewed Control PR #170 passed Windows and Ubuntu CI
+and was merged to main at 453c4fe. Its portrait Full Screen and opt-in
+server-sent Update notifications are retained in the combined 4.7.0 branch.
+The VERSION file now reads 4.7.0, and the signed build includes both.
+
+Guilds now exposes a mobile-responsive Tournaments tab. Guild managers can
+copy/share their Guild ID, propose two human Mega Board lineups (one Guild
+member per board in the initial UI), approve an opposing challenge, bind two
+existing ordinary Mega Board lobbies, open the boards, and read immutable
+per-board winners and team board-win counts after they finish. The server
+permits richer 2–8-seat boards, but the initial UI deliberately uses one
+participant from each Guild per board. Guild ties (1–1) remain unresolved.
+Regular Ranked and tournament rating stores are never modified by a fixture;
+F1 standings, brackets, automatic matchmaking, forfeit resolution and wider
+team compositions remain later-milestone decisions. Owner Beta practice
+allows invited ordinary players and AI without changing official progression.
+
+This is an audited 4.7.0 SOURCE RELEASE CANDIDATE, not a confirmation that
+Oracle is updated or that the owner has playtested the Android PWA. The final
+gate is complete regressions, signed release/build/browser identity, Windows
+and Ubuntu CI, then safe owner-controlled deployment and on-device checks.
+All HGR launcher artwork retains its reference geometry; no public-Game-Room
+service interruption or automatic deployment is authorised by this document.

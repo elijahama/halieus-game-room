@@ -110,3 +110,24 @@ proposals, opposing-manager approval and locked eligible player rosters.
 There is **no real room launch or team result yet**, so VERSION remains
 4.6.10 until the complete playable 4.7.0 acceptance criteria above pass.
 See [implementation and next gates](HGR_GUILD_FIXTURES_4_7.md).
+### 29 October 2026 — Independent 4.6.11 Control hotfix candidate
+
+While 4.7.0 Guild fixtures remain a separate draft, a focused Control
+regression repair targets two owner-observed issues: portrait Full Screen
+action visibility, and optional server-sent background Update stage/final
+notifications on Android/PWA when the owner switches apps. The 4.6.11 candidate VERSION is staged in its isolated branch; 4.6.10
+remains the merged public-source baseline until checks and owner acceptance.
+This candidate must not merge or deploy merely because its number is newer.
+See [Control Update notification acceptance](HGR_CONTROL_BACKGROUND_UPDATES.md).
+
+### 29 October 2026 — 4.7.0 candidate with the Control hotfix included
+
+The complete 4.6.11 Control source is now merged (PR #170, 453c4fe).
+A unified 4.7.0 candidate advances beyond backend-only fixture foundations:
+real Guild-v-Guild two-board challenges, opposing-manager approvals, lobby
+binding, full real game starts, immutable game-derived outcomes, and a
+Tournaments tab on the Guild screen. Beta practice remains invitation-only
+and non-scoring for ordinary accounts and AI. First-release Guild UI supports
+one member from each Guild per board; larger team boards and F1 ranking,
+brackets and tiebreakers are reserved for subsequent audited milestones.
+No Oracle deployment or on-device acceptance is implied by a version bump.
