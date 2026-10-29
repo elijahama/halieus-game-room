@@ -9,7 +9,8 @@ for(const [path,hash] of [['assets/branding/references/'+meta.source,meta.source
  if(path===meta.export){assert.equal(bytes.readUInt32BE(16),512);assert.equal(bytes.readUInt32BE(20),512);}
 }
 const manifest=JSON.parse(await read('client/public/control/manifest.webmanifest'));
-assert.equal(manifest.scope,'/control/');assert.equal(manifest.id,'/control/');assert.equal(manifest.display,'standalone');
+assert.equal(manifest.scope,'/control/');assert.equal(manifest.id,'/control/');assert.equal(manifest.display,'fullscreen');
+assert.deepEqual(manifest.display_override,['fullscreen','standalone','minimal-ui'],'Control PWA must fall back safely when fullscreen is unavailable.');
 assert.deepEqual(manifest.icons.map(i=>i.sizes),['192x192','512x512']);
 for(const [path,prefix] of [['client/public/sw.js','halieus-shell-'],['client/public/control/sw.js','hgr-cloud-control-']]){
  const handlers={},deleted=[];let completion;
