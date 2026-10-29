@@ -12,6 +12,7 @@ import { syncBlockingTurnPhase } from "./turn-engine.js";
 import { finalizeRankedMatch } from "./rankings.js";
 import { getMatchAwards } from "../../../../../shared/games/mega-board/ranked.js";
 import { finalizeSession, recordWorkingSession } from "../../../platform/sessionArchive.js";
+import { getGuildFixtureBoundRoom, recordFinishedGuildFixtureBoard } from "../../../platform/guildFixtures.js";
 
 const optionalActionTimers = new Map<
   string,
@@ -207,21 +208,27 @@ export function emitGameState(
   // stale "Resolving Card" (or similar) phase.
   syncBlockingTurnPhase(gameState);
 
-  if (gameState.phase === "finished" && gameState.ranked) {
+  if (gameState.phase === "finished" && gameState.ranked && !rooms.get(code)?.betaTournamentTest) {
     finalizeRankedMatch(gameState);
   }
 
   const room = rooms.get(code);
   if (room) {
     room.updatedAt = Date.now();
-    recordWorkingSession("mega-board", room.code, room.createdAt, {
+    if (!room.betaTournamentTest) recordWorkingSession("mega-board", room.code, room.createdAt, {
       room: { ...room, players: room.players.map(({ reconnectToken: _token, ...player }) => player) },
       gameState,
     });
     if (gameState.phase === "finished") {
+      // Only server-owned, verified real Mega Board results can settle Guild
+      // fixture boards; never accept a client-posted winner or a Beta room.
+      if (!room.betaTournamentTest && getGuildFixtureBoundRoom(code)) {
+        void recordFinishedGuildFixtureBoard(room, gameState).catch((error) =>
+          console.error("[HGR] Guild fixture board result could not be persisted; retry on next verified finish emission:", error));
+      }
       const surviving = gameState.players.filter((player) => !player.isBankrupt);
       const winner = surviving.length === 1 ? surviving[0]?.name ?? null : null;
-      void finalizeSession("mega-board", room.code, room.createdAt, "completed", { room, gameState }, {
+      if (!room.betaTournamentTest) void finalizeSession("mega-board", room.code, room.createdAt, "completed", { room, gameState }, {
         winner,
         players: gameState.players.length,
         ranked: room.ranked,
@@ -252,7 +259,7 @@ export function emitGameState(
             detail: `${award.detail} · ${award.value.toLocaleString("en-GB")}`,
           }));
         const durationMs = gameState.gameStartedAt ? Math.max(0, Date.now() - gameState.gameStartedAt) : 0;
-        io.emit("platform:game-finished", {
+        (room.betaTournamentTest ? io.to(code) : io).emit("platform:game-finished", {
           id: `mega-board-${code}-${gameState.turnNumber}`,
           game: "mega-board",
           gameTitle: "Mega Board",
@@ -283,7 +290,7 @@ export function emitGameState(
   syncTurnRollDeadline(gameState);
   syncOptionalActionTimer(io, code, gameState);
   captureMegaReplayFrame(gameState);
-  if (room && gameState.phase === "finished" && gameState.winnerId) {
+  if (room && !room.betaTournamentTest && gameState.phase === "finished" && gameState.winnerId) {
     void archiveCompletedMegaGame(room).catch(() => console.error("Mega Board replay archive could not be persisted; retry on next finished-state emission."));
   }
   queueRoomSave();

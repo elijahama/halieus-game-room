@@ -29,7 +29,11 @@ jobs:
       - run: npm run test:progression:refresh
       - run: npm run test:social:activity
       - run: npm run test:public:maintenance
+      - run: npm run test:guild:fixtures
+      - run: npm run test:beta:tournament
       - run: npm run test:control:background
+      - run: npm run test:control:actions
+      - run: npm run test:control:public-access
       - run: npm run test:browser:public-maintenance
       - run: npm run test:browser:control:window-operations
       - run: npm run test:replays:all

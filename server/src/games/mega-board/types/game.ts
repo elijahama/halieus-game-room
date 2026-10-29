@@ -24,6 +24,8 @@ export interface GameRoom {
   code: string;
   ranked: boolean;
   blitz: boolean;
+  /** Explicit owner/admin-created, invitation-only, non-scoring test match. */
+  betaTournamentTest?: boolean;
   hostId: string;
   players: RoomPlayer[];
   started: boolean;
@@ -40,6 +42,7 @@ export interface PublicGameRoom {
   code: string;
   ranked: boolean;
   blitz: boolean;
+  betaTournamentTest?: boolean;
   hostId: string;
   players: LobbyPlayer[];
   started: boolean;
@@ -52,6 +55,7 @@ export interface PublicGameRoom {
 export interface CreateGamePayload {
   playerName: string;
   ranked: boolean;
+  betaTournamentTest?: boolean;
   blitz?: boolean;
   code: string;
   freeParkingJackpotEnabled?: boolean;
@@ -132,6 +136,7 @@ export interface RoomPreview {
   code: string;
   ranked: boolean;
   blitz: boolean;
+  betaTournamentTest?: boolean;
   started: boolean;
   hostName: string;
   playerCount: number;

@@ -18,7 +18,7 @@
 
   const $ = (id) => document.getElementById(id);
   const operationButtons = () => Array.from(document.querySelectorAll(".operation-grid button"));
-  const updateButton = () => operationButtons().find((button) => button.textContent?.includes("Update HGR")) || null;
+  const updateButton = () => document.querySelector('.operation-grid button[data-operation="update"]');
   const ownerRow = () => document.querySelector(".infrastructure-list > div:nth-child(2)");
   const readiness = () => document.querySelector(".operation-readiness > div");
 
@@ -218,6 +218,7 @@
     // the Update tile. Start/Restart/Close must never impersonate deployment.
     const updateBusy = (updateInFlight && pendingRequestAction === "update")
       || (lastOperation?.action === "update" && lastOperation.state === "running");
+    // A local browser-window lifecycle request is NEVER a software update.
     const ready = selectedDevice?.approval === "approved" && selectedDevice.online && selectedDevice.localControlOnline;
     const update = updateButton();
     for (const button of lifecycleButtons()) {

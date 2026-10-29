@@ -15,8 +15,9 @@ import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, GAME_BY_ID, type GameId } from "../games/catalog";
 import { HgrIcon } from "./HgrIcon";
 import { PlayerIdentityCard } from "./PlayerIdentityCard";
+import { GuildFixturesPanel } from "./GuildFixturesPanel";
 
-type GuildView = "rooms" | "chat" | "leaderboard" | "members";
+type GuildView = "rooms" | "tournaments" | "chat" | "leaderboard" | "members";
 
 interface GuildsPanelProps {
   account: HalieusAccountSummary;
@@ -42,6 +43,7 @@ const ROOM_POLICY_LABELS: Record<HalieusGuildRoomPolicy, string> = {
 
 const GUILD_TABS = [
   { id: "rooms", label: "Rooms", icon: "games" },
+  { id: "tournaments", label: "Tournaments", icon: "leaderboard" },
   { id: "chat", label: "Chat", icon: "chat" },
   { id: "leaderboard", label: "Leaderboard", icon: "leaderboard" },
   { id: "members", label: "Members", icon: "players" },
@@ -609,6 +611,16 @@ export function GuildsPanel({
                 </section>
 
               </div>
+            )}
+
+            {view === "tournaments" && (
+              <GuildFixturesPanel
+                key={detail.id}
+                account={account}
+                guild={detail}
+                liveRooms={liveRooms}
+                onOpenLiveRoom={onOpenLiveRoom}
+              />
             )}
 
             {view === "chat" && (

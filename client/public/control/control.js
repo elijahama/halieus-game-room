@@ -441,7 +441,7 @@
     const stateValue = ["running", "succeeded", "failed", "rejected"].includes(value.state) ? value.state : "running";
     return {
       id: String(value.id || "operation"),
-      action: String(value.action || "update"),
+      action: ["update", "start", "restart", "close"].includes(value.action) ? value.action : "unknown",
       title: String(value.title || (value.action === "update" ? "Updating HGR" : "HGR operation")),
       phase: String(value.phase || "Working…"),
       reason: String(value.reason || "").trim(),
@@ -616,9 +616,10 @@
     }
     $("operationToast").hidden = false;
     $("operationToast").dataset.state = operation.state;
+    $("operationToast").dataset.action = operation.action;
     const lifecycleLabel = operation.action === "start" ? "Open HGR window"
       : operation.action === "restart" ? "Restart HGR window"
-        : operation.action === "close" ? "Close HGR window" : "Update";
+        : operation.action === "close" ? "Close HGR window" : operation.action === "update" ? "Update HGR" : "Control action";
     $("operationTitle").textContent = operation.state === "succeeded" ? `${lifecycleLabel} complete`
       : operation.state === "failed" ? `${lifecycleLabel} failed`
       : operation.state === "rejected" ? `${lifecycleLabel} not started` : operation.title;
@@ -629,8 +630,13 @@
       ? "Not started · tap for reason"
       : operation.state === "failed" ? "Stopped · tap for details" : operation.phase;
     const displayedProgress = operation.state === "rejected" ? 0 : operation.progress;
-    $("operationPercent").textContent = operation.state === "rejected" ? "—" : `${Math.round(displayedProgress)}%`;
-    $("operationProgressBar").style.width = `${displayedProgress}%`;
+    const isUpdate = operation.action === "update";
+    const percentLabel = $("operationPercent");
+    const progressTrack = $("operationProgressBar")?.parentElement;
+    percentLabel.hidden = !isUpdate;
+    if (progressTrack) progressTrack.hidden = !isUpdate;
+    percentLabel.textContent = !isUpdate || operation.state === "rejected" ? "—" : `${Math.round(displayedProgress)}%`;
+    $("operationProgressBar").style.width = isUpdate ? `${displayedProgress}%` : "0%";
     $("operationToastToggle").title = terminalReason || operation.phase;
     $("operationDetailAction").textContent = operation.title;
     $("operationStarted").textContent = operation.startedAt ? formatWhen(operation.startedAt) : "Unavailable";
@@ -702,17 +708,17 @@
     if (state.account?.role !== "owner" || publicAccessBusy || !publicAccessState) return;
     const closing = !publicAccessState.closed;
     const phrase = closing ? "CLOSE PUBLIC GAME ROOM" : "REOPEN PUBLIC GAME ROOM";
-    const typed = window.prompt(
-      (closing ? "Visitors will see a temporary closure page. Owner Control will remain available."
-        : "The public Game Room will reopen for everyone.") +
-      "\\nType " + phrase + " to confirm:", "",
-    );
-    if (typed !== phrase) return;
+    // The text area above already captures the visitor-facing maintenance
+    // reason. Do not ask for it again in a browser prompt, which previously
+    // caused owners to type that reason instead of the hidden sentinel phrase.
+    // The server still requires owner authentication, same-origin mutation and
+    // the action-specific confirmation token sent below.
     if (!window.confirm(closing
-      ? "Confirm public maintenance closure now? This will refuse new game connections and is blocked if any live room exists."
-      : "Confirm reopen the public Game Room for everyone?")) return;
+      ? "Close the PUBLIC Game Room for maintenance? Visitors will see the reason from the text box, all new game connections will be refused, and HGR Control stays available. Closing is blocked while any room is active. This does NOT close the owner-PC window or run an Update."
+      : "Reopen the PUBLIC Game Room to all visitors? This does NOT run Update or restart the owner-PC window.")) return;
     publicAccessBusy = true;
     let failureReason = "";
+    let verifiedOutcome = "";
     $("publicAccessToggle").disabled = true;
     $("publicAccessStatus").textContent = closing ? "Applying public closure…" : "Reopening the Game Room…";
     try {
@@ -727,10 +733,24 @@
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) throw Error(result.reason || "Public access could not be changed.");
+      if (result.state?.closed !== closing) {
+        throw Error("Public access reply does not match the requested state. Refresh Control and check access.");
+      }
       publicAccessState = result.state;
-      $("publicAccessStatus").textContent = closing
-        ? "Public visitor access is closed. Reopen from this panel when ready."
-        : "Public access reopened successfully.";
+      // A successful POST alone is not evidence that the public website gate
+      // really reached visitors. Probe an uncached, same-origin HTML route.
+      const gateCheck = await fetch("/?hgr-public-access-check=" + Date.now(), {
+        method: "GET", credentials: "include", cache: "no-store",
+        headers: { "Accept": "text/html", "Cache-Control": "no-cache" },
+      });
+      if (closing ? gateCheck.status !== 503 : !gateCheck.ok) {
+        throw Error(closing
+          ? "Public closure was recorded, but the website did not return its maintenance page. Do not assume visitors are blocked; check the public server/proxy."
+          : "Reopen was recorded, but the public website did not return a normal page. Check deployment and server status.");
+      }
+      verifiedOutcome = closing
+        ? "Verified: public website is serving HTTP 503 maintenance. Owner Control stays available."
+        : "Verified: public website has reopened.";
     } catch (error) {
       failureReason = error instanceof Error ? error.message : "The public access request failed.";
     } finally {
@@ -739,6 +759,7 @@
       // Do not erase the actionable 409 reason with the normal "site open"
       // status. The owner needs to know that a live match blocked closure.
       if (failureReason) $("publicAccessStatus").textContent = failureReason;
+      else if (verifiedOutcome) $("publicAccessStatus").textContent = verifiedOutcome;
     }
   }
 

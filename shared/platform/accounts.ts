@@ -197,6 +197,8 @@ export interface HalieusQuickPlayProfile {
 }
 
 export interface HalieusGameInviteSummary {
+  /** Shown to ordinary invited accounts; never grants owner/admin privileges. */
+  betaTournamentTest?: boolean;
   id: string;
   senderAccountId: string;
   senderDisplayName: string;

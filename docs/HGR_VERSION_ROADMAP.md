@@ -61,6 +61,55 @@ Scoped Mega Board patch: shared two-column phone rosters with long-name/property
 
 Active-match notifications and reconnect reconciliation are a **separate already owner-authorized batch, not implemented in 4.6.4**; the subsequent [4.6.5 candidate](HGR_ACTIVE_GAME_RETURN.md) has parent runtime/component verification with full-App/physical-PWA gates still outstanding. Native receipt `rcpt_fc27b6506bfc45d3826cdbaa860b5d4a` records observational Codex capture of the 4.6.4 work, not independent test attestation; Git setup and standard parent verification occurred outside that capture. See the 4.6.4 Masterbook entry for exact dimensions, evidence and limitations.
 
+### 29 October 2026 — Multiplayer Beta tournament practice
+
+Source-only 4.7 development adds an explicitly server-authorised
+non-scoring Mega Board Beta room. Owner/admin testers can invite ordinary
+player accounts or AI into test games. Joining does not grant admin rights,
+and practice match completion must not change permanent game history, Gamer
+Score, normal or tournament ratings, statistics, Guild results or rewards.
+This mode is separate from official Guild fixtures (which require eligible
+Guild-only human rosters); it is not an implemented test bracket or 5.0.0
+tournament. The version stays **4.6.10** while the playable 4.7 milestone
+and owner-device acceptance remain incomplete. See
+[Beta Tournament Practice](HGR_BETA_TOURNAMENT_PRACTICE.md).
+
+### 29 October 2026 — 4.7.0 two-board real results added
+
+The development branch now records verifiable, once-only finished-game
+receipts for both independent Mega Board boards and derives the number
+of board wins for each Guild. A 1–1 split remains unresolved; no unsupported
+F1 points, tie-break ranking or tournament rating is invented. This
+milestone is still unmerged, un-deployed and not yet fully owner-playable
+because Guild-facing fixture controls, mobile tests and release acceptance
+remain. 4.6.11 Control fixes are isolated in draft PR #170 and must be
+integrated safely before any unified later-version release.
+
+### 29 October 2026 — 4.7.0 real-match fixture linking candidate
+
+The staged source candidate now links manager-approved Guild lineups
+to two existing **real Mega Board** unstarted lobbies by authenticated
+account roster and distinct board identity. The ordinary Mega Board start
+handlers can run both games, while post-binding join/AI changes are
+rejected. This is more than a design-only foundation, but it is not
+complete 4.7.0 until result settlement, team scoring, UI, reconnect
+and owner end-to-end acceptance are complete. No Oracle deployment
+is implied; VERSION remains 4.6.10.
+
+### 28 October 2026 — 4.6.10 merged; 4.7.0 Guild fixture candidate opened
+
+The source mainline has now merged 4.6.7 Control/unlock refresh, 4.6.8
+test-device push, 4.6.9 verified in-app social presence, and 4.6.10
+owner-confirmed public maintenance. This is **source integration**, not
+proof of corresponding public Oracle deployment. Both CI operating
+systems passed PR #168. Begin 4.7.0 implementation in a separate,
+clean feature worktree based on merged main.
+
+The first staged Guild fixture slice records authenticated two-board
+proposals, opposing-manager approval and locked eligible player rosters.
+There is **no real room launch or team result yet**, so VERSION remains
+4.6.10 until the complete playable 4.7.0 acceptance criteria above pass.
+See [implementation and next gates](HGR_GUILD_FIXTURES_4_7.md).
 ### 29 October 2026 — Independent 4.6.11 Control hotfix candidate
 
 While 4.7.0 Guild fixtures remain a separate draft, a focused Control
@@ -70,3 +119,36 @@ notifications on Android/PWA when the owner switches apps. The 4.6.11 candidate 
 remains the merged public-source baseline until checks and owner acceptance.
 This candidate must not merge or deploy merely because its number is newer.
 See [Control Update notification acceptance](HGR_CONTROL_BACKGROUND_UPDATES.md).
+
+### 29 October 2026 — 4.7.0 candidate with the Control hotfix included
+
+The complete 4.6.11 Control source is now merged (PR #170, 453c4fe).
+A unified 4.7.0 candidate advances beyond backend-only fixture foundations:
+real Guild-v-Guild two-board challenges, opposing-manager approvals, lobby
+binding, full real game starts, immutable game-derived outcomes, and a
+Tournaments tab on the Guild screen. Beta practice remains invitation-only
+and non-scoring for ordinary accounts and AI. First-release Guild UI supports
+one member from each Guild per board; larger team boards and F1 ranking,
+brackets and tiebreakers are reserved for subsequent audited milestones.
+No Oracle deployment or on-device acceptance is implied by a version bump.
+### 29 October 2026 - 4.7.0 Control lifecycle presentation fix
+
+The owner reported that opening/restarting/closing the HGR owner-PC window
+still looked like an Update deployment. In the combined 4.7.0 candidate,
+the actual source of the shared-status confusion is fixed: only Update
+renders updater progress/spinner; lifecycle actions remain tracked but
+display independent action-specific statuses/icons without deployment bars.
+A cache-busted Control JS/CSS and executable UI-state regression test guard
+against recurrence. This is source-only until validated and deployed.
+### 29 October 2026 — Urgent 4.7.0 visitor-maintenance verification
+
+Public **Close Game Room** is a distinct owner-confirmed Oracle visitor gate,
+not the **Close HGR Window** PC command or **Update**. The mobile Control
+confirmation flow now consumes the maintenance reason from its own labelled
+field without a competing browser text prompt, requires one action confirmation,
+and checks a new uncached public GET for actual HTTP 503 before displaying
+verified closure. Reopen must similarly be confirmed by the visitor route.
+Both operations continue to refuse unsafe server states and keep Control
+available. Add dedicated UI and full HTTP/Socket.IO runtime regressions on
+both CI operating systems. Never claim production is closed or version 4.7.0
+deployed from GitHub source changes alone.

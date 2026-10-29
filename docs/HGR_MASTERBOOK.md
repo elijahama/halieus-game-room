@@ -1522,6 +1522,66 @@ A separate public website closure/reopen control has been designed and implement
 
 See [HGR_PUBLIC_MAINTENANCE.md](HGR_PUBLIC_MAINTENANCE.md). The public gate must be audited and accepted after Windows/Ubuntu CI and real mobile/desktop testing, and must not replace or contradict the existing transient deploy/restart maintenance notification mechanism.
 
+## 4.7.0 — Invited non-scoring Beta tournament practice (29 October 2026)
+
+Owner-approved Beta Test Lab now has a source candidate for authenticated
+owner/admin-created Mega Board practice games with real non-admin invitees
+and AI opponents. An ordinary account can accept an existing HGR Inbox
+invitation without gaining Beta/admin privileges; uninvited entry is
+rejected by the server. The entire room is labelled test-only, with no
+Ranked/Tournament result, Gamer Score, achievements, normal personal stats,
+Guild result projection or permanent match replay. Recoveries require the
+original signed-in account plus the seat token; test results stay private
+to participants. This is **not** an official Guild fixture, bracket or live
+tournament release. See
+[Beta Tournament Practice acceptance](HGR_BETA_TOURNAMENT_PRACTICE.md).
+
+## 4.7.0 — Immutable real-match Guild results (29 October 2026)
+
+The existing two-board Guild candidate now captures actual completed Mega
+Board outcomes, not merely lobby bindings: verified winner account/Guild,
+finish positions and immutable one-time receipts persisted for both boards.
+The combined fixture status becomes completed and exposes each Guild's
+verified board-win count. A 1–1 split is intentionally unresolved pending
+an approved tiebreaker; no tournament F1 or Elo rewards are triggered.
+Server identity and duplicate-finish safeguards have integration tests.
+This is not yet a released version; Guild-facing approval/binding UI,
+end-to-end owner acceptance and deployment are pending. See
+[4.7 Guild fixture documentation](HGR_GUILD_FIXTURES_4_7.md).
+
+## 4.7.0 — Real two-board Guild fixture binding (29 October 2026)
+
+Second staged source batch: authenticated Guild manager binds an approved
+two-board fixture to **two real populated Mega Board lobbies**. Server checks
+actual signed-in account seats against frozen lineups, rejects extra/AI seats,
+requires ordinary unrated non-Blitz games and captures separate room identity,
+creation timestamp and boardMatchId. Standard Mega Board join, AI-add and
+host-start handlers enforce the locked roster; both boards can start as
+independent normal games with ordinary teammate rent/property rules. The
+Guild fixture still has no settled team result, fixture finish ingester,
+automatic tournament rating award, mobile launcher/status UI or production
+acceptance; therefore this is not a finished 4.7.0 release. See
+[Guild fixture progression](HGR_GUILD_FIXTURES_4_7.md).
+
+## 4.7.0 milestone development — authenticated two-board Guild fixture proposals (28 October 2026)
+
+The first isolated **4.7.0 candidate batch** adds a durable Guild-v-Guild
+Mega Board fixture proposal and two-board roster locking service, using the
+existing Guild membership authority. A Guild owner/admin submits its own
+lineups; the opposing Guild owner/admin must separately authenticate and
+approve its own members. Duplicate people, cross-team overlap, invalid Guilds
+and over-capacity boards are refused. Either Guild manager can cancel before
+actual board launch. The fixture file is separate from normal Guild messages,
+sessions, and all Ranked/tournament scoring stores. It is source-only and
+does **not** create a live game or claim a 4.7.0 public release.
+
+The **4.7.0 advancement gate remains unchanged**: two independent real
+Mega Board matches per locked Guild fixture, trusted seat and game IDs,
+normal rent/property rules, verified outcomes, team scoring and tie policy,
+safe reconnect/cancellation, usable Guild UI, full regression and
+owner/physical-device acceptance. The repository VERSION remains 4.6.10
+during this staged work. See [4.7 fixture implementation](HGR_GUILD_FIXTURES_4_7.md)
+and [version roadmap](HGR_VERSION_ROADMAP.md).
 ## Control 4.6.11 candidate — Portrait fullscreen and off-app Update progress (29 October 2026)
 
 Separate focused 4.6.11 VERSION candidate from the draft 4.7.0
@@ -1539,3 +1599,63 @@ The push title/body omit local paths, credentials and failure diagnostics;
 an unprivileged player cannot subscribe. Control art, launcher H, unrelated
 games and 4.7.0 Guild fixture work are untouched. See
 [Control portrait and off-app update acceptance](HGR_CONTROL_BACKGROUND_UPDATES.md).
+
+## 29 October 2026 — Unified 4.7.0 release candidate (supersedes staged-slice status)
+
+The previously separately reviewed Control PR #170 passed Windows and Ubuntu CI
+and was merged to main at 453c4fe. Its portrait Full Screen and opt-in
+server-sent Update notifications are retained in the combined 4.7.0 branch.
+The VERSION file now reads 4.7.0, and the signed build includes both.
+
+Guilds now exposes a mobile-responsive Tournaments tab. Guild managers can
+copy/share their Guild ID, propose two human Mega Board lineups (one Guild
+member per board in the initial UI), approve an opposing challenge, bind two
+existing ordinary Mega Board lobbies, open the boards, and read immutable
+per-board winners and team board-win counts after they finish. The server
+permits richer 2–8-seat boards, but the initial UI deliberately uses one
+participant from each Guild per board. Guild ties (1–1) remain unresolved.
+Regular Ranked and tournament rating stores are never modified by a fixture;
+F1 standings, brackets, automatic matchmaking, forfeit resolution and wider
+team compositions remain later-milestone decisions. Owner Beta practice
+allows invited ordinary players and AI without changing official progression.
+
+This is an audited 4.7.0 SOURCE RELEASE CANDIDATE, not a confirmation that
+Oracle is updated or that the owner has playtested the Android PWA. The final
+gate is complete regressions, signed release/build/browser identity, Windows
+and Ubuntu CI, then safe owner-controlled deployment and on-device checks.
+All HGR launcher artwork retains its reference geometry; no public-Game-Room
+service interruption or automatic deployment is authorised by this document.
+## 4.7.0 - Control lifecycle versus Update presentation isolation (29 October 2026)
+
+Owner confirmed that Open, Restart and Close owner-PC window controls were
+still showing deployment-style updating progress. The unified 4.7.0 candidate
+now gives every operation its own authoritative action identity:
+only action=update displays software deployment percentage, pulsing progress
+track or Update tile spinner. Open, Restart and Close retain their real
+lifecycle receipts and show static action-specific glyphs, no updater bar
+and no guessed download/deployment progress. Unknown operation actions cannot
+silently default to Update. The display uses server-reported action/status;
+the actual commands, remote window semantics and Oracle website remain
+unchanged. Cache-busting of Control JS/CSS forces the corrected user interface
+to be fetched on the next deployment. The new runtime UI test exercises
+start/restart/close/update/unknown states and runs on both CI platforms.
+This does not mean the public site has been deployed or phone-tested.
+## 4.7.0 — Public maintenance control usability and verified visitor closure (29 October 2026)
+
+The owner confirmed that typing a maintenance reason into Android's separate
+browser confirmation prompt silently prevented closing public visitor access.
+Control previously required the exact literal `CLOSE PUBLIC GAME ROOM` in
+that prompt despite showing an independent **Reason shown to visitors** field.
+The 4.7.0 correction removes the misleading prompt: the reason remains in the
+textarea, and the owner performs one explicit confirm dialog. The secure
+owner-only server endpoint retains its exact action confirmation token, the
+same-origin mutation guard, live-room refusal, persisted closure and reopen
+semantics; neither button runs a software Update or closes the laptop window.
+After the server acknowledges closing, Control performs a fresh same-origin
+HTML request and requires an actual HTTP 503 maintenance response before
+presenting the closure as verified. Reopen likewise checks for ordinary HTTP
+success. Probe discrepancies and server 409 failures remain visible after
+status refresh; the app does not claim that visitors are blocked if the public
+proxy still serves a normal game page. Source tests exercise a real click
+sequence and a local HTTP/Socket.IO server, not Oracle production. Deployment,
+owner/mobile acceptance and restoration of public access remain explicit steps.

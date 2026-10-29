@@ -531,6 +531,8 @@ export default function App() {
     sessionStorage.setItem("halieus-beta-test-mode", "1");
     window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: true }));
     setBetaMode(true);
+    setRanked(false);
+    setBlitz(false);
     setPlayerName(testName);
     setMessage("Beta Test Lab active. New rooms use an isolated test identity and do not count toward your account stats.");
   }
@@ -1494,8 +1496,9 @@ function handleLeaveSpectator() {
       "game:create",
       {
         playerName: trimmedName,
-        ranked,
-        blitz,
+        ranked: betaMode ? false : ranked,
+        blitz: betaMode ? false : blitz,
+        betaTournamentTest: betaMode && (authStatus?.account?.role === "owner" || authStatus?.account?.role === "admin"),
         code: trimmedCode,
         freeParkingJackpotEnabled,
       },
@@ -3328,7 +3331,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.6.11-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.7.0-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>

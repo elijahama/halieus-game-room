@@ -116,7 +116,8 @@ assert.match(hgrIcon,/export function HgrIcon/,'Shared HGR SVG icon component mi
 
 assert.doesNotMatch(home,/<ProjectTimeline\b/,'Project history belongs in project/about documentation rather than Home');
 
-assert.match(guildPanel,/type GuildView = "rooms" \| "chat" \| "leaderboard" \| "members"/,'Guild UI must expose Rooms, Chat, Leaderboard and Members');
+assert.match(guildPanel,/type GuildView = "rooms" \| (?:"tournaments" \| )?"chat" \| "leaderboard" \| "members"/,'Guild UI must preserve Rooms, Chat, Leaderboard and Members');
+assert.match(guildPanel,/id: "tournaments", label: "Tournaments"/,'4.7.0 Guilds must provide its own tournament fixture tab');
 assert.match(guildPanel,/Guilds is deliberately REST-backed rather than tied to a game socket/,'Guild architecture comment missing');
 assert.match(guildPanel,/setInterval\(\(\) => void loadDetail\(selectedGuildId, true\), 5000\)/,'Guild chat/detail persistence polling missing');
 assert.match(guildPanel,/Create guild room/,'Guild room creation action missing');

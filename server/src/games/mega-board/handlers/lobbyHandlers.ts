@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { getAuthenticatedAccount, roomCosmeticState } from "../../../platform/accounts.js";
+import { canViewBetaTournamentRoom, getAuthenticatedAccount, hasBetaTournamentRoomInvitation, roomCosmeticState } from "../../../platform/accounts.js";
 import { SKIN_CATALOG } from "../../../../../shared/platform/skins.js";
 import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
@@ -23,6 +23,7 @@ import { initialiseCardDecks } from "../utils/cards.js";
 import { queueRoomSave } from "../utils/persistence.js";
 import { reconnectRoomPlayer } from "../utils/reconnection.js";
 import { activeMegaMatch } from "../../../platform/active-match.js";
+import { getGuildFixtureBoundRoom, getGuildFixtureStartBlock } from "../../../platform/guildFixtures.js";
 import { cancelHostGrace } from "../utils/host-grace.js";
 import { toPublicGameRoom } from "../utils/room-view.js";
 import { syncAuctionTimer } from "../utils/auction-timer.js";
@@ -111,6 +112,13 @@ export function registerLobbyHandlers(
         return;
       }
 
+      if (room.betaTournamentTest) {
+        const viewer = getAuthenticatedAccount(socket.request as Request);
+        if (!viewer || !canViewBetaTournamentRoom(viewer.id, code)) {
+          acknowledge({ ok: false, reason: "This Beta practice room is invitation-only." });
+          return;
+        }
+      }
       const activePlayers =
         room.players.filter(
           (player) => !player.hasLeft,
@@ -137,6 +145,7 @@ export function registerLobbyHandlers(
           code: room.code,
           ranked: room.ranked,
           blitz: room.blitz,
+          betaTournamentTest: room.betaTournamentTest === true,
           started: room.started,
           hostName:
             host?.name ?? "Host",
@@ -165,8 +174,14 @@ export function registerLobbyHandlers(
         acknowledge({ ok: false, reason: !playerName ? "Player name is required." : "Game code is required." });
         return;
       }
-      const blitz = Boolean(payload.blitz);
-      const ranked = Boolean(payload.ranked) && !blitz;
+      const betaTournamentTest = payload.betaTournamentTest === true;
+      const creator = betaTournamentTest ? getAuthenticatedAccount(socket.request as Request) : null;
+      if (betaTournamentTest && (!creator || (creator.role !== "owner" && creator.role !== "admin"))) {
+        acknowledge({ ok: false, reason: "Only an owner or administrator can create a Beta tournament practice room." });
+        return;
+      }
+      const blitz = betaTournamentTest ? false : Boolean(payload.blitz);
+      const ranked = betaTournamentTest ? false : Boolean(payload.ranked) && !blitz;
       const freeParkingJackpotEnabled = ranked ? false : payload.freeParkingJackpotEnabled ?? false;
 
       // Recover a lost acknowledgement only for this socket's existing host seat.
@@ -219,6 +234,7 @@ export function registerLobbyHandlers(
         code,
         ranked,
         blitz,
+        betaTournamentTest,
         hostId: socket.id,
         boardStyle,
         players: [hostPlayer],
@@ -270,6 +286,17 @@ export function registerLobbyHandlers(
       if (!room) {
         acknowledge({ ok: false, reason: "That game room does not exist." });
         return;
+      }
+      if (getGuildFixtureBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "This Guild fixture lineup is locked. Only registered seats can reconnect." });
+        return;
+      }
+      if (room.betaTournamentTest) {
+        const invited = getAuthenticatedAccount(socket.request as Request);
+        if (!invited || !hasBetaTournamentRoomInvitation(invited.id, code)) {
+          acknowledge({ ok: false, reason: "This Beta practice match requires an invitation to your own HGR account." });
+          return;
+        }
       }
       if (room.started) {
         acknowledge({
@@ -353,6 +380,23 @@ export function registerLobbyHandlers(
           candidate.reconnectToken ===
           reconnectToken,
       );
+      if (room.betaTournamentTest) {
+        const account = getAuthenticatedAccount(socket.request as Request);
+        if (!account || !existingPlayer || account.id !== existingPlayer.replayAccountId) {
+          acknowledge({ ok: false, reason: "Only the original invited account can recover its Beta practice seat." });
+          return;
+        }
+      }
+      const boundGuildBoard = getGuildFixtureBoundRoom(code);
+      if (boundGuildBoard) {
+        const account = getAuthenticatedAccount(socket.request as Request);
+        if (!existingPlayer || !account || account.id !== existingPlayer.replayAccountId ||
+            room.createdAt !== boundGuildBoard.link.roomCreatedAt ||
+            !boundGuildBoard.link.seatAccountIds.includes(account.id)) {
+          acknowledge({ ok: false, reason: "This Guild fixture seat must be recovered by its original signed-in account." });
+          return;
+        }
+      }
       const oldSocketId =
           existingPlayer?.id;
 
@@ -443,6 +487,13 @@ socket.on(
       return;
     }
 
+    if (room.betaTournamentTest) {
+      const viewer = getAuthenticatedAccount(socket.request as Request);
+      if (!viewer || !canViewBetaTournamentRoom(viewer.id, code)) {
+        acknowledge({ ok: false, reason: "Only authorised practice participants can watch this Beta room." });
+        return;
+      }
+    }
     socket.join(code);
     addSpectator(code, socket.id, payload.playerName ?? "Spectator");
     io.to(code).emit("game:spectators", listSpectators(code));
@@ -518,6 +569,11 @@ socket.on(
         return;
       }
 
+      const fixtureBlock = getGuildFixtureStartBlock(room);
+      if (fixtureBlock) {
+        acknowledge({ ok: false, reason: fixtureBlock });
+        return;
+      }
       const connectedPlayers = room.players.filter(
         (player) =>
           player.isAi ||

@@ -9,6 +9,7 @@ import type {
 } from "../../../../../shared/games/mega-board/game-state.js";
 
 import { rooms } from "../state/rooms.js";
+import { getGuildFixtureBoundRoom } from "../../../platform/guildFixtures.js";
 
 import type {
   AddAiPayload,
@@ -158,6 +159,10 @@ export function registerAiLobbyHandlers(
         return;
       }
 
+      if (getGuildFixtureBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "Guild fixture boards cannot add AI after lineup locking." });
+        return;
+      }
       if (!socketIsCurrentHost(room, socket.id)) {
         acknowledge({
           ok: false,

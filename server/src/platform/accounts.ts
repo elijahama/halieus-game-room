@@ -1,4 +1,5 @@
 import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
+import { rooms as megaBoardRooms } from "../games/mega-board/state/rooms.js";
 import { buildRankedLeaderboard } from "./ranked.js";
 import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranked.js";
 import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSkinPreferences, type HalieusSkinSlot } from "../../../shared/platform/skins.js";
@@ -601,6 +602,7 @@ async function quickPlayProfile(account: StoredAccount): Promise<HalieusQuickPla
   const aliases = new Set([account.displayName, ...(account.displayNameAliases ?? [])].map((value) => value.trim().toLowerCase()).filter(Boolean));
   const buckets = new Map<string, Map<string, { preference: HalieusQuickPlayPreference; plays: number; lastAt: number }>>();
   for (const archive of await readFinalisedSessionFiles()) {
+    if (archive?.state?.room?.betaTournamentTest === true) continue;
     const game = typeof archive?.game === "string" && GAME_TITLES[archive.game] ? archive.game : null;
     if (!game) continue;
     const state = archive?.state ?? {};
@@ -646,6 +648,7 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
   const countedWordGameDays = new Set<string>();
   const archives = (await readFinalisedSessionFiles()).sort((a,b) => Number(a?.finalisedAt ?? 0) - Number(b?.finalisedAt ?? 0));
   for (const archive of archives) {
+    if (archive?.state?.room?.betaTournamentTest === true) continue;
     const game = typeof archive?.game === "string" && GAME_TITLES[archive.game] ? archive.game : null;
     if (!game) continue;
     const state = archive?.state ?? {};
@@ -911,7 +914,11 @@ function visibleNameForViewer(name: string, viewer: StoredAccount): string {
 }
 
 function liveRoomsForViewer(viewer: StoredAccount): HalieusLiveRoomSummary[] {
-  return (adminRuntimeControls?.getLiveRooms() ?? []).map(({ verifiedAccountIds: _internalIds, ...room }) => ({
+  return (adminRuntimeControls?.getLiveRooms() ?? [])
+    .filter((room) => room.game !== "mega-board" ||
+      megaBoardRooms.get(room.code)?.betaTournamentTest !== true ||
+      canViewBetaTournamentRoom(viewer.id, room.code))
+    .map(({ verifiedAccountIds: _internalIds, ...room }) => ({
     ...room,
     humanPlayers: room.humanPlayers.map((name) => visibleNameForViewer(name, viewer)),
   }));
@@ -924,13 +931,30 @@ function expireGameRequests(): void {
   }
 }
 
+/** Keep invitation-only Beta sessions out of normal discovery and public spectator listings. */
+export function canViewBetaTournamentRoom(accountId: string, roomCode: string): boolean {
+  const room = megaBoardRooms.get(roomCode);
+  if (!room?.betaTournamentTest) return false;
+  if (room.players.some((player) => !player.isAi && !player.hasLeft && player.replayAccountId === accountId)) return true;
+  return hasBetaTournamentRoomInvitation(accountId, roomCode);
+}
+/** An invitation is explicit opt-in to a private practice room, not Beta/admin access. */
+export function hasBetaTournamentRoomInvitation(accountId: string, roomCode: string): boolean {
+  const room = megaBoardRooms.get(roomCode);
+  if (!room?.betaTournamentTest || room.started) return false;
+  return store.gameInvites.some((invite) =>
+    invite.game === "mega-board" && invite.roomCode === roomCode &&
+    invite.recipientAccountId === accountId && !invite.dismissedAt &&
+    invite.expiresAt > Date.now());
+}
 function publicGameInvites(accountId: string): HalieusGameInviteSummary[] {
   const now = Date.now();
   const activeRooms = adminRuntimeControls?.getLiveRooms() ?? [];
   const roomKeys = new Set(activeRooms.map((room) => `${room.game}:${room.code}`));
   return store.gameInvites
     .filter((invite) => invite.recipientAccountId === accountId && !invite.dismissedAt && invite.expiresAt > now && roomKeys.has(`${invite.game}:${invite.roomCode}`))
-    .map(({ dismissedAt: _dismissedAt, ...invite }) => invite)
+    .map(({ dismissedAt: _dismissedAt, ...invite }) => ({ ...invite,
+      betaTournamentTest: invite.game === "mega-board" && megaBoardRooms.get(invite.roomCode)?.betaTournamentTest === true }))
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
@@ -1142,7 +1166,8 @@ export function registerAccountRoutes(app: Express): void {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     const contacts = playerDirectory(auth.account, "social");
-    const rooms = adminRuntimeControls?.getLiveRooms() ?? [];
+    const rooms = (adminRuntimeControls?.getLiveRooms() ?? [])
+      .filter((room) => room.game !== "mega-board" || megaBoardRooms.get(room.code)?.betaTournamentTest !== true);
     const entries = contacts.map((contact) => {
       const room = rooms.find((entry) => entry.verifiedAccountIds?.includes(contact.id));
       return {
@@ -1175,7 +1200,9 @@ export function registerAccountRoutes(app: Express): void {
     const room = activeRoomForInvite(game, roomCode);
     if (!room) { response.status(404).json({ ok: false, reason: "That game room is no longer active." }); return; }
     const aliases = accountAliases(auth.account);
-    if (!room.humanPlayers.some((name) => aliases.has(name.trim().toLowerCase()))) {
+    const betaHost = game === "mega-board" && auth.account.role !== "player" && megaBoardRooms.get(roomCode)?.betaTournamentTest === true &&
+      megaBoardRooms.get(roomCode)?.players.some((player) => player.isHost && player.replayAccountId === auth.account.id);
+    if (!betaHost && !room.humanPlayers.some((name) => aliases.has(name.trim().toLowerCase()))) {
       response.status(403).json({ ok: false, reason: "You can only invite friends to a room you are currently playing in." }); return;
     }
     const now = Date.now();
@@ -1189,10 +1216,10 @@ export function registerAccountRoutes(app: Express): void {
     await saveStore();
     void sendHgrPush([recipient.id], {
       topic:"invites", title:"HGR room invitation",
-      body:`${auth.account.displayName} invited you to ${room.gameTitle}.`,
+      body: betaHost ? `${auth.account.displayName} invited you to a non-scoring Beta practice match.` : `${auth.account.displayName} invited you to ${room.gameTitle}.`,
       url:"/?inbox=1",tag:"hgr-room-"+invite.id,
     });
-    response.status(201).json({ ok: true, invite: (({ dismissedAt: _dismissedAt, ...item }) => item)(invite) });
+    response.status(201).json({ ok: true, invite: { ...((({ dismissedAt: _dismissedAt, ...item }) => item)(invite)), betaTournamentTest: Boolean(betaHost) } });
   });
 
   app.post("/accounts/game-invites/:inviteId/dismiss", async (request, response) => {

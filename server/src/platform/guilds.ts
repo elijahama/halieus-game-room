@@ -23,6 +23,7 @@ import type {
 } from "../../../shared/platform/guilds.js";
 import { getGuildDataDirectory } from "./dataPaths.js";
 import { sendHgrPush } from "./pushNotifications.js";
+import { loadGuildFixtures, registerGuildFixtureRoutes } from "./guildFixtures.js";
 import { acknowledgeGuildMessages, loadGuildMessageReceipts, messageReceiptsFor } from "./guildMessageReceipts.js";
 
 type GuildAuthResolver = (request: Request) => HalieusAccountSummary | null;
@@ -283,6 +284,10 @@ async function saveStore(): Promise<void> {
 export async function loadGuildStore(): Promise<void> {
   await mkdir(dataDirectory, { recursive: true });
   await loadGuildMessageReceipts();
+  await loadGuildFixtures().catch((error) => {
+    // Corrupt fixture drafts must disable only tournament planning, not all HGR games.
+    console.error("[HGR] Guild fixture store unavailable; fixtures remain blocked.", error);
+  });
   if (!existsSync(storePath)) {
     await saveStore();
     return;
@@ -406,6 +411,14 @@ export function registerGuildRoutes(app: Express, resolveAccount: GuildAuthResol
     }
   });
   lookupAccountById = resolveAccountById;
+  registerGuildFixtureRoutes(app, resolveAccount, (guildId) => {
+    const guild = store.guilds.find((item) => item.id === guildId);
+    return guild ? {
+      id: guild.id,
+      memberIds: guild.members.map((member) => member.accountId),
+      managerIds: guild.members.filter((member) => member.role === "owner" || member.role === "admin").map((member) => member.accountId),
+    } : null;
+  });
   app.get("/guilds", (request, response) => {
     const account = requireAccount(resolveAccount, request, response);
     if (!account) return;
