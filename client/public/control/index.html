@@ -9,9 +9,9 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.7.1-operations-typography" />
+  <link rel="stylesheet" href="/control/control.css?v=4.7.2-source-label-activity-chart" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.7.1-operations-typography" defer></script>
+  <script src="/control/control.js?v=4.7.2-source-label-activity-chart" defer></script>
   <script src="/control/development.js?v=development-timeline-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
@@ -91,7 +91,7 @@
           <div class="card-heading"><div><p class="eyebrow">INFRASTRUCTURE</p><h2>HGR network</h2></div><span class="status-dot is-live"></span></div>
           <div class="infrastructure-list">
             <div><span>☁</span><p><strong>HGR Cloud</strong><small id="cloudDetail">Checking…</small></p><b id="cloudBadge">—</b></div>
-            <div><span>🖥</span><p><strong>Owner PC</strong><small id="ownerPcDetail">Cloud agent enrollment comes next</small></p><b class="muted">Not linked</b></div>
+            <div><span>🖥</span><p><strong>Owner PC</strong><small id="ownerPcDetail">Cloud agent enrollment comes next</small><small id="ownerPcCheckout" class="owner-pc-checkout" hidden></small></p><b class="muted">Not linked</b></div>
             <div><span>🌐</span><p><strong>Public Game Room</strong><small id="serverVersion">Version —</small></p><b id="serverBadge">Checking</b></div>
           </div>
         </article>

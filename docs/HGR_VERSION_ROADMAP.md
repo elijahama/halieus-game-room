@@ -166,3 +166,19 @@ tournament ledger, icon geometry, account privilege or maintenance safety
 guard changes. Add audited 320–1440px browser checks and preserve all
 existing Control regression suites before release. This is a development
 candidate until validation, merge and live Oracle fingerprint verification.
+
+### 29 October 2026 — 4.7.2 Control Overview display-identity hotfix
+
+Control's green Owner PC badge indicates an authenticated outbound
+bridge, **not** a guarantee that the owner's original local development
+worktree has been upgraded. The 4.7.1 live screenshot showed the
+agent-reported `HGR_CONTROL_GAME_ROOT` checkout at 4.5.6 while Oracle
+was truly 4.7.1. The dedicated laptop Release Checkout already matched
+4.7.1. Make the original checkout explicitly `Local development source`
+and keep the public release exclusively on the server's version row.
+Also render a visible point/collection hint for the rolling activity
+chart's first real sample (its previous one-point polyline was
+invisible). These are display-only changes; do not reset/force-update
+the original checkout, alter live metrics, or change game/maintenance
+operations. Gate via tests, CI, signed release validation and separate
+production acceptance.

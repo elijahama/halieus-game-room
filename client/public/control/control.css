@@ -514,3 +514,24 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
 @media (prefers-reduced-motion:reduce){
   .control-operation-cluster .operation-grid button[data-operation]{transition:none}
 }
+
+
+/* 4.7.2 — a connected owner PC may report the *older development source*
+ * as hgrVersion. Never confuse it with the independently deployed site. */
+.infrastructure-list .owner-pc-checkout {
+  font-family: var(--hgr-font-caption, "Alata", sans-serif);
+  font-size: 10px;
+  line-height: 1.4;
+  color: #9daecc;
+  overflow-wrap: anywhere;
+  margin-top: 4px;
+}
+/* Show honest points while a 60-second chart has one sample, rather than
+ * drawing an invisible one-coordinate polyline. Keep shared line colours. */
+.line-chart .chart-point.chart-line-a{fill:#6388ff;stroke:#6388ff}
+.line-chart .chart-point.chart-line-b{fill:#51d58d;stroke:#51d58d}
+.line-chart .chart-point.chart-line-c{fill:#c17cff;stroke:#c17cff}
+.line-chart .chart-sampling-hint{
+  font: 12px "Alata","Varela Round",system-ui,sans-serif;
+  fill: #b3c0d8;
+}
