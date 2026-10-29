@@ -19,6 +19,7 @@
     "test:control:public-access": "node tests/runtime-control-public-access-ui-4.7.0.mjs",
     "test:control:overview": "node tests/runtime-control-overview-truth-4.7.2.mjs",
     "test:control:priorities": "node tests/runtime-control-priority-and-release-heartbeat-4.7.3.mjs",
+    "test:theme:pwa": "node --import tsx tests/runtime-theme-pwa-4.7.4.mjs",
     "test:social:activity": "node --import tsx tests/runtime-social-activity-notifications-4.6.9.mjs",
     "test:progression:refresh": "node --import tsx tests/runtime-progression-refresh.mjs",
     "test:browser:control:window-operations": "node tests/browser-control-window-operations.mjs",
