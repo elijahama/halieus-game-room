@@ -70,7 +70,7 @@ function localReleaseCheckoutVersion(): string | null {
   if (!base || !isHgrRepositoryRoot(base)) return null;
   try {
     const version = readFileSync(resolve(base, "VERSION"), "utf8").trim();
-    return /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$/.test(version) ? version : null;
+    return /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version) ? version : null;
   } catch { return null; }
 }
 
