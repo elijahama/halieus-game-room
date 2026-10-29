@@ -8,14 +8,16 @@ const markup = await readFile(new URL("../client/public/control/index.html", imp
 const styles = await readFile(new URL("../client/public/control/control.css", import.meta.url), "utf8");
 
 assert.match(markup, /id="ownerPcDetail"/);
-assert.match(markup, /id="ownerPcCheckout"[^>]+hidden/);
+assert.match(markup, /id="ownerPcCheckout"/);
+assert.match(markup, /Original laptop development checkout/);
+assert.match(markup, /Laptop release checkout/);
 const cssVersion = markup.match(/control\/control\.css\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
 const jsVersion = markup.match(/control\/control\.js\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
 assert.ok(cssVersion, "Control needs a versioned CSS asset.");
 assert.equal(jsVersion, cssVersion, "Control CSS and JS must be served from the same release.");
 assert.match(bridge, /HGR_CONTROL_GAME_ROOT/);
-assert.match(bridge, /Local development source:/);
-assert.match(bridge, /not the public release/);
+assert.match(bridge, /preserved original source/);
+assert.match(bridge, /Not reported by the current laptop bridge/);
 assert.doesNotMatch(bridge, /detail\.textContent = `\$\{device\.machineName\}\$\{device\.hgrVersion/, "Local source version must not impersonate deployed release.");
 assert.match(styles, /\.owner-pc-checkout/);
 assert.match(styles, /\.line-chart \.chart-point\.chart-line-a/);
