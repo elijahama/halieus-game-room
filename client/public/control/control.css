@@ -535,3 +535,61 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
   font: 12px "Alata","Varela Round",system-ui,sans-serif;
   fill: #b3c0d8;
 }
+
+
+/* HGR 4.7.3: primary public operations first, laptop-only commands behind
+ * a secondary tab. All colours are scoped to Control, never to game themes. */
+.control-operation-tabs{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  padding:6px;margin:14px 0 16px;
+  background:#111b2a;border:1px solid #34445f;border-radius:15px;
+}
+.control-operation-tabs [role="tab"]{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  min-width:0;min-height:48px;padding:9px 10px;
+  border:1px solid transparent;border-radius:11px;
+  background:transparent;color:#bccbe3;
+  font:400 13px var(--hgr-interface-font,"Varela Round",sans-serif);
+  cursor:pointer;white-space:normal;text-align:center;
+}
+.control-operation-tabs [role="tab"][aria-selected="true"]{
+  background:#26354b;border-color:#7da9f3;color:#f6f9ff;
+  box-shadow:0 2px 12px rgba(31,74,141,.25);
+}
+.control-operation-tabs [role="tab"]:focus-visible{
+  outline:3px solid #91b7ff;outline-offset:2px;
+}
+.control-operation-tabs [role="tab"] span{font-size:18px}
+.control-operation-intro{
+  margin:0 0 12px;color:#c0d1ea;font-size:13px;line-height:1.55;
+}
+[data-operation-panel]{min-width:0}
+[data-operation-panel="maintenance"] .hgr-public-access-card{
+  margin:0;min-width:0;
+}
+[data-operation-panel="maintenance"] .hgr-public-access-card textarea{
+  max-width:100%;min-width:0;
+}
+[data-operation-panel="update"] .control-operation-cluster,
+[data-operation-panel="laptop"] .control-operation-cluster{margin:0}
+[data-operation-panel="update"] .control-operation-cluster--software{
+  border-top-color:#80a9ff;
+}
+[data-operation-panel="laptop"] .operation-readiness{margin-bottom:12px}
+.infrastructure-list .source-tag{color:#92a9ca;font-size:10px}
+.infrastructure-list #ownerReleaseCheckout,.infrastructure-list #ownerPcCheckout{
+  overflow-wrap:anywhere;line-height:1.45;
+}
+@media(max-width:600px){
+  .control-operation-tabs{gap:5px;margin:10px 0 12px;padding:5px}
+  .control-operation-tabs [role="tab"]{
+    min-height:48px;padding:7px 3px;font-size:11px;gap:3px;
+    flex-direction:column;
+  }
+  .control-operation-tabs [role="tab"] span{font-size:18px;line-height:1}
+  [data-operation-panel="maintenance"] .hgr-public-access-card{padding:14px}
+  .infrastructure-list>div{grid-template-columns:26px minmax(0,1fr) auto}
+}
+@media(prefers-reduced-motion:reduce){
+  .control-operation-tabs [role="tab"]{transition:none}
+}
