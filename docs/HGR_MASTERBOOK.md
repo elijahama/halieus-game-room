@@ -1791,3 +1791,81 @@ checks, Control lifecycle/maintenance/release checks, 320–1440px real
 browser layout tests, artwork integrity, both CI operating systems, and
 an explicit zero-room Oracle deployment are verified. Document any
 agent-activation step required to make the new local version visible.
+
+## 4.7.4 — Theme unlocking visibility, canonical mono glyph, notifications and installed-PWA fullscreen (29 October 2026)
+
+Owner re-raised three problems: (1) themes shown grey even when the displayed
+Gamer Score appears sufficient; (2) "Mono Light" and "Mono Dark" still painted
+coloured/bordered tiles and the "White glyph" choice was redundant; and
+(3) Android notifications displayed a square favicon/small badge instead
+of a legible H. Owner also requests installed-PWA fullscreen starts, and
+slider-style Text Size/Density settings.
+
+**Theme entitlement authority:** The server's existing score, verified-match,
+and achievement requirements and the server-only save gate are unchanged.
+`GET /accounts/me/themes` now returns the verified Gamer Score, completed
+games and achieved IDs from the *same authoritative progression snapshot*
+used to grant its entitlements, marked as signed-in or anonymous and
+`Cache-Control: private, no-store`. The Theme Library shows these exact
+counts and an explicit per-theme requirement rather than showing every
+unavailable theme as a nearly identical grey lock. Anonymous accounts are
+labelled **Sign in** rather than silently masquerading as zero-score
+accounts. Failed checks preserve previously verified entitlements and
+surface a retry message. Never grant from local preferences, user-supplied
+scores, ratings, admin status or Beta test mode (except existing ephemeral
+Beta preview). Accept an earned score threshold and a freshly earned
+threshold; distinct match-count/achievement gates must remain distinct.
+Live signed-in user acceptance remains needed; an audited UI explanation
+alone must not be presented as a proof of the account's score records.
+
+**Mono H:** The reference `assets/branding/icon-sets/glyphs/hgr-h.svg`
+and `shared/platform/brand.ts` preserve the exact canonical launcher-family
+flared H geometry. **Mono Light is #FFFFFF H ONLY** and **Mono Dark is
+#000000 H ONLY**, both on fully transparent backgrounds. No tile,
+surrounding border, shadow, coloured outline or replacement H. Remove the
+duplicate White glyph/Black glyph menu choices; map old saved values to the
+new correct mono IDs for backwards compatibility. Keep other variants
+and all approved rendered launchers unchanged. The in-app H treatments
+cannot synchronously rewrite an already installed PWA shortcut icon.
+The UI now explicitly distinguishes *in-app style* from the browser/OS
+launcher identity. A separate, consent-based installed launcher theme
+workflow would require compatibility checks and user acceptance and
+must not be faked as an instant on-tap Android icon change.
+
+**Notification badge:** The Android small badge is not the large coloured
+app icon. The old `favicon-32.png` and Control's full blue tile were
+inappropriate for the compact monochrome alpha mask. Use an actual
+96×96 transparent-background PNG generated from the same approved
+`hgr-h.svg` path (solid white glyph, no tile or text) for the
+service-worker `badge` in the Game Room and cloud Control. Their
+larger notification `icon` retains the existing approved gold/blue
+application roles. Protect the canonical source, preserve role-specific
+launcher artwork and test the final PNG alpha channels and geometry.
+Device OS rendering may tint/mask it; accept on real Android.
+
+**Installed PWA fullscreen:** The Game Room and cloud/legacy Control
+web manifests prefer `display: fullscreen` with
+`display_override: [fullscreen,standalone,minimal-ui]`, so compatible
+installed PWAs can launch without browser chrome. Normal browser-tab
+navigation remains unaffected. Browsers or Android can choose a fallback;
+the new manifest link uses a cache-busting revision. An already installed
+PWA may require its browser to update the manifest or a reinstall, and
+fullscreen may hide status bar/system navigation. Do not claim universal
+guarantees, invoke the Fullscreen API without a gesture, or remove
+accessible in-app navigation.
+
+**Readability controls:** Replace the three tiny button chips per Text Size
+and Density with accessible 3-position `input type=range` sliders.
+Preserve the existing small/standard/large and compact/standard/comfortable
+settings, event names, persistence and styling. This is not an arbitrary
+CSS zoom or a change to minimum tap targets.
+
+**Deferred, separately audited UI batches:** Move push test notifications
+to Owner Tools, investigate personal profile/gaming-history clutter,
+feedback presentation, adaptive/logo-style semantics and OS launcher
+shortcuts, and avoid mixing such redesigns into this small version.
+No unverified image generation or new H geometry may be introduced.
+
+4.7.4 is a source candidate until runtime/theme/auth/visual regressions,
+protected-artwork and release-integrity checks, both CI platforms,
+approved Oracle deployment and Android/PWA acceptance complete.
