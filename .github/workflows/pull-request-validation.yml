@@ -46,6 +46,8 @@ jobs:
       - run: npm run test:browser:history
       - run: npm run test:active-match
       - run: npm run test:browser:active-match
+      - run: npm run test:browser:account-workspace
+      - run: npm run test:browser:flat-mobile-join
       - run: npm run test:browser:discovery-portrait
       - run: npm run test:browser:gallery-all
       - run: npm audit --audit-level=high
