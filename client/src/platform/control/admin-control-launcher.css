@@ -7,3 +7,50 @@
 .hgr-admin-control-launcher strong{margin-top:3px;font-size:13px;line-height:1.1}
 .halieus-admin-utility:has(.hgr-admin-control-launcher){margin-top:10px;flex-shrink:0}
 .halieus-mobile-admin-utility:has(.hgr-admin-control-launcher){margin:12px 0}
+
+
+/* Fixed Control-family styling; owner/admin shortcuts must NEVER inherit the
+ * ordinary Game Room's selected wallpaper, foreground or theme surfaces. */
+.hgr-admin-control-launcher{
+  color-scheme:dark;
+  --hgr-owner-control-ink:#e9f1ff;
+  --hgr-owner-control-muted:#a9bfdc;
+  display:flex;align-items:center;gap:11px;
+  width:100%;padding:10px 12px;box-sizing:border-box;
+  border:1px solid rgba(128,170,235,.45);border-radius:14px;
+  color:var(--hgr-owner-control-ink);
+  background:linear-gradient(150deg,#192a44 0%,#111827 72%,#0b1322 100%);
+  box-shadow:inset 0 1px 0 rgba(180,207,255,.1),0 4px 18px rgba(5,10,19,.25);
+  font-family:"Varela Round",system-ui,sans-serif;text-decoration:none;
+}
+.hgr-admin-control-launcher:hover{
+  border-color:#a3c2ff;
+  background:linear-gradient(150deg,#243c60,#131f32 72%,#101829);
+  color:#fff;
+}
+.hgr-admin-control-launcher:focus-visible{outline:3px solid #8fb9ff;outline-offset:3px}
+.hgr-admin-control-launcher .hgr-admin-control-mark{
+  width:38px;height:38px;flex:0 0 38px;border-radius:10px;
+  object-fit:contain;background:#0d1b30;box-shadow:none;
+}
+.hgr-admin-control-launcher span{min-width:0}
+.hgr-admin-control-launcher small{
+  display:block;font:400 10px/1.15 "Alata",system-ui,sans-serif;
+  letter-spacing:.12em;color:#9fc1fc;
+}
+.hgr-admin-control-launcher strong{
+  display:block;font:400 16px/1.25 "Righteous","Varela Round",system-ui,sans-serif;
+  margin-top:3px;color:#f1f6ff;overflow-wrap:anywhere;
+}
+.hgr-admin-control-launcher em{
+  display:block;margin-top:3px;font:400 10px/1.35 "Alata",system-ui,sans-serif;
+  font-style:normal;color:#afc3e3;
+}
+@media(max-width:600px){
+  .halieus-mobile-admin-utility .hgr-admin-control-launcher{
+    min-height:66px;padding:11px 13px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .hgr-admin-control-launcher{transition:none}
+}
