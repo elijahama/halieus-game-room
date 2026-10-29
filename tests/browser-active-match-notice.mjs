@@ -96,6 +96,18 @@ try {
     await page.getByRole("button", { name: "Logout" }).evaluate(button => button.click());
     await dialog.waitFor({ state: "detached" });
     assert.deepEqual(JSON.parse(await takeoverResults.innerText()), bothRecoveries, "Logout cancels pending account takeover");
+    // A lock-screen push opens a match-scoped authenticated return route,
+    // not an automatic session takeover or a guessed room join.
+    matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-123", paused: false, yourTurn: true, notice: null }];
+    await page.goto("http://notice.test/?resumeMatch=mega-ROOM-123");
+    await page.addStyleTag({ path: bundle.replace(/\\.js$/, ".css") });
+    await page.addScriptTag({ path: bundle });
+    await page.getByRole("button", { name: "Continue game" }).waitFor();
+    matches = [];
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await page.getByText("Live match unavailable").waitFor();
+    assert.equal(await page.getByRole("button", { name: "Continue game" }).count(), 0,
+      "Stale deep-link cannot recover an expired or inaccessible match");
     console.log(`PASS takeover dialog ${width}: Cancel/Escape, snapshot, explicit one-use guest confirm, account switch/logout cancellation (component coverage)`);
     console.log(`PASS active notice ${width}: your-turn status, paused suppression, correct return, no forced takeover UI, dedup, focus, hidden/resume, account switch/logout`);
     await page.close();
