@@ -121,6 +121,7 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
 
   for (const record of records) {
     if (!record.sessionId || sessions.has(record.sessionId) || !["completed", "forfeit-completed"].includes(record.status)) continue;
+    if (record.state?.room?.betaTournamentTest === true) continue;
     sessions.add(record.sessionId);
 
     const state = record.state?.gameState ?? record.state;
