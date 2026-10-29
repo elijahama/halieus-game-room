@@ -131,3 +131,12 @@ and non-scoring for ordinary accounts and AI. First-release Guild UI supports
 one member from each Guild per board; larger team boards and F1 ranking,
 brackets and tiebreakers are reserved for subsequent audited milestones.
 No Oracle deployment or on-device acceptance is implied by a version bump.
+### 29 October 2026 - 4.7.0 Control lifecycle presentation fix
+
+The owner reported that opening/restarting/closing the HGR owner-PC window
+still looked like an Update deployment. In the combined 4.7.0 candidate,
+the actual source of the shared-status confusion is fixed: only Update
+renders updater progress/spinner; lifecycle actions remain tracked but
+display independent action-specific statuses/icons without deployment bars.
+A cache-busted Control JS/CSS and executable UI-state regression test guard
+against recurrence. This is source-only until validated and deployed.

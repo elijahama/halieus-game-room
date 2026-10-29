@@ -1625,3 +1625,18 @@ gate is complete regressions, signed release/build/browser identity, Windows
 and Ubuntu CI, then safe owner-controlled deployment and on-device checks.
 All HGR launcher artwork retains its reference geometry; no public-Game-Room
 service interruption or automatic deployment is authorised by this document.
+## 4.7.0 - Control lifecycle versus Update presentation isolation (29 October 2026)
+
+Owner confirmed that Open, Restart and Close owner-PC window controls were
+still showing deployment-style updating progress. The unified 4.7.0 candidate
+now gives every operation its own authoritative action identity:
+only action=update displays software deployment percentage, pulsing progress
+track or Update tile spinner. Open, Restart and Close retain their real
+lifecycle receipts and show static action-specific glyphs, no updater bar
+and no guessed download/deployment progress. Unknown operation actions cannot
+silently default to Update. The display uses server-reported action/status;
+the actual commands, remote window semantics and Oracle website remain
+unchanged. Cache-busting of Control JS/CSS forces the corrected user interface
+to be fetched on the next deployment. The new runtime UI test exercises
+start/restart/close/update/unknown states and runs on both CI platforms.
+This does not mean the public site has been deployed or phone-tested.
