@@ -10,8 +10,12 @@ assert.match(html, /id="operationProgressBar"/);
 assert.match(cloud, /querySelector\(['"]\.operation-grid button\[data-operation="update"\]['"]\)/,
   "Update tile must be selected by exact action ID instead of label text.");
 assert.match(css, /operation-toast:not\(\[data-action="update"\]\) \.operation-progress/);
-assert.match(css, /operation-toast\[data-action="restart"\] \.operation-icon::before/);
-assert.match(css, /operation-toast\[data-action="close"\] \.operation-icon::before/);
+assert.match(css, /operation-toast\[data-state="running"\]\[data-action="restart"\] \.operation-icon::before/);
+assert.match(css, /operation-toast\[data-state="running"\]\[data-action="close"\] \.operation-icon::before/);
+assert.match(css, /operation-toast\[data-state="succeeded"\] \.operation-icon::before/,
+  "Completed lifecycle actions must preserve the static success tick.");
+assert.match(css, /operation-toast\[data-state="failed"\] \.operation-icon::before/,
+  "Failed lifecycle actions must preserve their failure symbol.");
 const elements = new Map();
 function el(id) {
   if (!elements.has(id)) {
