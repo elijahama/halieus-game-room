@@ -1,7 +1,7 @@
 # HGR Control + Launcher/Icon Repair Process
 Version line: 4.5.3
 
-Current repair status, exact commits, reference decisions and owner acceptance: [Part 26 acceptance record](HGR_PART26_ACCEPTANCE.md). Earlier sections below retain historical batch numbering; use the acceptance record for the current seven-batch repair.
+Current repair status, exact commits, reference decisions and owner acceptance: [Control acceptance record](HGR_PART26_ACCEPTANCE.md). Earlier sections below retain historical batch numbering; use the acceptance record for the current seven-batch repair.
 
 This document records the repair in deliberately small batches so launcher, Control, pairing and branding changes are not mixed together.
 
@@ -16,7 +16,7 @@ This document records the repair in deliberately small batches so launcher, Cont
 - The generated launcher set exposes one Control start entry and one explicit Stop entry.
 - HGR Control cloud status must be stated accurately: private/Tailscale path is current; cloud relay is not yet a live deployment.
 
-## Batch 1 — Control launcher simplification and documentation
+## Implementation batch 1 — Control launcher simplification and documentation
 
 **Goal:** remove launcher ambiguity before touching networking or artwork.
 
@@ -63,7 +63,7 @@ Owner-PC acceptance for Batch 1:
 
 Do not evaluate icon artwork in this batch; launcher artwork is Batch 3.
 
-## Batch 1.1 — Oracle package repair after launcher/PWA authority change
+## Implementation batch 1.1 — Oracle package repair after launcher/PWA authority change
 
 **Goal:** keep the approved `HGR Main.png` available inside the exact Oracle deployment source archive.
 
@@ -100,7 +100,7 @@ Acceptance:
 5. owner retries Update HGR — **pending**;
 6. Oracle candidate must pass the client prebuild instead of failing with ENOENT.
 
-## Batch 2 — Pairing/API reliability
+## Implementation batch 2 — Pairing/API reliability
 
 **Goal:** fix the phone state where the Control shell loads but pairing reports `Failed to fetch`.
 
@@ -144,7 +144,7 @@ Dev 24 therefore adds these acceptance-critical handoffs:
 
 A stopped Control service must remain stopped after Update HGR.
 
-## Batch 3 — Reference-PNG launcher artwork
+## Implementation batch 3 — Reference-PNG launcher artwork
 
 **Goal:** stop all launcher redraw drift.
 
@@ -191,7 +191,7 @@ The Personal logo panel is expanded into three groups so the large empty area is
 
 Visible acceptance requires checking the website panel itself; CI alone does not close this batch.
 
-## Batch 4 — Icon-folder cleanup
+## Implementation batch 4 — Icon-folder cleanup
 
 **Goal:** remove duplicate/obsolete icon families only after Batch 3 has proven the live launcher pipeline.
 
@@ -209,7 +209,7 @@ Keep:
 
 No folder is deleted until code search/regressions prove it is unused.
 
-## Batch 5 — Control cloud implementation
+## Implementation batch 5 — Control cloud implementation
 
 Current status: **not deployed**
 
@@ -242,36 +242,36 @@ For each batch record:
 - any follow-up regression created from failures.
 
 
-## Part 26 Batch 1 — approved Control crop, 2 October 2026
+## Implementation batch 1 — approved Control crop, 2 October 2026
 
 Latest main had replaced the model sheet with a 256x256 PNG whose IDAT checksum was invalid. Dimension-only checks missed this. Owner selected the lower-row blue gear Control icon; the authority and PWA copy now contain that exact crop, resized without redrawing. Provenance is in HGR_CONTROL_LAUNCHER_SOURCE.md. Regression retains square checks and adds chunk checksums, decompression, corrupt-file rejection and approved-artwork hash. Existing distinct Stop badge, canonical Stop target, stale export cleanup, actual shortcut IconLocation validation and explicit icon-cache refresh remain enabled.
 
 Source/CI results and real owner-PC/phone acceptance are recorded separately. Owner acceptance must confirm visible Control/Stop icons, canonical launcher names and successful background start/stop. CI alone does not establish that acceptance.
 
 
-## Part 26 Batch 2 — running Control update lifecycle
+## Implementation batch 2 — running Control update lifecycle
 
 Batch 1 source commit 4714d1758e4f1057376e2eb68376e88774dd1db6 passed CI run 37064062685 (#773). Windows export, actual shortcut metadata and cache-refresh commands passed in the isolated checkout; owner-visible acceptance is pending.
 
 Updater now captures Control state before pulling. Stopped-before-update stays stopped; replaced processes are preserved. Existing Control receives an authenticated local graceful stop (legacy fallback retained), restarts from updated source, verifies its listener and rejects reused runtime credentials. The normal start helper re-establishes and health-checks the saved Tailscale HTTPS port and generates fresh pairing state. Tests cover stopped/running/stale snapshot states, port preservation, token rotation, real authenticated shutdown and unauthorized shutdown denial. Real owner-PC/phone update, Serve-route and re-pair acceptance remain pending.
 
 
-## Part 26 Batch 3 — phone state and installed-shell takeover
+## Implementation batch 3 — phone state and installed-shell takeover
 
 Batch 2 passed CI 37066007790 after process identity was made independent of PowerShell JSON date conversion. Batch 3 adds live pairing expiry, an expired-form Retry connection action, bounded network requests and idle connection monitoring. Reopening Control renews an expired code; it does not leave the owner trapped in an already-running message. Worker activation actively navigates older installed shells that have no update listener, deletes only Control caches, and never caches API responses. The offline fallback uses Owner PC unavailable and Retry connection. Manifest dimensions match the actual Control PNG. Browser regression simulates a genuinely stale service worker then checks fresh/expired/paired/disconnected states. Real installed Chrome/Brave and tailnet acceptance remain pending.
 
 
-## Part 26 Batch 4 — launcher-family website H and compact appearance
+## Implementation batch 4 — launcher-family website H and compact appearance
 
 Batch 3 commit 3fe28ef1e8e01e5eafb606abb931bde26b464963 passed CI 37067888616. Website H now traces the wide, angled caps and proportions of the approved no-badge launcher glyph (ChatGPT Image 25 Sept 2026, 18_26_58-6.png); the narrow slab-serif reconstruction was rejected by the owner. All SVG consumers and flat exports share this path, with a new favicon revision. Launcher raster masters are preserved. Personal tiles use an integrated face gradient and the existing palette; glyph-only choices remain tile-free. Ten independent logo choices stay grouped. Theme is a compact full-width row, avoiding the stretched empty column. Desktop navigation has a neutral raised active face, a restrained brand edge and a compact Join action with physical depth; mobile navigation structure and game buttons are unchanged.
 
 
-## Part 26 Batch 5 — canonical lifecycle helpers
+## Implementation batch 5 — canonical lifecycle helpers
 
 Canonical CMD launchers and updater now call start-control.ps1 / stop-control.ps1. Old Mobile-named scripts are compatibility shims only, with no duplicated implementation or generated user-facing shortcut. The ignored hgr-control-mobile-state.json filename is deliberately retained to let the updated stop/update helpers recognise an agent launched before this change; renaming live state would strand that process. Release integrity and Oracle package checks require both new canonical helpers and legacy compatibility entry points.
 
 
-## Part 26 Batch 6 — verified launcher refresh
+## Implementation batch 6 — verified launcher refresh
 
 Control generation rejects even matching square authority/delivery PNGs when their hash is not the approved artwork. ICO validation checks its directory, dimensions, bit depth, byte length and exact embedded PNG. Stale generated-file removal and Windows cache refresh failures now stop the stage. Shortcut validation also checks icon index, executable and working directory; paths containing commas are supported. Windows runtime regression uses a disposable project and fake Start Menu, verifies all sixteen shortcuts, and rejects corrupted ICOs, wrong icon indices/targets, cache failure and unapproved artwork. It does not launch the desktop app, Control or an update/deployment.
 
