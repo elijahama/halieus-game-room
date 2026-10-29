@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createInitialGameState } from "../shared/games/mega-board/game-state.ts";
 import { pauseMegaRoom, resumeMegaRoom, isBlockedWhilePaused } from "../server/src/games/mega-board/utils/pause-room.ts";
 import { syncTurnRollDeadline } from "../server/src/games/mega-board/utils/game-state.ts";
-import { HOST_RECONNECT_GRACE_MS, PAUSED_HOST_RECONNECT_GRACE_MS } from "../server/src/games/mega-board/utils/host-grace.ts";
+import { HOST_RECONNECT_GRACE_MS, ACTIVE_HOST_RECONNECT_GRACE_MS, PAUSED_HOST_RECONNECT_GRACE_MS, hostReconnectGraceMs } from "../server/src/games/mega-board/utils/host-grace.ts";
 
 const players = [
  {id:"host",name:"Ava",isHost:true,isConnected:true,isAi:false,hasLeft:false,reconnectToken:"secret-h"},
@@ -15,7 +15,12 @@ state.turnRollDeadline=120_000;
 state.turnRollDeadlinePlayerId="host";
 const room={code:"PAUSE35",ranked:false,blitz:false,hostId:"host",players,started:true,gameState:state,createdAt:1,updatedAt:1};
 assert.equal(HOST_RECONNECT_GRACE_MS,90_000);
+assert.equal(ACTIVE_HOST_RECONNECT_GRACE_MS,86_400_000);
 assert.equal(PAUSED_HOST_RECONNECT_GRACE_MS,86_400_000);
+assert.equal(hostReconnectGraceMs(room),86_400_000,"Active match host may return later after phone backgrounding");
+assert.equal(hostReconnectGraceMs({...room,started:false,gameState:null}),90_000,"Idle lobby retains short grace");
+assert.equal(hostReconnectGraceMs({...room,started:true,gameState:null}),90_000,"Missing game state cannot claim a live match grace");
+assert.equal(hostReconnectGraceMs({...room,gameState:{...state,phase:"finished"}}),90_000,"Finished room does not acquire live match grace");
 assert.equal(isBlockedWhilePaused("game:roll"),true);
 assert.equal(isBlockedWhilePaused("game:buy-property"),true);
 assert.equal(isBlockedWhilePaused("game:reconnect"),false);
@@ -32,6 +37,7 @@ players[1].isConnected=true;
 assert.throws(() => pauseMegaRoom(room,100_000),/still online/);
 players[1].isConnected=false;
 pauseMegaRoom(room,100_000);
+assert.equal(hostReconnectGraceMs(room),86_400_000,"Paused match retains its original one-day grace");
 assert.equal(state.pauseState.remainingRollMs,20_000);
 assert.equal(state.turnRollDeadline,null);
 assert.equal(state.turnRollDeadlinePlayerId,null);
@@ -69,4 +75,4 @@ assert.equal(state.pauseState,null,"Previously eliminated players do not block r
 assert.equal(state.turnRollDeadline,861_000);
 state.turnPhase="debt";
 assert.throws(()=>pauseMegaRoom(room,900_000),/between decisions/);
-console.log("PASS Part35 pause/resume invariants: ranked/AI/autopilot/online guards, exact remaining time, frozen deadlines, reconnect, actions and host grace");
+console.log("PASS Mega Board pause/resume and host grace: active app switching does not expire in 90 seconds, waiting lobby still does, timers and guards preserved");

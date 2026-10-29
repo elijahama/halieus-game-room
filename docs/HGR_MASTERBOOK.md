@@ -1791,3 +1791,14 @@ checks, Control lifecycle/maintenance/release checks, 320–1440px real
 browser layout tests, artwork integrity, both CI operating systems, and
 an explicit zero-room Oracle deployment are verified. Document any
 agent-activation step required to make the new local version visible.
+
+## Mobile Mega Board — preserve the match when the host backgrounds or returns (29 October 2026)
+
+**Owner field report:** During a six-seat portrait Mega Board test (one human host with CPU opponents), leaving the app caused an obstructing interruption and the player could not rejoin. Exact trigger/message remains unconfirmed from the screenshot; two independently verified source defects warrant a narrow recovery hotfix.
+
+- The ordinary unpaused **host-disconnect grace was 90 seconds**, identical to a waiting lobby. After this timer the server ends the entire room. For a **started, unfinished Mega Board match**, retain the host recovery slot for **24 hours**, matching the existing paused-match grace; keep unstarted waiting lobbies and finished rooms on the previous 90-second policy. Authoritative game/turn timers still apply during absence; this is not a pause, infinite room retention or a rule change. Keep the room in the active-game release-protection gate, including after server recovery. Explicit End game and Forfeit retain their existing semantics.
+- The authenticated active-match return card used `game:reconnect` even for a **parked, still-connected session in the same socket**. The server correctly rejects this as an already-active seat, stranding the user on the hub. A revalidated match now **unparks the original board without a new socket call** *only* when the local saved session, room, state and connected player socket all agree, the viewer is not a spectator and the account remains unchanged. Different/disconnected sockets retain the normal token-backed `force:false` server recovery; never auto-takeover another session.
+- Tests were added to the existing Mega Board pause/recovery regression chain to confirm active and paused grace versus lobby grace, and to the active-match wiring guard for same-socket identity and unpark behavior. Typecheck, socket runtime, rendered mobile tests and complete Windows/Ubuntu CI remain explicit independent gates until confirmed.
+- Do not restart Oracle to test a UI change while matches are active. A dev/static preview is separate from the live production Socket.IO room, and deploying a new browser bundle mid-turn is **not** equivalent to hot-reloading a joined live game. Observe owner-requested portrait gallery, theme, auction/decision/notice scaling improvements in subsequent audited UI-only batches. No launcher H art or theme asset geometry was changed in this hotfix.
+
+**Status:** Narrow source branch only. Not merged or deployed until validation and safe maintenance; public version stays 4.7.3.
