@@ -29,9 +29,9 @@ export function GameInviteDropdown({
       <div className="hgr-game-invite-dropdown-head">
         {game && <img src={game.icon} alt="" />}
         <div>
-          <small>{notification.kind === "room" ? "ROOM INVITATION" : "GAME REQUEST"}</small>
+          <small>{notification.kind === "room" && notification.betaTournamentTest ? "BETA PRACTICE INVITATION" : notification.kind === "room" ? "ROOM INVITATION" : "GAME REQUEST"}</small>
           <strong>{notification.sender} invited you to {notification.gameTitle}</strong>
-          <span>{notification.kind === "room" ? `Room ${notification.roomCode}` : "Would you like to play?"}</span>
+          <span>{notification.kind === "room" && notification.betaTournamentTest ? `Room ${notification.roomCode} · Test only, no ratings or rewards` : notification.kind === "room" ? `Room ${notification.roomCode}` : "Would you like to play?"}</span>
         </div>
         <button type="button" className="hgr-game-invite-later" disabled={busy} onClick={onLater}
           aria-label="Later — keep invitation in inbox">×</button>
