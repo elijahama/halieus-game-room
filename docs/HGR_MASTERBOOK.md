@@ -1659,3 +1659,41 @@ status refresh; the app does not claim that visitors are blocked if the public
 proxy still serves a normal game page. Source tests exercise a real click
 sequence and a local HTTP/Socket.IO server, not Oracle production. Deployment,
 owner/mobile acceptance and restoration of public access remain explicit steps.
+
+## 4.7.1 — Control typography parity and operation-scope design (29 October 2026)
+
+Owner accepted the live 4.7.0 visitor maintenance gate after confirming the
+distinct public closure page in a separate browser window. The next patch is
+a restrained **Control Operations presentation** refinement, not an artwork
+replacement, action semantics rewrite, new release manager or change to the
+physical HGR launcher icon family. It keeps the approved current HGR
+typography roles: **Unbounded Variable** = major headings, **Righteous** =
+secondary headings, **Varela Round** = body, controls, forms and navigation,
+**Alata** = small captions, effect explanations and compact metadata.
+Control self-hosts these same already-licensed font faces at its scoped
+`/control/fonts/` paths. The font selection and type hierarchy come directly
+from the existing 4.5.5c Balanced HGR website role policy, not an invented
+Control-only branding design.
+
+Within Control → Operations, actions are now separated into three honest
+surfaces: (1) **Laptop · Lagz**, for Open/Restart/Close of that device's
+dedicated browser window; (2) **Software update**, for the existing approved
+deployment and its own progress/notification controls; and (3) **Public
+website access**, for the visitor-facing HTTP 503 maintenance gate and
+Reopen. Each laptop action has an immutable plain-language effect statement
+and a separately dynamic bridge-readiness line. These preserve all four
+`data-operation` IDs and original backend authentication, owner approvals,
+mutual exclusion, server-authoritative receipts, update spinner isolation,
+zero-live-room public maintenance guard and Control reachability during
+closure. The three-window group has responsive 3/2/1-column layout at desktop,
+tablet and mobile sizes; the updater remains a separate full-width surface.
+At 320px, labels and buttons must stay readable and tappable without
+horizontal clipping. No canonical H or launcher artwork was changed.
+
+**Acceptance:** Playwright renders Control Operations at 320, 390, 820 and
+1440px to verify four exact action IDs, separate update control, real font
+families and no overflow. Existing 4.7.0 Control action/maintenance tests,
+typechecks, full regressions, browser identity, signed release integrity
+and Windows/Ubuntu CI must remain green before a controlled 4.7.1 Oracle
+deployment. Physical Android PWA layout and owner confirmation remain a
+separate final user acceptance step.
