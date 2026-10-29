@@ -296,7 +296,7 @@ async function handleHeartbeat(request: IncomingMessage, response: ServerRespons
   const machineName = boundedText(body.machineName, 80) || "Owner PC";
   const hgrVersion = boundedText(body.hgrVersion, 40) || null;
   const checkout = boundedText(body.releaseCheckoutVersion, 40);
-  const releaseCheckoutVersion = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$/.test(checkout) ? checkout : null;
+  const releaseCheckoutVersion = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(checkout) ? checkout : null;
   const localControlOnline = body.localControlOnline === true;
   if (protocol !== HGR_CONTROL_CLOUD_PROTOCOL || !validDeviceId(deviceId) || secret.length < 32) {
     sendJson(response, 400, { ok: false, reason: "Invalid Control Agent identity." });
