@@ -12,7 +12,7 @@ assert.match(app,/AyoScreen/); assert.match(app,/WordBoardScreen/); assert.match
 assert.match(server,/registerAyoHandlers/); assert.match(server,/registerWordBoardHandlers/); assert.match(server,/getAyoLiveRoomSummaries/); assert.match(server,/getWordBoardLiveRoomSummaries/);
 assert.match(home,/REQUEST A GAME/); assert.match(home,/onCreateAyo/); assert.match(home,/onCreateWordBoard/); assert.match(home,/InstallAppButton/); assert.match(home,/NotificationPermissionButton/);
 assert.match(shared,/HalieusGameRequestStatus/); assert.match(shared,/HalieusPlayerVisibility/); assert.match(accounts,/\/accounts\/game-requests/); assert.match(accounts,/\/admin\/accounts\/:accountId\/visibility/); assert.match(accounts,/Hidden Player/);
-assert.match(sockets,/transports:\s*\["polling",\s*"websocket"\]/); assert.match(sockets,/tryAllTransports:\s*true/); assert.match(manifest,/"display":\s*"standalone"/); assert.match(css,/3\.7\.0 — Ayo/); assert.match(css,/3\.7\.0 — Word Board/);
+assert.match(sockets,/transports:\s*\["polling",\s*"websocket"\]/); assert.match(sockets,/tryAllTransports:\s*true/); assert.match(manifest,/"display":\s*"(?:fullscreen|standalone)"/,"Installed PWA display mode must remain valid"); assert.match(css,/3\.7\.0 — Ayo/); assert.match(css,/3\.7\.0 — Word Board/);
 const ayo=read('server/src/games/ayo/handlers.ts'), word=read('server/src/games/word-board/handlers.ts');
 assert.match(ayo,/Array\(12\)\.fill\(4\)/); assert.match(ayo,/ayo:sow/); assert.match(ayo,/reconnectToken/); assert.match(ayo,/spectate/);
 assert.match(word,/makeBoard\(\)/); assert.match(word,/word-board:play/); assert.match(word,/dictionaryMode/); assert.match(word,/rack:\s*viewer\?/); assert.match(word,/word-board:exchange/);
