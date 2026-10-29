@@ -25,6 +25,7 @@ interface StoredDevice {
   approval: DeviceApproval;
   machineName: string;
   hgrVersion: string | null;
+  releaseCheckoutVersion?: string | null;
   createdAt: string;
   approvedAt: string | null;
   revokedAt?: string | null;
@@ -294,6 +295,8 @@ async function handleHeartbeat(request: IncomingMessage, response: ServerRespons
   const secret = boundedText(body.secret, 256);
   const machineName = boundedText(body.machineName, 80) || "Owner PC";
   const hgrVersion = boundedText(body.hgrVersion, 40) || null;
+  const checkout = boundedText(body.releaseCheckoutVersion, 40);
+  const releaseCheckoutVersion = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$/.test(checkout) ? checkout : null;
   const localControlOnline = body.localControlOnline === true;
   if (protocol !== HGR_CONTROL_CLOUD_PROTOCOL || !validDeviceId(deviceId) || secret.length < 32) {
     sendJson(response, 400, { ok: false, reason: "Invalid Control Agent identity." });
@@ -315,6 +318,7 @@ async function handleHeartbeat(request: IncomingMessage, response: ServerRespons
         approval: "pending",
         machineName,
         hgrVersion,
+        releaseCheckoutVersion,
         createdAt: now,
         approvedAt: null,
         revokedAt: null,
@@ -332,6 +336,7 @@ async function handleHeartbeat(request: IncomingMessage, response: ServerRespons
     }
     device.machineName = machineName;
     device.hgrVersion = hgrVersion;
+    device.releaseCheckoutVersion = releaseCheckoutVersion;
     device.lastSeenAt = now;
     device.localControlOnline = localControlOnline;
     expireUnreportedUpdates(store.requests, Date.now());
@@ -479,6 +484,7 @@ async function handleStatus(request: IncomingMessage, response: ServerResponse):
       deviceId: device.deviceId,
       machineName: device.machineName,
       hgrVersion: device.hgrVersion,
+      releaseCheckoutVersion: device.releaseCheckoutVersion ?? null,
       approval: device.approval,
       online: device.approval !== "revoked" && deviceOnline(device),
       lastSeenAt: device.lastSeenAt,
