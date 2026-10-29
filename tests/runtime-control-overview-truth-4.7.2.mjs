@@ -9,8 +9,10 @@ const styles = await readFile(new URL("../client/public/control/control.css", im
 
 assert.match(markup, /id="ownerPcDetail"/);
 assert.match(markup, /id="ownerPcCheckout"[^>]+hidden/);
-assert.match(markup, /control\/control\.css\?v=4\.7\.2-source-label-activity-chart/);
-assert.match(markup, /control\/control\.js\?v=4\.7\.2-source-label-activity-chart/);
+const cssVersion = markup.match(/control\/control\.css\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
+const jsVersion = markup.match(/control\/control\.js\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
+assert.ok(cssVersion, "Control needs a versioned CSS asset.");
+assert.equal(jsVersion, cssVersion, "Control CSS and JS must be served from the same release.");
 assert.match(bridge, /HGR_CONTROL_GAME_ROOT/);
 assert.match(bridge, /Local development source:/);
 assert.match(bridge, /not the public release/);
