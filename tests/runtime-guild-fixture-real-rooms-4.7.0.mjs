@@ -98,10 +98,10 @@ try {
   assert.equal((await call("/guild-fixtures/" + fixtureId + "/bind-rooms", "blue-lead", {
     roomCodes: [first.code, second.code],
   })).status, 409);
-  assert.equal((await call("/guild-fixtures/" + fixtureId + "/cancel", "blue-lead", {})).status, 409);
   const hostA = handlersFor("socket-a");
   assert.equal(emit(hostA, "game:join", { code: first.code, playerName: "uninvited" }).ok, false);
   assert.equal(emit(hostA, "game:add-ai", { code: first.code, difficulty: "easy" }).ok, false);
+  assert.equal(emit(hostA, "game:reconnect", { code: first.code, reconnectToken: "test-only" }).ok, false);
   assert.equal(getGuildFixtureStartBlock(first), null);
   first.players[1].replayAccountId = "outsider";
   assert.equal(emit(hostA, "game:start", { code: first.code }).ok, false);
@@ -115,6 +115,23 @@ try {
   assert.notEqual(first.gameState, second.gameState);
   assert.equal(first.gameState.ranked, false);
   assert.equal(second.gameState.blitz, false);
+  assert.equal((await call("/guild-fixtures/" + fixtureId + "/cancel", "blue-lead", {})).status, 409);
+  const secondProposal = await call("/guild-fixtures", "blue-lead", {
+    homeGuildId: "blue", awayGuildId: "gold", homeLineups: [["blue-a"], ["blue-b"]],
+  });
+  const secondFixtureId = secondProposal.body.fixture.id;
+  assert.equal((await call("/guild-fixtures/" + secondFixtureId + "/accept", "gold-lead", {
+    awayLineups: [["gold-a"], ["gold-b"]],
+  })).status, 200);
+  const third = lobby("GFX003", seat("socket-e", "blue-a", true), seat("socket-f", "gold-a"));
+  const fourth = lobby("GFX004", seat("socket-g", "blue-b", true), seat("socket-h", "gold-b"));
+  rooms.set(third.code, third); rooms.set(fourth.code, fourth);
+  assert.equal((await call("/guild-fixtures/" + secondFixtureId + "/bind-rooms", "gold-lead", {
+    roomCodes: [third.code, fourth.code],
+  })).status, 200);
+  assert.ok(getGuildFixtureBoundRoom(third.code));
+  assert.equal((await call("/guild-fixtures/" + secondFixtureId + "/cancel", "gold-lead", {})).status, 200);
+  assert.equal(getGuildFixtureBoundRoom(third.code), null);
   await flushRoomSave();
   console.log("PASS HGR 4.7.0: two real Mega Board boards linked, locked account seats, actual independent starts, uninvited/AI/roster-change rejection");
 } finally {
