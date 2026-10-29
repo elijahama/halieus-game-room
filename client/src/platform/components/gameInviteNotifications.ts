@@ -17,6 +17,7 @@ export type HgrIncomingGameNotification =
     }
   | {
       kind: "room";
+      betaTournamentTest?: boolean;
       key: string;
       id: string;
       sender: string;
@@ -47,6 +48,7 @@ export function incomingGameNotifications(
         kind: "room", key: "room:" + item.id, id: item.id,
         sender: item.senderDisplayName, gameTitle: item.gameTitle,
         game: item.game, createdAt: item.createdAt, roomCode: item.roomCode,
+        betaTournamentTest: item.betaTournamentTest === true,
       })),
   ].sort((a, b) => b.createdAt - a.createdAt || a.key.localeCompare(b.key));
 }
