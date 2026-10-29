@@ -1697,3 +1697,45 @@ typechecks, full regressions, browser identity, signed release integrity
 and Windows/Ubuntu CI must remain green before a controlled 4.7.1 Oracle
 deployment. Physical Android PWA layout and owner confirmation remain a
 separate final user acceptance step.
+
+## 4.7.2 — Control Overview source-version honesty and first activity sample (29 October 2026)
+
+**Observed by the owner after deploying 4.7.1:** Control → Overview showed
+**Owner PC: Lagz · HGR 4.5.6** as Online alongside **Public Game Room:
+Version 4.7.1**. The values are not necessarily competing release
+identities: the outbound Control bridge reports `device.hgrVersion`
+from the original, independently maintained owner-local game/source checkout
+(`HGR_CONTROL_GAME_ROOT` in `server/src/control-agent.ts`, `buildStatus()`),
+while the website version comes from Oracle `/health`. The dedicated
+Windows **Release Checkout** had separately fast-forwarded and verified
+against GitHub `main` at 4.7.1. The older game/source checkout was
+deliberately preserved to avoid damaging its development changes.
+
+**Scoped UI correction:** Keep all three infrastructure states and their
+actual health signals unchanged. The Owner PC's first line now says
+**Lagz · Control bridge**, and an explicit second line labels the distinct
+**Local development source: 4.5.6 · not the public release** (or the
+current agent-reported version). The Public Game Room row continues to
+use independently fetched, authoritative `/health.version`. Do not
+silently report the Oracle version as a local source version, change
+`HGR_CONTROL_GAME_ROOT`, overwrite the owner's older working tree, or
+treat a green bridge as evidence of local/website release parity.
+
+**Chart correction:** The rolling activity graph only drew `polyline`
+elements, which are visually empty with exactly one data point. Show
+real samples as coloured data-point markers even before a second
+observation; show a neutral "Collecting activity history" label until a
+trend is possible and "Awaiting first live sample" when truly empty.
+Once two or more observations exist, draw the actual existing
+connections/players/rooms polylines with latest-point markers. No
+dummy zero samples, fabricated history, or back-end metrics are added.
+Preserve the current two-second live collection and the 31-sample cap.
+
+**Acceptance:** Isolated runtime test executes the real chart renderer,
+checks empty/one/two real samples, and audits truthful independent
+version semantics. Existing Control, PWA, fonts, artwork, Guild,
+tournament and maintenance fixes remain protected. Run complete
+regressions, production build, release integrity, browser identity and
+both operating-system CI jobs before declaring 4.7.2 ready. This
+documentation describes a development candidate until merged/deployed
+and independently verified on the public website.
