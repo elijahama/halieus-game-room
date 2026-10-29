@@ -1,8 +1,8 @@
 # HGR Control — Portrait fullscreen and background Update notifications
 
 **Development candidate:** 4.6.11 Control usability hotfix, independently reviewed
-from ongoing 4.7.0 Guild fixture work. The source version remains 4.6.10
-until a complete release is approved and verified. No production deploy here.
+from ongoing 4.7.0 Guild fixture work. The candidate's authoritative VERSION is 4.6.11; the public/main
+release remains at 4.6.10 until review, merge and actual deployment. No production deploy here.
 
 ## Fullscreen
 
