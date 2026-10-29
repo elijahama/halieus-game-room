@@ -35,6 +35,7 @@ interface Props {
 }
 
 type AdminTab = "overview" | "players" | "invites" | "codes" | "requests" | "rooms" | "feedback" | "audit" | "test-lab" | "account";
+type PersonalView = "profile" | "appearance" | "notifications" | "record" | "feedback";
 type FreshCodeKind = "invite" | "reset";
 type InviteFilter = "all" | "active" | "used" | "revoked" | "expired";
 
@@ -102,6 +103,7 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
   const isAdmin = account.role === "owner" || account.role === "admin";
   const isOwner = account.role === "owner";
   const [adminTab, setAdminTab] = useState<AdminTab>("account");
+  const [personalView, setPersonalView] = useState<PersonalView>("profile");
   const [snapshot, setSnapshot] = useState<HalieusAdminSnapshot | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [message, setMessage] = useState("");
@@ -400,11 +402,30 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
   }, [personalStats]);
 
   const profileSettings = (
-    <section className="account-self-service">
-      <AchievementBar progression={personalStats?.progression} />
-      <GameHistory key={account.id} />
-      {isAdmin && <header className="account-self-service-heading"><div><p className="modal-eyebrow">Your account</p><h3>Profile & security</h3></div><button type="button" className="button-outline account-open-owner-tools" onClick={() => setAdminTab("overview")}>Owner tools →</button></header>}
-      <div className="account-profile-grid">
+    <section className="account-self-service hgr-account-workspace">
+      <header className="hgr-account-section-intro">
+        <div><p className="modal-eyebrow">Personal settings</p><h3>{
+          personalView === "profile" ? "Profile & security" :
+          personalView === "appearance" ? "Appearance" :
+          personalView === "notifications" ? "Notifications" :
+          personalView === "record" ? "Game history" : "Feedback"
+        }</h3><small>Choose a section instead of scrolling through every setting.</small></div>
+      </header>
+      <nav className="hgr-account-personal-nav" role="tablist" aria-label="Personal account sections">
+        {([
+          ["profile", "Profile", "Identity and security"],
+          ["appearance", "Appearance", "Themes and readability"],
+          ["notifications", "Notifications", "Device alerts"],
+          ["record", "Game history", "Progress and results"],
+          ["feedback", "Feedback", "Reports and replies"],
+        ] as const).map(([id, label, hint]) =>
+          <button key={id} type="button" role="tab" aria-selected={personalView === id}
+            className={personalView === id ? "is-active" : ""} onClick={() => setPersonalView(id)}>
+            <strong>{label}</strong><small>{hint}</small>
+          </button>)}
+      </nav>
+      <div className="hgr-account-section-body" role="tabpanel" aria-label={personalView}>
+      {personalView === "profile" && <div className="account-profile-grid">
         <form className="account-settings-card" onSubmit={saveProfile}>
           <div><p className="modal-eyebrow">Player profile</p><h3>Your Halieus identity</h3></div>
           <label>Display name<input value={displayName} onChange={(event) => setDisplayName(event.target.value)} maxLength={40} /><small className="account-field-help">Shown to other players in Halieus and in games.</small></label>
@@ -421,17 +442,21 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
           <label>New password<input type="password" minLength={10} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} autoComplete="new-password" required /></label>
           <button type="submit" className="button-outline">Change password</button>
         </form>
-      </div>
-      <section className="account-appearance-card">
+      </div>}
+      {personalView === "appearance" && <section className="account-appearance-card">
         <header className="account-appearance-heading"><div><p className="modal-eyebrow">Player settings</p><h3>Appearance</h3></div><small>Theme, text size and density follow you across HGR.</small></header>
         <DisplaySettingsPanel darkMode={false} onToggleDarkMode={() => {}} showFullscreen={false} onToggleFullscreen={() => {}} />
-      </section>
-      <section className="account-appearance-card" aria-label="Notification settings">
+      </section>}
+      {personalView === "notifications" && <section className="account-appearance-card" aria-label="Notification settings">
         <header className="account-appearance-heading"><div><p className="modal-eyebrow">Player settings</p><h3>Notifications</h3></div><small>Manage background alerts for this browser or installed app.</small></header>
         <NotificationPermissionButton accountId={account.id} mode="settings" />
-      </section>
+      </section>}
 
-      {personalStats && <section className="account-game-record">
+      {personalView === "record" && <>
+        <AchievementBar progression={personalStats?.progression} />
+        <GameHistory key={account.id} />
+      </>}
+      {personalView === "record" && personalStats && <section className="account-game-record">
         <header><div><p className="modal-eyebrow">Your games</p><h3>Personal game record</h3></div><span>{personalStats.played} played · {personalStats.wins} won</span></header>
         <div className="account-stat-overview">
           <article><small>Gamer Score</small><strong>{personalStats.progression?.gamerScore ?? 0}</strong></article>
@@ -454,7 +479,7 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
         <div className="account-game-record-grid">{personalStats.byGame.map((row) => <article key={row.game}><strong>{row.gameTitle}</strong><small>{row.played} played · {row.wins} won · {row.played ? Math.round((row.wins / row.played) * 100) : 0}% overall</small></article>)}</div>
         {personalStats.recent.length > 0 && <div className="account-game-record-recent"><h4>Recent results</h4>{personalStats.recent.slice(0, 6).map((item, index) => <article key={`${item.roomCode}-${item.at}-${index}`}><span><strong>{item.gameTitle}</strong><small>{new Date(item.at).toLocaleDateString()} · Room {item.roomCode}{item.matchMode ? ` · ${item.matchMode[0].toUpperCase() + item.matchMode.slice(1)}` : ""}{item.opponentType ? ` · ${item.opponentType === "human-only" ? "Human" : item.opponentType === "ai-involved" ? "AI involved" : "Solo"}` : ""}</small></span><b className={item.won ? "is-win" : ""}>{item.result}</b></article>)}</div>}
       </section>}
-      <section className="account-feedback-card">
+      {personalView === "feedback" && <section className="account-feedback-card">
         <header><div><p className="modal-eyebrow">Feedback</p><h3>Send feedback</h3><small>Send a game issue, UI note or suggestion directly to the HGR owner. Replies stay attached to your account here.</small></div></header>
         <form className="account-feedback-form" onSubmit={submitProfileFeedback}>
           <label>About<select value={feedbackSubject} onChange={(event) => setFeedbackSubject(event.target.value)}><option value="general">Halieus Game Room / general</option>{GAME_CATALOG.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}</select></label>
@@ -471,7 +496,8 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
             {entry.ownerReply && <div className="account-feedback-reply"><small>Reply from {entry.ownerReply.responderDisplayName}</small><p>{entry.ownerReply.message}</p><time>{when(entry.ownerReply.at)}</time></div>}
           </article>)}
         </div>
-      </section>
+      </section>}
+      </div>
     </section>
   );
 
@@ -490,6 +516,14 @@ export function AccountPanel({ feedbackFocusId, account, onClose, onAccountChang
         </header>
 
         <div className="account-panel-scroll">
+          {isAdmin && <nav className="hgr-account-workspace-switch" aria-label="Account workspace">
+            <button type="button" className={adminTab === "account" ? "is-active" : ""}
+              aria-current={adminTab === "account" ? "page" : undefined}
+              onClick={() => setAdminTab("account")}>My settings</button>
+            <button type="button" className={adminTab !== "account" ? "is-active" : ""}
+              aria-current={adminTab !== "account" ? "page" : undefined}
+              onClick={() => setAdminTab("overview")}>Owner settings</button>
+          </nav>}
           {isAdmin && adminTab !== "account" && (
             <section className="account-admin-zone account-admin-zone-primary">
               <header className="account-admin-heading">
