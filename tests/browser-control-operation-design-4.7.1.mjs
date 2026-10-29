@@ -19,8 +19,10 @@ assert.match(html, /id="pcWindowActionsHeading"/);
 assert.match(html, /id="softwareUpdateHeading"/);
 assert.match(html, /id="publicAccessCard"/);
 assert.match(html, /id="controlUpdateAlerts"/);
-assert.match(html, /control\/control\.css\?v=4\.7\.1-operations-typography/);
-assert.match(original, /control\/control\.js\?v=4\.7\.1-operations-typography/);
+const cssVersion = original.match(/control\/control\.css\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
+const scriptVersion = original.match(/control\/control\.js\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
+assert.ok(cssVersion, "Control stylesheet needs a versioned release asset URL.");
+assert.equal(scriptVersion, cssVersion, "Control CSS and script must use the same cache-busting version.");
 assert.match(css, /font-family: var\(--hgr-interface-font\)/);
 
 const server = createServer(async (req, res) => {
