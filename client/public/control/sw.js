@@ -33,7 +33,7 @@ self.addEventListener('push', (event) => {
     tag,
     renotify: true,
     icon: '/control/control-icon.png?v=part26-control-approved2',
-    badge: '/control/control-icon.png?v=part26-control-approved2',
+    badge: '/notification-badge-96.png?identity=mono-h-only',
     data: { url: '/control/' },
   }));
 });
