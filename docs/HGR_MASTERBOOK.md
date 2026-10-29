@@ -1791,3 +1791,58 @@ checks, Control lifecycle/maintenance/release checks, 320–1440px real
 browser layout tests, artwork integrity, both CI operating systems, and
 an explicit zero-room Oracle deployment are verified. Document any
 agent-activation step required to make the new local version visible.
+
+## Live Game Continuity — Batch A1: Mega Board authenticated turn awareness (29 October 2026)
+
+**Source candidate only; no deployment or completed test claim.** The existing
+authenticated, hub-visible active-match return card is retained, with a
+single new `yourTurn` Boolean in `/accounts/active-matches`. Only the
+verified owner of the actual persisted Mega Board player seat can see
+**Your turn — Continue game to make your move.** Turn status is true only
+in the server-authoritative live `playing` phase when the current player
+matches the persisted account-owned seat, the match is not paused, and
+the turn is in ordinary `roll` or `optional-actions` phase.
+Ordering, auctions, pending decisions, other players' turns, paused,
+expired, bankrupt, finished, and unrelated accounts do not advertise a
+normal actionable turn. Other sensitive room/game state is not projected.
+
+The return button retains its existing action and label, including
+revalidation, token-backed recovery, and `force: false` behavior.
+No new push notification topic, permission request, hidden-tab polling,
+gameplay timer change, account takeover, icon asset, or Control code is
+included. Runtime account/seat/phase/paused checks and 390/820px rendered
+UI assertions were added to the already existing active-match test suites.
+Tests, PR CI, safe release preparation, and actual PWA acceptance must
+be verified independently. This is the first narrowly scoped step toward
+the cross-game **Live Game Continuity** feature, not completed universal
+game support or OS turn push. Full user requirement is documented
+separately in the live-game continuity design.
+
+## Live Game Continuity — Batch A2: opted-in Mega Board turn Web Push (29 October 2026)
+
+**New dependent source candidate; unmerged, not deployed or physically PWA-tested.**
+Extends the already validated A1 authenticated turn-aware return without
+changing game rules, timer ownership, token recovery or the non-forcing
+account return path. A2 adds a separate per-device `turns` push topic and
+settings toggle (off by default, even for existing `invites`/`messages`
+subscribers). Existing owner/admin `operations` topic and private VAPID
+store remain isolated. The authoritative Mega Board state emitter calls an
+account/seat-verified, one-notification-per-turn helper. A persisted private
+room key prevents duplicated notices after repeated broadcasts and
+restarts; loading an older live room seeds its current-turn key rather
+than sending a historical push. Paused, expired, finished, guest,
+unclaimed, AI, automated, Beta and blocking-pending states do not generate
+ordinary-turn alerts. Push copy contains no recovery tokens, account IDs,
+hidden cards or pending private decisions, and uses a short delivery TTL.
+
+Tap destination `/?resumeMatch=<matchId>` requires authenticated match
+discovery and the existing saved recovery session, and displays a clear
+unavailable state for stale/ended matches. There is no automatic takeover,
+account-only cross-device recovery, background polling or promise of
+delivery if phone/browser permissions prevent Web Push. Preferences and
+the existing Send test notification are retained. Full Windows/Ubuntu
+PR tests, browser settings UI, real Android/tablet notification receipt,
+safe version preparation and live Oracle fingerprint remain independent
+release gates. See
+[HGR_LIVE_GAME_CONTINUITY.md](HGR_LIVE_GAME_CONTINUITY.md) for the
+scope and remaining all-game rollout.

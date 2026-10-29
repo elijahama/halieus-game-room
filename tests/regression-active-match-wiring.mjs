@@ -23,6 +23,11 @@ assert.doesNotMatch(manual, /window\.confirm|recoverGame\(/, "Opening confirmati
 assert.match(app, /useMegaTakeoverConfirmation\(authStatus\?\.account\?\.id, session => recoverGame\(session, true\)\)/);
 assert.match(app, /<ConfirmDialog open=\{Boolean\(megaTakeover.target\)\}[\s\S]*?onCancel=\{megaTakeover.cancel\} onConfirm=\{megaTakeover.confirm\}/);
 const notice = read("client/src/platform/components/ActiveMatchNotice.tsx");
+const broadcaster = read("server/src/games/mega-board/utils/game-state.ts");
+assert.match(broadcaster, /notifyNewMegaTurn\(room\)/, "Only authoritative state broadcasts generate turn alerts");
+const turnPush = read("server/src/platform/megaTurnAlerts.ts");
+assert.match(turnPush, /activeMegaMatch\(room, seat, seat\.replayAccountId\)/, "No username-only push recipients");
+assert.match(turnPush, /lastTurnPushKey/, "Persistent turn-level dedup marker");
 assert.match(notice, /result\.matches\.find\(item => item\.matchId === match\.matchId\)/, "Revalidate discovery before return");
 assert.match(notice, /if \(!mounted\.current\) return/, "Unmounted account cannot initiate return");
 console.log("PASS active-match App/HomeScreen source wiring guards (not full-App E2E)");

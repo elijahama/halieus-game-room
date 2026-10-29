@@ -48,7 +48,21 @@ try {
   const listed = await api("/accounts/active-matches", owner.cookie);
   assert.equal(listed.cache, "no-store"); assert.equal(listed.body.matches.length, 1);
   const match = listed.body.matches[0];
-  assert.deepEqual(Object.keys(match).sort(), ["code", "gameId", "matchId", "notice", "paused"]);
+  assert.deepEqual(Object.keys(match).sort(), ["code", "gameId", "matchId", "notice", "paused", "yourTurn"]);
+  assert.equal(match.yourTurn, false, "Ordering is not a player turn");
+  state.phase = "playing"; state.turnPhase = "roll";
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).body.matches[0].yourTurn, true, "The verified active seat can roll");
+  state.currentPlayerIndex = 1;
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).body.matches[0].yourTurn, false, "Other player turns are not the owner\'s turn");
+  state.currentPlayerIndex = 0; state.turnPhase = "auction";
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).body.matches[0].yourTurn, false, "Auction is not an ordinary turn");
+  state.turnPhase = "optional-actions";
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).body.matches[0].yourTurn, true);
+  state.pauseState = { pausedAt: Date.now(), turn: 1, turnPhase: state.turnPhase, remainingRollMs: null, remainingOptionalMs: null };
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).body.matches[0].yourTurn, false, "Paused turns must not alert");
+  state.pauseState = null; state.phase = "ordering"; state.turnPhase = "ordering";
+  assert.equal((await api("/accounts/active-matches", owner.cookie)).body.matches[0].yourTurn, false);
+  state.phase = "playing"; state.turnPhase = "roll";
   for (const secret of [host.id, created.reconnectToken, owner.body.account.id, "private-sentinel", "replayAccountId", "propertyOwners"]) assert(!JSON.stringify(listed.body).includes(secret), secret);
   assert.equal((await api("/accounts/active-matches")).status, 401);
   assert.deepEqual((await api("/accounts/active-matches", other.cookie)).body.matches, [], "Name spoofing cannot discover seats");
@@ -88,7 +102,7 @@ try {
   assert.equal((await api("/accounts/active-matches", owner.cookie)).status, 401);
   assert.equal((await send(second, "game:reconnect", payload)).ok, false, "Revoked socket session");
   rooms.delete(room.code);
-  console.log("PASS active match account cookies, name spoofing, private projection, stale/finished/forfeited/expired guards, token checks, no takeover, pause and logout");
+  console.log("PASS active match turn-owner/phase/paused guards, account cookies, name spoofing, private projection, stale/finished/forfeited/expired guards, token checks, no takeover, pause and logout");
 } finally {
   for (const s of sockets) s.disconnect(); rooms.clear(); await new Promise(resolve => io.close(resolve));
   await new Promise(resolve => setTimeout(resolve, 1200)); await rm(root, { recursive: true, force: true });

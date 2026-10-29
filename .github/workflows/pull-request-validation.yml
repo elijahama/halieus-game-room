@@ -46,6 +46,7 @@ jobs:
       - run: npm run test:browser:history
       - run: npm run test:active-match
       - run: npm run test:browser:active-match
+      - run: node tests/browser-push-enrollment-4.5.5v.mjs
       - run: npm run test:browser:discovery-portrait
       - run: npm run test:browser:gallery-all
       - run: npm audit --audit-level=high

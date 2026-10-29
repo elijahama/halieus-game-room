@@ -70,7 +70,7 @@
     "test:browser:discovery-portrait": "node tests/browser-discovery-portrait.mjs",
     "test:browser:mega-compact": "node tests/browser-mega-compact-layout.mjs",
     "test:active-match:wiring": "node tests/regression-active-match-wiring.mjs",
-    "test:active-match": "npm run test:active-match:wiring && node --import tsx tests/runtime-active-match.mjs",
+    "test:active-match": "npm run test:active-match:wiring && node --import tsx tests/runtime-active-match.mjs && node --import tsx tests/runtime-mega-turn-push.mjs",
     "test:browser:active-match": "node tests/browser-active-match-notice.mjs"
   },
   "engines": {

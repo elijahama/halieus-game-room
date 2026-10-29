@@ -1,5 +1,6 @@
 import { archiveCompletedMegaGame } from "./mega-history.js";
 import { publicProgressionState } from "../../../platform/progression.js";
+import { notifyNewMegaTurn } from "../../../platform/megaTurnAlerts.js";
 import type { Server } from "socket.io";
 import type { GameState } from "../../../../../shared/games/mega-board/game-state.js";
 import { BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS, OPTIONAL_ACTION_DURATION_MS, TURN_ROLL_AUTOPILOT_DURATION_MS } from "../../../../../shared/games/mega-board/game-rules.js";
@@ -293,6 +294,7 @@ export function emitGameState(
   if (room && !room.betaTournamentTest && gameState.phase === "finished" && gameState.winnerId) {
     void archiveCompletedMegaGame(room).catch(() => console.error("Mega Board replay archive could not be persisted; retry on next finished-state emission."));
   }
+  if (room && room.gameState === gameState) notifyNewMegaTurn(room);
   queueRoomSave();
 
   io.to(code).emit("game:state", {

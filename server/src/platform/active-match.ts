@@ -10,12 +10,18 @@ export function activeMegaMatch(room: GameRoom, player: RoomPlayer, accountId: s
       state.roomCode !== room.code || !Number.isFinite(state.gameStartedAt) || state.gameStartedAt <= 0 ||
       (room.hostDisconnectDeadline !== null && room.hostDisconnectDeadline <= now) ||
       !state.players.some(seat => seat.id === player.id && !seat.isBankrupt)) return null;
+  // Only normal actionable turn phases count; auctions, private pending decisions, ordering
+  // and paused matches must never be misrepresented as an ordinary player turn.
+  const currentPlayer = state.players[state.currentPlayerIndex];
+  const yourTurn = !state.pauseState && state.phase === "playing" &&
+    (state.turnPhase === "roll" || state.turnPhase === "optional-actions") &&
+    currentPlayer?.id === player.id;
   // Only explicitly public, completed decisions. Never serialize a pending trade/card or player record.
   const notice = [...(state.globalNotices ?? []), ...(state.lastGlobalNotice ? [state.lastGlobalNotice] : [])]
     .filter(item => ["purchase-complete", "trade-complete", "bankruptcy", "rent-payment"].includes(item.kind))
     .sort((a, b) => b.createdAt - a.createdAt)[0];
   return { gameId: "mega-board", code: room.code, matchId: `mega-${room.code}-${state.gameStartedAt}`,
-    paused: Boolean(state.pauseState), notice: notice ? { id: notice.id, title: notice.title, message: notice.message } : null };
+    paused: Boolean(state.pauseState), yourTurn, notice: notice ? { id: notice.id, title: notice.title, message: notice.message } : null };
 }
 
 export function registerActiveMatchRoutes(app: Express, authenticate: (request: Request) => { id: string } | null) {

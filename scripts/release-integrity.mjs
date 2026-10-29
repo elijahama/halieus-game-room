@@ -70,6 +70,8 @@ const roots = [
 ];
 const singles = [
   'tests/runtime-active-match.mjs', 'tests/browser-active-match-notice.mjs',
+  'tests/runtime-mega-turn-push.mjs', 'tests/runtime-pwa-push-subscriptions-4.5.5t.mjs',
+  'tests/browser-push-enrollment-4.5.5v.mjs', 'docs/HGR_LIVE_GAME_CONTINUITY.md',
   'tests/regression-active-match-wiring.mjs', 'tests/fixtures/active-match-notice.tsx',
   'docs/HGR_ACTIVE_GAME_RETURN.md', 'docs/HGR_PWA_NOTIFICATIONS.md',
   'tests/browser-mega-compact-layout.mjs', 'tests/fixtures/mega-mobile-auction-real.tsx',

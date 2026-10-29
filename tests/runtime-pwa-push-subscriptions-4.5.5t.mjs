@@ -94,6 +94,12 @@ try {
   assert.equal((await api("/accounts/push/unsubscribe",{cookie:b.cookie,method:"POST",body:{endpoint}})).status,200);
   stored=JSON.parse(await readFile(join(data,"notifications","push-subscriptions.json"),"utf8"));
   assert.equal(stored.subscriptions.length,0,"Revocation persists");
+  const turnOptIn = await api("/accounts/push/subscribe",{cookie:b.cookie,method:"POST",
+    body:{...valid,topics:["invites","messages","turns"]}});
+  assert.equal(turnOptIn.status,200,"Standard accounts may explicitly opt into game turns");
+  const selectedTopics=(await api("/accounts/push/status",{cookie:b.cookie,method:"POST",body:{endpoint}})).json.topics;
+  assert.deepEqual(selectedTopics,["invites","messages","turns"]);
+  assert.equal((await api("/accounts/push/unsubscribe",{cookie:b.cookie,method:"POST",body:{endpoint}})).status,200);
   const controlEndpoint = "https://web.push.apple.com/control-test-subscription-1234567890abcdef";
   const controlSubscription = {
     subscription: { ...valid.subscription, endpoint: controlEndpoint }, topics: ["operations"],
