@@ -20,6 +20,7 @@
     "test:social:activity": "node --import tsx tests/runtime-social-activity-notifications-4.6.9.mjs",
     "test:progression:refresh": "node --import tsx tests/runtime-progression-refresh.mjs",
     "test:browser:control:window-operations": "node tests/browser-control-window-operations.mjs",
+    "test:browser:control:design": "node tests/browser-control-operation-design-4.7.1.mjs",
     "typecheck": "npm --workspace client run typecheck && npm --workspace server run typecheck",
     "build": "npm --workspace client run build && npm --workspace server run build",
     "start": "npm --workspace server run start",
