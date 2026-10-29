@@ -19,6 +19,7 @@ assert.equal(ACTIVE_HOST_RECONNECT_GRACE_MS,86_400_000);
 assert.equal(PAUSED_HOST_RECONNECT_GRACE_MS,86_400_000);
 assert.equal(hostReconnectGraceMs(room),86_400_000,"Active match host may return later after phone backgrounding");
 assert.equal(hostReconnectGraceMs({...room,started:false,gameState:null}),90_000,"Idle lobby retains short grace");
+assert.equal(hostReconnectGraceMs({...room,started:true,gameState:null}),90_000,"Missing game state cannot claim a live match grace");
 assert.equal(hostReconnectGraceMs({...room,gameState:{...state,phase:"finished"}}),90_000,"Finished room does not acquire live match grace");
 assert.equal(isBlockedWhilePaused("game:roll"),true);
 assert.equal(isBlockedWhilePaused("game:buy-property"),true);
