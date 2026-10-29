@@ -1313,6 +1313,15 @@ export default function App() {
     const accountId = authStatus?.account?.id;
     if (!session || session.code !== match.code) return "Return is available only in the browser with this game's saved recovery session. Account-only cross-device return is not supported.";
     if (!accountId || activeReturnAccount.current !== accountId || !socket.connected) return "Reconnect to HGR and try again.";
+    // Returning from the hub while the SAME socket still owns this seat must
+    // only unpark the board. A redundant game:reconnect is rejected as an
+    // already-active session and previously stranded mobile players here.
+    // ActiveMatchNotice has just revalidated match eligibility on the server.
+    if (megaBoardParked && !isSpectator && lobby?.code === match.code &&
+        lobby.playerId === socket.id && gameState?.roomCode === match.code) {
+      handleResumeSavedSession();
+      return null;
+    }
     return new Promise(resolve => {
       socket.timeout(7000).emit("game:reconnect", { ...session, force: false, activeMatchId: match.matchId, activeAccountId: accountId },
         (error: Error | null, response: GameResponse) => {
