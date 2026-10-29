@@ -196,3 +196,22 @@ report a real local release VERSION; missing/old bridge fields remain
 explicitly Unverified. No made-up match with Oracle. Preserve game rules,
 identity security, PWA art, existing maintenance, updater and release
 safeguards. 4.7.3 is a source candidate, not deployed by documentation.
+
+### 29 October 2026 — 4.7.4 appearance correctness and installed-PWA batch
+
+Prioritize unlockable themes that remain grey despite visible Gamer Score.
+Return the score, match counts and achievements alongside the same
+server-verified entitlement decision. Explain sign-in and distinct unlock
+types in UI without inventing grants, changing thresholds or trusting
+client totals. Correct Mono Light (white H on transparent) and Mono Dark
+(black H on transparent) to use *only* the canonical flared H; remove
+duplicate glyph selectors with old-preference compatibility. Replace the
+Android notification small-badge square with canonical white H alpha-mask
+PNG, preserving the role-coloured large icon and approved launcher assets.
+Request fullscreen for installed Game Room/Control PWAs with standalone
+fallback; do not claim browser tabs or unsupported OS versions obey it.
+Text size/density become 3-step accessible sliders, maintaining the real
+existing values. Owner Tools notification relocation, full profile/history
+and feedback UI redesign and OS launcher theme selection remain separate.
+No public deployment until release identity, CI and zero-room safeguards
+pass.
