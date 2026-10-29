@@ -37,6 +37,7 @@ try {
     await context.grantPermissions(["notifications"], {origin: base});
     const page = await context.newPage();
     let backendSubscribeCount = 0;
+    let backendTopics = ["invites", "messages"];
     const errors = [];
     page.on("pageerror", e => errors.push(e.message));
     await page.addInitScript(() => {
@@ -71,10 +72,11 @@ try {
       status: 200, contentType: "application/json",
       body: JSON.stringify({ok:true,available:true,publicKey:"B".repeat(87)}),
     }));
-    await page.route("**/accounts/push/status", route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:true,enabled:true})}));
+    await page.route("**/accounts/push/status", route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:true,enabled:true,topics:backendTopics})}));
     await page.route("**/accounts/push/unsubscribe", route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({ok:true})}));
     await page.route("**/accounts/push/subscribe", route => {
       backendSubscribeCount++;
+      backendTopics = JSON.parse(route.request().postData() || "{}").topics;
       return route.fulfill({status: 200, contentType: "application/json", body: JSON.stringify({ok:true})});
     });
     await page.goto(base + "/" + prefix + ".html", {waitUntil:"domcontentloaded"});
@@ -102,6 +104,13 @@ try {
     assert.equal(await enrollment.getByRole("button").count(), 0, "Main PWA enrollment bar disappears after verified opt-in");
     assert.equal(await settings.getByText("Enabled on this device.").isVisible(), true, "Profile Settings reflects opt-in");
     assert.equal(backendSubscribeCount, 1, "Successful browser subscription must reach HGR account route exactly once");
+    assert.deepEqual(backendTopics, ["invites","messages"], "Existing push enrollment must not silently opt in turns");
+    await settings.getByRole("button", {name:"Enable turn alerts"}).click();
+    await settings.getByRole("button", {name:"Disable turn alerts"}).waitFor();
+    assert.deepEqual(backendTopics, ["invites","messages","turns"], "Explicit user turn consent added without losing old topics");
+    await settings.getByRole("button", {name:"Disable turn alerts"}).click();
+    await settings.getByRole("button", {name:"Enable turn alerts"}).waitFor();
+    assert.deepEqual(backendTopics, ["invites","messages"], "Per-device opt-out keeps invitation/message alerts");
     await settings.getByRole("button", {name:"Disable PWA alerts"}).click();
     await enrollment.getByRole("button", {name:"Enable PWA alerts"}).waitFor();
     assert.equal(await settings.getByText("Not enabled on this device.").isVisible(), true, "Profile Settings reflects opt-out");
