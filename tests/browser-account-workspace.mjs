@@ -29,6 +29,9 @@ try {
       return route.fulfill({contentType:"text/html",body:'<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><main id="root"></main></body></html>'});
     });
     await page.goto("http://account.test/");
+    await page.addStyleTag({path:join(root,"client/src/index.css")});
+    await page.addStyleTag({path:join(root,"client/src/styles/hgr-theme.css")});
+    await page.addStyleTag({path:join(root,"client/src/styles/hgr-4.5.1.css")});
     await page.addStyleTag({path:bundle.replace(/\.js$/,".css")});
     await page.addStyleTag({path:join(root,"client/src/styles/hgr-account-workspace.css")});
     await page.addScriptTag({path:bundle});
@@ -49,6 +52,8 @@ try {
     await dialog.getByRole("heading",{name:"Administration"}).waitFor();
     const ownerNav=dialog.getByRole("navigation",{name:"Owner control panel sections"});
     assert.equal(await ownerNav.getByRole("button").count(),7,"Owner routes remain available");
+    assert.equal(await ownerNav.evaluate(el=>getComputedStyle(el).overflowX),"auto",
+      "Owner navigation must be horizontally swipeable, not seven oversized grid rows");
     await ownerNav.getByRole("button",{name:/Rooms/}).click();
     await dialog.getByRole("heading",{name:"Rooms",exact:true}).waitFor();
     await dialog.getByRole("button",{name:"My settings"}).click();
