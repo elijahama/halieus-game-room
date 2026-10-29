@@ -178,10 +178,22 @@
         <p><strong>This blocks visitor access to the website, not the laptop window.</strong> Closing the public Game Room shows your maintenance message and refuses new games while keeping Oracle and HGR Control online. Reopen here when finished.</p>
         <p id="publicAccessStatus" role="status">Checking public access…</p>
         <p id="publicAccessRooms">Checking live rooms…</p>
+        <p id="publicAccessDeadline" role="status" hidden></p>
+        <div class="hgr-public-access-duration">
+          <label for="publicAccessDuration">Automatic reopening</label>
+          <select id="publicAccessDuration">
+            <option value="manual">Manual — reopen from Control</option>
+            <option value="30">After 30 minutes</option>
+            <option value="60" selected>After 1 hour</option>
+            <option value="120">After 2 hours</option>
+            <option value="360">After 6 hours</option>
+          </select>
+          <small>Choose how long the public website should stay closed. This timer runs on Oracle even if your phone or laptop is off.</small>
+        </div>
         <label for="publicAccessReason">Reason shown to visitors</label>
         <textarea id="publicAccessReason" rows="2" maxlength="220" placeholder="The Game Room is temporarily closed for maintenance."></textarea>
         <button type="button" id="publicAccessToggle" class="secondary-action" disabled>Checking status…</button>
-        <small>The reason above is shown to visitors. Tap Close and confirm once; there is no second phrase to type. Closure is refused if any game or lobby is active. Successful closure checks for an HTTP 503 maintenance page. Reopen is always available from Control. This never runs Update or closes your laptop window.</small>
+        <small>The reason above is shown to visitors. Tap Close and confirm once; there is no second phrase to type. Closure is refused if any game or lobby is active. Successful closure checks for an HTTP 503 maintenance page. Automatic reopening is available for timed closures; manual reopening remains available from Control. This never runs Update or closes your laptop window.</small>
       </article>
       </section>
       <section id="operationPanelUpdate" role="tabpanel" aria-labelledby="operationTabUpdate" data-operation-panel="update" hidden>
