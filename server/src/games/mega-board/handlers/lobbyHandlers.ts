@@ -358,6 +358,16 @@ export function registerLobbyHandlers(
           candidate.reconnectToken ===
           reconnectToken,
       );
+      const boundGuildBoard = getGuildFixtureBoundRoom(code);
+      if (boundGuildBoard) {
+        const account = getAuthenticatedAccount(socket.request as Request);
+        if (!existingPlayer || !account || account.id !== existingPlayer.replayAccountId ||
+            room.createdAt !== boundGuildBoard.link.roomCreatedAt ||
+            !boundGuildBoard.link.seatAccountIds.includes(account.id)) {
+          acknowledge({ ok: false, reason: "This Guild fixture seat must be recovered by its original signed-in account." });
+          return;
+        }
+      }
       const oldSocketId =
           existingPlayer?.id;
 
