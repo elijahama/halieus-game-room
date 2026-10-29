@@ -25,7 +25,7 @@ assert.match(cloud,/store\.requests\.some\(\(entry\) => entry\.deviceId === devi
   "Atomic queue rejects concurrent actions");
 assert.match(cloud,/\["update", "start", "restart", "close"\]\.includes\(entry\.action\)/,
   "Bridge poll can only get allowlisted cloud operations");
-assert.match(cloud,/if \(operation\.state !== "running" && operation\.state !== "queued"\) return true/,
+assert.match(cloud,/if \(operation\.state !== "running" && operation\.state !== "queued"\) return \{ found: true, notification: null \}/,
   "Late progress cannot replay a terminal operation");
 assert.doesNotMatch(cloud,/node:child_process|execFile\(|spawn\(|body\.(?:command|shell|executable|script|args)/,
   "Cloud must not spawn commands or interpret supplied scripts");
