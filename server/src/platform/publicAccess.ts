@@ -46,7 +46,7 @@ export async function loadPublicAccessState(): Promise<HgrPublicAccessState> {
       reason: cleanMaintenanceReason(value.reason),
       updatedAt: Number.isFinite(value.updatedAt) ? Number(value.updatedAt) : 0,
       updatedBy: typeof value.updatedBy === "string" ? value.updatedBy.slice(0, 120) : "system",
-      reopenAt: Number.isSafeInteger(value.reopenAt) && Number(value.reopenAt) > 0
+      reopenAt: typeof value.reopenAt === "number" && Number.isSafeInteger(value.reopenAt) && value.reopenAt > 0
         ? Number(value.reopenAt) : null,
     };
   } catch (error) {
@@ -97,7 +97,7 @@ export function setPublicAccessState(
     reason: cleanMaintenanceReason(reason),
     updatedAt: Date.now(),
     updatedBy: by.slice(0, 120),
-    reopenAt: closed && Number.isSafeInteger(reopenAt) && Number(reopenAt) > 0 ? reopenAt : null,
+    reopenAt: closed && typeof reopenAt === "number" && Number.isSafeInteger(reopenAt) && reopenAt > 0 ? reopenAt : null,
   }));
 }
 
@@ -138,7 +138,7 @@ function escapeHtml(value: string): string {
 /** HTML never references custom/replacement H artwork. */
 export function renderPublicClosedPage(reason: string, reopenAt: number | null = null): string {
   const safeReason = escapeHtml(cleanMaintenanceReason(reason));
-  const validReopenAt = Number.isSafeInteger(reopenAt) && Number(reopenAt) > 0 ? Number(reopenAt) : null;
+  const validReopenAt = typeof reopenAt === "number" && Number.isSafeInteger(reopenAt) && reopenAt > 0 ? reopenAt : null;
   const reopenNotice = validReopenAt === null ? "" :
     `<p>Scheduled reopening: <time datetime="${new Date(validReopenAt).toISOString()}">${new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" }).format(validReopenAt)}</time></p>`;
   return `<!doctype html>
