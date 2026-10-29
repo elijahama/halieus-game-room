@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { getAuthenticatedAccount, roomCosmeticState } from "../../../platform/accounts.js";
+import { getAuthenticatedAccount, hasBetaTournamentRoomInvitation, roomCosmeticState } from "../../../platform/accounts.js";
 import { SKIN_CATALOG } from "../../../../../shared/platform/skins.js";
 import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
@@ -138,6 +138,7 @@ export function registerLobbyHandlers(
           code: room.code,
           ranked: room.ranked,
           blitz: room.blitz,
+          betaTournamentTest: room.betaTournamentTest === true,
           started: room.started,
           hostName:
             host?.name ?? "Host",
@@ -166,8 +167,14 @@ export function registerLobbyHandlers(
         acknowledge({ ok: false, reason: !playerName ? "Player name is required." : "Game code is required." });
         return;
       }
-      const blitz = Boolean(payload.blitz);
-      const ranked = Boolean(payload.ranked) && !blitz;
+      const betaTournamentTest = payload.betaTournamentTest === true;
+      const creator = betaTournamentTest ? getAuthenticatedAccount(socket.request as Request) : null;
+      if (betaTournamentTest && (!creator || (creator.role !== "owner" && creator.role !== "admin"))) {
+        acknowledge({ ok: false, reason: "Only an owner or administrator can create a Beta tournament practice room." });
+        return;
+      }
+      const blitz = betaTournamentTest ? false : Boolean(payload.blitz);
+      const ranked = betaTournamentTest ? false : Boolean(payload.ranked) && !blitz;
       const freeParkingJackpotEnabled = ranked ? false : payload.freeParkingJackpotEnabled ?? false;
 
       // Recover a lost acknowledgement only for this socket's existing host seat.
@@ -220,6 +227,7 @@ export function registerLobbyHandlers(
         code,
         ranked,
         blitz,
+        betaTournamentTest,
         hostId: socket.id,
         boardStyle,
         players: [hostPlayer],
@@ -275,6 +283,13 @@ export function registerLobbyHandlers(
       if (getGuildFixtureBoundRoom(code)) {
         acknowledge({ ok: false, reason: "This Guild fixture lineup is locked. Only registered seats can reconnect." });
         return;
+      }
+      if (room.betaTournamentTest) {
+        const invited = getAuthenticatedAccount(socket.request as Request);
+        if (!invited || !hasBetaTournamentRoomInvitation(invited.id, code)) {
+          acknowledge({ ok: false, reason: "This Beta practice match requires an invitation to your own HGR account." });
+          return;
+        }
       }
       if (room.started) {
         acknowledge({
@@ -358,6 +373,13 @@ export function registerLobbyHandlers(
           candidate.reconnectToken ===
           reconnectToken,
       );
+      if (room.betaTournamentTest) {
+        const account = getAuthenticatedAccount(socket.request as Request);
+        if (!account || !existingPlayer || account.id !== existingPlayer.replayAccountId) {
+          acknowledge({ ok: false, reason: "Only the original invited account can recover its Beta practice seat." });
+          return;
+        }
+      }
       const boundGuildBoard = getGuildFixtureBoundRoom(code);
       if (boundGuildBoard) {
         const account = getAuthenticatedAccount(socket.request as Request);
