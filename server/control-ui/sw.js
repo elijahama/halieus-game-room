@@ -1,4 +1,6 @@
 const CACHE_NAME = "hgr-control-shell-v10";
+// Historical isolated Control SW has no push listener; live cloud Control
+// continues to use /control/sw.js with the canonical monochrome badge.
 const SHELL = ["/control.css?v=4.5.3-control-b4", "/control.js?v=4.5.3-control-b4", "/manifest.webmanifest?v=4.5.3-control-approved2", "/offline.html"];
 
 self.addEventListener("install", (event) => {
