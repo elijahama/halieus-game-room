@@ -50,7 +50,7 @@ const io = { to: () => ({ emit: () => {} }), sockets: { sockets: new Map() } };
 function handlersFor(socketId) {
   const handlers = new Map();
   const socket = { id: socketId, connected: true, data: {},
-    request: {}, join: () => {}, on: (name, handler) => { handlers.set(name, handler); } };
+    request: { headers: {} }, join: () => {}, on: (name, handler) => { handlers.set(name, handler); } };
   registerLobbyHandlers(io, socket);
   registerAiLobbyHandlers(io, socket);
   return handlers;
