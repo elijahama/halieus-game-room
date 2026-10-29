@@ -718,6 +718,7 @@
       : "Reopen the PUBLIC Game Room to all visitors? This does NOT run Update or restart the owner-PC window.")) return;
     publicAccessBusy = true;
     let failureReason = "";
+    let verifiedOutcome = "";
     $("publicAccessToggle").disabled = true;
     $("publicAccessStatus").textContent = closing ? "Applying public closure…" : "Reopening the Game Room…";
     try {
@@ -747,7 +748,7 @@
           ? "Public closure was recorded, but the website did not return its maintenance page. Do not assume visitors are blocked; check the public server/proxy."
           : "Reopen was recorded, but the public website did not return a normal page. Check deployment and server status.");
       }
-      $("publicAccessStatus").textContent = closing
+      verifiedOutcome = closing
         ? "Verified: public website is serving HTTP 503 maintenance. Owner Control stays available."
         : "Verified: public website has reopened.";
     } catch (error) {
@@ -758,6 +759,7 @@
       // Do not erase the actionable 409 reason with the normal "site open"
       // status. The owner needs to know that a live match blocked closure.
       if (failureReason) $("publicAccessStatus").textContent = failureReason;
+      else if (verifiedOutcome) $("publicAccessStatus").textContent = verifiedOutcome;
     }
   }
 
