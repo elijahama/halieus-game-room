@@ -3266,3 +3266,28 @@ html[data-theme="light"] .halieus-join-primary:hover,
 html[data-theme="dark"] .halieus-join-primary:hover {
   background: var(--hgr-gold-strong) !important;
 }
+
+
+/* HGR 4.7.4: discrete slider controls replace tiny option-chip rows.
+ * The existing three-level text/density policies are unchanged. */
+.halieus-preference-row .halieus-preference-slider{
+  flex:1 1 230px;min-width:0;max-width:360px;
+  display:grid;gap:8px;padding:5px 0;
+}
+.halieus-preference-slider input[type="range"]{
+  width:100%;min-height:44px;margin:0;
+  accent-color:var(--hgr-action-bg,#F4C430);
+  cursor:pointer;touch-action:pan-y;
+}
+.halieus-preference-slider > div{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:8px;font:400 12px/1.4 "Alata",system-ui,sans-serif;
+  color:var(--hgr-muted,#c0cede);
+}
+.halieus-preference-slider strong{
+  color:var(--hgr-text,#f8fafc);
+  font-weight:700;text-transform:capitalize;
+}
+.halieus-preference-slider input[type="range"]:focus-visible{
+  outline:3px solid var(--hgr-secondary,#73a8ff);outline-offset:2px;
+}
