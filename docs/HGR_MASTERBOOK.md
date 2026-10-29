@@ -4,7 +4,7 @@
 >
 > This document is the high-level source of truth for understanding Halieus Game Room (HGR). It does not replace detailed implementation docs; it connects them.
 
-## Current Part 26 checkpoint
+## Current checkpoint
 
 ### Active-game return source batch after 4.6.4
 
@@ -12,7 +12,7 @@ The separate owner-authorized Mega Board active-game notice is a **4.6.5 review 
 
 Final parent evidence: standard full regression, active-match runtime/wiring, active browser, compact browser **52 cases**, history and pause socket regressions passed. Updated in-app ConfirmDialog component tests passed at **390/820px**, including Cancel/Escape, snapshot, one-use guest confirmation and account-switch/logout cancellation; inspected `../hgr-465-confirmation-browser.log` corroborates those PASS lines. Standard build/integrity/browser-release checks passed **before the final dialog correction**; final identity production rebuild and 4.6.5 CI are still pending. Full-App E2E and physical-PWA acceptance remain unperformed. Baseline **4.6.4 PR159 Windows+Ubuntu CI passed at `25429b7`, run `40413060729`**, as reported by parent; this is not candidate CI evidence. Receipt `rcpt_bf69d18797384553936bc243a4c631dd` remains observational capture, not independent attestation.
 
-[Part 26 acceptance record](HGR_PART26_ACCEPTANCE.md) records the Control lifecycle/PWA/launcher repairs, launcher-derived website H, compact appearance and desktop sidebar changes, Parts 20–26/Drive reference decisions, exact commits and outstanding real-device acceptance. Keep source validation separate from owner acceptance.
+[Control acceptance record](HGR_PART26_ACCEPTANCE.md) records the Control lifecycle/PWA/launcher repairs, launcher-derived website H, compact appearance and desktop sidebar changes, historical development and Drive reference decisions, exact commits and outstanding real-device acceptance. Keep source validation separate from owner acceptance.
 
 ## 1. What HGR is
 
@@ -423,36 +423,36 @@ Start with this Masterbook, then go deeper:
 Historical RC, patch and implementation logs remain evidence of how the project evolved; they are not automatically the current behavioural source of truth.
 
 
-## Part 26 Batch 1 — approved Control crop, 2 October 2026
+## Implementation batch 1 — approved Control crop, 2 October 2026
 
 Latest main had replaced the model sheet with a 256x256 PNG whose IDAT checksum was invalid. Dimension-only checks missed this. Owner selected the lower-row blue gear Control icon; the authority and PWA copy now contain that exact crop, resized without redrawing. Provenance is in HGR_CONTROL_LAUNCHER_SOURCE.md. Regression retains square checks and adds chunk checksums, decompression, corrupt-file rejection and approved-artwork hash. Existing distinct Stop badge, canonical Stop target, stale export cleanup, actual shortcut IconLocation validation and explicit icon-cache refresh remain enabled.
 
 Source/CI results and real owner-PC/phone acceptance are recorded separately. Owner acceptance must confirm visible Control/Stop icons, canonical launcher names and successful background start/stop. CI alone does not establish that acceptance.
 
 
-## Part 26 Batch 2 — running Control update lifecycle
+## Implementation batch 2 — running Control update lifecycle
 
 Batch 1 source commit 4714d1758e4f1057376e2eb68376e88774dd1db6 passed CI run 37064062685 (#773). Windows export, actual shortcut metadata and cache-refresh commands passed in the isolated checkout; owner-visible acceptance is pending.
 
 Updater now captures Control state before pulling. Stopped-before-update stays stopped; replaced processes are preserved. Existing Control receives an authenticated local graceful stop (legacy fallback retained), restarts from updated source, verifies its listener and rejects reused runtime credentials. The normal start helper re-establishes and health-checks the saved Tailscale HTTPS port and generates fresh pairing state. Tests cover stopped/running/stale snapshot states, port preservation, token rotation, real authenticated shutdown and unauthorized shutdown denial. Real owner-PC/phone update, Serve-route and re-pair acceptance remain pending.
 
 
-## Part 26 Batch 3 — phone state and installed-shell takeover
+## Implementation batch 3 — phone state and installed-shell takeover
 
 Batch 2 passed CI 37066007790 after process identity was made independent of PowerShell JSON date conversion. Batch 3 adds live pairing expiry, an expired-form Retry connection action, bounded network requests and idle connection monitoring. Reopening Control renews an expired code; it does not leave the owner trapped in an already-running message. Worker activation actively navigates older installed shells that have no update listener, deletes only Control caches, and never caches API responses. The offline fallback uses Owner PC unavailable and Retry connection. Manifest dimensions match the actual Control PNG. Browser regression simulates a genuinely stale service worker then checks fresh/expired/paired/disconnected states. Real installed Chrome/Brave and tailnet acceptance remain pending.
 
 
-## Part 26 Batch 4 — launcher-family website H and compact appearance
+## Implementation batch 4 — launcher-family website H and compact appearance
 
 Batch 3 commit 3fe28ef1e8e01e5eafb606abb931bde26b464963 passed CI 37067888616. Website H now traces the wide, angled caps and proportions of the approved no-badge launcher glyph (ChatGPT Image 25 Sept 2026, 18_26_58-6.png); the narrow slab-serif reconstruction was rejected by the owner. All SVG consumers and flat exports share this path, with a new favicon revision. Launcher raster masters are preserved. Personal tiles use an integrated face gradient and the existing palette; glyph-only choices remain tile-free. Ten independent logo choices stay grouped. Theme is a compact full-width row, avoiding the stretched empty column. Desktop navigation has a neutral raised active face, a restrained brand edge and a compact Join action with physical depth; mobile navigation structure and game buttons are unchanged.
 
 
-## Part 26 Batch 5 — canonical lifecycle helpers
+## Implementation batch 5 — canonical lifecycle helpers
 
 Canonical CMD launchers and updater now call start-control.ps1 / stop-control.ps1. Old Mobile-named scripts are compatibility shims only, with no duplicated implementation or generated user-facing shortcut. The ignored hgr-control-mobile-state.json filename is deliberately retained to let the updated stop/update helpers recognise an agent launched before this change; renaming live state would strand that process. Release integrity and Oracle package checks require both new canonical helpers and legacy compatibility entry points.
 
 
-## Part 26 Batch 6 — verified launcher refresh
+## Implementation batch 6 — verified launcher refresh
 
 Control generation rejects even matching square authority/delivery PNGs when their hash is not the approved artwork. ICO validation checks its directory, dimensions, bit depth, byte length and exact embedded PNG. Stale generated-file removal and Windows cache refresh failures now stop the stage. Shortcut validation also checks icon index, executable and working directory; paths containing commas are supported. Windows runtime regression uses a disposable project and fake Start Menu, verifies all sixteen shortcuts, and rejects corrupted ICOs, wrong icon indices/targets, cache failure and unapproved artwork. It does not launch the desktop app, Control or an update/deployment.
 
@@ -573,7 +573,7 @@ Control Update state icons are semantic without duplication. The Operations Upda
 These are 4.5.5 acceptance rules. Canonical VERSION remains 4.5.4 until real-device validation confirms the mobile carousel, Control update completion path, theme rendering and player-colour isolation.
 
 
-## 7 October 2026 — Part 28 theme-control simplification
+## 7 October 2026 — theme-control simplification
 
 Theme selection is deliberately simpler. **System, Light and Dark** remain the immediate base appearance modes. Theme Library exposes **Core** beside progression **Unlockables**. Core is the promoted former Custom preset set; those presets are no longer duplicated inside the Custom editor. The duplicate saved Workspace-palette tile remains removed.
 
@@ -584,7 +584,7 @@ Existing theme/profile data and entitlement rules are not deleted by this UI sim
 Source regression must protect the visible promoted Core preset set, Unlockables, the absence of a second preset gallery inside Custom, the absence of the duplicate Workspace card, and the RGB/HSL editor. Core preset backgrounds must keep moving ambient emblems when reduced motion is not requested. Real-device visual acceptance remains separate from CI.
 
 
-### 2026-10-07 — Part 28 Control update status simplification
+### 2026-10-07 — Control update status simplification
 
 The persistent Control operation status is now the single terminal-status surface for Update. The Operations Update tile represents only **idle** and **running**, so a terminal failure/success icon is not duplicated at the bottom of the Operations dashboard. Failure/rejection keep neutral card chrome; the semantic status mark and exact captured owner-PC reason remain visible.
 
@@ -593,7 +593,7 @@ The operation status can be minimized on **desktop and mobile** and snapped to a
 This changes presentation only. Server-owned progress, durable operation IDs, failure capture, timeout/recovery rules and the rule that failed updates must stop rather than deploy remain unchanged. A source pass cannot identify a machine-specific update failure by itself; the next real owner-PC failure must be diagnosed from the now-surfaced bounded failure reason and operation history.
 
 
-### 2026-10-07 — Part 28 Control Update blank-line failure
+### 2026-10-07 — Control Update blank-line failure
 
 A real website-triggered owner-PC Update reached Control and failed at **3%** before source synchronisation/build/deployment. The captured PowerShell reason was `Cannot bind argument to parameter 'Line' because it is an empty string.` Root cause: `control-update.ps1` streamed CMD output into `Update-HgrProgressFromLine`, whose mandatory string parameter rejected blank output lines before the function body could inspect them.
 
@@ -602,16 +602,16 @@ Durable rule: progress parsing must treat blank/whitespace updater output as a n
 Source CI validates the guard. Real-device acceptance still requires a fresh Cloud Update to advance beyond 3% and reach either the next truthful failure or 100% completion.
 
 
-### 2026-10-07 — Part 28 Control visual correction
+### 2026-10-07 — Control visual correction
 
 A failed/rejected global Control operation keeps a semantic status glyph but **no coloured icon-tile highlight**. Neutral card chrome and a transparent status-icon background prevent failure from becoming a large visual alarm while preserving truthful state.
 
 On mobile, the top-right profile control is avatar-only. When the text label is hidden, the control frame collapses to a compact square around the avatar instead of retaining desktop chip padding. This keeps the visible border proportional to the profile picture.
 
 
-### 2026-10-08 — Part 28 Core theme restoration correction
+### 2026-10-08 — Core theme restoration correction
 
-Part 28's first simplification removed too much from Theme Library. The corrected durable split is:
+The first simplification removed too much from Theme Library. The corrected durable split is:
 
 - **Core**: the former working Custom presets are promoted into proper always-available Theme Library profiles. They keep the same four-colour palette behaviour and the same moving ambient-emblem atmosphere that made those presets work.
 - **Unlockables**: progression-gated profile themes remain beside Core and keep their existing entitlement/Beta rules.
@@ -648,9 +648,9 @@ An available Control operation must not look permanently selected, failed or ala
 
 ### 2026-10-08 — 4.5.5 forced live delivery correction
 
-A repeated real-device report showed that validated Part 28 source changes were still not visible after updating. Audit found a delivery mismatch: the repository continued to declare the product/PWA shell as **4.5.4** even though the accepted UI work and tests were already operating under the 4.5.5 contract.
+A repeated real-device report showed that validated source changes were still not visible after updating. Audit found a delivery mismatch: the repository continued to declare the product/PWA shell as **4.5.4** even though the accepted UI work and tests were already operating under the 4.5.5 contract.
 
-Durable correction: Part 28 is cut as an actual **4.5.5** release. VERSION/package identity, service-worker cache namespace, manifest/icon URLs, browser favicon identity, main Control-navigation revision and Cloud Control CSS/JS revision move together. A final Part 28 stylesheet is imported last so legacy/mobile/player-accent rules cannot override the approved appearance-control behaviour.
+Durable correction: this work is cut as an actual **4.5.5** release. VERSION/package identity, service-worker cache namespace, manifest/icon URLs, browser favicon identity, main Control-navigation revision and Cloud Control CSS/JS revision move together. A final stylesheet is imported last so legacy/mobile/player-accent rules cannot override the approved appearance-control behaviour.
 
 This is a delivery/authority fix, not a geometry redesign. Canonical HGR H geometry is unchanged. Theme Library remains Core + Unlockables; Custom remains RGB + HSL + Greyscale + contrast guidance; player colour remains avatar/initials fallback only; Control update progress and terminal-state rules remain as previously approved.
 
@@ -743,7 +743,7 @@ Second, the canonical launcher-family H vector had been corrected after several 
 
 The identity cache revisions move to `install-h5` and `brand-h9` so browsers and installed-PWA discovery do not keep the prior raster family. Role-specific Start/Restart/Close/Update/PowerShell/OpenShard/Control artwork remains under its approved rendered-PNG authority and is not redrawn by the main identity generator.
 
-## Part 29 — Windows canonical-H identity checkout correction (11 October 2026)
+## Windows canonical-H identity checkout correction (11 October 2026)
 
 An owner-PC Update reached client prebuild and stopped before deployment: `copy-approved-pwa-icon.mjs` rejected the main H icon's source hash as stale. CI-generated assets on `main` were previously validated, but Windows Git checkout can convert SVG line endings because the prior `.gitattributes` did not explicitly pin `*.svg` to LF. A changed line ending is not a changed H geometry.
 
@@ -751,7 +751,7 @@ Protect against this source-identity false positive by pinning SVG checkout to L
 
 The client prebuild now names the mismatched source so a real local override can be distinguished from a line-ending artefact. Source regression covers LF-vs-CRLF equivalence and genuine artwork-change rejection. Owner-PC rerun and visible installed-icon acceptance remain pending.
 
-## Part 29 — rejected PWA logo update (12 October 2026)
+## rejected PWA logo update (12 October 2026)
 
 Owner's Brave `Review logo update` screenshot shows the installed app's archived rectangular block H on the left and the retired play-cut H proposed on the right. **Neither is the approved current launcher-family H.** The current committed 192/512px install images and `HGR Main.png` were inspected: they use the canonical flared H without a play triangle. This is a delivery/cache/installed-shell acceptance failure, not permission to redraw the H.
 
@@ -759,7 +759,7 @@ Correction: advance the main HGR install identity URL revision from `install-h5`
 
 No canonical geometry, role-specific launcher PNG/ICO, theme, game UI or version number is changed. Do not approve a PWA logo change showing the retired play symbol. Preserve player/recovery state; do not recommend uninstalling the installed app as a first-line action.
 
-## Part 29 — update no-op visibility correction (13 October 2026)
+## update no-op visibility correction (13 October 2026)
 
 An owner report says Update produced no visible change. GitHub source verification alone does not establish that the owner PC deployed or refreshed the installed app. The local PC was offline to Desktop Commander during diagnosis, and public website health/manifest could not be fetched externally, so the precise workstation cause remains unverified.
 
@@ -767,9 +767,9 @@ Source audit found a genuine false-success branch in `Update HGR GitHub.cmd`: af
 
 Acceptance: run Update on the actual Windows owner PC, retain the final console output, confirm Oracle deployment and its release fingerprint, then separately verify the actual live PWA icon and HGR window. A passing GitHub run is not a substitute for those checks.
 
-Part 29 follow-up: the initial no-op visibility batch exposed a stale Part 17 regression that prohibited *any* pause after deployment. Its intent was to protect noninteractive updates from hanging, not to conceal the result of a manual owner run. That assertion now specifically requires the manual-only `HGR_UPDATE_NONINTERACTIVE` gate and prohibits the old false-success label.
+follow-up: the initial no-op visibility batch exposed a stale regression that prohibited *any* pause after deployment. Its intent was to protect noninteractive updates from hanging, not to conceal the result of a manual owner run. That assertion now specifically requires the manual-only `HGR_UPDATE_NONINTERACTIVE` gate and prohibits the old false-success label.
 
-## Part 29 — manual updater launch and shortcut handoff (13 October 2026)
+## manual updater launch and shortcut handoff (13 October 2026)
 
 Owner clarified that Update ran its console processes, closed, and visibly opened neither HGR Control nor the website. Deployment success was therefore not observable. Source audit located two independent behaviours: the generated `HGR - Update Site` shortcut targeted the ignored private `Update Halieus Website.cmd` deploy-only launcher instead of `Update HGR GitHub.cmd`; and the full updater preserved a stopped Control agent while trusting in-place release refresh for a pre-existing Edge window. Which shortcut the owner clicked on the previous run remains unconfirmed; both paths were insufficient for the requested **manual** update UX.
 
@@ -777,7 +777,7 @@ The generated Update Site shortcut now calls the tracked canonical all-in-one Up
 
 A safe local `%LOCALAPPDATA%\\Halieus Game Room\\last-update-result.txt` receipt now persists the outcome when the console closes. No secrets are written into the receipt. Due to the existing temporary updater snapshot, **one first bootstrap run from the tracked `Update HGR GitHub.cmd` file** is needed to refresh the old shortcut; thereafter the Update Site shortcut points to the canonical workflow. Owner-device proof remains pending. This patch does not touch branding geometry or launcher-art PNGs.
 
-## Part 29 — Cloud Update 38% regression isolation and GitHub owner rename (13 October 2026)
+## Cloud Update 38% regression isolation and GitHub owner rename (13 October 2026)
 
 The owner supplied the complete `hgr-control-update.out.log`. Git pull, release generation, TypeScript, and full production build completed; many regression checks passed. The run then stopped in `tests/runtime-control-update.ps1` with `Expected 2 lifecycle calls`. The following `tests/runtime-control-lifecycle.mjs` `1 !== 0` was its wrapper reporting the same failing PowerShell test. No Oracle STEP 9 deployment took place in that Cloud Update attempt.
 
@@ -787,7 +787,7 @@ Corrective batch: launch the fixture with a clean environment free of Cloud Cont
 
 GitHub account owner was renamed from `Laijee27` to `elijahama`. Current canonical URL verified through GitHub API: `https://github.com/elijahama/halieus-game-room`. The owner's local `origin` still reported the old URL, which redirects; the updater migrates **only** this explicitly known old HGR origin to the new same-protocol URL, never force-pushes, and leaves all other remotes untouched. `package.json` repository metadata is synchronized. User-device cloud restart, Oracle deployment and public icon acceptance remain pending.
 
-## Part 29 — 62% Cloud Update CMD re-push parsing and renamed origin (13 October 2026)
+## 62% Cloud Update CMD re-push parsing and renamed origin (13 October 2026)
 
 Owner screenshot: Cloud Update reached 62% but failed with `ahead was unexpected at this time` after Git fetch still displayed `Laijee27`. No Oracle deployment success can be inferred. STEP 7B contained a raw `commit(s) ahead` echo inside a parenthesized Windows CMD IF block. Parentheses in this context can terminate CMD block parsing. Removed the raw parenthetical from this echo, preserving remote ancestry checks, ahead count and strictly non-force push. Added `git remote get-url origin` immediately after the exact-match old-owner migration to make effective configured GitHub URL visible.
 
@@ -795,7 +795,7 @@ The original account URL `https://github.com/Laijee27/halieus-game-room` redirec
 
 Acceptance awaits owner-PC updated script reaching Oracle deployment and final Control handoff; a Cloud Update from a pre-pull script snapshot may still need a first fetch. No branding or player-state changes.
 
-## Part 29 — Cloud Update 88% desktop-session false failure (13 October 2026)
+## Cloud Update 88% desktop-session false failure (13 October 2026)
 
 Owner Control Cloud screenshot: operation stopped around 88% after deploy with `[STOPPED] Update/deploy completed, but the HGR client could not be refreshed/opened cleanly`. Owner independently confirmed HGR was actually open on their laptop. The defect was the updater executing `scripts/windows/post-update-client.ps1` during **noninteractive Cloud Update** and treating failure to enumerate a visible Edge app window in the updater's session as a *deployment failure*. A Windows background agent may not have access to the interactive user's desktop/window handles. The owner using an independently installed app on the phone does not require a Windows window to open on either device.
 
@@ -803,7 +803,7 @@ Decision: only a **manual owner-PC Update** calls the desktop launcher/window-vi
 
 CI protects the decision with source regressions and a real Windows CMD smoke test extracting the actual client-handoff branch and testing both Cloud and manual modes with a disposable local stub helper. The cloud mode must not invoke the stub; manual mode must invoke `-ShowWindow`. Owner device acceptance awaits a successful 100% Cloud Update and refreshed Control bridge. No H geometry, icons, themes or game state are changed.
 
-## Part 29 — restore mandatory Update and retire private Control launcher pair (13 October 2026)
+## restore mandatory Update and retire private Control launcher pair (13 October 2026)
 
 Owner confirmed the laptop's owner launcher group showed PowerShell, OpenShard, Control, Start, Restart and Close, but **no Update**, and asked to replace the now-redundant Tailscale-oriented Control launcher with Update. Source audit found `scripts/windows/launcher-shortcuts.ps1` silently made creation/verification of the Update .lnk conditional on whether `Update HGR GitHub.cmd` existed at refresh time. This allows a superficially successful refresh with no essential updater link.
 
@@ -813,38 +813,38 @@ IMPORTANT: The phone/tablet website Control still relies on an outbound owner-PC
 
 Regression: the Windows isolated launcher fixture must create exactly 12 .lnk files (6 roles × 2 groups), verify the Update .lnk's canonical target and icon, reject a missing updater without erasing existing links, reject corrupted .lnk metadata, and verify retired Control shortcuts are absent. Owner-device shortcut refresh and the physical pinned/desktop copies remain to be confirmed after pull.
 
-## Part 29 — Core and Custom themed background symbols: visible movement and browser acceptance (13 October 2026)
+## Core and Custom themed background symbols: visible movement and browser acceptance (13 October 2026)
 
-Owner has repeatedly reported that the themed background symbols are not working as requested. The earlier Part 28 source-only checks guaranteed that promoted Core and Custom pick the same atmosphere symbols and marker, but did not exercise rendered browser opacity or movement. Auditing the CSS cascade revealed desktop/touch rules that faded these glyphs to 0.052–0.09 opacity. The final CSS authority now sets shared Core/Custom glyph opacity to 0.17, preserves primary/secondary palette tint, runs the exact same 17-second float animation and honors reduced-motion. The generic Core/Custom symbol sequence remains independent of the selected game; System/Light/Dark continue to use the selected game's motif.
+Owner has repeatedly reported that the themed background symbols are not working as requested. The earlier source-only checks guaranteed that promoted Core and Custom pick the same atmosphere symbols and marker, but did not exercise rendered browser opacity or movement. Auditing the CSS cascade revealed desktop/touch rules that faded these glyphs to 0.052–0.09 opacity. The final CSS authority now sets shared Core/Custom glyph opacity to 0.17, preserves primary/secondary palette tint, runs the exact same 17-second float animation and honors reduced-motion. The generic Core/Custom symbol sequence remains independent of the selected game; System/Light/Dark continue to use the selected game's motif.
 
-Important regression coverage: the new built-release Playwright test runs the actual app on desktop and mobile Chromium. It checks rendered glyph opacity, actual transform movement after 850 ms, identical symbols and animation between Custom, Studio Graphite, Cyan Studio and Soft Light, the game-owned atmosphere for Dark, and disabled animation when reduced-motion is requested. A stale Part 17 test was aligned to the equivalent expanded CSS animation declaration without weakening the runtime test. No branding assets, launcher artwork, server game rules or account state were changed. Device acceptance after website deployment is still pending.
+Important regression coverage: the new built-release Playwright test runs the actual app on desktop and mobile Chromium. It checks rendered glyph opacity, actual transform movement after 850 ms, identical symbols and animation between Custom, Studio Graphite, Cyan Studio and Soft Light, the game-owned atmosphere for Dark, and disabled animation when reduced-motion is requested. A stale test was aligned to the equivalent expanded CSS animation declaration without weakening the runtime test. No branding assets, launcher artwork, server game rules or account state were changed. Device acceptance after website deployment is still pending.
 
-## Part 30 — Complete Beta console/retro/arcade theme background coverage (14 October 2026)
+## Complete Beta console/retro/arcade theme background coverage (14 October 2026)
 
-Owner tested the unlockable console profiles in Beta/Test Lab and found no visible background-symbol differences. This was not solved by the earlier Part 29 Core/Custom fix. Two distinct code defects were audited: (1) `client/src/platform/theme.ts` mapped **17 console-related profiles** to the same `ATMOSPHERE_CONSOLE` glyph array, with two arcade profiles using shared arcade glyphs; (2) `hgr-4.5.5-part28-authority.css` raised glyph opacity/z-index/animation only for `data-atmosphere-engine="custom"`, while all non-Core unlockables render with `data-atmosphere-engine="profile"` and inherited old ~0.05–0.09 opacity and negative stacking.
+Owner tested the unlockable console profiles in Beta/Test Lab and found no visible background-symbol differences. This was not solved by the earlier Core/Custom fix. Two distinct code defects were audited: (1) `client/src/platform/theme.ts` mapped **17 console-related profiles** to the same `ATMOSPHERE_CONSOLE` glyph array, with two arcade profiles using shared arcade glyphs; (2) `hgr-4.5.5-part28-authority.css` raised glyph opacity/z-index/animation only for `data-atmosphere-engine="custom"`, while all non-Core unlockables render with `data-atmosphere-engine="profile"` and inherited old ~0.05–0.09 opacity and negative stacking.
 
 Correction assigns each progression profile its own nine original Unicode ambient marks, inspired by its hardware era without copying proprietary platform logos or gameplay controls. Each theme continues using its existing palette. The final CSS extends proven Core/Custom rendering to the profile engine with matching specificity, animated 17s ambient float, visual layering and reduced-motion support. Base System/Light/Dark game glyphs remain unchanged. Theme requirement metadata is NOT changed: Beta remains an override through the existing `themeIsAvailable` gate and skips the account unlock API.
 
 Verification adds a **real Chromium browser** test for every progression-gated profile on desktop and mobile: unique symbol signature, 9 glyphs, computed opacity >= 0.14, nonnegative layer stacking, running animation, and no game-symbol contamination. Representative console families also prove moving transform over time. The test opens the real Theme Library, enables Beta via the established event, clicks a normally locked console theme, and confirms that Apply preserves its correct background. Existing Core/Custom and reduced-motion tests are retained. GitHub CI and actual owner-device deployment remain separate acceptance criteria.
 
-## Part 30 — Beta Test Lab theme persistence isolation (14 October 2026)
+## Beta Test Lab theme persistence isolation (14 October 2026)
 
 During the console atmosphere audit, a second Beta bug was found: `ThemeButton.applyPreview` called `commitTheme` even for Beta-unlocked profiles, and `commitTheme` always stored selection in normal `localStorage`. That leaks normally locked console cosmetics into the owner's permanent appearance. The prior contract explicitly requires Beta cosmetic selections to be session-only, with their unlock metadata untouched.
 
 `themePreview.ts` now routes **all** Beta theme applications to `sessionStorage["halieus-beta-theme-selection"]` rather than the normal theme keys. `committedTheme()` returns a validated Beta session appearance only when Test Lab is active, falling back to normal saved appearance otherwise. App + ThemeButton initialise from the effective session appearance after page reload; exiting Test Lab or signing out removes the Beta selection and immediately redispatches the normal saved appearance. No gameplay rules, real account entitlements or permanent theme values change. A stale/incomplete Beta session JSON payload is rejected. The browser test must select and Apply a locked console theme through the real picker, assert that normal storage did not change, reload inside Beta to verify the preview persists, and reload outside Beta to verify normal Custom appearance returns.
 
-## Part 30 — Correct actual theme wallpaper paint order, not merely computed opacity (15 October 2026)
+## Correct actual theme wallpaper paint order, not merely computed opacity (15 October 2026)
 
 **Owner-device reproduction:** Connected to Lagz using Remote Desktop Commander. The owner laptop's `main` matched GitHub (`3fa6a0e`), the public `/health` endpoint reported `hgr-4.5.5-f7d67b07ef543cc3`, and the last Cloud Update result recorded 100% success. A fresh, isolated Playwright browser loaded the public website's real hashed CSS and JS on desktop and mobile. It confirmed that all 12 curated Core palettes use the Custom symbols and all 19 progression profiles have distinct animated symbols. However, full-window screenshots showed **no visible ambient symbols** through the opaque home cards. Previous automated checks read glyph CSS opacity/animation only and therefore falsely passed.
 
-**Root cause:** `client/src/styles/hgr-4.5.1.css` placed `.halieus-main` at stacking `z-index:2` above the fixed `.halieus-theme-atmosphere` layer at `z-index:0`. Most of the screen is opaque panels, so the moving glyphs were painted **behind** the interface. Increasing opacity to 0.17 in Part 29 did not change that. Browser diagnostics captured visible glyph bounding boxes behind `.halieus-main` and its child controls. These screenshots are temporary runtime audit artifacts and are not branding references.
+**Root cause:** `client/src/styles/hgr-4.5.1.css` placed `.halieus-main` at stacking `z-index:2` above the fixed `.halieus-theme-atmosphere` layer at `z-index:0`. Most of the screen is opaque panels, so the moving glyphs were painted **behind** the interface. Increasing opacity to 0.17 in did not change that. Browser diagnostics captured visible glyph bounding boxes behind `.halieus-main` and its child controls. These screenshots are temporary runtime audit artifacts and are not branding references.
 
 **Scoped resolution:** For Core/Custom and Beta progression profile engines only, promote the noninteractive motif layer above the opaque page cards (`z-index:3`), force the promoted container **transparent and transition-free** and remove its large `::after` canvas gradient. Do not promote an opaque fullscreen background, darken the workspace or block click targets. Keep decorative spans at 20% opacity with palette colours and their existing 17-second movement. Shift two central symbols away from primary text/buttons and soften those positions on narrow mobile layouts. The standard System/Light/Dark game-owned atmosphere remains on its existing layering. No H geometry, icons, board art, game state, Control agents or unlock metadata were modified.
 
-**Regression gate:** `tests/browser-theme-atmosphere.mjs` now asserts layer order, transparent background, absence of an opaque after-gradient, pointer-event pass-through and actual Chromium *screenshot pixel differences* when the glyphs are hidden, sampling pixels inside the content region on desktop and mobile. The test compares Custom, Soft Light Core and a Beta console theme, while retaining all previous engine parity, profile uniqueness, motion, reduced-motion and Beta session-preference tests. Part 17 and Part 29 source regressions enforce 20% motif opacity. Local owner-PC typecheck, full regression chain, production build and pixel-verification passed. Production redeployment and direct public-site re-test must be recorded separately; do not infer live success from source checks.
+**Regression gate:** `tests/browser-theme-atmosphere.mjs` now asserts layer order, transparent background, absence of an opaque after-gradient, pointer-event pass-through and actual Chromium *screenshot pixel differences* when the glyphs are hidden, sampling pixels inside the content region on desktop and mobile. The test compares Custom, Soft Light Core and a Beta console theme, while retaining all previous engine parity, profile uniqueness, motion, reduced-motion and Beta session-preference tests. and source regressions enforce 20% motif opacity. Local owner-PC typecheck, full regression chain, production build and pixel-verification passed. Production redeployment and direct public-site re-test must be recorded separately; do not infer live success from source checks.
 The screenshot-pixel decoder (`pngjs` v7) is a direct HGR development dependency, while QR generation keeps its existing nested `pngjs` v5 dependency; no runtime game feature uses the new test dependency.
 
-## Part 29 — Mega Board mortgage, roster and liquidation viewport correction (18 October 2026)
+## Mega Board mortgage, roster and liquidation viewport correction (18 October 2026)
 
 The owner supplied five screenshots from five-player ERU38J showing mortgaged board properties fading to white/grey, owned holdings truncated after six pills, and a disproportionately zoomed-in debt liquidation/full management panel. Root causes were verified in client code: `hgr-game-surfaces-v45.css` overwrote the intended red mortgage tile with themed material and a desaturation filter; `PlayerRail.tsx` explicitly sliced the full owned list at six; desktop CSS used three tiny columns and hid overflow; `GameSidebar.tsx` rendered the debt controls outside its scrollable overlay body.
 
@@ -858,7 +858,7 @@ Owner supplied two further screenshots during the same UI batch. The split 3/2 M
 
 GameBoard had labelled the globally persisted `gameState.lastDiceRoll` as `Last roll` after a turn had already advanced to a different player. It now only displays dice in the board centre when the most recent server `activityLog` roll belongs to the active player and the current round; it displays a waiting/jail prompt otherwise. During an active roll the existing overlay animation still handles the sequence. This is presentation-only and does not clear the authoritative lastDiceRoll or alter server turn order, doubles, speed-die or event logs.
 
-## Part 29 — Obaseki Award (Mega Board; 18 October 2026)
+## Obaseki Award (Mega Board; 18 October 2026)
 
 Owner requested: “Obaseki Award — when someone collects over £200 with all utilities.” Decision: a **match award** under the existing Mega Board Results > Awards / Ranked match-bonus system, titled **Obaseki Award**, symbol 💡, awarded to **each player who receives a single utility-rent payment strictly greater than £200 while holding all three utilities (Gas, Electric, Water)**. Exactly £200 does not qualify and two smaller rent receipts totalling more than £200 do not qualify. The three-utility rate is 20× the white-dice total; totals of 11 or 12 naturally clear £200. The requirement does **not** include property/station rent, unpaid debt, rent collected before completing the utility set, or income while any utility is owned by another player. Awards already earned in a match are not rescinded if a utility is later traded. Server records the largest eligible single receipt in optional backward-compatible `PlayerMatchStats.peakUtilityRentWithAllUtilities` on payment, covering direct rent, deferred debt repayment and partial shared rent settlements. Older matches safely default to zero; no retroactive inference. `getMatchAwards` supports a strict threshold to grant this award to every qualifying player while preserving winner-takes-most existing awards. The award appears in result cards and reports; ranked bonus contribution is 7 points under the existing capped rating calculation. This is not an account-wide Gamer Score achievement. Unit regression verifies threshold 200/201 per receipt, exclusion of two smaller payments totalling over £200, both receipt paths, and other ownership/rent exclusions. Gameplay rent multipliers, ownership and payment rules remain unchanged.
 
@@ -866,13 +866,13 @@ Owner requested: “Obaseki Award — when someone collects over £200 with all 
 
 The first Chromium viewport test was invalid on tablets because it inspected `.player-rail-side`, which the app deliberately hides below 1181px. The responsive test now instantiates the actual `.tablet-players-drawer > .player-rail` structure for tablet/phone and the desktop split rail for desktop. It asserts seven match seats, 26 asset chips, scrollable inventories, red computed mortgage paint, and bounded debt controls at all three widths. A separately scoped drawer rule ensures an internal, height-bounded property inventory even on phones.
 
-## Part 29 — Online directory search visibility (18 October 2026)
+## Online directory search visibility (18 October 2026)
 
 Owner Players page screenshot shows a stale `Sam` search while the `All` status filter is active, explaining why only Sam E appeared. Fix now makes `All` and `Online` clear the name search, shows `N of M shown · K online`, and exposes a clear-search button. Directory refresh is isolated from six other profile/social requests, and refreshes each 10 seconds and after foreground resume, so unrelated endpoint failures cannot freeze the roster. The existing privacy/visibility rules and presence timeout remain in force. Owner-device verification after deploy is pending.
 
-## Part 30 — 19 October 2026 audited owner Update and default-browser window handoff
+## 19 October 2026 audited owner Update and default-browser window handoff
 
-**Audit / source authority:** On 19 October the owner laptop Lagz was behind GitHub main (e9a2c0a versus 6460d8f). The earlier Part 29/30 Mega Board, Players, themed background and launcher source fixes were already merged and regression-protected; do not duplicate or rewrite those patches. The clean checkout was safely rebased through the canonical Update HGR GitHub.cmd.
+**Audit / source authority:** On 19 October the owner laptop Lagz was behind GitHub main (e9a2c0a versus 6460d8f). The earlier Mega Board, Players, themed background and launcher source fixes were already merged and regression-protected; do not duplicate or rewrite those patches. The clean checkout was safely rebased through the canonical Update HGR GitHub.cmd.
 
 **Validation and Oracle update:** The laptop passed client/server typecheck, production builds, full regression suite including real launcher-icon Windows tests, and Oracle package preflight. Oracle successfully activated HGR 4.5.5 release fingerprint `hgr-4.5.5-af4e7f5199899998`; local and public HTTPS /health showed an online server and matching release fingerprint. All six approved HGR launchers (Start, Restart, Close, Update, PowerShell, OpenShard) were regenerated and verified in project and Start Menu folders. The private Control shortcut remains retired, but the Control agent/service is preserved.
 
@@ -882,7 +882,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Acceptance boundary:** The initial server deployment and laptop code sync were verified; the initial end-to-end updater was PARTIAL because of final client handoff. Repeat the complete updater after the focused correction is committed; separately confirm owner-facing visual behaviour on desktop, tablet and phone. Source/CI tests are not owner visual acceptance.
 
-## Part 30.2 - Unbounded website typography pilot (19 October 2026)
+## Unbounded website typography pilot (19 October 2026)
 
 **Owner intent:** The website's default Inter/Segoe typography feels generic. Trial the PSR-approved **Unbounded** typeface on HGR's website before resuming Mega Board tournament design. This is a reversible, typography-only visual pilot; do not change the approved HGR H/logo, icons, theme imagery, layout structure, gameplay, access permissions, or tournament state.
 
@@ -892,7 +892,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Tournament handoff:** Return to the documented Chapter 40 Mega Board tournament plan only after verifying the typography-only deployment. Neither bracket engine nor temporary/timed account/guild permission grants are implemented by this font patch.
 
-## Part 30.3 — 4.5.5a Beta typography comparison (19 October 2026)
+## 4.5.5a Beta typography comparison (19 October 2026)
 
 **Owner priority / order:** Tournament implementation is ON HOLD while real website layout, small-device legibility, inactive cosmetic themes, Control fullscreen, update progress and account-access communications are improved. Target for finished tournament mode: December 2026, conditional on independent acceptance gates. Track small UI fixes under lettered patch identifiers (4.5.5a, 4.5.5b, 4.5.5c...) rather than claiming unrelated changes as one monolithic patch; do not presume these labels are a deployed semantic version until the VERSION/release pipeline supports them.
 
@@ -906,7 +906,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Later access groundwork, separate from tournament:** Account grants with finite access durations 1 day, 5 days, 7 days, 1 month, 2 months or 3 months; after expiry keep account ID, history, guild records, stats and achievements without deleting them. Server-authoritative expiry must invalidate active permissions and sockets; a renewed grant recovers the same account record. Use a top-edge narrow, independently dismissible news ticker displaying remaining access and updates; X hides presentation only, not account expiry enforcement or release process. No timed-access backend, countdown access ribbon or tournament engine is deployed in this font batch.
 
-## Part 30.4 — 4.5.5b update news ribbon (19 October 2026)
+## 4.5.5b update news ribbon (19 October 2026)
 
 **Owner direction:** Replace the crude fixed notification/spinning icon in update/restart flow with a thin news-ticker ribbon across the very top of HGR. The banner should have an explicit X, not a dropdown; no spinning after completion; reduced-motion honoured. Keep a shared presentation vocabulary for future countdown-to-expiry notices (the latter are a separate account-grant backend project).
 
@@ -918,7 +918,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **4.5.5b CI recovery correction:** The first release-identity workflow blocked this patch because existing tests correctly require live-game recovery-key/room-code advice during maintenance. Preserve that advice in the same compact scrolling ticker as part of the update text, and expose the full text via aria-label/title even when clipped visually on 320px phones. No restored large dropdown card, no resurrected rotating spinner, and no changes to server restart/release-navigation logic. Existing regression-control-agent.mjs and new regression-update-ribbon.mjs both verify this. The failed candidate must not be deployed; only the passing corrected revision may be released.
 
-## Part 30.5 - 4.5.5c role-based typography (19 October 2026)
+## 4.5.5c role-based typography (19 October 2026)
 
 **Owner assessment (HGR, not a change to PSR's documentation design):** Unbounded remains a strong display face for bold headings/subheadings but was too broad and large when used everywhere. Righteous is liked for mid-sized text, some short emphasis and labels. Alata is especially good for small, dense reading. Varela Round is a **very strong general UI and in-game text candidate** (including Mega Board); it was initially hard to find but was subsequently verified in the live font preview and positively evaluated by the owner. Do **not** use it as the main oversized home headline. Fredoka is rejected as an HGR recommendation; keep the existing optional Test Lab comparison for traceability only. No replacement canonical H geometry or icon geometry is permitted.
 
@@ -928,7 +928,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Audit boundaries:** This typography patch does not resolve table-skin appearance, cross-game ambient theme tinting, Control fullscreen handoff, temporary accounts, account-expiry ribbon backend, or tournaments. Those are separately tracked and must not be presented as completed. Rollback by removing only the last CSS import and restoring Beta selection fallback/option without editing the approved H artwork, existing theme variables, gameplay, or 4.5.5b update ribbon. Record GitHub commit, passing test evidence, deployment fingerprint and owner-device acceptance separately after validation.
 
-## Part 30.6 — 4.5.5d: retire HGR Control Tailscale client (19 October 2026)
+## 4.5.5d: retire HGR Control Tailscale client (19 October 2026)
 
 **Owner instruction:** The private Tailscale-backed Control client is obsolete because current Control is accessible at https://halieus.remotewire.net/control/. Do not remove the authenticated local Control Agent, outbound Cloud bridge, signed website Control artwork, working updater or six canonical owner launchers. Unrelated legacy game-host Funnel (:3000) and private Oracle administration are separate concerns.
 
@@ -940,7 +940,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Boundaries:** This owner-PC migration is already active. GitHub commit/source release and owner phone/tablet UI operation checks are separate evidence. The 4.5.5c mixed-font beta patch remains an independent uncommitted candidate. Tournament and timed account grants are not touched. See docs/HGR_CONTROL_TAILSCALE_RETIREMENT.md for detailed operational record.
 
-## Part 30.7 — 4.5.5e Daily Word anti-farming and Ayo audit escalation (19 October 2026)
+## 4.5.5e Daily Word anti-farming and Ayo audit escalation (19 October 2026)
 
 **Exploit (owner-confirmed):** A player can complete the fixed five-letter Daily Word puzzle, learn the answer, start further daily rooms and immediately answer correctly to farm high scores, wins and achievement counters. Previous Daily leaderboard code already deduplicated the earliest finalized day, but **general progression and personal stats counted multiple completed Word Game archives**, so a cosmetic leaderboard deduplication was not enough. Some record matching also trusted typed player names, permitting impersonation of an account in the daily summary without authenticated session provenance.
 
@@ -956,7 +956,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **ASTERISK / HIGH PRIORITY — AYO (also verbally reported as 'Io'):** On 19 October 2026 the owner reported Ayo as **extremely buggy and broken**, with a screenshot in the project conversation. Exact mechanics/root causes are not yet verified, so do NOT mislabel this as just mobile optimization or assert an untested fix. Separate GitHub issue [#112](https://github.com/elijahama/halieus-game-room/issues/112) tracks a full server-authoritative game rules, seed/capture/turn, reconnect, mobile touch layout and deterministic playtest audit. This is **P1**, to be investigated in its own small batch following the scoring hotfix. No Ayo source code is changed by 4.5.5e.
 
-## Part 30.7 — 4.5.5f Control mobile terminal-operation panel (19 October 2026)
+## 4.5.5f Control mobile terminal-operation panel (19 October 2026)
 
 **Evidence:** Owner supplied a Chrome screenshot at narrow-phone dimensions: Operations action cards were covered by an expanded persistent Update card. A rejected Git safety gate displayed a long multi-line reason in the headline and still misleadingly showed 1% progress even though Update never started. Source gate in server/src/control-agent.ts rightly rejects tracked edits; do not disable or weaken it, and do not discard outstanding 4.5.5c font work.
 
@@ -966,7 +966,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Batching/deployment:** This is an independent Control UI correction after the locally committed 4.5.5c typography pass. Keep separate source commit and release evidence. The owner-device screenshot is evidence of the previous bug, not proof that the repaired live site is accepted. Do not label Control update live until a confirmed release fingerprint/HTTP health check is recorded.
 
-## Part 30.8 — 4.5.5g cross-platform release identity portability (19 October 2026)
+## 4.5.5g cross-platform release identity portability (19 October 2026)
 
 **Blocker after 4.5.5c/f CI:** GitHub's Linux release-identity job passed and committed a fingerprint, but Lagz's clean Windows checkout calculated a different hash from the same Git source. Thus remote Update or Oracle packaging could see a mismatched manifest despite a clean Git tree. This is not a reason to disable Control's tracked-change safety check.
 
@@ -976,7 +976,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Release acceptance:** Publish 4.5.5g independently after typography 4.5.5c and mobile Control 4.5.5f. Rebuild source and repeat targeted plus full regression checks. Wait for Linux CI fingerprint generation, verify the identical fingerprint on Windows without rewriting tracked artifacts, then deploy Oracle and verify production Control assets/health. Do not claim deploy before those steps. The archived stash of previous Windows-generated release metadata remains until the fingerprint is reconciled. Ayo remains a high-priority separate rules/turn-flow audit; tournament remains on hold.
 
-## Part 30.9 — 4.5.5h Friends, 4.5.5i Emotion Midnight, 4.5.5j achievement lettering — owner-reviewed mini-patches (19 October 2026)
+## 4.5.5h Friends, 4.5.5i Emotion Midnight, 4.5.5j achievement lettering — owner-reviewed mini-patches (19 October 2026)
 
 **Scope and owner requirements.** Replace public-facing Players with a privacy-first Friends list: only accepted friends and shared-guild peers. Add friends by exact @username, request acceptance required. The ordinary account directory must enforce social visibility on the server, not just via frontend filters. Preserve global ranked/verified scoring, but protect direct individual stats from unrelated profile enumeration. Add an authenticated Owner/Admin-only full-player diagnostic in Beta tools. Keep guild relationships separately reversible: unfriending does not remove someone's guild membership. Keep canonical HGR launcher artwork unchanged.
 
@@ -996,7 +996,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **4.5.5h follow-up label audit:** The desktop navigation and Players page were already renamed Friends, but the separate five-item phone bottom navigation still said Players, and Guilds had a return link labelled Players. Align both with Friends; keep internal view route identifier 'players' stable to avoid breaking navigation. The home section's empty friends/peers text must also match the relationship-filtered directory, not imply the whole network is offline. Local runtime feedback-directory data must be ignored in .gitignore (server/data/feedback/) rather than exposed or deleted. This only corrects remaining labels and private runtime source protection, not game visibility or relationship rules.
 
-## Part 30.10 — HGR 4.5.5l Choose Your Game: Tiles / List (20 October 2026)
+## HGR 4.5.5l Choose Your Game: Tiles / List (20 October 2026)
 
 **Owner requirement:** The Choose Your Game catalogue needs an explicit Tiles / List toggle. It must work on modern portrait phones as well as tablet/desktop, without losing any playable games, their category organisation, existing canonical game icons, statuses, or room-creation actions. This is a display preference, not a new game mode.
 
@@ -1008,7 +1008,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Release discipline:** Tested local source is not evidence of public deployment. Before declaring live, publish audited commits after existing h/i/j and k work, run release identity/CI, and confirm Oracle's public release fingerprint and owner-device portrait behaviour. No tournament changes; Ayo P1 rules audit and broader portrait/game optimizations remain separate.
 
-## Part 30.10 — 4.5.5l Game library Tiles/List toggle (20 October 2026)
+## 4.5.5l Game library Tiles/List toggle (20 October 2026)
 
 **Owner decision:** Under the Choose Your Game heading, allow players to switch the game catalogue between Tiles and List. This is a presentation preference, not a progression perk or Beta-only setting.
 
@@ -1020,7 +1020,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Batch isolation:** Following preceding 4.5.5h/i/j source commits, 4.5.5k covers Friends/mobile navigation naming and ignoring private runtime feedback data. 4.5.5l exclusively covers this game-library toggle. Release, GitHub source push, Oracle activation, fingerprints and owner phone validation must be recorded separately. Ayo P1 gameplay audit and full-site portrait reflow remain separate unfinished items. Tournament implementation remains on hold.
 
-## Part 30.11 — 4.5.5m: Lagz online, Control Agent disconnected, and 98% finalizer regression (20 October 2026)
+## 4.5.5m: Lagz online, Control Agent disconnected, and 98% finalizer regression (20 October 2026)
 
 **Owner evidence:** A phone screenshot of Control's HGR network showed HGR Cloud online and Public Game Room online, but the Owner PC row said 'Agent offline' and the old Update badge said failed at 98%. The owner correctly clarified that the physical PC was NOT offline. A direct authorized Remote Desktop Commander session verified Lagz online, latest HGR public health online, and an outbound Cloud bridge process alive. However, `server/data/runtime/hgr-control-mobile-state.json` and `.hgr-control-token` were missing and no authenticated Control Agent was listening on `127.0.0.1:43127`. The old update marker was conclusively terminal: `state=failed`, `progress=98`, `phase=Update finalization failed` (19 Oct 2026). The website was not actively updating.
 
@@ -1034,7 +1034,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Release honesty:** Local runtime recovery is active immediately, regardless of website UI deployment. The 4.5.5m code and wording are initially local source changes. HGR local main already contains 4.5.5h/i/j/k/l social/theme/type/library commits ahead of GitHub plus generated release files, so do NOT run Cloud Update against a dirty tree or silently deploy all those unrelated changes merely to change status wording. Stage source, publish after independent validation and explicitly verify CI, Oracle fingerprint and owner-device acceptance before calling 4.5.5m live. The old failed 98% history remains truthful and dismissible.
 
-## Part 30.12 — 4.5.5n Cloud Oracle credential preflight / 88% timeout (20 October 2026)
+## 4.5.5n Cloud Oracle credential preflight / 88% timeout (20 October 2026)
 
 **Owner evidence:** On portrait Chrome at approximately 03:05 London local time, Operations showed Cloud Update ready and a completed failed update at **88%**, with phase "Update status timed out" and reason "The cloud bridge stopped receiving a final result from the approved owner-PC updater." This was a distinct new attempt from the earlier 98% finalizer bug. It had begun on 20 October at 01:04:58 UTC and failed at the bridge timeout around 01:49:58 UTC. Public /health was still online on hgr-4.5.5-d1bb4a17b3bb4dea; the new source had not deployed.
 
@@ -1044,7 +1044,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Regression:** tests/runtime-cloud-oracle-4.5.5n.ps1 builds a fully isolated local fixture with a synthetic NONFUNCTIONAL SSH-key-shaped file, a fake deployment helper, and an isolated LOCALAPPDATA config. It checks saved-key forwarding, successful fixture execution, no key-path logging, refusal on nonexistent key, and rejection of non-cloud invocation. No real owner keys and no network calls. tests/regression-cloud-oracle-4.5.5n.mjs asserts CMD cloud-before-private routing, preserved manual route, tracked-helper-only execution, absence of file picker and brute-force enumeration; Windows CI additionally executes the isolated PowerShell fixture. Registered in npm test:regression. Real Oracle release activation is a separate unverified step, not claimed by the unit test.
 
-## Part 30.13 — 4.5.5o expanded phone operations status no longer overlays buttons
+## 4.5.5o expanded phone operations status no longer overlays buttons
 
 **Owner evidence:** On the same 20 October Chrome screenshot, the terminal 88% update card was expanded across the two lower Operations action tiles and immediately above fixed bottom navigation. The prior 4.5.5f terminal-chip fix kept the collapsed state compact, but tapping it switched back to an expanded fixed-position overlay, which still obscured the owner's controls.
 
@@ -1054,7 +1054,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Shipping state:** n/o initially exist only in the developer source on Lagz, ahead of the last publicly serving hgr-4.5.5-d1bb4a17b3bb4dea. The old cloud failure must NOT be relabelled successful. No new remote Update should be triggered until the source is committed, protected release metadata reconciled, CI passes and the owner chooses to deploy/verify. Continue small audited release batches; Ayo and broader portrait-game audit remain separate, tournaments paused.
 
-## Part 30.12 — 4.5.5p social-list refinement (20 October 2026) — OWNER PROVISIONAL REVIEW
+## 4.5.5p social-list refinement (20 October 2026) — OWNER PROVISIONAL REVIEW
 
 **Owner feedback, not a final information-architecture decision:** Friendships must remain separate from guild membership. The owner wanted a meaningful browseable list under Friends, with a way to access Guilds, not a Friends tab that merely redirects to Guilds. They considered broader grouped navigation and tournament placement aloud but explicitly did NOT approve any tournament integration or navigation rearrangement. Preserve independent Friends and Guilds pages, full mobile bottom-nav, guild functions and the exact-@handle friend request/acceptance flow.
 
@@ -1068,7 +1068,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Release boundary:** Candidate is LOCAL SOURCE ONLY pending separate release/CI/deployment validation and owner sign-off. Do not automatically publish solely because the owner was brainstorming. Tournament mode remains expressly on hold. Do not mistake the group toggle for changing the user's real guild permissions or friend list backend logic.
 
-## Part 30.13 — 4.5.5q: private feedback excluded from release identity and Oracle ZIP (20 October 2026)
+## 4.5.5q: private feedback excluded from release identity and Oracle ZIP (20 October 2026)
 
 **Blocker discovered during authorised 4.5.5p publication:** HGR 4.5.5p passed the entire local suite and GitHub CI, and the release bot generated Linux fingerprint hgr-4.5.5-9b25262871f94bae (508 inputs). Lagz's verified identical Git tree calculated hgr-4.5.5-4265e64a22816555 (509 inputs). A path-by-path comparison of the Linux release manifest against Lagz's locally regenerated manifest found exactly ONE extra Windows release input: server/data/feedback/feedback.json, a PRIVATE LOCAL PLAYER-FEEDBACK RUNTIME FILE. Its contents were never disclosed or copied to GitHub. It was ignored by Git but accidentally included by the release-integrity scanner because the entire server/data/feedback directory wasn't excluded. The Oracle Windows packager uses the integrity manifest as a whitelist for server/data, so accidental inclusion was also a potential player-feedback data leak. DEPLOYMENT WAS HELD.
 
@@ -1076,7 +1076,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **Guardrails:** Preserve the actual private feedback store untouched on Lagz and Oracle; do not read, print, upload, delete, or add it to Git. Keep server runtime game/sessions/guilds private; release payload should only contain intended shipped source/static assets. No user-facing Friends, games, fonts, glyphs, Tailscale-free Control or launchers are changed by this release privacy fix. Release after standalone tests and full regression/production build; publish as a separate 4.5.5q commit and wait for Linux CI-generated release identity to agree with clean Windows before Oracle activation. Mark 4.5.5p live only after confirmed public /health fingerprint and actual Friends assets match. Tournament mode remains on hold.
 
-## Part 30.13 — HGR 4.5.5r: game-request and room-invite notification dropdown (20 October 2026)
+## HGR 4.5.5r: game-request and room-invite notification dropdown (20 October 2026)
 
 **Owner request:** A game invitation sent within HGR should generate a small drop-down notification in the app/PWA, showing the sender and game with Accept/Join, Decline, Later, and Inbox. Players should not have to manually open the Inbox to learn a friend/guild contact invited them. User also requests PWA notifications when there are messages or invitations; true closed-app Web Push requires a separate server-side delivery design.
 
@@ -1090,7 +1090,7 @@ Owner Players page screenshot shows a stale `Sam` search while the `All` status 
 
 **QA:** unit test tests/runtime-game-invite-notifications-4.5.5r.mjs passed for recipient status, expiry, sorting and dedup; browser test tests/browser-game-invite-dropdown-4.5.5r.mjs passed for actual React actions (Accept/Join/Decline/Later/Inbox) at 320/360/390/430/820/1440px. tests/regression-game-invite-dropdown-4.5.5r.mjs passed and is integrated into the HGR regression suite. The full HGR suite, release fingerprint, GitHub CI, Oracle deployment and owner PWA acceptance must be recorded separately before declaring the feature live. For full architectural boundaries see docs/HGR_GAME_INVITE_NOTIFICATIONS.md.
 
-## Part 30.13 — 4.5.5s/t notification mini-batches — 20 October 2026
+## 4.5.5s/t notification mini-batches — 20 October 2026
 
 Owner requests: keep all notifications and messages within downloaded HGR PWA; let players invite friends/guild members to HGR games inside the website/PWA, producing a top dropdown with Accept/Decline. Implement mini batches, preserving fixes and publisher receipts.
 
@@ -1102,7 +1102,7 @@ Batch 4.5.5t adds genuine Web Push infrastructure (not page polling sold as back
 
 Detailed durable design and QA gates: docs/HGR_PWA_NOTIFICATIONS.md. Keep branding/launcher H unchanged; Ayo bug and full portrait optimization separate; tournaments on hold. Local work must be committed and cross-platform release-tested before declaring live.
 
-## Part 30.14 — 4.5.5u Vite 7.3.7 audit-gate security maintenance — 20 October 2026
+## 4.5.5u Vite 7.3.7 audit-gate security maintenance — 20 October 2026
 
 **CI security gate blocked 4.5.5s/t publication to Oracle, as intended:** GitHub HGR release-identity Linux CI run 39510952320 passed workspace installation, canonical identity generation, typecheck, full HGR regressions, and Windows deferred-Control update tests, but failed the enforced `npm audit --audit-level=high` step. This is NOT evidence notification feature tests failed. Diagnosed exact advisory through a local audit (one high risk in **Vite 7.3.6**, GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-587h-7wmj-h5pm, Windows editor shell handling). Npm reports 7.3.7 as nonbreaking patched version.
 
@@ -1110,9 +1110,9 @@ Detailed durable design and QA gates: docs/HGR_PWA_NOTIFICATIONS.md. Keep brandi
 
 The requirement to validate actual closed PWA push delivery on the user's phone after explicit opt-in remains a separate acceptance gate. No tournament changes.
 
-**Part 31.1 local validation — 21 October 2026:** Repaired two active regression expectations (`tests/regression-3.6.8b.mjs` package and lockfile pin, plus `tests/regression-3.6.8c.mjs` package pin) to require patched Vite 7.3.7 rather than the vulnerable 7.3.6. Historical copies under `tests/tests/` and `tests/client/` were not rewritten. On Lagz, `npm audit --audit-level=high` reported **0 vulnerabilities**, `npm run typecheck` passed, the complete `npm run test:regression` chain passed, production `npm run build` passed, and browser tests for 4.5.5p Friends/Guild contacts, 4.5.5r invitation dropdown, and 4.5.5s guild-message notices passed across their scripted device widths. Regenerate and verify release identity after this Masterbook entry. These are LOCAL checks only; no GitHub CI rerun, Oracle deployment or real closed-PWA push delivery is claimed. Preserve staged/unstaged working changes and avoid pushing or triggering Cloud Update from a dirty repository.
+**local validation — 21 October 2026:** Repaired two active regression expectations (`tests/regression-3.6.8b.mjs` package and lockfile pin, plus `tests/regression-3.6.8c.mjs` package pin) to require patched Vite 7.3.7 rather than the vulnerable 7.3.6. Historical copies under `tests/tests/` and `tests/client/` were not rewritten. On Lagz, `npm audit --audit-level=high` reported **0 vulnerabilities**, `npm run typecheck` passed, the complete `npm run test:regression` chain passed, production `npm run build` passed, and browser tests for 4.5.5p Friends/Guild contacts, 4.5.5r invitation dropdown, and 4.5.5s guild-message notices passed across their scripted device widths. Regenerate and verify release identity after this Masterbook entry. These are LOCAL checks only; no GitHub CI rerun, Oracle deployment or real closed-PWA push delivery is claimed. Preserve staged/unstaged working changes and avoid pushing or triggering Cloud Update from a dirty repository.
 
-## Part 31.4 — 4.5.5v: browser push-provider failure recovery (22 October 2026)
+## 4.5.5v: browser push-provider failure recovery (22 October 2026)
 
 **Owner acceptance evidence:** The live HGR PWA's **Enable PWA alerts** control displayed the raw browser exception `Registration failed - push service error`. The source flow reaches `registration.pushManager.subscribe(...)` *before* HGR POSTs a subscription to the account backend. Thus a push-provider registration exception must not be mislabelled as successful HGR subscription, server dispatch failure or a granted device enrollment. Neither device brand nor OS was established by the screenshot.
 
@@ -1122,7 +1122,7 @@ The requirement to validate actual closed PWA push delivery on the user's phone 
 
 **QA:** New real React/Playwright harness `tests/browser-push-enrollment-4.5.5v.mjs` simulates a push-provider rejection and then a successful explicit retry at 360px and 820px. It verifies the failure shows recovery, does not POST a missing browser subscription to HGR, leaves Enable usable, does not cause horizontal overflow, and submits once on the successful retry. The test is included in Linux release CI's built-release browser stage. Source/typecheck, full regressions, build, release fingerprint, CI, production and **real device delivery** are separate gates; do not mark a real PWA push delivery success until reproduced on an actual supported device after owner opt-in. Issue #114 tracks device acceptance; issue #113 tracks the separate unresolved invite-origin hostname.
 
-## Part 31.5 — 4.5.5w: Add guild members as friends (22 October 2026)
+## 4.5.5w: Add guild members as friends (22 October 2026)
 
 **Owner requirement:** Guild peers who are not already accepted friends must have a direct, visible **+ Add friend** control within **Guilds → Members**. Friends and guilds remain separate relationships; no forced/automatic friendship.
 
@@ -1132,7 +1132,7 @@ The requirement to validate actual closed PWA push delivery on the user's phone 
 
 **QA:** `tests/browser-guild-add-friend-4.5.5w.mjs` mounts the real React GuildsPanel with mocked authenticated social endpoints at 320px, 390px and 820px. Covers own account exclusion, accepted-friend protection, incoming/outgoing pending separation, exact member handle POST once, immediate Pending state and 44px/no-clipping action. Wired into Linux release browser checks. Full regression and build plus release CI, deployment fingerprint and real account acceptance remain separate gates. The unrelated Brave push-registration issue remains tracked under issue #114 and must not be conflated with this guild UX update.
 
-## Part 31 — 4.5.5x: Mega Board spectator vertical priority (22 October 2026)
+## 4.5.5x: Mega Board spectator vertical priority (22 October 2026)
 
 **Owner visual requirement:** In live Mega Board spectator mode, the **Spectating** state must be obvious above gameplay, the board must occupy the first main content position, and the complete roster must be directly visible **below** it instead of disappearing into desktop side rails or a mobile drawer. This also covers viewers whose player seat is bankrupt and therefore read-only. The participant experience must not change.
 
@@ -1140,9 +1140,9 @@ The requirement to validate actual closed PWA push delivery on the user's phone 
 
 **Containment:** The existing desktop Mega Board CSS gives the board a size-contained parent whose automatic row can collapse and lift the square board behind the header/roster. The spectator-only override in `client/src/index.css` uses a one-column, scrollable, intrinsic square board frame followed by a compact responsive roster. It preserves square board dimensions, scroll access to property chips, safe-area spacing and screen-reader labels. The earlier active-player desktop grid and mobile drawer rules stay intact.
 
-**QA:** New `tests/browser-mega-spectator-layout-4.5.5x.mjs` loads the actual full CSS and asserts bar-above-board-above-roster, five player cards, visible first player without overlap, square canvas and no horizontal overflow at 360x780, 390x844, 820x900 and 1536x900. Browser test also checks the actual App spectator-only branch and active-player preservation. It caught and corrected a real legacy desktop containment conflict. The new test is wired to Linux release CI. CI validation, production deployment, and actual owner spectator device acceptance must each be recorded separately. Other Part 31 asks (PWA alert dismissal, font match to Control, Control phone/tablet fullscreen and Guild contacts action) remain distinct, pending scoped follow-up work; they are not completed by this spectator layout batch.
+**QA:** New `tests/browser-mega-spectator-layout-4.5.5x.mjs` loads the actual full CSS and asserts bar-above-board-above-roster, five player cards, visible first player without overlap, square canvas and no horizontal overflow at 360x780, 390x844, 820x900 and 1536x900. Browser test also checks the actual App spectator-only branch and active-player preservation. It caught and corrected a real legacy desktop containment conflict. The new test is wired to Linux release CI. CI validation, production deployment, and actual owner spectator device acceptance must each be recorded separately. Other asks (PWA alert dismissal, font match to Control, Control phone/tablet fullscreen and Guild contacts action) remain distinct, pending scoped follow-up work; they are not completed by this spectator layout batch.
 
-## Part 31.6 — Owner PowerShell learning record and ChatGPT Remote Desktop background task (22–23 October 2026)
+## Owner PowerShell learning record and ChatGPT Remote Desktop background task (22–23 October 2026)
 
 **Teaching goal:** In parallel with HGR development, teach PowerShell using the owner's preferred **algebra → program condition → evaluated output** sequence, not rote syntax. Learning progress, exercises, false starts and exact technical rules are recorded in `docs/HGR_POWERSHELL_CODING_LESSON.md`. Explain symbols before exercises; offer a natural lesson stopping point while HGR development continues.
 
@@ -1275,11 +1275,11 @@ The canonical Oracle installer now refuses activation if loopback health cannot 
 Lagz local gates passed: complete HGR regression chain, client/server TypeScript, production client/server build, canonical launcher/PWA asset checks and npm audit (zero vulnerabilities). Combined production CSS tests passed at all five requested sizes. Real-component browser coverage also includes the actual GameBoard and Roll Dice callback after panels close. Final branch CI, merge and deployment evidence are recorded separately below; the initial local passes do not imply publication.
 
 
-## HGR Part 33 — Mega Board desktop spectator containment and turn-clock visibility (25 October 2026)
+## Mega Board desktop spectator containment and turn-clock visibility (25 October 2026)
 
-**Owner device feedback:** Real desktop spectator screenshots confirm the Part 31 board-above-players composition is welcome, but header text is not centred, the whole page scrolls, and the turn timer is missing while a player resolves debt. Preserve the canonical launcher H, board spaces, gameplay authority, current active-seat three-lane layout, existing role/privacy rules and mobile scrolling. Do not treat a spectator's viewing privileges as participation.
+**Owner device feedback:** Real desktop spectator screenshots confirm the board-above-players composition is welcome, but header text is not centred, the whole page scrolls, and the turn timer is missing while a player resolves debt. Preserve the canonical launcher H, board spaces, gameplay authority, current active-seat three-lane layout, existing role/privacy rules and mobile scrolling. Do not treat a spectator's viewing privileges as participation.
 
-**Cause / scoped correction:** The Part 31 spectator CSS explicitly sets `height:auto`, `min-height:100dvh`, `overflow-y:auto` and an unbounded board-and-roster stack, overruling the earlier desktop viewport lock. For desktop widths from 1181 CSS px, constrain **only spectator mode** to the viewport, place the square board in the remaining flexible first row, and reserve an internally scrollable roster below. Property strips continue scrolling internally, and the spectator heading, banner, and header metadata values are centred. On phone/tablet, retain natural vertical scrolling and the previously verified Players drawer, notifications, floating chat and auction behavior.
+**Cause / scoped correction:** The spectator CSS explicitly sets `height:auto`, `min-height:100dvh`, `overflow-y:auto` and an unbounded board-and-roster stack, overruling the earlier desktop viewport lock. For desktop widths from 1181 CSS px, constrain **only spectator mode** to the viewport, place the square board in the remaining flexible first row, and reserve an internally scrollable roster below. Property strips continue scrolling internally, and the spectator heading, banner, and header metadata values are centred. On phone/tablet, retain natural vertical scrolling and the previously verified Players drawer, notifications, floating chat and auction behavior.
 
 The header previously rendered only a human roll-phase deadline and replaced it with a wall clock in other phases. The server already exposes `turnRollDeadline`, `turnRollDeadlinePlayerId` and `optionalActionDeadline`; the shared read-only presentation helper formats those deadlines for both active and spectator users. Show **Turn timer** in every phase: countdown for matching roll or optional-actions deadline, **Auto** for automated rolls, **Paused** for blocking/debt/trade phases without a running deadline, and an em dash if no authoritative timer is active yet. Never synthesize a countdown or change server timer semantics. The Game menu retains the existing timer configuration.
 
@@ -1287,12 +1287,12 @@ The header previously rendered only a human roll-phase deadline and replaced it 
 
 **Local validation evidence:** Client/server typechecks **PASS**; complete existing HGR regression chain plus timer-specific runtime tests **PASS**; spectator browser acceptance at all six listed sizes **PASS**; real mobile Lobby/Players/Properties/Trade/chat/fullscreen acceptance and waiting-room tests **PASS**; mobile auction and Players/chat-overlap tests **PASS**; canonical launcher/PWA build check **PASS**; security audit: **0 vulnerabilities**. Build must still be repeated after the final release-manifest refresh and its built-server fingerprint checked before review.
 
-**Release boundary:** Part 33 is prepared as a scoped 4.5.9 candidate. Do not merge/deploy while live active room safety, release identity, CI or final review gates are unresolved; no production deployment is implied by the source changes.
+**Release boundary:** This fix is prepared as a scoped 4.5.9 candidate. Do not merge/deploy while live active room safety, release identity, CI or final review gates are unresolved; no production deployment is implied by the source changes.
 
 
-## Part 34 — Saved Games, Recent Replay and Copyable Move Notation (25 October 2026)
+## Saved Games, Recent Replay and Copyable Move Notation (25 October 2026)
 
-**Origin and scope:** Owner requested site-wide saved games and game replay, then specifically a chess.com-style *move list that can be copied/pasted alongside Game Reports*. GitHub issue #153 tracks the longer cross-game program. Part 34 introduces a deliberately bounded **Mega Board pilot** only, developed in its own 4.5.10 branch after PR #152. Preserve all active gameplay, real-time timers, owner Part 32 work, launcher-family artwork and untouched game modes.
+**Origin and scope:** Owner requested site-wide saved games and game replay, then specifically a chess.com-style *move list that can be copied/pasted alongside Game Reports*. GitHub issue #153 tracks the longer cross-game program. This change introduces a deliberately bounded **Mega Board pilot** only, developed in its own 4.5.10 branch after PR #152. Preserve all active gameplay, real-time timers, owner work, launcher-family artwork and untouched game modes.
 
 ### Server checkpoints (pilot, not full suspension)
 
@@ -1316,12 +1316,12 @@ The header previously rendered only a human roll-phase deadline and replaced it 
 
 Runtime tests must cover durable save/load, slots, rollback and deadlines, ranked/CPU/opponent denial, 240-frame cap, duplicate suppression and no credential leakage in replay. Include a real Socket.IO host-versus-stranger test confirming private metadata, blocked traversal/invalid slots, online-opponent restore denial and acknowledgement only after room persistence. Move text tests must verify numbered ordering, actors, normalized lines and inclusion in the Game Report. Real React browser fixtures must validate copy/download, move jumping, unavailable old frames and layouts at 390, 820 and 1408 CSS px. CI must also run full HGR regressions, typechecks, security audit, production build, release fingerprint and protected canonical artwork tests.
 
-**Not yet delivered:** true suspend/resume with player consent and preserved timer offsets, permanent replay archives for completed games, deterministic full-game replay, shareable signed URLs, privacy-aware post-match card/role reveals, and adapters for Poker, WHOT, Ludo and other games. These remain in issue #153. Do not claim Part 34 is live before reviewed CI, merged release identity, an actual zero-active-room Oracle deployment and public health/device checks.
+**Not yet delivered:** true suspend/resume with player consent and preserved timer offsets, permanent replay archives for completed games, deterministic full-game replay, shareable signed URLs, privacy-aware post-match card/role reveals, and adapters for Poker, WHOT, Ludo and other games. These remain in issue #153. Do not claim is live before reviewed CI, merged release identity, an actual zero-active-room Oracle deployment and public health/device checks.
 
 
-## Part 35 — Mega Board Server Pause/Resume Pilot (26 October 2026)
+## Mega Board Server Pause/Resume Pilot (26 October 2026)
 
-**Context:** Follows the production-verified HGR 4.5.10 release (fingerprint hgr-4.5.10-699611db6241a817) and the scoped Save/Recent Replay pilot. Implemented in a **separate Part 35 worktree**; never mix with owner's Part 32 working files, runtime notification data or canonical launcher branding.
+**Context:** Follows the production-verified HGR 4.5.10 release (fingerprint hgr-4.5.10-699611db6241a817) and the scoped Save/Recent Replay pilot. Implemented in a **separate worktree**; never mix with owner's working files, runtime notification data or canonical launcher branding.
 
 **Capability, intentionally narrow:**
 
@@ -1337,7 +1337,7 @@ Runtime tests must cover durable save/load, slots, rollback and deadlines, ranke
 **Roadmap:** Issue #153 remains open for consent-based co-operative pause, deterministic replay archives across all HGR games, permission-controlled sharing, CPU handling, and persistent saved-game gallery.
 
 
-## Part 36 — Owner-approved spectator-style Mega Board phone portrait (26 October 2026)
+## Owner-approved spectator-style Mega Board phone portrait (26 October 2026)
 
 **Owner design acceptance:** The existing **live spectator portrait** arrangement is the new reference standard for **actively playing Mega Board on a phone in portrait orientation**. It is not a request to turn players into spectators or remove controls. Preserve the same clear visual order: game identity/status at the top, a large square full-width board, then the complete, directly accessible player roster underneath. Avoid a separate full-screen Players drawer as the *only* route to that roster on phone portrait. Keep player money privacy: the active player sees their own cash; opponents remain masked unless the game already authorizes disclosure.
 
@@ -1345,7 +1345,7 @@ Runtime tests must cover durable save/load, slots, rollback and deadlines, ranke
 
 **Acceptance:** `tests/browser-mega-player-portrait-part36.mjs` reads the full actual HGR style stack and tests 320x568, 360x780, 390x844, 430x932 and 600x960 portrait, plus 844x390 landscape, 820x900 tablet and 1440x900 desktop. It verifies a square unclipped board, first player below the board within the initial viewport, all eight player cards scroll-reachable, no horizontal overflow, no duplicate visible side rails/drawer, roll and player card clickability, and no layout opt-in for other screen classes. CI should run it alongside the existing spectator and mobile integration tests. Preserve canonical launcher-family H and all approved branding/reference assets. Complete HGR regressions, typecheck, build, security and release fingerprint tests, GitHub CI and actual owner phone acceptance are separate release gates. Never mark a source-only change as deployed.
 
-**Branch/discipline:** Part 36 uses an isolated clean worktree on the verified 4.5.11 main baseline; the owner's ongoing Part 32 checkout and unrelated untracked notifications/openshard branding reference must remain untouched. This is a layout-only change; no game-state, role authorization or server logic changes.
+**Branch/discipline:** This change uses an isolated clean worktree on the verified 4.5.11 main baseline; the owner's ongoing checkout and unrelated untracked notifications/openshard branding reference must remain untouched. This is a layout-only change; no game-state, role authorization or server logic changes.
 
 
 ## Mega Board Tournament architecture — Owner-approved independent continuity (26 October 2026)
@@ -1845,3 +1845,11 @@ be verified independently. This is the first narrowly scoped step toward
 the cross-game **Live Game Continuity** feature, not completed universal
 game support or OS turn push. Full user requirement is documented
 separately in the live-game continuity design.
+
+## Public repository naming policy (29 October 2026)
+
+Public GitHub pull-request and issue titles/descriptions, release documentation,
+and Masterbook headings must use feature, version, date, or technical milestone
+names. Chat conversation segmentation is not a product version or a public
+release designation. Existing technical filenames and historical commit
+identifiers are preserved until a separate reference-safe rename can be audited.
