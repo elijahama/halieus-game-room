@@ -3,7 +3,8 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { Express, Request, Response } from "express";
 import type { HalieusAccountSummary } from "../../../shared/platform/accounts.js";
-import type { HgrGuildBoardLineups, HgrGuildFixture, HgrGuildFixtureBoardLink } from "../../../shared/platform/guildFixtures.js";
+import type { HgrGuildBoardLineups, HgrGuildFixture, HgrGuildFixtureBoardLink, HgrGuildFixtureBoardResult } from "../../../shared/platform/guildFixtures.js";
+import type { GameState } from "../../../shared/games/mega-board/game-state.js";
 import { rooms as megaRooms } from "../games/mega-board/state/rooms.js";
 import type { GameRoom } from "../games/mega-board/types/game.js";
 import { getGuildDataDirectory } from "./dataPaths.js";
@@ -68,16 +69,21 @@ function ensureValidDocument(raw: unknown): asserts raw is Document {
   const seen = new Set<string>();
   for (const row of (raw as Document).fixtures) {
     if (!row || typeof row.id !== "string" || !row.id || seen.has(row.id) ||
-        !["proposed", "lineups-locked", "rooms-bound", "cancelled"].includes(row.status) ||
+        !["proposed", "lineups-locked", "rooms-bound", "completed", "cancelled"].includes(row.status) ||
         typeof row.homeGuildId !== "string" || typeof row.awayGuildId !== "string" ||
         !Array.isArray(row.homeLineups) || row.homeLineups.length !== 2) {
       throw new Error("Invalid persisted fixture record; refusing to overwrite");
     }
-    if (row.status === "rooms-bound" && (!Array.isArray(row.boards) ||
+    if ((row.status === "rooms-bound" || row.status === "completed") && (!Array.isArray(row.boards) ||
         row.boards.length !== 2 || row.boards.some((board: HgrGuildFixtureBoardLink) =>
           typeof board.roomCode !== "string" || !Number.isSafeInteger(board.roomCreatedAt) ||
           typeof board.boardMatchId !== "string" || !Array.isArray(board.seatAccountIds)))) {
       throw new Error("Malformed bound fixture; refusing to rewrite it.");
+    }
+    if (row.status === "completed" && (!Array.isArray(row.boardResults) ||
+        row.boardResults.length !== 2 || row.boardResults.some((result: HgrGuildFixtureBoardResult) =>
+          typeof result.boardMatchId !== "string" || typeof result.winnerGuildId !== "string"))) {
+      throw new Error("Completed fixture has invalid board receipts.");
     }
     seen.add(row.id);
   }
@@ -226,6 +232,70 @@ export function createGuildFixtureCoordinator(
       return { next, value: fixture };
     });
   }
+  /** Real completed-game receipt; zero manual API for posting results. */
+  async function recordFinishedGame(room: GameRoom, state: GameState): Promise<HgrGuildFixture | null> {
+    return transact((current) => {
+      const fixture = [...current.values()].find((row) =>
+        row.status === "rooms-bound" && row.boards?.some((link) => link.roomCode === room.code));
+      if (!fixture?.boards || !fixture.awayLineups) return { next: current, value: null };
+      if (fixture.boardResults?.some((row) => row.roomCode === room.code)) {
+        return { next: current, value: fixture };
+      }
+      const boardIndex = fixture.boards.findIndex((link) => link.roomCode === room.code);
+      const link = fixture.boards[boardIndex]!;
+      if (room !== megaRooms.get(room.code) || room.createdAt !== link.roomCreatedAt ||
+          !room.started || room.gameState !== state || room.betaTournamentTest || room.ranked || room.blitz ||
+          state.phase !== "finished" || !state.winnerId || state.roomCode !== room.code ||
+          !Number.isSafeInteger(state.gameStartedAt) || state.gameStartedAt < room.createdAt ||
+          state.players.length !== room.players.length || state.players.length !== link.seatAccountIds.length) {
+        throw new FixtureError(409, "Completed board identity or lifecycle does not match its locked fixture.");
+      }
+      const actualIds = new Set<string>();
+      const placements = state.players.map((player) => {
+        const seat = room.players.find((entry) => entry.id === player.id);
+        const accountId = seat?.replayAccountId;
+        if (!accountId || actualIds.has(accountId) || !link.seatAccountIds.includes(accountId) ||
+            player.isAi || seat?.isAi) {
+          throw new FixtureError(409, "Completed board contains an unregistered, duplicate or AI seat.");
+        }
+        actualIds.add(accountId);
+        const guildId = fixture.homeLineups[boardIndex]!.includes(accountId)
+          ? fixture.homeGuildId : fixture.awayLineups![boardIndex]!.includes(accountId)
+            ? fixture.awayGuildId : null;
+        if (!guildId) throw new FixtureError(409, "Completed board contains an unregistered guild.");
+        const position = player.id === state.winnerId ? 1
+          : state.playerStats?.[player.id]?.finishPosition ?? state.players.length;
+        if (!Number.isSafeInteger(position) || position < 1 || position > state.players.length) {
+          throw new FixtureError(409, "Invalid finish position from actual game.");
+        }
+        return { accountId, guildId, finishPosition: position };
+      });
+      if (actualIds.size !== link.seatAccountIds.length ||
+          !link.seatAccountIds.every((id) => actualIds.has(id))) {
+        throw new FixtureError(409, "Finished game roster no longer matches locked lineup.");
+      }
+      const winningSeat = room.players.find((seat) => seat.id === state.winnerId);
+      const winnerAccountId = winningSeat?.replayAccountId;
+      const winner = placements.find((entry) => entry.accountId === winnerAccountId);
+      if (!winner || !winnerAccountId) throw new FixtureError(409, "Winner is not a registered guild seat.");
+      const result: HgrGuildFixtureBoardResult = {
+        boardMatchId: link.boardMatchId, roomCode: link.roomCode,
+        roomCreatedAt: link.roomCreatedAt, gameStartedAt: state.gameStartedAt,
+        winnerAccountId, winnerGuildId: winner.guildId,
+        completedAt: Date.now(), placements,
+      };
+      const boardResults = [...(fixture.boardResults ?? []), result];
+      const updated: HgrGuildFixture = {
+        ...fixture, boardResults, updatedAt: Date.now(),
+        status: boardResults.length === 2 ? "completed" : "rooms-bound",
+        homeBoardWins: boardResults.filter((row) => row.winnerGuildId === fixture.homeGuildId).length,
+        awayBoardWins: boardResults.filter((row) => row.winnerGuildId === fixture.awayGuildId).length,
+      };
+      const next = new Map(current);
+      next.set(updated.id, updated);
+      return { next, value: updated };
+    });
+  }
   function boundRoom(code: string): { fixtureId: string; link: HgrGuildFixtureBoardLink } | null {
     if (!loaded) return null;
     for (const fixture of fixtures.values()) {
@@ -241,12 +311,15 @@ export function createGuildFixtureCoordinator(
       guild(f.homeGuildId)?.memberIds.includes(accountId) || guild(f.awayGuildId)?.memberIds.includes(accountId))
       .sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 100).map((f) => structuredClone(f));
   }
-  return { load, propose, accept, bindRooms, boundRoom, cancel, list };
+  return { load, propose, accept, bindRooms, recordFinishedGame, boundRoom, cancel, list };
 }
 const coordinator = createGuildFixtureCoordinator();
 export const loadGuildFixtures = () => coordinator.load();
 /** Read-only lobby guards; regular non-fixture games remain unchanged. */
 export function getGuildFixtureBoundRoom(code: string) { return coordinator.boundRoom(code); }
+export function recordFinishedGuildFixtureBoard(room: GameRoom, state: GameState) {
+  return coordinator.recordFinishedGame(room, state);
+}
 export function getGuildFixtureStartBlock(room: GameRoom): string | null {
   const binding = coordinator.boundRoom(room.code);
   if (!binding) return null;
