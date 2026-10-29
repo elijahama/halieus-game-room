@@ -782,7 +782,36 @@
     }
   }
 
+  // Operations have separate scopes. Maintenance is the mobile-first default;
+  // switching tabs never triggers a command or changes existing server state.
+  function setOperationCategory(category, focusTab = false) {
+    const allowed = ["maintenance", "update", "laptop"];
+    if (!allowed.includes(category)) return;
+    queryAll("[data-operation-tab]").forEach((tab) => {
+      const active = tab.dataset.operationTab === category;
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+      if (active && focusTab) tab.focus();
+    });
+    queryAll("[data-operation-panel]").forEach((panel) => {
+      panel.hidden = panel.dataset.operationPanel !== category;
+    });
+  }
+
   function bindUi() {
+    setOperationCategory("maintenance");
+    queryAll("[data-operation-tab]").forEach((tab) => {
+      tab.addEventListener("click", () => setOperationCategory(tab.dataset.operationTab));
+      tab.addEventListener("keydown", (event) => {
+        if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+        const tabs = queryAll("[data-operation-tab]");
+        const current = tabs.indexOf(tab);
+        const target = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1
+          : (current + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+        event.preventDefault();
+        setOperationCategory(tabs[target].dataset.operationTab, true);
+      });
+    });
     queryAll("[data-section]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.section)));
     $("publicAccessToggle")?.addEventListener("click", () => void togglePublicAccess());
     queryAll("[data-jump]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.jump)));
