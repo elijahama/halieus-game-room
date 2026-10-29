@@ -1,5 +1,33 @@
 # HGR 4.7.0 Guild-v-Guild fixture — staged implementation
 
+## Third audited slice — finished-game result receipts (source only)
+
+The original Mega Board game-state broadcast now detects a bound fixture when
+an authoritative game reaches a finished phase. It verifies the exact original
+room identity and creation time, live game's start time and room code, absence
+of AI/Beta/Ranked/Blitz, all authenticated seat account IDs, and an eligible
+winner. The fixture coordinator atomically persists each board's receipt
+(boardMatchId, winner account/Guild, positions, timestamps), with once-only
+deduplication across repeated finish broadcasts. After both actual boards
+finish the fixture becomes **completed** and displays verified 2-board wins
+for each Guild. A 1–1 result remains an **unresolved tie** rather than
+inventing a tiebreaker, tournament F1 points or Elo changes. Completed records
+cannot be cancelled or reassigned; ordinary Ranked files remain untouched.
+
+The end-to-end runtime integration test starts both real boards, sends
+finished-state broadcasts, proves idempotent receipt recording and confirms
+the immutable completed 1–1 result through the authenticated Guild route.
+The first implementation failed two genuine lifecycle tests (duplicate final
+receipt and post-completion cancellation), which were corrected before the
+test passed. This progress remains on draft PR #169, not a deployed release.
+
+**Still required for owner acceptance of 4.7.0:** Guild-facing proposal,
+challenge-approval and room-binding controls, fixture dashboard, supported
+multiple-device full game and reconnect testing, explicit owner decision on
+overall team tie/forfeit handling, Windows/Ubuntu CI on the final commit and
+safe deployment. Official rating/F1 awards and brackets are 4.8–5.0 work,
+not silently awarded at this stage.
+
 ## Second audited slice — real-room binding (source only)
 
 After both Guild managers lock their lineups, a participating manager may
