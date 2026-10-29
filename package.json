@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.6.10",
+  "version": "4.6.11",
   "private": true,
   "workspaces": [
     "client",

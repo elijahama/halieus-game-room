@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
-  "version": "4.6.10",
-  "fingerprint": "hgr-4.6.10-4c13fc926fdc6d8e",
+  "version": "4.6.11",
+  "fingerprint": "hgr-4.6.11-16d9e95e7014d85b",
   "algorithm": "sha256",
-  "sourceHash": "4c13fc926fdc6d8e2a60029583a96e14b86bde532da585052ee3de0acd181def",
-  "integrityFileCount": 577,
+  "sourceHash": "16d9e95e7014d85b318fea892ce5d5e15417e220519f7a339e48f56b209ed1a0",
+  "integrityFileCount": 578,
   "integrityFiles": [
     ".github/workflows/pull-request-validation.yml",
     ".github/workflows/release-identity.yml",
@@ -88,6 +88,7 @@
     "client/public/control/manifest.webmanifest",
     "client/public/control/offline.html",
     "client/public/control/sw.js",
+    "client/public/control/update-alerts.js",
     "client/public/favicon-32.png",
     "client/public/favicon.ico",
     "client/public/game-icons/anagrams-race.svg",
