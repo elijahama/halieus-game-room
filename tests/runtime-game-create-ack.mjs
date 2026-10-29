@@ -41,7 +41,7 @@ const js = ts.transpile(handler, { target: ts.ScriptTarget.ES2022 });
 function submitHarness(socket, code) {
   const values = {};
   const setters = ['setIsCreating','setMessage','setMegaBoardParked','setLobby','setRanked','setBlitz','setIsSpectator','saveSession','setSavedSession','setRecoveryCode','setInviteCode','setInvitePreview','updateBrowserPath'];
-  const args = { socket, isCreating:false, playerName:'Host', roomCode:code, ranked:true, blitz:false, freeParkingJackpotEnabled:true };
+  const args = { socket, isCreating:false, playerName:'Host', roomCode:code, ranked:true, blitz:false, betaMode:false, authStatus:null, freeParkingJackpotEnabled:true };
   for (const name of setters) args[name] = value => { values[name] = value; };
   const submit = new Function(...Object.keys(args), js+'; return handleCreateGame;')(...Object.values(args));
   return { values, submit: () => submit({preventDefault(){}}) };
