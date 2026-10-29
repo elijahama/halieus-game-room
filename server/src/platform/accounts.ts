@@ -602,6 +602,7 @@ async function quickPlayProfile(account: StoredAccount): Promise<HalieusQuickPla
   const aliases = new Set([account.displayName, ...(account.displayNameAliases ?? [])].map((value) => value.trim().toLowerCase()).filter(Boolean));
   const buckets = new Map<string, Map<string, { preference: HalieusQuickPlayPreference; plays: number; lastAt: number }>>();
   for (const archive of await readFinalisedSessionFiles()) {
+    if (archive?.state?.room?.betaTournamentTest === true) continue;
     const game = typeof archive?.game === "string" && GAME_TITLES[archive.game] ? archive.game : null;
     if (!game) continue;
     const state = archive?.state ?? {};
@@ -647,6 +648,7 @@ async function personalStats(account: StoredAccount): Promise<HalieusPersonalSta
   const countedWordGameDays = new Set<string>();
   const archives = (await readFinalisedSessionFiles()).sort((a,b) => Number(a?.finalisedAt ?? 0) - Number(b?.finalisedAt ?? 0));
   for (const archive of archives) {
+    if (archive?.state?.room?.betaTournamentTest === true) continue;
     const game = typeof archive?.game === "string" && GAME_TITLES[archive.game] ? archive.game : null;
     if (!game) continue;
     const state = archive?.state ?? {};
