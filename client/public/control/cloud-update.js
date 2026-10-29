@@ -356,7 +356,7 @@
     // This value is signed-in agent-reported VERSION from the actual release
     // checkout, not an alias for the website or the development worktree.
     const reportedRelease = typeof device.releaseCheckoutVersion === "string"
-      && /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$/.test(device.releaseCheckoutVersion)
+      && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(device.releaseCheckoutVersion)
       ? device.releaseCheckoutVersion : null;
     const fresh = device.online === true && device.localControlOnline === true;
     if (release) release.textContent = reportedRelease
