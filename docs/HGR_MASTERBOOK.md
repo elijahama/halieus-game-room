@@ -1522,6 +1522,20 @@ A separate public website closure/reopen control has been designed and implement
 
 See [HGR_PUBLIC_MAINTENANCE.md](HGR_PUBLIC_MAINTENANCE.md). The public gate must be audited and accepted after Windows/Ubuntu CI and real mobile/desktop testing, and must not replace or contradict the existing transient deploy/restart maintenance notification mechanism.
 
+## 4.7.0 — Invited non-scoring Beta tournament practice (29 October 2026)
+
+Owner-approved Beta Test Lab now has a source candidate for authenticated
+owner/admin-created Mega Board practice games with real non-admin invitees
+and AI opponents. An ordinary account can accept an existing HGR Inbox
+invitation without gaining Beta/admin privileges; uninvited entry is
+rejected by the server. The entire room is labelled test-only, with no
+Ranked/Tournament result, Gamer Score, achievements, normal personal stats,
+Guild result projection or permanent match replay. Recoveries require the
+original signed-in account plus the seat token; test results stay private
+to participants. This is **not** an official Guild fixture, bracket or live
+tournament release. See
+[Beta Tournament Practice acceptance](HGR_BETA_TOURNAMENT_PRACTICE.md).
+
 ## 4.7.0 — Real two-board Guild fixture binding (29 October 2026)
 
 Second staged source batch: authenticated Guild manager binds an approved
