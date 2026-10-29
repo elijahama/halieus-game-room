@@ -20,7 +20,7 @@ assert.match(html, /id="softwareUpdateHeading"/);
 assert.match(html, /id="publicAccessCard"/);
 assert.match(html, /id="controlUpdateAlerts"/);
 assert.match(html, /control\/control\.css\?v=4\.7\.1-operations-typography/);
-assert.match(html, /control\/control\.js\?v=4\.7\.1-operations-typography/);
+assert.match(original, /control\/control\.js\?v=4\.7\.1-operations-typography/);
 assert.match(css, /font-family: var\(--hgr-interface-font\)/);
 
 const server = createServer(async (req, res) => {
