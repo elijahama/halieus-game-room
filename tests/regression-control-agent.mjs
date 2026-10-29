@@ -285,7 +285,8 @@ assert.match(controlUiJs, /finishIntro\("Secure link ready"\)/, "Mobile PWA intr
 assert.match(controlUiJs, /classList\.toggle\("is-close", action === "close"\)/, "Close confirmation must inherit Close action colour");
 assert.match(controlUiJs, /classList\.toggle\("is-update", action === "update"\)/, "Update confirmation must inherit Update action colour");
 assert.doesNotMatch(controlUiJs, /localStorage|sessionStorage/, "Mobile Control must not persist control credentials in browser storage");
-assert.match(controlManifest, /"display": "standalone"/, "Mobile Control manifest must support standalone installation");
+assert.match(controlManifest, /"display": "fullscreen"/, "Mobile Control manifest must prefer fullscreen installation");
+assert.match(controlManifest, /"standalone"/, "Standalone installation remains the compatibility fallback");
 assert.match(controlManifest, /control-icon\.png\?v=4\.5\.3-control-approved2/, "Installed HGR Control must use the approved reference PNG");
 assert.match(agent, /const controlIconPng = resolve\(controlUiDirectory, "control-icon\.png"\)/, "Control Agent must resolve the approved Control PNG");
 assert.match(agent, /"\/control-icon\.png"/, "Control Agent must serve the dedicated Control PNG");
