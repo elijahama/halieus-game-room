@@ -56,6 +56,7 @@ export function NotificationPermissionButton({
   const [permission, setPermission] = useState<NotificationPermission>(
     typeof Notification !== "undefined" ? Notification.permission : "denied");
   const [enabled, setEnabled] = useState(false);
+  const [topics, setTopics] = useState<string[]>([]);
   const [checking, setChecking] = useState(true);
   const [busy, setBusy] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -71,6 +72,7 @@ export function NotificationPermissionButton({
     let live = true;
     const valid = () => live && generation.current === thisGeneration && currentAccount.current === accountId;
     setEnabled(false);
+    setTopics([]);
     setChecking(true);
     setBusy(false);
     setTesting(false);
@@ -87,12 +89,13 @@ export function NotificationPermissionButton({
         const existing = await bounded(registration?.pushManager.getSubscription() ?? Promise.resolve(null),
           "Notification subscription check");
         const saved = existing
-          ? await pushApi<{ ok: true; enabled: boolean }>("/accounts/push/status", {
+          ? await pushApi<{ ok: true; enabled: boolean; topics: string[] }>("/accounts/push/status", {
             method: "POST", body: JSON.stringify({ endpoint: existing.endpoint }),
           })
           : null;
         if (valid()) {
           setEnabled(Boolean(existing && saved?.enabled));
+          setTopics(existing && saved?.enabled && Array.isArray(saved.topics) ? saved.topics : []);
           setPermission(Notification.permission);
           setError("");
         }
@@ -150,6 +153,7 @@ export function NotificationPermissionButton({
         }
         if (!valid()) return;
         setEnabled(false);
+        setTopics([]);
         setPermission(Notification.permission);
         window.dispatchEvent(new CustomEvent<PushChange>(PUSH_CHANGE_EVENT, {
           detail: { accountId: requestedAccount, enabled: false },
@@ -179,6 +183,7 @@ export function NotificationPermissionButton({
       }
       if (!valid()) return;
       setEnabled(true);
+      setTopics(["invites", "messages"]);
       window.dispatchEvent(new CustomEvent<PushChange>(PUSH_CHANGE_EVENT, {
         detail: { accountId: requestedAccount, enabled: true },
       }));
@@ -193,6 +198,37 @@ export function NotificationPermissionButton({
     } finally {
       if (valid()) setBusy(false);
     }
+  };
+
+  // Gameplay notifications are a separate explicit opt-in. Existing invitation,
+  // message and privileged Control preferences remain unchanged.
+  const toggleTurnAlerts = async () => {
+    if (!enabled || busy || checking || testing) return;
+    const requestedAccount = accountId;
+    const run = generation.current;
+    const valid = () => currentAccount.current === requestedAccount && generation.current === run;
+    setBusy(true);
+    setError("");
+    try {
+      const registration = await bounded(navigator.serviceWorker.getRegistration(), "Notification service check");
+      const subscription = await bounded(registration?.pushManager.getSubscription() ?? Promise.resolve(null),
+        "Notification subscription check");
+      if (!subscription || !valid()) throw new Error("Re-enable PWA alerts on this device first.");
+      const saved = await pushApi<{ enabled: boolean; topics: string[] }>("/accounts/push/status", {
+        method: "POST", body: JSON.stringify({ endpoint: subscription.endpoint }),
+      });
+      if (!valid()) return;
+      if (!saved.enabled || !Array.isArray(saved.topics)) throw new Error("This device is not enrolled for this account.");
+      const existing = saved.topics.filter(topic => ["invites", "messages", "operations", "turns"].includes(topic));
+      const next = existing.includes("turns") ? existing.filter(topic => topic !== "turns") : [...existing, "turns"];
+      if (!next.length) throw new Error("Turn alerts are the only topic on this device. Use Disable PWA alerts to opt out.");
+      await pushApi("/accounts/push/subscribe", {
+        method: "POST", body: JSON.stringify({ subscription: subscription.toJSON(), topics: next }),
+      });
+      if (valid()) setTopics(next);
+    } catch (caught) {
+      if (valid()) setError(caught instanceof Error ? caught.message : "Could not update turn alerts.");
+    } finally { if (valid()) setBusy(false); }
   };
 
   const testDelivery = async () => {
@@ -230,6 +266,13 @@ export function NotificationPermissionButton({
         ? "Disable PWA alerts" : permission === "denied" ? "Notifications blocked" : "Enable PWA alerts"}</b>
     </button>
     {mode === "settings" && enabled && <div className="hgr-push-test-controls">
+      <button type="button" className="button-outline" disabled={checking || busy || testing}
+        onClick={() => void toggleTurnAlerts()}>
+        {topics.includes("turns") ? "Disable turn alerts" : "Enable turn alerts"}
+      </button>
+      <small role="status">{topics.includes("turns")
+        ? "Your-turn notifications are enabled on this device for eligible live games."
+        : "Turn alerts are off. Enable them separately from invitations and messages."}</small>
       <button type="button" className="button-outline"
         disabled={checking || busy || testing || permission !== "granted"}
         onClick={() => void testDelivery()}>
