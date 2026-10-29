@@ -1791,3 +1791,29 @@ checks, Control lifecycle/maintenance/release checks, 320–1440px real
 browser layout tests, artwork integrity, both CI operating systems, and
 an explicit zero-room Oracle deployment are verified. Document any
 agent-activation step required to make the new local version visible.
+
+## Part 35 — Live game continuity and actionable notifications (29 October 2026)
+
+**Owner-requested design, not a shipped feature.** After switching apps,
+locking the phone, or leaving an installed PWA in the background, the
+authenticated participant should be able to **Continue game** in the same
+eligible live match. Within HGR, provide account-scoped notices for
+turns, required decisions and completed public player actions, retaining
+a concise event feed on return. Opted-in device notifications should
+announce important turn/decision events and deep-link to the authorized
+live match; do not turn every opponent action into noisy OS push.
+
+The Mega Board-only active-match card and existing invitation/message/
+operation Web Push are foundations, **not** cross-game resume or turn
+push. Generalize match discovery with account/seat security, reconcile
+on focus and return, ensure server-owned gameplay continues normally,
+rate-limit and deduplicate notices, protect hidden game state, and
+distinguish backgrounding from explicit logout. OS/PWA delivery is
+best-effort and requires explicit new gameplay-alert consent and real
+Android/tablet device acceptance. Preserve the current protected HGR
+launcher artwork, Control, PWA behaviours and release safeguards.
+
+Full requirement, event classes, platform limits, audited implementation
+batches and device acceptance: [HGR_LIVE_GAME_CONTINUITY.md](HGR_LIVE_GAME_CONTINUITY.md).
+No source implementation, release claim or deployment is authorized by
+this documentation entry alone.
