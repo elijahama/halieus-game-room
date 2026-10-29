@@ -1,5 +1,5 @@
-const CACHE = 'halieus-shell-v4-7-3-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
-const SHELL = ['/', '/site.webmanifest?identity=install-h6', '/app-icon-192.png?identity=install-h6', '/app-icon-512.png?identity=install-h6'];
+const CACHE = 'halieus-shell-v4-7-4-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
+const SHELL = ['/', '/site.webmanifest?identity=fullscreen-474', '/app-icon-192.png?identity=install-h6', '/app-icon-512.png?identity=install-h6', '/notification-badge-96.png?identity=mono-h-only'];
 const IDENTITY_PATHS = new Set(['/site.webmanifest', '/halieus-mark.svg', '/halieus-app-icon.svg', '/halieus-app-icon.png', '/app-icon.svg', '/app-icon-180.png', '/app-icon-192.png', '/app-icon-512.png', '/favicon-32.png', '/favicon.ico', '/notification-badge-96.png']);
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).catch(() => undefined));
