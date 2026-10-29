@@ -26825,6 +26825,13 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
     min-width: 36px;
     min-height: 36px;
   }
+  /* Compact board-game lobby galleries have explicit touch-safe remove controls.
+     Keep the action itself large enough on 320px phones and Windows tablet CSS
+     rounding without enlarging the gallery card or changing lobby behaviour. */
+  .card-game-lobby > .card-game-roster .card-game-player-row > button {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
   /* Mega Board's existing responsive columns also need display:grid:
      prevent an older flex override from restacking the player gallery. */
   .mega-live-page .game-layout

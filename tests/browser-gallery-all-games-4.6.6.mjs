@@ -86,8 +86,14 @@ try {
     assert.equal(pageOverflow,false,`No horizontal overflow at ${viewport.width}px`);
     const buttons=page.locator('[data-game="connect-four"] .card-game-player-row button');
     assert.equal(await buttons.count(),4,"All roster action buttons preserved");
-    const touch=await buttons.first().evaluate(node=>({w:node.getBoundingClientRect().width,h:node.getBoundingClientRect().height}));
-    assert(touch.w>=36&&touch.h>=36,"Existing AI removal button must stay touch-accessible");
+    const touch=await buttons.first().evaluate(node=>({
+      w:node.getBoundingClientRect().width,h:node.getBoundingClientRect().height,
+      minWidth:getComputedStyle(node).minWidth,minHeight:getComputedStyle(node).minHeight,
+    }));
+    assert(parseFloat(touch.minWidth)>=40&&parseFloat(touch.minHeight)>=40,
+      `Gallery removal style must guarantee 40px targets: ${JSON.stringify(touch)}`);
+    assert(touch.w>=39.5&&touch.h>=39.5,
+      `AI removal must remain at least 40px apart from subpixel rounding: ${JSON.stringify(touch)}`);
     const mega=await page.locator('[data-game="mega-board"] .player-property-strip').first()
       .evaluate(node=>getComputedStyle(node).gridTemplateColumns.split(/\s+/).filter(Boolean).length);
     assert.equal(mega,2,"Mega Board property strips use a gallery");
