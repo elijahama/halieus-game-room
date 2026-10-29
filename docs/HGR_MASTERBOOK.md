@@ -1524,7 +1524,8 @@ See [HGR_PUBLIC_MAINTENANCE.md](HGR_PUBLIC_MAINTENANCE.md). The public gate must
 
 ## Control 4.6.11 candidate — Portrait fullscreen and off-app Update progress (29 October 2026)
 
-Separate focused source hotfix from the draft 4.7.0 tournament branch.
+Separate focused 4.6.11 VERSION candidate from the draft 4.7.0
+tournament branch. Merged main remains 4.6.10 pending validation.
 Control must expose its Full Screen action in portrait on Android, even when
 opened as an installed PWA and the Fullscreen API exists. Unsupported
 devices keep an honest disabled explanation. Owner/admins can optionally
