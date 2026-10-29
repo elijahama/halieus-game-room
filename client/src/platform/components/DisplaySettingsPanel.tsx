@@ -76,7 +76,7 @@ export function DisplaySettingsPanel({
 
       <div className="halieus-display-group halieus-display-group-logo">
         <header>
-          <div><strong>Halieus logo</strong><small>Choose the H treatment independently from your colour theme.</small></div>
+          <div><strong>Halieus logo</strong><small>Change the in-app H only. Installed PWA icons are controlled by your browser and may require reinstalling.</small></div>
           <span>Personal</span>
         </header>
         {([
@@ -85,16 +85,14 @@ export function DisplaySettingsPanel({
             label: "Core styles",
             options: [
               ["brand", "Theme", "Theme-aware tile"],
-              ["mono-light", "Mono light", "Dark H on a light tile"],
-              ["mono-dark", "Mono dark", "Light H on a dark tile"],
-              ["white-glyph", "White glyph", "White H with no tile"],
+              ["mono-light", "Mono light", "White H only · transparent background"],
+              ["mono-dark", "Mono dark", "Black H only · transparent background"],
             ],
           },
           {
             id: "launcher",
-            label: "Launcher styles",
+            label: "Launcher-inspired looks",
             options: [
-              ["black-glyph", "Black glyph", "Black H with no tile"],
               ["light", "Light tile", "Theme-safe light mark"],
               ["blue", "Blue tile", "Royal-blue launcher treatment"],
               ["gold", "Gold launcher", "Signature gold launcher mark"],
