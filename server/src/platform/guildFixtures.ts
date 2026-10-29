@@ -236,11 +236,12 @@ export function createGuildFixtureCoordinator(
   async function recordFinishedGame(room: GameRoom, state: GameState): Promise<HgrGuildFixture | null> {
     return transact((current) => {
       const fixture = [...current.values()].find((row) =>
-        row.status === "rooms-bound" && row.boards?.some((link) => link.roomCode === room.code));
+        (row.status === "rooms-bound" || row.status === "completed") && row.boards?.some((link) => link.roomCode === room.code));
       if (!fixture?.boards || !fixture.awayLineups) return { next: current, value: null };
       if (fixture.boardResults?.some((row) => row.roomCode === room.code)) {
         return { next: current, value: fixture };
       }
+      if (fixture.status === "completed") throw new FixtureError(409, "Completed fixture cannot accept another game receipt.");
       const boardIndex = fixture.boards.findIndex((link) => link.roomCode === room.code);
       const link = fixture.boards[boardIndex]!;
       if (room !== megaRooms.get(room.code) || room.createdAt !== link.roomCreatedAt ||
