@@ -35,6 +35,7 @@ import "./styles/hgr-4.5.5s-guild-message-notices.css";
 import "./styles/hgr-4.6-gallery-experiment.css";
 import "./styles/hgr-library-discovery.css";
 import "./styles/hgr-flat-mobile-join.css";
+import "./styles/hgr-account-workspace.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.
