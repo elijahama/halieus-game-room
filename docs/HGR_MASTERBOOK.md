@@ -1536,6 +1536,19 @@ to participants. This is **not** an official Guild fixture, bracket or live
 tournament release. See
 [Beta Tournament Practice acceptance](HGR_BETA_TOURNAMENT_PRACTICE.md).
 
+## 4.7.0 — Immutable real-match Guild results (29 October 2026)
+
+The existing two-board Guild candidate now captures actual completed Mega
+Board outcomes, not merely lobby bindings: verified winner account/Guild,
+finish positions and immutable one-time receipts persisted for both boards.
+The combined fixture status becomes completed and exposes each Guild's
+verified board-win count. A 1–1 split is intentionally unresolved pending
+an approved tiebreaker; no tournament F1 or Elo rewards are triggered.
+Server identity and duplicate-finish safeguards have integration tests.
+This is not yet a released version; Guild-facing approval/binding UI,
+end-to-end owner acceptance and deployment are pending. See
+[4.7 Guild fixture documentation](HGR_GUILD_FIXTURES_4_7.md).
+
 ## 4.7.0 — Real two-board Guild fixture binding (29 October 2026)
 
 Second staged source batch: authenticated Guild manager binds an approved
