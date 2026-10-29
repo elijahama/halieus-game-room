@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
   <link rel="stylesheet" href="/control/control.css?v=4.7.0-action-isolation" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.7.0-action-isolation" defer></script>
+  <script src="/control/control.js?v=4.7.0-maintenance-confirmation" defer></script>
   <script src="/control/development.js?v=development-timeline-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
@@ -191,7 +191,7 @@
         <label for="publicAccessReason">Reason shown to visitors</label>
         <textarea id="publicAccessReason" rows="2" maxlength="220" placeholder="The Game Room is temporarily closed for maintenance."></textarea>
         <button type="button" id="publicAccessToggle" class="secondary-action" disabled>Checking status…</button>
-        <small>Closing is refused if any game or lobby is active. A confirmed Reopen action is always available from Control. The server stays running.</small>
+        <small>The reason above is shown to visitors. Tap Close and confirm once; there is no second phrase to type. Closure is refused if any game or lobby is active. Successful closure checks for an HTTP 503 maintenance page. Reopen is always available from Control. This never runs Update or closes your laptop window.</small>
       </article>
       <button type="button" class="secondary-action development-jump" data-jump="development">View development batches &amp; GitHub checks</button>
       <article class="panel-card operation-demo-info"><p class="eyebrow">MOBILE OPERATION UI</p><h2>Persistent operation status</h2><p>Approved Start, Restart, Close and Update operations remain traceable while you move around Control. On phones, a compact status chip expands to show progress, phase and the server-verified result.</p></article>
