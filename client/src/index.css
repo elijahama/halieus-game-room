@@ -26971,3 +26971,35 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
   .hgr-social-activity-group > header strong { flex: 1 1 100%; }
   .hgr-social-activity-group > header button { flex: 1 1 auto; }
 }
+
+
+/* HGR 4.7 Guild tournament fixtures — additive, identity-safe mobile UI. */
+.halieus-guild-fixture-panel{display:grid;gap:14px;min-width:0;padding:12px 0}
+.halieus-guild-fixture-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.halieus-guild-fixture-heading h3{font-size:1.15rem;margin:4px 0}
+.halieus-guild-fixture-heading p,.halieus-guild-fixture-form p,.halieus-guild-fixture-disclaimer{font-size:.82rem;line-height:1.5;color:var(--text-muted,#aab7cd)}
+.halieus-guild-fixture-id{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border-subtle,rgba(255,255,255,.16));border-radius:12px}
+.halieus-guild-fixture-id code{font-size:.76rem;overflow-wrap:anywhere;user-select:all}
+.halieus-guild-fixture-form,.halieus-guild-fixture-card{display:grid;gap:10px;padding:14px;border:1px solid var(--border-subtle,rgba(255,255,255,.16));border-radius:14px;min-width:0}
+.halieus-guild-fixture-form h4,.halieus-guild-fixture-list h4{margin:0;font-size:1rem}
+.halieus-guild-fixture-form label{display:grid;gap:5px;font-size:.8rem;min-width:0}
+.halieus-guild-fixture-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.halieus-guild-fixture-form input,.halieus-guild-fixture-form select{width:100%;max-width:100%;min-width:0;min-height:44px;padding:10px;border-radius:9px;color:inherit;background:var(--surface,rgba(15,24,40,.75));border:1px solid var(--border-subtle,rgba(255,255,255,.22))}
+.halieus-guild-fixture-form button,.halieus-guild-fixture-card button{min-height:44px}
+.halieus-guild-fixture-list{display:grid;gap:12px;min-width:0}
+.halieus-guild-fixture-card>header,.halieus-guild-fixture-board{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.halieus-guild-fixture-card>header strong{font-size:.96rem}
+.halieus-guild-fixture-card>header span,.halieus-guild-fixture-board span{font-size:.75rem;color:var(--text-muted,#b5c4d8)}
+.halieus-guild-fixture-card>small{overflow-wrap:anywhere}
+.halieus-guild-fixture-board{padding:8px 0;border-top:1px solid var(--border-subtle,rgba(255,255,255,.12))}
+.halieus-guild-fixture-board strong{font-size:.83rem}
+.halieus-guild-fixture-score{font-size:.9rem;font-weight:700}
+.halieus-guild-fixture-error{color:#ff8d96}
+.halieus-guild-fixture-notice{color:#a3eec6}
+.halieus-guild-tabs{flex-wrap:wrap}
+@media(max-width:600px){.halieus-guild-fixture-fields{grid-template-columns:minmax(0,1fr)}
+ .halieus-guild-fixture-panel{padding:8px 0}
+ .halieus-guild-fixture-card,.halieus-guild-fixture-form{padding:11px}
+ .halieus-guild-fixture-heading>button{width:100%}
+ .halieus-guild-fixture-card>header{align-items:flex-start;flex-direction:column}
+}
