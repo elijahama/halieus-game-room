@@ -763,7 +763,7 @@
           state: closing ? "closed" : "open",
           confirmation: phrase,
           reason: $("publicAccessReason").value.trim(),
-          reopenAt: closing && $("publicAccessDuration").value !== "manual"
+          reopenAt: closing && ["30", "60", "120", "360"].includes($("publicAccessDuration").value)
             ? Date.now() + Number($("publicAccessDuration").value) * 60_000 : null,
         }),
       });
