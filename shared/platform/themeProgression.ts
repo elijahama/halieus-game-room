@@ -55,3 +55,24 @@ export function themeUnlockLabel(id: string): string {
  if (!rule) return "Unavailable";
  return rule.kind === "core" ? "Core · always available" : rule.kind === "score" ? `Earn ${rule.count} Gamer Score` : rule.kind === "played" ? `Complete ${rule.count} verified matches` : rule.label;
 }
+
+
+/** Display-only progress; only server-issued entitlements may unlock a theme. */
+export interface VerifiedThemeProgress {
+  authenticated: boolean;
+  gamerScore: number | null;
+  verifiedGames: number | null;
+  achievementIds: readonly string[];
+}
+export function themeUnlockProgressLabel(id: string, progress: VerifiedThemeProgress | null): string {
+  const rule = THEME_REQUIREMENTS[id];
+  if (!rule) return "Unavailable";
+  if (rule.kind === "core") return "Core · always available";
+  if (!progress) return "Checking earned themes…";
+  if (!progress.authenticated) return "Sign in to check earned themes";
+  if (rule.kind === "score")
+    return progress.gamerScore == null ? "Verified Gamer Score unavailable" : `${progress.gamerScore}/${rule.count} Gamer Score`;
+  if (rule.kind === "played")
+    return progress.verifiedGames == null ? "Verified match count unavailable" : `${progress.verifiedGames}/${rule.count} verified matches`;
+  return progress.achievementIds.includes(rule.id) ? "Achievement completed" : rule.label;
+}
