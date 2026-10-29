@@ -988,6 +988,16 @@ export function registerAccountRoutes(app: Express): void {
     if (request.body?.confirmation !== expected) {
       response.status(409).json({ ok: false, reason: "The owner confirmation phrase was not accepted." }); return;
     }
+    const rawReopenAt: unknown = request.body?.reopenAt;
+    let reopenAt: number | null = null;
+    if (closed && rawReopenAt !== undefined && rawReopenAt !== null) {
+      const now = Date.now();
+      if (typeof rawReopenAt !== "number" || !Number.isSafeInteger(rawReopenAt) ||
+          rawReopenAt < now + 60_000 || rawReopenAt > now + 30 * 86_400_000) {
+        response.status(400).json({ ok: false, reason: "Automatic reopening must be between one minute and 30 days from now." }); return;
+      }
+      reopenAt = rawReopenAt;
+    }
     const activeRooms = adminRuntimeControls?.getRoomCount();
     // A missing room registry is NOT proof that no one is playing.
     if (closed && (!Number.isInteger(activeRooms) || activeRooms! > 0)) {
@@ -998,7 +1008,7 @@ export function registerAccountRoutes(app: Express): void {
     }
     let state;
     try {
-      state = await setPublicAccessState(closed, request.body?.reason, owner.id);
+      state = await setPublicAccessState(closed, request.body?.reason, owner.id, reopenAt);
     } catch {
       response.status(500).json({ ok: false, reason: "Could not persist public access. The change was not applied." }); return;
     }
