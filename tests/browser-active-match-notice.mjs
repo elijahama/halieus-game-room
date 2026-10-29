@@ -100,7 +100,7 @@ try {
     // not an automatic session takeover or a guessed room join.
     matches = [{ gameId: "mega-board", code: "ROOM", matchId: "mega-ROOM-123", paused: false, yourTurn: true, notice: null }];
     await page.goto("http://notice.test/?resumeMatch=mega-ROOM-123");
-    await page.addStyleTag({ path: bundle.replace(/\\.js$/, ".css") });
+    await page.addStyleTag({ path: bundle.replace(/\.js$/, ".css") });
     await page.addScriptTag({ path: bundle });
     await page.getByRole("button", { name: "Continue game" }).waitFor();
     matches = [];
