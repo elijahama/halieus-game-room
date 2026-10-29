@@ -11,6 +11,7 @@ export function toPublicGameRoom(
     boardStyle: room.boardStyle ?? "classic-board",
     ranked: room.ranked,
     blitz: room.blitz,
+    betaTournamentTest: room.betaTournamentTest === true,
     turnTimerSeconds: room.turnTimerSeconds ?? (room.blitz ? 150 : 45),
     hostId: room.hostId,
     started: room.started,
