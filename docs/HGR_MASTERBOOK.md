@@ -1791,3 +1791,29 @@ checks, Control lifecycle/maintenance/release checks, 320–1440px real
 browser layout tests, artwork integrity, both CI operating systems, and
 an explicit zero-room Oracle deployment are verified. Document any
 agent-activation step required to make the new local version visible.
+
+## Live Game Continuity — Batch A1: Mega Board authenticated turn awareness (29 October 2026)
+
+**Source candidate only; no deployment or completed test claim.** The existing
+authenticated, hub-visible active-match return card is retained, with a
+single new `yourTurn` Boolean in `/accounts/active-matches`. Only the
+verified owner of the actual persisted Mega Board player seat can see
+**Your turn — Continue game to make your move.** Turn status is true only
+in the server-authoritative live `playing` phase when the current player
+matches the persisted account-owned seat, the match is not paused, and
+the turn is in ordinary `roll` or `optional-actions` phase.
+Ordering, auctions, pending decisions, other players' turns, paused,
+expired, bankrupt, finished, and unrelated accounts do not advertise a
+normal actionable turn. Other sensitive room/game state is not projected.
+
+The return button retains its existing action and label, including
+revalidation, token-backed recovery, and `force: false` behavior.
+No new push notification topic, permission request, hidden-tab polling,
+gameplay timer change, account takeover, icon asset, or Control code is
+included. Runtime account/seat/phase/paused checks and 390/820px rendered
+UI assertions were added to the already existing active-match test suites.
+Tests, PR CI, safe release preparation, and actual PWA acceptance must
+be verified independently. This is the first narrowly scoped step toward
+the cross-game **Live Game Continuity** feature, not completed universal
+game support or OS turn push. Full user requirement is documented
+separately in the live-game continuity design.
