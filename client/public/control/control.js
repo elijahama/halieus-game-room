@@ -441,7 +441,7 @@
     const stateValue = ["running", "succeeded", "failed", "rejected"].includes(value.state) ? value.state : "running";
     return {
       id: String(value.id || "operation"),
-      action: String(value.action || "update"),
+      action: ["update", "start", "restart", "close"].includes(value.action) ? value.action : "unknown",
       title: String(value.title || (value.action === "update" ? "Updating HGR" : "HGR operation")),
       phase: String(value.phase || "Working…"),
       reason: String(value.reason || "").trim(),
@@ -616,9 +616,10 @@
     }
     $("operationToast").hidden = false;
     $("operationToast").dataset.state = operation.state;
+    $("operationToast").dataset.action = operation.action;
     const lifecycleLabel = operation.action === "start" ? "Open HGR window"
       : operation.action === "restart" ? "Restart HGR window"
-        : operation.action === "close" ? "Close HGR window" : "Update";
+        : operation.action === "close" ? "Close HGR window" : operation.action === "update" ? "Update HGR" : "Control action";
     $("operationTitle").textContent = operation.state === "succeeded" ? `${lifecycleLabel} complete`
       : operation.state === "failed" ? `${lifecycleLabel} failed`
       : operation.state === "rejected" ? `${lifecycleLabel} not started` : operation.title;
@@ -629,8 +630,13 @@
       ? "Not started · tap for reason"
       : operation.state === "failed" ? "Stopped · tap for details" : operation.phase;
     const displayedProgress = operation.state === "rejected" ? 0 : operation.progress;
-    $("operationPercent").textContent = operation.state === "rejected" ? "—" : `${Math.round(displayedProgress)}%`;
-    $("operationProgressBar").style.width = `${displayedProgress}%`;
+    const isUpdate = operation.action === "update";
+    const percentLabel = $("operationPercent");
+    const progressTrack = $("operationProgressBar")?.parentElement;
+    percentLabel.hidden = !isUpdate;
+    if (progressTrack) progressTrack.hidden = !isUpdate;
+    percentLabel.textContent = !isUpdate || operation.state === "rejected" ? "—" : `${Math.round(displayedProgress)}%`;
+    $("operationProgressBar").style.width = isUpdate ? `${displayedProgress}%` : "0%";
     $("operationToastToggle").title = terminalReason || operation.phase;
     $("operationDetailAction").textContent = operation.title;
     $("operationStarted").textContent = operation.startedAt ? formatWhen(operation.startedAt) : "Unavailable";
