@@ -1522,6 +1522,20 @@ A separate public website closure/reopen control has been designed and implement
 
 See [HGR_PUBLIC_MAINTENANCE.md](HGR_PUBLIC_MAINTENANCE.md). The public gate must be audited and accepted after Windows/Ubuntu CI and real mobile/desktop testing, and must not replace or contradict the existing transient deploy/restart maintenance notification mechanism.
 
+## 4.7.0 — Real two-board Guild fixture binding (29 October 2026)
+
+Second staged source batch: authenticated Guild manager binds an approved
+two-board fixture to **two real populated Mega Board lobbies**. Server checks
+actual signed-in account seats against frozen lineups, rejects extra/AI seats,
+requires ordinary unrated non-Blitz games and captures separate room identity,
+creation timestamp and boardMatchId. Standard Mega Board join, AI-add and
+host-start handlers enforce the locked roster; both boards can start as
+independent normal games with ordinary teammate rent/property rules. The
+Guild fixture still has no settled team result, fixture finish ingester,
+automatic tournament rating award, mobile launcher/status UI or production
+acceptance; therefore this is not a finished 4.7.0 release. See
+[Guild fixture progression](HGR_GUILD_FIXTURES_4_7.md).
+
 ## 4.7.0 milestone development — authenticated two-board Guild fixture proposals (28 October 2026)
 
 The first isolated **4.7.0 candidate batch** adds a durable Guild-v-Guild
