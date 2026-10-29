@@ -369,10 +369,16 @@
       const y = pad + ((height - pad * 2) / 4) * index;
       svg.appendChild(svgNode("line", { x1: pad, y1: y, x2: width - pad, y2: y, class: "chart-grid" }));
     }
-    const samples = state.samples.length ? state.samples : [{ clients: 0, players: 0, rooms: 0, at: Date.now() }];
+    const samples = state.samples;
+    if (!samples.length) {
+      const waiting = svgNode("text", { x: width / 2, y: height / 2, class: "chart-sampling-hint", "text-anchor": "middle" });
+      waiting.textContent = "Awaiting first live sample";
+      svg.appendChild(waiting);
+      return;
+    }
     const maximum = Math.max(4, ...samples.flatMap((sample) => [sample.clients, sample.players, sample.rooms]));
     const point = (value, index) => {
-      const x = samples.length === 1 ? pad : pad + ((width - pad * 2) * index) / (samples.length - 1);
+      const x = samples.length === 1 ? width / 2 : pad + ((width - pad * 2) * index) / (samples.length - 1);
       const y = height - pad - ((height - pad * 2) * Number(value || 0)) / maximum;
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     };
@@ -382,8 +388,21 @@
       ["rooms", "chart-line-c"],
     ].forEach(([key, className]) => {
       const points = samples.map((sample, index) => point(sample[key], index)).join(" ");
-      svg.appendChild(svgNode("polyline", { points, class: className }));
+      if (samples.length > 1) svg.appendChild(svgNode("polyline", { points, class: className }));
+      // A single sample has no line segment and was previously invisible.
+      // Keep every current measure visible as a point while history accumulates.
+      const last = samples[samples.length - 1];
+      const [x, y] = point(last[key], samples.length - 1).split(",");
+      svg.appendChild(svgNode("circle", {
+        cx: x, cy: y, r: samples.length === 1 ? 5 : 3.5,
+        class: `chart-point ${className}`,
+      }));
     });
+    if (samples.length === 1) {
+      const hint = svgNode("text", { x: width / 2, y: pad + 16, class: "chart-sampling-hint", "text-anchor": "middle" });
+      hint.textContent = "Collecting activity history";
+      svg.appendChild(hint);
+    }
   }
 
   function drawCharts() {
