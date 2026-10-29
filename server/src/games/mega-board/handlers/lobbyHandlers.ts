@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { getAuthenticatedAccount, hasBetaTournamentRoomInvitation, roomCosmeticState } from "../../../platform/accounts.js";
+import { canViewBetaTournamentRoom, getAuthenticatedAccount, hasBetaTournamentRoomInvitation, roomCosmeticState } from "../../../platform/accounts.js";
 import { SKIN_CATALOG } from "../../../../../shared/platform/skins.js";
 import { publicProgressionState } from "../../../platform/progression.js";
 import { pushGlobalNotice, recordActivity } from "../utils/activity.js";
@@ -112,6 +112,13 @@ export function registerLobbyHandlers(
         return;
       }
 
+      if (room.betaTournamentTest) {
+        const viewer = getAuthenticatedAccount(socket.request as Request);
+        if (!viewer || !canViewBetaTournamentRoom(viewer.id, code)) {
+          acknowledge({ ok: false, reason: "This Beta practice room is invitation-only." });
+          return;
+        }
+      }
       const activePlayers =
         room.players.filter(
           (player) => !player.hasLeft,
@@ -480,6 +487,13 @@ socket.on(
       return;
     }
 
+    if (room.betaTournamentTest) {
+      const viewer = getAuthenticatedAccount(socket.request as Request);
+      if (!viewer || !canViewBetaTournamentRoom(viewer.id, code)) {
+        acknowledge({ ok: false, reason: "Only authorised practice participants can watch this Beta room." });
+        return;
+      }
+    }
     socket.join(code);
     addSpectator(code, socket.id, payload.playerName ?? "Spectator");
     io.to(code).emit("game:spectators", listSpectators(code));
