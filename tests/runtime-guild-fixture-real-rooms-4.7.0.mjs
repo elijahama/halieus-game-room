@@ -8,11 +8,12 @@ const directory = await mkdtemp(join(tmpdir(), "hgr-fixture-real-lobbies-"));
 process.env.HALIEUS_DATA_DIR = directory;
 process.env.ROOM_SAVE_PATH = join(directory, "rooms.json");
 const { rooms } = await import("../server/src/games/mega-board/state/rooms.ts");
-const { loadGuildFixtures, registerGuildFixtureRoutes, getGuildFixtureBoundRoom, getGuildFixtureStartBlock } =
+const { loadGuildFixtures, registerGuildFixtureRoutes, getGuildFixtureBoundRoom, getGuildFixtureStartBlock, recordFinishedGuildFixtureBoard } =
   await import("../server/src/platform/guildFixtures.ts");
 const { registerLobbyHandlers } = await import("../server/src/games/mega-board/handlers/lobbyHandlers.ts");
 const { registerAiLobbyHandlers } = await import("../server/src/games/mega-board/handlers/aiLobbyHandlers.ts");
 const { flushRoomSave } = await import("../server/src/games/mega-board/utils/persistence.ts");
+const { emitGameState } = await import("../server/src/games/mega-board/utils/game-state.ts");
 
 const guilds = new Map([
   ["blue", { id: "blue", managerIds: ["blue-lead"], memberIds: ["blue-lead", "blue-a", "blue-b"] }],
@@ -46,7 +47,7 @@ function lobby(code, first, second) {
     started: false, gameState: null, createdAt: now, updatedAt: now,
     freeParkingJackpotEnabled: false, hostDisconnectDeadline: null, boardStyle: "classic-board" };
 }
-const io = { to: () => ({ emit: () => {} }), sockets: { sockets: new Map() } };
+const io = { to: () => ({ emit: () => {} }), emit: () => {}, sockets: { sockets: new Map() } };
 function handlersFor(socketId) {
   const handlers = new Map();
   const socket = { id: socketId, connected: true, data: {},
@@ -115,6 +116,29 @@ try {
   assert.notEqual(first.gameState, second.gameState);
   assert.equal(first.gameState.ranked, false);
   assert.equal(second.gameState.blitz, false);
+  first.gameState.phase = "finished";
+  first.gameState.winnerId = "socket-a";
+  emitGameState(io, first.code, first.gameState);
+  // Real broadcast ingests the board finish asynchronously; awaiting the
+  // same server-authoritative writer also proves duplicate dispatch is safe.
+  const firstReceipt = await recordFinishedGuildFixtureBoard(first, first.gameState);
+  assert.equal(firstReceipt.status, "rooms-bound");
+  assert.equal(firstReceipt.boardResults.length, 1);
+  assert.equal(firstReceipt.homeBoardWins, 1);
+  assert.equal(firstReceipt.awayBoardWins, 0);
+  second.gameState.phase = "finished";
+  second.gameState.winnerId = "socket-d";
+  emitGameState(io, second.code, second.gameState);
+  const finalReceipt = await recordFinishedGuildFixtureBoard(second, second.gameState);
+  assert.equal(finalReceipt.status, "completed");
+  assert.equal(finalReceipt.boardResults.length, 2);
+  assert.equal(finalReceipt.homeBoardWins, 1);
+  assert.equal(finalReceipt.awayBoardWins, 1);
+  assert.equal(finalReceipt.boardResults[0].winnerAccountId, "blue-a");
+  assert.equal(finalReceipt.boardResults[1].winnerAccountId, "gold-b");
+  const participantView = await call("/guild-fixtures", "gold-a");
+  assert.equal(participantView.status, 200);
+  assert.equal(participantView.body.fixtures.find(f => f.id === fixtureId).status, "completed");
   assert.equal((await call("/guild-fixtures/" + fixtureId + "/cancel", "blue-lead", {})).status, 409);
   const secondProposal = await call("/guild-fixtures", "blue-lead", {
     homeGuildId: "blue", awayGuildId: "gold", homeLineups: [["blue-a"], ["blue-b"]],
