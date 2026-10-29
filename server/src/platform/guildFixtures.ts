@@ -41,7 +41,7 @@ function validateRealBoardRoom(room: GameRoom | undefined, link: HgrGuildFixture
   if (!room || room.code !== link.roomCode || room.createdAt !== link.roomCreatedAt) {
     throw new FixtureError(409, "The bound Mega Board lobby is missing or was replaced.");
   }
-  if (room.ranked || room.blitz) {
+  if (room.ranked || room.blitz || room.betaTournamentTest) {
     throw new FixtureError(409, "Guild fixtures require ordinary, independent Mega Board economy rules.");
   }
   if (room.players.length < 2 || room.players.length > 8 ||
