@@ -196,3 +196,9 @@ report a real local release VERSION; missing/old bridge fields remain
 explicitly Unverified. No made-up match with Oracle. Preserve game rules,
 identity security, PWA art, existing maintenance, updater and release
 safeguards. 4.7.3 is a source candidate, not deployed by documentation.
+
+## 4.7.4 — Mobile game continuity and account layout patch candidate (29 October 2026)
+
+**Candidate only:** Owner gave approval to advance validated changes, not permission to bypass active-room release gates. The verified source package combines authenticated Mega Board turn-aware return (pending final reconciled CI on review PR #176), same-socket reconnect and started-host grace (merged #178), fully flat mobile Join (merged #179), and responsive Profile / Owner Settings workspaces (merged #180). All protected launcher-family H assets, theme boards, player galleries, gameplay logic and private data remain untouched. Genuine Android OS background-turn push remains **unreleased**: draft #177 requires verified sign-out revocation, device permission/receipt acceptance and release-safe deep-link checks.
+
+Use `VERSION` **4.7.4** for this patch candidate. Its generated package metadata, cache key, asset query versions and shared version are prepared using the same transformations as `scripts/release-integrity.mjs`; generated `RELEASE.json` and `shared/release.ts` must be rebuilt by the official `npm run prepare:release` workflow before packaging. Require Windows/Ubuntu CI for this final combined source, high/critical npm audit, idle/malformed-room safety gate, Oracle-local exact-fingerprint verification, public `/health` corroboration and real installed Android rejoin/UX acceptance. Merging this branch is **not** Oracle deployment. Do not hot-restart any active match.
