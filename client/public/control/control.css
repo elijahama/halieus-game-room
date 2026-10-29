@@ -269,6 +269,30 @@
 @media(max-width:720px){.control-fullscreen-toggle{padding:9px 10px;font-size:11px;min-height:40px;max-width:40vw}.control-topbar{flex-wrap:wrap}.control-topbar h1{font-size:clamp(19px,5.5vw,23px)}.control-main :is(h2){letter-spacing:-.04em}}
 
 
+/* Owner-only opt-in Control updates; never overlay or obscure operation tiles. */
+.hgr-control-update-alerts{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:14px 0}
+.hgr-control-update-alerts h2{font-size:16px;margin:5px 0}
+.hgr-control-update-alerts p:not(.eyebrow){color:#d4e0f3;font-size:12px;line-height:1.55;margin:7px 0}
+.hgr-control-update-alerts small{display:block;color:#b2c0d6;max-width:660px;line-height:1.55}
+.hgr-control-update-alerts-actions{display:flex;flex-wrap:wrap;gap:9px}
+.hgr-control-update-alerts-actions button{min-height:44px;white-space:normal}
+@media(max-width:720px){
+  .hgr-control-update-alerts{flex-direction:column;align-items:stretch}
+  .hgr-control-update-alerts-actions{display:grid;grid-template-columns:1fr}
+  .hgr-control-update-alerts-actions button{width:100%;min-height:44px}
+}
+/* Keep Control Full Screen visible and touch-accessible in portrait.
+ * Do not hide it behind the profile chip or remove it for installed Android PWAs. */
+@media(max-width:720px){
+  .control-topbar .topbar-actions{display:flex;flex-wrap:wrap;width:100%;gap:8px;align-items:center;justify-content:flex-start}
+  .control-topbar .control-fullscreen-toggle:not([hidden]){display:inline-flex;order:-2;flex:0 0 auto;max-width:none;min-width:104px;min-height:44px;padding:10px 12px}
+  .control-topbar .control-fullscreen-toggle:disabled{opacity:.7;cursor:default}
+  .control-topbar .profile-chip{order:2;margin-left:auto}
+}
+@media(max-width:380px){
+  .control-topbar .control-fullscreen-toggle:not([hidden]){font-size:11px;min-width:98px;min-height:44px}
+}
+
 /* Development evidence sits inside normal Control document flow.
    No percentage is implied for PRs, and no overlay can cover mobile actions. */
 .control-rail nav{min-height:0;overflow-y:auto}

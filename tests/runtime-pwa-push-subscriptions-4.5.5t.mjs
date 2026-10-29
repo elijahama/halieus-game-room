@@ -94,5 +94,19 @@ try {
   assert.equal((await api("/accounts/push/unsubscribe",{cookie:b.cookie,method:"POST",body:{endpoint}})).status,200);
   stored=JSON.parse(await readFile(join(data,"notifications","push-subscriptions.json"),"utf8"));
   assert.equal(stored.subscriptions.length,0,"Revocation persists");
+  const controlEndpoint = "https://web.push.apple.com/control-test-subscription-1234567890abcdef";
+  const controlSubscription = {
+    subscription: { ...valid.subscription, endpoint: controlEndpoint }, topics: ["operations"],
+  };
+  assert.equal((await api("/accounts/push/subscribe",{cookie:b.cookie,method:"POST",body:controlSubscription})).status,403,
+    "Ordinary account must never enroll in privileged Control Update alerts.");
+  const ownerSubscribed = await api("/accounts/push/subscribe",{
+    cookie:owner.cookie,method:"POST",body:controlSubscription,
+  });
+  assert.equal(ownerSubscribed.status,200,"Authenticated owner may opt into Control updates.");
+  assert.deepEqual((await api("/accounts/push/status",{cookie:owner.cookie,method:"POST",
+    body:{endpoint:controlEndpoint}})).json.topics,["operations"]);
+  assert.equal((await api("/accounts/push/unsubscribe",{cookie:owner.cookie,method:"POST",
+    body:{endpoint:controlEndpoint}})).status,200);
   console.log("PASS 4.5.5t: per-account browser subscription, VAPID key not exposed, SSRF rejection, opt-in/opt-out and safe account rebinding");
 } finally {server.kill("SIGTERM");await sleep(140);await rm(data,{recursive:true,force:true});}

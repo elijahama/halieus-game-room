@@ -29,6 +29,7 @@ jobs:
       - run: npm run test:progression:refresh
       - run: npm run test:social:activity
       - run: npm run test:public:maintenance
+      - run: npm run test:control:background
       - run: npm run test:browser:public-maintenance
       - run: npm run test:browser:control:window-operations
       - run: npm run test:replays:all

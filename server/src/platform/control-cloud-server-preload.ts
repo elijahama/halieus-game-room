@@ -10,7 +10,8 @@ import {
   type HalieusCloudControlRequest,
 } from "../../../shared/platform/control-cloud.js";
 import type { Request as ExpressRequest } from "express";
-import { getAuthenticatedAccount } from "./accounts.js";
+import { getAuthenticatedAccount, getAccountSummaryById } from "./accounts.js";
+import { sendHgrPush } from "./pushNotifications.js";
 import { expireUnreportedUpdates } from "./control-operation-recovery.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
 import { storeRelaySnapshot } from "./control-development-relay.js";
@@ -43,6 +44,10 @@ interface StoredRequest {
   progress: number;
   reason: string | null;
   localOperationId: string | null;
+  /** Private actor identity; never copied to publicOperation(). */
+  requestedByAccountId?: string;
+  /** Last durable push milestone to avoid repeated background alerts. */
+  notifiedProgressMilestone?: number;
 }
 
 interface CloudStore {
@@ -226,6 +231,37 @@ function deviceOnline(device: StoredDevice): boolean {
   return Date.now() - Date.parse(device.lastSeenAt) <= ONLINE_WINDOW_MS;
 }
 
+/** Only actual agent-reported milestones are notified; never guess progress. */
+export function hgrControlPushMilestone(progress: number): number {
+  if (progress >= 95) return 95;
+  if (progress >= 75) return 75;
+  if (progress >= 50) return 50;
+  if (progress >= 25) return 25;
+  return 0;
+}
+function notifyOperationUpdate(operation: StoredRequest): void {
+  const actorId = operation.requestedByAccountId;
+  if (!actorId || operation.action !== "update") return;
+  const actor = getAccountSummaryById(actorId);
+  if (!actor || (actor.role !== "owner" && actor.role !== "admin")) return;
+  const terminal = ["succeeded", "failed", "rejected"].includes(operation.state);
+  const label = operation.state === "succeeded" ? "Complete"
+    : operation.state === "failed" || operation.state === "rejected" ? "Stopped" : "In progress";
+  // Deliberately omit raw phases and failure details: lock-screen notifications
+  // must never leak local file paths, private output or credentials.
+  const body = operation.state === "succeeded"
+    ? "The owner-PC update has completed. Open Control to verify the result."
+    : terminal
+      ? "The owner-PC update did not finish. Open Control to see the verified reason."
+      : `Owner-PC update reported ${operation.progress}%. Tap to see the current stage.`;
+  void sendHgrPush([actor.id], {
+    topic: "operations",
+    title: `HGR Update · ${label}${terminal ? "" : ` ${operation.progress}%`}`,
+    body,
+    url: "/control/",
+    tag: "hgr-control-update-" + operation.requestId,
+  }).catch((error) => console.error("[HGR] Control update notification failed:", error));
+}
 function publicOperation(request: StoredRequest | null) {
   if (!request) return null;
   return {
@@ -398,11 +434,11 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
   const reason = boundedText(body.reason, 900) || null;
   const localOperationId = boundedText(body.localOperationId, 96) || null;
 
-  const found = await mutateStore((store) => {
+  const result = await mutateStore((store) => {
     const operation = store.requests.find((entry) => entry.requestId === requestId && entry.deviceId === auth.device.deviceId);
-    if (!operation) return false;
+    if (!operation) return { found: false, notification: null };
     // Late bridge reports must never reopen a completed or timed-out request.
-    if (operation.state !== "running" && operation.state !== "queued") return true;
+    if (operation.state !== "running" && operation.state !== "queued") return { found: true, notification: null };
     operation.state = state;
     operation.progress = state === "succeeded" ? 100 : Math.max(operation.progress, progress);
     operation.phase = phase;
@@ -411,10 +447,19 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
     operation.updatedAt = new Date().toISOString();
     const device = store.devices.find((candidate) => candidate.deviceId === auth.device.deviceId);
     if (device) device.lastSeenAt = operation.updatedAt;
-    return true;
+    if (operation.action !== "update" || !operation.requestedByAccountId) {
+      return { found: true, notification: null };
+    }
+    const terminal = state !== "running";
+    const milestone = hgrControlPushMilestone(operation.progress);
+    const previous = operation.notifiedProgressMilestone ?? -1;
+    if (!terminal && milestone <= previous) return { found: true, notification: null };
+    if (!terminal) operation.notifiedProgressMilestone = milestone;
+    return { found: true, notification: { ...operation, milestone: terminal ? null : milestone } };
   });
-  if (!found) { sendJson(response, 404, { ok: false, reason: "Unknown cloud Update request." }); return; }
+  if (!result.found) { sendJson(response, 404, { ok: false, reason: "Unknown cloud Update request." }); return; }
   sendJson(response, 200, { ok: true });
+  if (result.notification) notifyOperationUpdate(result.notification);
 }
 
 async function handleStatus(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -555,6 +600,7 @@ async function handleQueueUpdate(request: IncomingMessage, response: ServerRespo
       progress: 0,
       reason: null,
       localOperationId: null,
+      requestedByAccountId: actor.id,
     };
     store.requests.unshift(entry);
     return entry;

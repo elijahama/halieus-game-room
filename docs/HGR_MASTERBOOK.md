@@ -1521,3 +1521,21 @@ See [HGR_SOCIAL_ACTIVITY_NOTIFICATIONS.md](HGR_SOCIAL_ACTIVITY_NOTIFICATIONS.md)
 A separate public website closure/reopen control has been designed and implemented independently of the existing Open/Restart/Close **HGR Window** buttons. Closing changes the Oracle server's **visitor gate** to an uncached HTTP 503 maintenance page and rejects new public game sockets, without stopping the server or authenticated owner Control. The service refuses closure when any of the 14 game types has an active room. The owner can log in via the maintenance page and reopen from Control; private persisted state survives process restarts. Typed confirmation, same-origin JSON, owner-only authentication, audit and private data storage are required. No live site closure is performed in source development.
 
 See [HGR_PUBLIC_MAINTENANCE.md](HGR_PUBLIC_MAINTENANCE.md). The public gate must be audited and accepted after Windows/Ubuntu CI and real mobile/desktop testing, and must not replace or contradict the existing transient deploy/restart maintenance notification mechanism.
+
+## Control 4.6.11 candidate — Portrait fullscreen and off-app Update progress (29 October 2026)
+
+Separate focused 4.6.11 VERSION candidate from the draft 4.7.0
+tournament branch. Merged main remains 4.6.10 pending validation.
+Control must expose its Full Screen action in portrait on Android, even when
+opened as an installed PWA and the Fullscreen API exists. Unsupported
+devices keep an honest disabled explanation. Owner/admins can optionally
+enable Control-scoped Android/browser Web Push alerts from Operations,
+reporting actual owner-PC update progress milestones and terminal outcomes
+after switching apps. This requires permission, a valid account-bound device
+subscription, and authenticated agent reports; there is no fabricated
+background polling or continuously running OS progress indicator. The
+persistent Control operation status/history remains authoritative.
+The push title/body omit local paths, credentials and failure diagnostics;
+an unprivileged player cannot subscribe. Control art, launcher H, unrelated
+games and 4.7.0 Guild fixture work are untouched. See
+[Control portrait and off-app update acceptance](HGR_CONTROL_BACKGROUND_UPDATES.md).

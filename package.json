@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.6.10",
+  "version": "4.6.11",
   "private": true,
   "workspaces": [
     "client",
@@ -12,6 +12,7 @@
     "test:browser:gallery-all": "node tests/browser-gallery-all-games-4.6.6.mjs",
     "test:browser:public-maintenance": "node --import tsx tests/browser-public-maintenance-4.6.10.mjs",
     "test:public:maintenance": "node --import tsx tests/runtime-public-maintenance-4.6.10.mjs && node tests/runtime-public-maintenance-integration-4.6.10.mjs",
+    "test:control:background": "node tests/runtime-control-portrait-background-updates.mjs",
     "test:social:activity": "node --import tsx tests/runtime-social-activity-notifications-4.6.9.mjs",
     "test:progression:refresh": "node --import tsx tests/runtime-progression-refresh.mjs",
     "test:browser:control:window-operations": "node tests/browser-control-window-operations.mjs",
