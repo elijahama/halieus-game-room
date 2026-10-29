@@ -271,7 +271,7 @@ export function NotificationPermissionButton({
         {topics.includes("turns") ? "Disable turn alerts" : "Enable turn alerts"}
       </button>
       <small role="status">{topics.includes("turns")
-        ? "Your-turn notifications are enabled on this device for eligible live games."
+        ? "Mega Board turn notifications are enabled on this device."
         : "Turn alerts are off. Enable them separately from invitations and messages."}</small>
       <button type="button" className="button-outline"
         disabled={checking || busy || testing || permission !== "granted"}
