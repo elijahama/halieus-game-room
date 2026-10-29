@@ -120,6 +120,11 @@ function prepareLoadedRoom(
     room.gameState.lastGlobalNotice ??= null;
     room.gameState.globalNotices ??= [];
     room.gameState.gameStartedAt ??= room.updatedAt ?? room.createdAt ?? Date.now();
+    // An older saved room has no turn-push ledger. Seed the current turn so
+    // a server restart/upgrade never replays a turn alert for an existing seat.
+    if (room.lastTurnPushKey === undefined && room.gameState.phase === "playing") {
+      room.lastTurnPushKey = `mega-${room.code}-${room.gameState.gameStartedAt}:${room.gameState.turnNumber}:${room.gameState.currentPlayerIndex}`;
+    }
     room.gameState.turnTimerSeconds ??= Math.round((room.gameState.blitz ? BLITZ_TURN_ROLL_AUTOPILOT_DURATION_MS : TURN_ROLL_AUTOPILOT_DURATION_MS) / 1000);
     room.gameState.turnRollDeadline ??= null;
     room.gameState.turnRollDeadlinePlayerId ??= null;
