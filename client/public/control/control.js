@@ -708,15 +708,14 @@
     if (state.account?.role !== "owner" || publicAccessBusy || !publicAccessState) return;
     const closing = !publicAccessState.closed;
     const phrase = closing ? "CLOSE PUBLIC GAME ROOM" : "REOPEN PUBLIC GAME ROOM";
-    const typed = window.prompt(
-      (closing ? "Visitors will see a temporary closure page. Owner Control will remain available."
-        : "The public Game Room will reopen for everyone.") +
-      "\\nType " + phrase + " to confirm:", "",
-    );
-    if (typed !== phrase) return;
+    // The text area above already captures the visitor-facing maintenance
+    // reason. Do not ask for it again in a browser prompt, which previously
+    // caused owners to type that reason instead of the hidden sentinel phrase.
+    // The server still requires owner authentication, same-origin mutation and
+    // the action-specific confirmation token sent below.
     if (!window.confirm(closing
-      ? "Confirm public maintenance closure now? This will refuse new game connections and is blocked if any live room exists."
-      : "Confirm reopen the public Game Room for everyone?")) return;
+      ? "Close the PUBLIC Game Room for maintenance? Visitors will see the reason from the text box, all new game connections will be refused, and HGR Control stays available. Closing is blocked while any room is active. This does NOT close the owner-PC window or run an Update."
+      : "Reopen the PUBLIC Game Room to all visitors? This does NOT run Update or restart the owner-PC window.")) return;
     publicAccessBusy = true;
     let failureReason = "";
     $("publicAccessToggle").disabled = true;
@@ -733,10 +732,24 @@
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) throw Error(result.reason || "Public access could not be changed.");
+      if (result.state?.closed !== closing) {
+        throw Error("Public access reply does not match the requested state. Refresh Control and check access.");
+      }
       publicAccessState = result.state;
+      // A successful POST alone is not evidence that the public website gate
+      // really reached visitors. Probe an uncached, same-origin HTML route.
+      const gateCheck = await fetch("/?hgr-public-access-check=" + Date.now(), {
+        method: "GET", credentials: "include", cache: "no-store",
+        headers: { "Accept": "text/html", "Cache-Control": "no-cache" },
+      });
+      if (closing ? gateCheck.status !== 503 : !gateCheck.ok) {
+        throw Error(closing
+          ? "Public closure was recorded, but the website did not return its maintenance page. Do not assume visitors are blocked; check the public server/proxy."
+          : "Reopen was recorded, but the public website did not return a normal page. Check deployment and server status.");
+      }
       $("publicAccessStatus").textContent = closing
-        ? "Public visitor access is closed. Reopen from this panel when ready."
-        : "Public access reopened successfully.";
+        ? "Verified: public website is serving HTTP 503 maintenance. Owner Control stays available."
+        : "Verified: public website has reopened.";
     } catch (error) {
       failureReason = error instanceof Error ? error.message : "The public access request failed.";
     } finally {
