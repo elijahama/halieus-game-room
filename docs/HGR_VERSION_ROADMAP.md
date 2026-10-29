@@ -140,3 +140,15 @@ renders updater progress/spinner; lifecycle actions remain tracked but
 display independent action-specific statuses/icons without deployment bars.
 A cache-busted Control JS/CSS and executable UI-state regression test guard
 against recurrence. This is source-only until validated and deployed.
+### 29 October 2026 — Urgent 4.7.0 visitor-maintenance verification
+
+Public **Close Game Room** is a distinct owner-confirmed Oracle visitor gate,
+not the **Close HGR Window** PC command or **Update**. The mobile Control
+confirmation flow now consumes the maintenance reason from its own labelled
+field without a competing browser text prompt, requires one action confirmation,
+and checks a new uncached public GET for actual HTTP 503 before displaying
+verified closure. Reopen must similarly be confirmed by the visitor route.
+Both operations continue to refuse unsafe server states and keep Control
+available. Add dedicated UI and full HTTP/Socket.IO runtime regressions on
+both CI operating systems. Never claim production is closed or version 4.7.0
+deployed from GitHub source changes alone.
