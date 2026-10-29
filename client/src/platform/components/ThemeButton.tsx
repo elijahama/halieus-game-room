@@ -1,4 +1,4 @@
-import { CORE_LIBRARY_THEME_IDS, CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
+import { CORE_LIBRARY_THEME_IDS, CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel, themeUnlockProgressLabel, type VerifiedThemeProgress } from "../../../../shared/platform/themeProgression";
 import { accountApi } from "../accounts/api";
 import { subscribeToProgressionUpdates } from "../progressionRefresh";
 import { useModalLifecycle } from "./useModalLifecycle";
@@ -105,6 +105,7 @@ const THEME_LIBRARY_GROUPS = [
 
 export function ThemeButton({ background, colour, borderColour }: ThemeButtonProps) {
   const [entitlements, setEntitlements] = useState<string[]>(CORE_THEME_IDS);
+  const [verifiedProgress, setVerifiedProgress] = useState<VerifiedThemeProgress | null>(null);
   const [entitlementRefreshKey, setEntitlementRefreshKey] = useState(0);
   const [checkingEntitlements, setCheckingEntitlements] = useState(false);
   const [themeError, setThemeError] = useState("");
@@ -143,11 +144,12 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
     if (!menuOpen) return;
     let live = true;
     setCheckingEntitlements(true);
-    void accountApi<{entitlements:string[]}>("/accounts/me/themes")
+    void accountApi<{authenticated:boolean;entitlements:string[];gamerScore:number|null;verifiedGames:number|null;achievementIds:string[]}>("/accounts/me/themes", {cache:"no-store"})
       .then((result) => {
         if (!live) return;
-        setEntitlements([...new Set([...CORE_THEME_IDS, ...result.entitlements])]);
-        setThemeError("");
+        setEntitlements([...new Set([...CORE_THEME_IDS, ...(result.authenticated ? result.entitlements : [])])]);
+        setVerifiedProgress({ authenticated: result.authenticated, gamerScore: result.gamerScore, verifiedGames: result.verifiedGames, achievementIds: result.achievementIds });
+        setThemeError(result.authenticated ? "" : "Sign in to view and use your earned themes.");
       })
       .catch(() => {
         // An intermittent network failure is NOT evidence that earned
@@ -327,7 +329,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
               <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HSL</button>
               <div className="halieus-unlock-refresh-actions">
                 <button type="button" disabled={checkingEntitlements} onClick={() => setEntitlementRefreshKey((key) => key + 1)}>Refresh earned themes</button>
-                <small role="status">{checkingEntitlements ? "Checking verified Gamer Score and achievements…" : "Only completed, verified matches count toward unlocks."}</small>
+                <small role="status">{checkingEntitlements ? "Checking your earned themes…" : verifiedProgress?.authenticated ? `Verified Gamer Score: ${verifiedProgress.gamerScore ?? "unavailable"} · Completed matches: ${verifiedProgress.verifiedGames ?? "unavailable"} · ${entitlements.length - CORE_THEME_IDS.length} earned themes` : verifiedProgress ? "Sign in to check your earned themes." : "Open the library to verify your earned themes."}</small>
               </div>
               <div className="halieus-theme-library-grid">
                 {THEME_LIBRARY_GROUPS.map((group) => (
@@ -347,7 +349,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
                           </span>
                           {profile.motif && <span className="halieus-theme-profile-motif">{profile.motif.map((colour) => <i key={colour} style={{ background: colour }} />)}</span>}
                         </span>
-                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{betaMode && !entitlements.includes(profile.id) ? `Beta access · Normally: ${themeUnlockLabel(profile.id)}` : entitlements.includes(profile.id) ? (CORE_THEME_IDS.includes(profile.id) ? "Core · always available" : "Unlocked") : `Locked · ${themeUnlockLabel(profile.id)}`}</small></span>
+                        <span><em>{profile.mood}</em><strong>{profile.label}</strong><small>{profile.description}</small><small className="theme-unlock-condition">{betaMode && !entitlements.includes(profile.id) ? `Beta access · Normally: ${themeUnlockLabel(profile.id)}` : entitlements.includes(profile.id) ? (CORE_THEME_IDS.includes(profile.id) ? "Core · always available" : "Unlocked · verified") : `${verifiedProgress?.authenticated ? "Locked" : "Unavailable"} · ${themeUnlockProgressLabel(profile.id, verifiedProgress)}`}</small></span>
                         {mode === "profile" && profileId === profile.id && <b aria-hidden="true">✓</b>}
                       </button>
                     ))}
