@@ -17,8 +17,7 @@ locked roster; the normal host-owned start handler rechecks room identity,
 connected seats and locked account IDs. Once that guard passes, it starts
 the **ordinary Mega Board engine** for each board independently. The game
 does not give teammates joint wallets, exempt them from rent, or change
-normal economic gameplay. An owner/admin cannot cancel a bound fixture via
-the pre-launch cancellation route, because a game may already be in progress.
+normal economic gameplay. For bound fixtures, a participating manager can cancel **only if both original lobbies still exist and neither has started**; cancellation is refused once either board starts or its identity cannot be verified. Bound seat recovery additionally requires the original authenticated account and its reconnect token, preventing token-only cross-account takeovers.
 
 Dedicated runtime tests launch both rooms through the real Mega Board start
 handlers and reject tampered rosters, AI additions, duplicate assignment and
