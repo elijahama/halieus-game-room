@@ -626,3 +626,56 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
   .hgr-maintenance-schedule{padding:12px}
   .hgr-maintenance-schedule-actions button{width:100%}
 }
+
+/* Read-only delivery plan and long-range Tournament milestone timeline.
+   Always in document flow; these cards never imply background work is running. */
+.development-delivery,.development-tournament-roadmap{min-width:0;display:grid;gap:12px;margin-bottom:16px}
+.development-delivery>.card-heading,.development-tournament-roadmap>.card-heading{margin:0}
+.development-delivery>p,.development-tournament-roadmap>p{
+  margin:0;color:#b4c4dc;line-height:1.6;font-size:12px
+}
+.development-delivery-track{list-style:none;margin:0;padding:0 0 0 23px;display:grid;gap:12px;position:relative}
+.development-delivery-track::before{
+  content:"";position:absolute;left:9px;top:12px;bottom:12px;width:2px;background:rgba(132,171,236,.3)
+}
+.development-delivery-item{
+  position:relative;min-width:0;padding:14px;border:1px solid rgba(134,168,225,.21);
+  border-radius:12px;background:rgba(17,29,47,.44);display:grid;gap:7px
+}
+.development-delivery-item::before{
+  content:"";position:absolute;left:-20px;top:18px;width:10px;height:10px;border-radius:50%;
+  border:2px solid #789ce9;background:#17243b
+}
+.development-delivery-heading,.development-roadmap-heading{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0
+}
+.development-delivery-heading strong,.development-roadmap-heading strong{
+  font-size:13px;line-height:1.4;overflow-wrap:anywhere
+}
+.development-batch-id{display:grid;place-items:center;min-width:26px;height:26px;
+  border-radius:8px;background:#283b5b;color:#e5efff;font-size:12px;font-weight:900}
+.development-batch-state,.development-roadmap-state{
+  font-size:11px;font-weight:800;line-height:1.5;color:#b8d2ff
+}
+.development-delivery-item p,.development-roadmap-item p{margin:0;color:#c2d1e5;font-size:12px;line-height:1.55}
+.development-delivery-item .development-source-link{
+  align-self:start;justify-self:start;min-height:32px;display:inline-flex;align-items:center
+}
+.development-roadmap-stages{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.development-roadmap-item{
+  min-width:0;padding:14px;border:1px solid rgba(132,171,236,.22);border-radius:12px;
+  background:rgba(17,29,47,.44);display:grid;gap:7px;align-content:start
+}
+.development-roadmap-item:last-child{
+  grid-column:1/-1;border-color:rgba(168,186,245,.48);
+  background:rgba(35,51,80,.58)
+}
+.development-roadmap-heading span{font-size:12px;color:#d8e4f8}
+.development-roadmap-note{font-weight:600}
+@media(max-width:760px){
+  .development-roadmap-stages{grid-template-columns:1fr}
+  .development-delivery-item,.development-roadmap-item{padding:12px}
+  .development-delivery-track{padding-left:19px}
+  .development-delivery-track::before{left:6px}
+  .development-delivery-item::before{left:-16px}
+}
