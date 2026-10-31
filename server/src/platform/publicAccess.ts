@@ -198,7 +198,7 @@ async function reopenWhenDue(): Promise<void> {
   }
 }
 
-async function processScheduledWindow(): Promise<void> {
+export async function processScheduledWindow(): Promise<void> {
   try {
     await enqueueAccessChange(() => {
       const window = state.scheduledWindow;
