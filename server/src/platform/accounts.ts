@@ -7,7 +7,8 @@ import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/them
 import { readPlayerProgression } from "./progression.js";
 import { getGuildPeerAccountIds } from "./guilds.js";
 import { sendHgrPush } from "./pushNotifications.js";
-import { getPublicAccessState, setPublicAccessState } from "./publicAccess.js";
+import { getPublicAccessState, setPublicAccessState, schedulePublicMaintenance, cancelPublicMaintenance } from "./publicAccess.js";
+import { validateMaintenanceWindow } from "./maintenanceTimeZones.js";
 import type { Express, Request, Response } from "express";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -1024,6 +1025,85 @@ export function registerAccountRoutes(app: Express): void {
     }
     response.setHeader("Cache-Control", "no-store");
     response.json({ ok: true, state, activeRooms: adminRuntimeControls?.getRoomCount() ?? 0 });
+  });
+
+  // An explicit start AND end (with independently selected IANA zones) is
+  // separate from the immediate manual Close/Reopen action above.
+  app.post("/admin/public-access/schedule", async (request, response) => {
+    const owner = requireOwner(request, response);
+    if (!owner) return;
+    if (!request.is("application/json")) {
+      response.status(415).json({ ok: false, reason: "JSON is required." }); return;
+    }
+    const origin = request.get("origin");
+    if (origin) {
+      let sameOrigin = false;
+      try { sameOrigin = new URL(origin).host === request.get("host"); } catch { /* reject */ }
+      if (!sameOrigin) {
+        response.status(403).json({ ok: false, reason: "Cross-site public access changes are forbidden." }); return;
+      }
+    }
+    if (request.body?.confirmation !== "SCHEDULE PUBLIC MAINTENANCE") {
+      response.status(409).json({ ok: false, reason: "Confirm the exact maintenance schedule." }); return;
+    }
+    let window: ReturnType<typeof validateMaintenanceWindow>;
+    try {
+      window = validateMaintenanceWindow(
+        request.body?.startLocal, request.body?.startTimeZone,
+        request.body?.endLocal, request.body?.endTimeZone);
+    } catch (error) {
+      response.status(400).json({ ok: false, reason: error instanceof Error ? error.message : "Invalid maintenance schedule." }); return;
+    }
+    let state;
+    try {
+      state = await schedulePublicMaintenance(window, request.body?.reason, owner.id);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not persist maintenance schedule.";
+      response.status(/Reopen|Cancel/.test(message) ? 409 : 500).json({ ok: false, reason: message }); return;
+    }
+    try {
+      addAudit(owner.id, "public-access.scheduled", "system", null,
+        "Owner scheduled a future public maintenance window.");
+      await saveStore();
+    } catch (error) {
+      console.error("[HGR] Future maintenance saved but audit entry failed.", error);
+    }
+    response.setHeader("Cache-Control", "no-store");
+    response.json({ ok: true, state });
+  });
+
+  app.post("/admin/public-access/schedule/cancel", async (request, response) => {
+    const owner = requireOwner(request, response);
+    if (!owner) return;
+    if (!request.is("application/json")) {
+      response.status(415).json({ ok: false, reason: "JSON is required." }); return;
+    }
+    const origin = request.get("origin");
+    if (origin) {
+      let sameOrigin = false;
+      try { sameOrigin = new URL(origin).host === request.get("host"); } catch { /* reject */ }
+      if (!sameOrigin) {
+        response.status(403).json({ ok: false, reason: "Cross-site public access changes are forbidden." }); return;
+      }
+    }
+    if (request.body?.confirmation !== "CANCEL PUBLIC MAINTENANCE") {
+      response.status(409).json({ ok: false, reason: "Confirm cancellation of the pending maintenance window." }); return;
+    }
+    let state;
+    try {
+      state = await cancelPublicMaintenance(owner.id);
+    } catch (error) {
+      response.status(409).json({ ok: false, reason: error instanceof Error ? error.message : "Unable to cancel." }); return;
+    }
+    try {
+      addAudit(owner.id, "public-access.schedule-cancelled", "system", null,
+        "Owner cancelled a future maintenance window.");
+      await saveStore();
+    } catch (error) {
+      console.error("[HGR] Schedule cancelled but audit entry failed.", error);
+    }
+    response.setHeader("Cache-Control", "no-store");
+    response.json({ ok: true, state });
   });
 
   app.get("/auth/status", (request, response) => response.json(authStatus(request)));
