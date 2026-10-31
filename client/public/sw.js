@@ -39,13 +39,26 @@ self.addEventListener('fetch', (event) => {
     return response;
   })));
 });
+// Only approved HGR game IDs may select a bundled icon. Remote-provided
+// filenames/URLs are never interpolated into notification assets.
+const NOTIFICATION_GAMES = new Set([
+  'mega-board', 'poker', 'blackjack', 'whot', 'ludo', 'hidden-dictator',
+  'connect-four', 'word-game', 'password', 'anagrams-race',
+  'cheat', 'dominoes', 'ayo', 'word-board',
+]);
 self.addEventListener('push', (event) => {
   let payload = { title: 'Halieus Game Room', body: 'You have a new Halieus notification.', url: '/' };
   try { payload = { ...payload, ...(event.data?.json() || {}) }; } catch {}
+  const game = typeof payload.game === 'string' && NOTIFICATION_GAMES.has(payload.game) ? payload.game : null;
+  const icon = game ? `/game-icons/${game}.svg` : '/app-icon-192.png?identity=install-h6';
+  // Android masks the status-bar badge to a monochrome silhouette; never use
+  // the opaque full-colour square as a status badge.
+  const badge = game === 'mega-board' ? '/notification-badges/mega-board.png'
+    : '/notification-badges/hgr.png';
   event.waitUntil(self.registration.showNotification(payload.title, {
     body: payload.body,
-    icon: '/app-icon-192.png?identity=install-h6',
-    badge: '/favicon-32.png?identity=install-h6',
+    icon,
+    badge,
     data: { url: payload.url || '/' },
     tag: payload.tag || 'halieus-notification',
   }));
