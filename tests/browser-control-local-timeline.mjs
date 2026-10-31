@@ -6,9 +6,9 @@ const html = await readFile(new URL("client/public/control/index.html", root), "
 const css = await readFile(new URL("client/public/control/control.css", root), "utf8");
 const js = await readFile(new URL("client/public/control/development.js", root), "utf8");
 const start = html.indexOf('<section class="control-section" data-panel="development"');
-const end = html.indexOf('</section>', start);
+const end = html.indexOf('<section class="control-section" data-panel="audit"', start);
 assert.ok(start > 0 && end > start);
-const section = html.slice(start, end + 10).replace('class="control-section"', 'class="control-section is-active"');
+const section = html.slice(start, end).replace('class="control-section"', 'class="control-section is-active"');
 const mobile = html.match(/<nav class="control-mobile-nav"[^>]*>[\s\S]*?<\/nav>/)?.[0] || "";
 assert.ok(mobile);
 let timeline = {
@@ -27,7 +27,11 @@ try {
       if (pathname === "/control/development-timeline")
         return route.fulfill({ status: timeline.code || 200, contentType: "application/json", body: JSON.stringify(timeline) });
       if (pathname === "/control/development-status")
-        return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok:true,pulls:[],runs:[],pullsAvailable:true,runsAvailable:true,fetchedAt:"2026-10-25T06:01:00Z" }) });
+        return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok:true,pulls:[
+          {number:187,state:"draft",title:"Notification progress"},
+          {number:188,state:"open",title:"Android icons"},
+          {number:190,state:"merged",title:"Oracle diagnostics"},
+        ],runs:[],pullsAvailable:true,runsAvailable:true,fetchedAt:"2026-10-31T04:00:00Z" }) });
       if (pathname === "/test.css")
         return route.fulfill({ status:200, contentType:"text/css",body:css });
       if (pathname === "/control/development.js")
@@ -41,6 +45,14 @@ try {
     await page.locator("#refreshDevelopment").click();
     await page.getByText("Local history available on this server").waitFor();
     assert.equal(await page.locator(".development-local-entry").count(), 2);
+    assert.equal(await page.locator("#developmentDeliveryBatches > li").count(), 8,
+      "Eight explicit audited batches remain in owner Control");
+    assert.equal(await page.locator("#developmentTournamentRoadmap > article").count(), 5,
+      "4.6-5.0 release stages remain visible");
+    assert.match(await page.locator("#developmentTournamentRoadmap").innerText(), /5\.0\.0[\s\S]*owner sign-off/i);
+    assert.match(await page.locator("#developmentDeliveryBatches").innerText(), /Merged.*production separate/i,
+      "GitHub merge must not pretend an Oracle release was deployed");
+
     assert.ok((await page.locator("#developmentLocalEntries").innerText()).includes("Not verified"));
     assert.ok(!(await page.locator("body").innerText()).includes("secret prompt"));
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
