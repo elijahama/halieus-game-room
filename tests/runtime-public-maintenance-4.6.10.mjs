@@ -83,7 +83,7 @@ try {
   assert.match(ui,/id="publicAccessEndZone"/);
   assert.match(ui,/id="publicAccessSchedule"/);
   assert.doesNotMatch(ui,/id="publicAccessDuration"/,"Generic duration selector is rejected");
-  assert.match(accounts,/Automatic reopening must be between one minute and 30 days/);
+  assert.match(accounts,/Duration-based deadlines are no longer supported/);
   assert.match(worker,/if \(response\.ok\)/,"Maintenance 503 never cached as live PWA home");
   console.log("PASS HGR 4.6.10 public maintenance: default open, private persistence, corrupt fail closed, owner recovery, escaped page, routes, room/socket gates and Control UI");
 } finally {await rm(dir,{recursive:true,force:true})}
