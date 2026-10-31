@@ -9,9 +9,9 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.7.3-control-mobile-ops" />
+  <link rel="stylesheet" href="/control/control.css?v=4.7.5-scheduled-maintenance-zones" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.7.3-control-mobile-ops" defer></script>
+  <script src="/control/control.js?v=4.7.5-scheduled-maintenance-zones" defer></script>
   <script src="/control/development.js?v=development-timeline-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
@@ -179,21 +179,45 @@
         <p id="publicAccessStatus" role="status">Checking public access…</p>
         <p id="publicAccessRooms">Checking live rooms…</p>
         <p id="publicAccessDeadline" role="status" hidden></p>
-        <div class="hgr-public-access-duration">
-          <label for="publicAccessDuration">Automatic reopening</label>
-          <select id="publicAccessDuration">
-            <option value="manual" selected>Manual — reopen from Control</option>
-            <option value="30">After 30 minutes</option>
-            <option value="60">After 1 hour</option>
-            <option value="120">After 2 hours</option>
-            <option value="360">After 6 hours</option>
-          </select>
-          <small>Choose how long the public website should stay closed. This timer runs on Oracle even if your phone or laptop is off.</small>
-        </div>
+        <section class="hgr-maintenance-schedule" aria-labelledby="maintenanceScheduleTitle">
+          <h3 id="maintenanceScheduleTitle">Schedule maintenance</h3>
+          <p>Choose an exact start and end, each with its own time zone. Times are saved as absolute instants on Oracle; they do not depend on your phone staying online.</p>
+          <p id="publicAccessScheduleStatus" role="status">No maintenance window scheduled.</p>
+          <div class="hgr-maintenance-times">
+            <fieldset>
+              <legend>Starts</legend>
+              <label for="publicAccessStart">Date and local time</label>
+              <input id="publicAccessStart" type="datetime-local" required step="60">
+              <label for="publicAccessStartZone">Time zone (IANA)</label>
+              <input id="publicAccessStartZone" type="text" list="maintenanceTimeZoneOptions" value="Europe/London" maxlength="80" autocomplete="off" spellcheck="false">
+            </fieldset>
+            <fieldset>
+              <legend>Ends</legend>
+              <label for="publicAccessEnd">Date and local time</label>
+              <input id="publicAccessEnd" type="datetime-local" required step="60">
+              <label for="publicAccessEndZone">Time zone (IANA)</label>
+              <input id="publicAccessEndZone" type="text" list="maintenanceTimeZoneOptions" value="Europe/London" maxlength="80" autocomplete="off" spellcheck="false">
+            </fieldset>
+          </div>
+          <datalist id="maintenanceTimeZoneOptions">
+            <option value="Europe/London"></option><option value="UTC"></option>
+            <option value="Europe/Dublin"></option><option value="Europe/Paris"></option>
+            <option value="Europe/Berlin"></option><option value="America/New_York"></option>
+            <option value="America/Chicago"></option><option value="America/Los_Angeles"></option>
+            <option value="Asia/Dubai"></option><option value="Asia/Kolkata"></option>
+            <option value="Asia/Tokyo"></option><option value="Australia/Sydney"></option>
+          </datalist>
+          <small>Enter a valid IANA zone (for example, Europe/London or America/New_York). DST gaps or repeated clock times are rejected, not guessed.</small>
+          <div class="hgr-maintenance-schedule-actions">
+            <button type="button" class="secondary-action" id="publicAccessSchedule" disabled>Save scheduled window</button>
+            <button type="button" class="secondary-action" id="publicAccessCancelSchedule" hidden>Cancel scheduled window</button>
+          </div>
+          <small>If any rooms are active when the start arrives, they can finish. The website closes once all rooms are empty, but NEVER later than the end you chose. You can cancel a pending schedule here.</small>
+        </section>
         <label for="publicAccessReason">Reason shown to visitors</label>
         <textarea id="publicAccessReason" rows="2" maxlength="220" placeholder="The Game Room is temporarily closed for maintenance."></textarea>
-        <button type="button" id="publicAccessToggle" class="secondary-action" disabled>Checking status…</button>
-        <small>The reason above is shown to visitors. Tap Close and confirm once; there is no second phrase to type. Closure is refused if any game or lobby is active. Successful closure checks for an HTTP 503 maintenance page. Automatic reopening is available for timed closures; manual reopening remains available from Control. This never runs Update or closes your laptop window.</small>
+        <button type="button" id="publicAccessToggle" class="secondary-action" disabled>Checking immediate access…</button>
+        <small>The reason above is shown to visitors. Tap Close and confirm once; there is no second phrase to type. Closure is refused if any game or lobby is active. Successful closure checks for an HTTP 503 maintenance page. For scheduled closure, enter separate start/end dates, times and zones above. The immediate Close button remains manual and does not select a generic duration. This never runs Update or closes your laptop window.</small>
       </article>
       </section>
       <section id="operationPanelUpdate" role="tabpanel" aria-labelledby="operationTabUpdate" data-operation-panel="update" hidden>

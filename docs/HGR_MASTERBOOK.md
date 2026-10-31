@@ -1847,24 +1847,12 @@ game support or OS turn push. Full user requirement is documented
 separately in the live-game continuity design.
 
 
-## Public Game Room timed maintenance — approved design, implementation candidate (29 October 2026)
+## Public Game Room precise maintenance schedules — owner correction (31 October 2026)
 
-The owner needs duration-based public visitor closures and later future-date
-maintenance windows and scheduled software releases. The existing public
-visitor gate is authoritative; it is **not** the laptop browser-window Close
-operation and does not stop the Oracle process. Owner Control remains
-reachable, and active rooms must block closure.
+The owner rejected duration presets (30 minutes, 1 hour, etc.) as unsuitable. The required Control → Operations → Maintenance workflow is **an exact START date, local time and IANA zone, and an exact END date, local time and independently selectable IANA zone**, not “close now, reopen after N minutes.” Immediate manual Close/Reopen remains separate, with no generic duration selector.
 
-The initial source candidate adds optional 30m, 1h, 2h or 6h expiry to an
-owner-confirmed public closure, with manual reopening preserved as default.
-Oracle stores UTC deadlines outside deployable source, automatically reopens
-when due, and recovers the schedule after a service restart. The visitor page
-and Control show the UK-local reopening time. Safety invariants include no
-forced interruption to active games, serialized state writes, invalid-date
-rejection, browser-independent operation, and separate release-update controls.
+At schedule creation the server resolves each chosen civil clock time in its named IANA zone to an absolute UTC instant and rejects spring DST gaps, fall DST ambiguities, reversed windows, and invalid dates. A saved private `public-access.json` record contains both UTC instants, both zone names, visitor reason, owner identity and state (Scheduled, Waiting for rooms, Active, Completed or Missed). Oracle timers continue independently of the owner phone/laptop and survive a service restart. Scheduler activation is deferred until persisted rooms are recovered; room counts use the same authoritative cross-game owner registry. The schedule must never kick existing players: at scheduled start it closes if all rooms are empty, otherwise waits for empty rooms until the exact end. If the end arrives first, the window is Missed and no late closure occurs; if closure began late it **still ends at the original specified end**, never at start + duration. Owner can cancel a pending window; explicit manual Reopen is always available and cancels active closure. Control stays accessible at all times.
 
-Subsequent audited work must implement future start/end windows with safe
-room-draining, then scheduled approved releases through the existing
-authenticated owner-PC Control bridge. Neither future scheduling nor automatic
-updates are implemented by this source candidate. **No real website closure,
-remote deployment, or production schedule has been initiated.**
+Owner schedule and cancel endpoints are session/role-authorized, same-origin and explicitly confirmed; immediate Close refuses to silently erase a pending schedule. Visitors see the selected end-zone reopening time. Legacy persisted timed closures are safely read for migration, but the rejected duration-based UI is removed. No scheduled software release or update execution is implemented in this batch. No production closure or future window is activated by a source merge.
+
+Implementation and regressions: [HGR Public Maintenance](HGR_PUBLIC_MAINTENANCE.md), `server/src/platform/maintenanceTimeZones.ts`, `server/src/platform/publicAccess.ts`, `tests/runtime-scheduled-maintenance-zones.mjs`. Validate Windows/Ubuntu CI, responsive mobile, browser progress, game-preserving release gates, and Oracle fingerprint independently before claiming deployed.

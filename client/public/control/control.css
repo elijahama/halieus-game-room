@@ -594,14 +594,35 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
   .control-operation-tabs [role="tab"]{transition:none}
 }
 
-/* Timed public closure: compact and consistent with existing Control forms. */
-.hgr-public-access-duration { display:grid; gap:7px; min-width:0; }
-.hgr-public-access-duration label { font-weight:700; font-size:.9rem; }
-.hgr-public-access-duration select {
-  width:100%; min-height:44px; padding:10px 12px;
-  border:1px solid #50617b; border-radius:12px;
-  background:#0c1727; color:#eef4ff; font:inherit;
+/* Exact start/end maintenance schedule, responsive and touch-safe. */
+.hgr-maintenance-schedule {
+  display:grid;gap:12px;min-width:0;padding:16px;margin:12px 0;
+  border:1px solid rgba(127,167,236,.28);border-radius:14px;background:rgba(23,36,58,.64);
 }
-.hgr-public-access-duration select:focus-visible { outline:2px solid #94c1ff; outline-offset:3px; }
-#publicAccessDeadline { font-weight:700; color:#a2f8c9; }
-#publicAccessDeadline[hidden] { display:none; }
+.hgr-maintenance-schedule h3{font-size:16px;margin:0}
+.hgr-maintenance-schedule p,.hgr-maintenance-schedule small{margin:0;line-height:1.5;color:#c0d1ea}
+#publicAccessScheduleStatus{color:#b7f6ce;font-weight:700;overflow-wrap:anywhere}
+.hgr-maintenance-times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+.hgr-maintenance-times fieldset{
+  border:1px solid rgba(135,166,216,.25);border-radius:12px;
+  padding:12px;margin:0;display:grid;gap:8px;min-width:0
+}
+.hgr-maintenance-times legend{padding:0 6px;font-weight:800;color:#e2eeff}
+.hgr-maintenance-times label{font-weight:700;font-size:12px;color:#d2dff3}
+.hgr-maintenance-times input{
+  width:100%;min-width:0;max-width:100%;min-height:44px;padding:9px 10px;
+  border:1px solid #526987;border-radius:10px;background:#0c1727;color:#eef4ff;
+  color-scheme:dark;font:inherit;font-size:13px
+}
+.hgr-maintenance-times input:focus-visible{outline:2px solid #94c1ff;outline-offset:2px}
+.hgr-maintenance-times input:disabled{opacity:.6}
+.hgr-maintenance-schedule-actions{display:flex;flex-wrap:wrap;gap:10px}
+.hgr-maintenance-schedule-actions button{min-height:44px}
+#publicAccessCancelSchedule{border-color:#de976c;color:#ffd0ad}
+#publicAccessDeadline{font-weight:700;color:#a2f8c9}
+#publicAccessDeadline[hidden],#publicAccessCancelSchedule[hidden]{display:none!important}
+@media(max-width:720px){
+  .hgr-maintenance-times{grid-template-columns:1fr}
+  .hgr-maintenance-schedule{padding:12px}
+  .hgr-maintenance-schedule-actions button{width:100%}
+}

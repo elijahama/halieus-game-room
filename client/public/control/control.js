@@ -85,6 +85,16 @@
     }).format(new Date(Number(timestamp)));
   }
 
+  function formatMaintenanceZone(timestamp, zone) {
+    if (!Number.isSafeInteger(timestamp) || !zone) return "—";
+    try {
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone: zone, day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+      }).format(timestamp) + " (" + zone + ")";
+    } catch { return "Invalid time zone"; }
+  }
+
   function normalise(value) {
     return String(value || "").trim().toLocaleLowerCase();
   }
@@ -714,6 +724,9 @@
       publicAccessState = result.state;
       const closed = publicAccessState?.closed === true;
       const active = Number(result.activeRooms || 0);
+      const window = publicAccessState?.scheduledWindow || null;
+      const pending = window && ["scheduled", "waiting-for-rooms"].includes(window.status);
+      const activeWindow = window && window.status === "active";
       const deadline = closed && Number.isSafeInteger(publicAccessState?.reopenAt)
         ? publicAccessState.reopenAt : null;
       $("publicAccessStatus").textContent = closed
@@ -721,17 +734,39 @@
         : "Public Game Room is open.";
       $("publicAccessDeadline").hidden = !deadline;
       $("publicAccessDeadline").textContent = deadline
-        ? "Automatic reopening: " + formatUkMaintenanceDeadline(deadline)
+        ? "Reopens at: " + (activeWindow
+          ? formatMaintenanceZone(deadline, window.endTimeZone)
+          : formatUkMaintenanceDeadline(deadline))
         : "";
-      $("publicAccessDuration").disabled = closed;
+      const detail = window
+        ? "Start: " + formatMaintenanceZone(window.startAt, window.startTimeZone)
+          + " · End: " + formatMaintenanceZone(window.endAt, window.endTimeZone)
+        : "";
+      const statusLabels = {
+        scheduled: "Scheduled for the selected start time.",
+        "waiting-for-rooms": "Start reached · waiting for live rooms to finish. End time will not be extended.",
+        active: "Maintenance currently active; scheduled reopening is fixed.",
+        completed: "Last maintenance window completed.",
+        missed: "Scheduled window ended before rooms became empty; no interruption occurred.",
+      };
+      $("publicAccessScheduleStatus").textContent = window
+        ? (statusLabels[window.status] || "Schedule state unavailable.") + " " + detail
+        : "No maintenance window scheduled.";
+      $("publicAccessSchedule").disabled = closed || Boolean(pending) || Boolean(activeWindow);
+      $("publicAccessCancelSchedule").hidden = !pending;
+      $("publicAccessCancelSchedule").disabled = !pending;
+      for (const id of ["publicAccessStart", "publicAccessEnd", "publicAccessStartZone", "publicAccessEndZone"]) {
+        $(id).disabled = closed || Boolean(pending) || Boolean(activeWindow);
+      }
       $("publicAccessRooms").textContent = active + " live room" + (active === 1 ? "" : "s") + ".";
       if (document.activeElement !== $("publicAccessReason") && closed) {
         $("publicAccessReason").value = publicAccessState.reason || "";
       }
       const button = $("publicAccessToggle");
       button.textContent = closed ? "Reopen Public Game Room" : "Close Public Game Room";
-      button.disabled = !closed && active > 0;
-      button.title = !closed && active > 0 ? "Close is blocked while live rooms are occupied." : "";
+      button.disabled = !closed && (active > 0 || Boolean(pending));
+      button.title = !closed && pending ? "Cancel the pending schedule before using immediate Close."
+        : !closed && active > 0 ? "Close is blocked while live rooms are occupied." : "";
       button.dataset.state = closed ? "closed" : "open";
     } catch (error) {
       $("publicAccessStatus").textContent = error instanceof Error ? error.message : "Unable to read public access state.";
@@ -763,8 +798,7 @@
           state: closing ? "closed" : "open",
           confirmation: phrase,
           reason: $("publicAccessReason").value.trim(),
-          reopenAt: closing && ["30", "60", "120", "360"].includes($("publicAccessDuration").value)
-            ? Date.now() + Number($("publicAccessDuration").value) * 60_000 : null,
+          reopenAt: null,
         }),
       });
       const result = await response.json().catch(() => ({}));
@@ -796,6 +830,74 @@
       // status. The owner needs to know that a live match blocked closure.
       if (failureReason) $("publicAccessStatus").textContent = failureReason;
       else if (verifiedOutcome) $("publicAccessStatus").textContent = verifiedOutcome;
+    }
+  }
+
+  async function schedulePublicAccessWindow() {
+    if (state.account?.role !== "owner" || publicAccessBusy || !publicAccessState || publicAccessState.closed) return;
+    const startLocal = $("publicAccessStart").value;
+    const endLocal = $("publicAccessEnd").value;
+    const startTimeZone = $("publicAccessStartZone").value.trim();
+    const endTimeZone = $("publicAccessEndZone").value.trim();
+    if (!startLocal || !endLocal || !startTimeZone || !endTimeZone) {
+      $("publicAccessScheduleStatus").textContent = "Enter both dates, both local times and both time zones.";
+      return;
+    }
+    if (publicAccessState.scheduledWindow &&
+      ["scheduled", "waiting-for-rooms", "active"].includes(publicAccessState.scheduledWindow.status)) return;
+    const summary = "Schedule a PUBLIC Game Room closure?\n\n"
+      + "Start: " + startLocal + " (" + startTimeZone + ")\n"
+      + "End: " + endLocal + " (" + endTimeZone + ")\n\n"
+      + "Live rooms will not be interrupted. The closure never extends beyond the chosen end. Control remains accessible.";
+    if (!window.confirm(summary)) return;
+    publicAccessBusy = true;
+    $("publicAccessSchedule").disabled = true;
+    $("publicAccessScheduleStatus").textContent = "Saving the exact maintenance window…";
+    let errorText = "";
+    try {
+      const response = await fetch("/admin/public-access/schedule", {
+        method: "POST", credentials: "include", cache: "no-store",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          confirmation: "SCHEDULE PUBLIC MAINTENANCE",
+          startLocal, startTimeZone, endLocal, endTimeZone,
+          reason: $("publicAccessReason").value.trim(),
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok || !result.state?.scheduledWindow)
+        throw Error(result.reason || "The schedule was not saved.");
+      publicAccessState = result.state;
+    } catch (error) {
+      errorText = error instanceof Error ? error.message : "Could not save the schedule.";
+    } finally {
+      publicAccessBusy = false;
+      await refreshPublicAccess();
+      if (errorText) $("publicAccessScheduleStatus").textContent = errorText;
+    }
+  }
+
+  async function cancelPublicAccessWindow() {
+    if (state.account?.role !== "owner" || publicAccessBusy || !publicAccessState?.scheduledWindow) return;
+    if (!window.confirm("Cancel the scheduled maintenance window? This will not close or reopen the Game Room.")) return;
+    publicAccessBusy = true;
+    $("publicAccessCancelSchedule").disabled = true;
+    let errorText = "";
+    try {
+      const response = await fetch("/admin/public-access/schedule/cancel", {
+        method: "POST", credentials: "include", cache: "no-store",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ confirmation: "CANCEL PUBLIC MAINTENANCE" }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) throw Error(result.reason || "Cancellation failed.");
+      publicAccessState = result.state;
+    } catch (error) {
+      errorText = error instanceof Error ? error.message : "Cancellation failed.";
+    } finally {
+      publicAccessBusy = false;
+      await refreshPublicAccess();
+      if (errorText) $("publicAccessScheduleStatus").textContent = errorText;
     }
   }
 
@@ -831,6 +933,8 @@
     });
     queryAll("[data-section]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.section)));
     $("publicAccessToggle")?.addEventListener("click", () => void togglePublicAccess());
+    $("publicAccessSchedule")?.addEventListener("click", () => void schedulePublicAccessWindow());
+    $("publicAccessCancelSchedule")?.addEventListener("click", () => void cancelPublicAccessWindow());
     queryAll("[data-jump]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.jump)));
     $("refreshLive")?.addEventListener("click", () => void refreshCore());
     $("refreshAudit")?.addEventListener("click", () => void refreshCore());

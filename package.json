@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.7.4",
+  "version": "4.7.5",
   "private": true,
   "workspaces": [
     "client",
@@ -11,7 +11,7 @@
     "test:replays:all": "node --import tsx tests/runtime-hgr-game-replay-archive-part37.mjs && node --import tsx tests/runtime-mega-tournament-ratings-part37.mjs",
     "test:browser:gallery-all": "node tests/browser-gallery-all-games-4.6.6.mjs",
     "test:browser:public-maintenance": "node --import tsx tests/browser-public-maintenance-4.6.10.mjs",
-    "test:public:maintenance": "node --import tsx tests/runtime-public-maintenance-4.6.10.mjs && node tests/runtime-public-maintenance-integration-4.6.10.mjs",
+    "test:public:maintenance": "node --import tsx tests/runtime-public-maintenance-4.6.10.mjs && node tests/runtime-public-maintenance-integration-4.6.10.mjs && npm run test:maintenance:schedule",
     "test:guild:fixtures": "node --import tsx tests/runtime-guild-fixtures-4.7.0.mjs && node --import tsx tests/runtime-guild-fixtures-http-4.7.0.mjs && node --import tsx tests/runtime-guild-fixture-real-rooms-4.7.0.mjs",
     "test:beta:tournament": "node --import tsx tests/runtime-beta-tournament-invites-4.7.0.mjs",
     "test:control:background": "node tests/runtime-control-portrait-background-updates.mjs",
@@ -73,7 +73,8 @@
     "test:active-match": "npm run test:active-match:wiring && node --import tsx tests/runtime-active-match.mjs",
     "test:browser:active-match": "node tests/browser-active-match-notice.mjs",
     "test:browser:account-workspace": "node tests/browser-account-workspace.mjs",
-    "test:browser:flat-mobile-join": "node tests/browser-flat-mobile-join.mjs"
+    "test:browser:flat-mobile-join": "node tests/browser-flat-mobile-join.mjs",
+    "test:maintenance:schedule": "node --import tsx tests/runtime-scheduled-maintenance-zones.mjs"
   },
   "engines": {
     "node": ">=20.19.0"

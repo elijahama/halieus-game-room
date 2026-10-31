@@ -9,9 +9,10 @@ const root = resolve(import.meta.dirname, "..");
 try {
   const {
     cleanMaintenanceReason, getPublicAccessState, loadPublicAccessState,
-    setPublicAccessState, renderPublicClosedPage, onPublicAccessChanged,
+    setPublicAccessState, renderPublicClosedPage, onPublicAccessChanged, enableMaintenanceScheduler,
   } = await import("../server/src/platform/publicAccess.ts");
   assert.equal((await loadPublicAccessState()).closed,false,"New HGR installation defaults public");
+  enableMaintenanceScheduler();
   assert.equal(cleanMaintenanceReason(""),"The Game Room is temporarily closed. Please check back later.");
   const events = [];
   const detach = onPublicAccessChanged(state=>events.push(state.closed));
@@ -76,8 +77,13 @@ try {
   assert.match(control,/gateCheck\.status !== 503/,"Successful close needs an actual public maintenance response");
   assert.match(ui,/id="publicAccessCard"/);
   assert.match(ui,/id="publicAccessToggle"/);
-  assert.match(ui,/id="publicAccessDuration"/);
-  assert.match(accounts,/Automatic reopening must be between one minute and 30 days/);
+  assert.match(ui,/id="publicAccessStart"/);
+  assert.match(ui,/id="publicAccessEnd"/);
+  assert.match(ui,/id="publicAccessStartZone"/);
+  assert.match(ui,/id="publicAccessEndZone"/);
+  assert.match(ui,/id="publicAccessSchedule"/);
+  assert.doesNotMatch(ui,/id="publicAccessDuration"/,"Generic duration selector is rejected");
+  assert.match(accounts,/Duration-based deadlines are no longer supported/);
   assert.match(worker,/if \(response\.ok\)/,"Maintenance 503 never cached as live PWA home");
   console.log("PASS HGR 4.6.10 public maintenance: default open, private persistence, corrupt fail closed, owner recovery, escaped page, routes, room/socket gates and Control UI");
 } finally {await rm(dir,{recursive:true,force:true})}

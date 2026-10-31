@@ -54,7 +54,7 @@ import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthent
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
-import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage } from "./platform/publicAccess.js";
+import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler } from "./platform/publicAccess.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
 import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHandlers.js";
@@ -500,8 +500,10 @@ const getMegaBoardLiveRoomSummaries = () => [...rooms.values()]
     spectatable: room.started,
   }));
 
+const authoritativeRoomCount = () => getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getWordBoardRoomCount();
+configureMaintenanceRoomCount(authoritativeRoomCount);
 configureAccountAdminRuntimeControls({
-  getRoomCount: () => getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getWordBoardRoomCount(),
+  getRoomCount: authoritativeRoomCount,
   getLiveRooms: () => [
     ...getMegaBoardLiveRoomSummaries(),
     ...getPokerLiveRoomSummaries(),
@@ -653,6 +655,9 @@ for (const code of rooms.keys()) {
 }
 
 restoreHostGraceTimers(io);
+ 
+// Do not run a future closure before the persisted rooms have been recovered.
+enableMaintenanceScheduler();
 
 process.on("SIGINT", async () => {
   clearInterval(aiCoordinator);
@@ -697,7 +702,8 @@ app.use((request: Request, response: Response, next: NextFunction) => {
   response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   response.setHeader("Pragma", "no-cache");
   response.setHeader("X-Robots-Tag", "noindex,nofollow,noarchive");
-  response.status(503).type("html").send(renderPublicClosedPage(gate.reason, gate.reopenAt));
+  response.status(503).type("html").send(renderPublicClosedPage(
+    gate.reason, gate.reopenAt, gate.scheduledWindow?.endTimeZone ?? "Europe/London"));
 });
 
 const shouldServeClient =
