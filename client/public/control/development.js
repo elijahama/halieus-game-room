@@ -148,7 +148,7 @@
   const pullState = (item) => ({
     draft: "Draft · awaiting review",
     open: "Open · awaiting review",
-    merged: "Merged · changes accepted",
+    merged: "Merged in GitHub · production separate",
     closed: "Closed · not merged",
   })[item.state] || "Status unavailable";
   const runState = (run) => {
