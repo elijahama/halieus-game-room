@@ -1228,6 +1228,7 @@ export function registerAccountRoutes(app: Express): void {
       topic:"invites", title:"HGR room invitation",
       body: betaHost ? `${auth.account.displayName} invited you to a non-scoring Beta practice match.` : `${auth.account.displayName} invited you to ${room.gameTitle}.`,
       url:"/?inbox=1",tag:"hgr-room-"+invite.id,
+      game:room.game,
     });
     response.status(201).json({ ok: true, invite: { ...((({ dismissedAt: _dismissedAt, ...item }) => item)(invite)), betaTournamentTest: Boolean(betaHost) } });
   });
@@ -1276,6 +1277,7 @@ export function registerAccountRoutes(app: Express): void {
       topic:"invites", title:"HGR game request",
       body:`${auth.account.displayName} invited you to play ${item.gameTitle}.`,
       url:"/?inbox=1",tag:"hgr-request-"+item.id,
+      game:item.game,
     });
     response.status(201).json({ ok: true, request: item });
   });
