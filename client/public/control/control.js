@@ -657,7 +657,10 @@
     const lifecycleLabel = operation.action === "start" ? "Open HGR window"
       : operation.action === "restart" ? "Restart HGR window"
         : operation.action === "close" ? "Close HGR window" : operation.action === "update" ? "Update HGR" : "Control action";
+    // A failed historic operation is not the live site's release status:
+    // someone may have independently deployed a newer verified version.
     $("operationTitle").textContent = operation.state === "succeeded" ? `${lifecycleLabel} complete`
+      : operation.state === "failed" && operation.action === "update" ? "Last update attempt failed"
       : operation.state === "failed" ? `${lifecycleLabel} failed`
       : operation.state === "rejected" ? `${lifecycleLabel} not started` : operation.title;
     const terminalReason = operation.state === "failed" || operation.state === "rejected" ? operation.reason : "";
