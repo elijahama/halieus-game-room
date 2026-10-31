@@ -23,12 +23,12 @@
     },
     {
       id: "D", title: "Live-game continuity and push reliability",
-      plan: "Planned · gameplay safety", issue: 115,
+      plan: "Planned · gameplay safety", issue: 191,
       gate: "Background/foreground return cannot softlock a match; join/rejoin and required-decision alerts work in real games, including Android device acceptance.",
     },
     {
       id: "E", title: "Mobile Owner Settings and flat Join control",
-      plan: "Planned · interface repair",
+      plan: "Planned · interface repair", issue: 192,
       gate: "Profile/Owner Settings redesigned and tested at phone/tablet widths; Join loses all gloss, emboss and unwanted physical-button shadows.",
     },
     {
