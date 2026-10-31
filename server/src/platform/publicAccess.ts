@@ -229,6 +229,9 @@ async function processScheduledWindow(): Promise<void> {
         scheduledWindow: { ...window, status: "active" },
         updatedBy: "scheduled-maintenance-start", updatedAt: now };
     });
+    // A waiting window may make no state change while games continue. Even in
+    // that case it needs another check; enqueue's no-op path does not re-arm.
+    armScheduledReopen();
   } catch (error) {
     console.error("[HGR] Could not persist scheduled maintenance transition; retrying.", error);
     reopenTimer = setTimeout(() => void processScheduledWindow(), ROOM_RETRY_MS);
