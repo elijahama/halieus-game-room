@@ -44,6 +44,17 @@ try {
   assert(!layout.overflow,"Control public-access panel fits "+viewport.width+"px");
   assert(layout.btn.width>100&&layout.btn.width<=layout.card.width,"Reopen button usable on mobile");
   assert(layout.btn.height>=44,"Control Reopen touch target");
+  for (const id of ["publicAccessStart","publicAccessStartZone","publicAccessEnd","publicAccessEndZone"]) {
+    const bounds=await page.locator("#"+id).boundingBox();
+    assert(bounds&&bounds.height>=44,"Schedule field must be touch accessible: "+id);
+    assert(bounds.x>=0&&bounds.x+bounds.width<=viewport.width+1,
+      "Schedule field must fit viewport without clipping: "+id+" at "+viewport.width);
+  }
+  const schedule=await page.locator("#publicAccessSchedule").boundingBox();
+  assert(schedule&&schedule.height>=44,"Schedule action touch target");
+  assert.equal(await page.locator("#publicAccessDuration").count(),0,
+    "Generic duration preset must not be reintroduced");
+
   await page.close();
  }
  console.log("PASS 4.6.10 public maintenance visitor/owner Control layouts at 320,360,390,820,1440; no horizontal overflow and accessible controls");
