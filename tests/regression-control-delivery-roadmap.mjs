@@ -36,7 +36,7 @@ for (const version of ["4.6.x", "4.7.x", "4.8.x", "4.9.x", "5.0.0"]) {
 assert.match(js, /pulls\.find\(pull => Number\(pull\.number\) === batch\.pr\)/,
   "PR state must come from actual GitHub returned data rather than hard-coded job assumptions");
 assert.match(js, /Status not in latest GitHub snapshot/, "Unknown source state must be visibly unknown");
-assert.match(js, /A planned batch is not work running/, "Plan cannot pretend work is executing");
+assert.match(html, /A planned batch is not work running/, "Plan cannot pretend work is executing");
 assert.match(js, /No.*hardware MAC address access/, "Do not promise impossible website MAC bans");
 assert.match(js, /owner sign-off/i, "5.0 needs owner acceptance");
 assert.match(js, /Tournament feature gate still requires owner acceptance|owner acceptance still required/i);
