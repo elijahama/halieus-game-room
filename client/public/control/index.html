@@ -210,18 +210,6 @@
         <div class="operation-grid operation-grid--software">
           <button data-operation="update" data-update-state="idle" disabled><span class="operation-action-icon" aria-hidden="true"></span><strong>Update HGR</strong><em class="operation-effect">Run the approved updater, then verify the release.</em><small>Progress appears globally</small></button>
         </div>
-        <section class="panel-card control-update-meter" id="controlUpdateMeter" data-state="idle" aria-labelledby="controlUpdateProgressHeading">
-          <div class="control-update-meter-heading">
-            <div><p class="eyebrow">RELEASE PROGRESS</p><h3 id="controlUpdateProgressHeading">Update progress</h3></div>
-            <strong id="controlUpdatePercent">0%</strong>
-          </div>
-          <div class="control-update-meter-track" id="controlUpdateProgressTrack" role="progressbar"
-            aria-label="Software update progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <span id="controlUpdateProgressFill"></span>
-          </div>
-          <p id="controlUpdateProgressState" role="status">No update is running.</p>
-          <small>Fills only when the approved updater reports progress; completed or failed states are shown explicitly.</small>
-        </section>
         <section class="panel-card hgr-control-update-alerts" aria-label="Update notifications">
         <div>
           <p class="eyebrow">BACKGROUND UPDATES</p>
