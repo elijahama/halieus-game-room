@@ -1868,3 +1868,8 @@ room-draining, then scheduled approved releases through the existing
 authenticated owner-PC Control bridge. Neither future scheduling nor automatic
 updates are implemented by this source candidate. **No real website closure,
 remote deployment, or production schedule has been initiated.**
+
+
+## Android notification status-bar identity — approved asset reuse
+
+The owner rejected newly invented notification artwork. The **small symbol next to the Android clock** must use HGR's existing context-specific identity. The notification `icon` is the full-colour approved source asset; the Android `badge` must be a transparent source-derived monochrome glyph, not an opaque square, because Android masks badges. General platform notices use main HGR gold artwork with the canonical H status glyph; owner Control updates use the approved blue Control H/cog with its exact H/cog silhouette; Mega Board invitations and requests use the existing game SVG and its original M text glyph as the status badge. Other game invitations retain their catalogued full-colour icon, with HGR status glyph fallback until a legible derivative has been approved. Do not redraw launchers or the canonical H. Keep a strict game-ID allowlist and preserve the Control PWA's separate service-worker scope and owner protections. See [Android notification identity](HGR_ANDROID_NOTIFICATION_IDENTITY.md). This is development source; **not production-verified** until an approved release deploy and real Android notification test. The unrelated floating Control update-progress bar is a separate change.
