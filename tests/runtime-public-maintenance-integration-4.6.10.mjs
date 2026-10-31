@@ -90,6 +90,47 @@ try {
   body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM",reopenAt:Date.now()+1000}});
  assert.equal(badWindow.status,400,"An invalid reopening deadline is rejected");
  assert.equal((await request("/")).status,200,"Invalid schedule does not close visitors");
+ const futureStart = (Math.ceil(Date.now() / 60_000) + 6) * 60_000;
+ const scheduleBody = {
+   confirmation:"SCHEDULE PUBLIC MAINTENANCE",
+   startLocal:new Date(futureStart).toISOString().slice(0,16),
+   startTimeZone:"UTC",
+   endLocal:new Date(futureStart+2*60*60*1000).toISOString().slice(0,16),
+   endTimeZone:"Europe/London",
+   reason:"Explicit scheduled window",
+ };
+ // End is in a different zone, so the server—not the client—must resolve it.
+ const endInLondon = new Date(futureStart+2*60*60*1000).toLocaleString("sv-SE",{
+   timeZone:"Europe/London",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false
+ }).replace(" ","T");
+ scheduleBody.endLocal=endInLondon;
+ assert.equal((await request("/admin/public-access/schedule",{method:"POST",body:scheduleBody})).status,403,
+   "Anonymous callers cannot schedule maintenance");
+ assert.equal((await request("/admin/public-access/schedule",{cookie,method:"POST",
+   origin:"https://evil.example",body:scheduleBody})).status,403,"Cross-site schedule must be rejected");
+ const invalidZone=await request("/admin/public-access/schedule",{cookie,method:"POST",
+   body:{...scheduleBody,startTimeZone:"Mars/Olympus"}});
+ assert.equal(invalidZone.status,400,"Unsupported time zone must be rejected");
+ const newSchedule=await request("/admin/public-access/schedule",{cookie,method:"POST",body:scheduleBody});
+ assert.equal(newSchedule.status,200,"Owner can set exact future closure: "+JSON.stringify(newSchedule.json));
+ assert.equal(newSchedule.json.state.closed,false,"Scheduling must not immediately close visitors");
+ assert.equal(newSchedule.json.state.scheduledWindow.startAt,futureStart);
+ assert.equal(newSchedule.json.state.scheduledWindow.endAt,futureStart+2*60*60*1000);
+ assert.equal(newSchedule.json.state.scheduledWindow.startTimeZone,"UTC");
+ assert.equal(newSchedule.json.state.scheduledWindow.endTimeZone,"Europe/London");
+ assert.equal((await request("/")).status,200,"Public game remains open until the precise start");
+ const pendingClose=await request("/admin/public-access",{cookie,method:"POST",
+   body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM"}});
+ assert.equal(pendingClose.status,409,"Immediate Close cannot silently discard a pending window");
+ assert.equal((await request("/admin/public-access/schedule",{cookie,method:"POST",
+   body:scheduleBody})).status,409,"Duplicate schedule requires cancellation first");
+ assert.equal((await request("/admin/public-access/schedule/cancel",{cookie,method:"POST",
+   body:{confirmation:"WRONG"}})).status,409,"Cancellation requires confirmation");
+ const cancel=await request("/admin/public-access/schedule/cancel",{cookie,method:"POST",
+   body:{confirmation:"CANCEL PUBLIC MAINTENANCE"}});
+ assert.equal(cancel.status,200,"Owner can cancel a pending window");
+ assert.equal(cancel.json.state.scheduledWindow,null);
+ assert.equal((await request("/")).status,200,"Cancellation must not close the website");
  const deadline=Date.now()+90_000;
  const closed=await request("/admin/public-access",{cookie,method:"POST",
   body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM",reason:"Planned & approved <test>",reopenAt:deadline}});
