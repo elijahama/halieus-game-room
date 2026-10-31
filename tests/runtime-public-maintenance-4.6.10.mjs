@@ -35,6 +35,22 @@ try {
   assert.equal((await loadPublicAccessState()).closed,true,"Corrupt existing file fails closed");
   assert.equal((await setPublicAccessState(false,"Recovered","owner-test")).closed,false,"Owner can repair corrupt file");
   detach();
+  const reopenAt = Date.now() + 75;
+  const timed = await setPublicAccessState(true, "Short test closure", "owner-test", reopenAt);
+  assert.equal(timed.closed, true);
+  assert.equal(timed.reopenAt, reopenAt, "Expiry must be stored in private state");
+  assert.equal((await loadPublicAccessState()).reopenAt, reopenAt, "Expiry survives reload");
+  assert.match(renderPublicClosedPage("Time-limited access", reopenAt), /Scheduled reopening:/);
+  await new Promise(resolve => setTimeout(resolve, 200));
+  assert.equal(getPublicAccessState().closed, false, "Oracle-owned timer automatically reopens");
+  assert.equal(getPublicAccessState().reopenAt, null, "Reopen removes the deadline");
+  assert.equal(JSON.parse(await readFile(path, "utf8")).closed, false, "Automatic reopen is persisted");
+  // An older expiry must not reopen a newer owner-created closure.
+  await setPublicAccessState(true, "Older timer", "owner-test", Date.now() + 70);
+  await setPublicAccessState(true, "New manual closure", "owner-test");
+  await new Promise(resolve => setTimeout(resolve, 130));
+  assert.equal(getPublicAccessState().closed, true, "Stale automatic reopening cannot override manual closure");
+  await setPublicAccessState(false, "Fixture cleanup", "owner-test");
   const accounts=readFileSync(resolve(root,"server/src/platform/accounts.ts"),"utf8");
   const index=readFileSync(resolve(root,"server/src/index.ts"),"utf8");
   const control=readFileSync(resolve(root,"client/public/control/control.js"),"utf8");
@@ -60,6 +76,8 @@ try {
   assert.match(control,/gateCheck\.status !== 503/,"Successful close needs an actual public maintenance response");
   assert.match(ui,/id="publicAccessCard"/);
   assert.match(ui,/id="publicAccessToggle"/);
+  assert.match(ui,/id="publicAccessDuration"/);
+  assert.match(accounts,/Automatic reopening must be between one minute and 30 days/);
   assert.match(worker,/if \(response\.ok\)/,"Maintenance 503 never cached as live PWA home");
   console.log("PASS HGR 4.6.10 public maintenance: default open, private persistence, corrupt fail closed, owner recovery, escaped page, routes, room/socket gates and Control UI");
 } finally {await rm(dir,{recursive:true,force:true})}

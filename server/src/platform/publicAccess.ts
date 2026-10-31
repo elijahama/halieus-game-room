@@ -13,13 +13,17 @@ export interface HgrPublicAccessState {
   reason: string;
   updatedAt: number;
   updatedBy: string;
+  /** UTC timestamp in milliseconds; null means manual reopening only. */
+  reopenAt: number | null;
 }
 const file = resolve(getAccountDataDirectory(), "public-access.json");
 const DEFAULT_REASON = "The Game Room is temporarily closed. Please check back later.";
-const fresh = (): HgrPublicAccessState => ({ closed: false, reason: DEFAULT_REASON, updatedAt: 0, updatedBy: "system" });
+const fresh = (): HgrPublicAccessState => ({ closed: false, reason: DEFAULT_REASON, updatedAt: 0, updatedBy: "system", reopenAt: null });
 let state = fresh();
 let changeListener: ((next: HgrPublicAccessState) => void) | null = null;
 let writes: Promise<unknown> = Promise.resolve();
+let reopenTimer: ReturnType<typeof setTimeout> | null = null;
+const MAX_TIMER_DELAY_MS = 2_147_483_647;
 
 export function getPublicAccessState(): HgrPublicAccessState { return { ...state }; }
 export function isPublicGameRoomClosed(): boolean { return state.closed; }
@@ -42,29 +46,30 @@ export async function loadPublicAccessState(): Promise<HgrPublicAccessState> {
       reason: cleanMaintenanceReason(value.reason),
       updatedAt: Number.isFinite(value.updatedAt) ? Number(value.updatedAt) : 0,
       updatedBy: typeof value.updatedBy === "string" ? value.updatedBy.slice(0, 120) : "system",
+      reopenAt: typeof value.reopenAt === "number" && Number.isSafeInteger(value.reopenAt) && value.reopenAt > 0
+        ? Number(value.reopenAt) : null,
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") state = fresh();
     else {
       // A damaged closure record must never silently re-open public gameplay.
-      state = { closed: true, reason: DEFAULT_REASON, updatedAt: Date.now(), updatedBy: "recovery" };
+      state = { closed: true, reason: DEFAULT_REASON, updatedAt: Date.now(), updatedBy: "recovery", reopenAt: null };
       console.error("[HGR] Public access state unreadable; closed for visitors until owner repair.");
     }
   }
+  armScheduledReopen();
   return getPublicAccessState();
 }
-export function setPublicAccessState(
-  closed: boolean, reason: unknown, by: string,
-): Promise<HgrPublicAccessState> {
+/**
+ * All access mutations share a serialized persistence queue. In particular,
+ * an expired timer must not reopen a newer owner-created closure.
+ */
+function enqueueAccessChange(makeNext: () => HgrPublicAccessState | null): Promise<HgrPublicAccessState> {
   const work = writes.then(async () => {
+    const next = makeNext();
+    if (!next) return getPublicAccessState();
     const previous = state;
-    const next: HgrPublicAccessState = {
-      closed,
-      reason: cleanMaintenanceReason(reason),
-      updatedAt: Date.now(),
-      updatedBy: by.slice(0, 120),
-    };
-    // Reject new public sockets immediately; restore old gate if disk fails.
+    // Block new public connections immediately; restore the prior gate if disk fails.
     state = next;
     try {
       await mkdir(getAccountDataDirectory(), { recursive: true });
@@ -75,6 +80,7 @@ export function setPublicAccessState(
       state = previous;
       throw error;
     }
+    armScheduledReopen();
     try { changeListener?.(getPublicAccessState()); }
     catch (error) { console.error("[HGR] Public mode notification failed", error); }
     return getPublicAccessState();
@@ -82,12 +88,59 @@ export function setPublicAccessState(
   writes = work.then(() => undefined, () => undefined);
   return work;
 }
+
+export function setPublicAccessState(
+  closed: boolean, reason: unknown, by: string, reopenAt: number | null = null,
+): Promise<HgrPublicAccessState> {
+  return enqueueAccessChange(() => ({
+    closed,
+    reason: cleanMaintenanceReason(reason),
+    updatedAt: Date.now(),
+    updatedBy: by.slice(0, 120),
+    reopenAt: closed && typeof reopenAt === "number" && Number.isSafeInteger(reopenAt) && reopenAt > 0 ? reopenAt : null,
+  }));
+}
+
+async function reopenWhenDue(): Promise<void> {
+  try {
+    await enqueueAccessChange(() => {
+      if (!state.closed || state.reopenAt === null || state.reopenAt > Date.now()) return null;
+      return {
+        closed: false,
+        reason: DEFAULT_REASON,
+        updatedAt: Date.now(),
+        updatedBy: "automatic-reopen",
+        reopenAt: null,
+      };
+    });
+  } catch (error) {
+    console.error("[HGR] Scheduled public reopening could not be persisted; retrying.", error);
+    // A write failure must not report the site reopened. Retry while server remains alive.
+    if (state.closed && state.reopenAt !== null) {
+      reopenTimer = setTimeout(() => void reopenWhenDue(), 10_000);
+      reopenTimer.unref?.();
+    }
+  }
+}
+
+function armScheduledReopen(): void {
+  if (reopenTimer) clearTimeout(reopenTimer);
+  reopenTimer = null;
+  if (!state.closed || state.reopenAt === null) return;
+  const remaining = Math.max(0, state.reopenAt - Date.now());
+  reopenTimer = setTimeout(() => void reopenWhenDue(), Math.min(remaining, MAX_TIMER_DELAY_MS));
+  reopenTimer.unref?.();
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 /** HTML never references custom/replacement H artwork. */
-export function renderPublicClosedPage(reason: string): string {
+export function renderPublicClosedPage(reason: string, reopenAt: number | null = null): string {
   const safeReason = escapeHtml(cleanMaintenanceReason(reason));
+  const validReopenAt = typeof reopenAt === "number" && Number.isSafeInteger(reopenAt) && reopenAt > 0 ? reopenAt : null;
+  const reopenNotice = validReopenAt === null ? "" :
+    `<p>Scheduled reopening: <time datetime="${new Date(validReopenAt).toISOString()}">${new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" }).format(validReopenAt)}</time></p>`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>Game Room temporarily closed · HGR</title>
@@ -105,7 +158,7 @@ button{min-height:44px;cursor:pointer;background:#298aff;color:#07111c;border:0;
 button:disabled{opacity:.55}button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </style></head><body><main><small>Halieus Game Room · Maintenance</small>
 <h1>The Game Room is temporarily closed</h1>
-<p>${safeReason}</p><p>Existing account information and saved game history are preserved. Please return after reopening.</p>
+<p>${safeReason}</p>${reopenNotice}<p>Existing account information and saved game history are preserved. Please return after reopening.</p>
 <details><summary>Owner access to Control</summary><p>If you are already signed in, <a href="/control/">open HGR Control</a>. Otherwise sign in below.</p>
 <form id="controlLogin"><label>Username<input name="username" autocomplete="username" required maxlength="32"></label>
 <label>Password<input name="password" type="password" autocomplete="current-password" required></label>

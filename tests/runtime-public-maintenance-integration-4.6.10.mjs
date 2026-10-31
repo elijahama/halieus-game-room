@@ -86,14 +86,21 @@ try {
  assert.equal((await request("/")).status,200,"Denied closure leaves public site open");
  host.disconnect();host=null;
  await sleep(150);
+ const badWindow=await request("/admin/public-access",{cookie,method:"POST",
+  body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM",reopenAt:Date.now()+1000}});
+ assert.equal(badWindow.status,400,"An invalid reopening deadline is rejected");
+ assert.equal((await request("/")).status,200,"Invalid schedule does not close visitors");
+ const deadline=Date.now()+90_000;
  const closed=await request("/admin/public-access",{cookie,method:"POST",
-  body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM",reason:"Planned & approved <test>"}});
+  body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM",reason:"Planned & approved <test>",reopenAt:deadline}});
  assert.equal(closed.status,200,"Owner can close empty server: "+JSON.stringify(closed.json));
  assert.equal(closed.json.state.closed,true);
+ assert.equal(closed.json.state.reopenAt,deadline,"Deadline returned to owner Control");
  const visitor=await request("/");
  assert.equal(visitor.status,503);
  assert.match(visitor.text,/Game Room is temporarily closed/);
  assert.match(visitor.text,/Planned &amp; approved &lt;test&gt;/,"Owner HTML escaped");
+ assert.match(visitor.text,/Scheduled reopening:/,"Visitor sees scheduled reopening time");
  assert.match(visitor.text,/id="controlLogin"/,"Owner can sign in to Control while public closed");
  assert.match(visitor.text,/href="\/control\/"/,"Control link remains available");
  assert.match(visitor.cache,/no-store/);
@@ -112,6 +119,7 @@ try {
   body:{state:"open",confirmation:"REOPEN PUBLIC GAME ROOM"}});
  assert.equal(open.status,200,"Owner can reopen");
  assert.equal(open.json.state.closed,false);
+ assert.equal(open.json.state.reopenAt,null,"Owner reopening clears the deadline");
  assert.equal((await request("/")).status,200,"Public page restored after reopening");
  const guest=await connect();
  assert(guest.connected,"Game sockets allowed after reopen");

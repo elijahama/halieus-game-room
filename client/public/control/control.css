@@ -593,3 +593,15 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
 @media(prefers-reduced-motion:reduce){
   .control-operation-tabs [role="tab"]{transition:none}
 }
+
+/* Timed public closure: compact and consistent with existing Control forms. */
+.hgr-public-access-duration { display:grid; gap:7px; min-width:0; }
+.hgr-public-access-duration label { font-weight:700; font-size:.9rem; }
+.hgr-public-access-duration select {
+  width:100%; min-height:44px; padding:10px 12px;
+  border:1px solid #50617b; border-radius:12px;
+  background:#0c1727; color:#eef4ff; font:inherit;
+}
+.hgr-public-access-duration select:focus-visible { outline:2px solid #94c1ff; outline-offset:3px; }
+#publicAccessDeadline { font-weight:700; color:#a2f8c9; }
+#publicAccessDeadline[hidden] { display:none; }

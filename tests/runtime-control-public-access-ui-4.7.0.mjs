@@ -28,6 +28,7 @@ function el(id) {
   return elements.get(id);
 }
 el("publicAccessReason").value = "This is a test closure ⚠️";
+el("publicAccessDuration").value = "60";
 const fetch = async (url,options={}) => {
   if (url === "/admin/public-access" && !options.method) {
     return { ok:true,status:200,json:async()=>({ ok:true,state:{closed,reason:el("publicAccessReason").value},
@@ -68,6 +69,7 @@ assert.equal(promptCalled,false);
 assert.equal(mutationBodies[0].state,"closed");
 assert.equal(mutationBodies[0].reason,"This is a test closure ⚠️");
 assert.equal(mutationBodies[0].confirmation,"CLOSE PUBLIC GAME ROOM");
+assert.ok(mutationBodies[0].reopenAt > Date.now() + 59 * 60_000, "One-hour closure sends a UTC deadline");
 assert.ok(gatePath?.startsWith("/?hgr-public-access-check="));
 assert.equal(closed,true);
 assert.match(el("publicAccessStatus").textContent,/Verified: public website is serving HTTP 503 maintenance/);
@@ -76,11 +78,14 @@ assert.match(confirmations[0],/does NOT close the owner-PC window or run an Upda
 await control.togglePublicAccess();
 assert.equal(mutationBodies[1].state,"open");
 assert.equal(mutationBodies[1].confirmation,"REOPEN PUBLIC GAME ROOM");
+assert.equal(mutationBodies[1].reopenAt, null, "Manual reopen clears expiry");
 assert.equal(closed,false);
 assert.match(el("publicAccessStatus").textContent,/Verified: public website has reopened/);
 
 httpStatus=200;
+el("publicAccessDuration").value = "manual";
 await control.togglePublicAccess();
+assert.equal(mutationBodies[2].reopenAt, null, "Manual closure remains indefinite");
 assert.equal(closed,true,"The server did close, but the public gate probe disagrees.");
 assert.match(el("publicAccessStatus").textContent,/website did not return its maintenance page/,
   "Never claim closure worked when reverse proxy still serves normal visitor HTML.");
