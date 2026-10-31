@@ -999,6 +999,11 @@ export function registerAccountRoutes(app: Express): void {
       }
       reopenAt = rawReopenAt;
     }
+    const pendingWindow = getPublicAccessState().scheduledWindow;
+    if (closed && pendingWindow && ["scheduled", "waiting-for-rooms"].includes(pendingWindow.status)) {
+      response.status(409).json({ ok: false,
+        reason: "Cancel the scheduled maintenance window before using immediate Close." }); return;
+    }
     const activeRooms = adminRuntimeControls?.getRoomCount();
     // A missing room registry is NOT proof that no one is playing.
     if (closed && (!Number.isInteger(activeRooms) || activeRooms! > 0)) {
