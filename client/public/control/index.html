@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="/control/control.css?v=4.7.6-oracle-health-diagnostics" />
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/control/control.js?v=4.7.6-oracle-health-diagnostics" defer></script>
-  <script src="/control/development.js?v=development-timeline-v1" defer></script>
+  <script src="/control/development.js?v=development-roadmap-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
   <link rel="manifest" href="/control/manifest.webmanifest?v=4.5.4.19" />
@@ -283,6 +283,23 @@
         <small id="developmentTimestamp">Data is checked when this section opens and cached for up to five minutes.</small>
         <p>Draft or open pull requests are proposed changes, not background jobs. Tests and local work appear here only if GitHub publishes them.</p>
       </article>
+      <section class="panel-card development-delivery" aria-labelledby="deliveryTimelineHeading">
+        <div class="card-heading">
+          <div><p class="eyebrow">DELIVERY PLAN · VERIFIED SOURCES</p><h2 id="deliveryTimelineHeading">Delivery timeline</h2></div>
+        </div>
+        <p>Audited mini-batches, in the order we plan to handle them. A planned batch is not work running in the background; a merged PR is not proof of production deployment.</p>
+        <ol id="developmentDeliveryBatches" class="development-delivery-track" aria-label="Planned and submitted HGR development batches">
+          <li>Loading the release and development plan…</li>
+        </ol>
+      </section>
+      <section class="panel-card development-tournament-roadmap" aria-labelledby="tournamentRoadmapHeading">
+        <div class="card-heading">
+          <div><p class="eyebrow">MAJOR RELEASE PATH</p><h2 id="tournamentRoadmapHeading">Roadmap to HGR 5.0.0</h2></div>
+        </div>
+        <p>The 5.0.0 milestone means a complete, owner-accepted <strong>Mega Board Tournament Mode</strong>, not just a tournament menu or bracket mockup. Version-family milestones require usable features and verified tests.</p>
+        <div id="developmentTournamentRoadmap" class="development-roadmap-stages" aria-label="Tournament release milestones"></div>
+        <p class="development-roadmap-note">Universal saved-game and replay support across all games is a parallel workstream, not a claim that every game already has replay playback. Competitive tournament ratings stay separate from normal Ranked results.</p>
+      </section>
       <article class="panel-card development-local" aria-labelledby="developmentLocalHeading">
         <div class="card-heading">
           <div><p class="eyebrow">LOCAL OPENSHARD EVIDENCE</p><h2 id="developmentLocalHeading">Development timeline</h2></div>

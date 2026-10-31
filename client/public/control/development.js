@@ -3,6 +3,130 @@
   // Read-only: GitHub records are evidence of submitted development, not an
   // assertion that an AI assistant or local test is currently executing.
   const $ = (id) => document.getElementById(id);
+  // The ordered delivery plan is editorial. PR/CI states below are read
+  // from GitHub independently, never invented from a checklist or timer.
+  const DELIVERY_BATCHES = [
+    {
+      id: "A", title: "Update failure diagnostics",
+      plan: "Release source merged", pr: 190,
+      gate: "Oracle health failures show a clear safety-stop reason; no restart when occupancy cannot be verified. Source merged; live installation remains a separate gate.",
+    },
+    {
+      id: "B", title: "Real progress bar inside Update notifications",
+      plan: "Submitted for review", pr: 187,
+      gate: "Visible bar in expanded/minimised Control notifications, driven only by server-reported percentage; mobile acceptance and actual release verification.",
+    },
+    {
+      id: "C", title: "Android status-bar notification identity",
+      plan: "Submitted for review", pr: 188,
+      gate: "Approved main H, Control H/cog and Mega Board M badges; installed Android PWA notification check; no new launcher artwork.",
+    },
+    {
+      id: "D", title: "Live-game continuity and push reliability",
+      plan: "Planned · gameplay safety", issue: 191,
+      gate: "Background/foreground return cannot softlock a match; join/rejoin and required-decision alerts work in real games, including Android device acceptance.",
+    },
+    {
+      id: "E", title: "Mobile Owner Settings and flat Join control",
+      plan: "Planned · interface repair", issue: 192,
+      gate: "Profile/Owner Settings redesigned and tested at phone/tablet widths; Join loses all gloss, emboss and unwanted physical-button shadows.",
+    },
+    {
+      id: "F", title: "Owner sign-in review and blocking controls",
+      plan: "Planned · security", issue: 186,
+      gate: "Owner-only rejected sign-in audit, verified source IP, safe account/IP bans and unban/recovery; no claim of hardware MAC address access.",
+    },
+    {
+      id: "G", title: "Scheduled software releases",
+      plan: "Planned · separate from maintenance", issue: 182,
+      gate: "Exact release window, explicit version approval, game-drain preflight, health and rollback receipts; never run an unapproved update.",
+    },
+    {
+      id: "H", title: "Mobile gameplay, saves and replay acceptance",
+      plan: "Planned · cross-game quality", issue: 153,
+      gate: "Validate Mega Board mobile decisions, live room recovery, finished-match history and game-specific privacy-safe replay adapters in separate audits.",
+    },
+  ];
+
+  const TOURNAMENT_ROADMAP = [
+    {
+      version: "4.6.x", stage: "Foundation carried forward",
+      status: "Foundation source exists; full replay coverage not established",
+      gate: "Independent tournament rating/fixture identity and HGR-wide replay/archive primitives, with no claim that all fourteen game adapters are finished.",
+    },
+    {
+      version: "4.7.x", stage: "Playable Guild fixtures",
+      status: "Current release line · owner acceptance still required",
+      gate: "Two independent real Mega Board games per Guild-v-Guild fixture, locked lineups, unchanged rent, immutable results, reconnection, ties and settlement.",
+    },
+    {
+      version: "4.8.x", stage: "Solo and Guild bracket formats",
+      status: "Planned milestone",
+      gate: "Real entrants, seeded fixtures, winners/losers bracket advancement, elimination/finals policy, room links, spectating and recovery.",
+    },
+    {
+      version: "4.9.x", stage: "Competitive polish and launch readiness",
+      status: "Planned milestone",
+      gate: "Separate tournament player/Guild ratings, scoring and standings, seasons if approved, reports, tournament match replay, mobile UX, abuse controls and release rehearsals.",
+    },
+    {
+      version: "5.0.0", stage: "Complete Mega Board Tournament Mode",
+      status: "Reserved · not released",
+      gate: "Run both Solo and Guild tournaments end-to-end on production: registration, boards, results, brackets, finals, fair recovery, downloadable replay and explicit owner sign-off.",
+    },
+  ];
+
+  function renderDeliveryPlan(pulls = [], pullsAvailable = false) {
+    const container = $("developmentDeliveryBatches");
+    if (!container) return;
+    while (container.firstChild) container.removeChild(container.firstChild);
+    for (const batch of DELIVERY_BATCHES) {
+      const item = document.createElement("li");
+      item.className = "development-delivery-item";
+      const heading = document.createElement("div");
+      heading.className = "development-delivery-heading";
+      const number = text("span", batch.id, "development-batch-id");
+      const title = text("strong", batch.title);
+      heading.append(number, title);
+      item.appendChild(heading);
+      let stateLabel = batch.plan;
+      if (batch.pr && pullsAvailable) {
+        const evidence = pulls.find(pull => Number(pull.number) === batch.pr);
+        if (evidence) stateLabel = pullState(evidence);
+        else stateLabel = "Status not in latest GitHub snapshot · verify PR";
+      }
+      item.appendChild(text("small", stateLabel, "development-batch-state"));
+      item.appendChild(text("p", batch.gate));
+      const numberSource = batch.pr || batch.issue;
+      if (numberSource) {
+        const source = text("a", batch.pr ? "Review change on GitHub" : "View requirements on GitHub", "development-source-link");
+        source.href = "https://github.com/elijahama/halieus-game-room/" +
+          (batch.pr ? "pull/" : "issues/") + numberSource;
+        source.target = "_blank";
+        source.rel = "noopener noreferrer";
+        item.appendChild(source);
+      }
+      container.appendChild(item);
+    }
+  }
+
+  function renderTournamentRoadmap() {
+    const container = $("developmentTournamentRoadmap");
+    if (!container) return;
+    while (container.firstChild) container.removeChild(container.firstChild);
+    for (const milestone of TOURNAMENT_ROADMAP) {
+      const item = document.createElement("article");
+      item.className = "development-roadmap-item";
+      const header = document.createElement("div");
+      header.className = "development-roadmap-heading";
+      header.append(text("strong", milestone.version), text("span", milestone.stage));
+      item.appendChild(header);
+      item.appendChild(text("small", milestone.status, "development-roadmap-state"));
+      item.appendChild(text("p", milestone.gate));
+      container.appendChild(item);
+    }
+  }
+
   const panel = document.querySelector('[data-panel="development"]');
   if (!panel) return;
   let inFlight = null;
@@ -24,7 +148,7 @@
   const pullState = (item) => ({
     draft: "Draft · awaiting review",
     open: "Open · awaiting review",
-    merged: "Merged · changes accepted",
+    merged: "Merged in GitHub · production separate",
     closed: "Closed · not merged",
   })[item.state] || "Status unavailable";
   const runState = (run) => {
@@ -65,6 +189,7 @@
     clear(pullsNode);
     clear(runsNode);
     const pulls = Array.isArray(data.pulls) ? data.pulls : [];
+    renderDeliveryPlan(pulls, Boolean(data.pullsAvailable));
     const runs = Array.isArray(data.runs) ? data.runs : [];
     const open = pulls.filter(pull => pull.state === "open" || pull.state === "draft");
     const recent = pulls.filter(pull => pull.state === "merged" || pull.state === "closed").slice(0, 5);
@@ -125,6 +250,8 @@
     })().finally(() => { inFlight = null; button.disabled = false; });
     return inFlight;
   }
+  renderDeliveryPlan();
+  renderTournamentRoadmap();
   $("refreshDevelopment")?.addEventListener("click", () => { void refresh(); });
   document.addEventListener("click", (event) => {
     if (event.target instanceof Element

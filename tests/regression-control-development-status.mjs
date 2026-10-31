@@ -18,7 +18,7 @@ assert.match(html, /data-panel="development"/);
 assert.match(html, /data-jump="development"/);
 assert.match(html, /id="developmentPulls"/);
 assert.match(html, /id="developmentRuns"/);
-assert.match(html, /src="\/control\/development\.js\?v=development-timeline-v1"/);
+assert.match(html, /src="\/control\/development\.js\?v=development-roadmap-v1"/);
 assert.match(html, /href="\/control\/control\.css\?v=[a-z0-9._-]+"/i);
 assert.match(control, /development: "Development activity"/);
 assert.match(css, /\.development-columns/);
