@@ -19,17 +19,22 @@ export function ProjectTimeline({ currentVersion }: ProjectTimelineProps) {
       </header>
 
       <div className="hgr-project-history-track">
-        {PROJECT_TIMELINE.map((milestone) => (
+        {PROJECT_TIMELINE.map((milestone) => {
+          const isCurrent = !milestone.planned && (milestone.current
+            || milestone.version === currentVersion
+            || (milestone.version.endsWith(".x") && currentVersion.startsWith(milestone.version.slice(0, -1))));
+          return (
           <article
             key={milestone.version}
-            className={`hgr-project-milestone${milestone.current ? " is-current" : ""}`}
+            className={`hgr-project-milestone${isCurrent ? " is-current" : ""}${milestone.planned ? " is-planned" : ""}`}
           >
-            <small>{milestone.phase}</small>
+            <small>{milestone.planned ? "Planned · " : ""}{milestone.phase}</small>
             <strong>{milestone.version}</strong>
             <span>{milestone.title}</span>
             <p>{milestone.summary}</p>
           </article>
-        ))}
+          );
+        })}
       </div>
 
       <p className="hgr-project-history-note">
