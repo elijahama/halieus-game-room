@@ -1,6 +1,6 @@
-const CACHE = 'hgr-cloud-control-v1';
+const CACHE = 'hgr-cloud-control-v2';
 const OFFLINE = '/control/offline.html';
-const SHELL = [OFFLINE, '/control/control-icon.png?v=part26-control-approved2', '/control/control-icon-512.png?v=4.5.4.19'];
+const SHELL = [OFFLINE, '/control/control-icon.png?v=part26-control-approved2', '/control/control-icon-512.png?v=4.5.4.19', '/notification-badges/control.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
@@ -33,7 +33,8 @@ self.addEventListener('push', (event) => {
     tag,
     renotify: true,
     icon: '/control/control-icon.png?v=part26-control-approved2',
-    badge: '/control/control-icon.png?v=part26-control-approved2',
+    // Exact Control H/cog silhouette extracted from the approved launcher art.
+    badge: '/notification-badges/control.png',
     data: { url: '/control/' },
   }));
 });
