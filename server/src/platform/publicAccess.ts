@@ -266,11 +266,27 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 /** HTML never references custom/replacement H artwork. */
-export function renderPublicClosedPage(reason: string, reopenAt: number | null = null): string {
+export function renderPublicClosedPage(reason: string, reopenAt: number | null = null, endTimeZone = "Europe/London"): string {
   const safeReason = escapeHtml(cleanMaintenanceReason(reason));
   const validReopenAt = typeof reopenAt === "number" && Number.isSafeInteger(reopenAt) && reopenAt > 0 ? reopenAt : null;
+  let zone = endTimeZone;
+  let endLabel = "";
+  if (validReopenAt !== null) {
+    try {
+      endLabel = new Intl.DateTimeFormat("en-GB", {
+        timeZone: zone, day: "numeric", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+      }).format(validReopenAt);
+    } catch {
+      zone = "Europe/London";
+      endLabel = new Intl.DateTimeFormat("en-GB", {
+        timeZone: zone, day: "numeric", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit", timeZoneName: "short",
+      }).format(validReopenAt);
+    }
+  }
   const reopenNotice = validReopenAt === null ? "" :
-    `<p>Scheduled reopening: <time datetime="${new Date(validReopenAt).toISOString()}">${new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZoneName: "short" }).format(validReopenAt)}</time></p>`;
+    `<p>Scheduled reopening: <time datetime="${new Date(validReopenAt).toISOString()}">${escapeHtml(endLabel + " (" + zone + ")")}</time></p>`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>Game Room temporarily closed · HGR</title>
