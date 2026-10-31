@@ -131,17 +131,16 @@ try {
  assert.equal(cancel.status,200,"Owner can cancel a pending window");
  assert.equal(cancel.json.state.scheduledWindow,null);
  assert.equal((await request("/")).status,200,"Cancellation must not close the website");
- const deadline=Date.now()+90_000;
- const closed=await request("/admin/public-access",{cookie,method:"POST",
-  body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM",reason:"Planned & approved <test>",reopenAt:deadline}});
+  const closed=await request("/admin/public-access",{cookie,method:"POST",
+  body:{state:"closed",confirmation:"CLOSE PUBLIC GAME ROOM",reason:"Planned & approved <test>"}});
  assert.equal(closed.status,200,"Owner can close empty server: "+JSON.stringify(closed.json));
  assert.equal(closed.json.state.closed,true);
- assert.equal(closed.json.state.reopenAt,deadline,"Deadline returned to owner Control");
+ assert.equal(closed.json.state.reopenAt,null,"Immediate Close is manual; generic auto-expiry is removed");
  const visitor=await request("/");
  assert.equal(visitor.status,503);
  assert.match(visitor.text,/Game Room is temporarily closed/);
  assert.match(visitor.text,/Planned &amp; approved &lt;test&gt;/,"Owner HTML escaped");
- assert.match(visitor.text,/Scheduled reopening:/,"Visitor sees scheduled reopening time");
+ assert.doesNotMatch(visitor.text,/Scheduled reopening:/,"Immediate manual Close must not promise a generic timer");
  assert.match(visitor.text,/id="controlLogin"/,"Owner can sign in to Control while public closed");
  assert.match(visitor.text,/href="\/control\/"/,"Control link remains available");
  assert.match(visitor.cache,/no-store/);
