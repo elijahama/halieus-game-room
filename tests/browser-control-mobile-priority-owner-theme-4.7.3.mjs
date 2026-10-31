@@ -11,7 +11,7 @@ const html = original.replace(/<script\b[^>]*src=[^>]*><\/script>/gi, "");
 const control = await readFile(resolve(pub, "control/control.js"), "utf8");
 const launcher = await readFile(resolve(root, "client/src/platform/control/AdminControlLauncher.tsx"), "utf8");
 const launcherCss = await readFile(resolve(root, "client/src/platform/control/admin-control-launcher.css"), "utf8");
-assert.match(original, /4\.7\.3-control-mobile-ops/);
+assert.match(original, /4\.7\.4-visible-update-meter/, "Control icon and progress assets must use the current notification release tag.");
 assert.match(launcher, /control-icon\.png\?v=part26-control-approved2/, "Do not change approved Control H artwork.");
 assert.match(launcher, /OWNER CONTROLS/);
 assert.match(launcherCss, /color-scheme:dark/);
