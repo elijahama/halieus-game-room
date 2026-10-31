@@ -664,6 +664,26 @@
     if (progressTrack) progressTrack.hidden = !isUpdate;
     percentLabel.textContent = !isUpdate || operation.state === "rejected" ? "—" : `${Math.round(displayedProgress)}%`;
     $("operationProgressBar").style.width = isUpdate ? `${displayedProgress}%` : "0%";
+    const toastProgress = $("operationProgressTrack");
+    if (toastProgress) {
+      toastProgress.setAttribute("aria-hidden", String(!isUpdate));
+      if (isUpdate) toastProgress.setAttribute("aria-valuenow", String(Math.round(displayedProgress)));
+    }
+    // The software Update tab always owns a real, visible meter, even when the
+    // floating status is minimized. Both use exactly the same server receipt.
+    if (isUpdate && $("controlUpdateMeter")) {
+      const updateMeter = $("controlUpdateMeter");
+      const updatePercent = Math.round(displayedProgress);
+      updateMeter.dataset.state = operation.state;
+      $("controlUpdatePercent").textContent = `${updatePercent}%`;
+      $("controlUpdateProgressFill").style.width = `${displayedProgress}%`;
+      $("controlUpdateProgressTrack").setAttribute("aria-valuenow", String(updatePercent));
+      $("controlUpdateProgressState").textContent = operation.state === "succeeded"
+        ? "Update complete · verified by the server."
+        : operation.state === "failed" ? "Update stopped · view operation details."
+          : operation.state === "rejected" ? "Update not started · view operation details."
+            : operation.phase;
+    }
     $("operationToastToggle").title = terminalReason || operation.phase;
     $("operationDetailAction").textContent = operation.title;
     $("operationStarted").textContent = operation.startedAt ? formatWhen(operation.startedAt) : "Unavailable";
