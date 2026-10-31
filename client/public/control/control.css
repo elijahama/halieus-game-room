@@ -605,3 +605,29 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
 .hgr-public-access-duration select:focus-visible { outline:2px solid #94c1ff; outline-offset:3px; }
 #publicAccessDeadline { font-weight:700; color:#a2f8c9; }
 #publicAccessDeadline[hidden] { display:none; }
+
+/* Verified software Update progress — visible in the Update panel at every viewport. */
+.control-update-meter{min-width:0;display:grid;gap:12px;margin-top:14px}
+.control-update-meter-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0}
+.control-update-meter-heading h3{margin:0;font-size:16px}
+#controlUpdatePercent{font-size:22px;font-weight:900;color:#b8c9ff;font-variant-numeric:tabular-nums}
+.control-update-meter-track{width:100%;height:14px;overflow:hidden;border:1px solid rgba(153,177,223,.25);border-radius:999px;background:#242e42}
+.control-update-meter-track span{display:block;width:0%;height:100%;border-radius:inherit;background:#7299ff;transition:width .25s ease}
+.control-update-meter[data-state="succeeded"] .control-update-meter-track span{background:#45b778}
+.control-update-meter[data-state="failed"] .control-update-meter-track span,
+.control-update-meter[data-state="rejected"] .control-update-meter-track span{background:#e29a56}
+.control-update-meter p[role="status"]{margin:0;color:#d5e1f4;font-size:13px;overflow-wrap:anywhere}
+.control-update-meter>small{color:#9cacc8;font-size:11px;line-height:1.5}
+/* The minimized status must never conceal the actual update bar. */
+.operation-toast.is-minimized[data-action="update"] .operation-progress{
+  display:block!important;height:6px;margin:0 10px 9px;border-radius:999px;overflow:hidden
+}
+.operation-toast.is-minimized[data-action="update"] .operation-progress i{border-radius:inherit}
+@media(max-width:720px){
+  .control-update-meter{gap:10px;padding:14px}
+  .control-update-meter-track{height:12px}
+  #controlUpdatePercent{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){
+  .control-update-meter-track span{transition:none}
+}
