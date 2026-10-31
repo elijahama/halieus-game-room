@@ -2,6 +2,8 @@
 
 **Approved owner direction, 26 October 2026. This file is the release-number planning authority for the current development cycle.**
 
+**Current source/live clarification (31 October 2026):** HGR 4.7.5 was independently verified live with exact start/end maintenance scheduling. The corrective 4.7.6 source (Oracle health-gate diagnostics, PR #190) has passed both CI platforms and merged, but is **not** thereby confirmed deployed. The complete 4.7 Guild fixture acceptance is still separate, not automatically achieved by the 4.7.5 release number. For the actionable audited mini-batches in the owner Control Development timeline, see [Delivery Batches and Tournament Roadmap](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md).
+
 ## Release numbering rule
 
 - `MAJOR.MINOR.PATCH` tracks actual product maturity. Never label a pre-5.0 tournament foundation as fully implemented Tournament Mode.
