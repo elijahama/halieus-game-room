@@ -7,5 +7,15 @@ for(const state of [{status:"online",activeRooms:1},{status:"online",activeRooms
 const source=readFileSync("tests/dev-tools/Oracle Quick Deploy/quick-install.sh","utf8");
 assert.ok(source.indexOf('assert-release-idle.mjs')<source.indexOf('MAINTENANCE_JSON='));
 assert.ok(source.lastIndexOf('assert-release-idle.mjs')<source.indexOf('systemctl stop halieus-game-room'));
-assert.equal(source.split('assert-release-idle.mjs').length-1,2);
+assert.equal(source.split('assert-release-idle.mjs').length-1,1,"Both gates must reuse the same checked health parser");
+assert.match(source,/verify_live_rooms_idle "maintenance announcement"/,"Do not notify players without valid local health");
+assert.match(source,/if ! verify_live_rooms_idle "service activation"/,"Recheck immediately before activation");
+assert.match(source,/\[STOPPED\] Oracle \/health is unreachable/,"Curl failure must produce an actionable operation error");
+const runRaw=input=>spawnSync(process.execPath,["scripts/assert-release-idle.mjs"],{input,encoding:"utf8"});
+for(const invalid of ["", "{", "null", "[]", "not-json"]){
+  const result=runRaw(invalid);
+  assert.notEqual(result.status,0,"Empty/invalid health is not proof of an idle site");
+  assert.match(result.stderr,/room occupancy cannot be verified/,"Use a safe clear error, never raw SyntaxError");
+  assert.doesNotMatch(result.stderr,/SyntaxError|JSON\.parse/);
+}
 console.log("PASS deployment refuses active/malformed/unavailable room state before maintenance and activation");

@@ -66,6 +66,16 @@ assert.equal(el("operationPercent").hidden,false);
 assert.equal(el("operationProgressTrack").hidden,false);
 assert.equal(el("operationProgressBar").style.width,"42%");
 assert.equal(el("operationPercent").textContent,"42%");
+control.setOperation(control.normaliseOperation({
+  id:"old-failed-update",action:"update",title:"Update HGR",phase:"Publishing",
+  state:"failed",progress:88,reason:"Oracle local health was unavailable",
+  startedAt:"2026-10-31T01:43:00Z",updatedAt:"2026-10-31T01:53:00Z",
+}));
+assert.equal(el("operationTitle").textContent,"Last update attempt failed",
+  "The historical failed attempt must not be presented as the live site status");
+assert.equal(el("operationProgressBar").style.width,"88%",
+  "A failed operation must retain actual reported progress, not invent 100%");
+
 const unknown = control.normaliseOperation({ id:"unknown",title:"unknown",phase:"Unknown",state:"running",progress:99 });
 control.setOperation(unknown);
 assert.equal(el("operationToast").dataset.action,"unknown");

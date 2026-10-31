@@ -202,7 +202,22 @@ chmod 640 "$ENV_DIR/halieus.env"
 # the production service is stopped. This talks only to the current server over
 # Oracle loopback; it does not expose a public maintenance-control endpoint.
 # Refuse disruption when any live game remains or health cannot be verified.
-curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health | node "$CANDIDATE_DIR/scripts/assert-release-idle.mjs"
+# Capture /health before parsing it. An unreachable production process must
+# produce a clear safety-stop reason, not a secondary JSON.parse exception.
+# Neither an unavailable endpoint nor occupied rooms may trigger activation.
+verify_live_rooms_idle() {
+  local gate="$1"
+  local health_json
+  if ! health_json="$(curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health)"; then
+    echo "[STOPPED] Oracle /health is unreachable at 127.0.0.1:3000 before $gate. Live room occupancy cannot be verified; production was not changed." >&2
+    return 1
+  fi
+  if ! printf '%s' "$health_json" | node "$CANDIDATE_DIR/scripts/assert-release-idle.mjs"; then
+    echo "[STOPPED] Oracle /health did not confirm an idle Game Room before $gate. Active or unverifiable rooms prevent deployment." >&2
+    return 1
+  fi
+}
+verify_live_rooms_idle "maintenance announcement"
 MAINTENANCE_GRACE_SECONDS="${MAINTENANCE_GRACE_SECONDS:-12}"
 MAINTENANCE_JSON="$(node -e 'const version=process.argv[1];const seconds=Number(process.argv[2])||12;process.stdout.write(JSON.stringify({state:"scheduled",reason:"HGR is about to restart for an update.",targetVersion:version,estimatedSeconds:seconds}))' "$EXPECTED_VERSION" "$MAINTENANCE_GRACE_SECONDS")"
 if curl -fsS -X POST   -H 'Content-Type: application/json'   --data "$MAINTENANCE_JSON"   http://127.0.0.1:3000/internal/maintenance >/dev/null 2>&1; then
@@ -213,7 +228,7 @@ else
 fi
 
 # Recheck after the maintenance grace period, immediately before stopping production.
-if ! curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health | node "$CANDIDATE_DIR/scripts/assert-release-idle.mjs"; then
+if ! verify_live_rooms_idle "service activation"; then
   curl --connect-timeout 4 --max-time 8 -fsS -X POST -H 'Content-Type: application/json' --data '{"state":"clear"}' http://127.0.0.1:3000/internal/maintenance >/dev/null 2>&1 || true
   echo "Activation cancelled; existing production service remains running." >&2
   exit 1
