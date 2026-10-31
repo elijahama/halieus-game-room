@@ -7,6 +7,15 @@ const cloud = await readFile(new URL("../client/public/control/cloud-update.js",
 const html = await readFile(new URL("../client/public/control/index.html", import.meta.url), "utf8");
 assert.match(html, /id="operationToast"/);
 assert.match(html, /id="operationProgressBar"/);
+assert.match(html, /id="operationProgressTrack" role="progressbar"/,
+  "Visible update notification must expose an accessible progressbar");
+assert.doesNotMatch(html, /id="controlUpdateMeter"/,
+  "Progress belongs inside the notification, not a duplicate Update page card");
+assert.match(css, /\.operation-toast\.is-minimized\[data-action="update"\] \.operation-progress\s*\{[\s\S]*?display:block!important/,
+  "The notification progress must stay visible when minimized");
+assert.match(css, /\.operation-toast\[data-action="update"\] \.operation-progress\s*\{[\s\S]*?height:12px/,
+  "The notification must show a real substantial progress bar, not a hairline");
+
 assert.match(cloud, /querySelector\(['"]\.operation-grid button\[data-operation="update"\]['"]\)/,
   "Update tile must be selected by exact action ID instead of label text.");
 assert.match(css, /operation-toast:not\(\[data-action="update"\]\) \.operation-progress/);
@@ -66,6 +75,11 @@ assert.equal(el("operationPercent").hidden,false);
 assert.equal(el("operationProgressTrack").hidden,false);
 assert.equal(el("operationProgressBar").style.width,"42%");
 assert.equal(el("operationPercent").textContent,"42%");
+assert.equal(el("operationProgressTrack").attrs["aria-valuenow"], "42",
+  "Accessible progress must match the server's reported amount");
+assert.equal(el("operationProgressTrack").attrs["aria-hidden"], "false",
+  "An Update progress notification must be accessible");
+
 const unknown = control.normaliseOperation({ id:"unknown",title:"unknown",phase:"Unknown",state:"running",progress:99 });
 control.setOperation(unknown);
 assert.equal(el("operationToast").dataset.action,"unknown");
