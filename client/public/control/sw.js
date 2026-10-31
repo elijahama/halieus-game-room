@@ -33,7 +33,8 @@ self.addEventListener('push', (event) => {
     tag,
     renotify: true,
     icon: '/control/control-icon.png?v=part26-control-approved2',
-    badge: '/control/control-icon.png?v=part26-control-approved2',
+    // Exact Control H/cog silhouette extracted from the approved launcher art.
+    badge: '/notification-badges/control.png',
     data: { url: '/control/' },
   }));
 });
