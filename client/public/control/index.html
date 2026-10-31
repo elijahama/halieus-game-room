@@ -9,9 +9,9 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.7.6-oracle-health-diagnostics" />
+  <link rel="stylesheet" href="/control/control.css?v=4.7.8-visible-update-meter" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.7.6-oracle-health-diagnostics" defer></script>
+  <script src="/control/control.js?v=4.7.8-visible-update-meter" defer></script>
   <script src="/control/development.js?v=development-roadmap-v1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
@@ -338,7 +338,7 @@
       <button class="operation-toast-minimize" id="operationToastMinimize" type="button" aria-label="Minimize operation status" title="Minimize operation status">−</button>
     </div>
     <time class="operation-updated" id="operationUpdated"></time>
-    <div class="operation-progress" aria-hidden="true"><i id="operationProgressBar"></i></div>
+    <div class="operation-progress" id="operationProgressTrack" role="progressbar" aria-label="Software update progress" aria-hidden="true" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="operationProgressBar"></i></div>
     <div class="operation-toast-details" id="operationDetails" hidden>
       <div><span>Operation</span><strong id="operationDetailAction">Control action</strong></div>
       <div><span>Started</span><strong id="operationStarted">—</strong></div>
