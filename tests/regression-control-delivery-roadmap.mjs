@@ -26,7 +26,7 @@ for (const name of ["renderDeliveryPlan", "renderTournamentRoadmap", "DELIVERY_B
 for (const pr of [187, 188, 190]) {
   assert.match(js, new RegExp(`pr: ${pr}\\b`), `Existing audited release batch #${pr} must remain linked`);
 }
-for (const issue of [115, 182, 186, 153]) {
+for (const issue of [191, 192, 182, 186, 153]) {
   assert.match(js, new RegExp(`issue: ${issue}\\b`), `Known follow-up requirement #${issue} must remain linked`);
 }
 for (const version of ["4.6.x", "4.7.x", "4.8.x", "4.9.x", "5.0.0"]) {
