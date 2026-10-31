@@ -989,16 +989,13 @@ export function registerAccountRoutes(app: Express): void {
     if (request.body?.confirmation !== expected) {
       response.status(409).json({ ok: false, reason: "The owner confirmation phrase was not accepted." }); return;
     }
-    const rawReopenAt: unknown = request.body?.reopenAt;
-    let reopenAt: number | null = null;
-    if (closed && rawReopenAt !== undefined && rawReopenAt !== null) {
-      const now = Date.now();
-      if (typeof rawReopenAt !== "number" || !Number.isSafeInteger(rawReopenAt) ||
-          rawReopenAt < now + 60_000 || rawReopenAt > now + 30 * 86_400_000) {
-        response.status(400).json({ ok: false, reason: "Automatic reopening must be between one minute and 30 days from now." }); return;
-      }
-      reopenAt = rawReopenAt;
+    // The user rejected duration-based auto reopening. This legacy field is
+    // accepted only in private persisted old state, not for NEW owner actions.
+    if (request.body?.reopenAt !== undefined && request.body.reopenAt !== null) {
+      response.status(400).json({ ok: false,
+        reason: "Duration-based deadlines are no longer supported. Schedule an exact start and end time instead." }); return;
     }
+    const reopenAt: null = null;
     const pendingWindow = getPublicAccessState().scheduledWindow;
     if (closed && pendingWindow && ["scheduled", "waiting-for-rooms"].includes(pendingWindow.status)) {
       response.status(409).json({ ok: false,
