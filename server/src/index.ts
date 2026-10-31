@@ -702,7 +702,8 @@ app.use((request: Request, response: Response, next: NextFunction) => {
   response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   response.setHeader("Pragma", "no-cache");
   response.setHeader("X-Robots-Tag", "noindex,nofollow,noarchive");
-  response.status(503).type("html").send(renderPublicClosedPage(gate.reason, gate.reopenAt));
+  response.status(503).type("html").send(renderPublicClosedPage(
+    gate.reason, gate.reopenAt, gate.scheduledWindow?.endTimeZone ?? "Europe/London"));
 });
 
 const shouldServeClient =
