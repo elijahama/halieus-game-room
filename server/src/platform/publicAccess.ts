@@ -8,6 +8,17 @@ import { getAccountDataDirectory } from "./dataPaths.js";
  * health endpoints stay available even while the public Game Room is closed.
  * This is deliberately independent of temporary deploy/restart notices.
  */
+export interface HgrMaintenanceWindow {
+  id: string;
+  startAt: number;
+  endAt: number;
+  startTimeZone: string;
+  endTimeZone: string;
+  reason: string;
+  createdBy: string;
+  createdAt: number;
+  status: "scheduled" | "waiting-for-rooms" | "active" | "completed" | "missed";
+}
 export interface HgrPublicAccessState {
   closed: boolean;
   reason: string;
@@ -15,15 +26,28 @@ export interface HgrPublicAccessState {
   updatedBy: string;
   /** UTC timestamp in milliseconds; null means manual reopening only. */
   reopenAt: number | null;
+  scheduledWindow: HgrMaintenanceWindow | null;
 }
 const file = resolve(getAccountDataDirectory(), "public-access.json");
 const DEFAULT_REASON = "The Game Room is temporarily closed. Please check back later.";
-const fresh = (): HgrPublicAccessState => ({ closed: false, reason: DEFAULT_REASON, updatedAt: 0, updatedBy: "system", reopenAt: null });
+const fresh = (): HgrPublicAccessState => ({ closed: false, reason: DEFAULT_REASON, updatedAt: 0, updatedBy: "system", reopenAt: null, scheduledWindow: null });
 let state = fresh();
 let changeListener: ((next: HgrPublicAccessState) => void) | null = null;
 let writes: Promise<unknown> = Promise.resolve();
 let reopenTimer: ReturnType<typeof setTimeout> | null = null;
 const MAX_TIMER_DELAY_MS = 2_147_483_647;
+const ROOM_RETRY_MS = 15_000;
+let maintenanceRoomCount: (() => number) | null = null;
+let maintenanceSchedulerReady = false;
+
+/** Room count is supplied by the same authoritative registry as owner Control. */
+export function configureMaintenanceRoomCount(check: () => number): void {
+  maintenanceRoomCount = check;
+}
+export function enableMaintenanceScheduler(): void {
+  maintenanceSchedulerReady = true;
+  armScheduledReopen();
+}
 
 export function getPublicAccessState(): HgrPublicAccessState { return { ...state }; }
 export function isPublicGameRoomClosed(): boolean { return state.closed; }
@@ -48,12 +72,13 @@ export async function loadPublicAccessState(): Promise<HgrPublicAccessState> {
       updatedBy: typeof value.updatedBy === "string" ? value.updatedBy.slice(0, 120) : "system",
       reopenAt: typeof value.reopenAt === "number" && Number.isSafeInteger(value.reopenAt) && value.reopenAt > 0
         ? Number(value.reopenAt) : null,
+      scheduledWindow: validateStoredWindow(value.scheduledWindow),
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") state = fresh();
     else {
       // A damaged closure record must never silently re-open public gameplay.
-      state = { closed: true, reason: DEFAULT_REASON, updatedAt: Date.now(), updatedBy: "recovery", reopenAt: null };
+      state = { closed: true, reason: DEFAULT_REASON, updatedAt: Date.now(), updatedBy: "recovery", reopenAt: null, scheduledWindow: null };
       console.error("[HGR] Public access state unreadable; closed for visitors until owner repair.");
     }
   }
@@ -89,6 +114,54 @@ function enqueueAccessChange(makeNext: () => HgrPublicAccessState | null): Promi
   return work;
 }
 
+function validateStoredWindow(raw: unknown): HgrMaintenanceWindow | null {
+  if (raw === null || raw === undefined) return null;
+  if (!raw || typeof raw !== "object") throw new Error("Malformed scheduled maintenance window");
+  const value = raw as Partial<HgrMaintenanceWindow>;
+  if (typeof value.id !== "string" || value.id.length > 80 ||
+      !Number.isSafeInteger(value.startAt) || !Number.isSafeInteger(value.endAt) ||
+      value.startAt! <= 0 || value.endAt! <= value.startAt! ||
+      typeof value.reason !== "string" ||
+      typeof value.startTimeZone !== "string" || typeof value.endTimeZone !== "string" ||
+      !["scheduled", "waiting-for-rooms", "active", "completed", "missed"].includes(value.status ?? "") ||
+      typeof value.createdBy !== "string" || !Number.isSafeInteger(value.createdAt)) {
+    throw new Error("Malformed scheduled maintenance window");
+  }
+  return { id: value.id, startAt: value.startAt!, endAt: value.endAt!,
+    startTimeZone: value.startTimeZone.slice(0, 80), endTimeZone: value.endTimeZone.slice(0, 80),
+    reason: cleanMaintenanceReason(value.reason), status: value.status!,
+    createdBy: value.createdBy.slice(0, 120), createdAt: value.createdAt! };
+}
+
+export function schedulePublicMaintenance(
+  window: Pick<HgrMaintenanceWindow, "startAt" | "endAt" | "startTimeZone" | "endTimeZone">,
+  reason: unknown, by: string,
+): Promise<HgrPublicAccessState> {
+  return enqueueAccessChange(() => {
+    if (state.closed) throw new Error("Reopen the currently closed Game Room before scheduling a new window.");
+    if (state.scheduledWindow && ["scheduled", "waiting-for-rooms", "active"].includes(state.scheduledWindow.status))
+      throw new Error("Cancel the existing maintenance window before scheduling a replacement.");
+    const now = Date.now();
+    if (!Number.isSafeInteger(window.startAt) || !Number.isSafeInteger(window.endAt) ||
+        window.startAt < now + 25_000 || window.endAt <= window.startAt) throw new Error("Invalid future maintenance window.");
+    const scheduledWindow: HgrMaintenanceWindow = {
+      id: randomUUID(), startAt: window.startAt, endAt: window.endAt,
+      startTimeZone: window.startTimeZone, endTimeZone: window.endTimeZone,
+      reason: cleanMaintenanceReason(reason), createdBy: by.slice(0, 120),
+      createdAt: now, status: "scheduled",
+    };
+    return { ...state, scheduledWindow, updatedAt: now, updatedBy: by.slice(0, 120) };
+  });
+}
+
+export function cancelPublicMaintenance(by: string): Promise<HgrPublicAccessState> {
+  return enqueueAccessChange(() => {
+    if (!state.scheduledWindow || !["scheduled", "waiting-for-rooms"].includes(state.scheduledWindow.status))
+      throw new Error("There is no pending maintenance window to cancel.");
+    return { ...state, scheduledWindow: null, updatedAt: Date.now(), updatedBy: by.slice(0, 120) };
+  });
+}
+
 export function setPublicAccessState(
   closed: boolean, reason: unknown, by: string, reopenAt: number | null = null,
 ): Promise<HgrPublicAccessState> {
@@ -98,6 +171,7 @@ export function setPublicAccessState(
     updatedAt: Date.now(),
     updatedBy: by.slice(0, 120),
     reopenAt: closed && typeof reopenAt === "number" && Number.isSafeInteger(reopenAt) && reopenAt > 0 ? reopenAt : null,
+    scheduledWindow: null,
   }));
 }
 
@@ -111,6 +185,7 @@ async function reopenWhenDue(): Promise<void> {
         updatedAt: Date.now(),
         updatedBy: "automatic-reopen",
         reopenAt: null,
+        scheduledWindow: null,
       };
     });
   } catch (error) {
@@ -123,9 +198,61 @@ async function reopenWhenDue(): Promise<void> {
   }
 }
 
+async function processScheduledWindow(): Promise<void> {
+  try {
+    await enqueueAccessChange(() => {
+      const window = state.scheduledWindow;
+      if (!window || !["scheduled", "waiting-for-rooms", "active"].includes(window.status)) return null;
+      const now = Date.now();
+      if (window.status === "active") {
+        if (now < window.endAt) return null;
+        // The precise owner-selected end is authoritative even after restart.
+        return { ...state, closed: false, reason: DEFAULT_REASON, reopenAt: null,
+          scheduledWindow: { ...window, status: "completed" },
+          updatedBy: "scheduled-maintenance-end", updatedAt: now };
+      }
+      if (now < window.startAt) return null;
+      if (now >= window.endAt) {
+        // Never start a maintenance closure after its explicit end time.
+        return { ...state, scheduledWindow: { ...window, status: "missed" },
+          updatedBy: "scheduled-maintenance-missed", updatedAt: now };
+      }
+      const rooms = maintenanceRoomCount?.();
+      if (!Number.isInteger(rooms) || rooms! < 0 || rooms! > 0) {
+        if (window.status === "waiting-for-rooms") return null;
+        return { ...state, scheduledWindow: { ...window, status: "waiting-for-rooms" },
+          updatedBy: "scheduled-maintenance-drain", updatedAt: now };
+      }
+      // This sync callback checks rooms AND closes the visitor gate before
+      // returning to the event loop: no new room creation can slip between.
+      return { ...state, closed: true, reason: window.reason, reopenAt: window.endAt,
+        scheduledWindow: { ...window, status: "active" },
+        updatedBy: "scheduled-maintenance-start", updatedAt: now };
+    });
+  } catch (error) {
+    console.error("[HGR] Could not persist scheduled maintenance transition; retrying.", error);
+    reopenTimer = setTimeout(() => void processScheduledWindow(), ROOM_RETRY_MS);
+    reopenTimer.unref?.();
+  }
+}
+
 function armScheduledReopen(): void {
   if (reopenTimer) clearTimeout(reopenTimer);
   reopenTimer = null;
+  // The scheduler starts after recovered rooms have been loaded from disk.
+  if (!maintenanceSchedulerReady) return;
+  const window = state.scheduledWindow;
+  if (window && ["scheduled", "waiting-for-rooms", "active"].includes(window.status)) {
+    const now = Date.now();
+    const remaining = window.status === "active" ? window.endAt - now
+      : window.status === "waiting-for-rooms" && now >= window.startAt
+        ? Math.min(ROOM_RETRY_MS, window.endAt - now)
+        : window.startAt - now;
+    reopenTimer = setTimeout(() => void processScheduledWindow(), Math.max(0, Math.min(remaining, MAX_TIMER_DELAY_MS)));
+    reopenTimer.unref?.();
+    return;
+  }
+  // Read-only migration compatibility for older duration-based closures.
   if (!state.closed || state.reopenAt === null) return;
   const remaining = Math.max(0, state.reopenAt - Date.now());
   reopenTimer = setTimeout(() => void reopenWhenDue(), Math.min(remaining, MAX_TIMER_DELAY_MS));
