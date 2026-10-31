@@ -4,6 +4,7 @@ export interface ProjectMilestone {
   title: string;
   summary: string;
   current?: boolean;
+  planned?: boolean;
 }
 
 export const PROJECT_TIMELINE: ProjectMilestone[] = [
@@ -83,6 +84,44 @@ export const PROJECT_TIMELINE: ProjectMilestone[] = [
     title: "Guilds and persistent groups",
     summary:
       "Private guilds added persistent membership, role permissions, chat, guild-organised rooms, Join/Spectate links, room history and an internal guild leaderboard.",
-    current: true,
+  },
+  {
+    version: "4.5.x",
+    phase: "Platform integration",
+    title: "Shared mobile, account and PWA foundations",
+    summary: "Account and guild tools, cross-game mobile presentation, release integrity, owner Control and platform navigation advanced in separately audited releases.",
+  },
+  {
+    version: "4.6.x",
+    phase: "Competition and replay foundations",
+    title: "Independent ratings, archives and game-history infrastructure",
+    summary: "Tournament and replay primitives were introduced without claiming complete cross-game replay viewers or working end-to-end tournaments.",
+  },
+  {
+    version: "4.7.x",
+    phase: "Active release family",
+    title: "Public operations and playable Guild fixture development",
+    summary: "Control maintenance scheduling, game continuity and safer updates accompany the staged two-board Mega Board Guild fixture pathway; the Tournament feature gate still requires owner acceptance.",
+  },
+  {
+    version: "4.8.x",
+    phase: "Planned tournament milestone",
+    title: "Solo and Guild tournament brackets",
+    summary: "Working entrants, elimination and loser-bracket progression, finals, room links, spectators, cancellations and reconnect recovery.",
+    planned: true,
+  },
+  {
+    version: "4.9.x",
+    phase: "Planned tournament milestone",
+    title: "Competition experience and launch assurance",
+    summary: "Separate tournament ratings and standings, reports, tournament match replay, mobile and accessibility acceptance, security and full production rehearsals.",
+    planned: true,
+  },
+  {
+    version: "5.0.0",
+    phase: "Reserved · owner acceptance required",
+    title: "Complete Mega Board Tournament Mode",
+    summary: "A fully playable Solo and Guild tournament from registration to verified final, scoring, recovery and downloadable match replay. No placeholder-only release; explicit owner sign-off required.",
+    planned: true,
   },
 ];
