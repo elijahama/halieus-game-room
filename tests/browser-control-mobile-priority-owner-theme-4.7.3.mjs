@@ -11,12 +11,12 @@ const html = original.replace(/<script\b[^>]*src=[^>]*><\/script>/gi, "");
 const control = await readFile(resolve(pub, "control/control.js"), "utf8");
 const launcher = await readFile(resolve(root, "client/src/platform/control/AdminControlLauncher.tsx"), "utf8");
 const launcherCss = await readFile(resolve(root, "client/src/platform/control/admin-control-launcher.css"), "utf8");
-assert.match(original, /4\.7\.6-oracle-health-diagnostics/);
+assert.match(original, /4\.7\.8-visible-update-meter/, "Update meter assets must use the current cache tag.");
 assert.match(launcher, /control-icon\.png\?v=part26-control-approved2/, "Do not change approved Control H artwork.");
 assert.match(launcher, /OWNER CONTROLS/);
 assert.match(launcherCss, /color-scheme:dark/);
 const exposed = control.replace("  void initialise();",
-  "  globalThis.__auditOps = { setOperationCategory, bindUi };");
+  "  globalThis.__auditOps = { setOperationCategory, bindUi, normaliseOperation, setOperation };");
 assert.notEqual(exposed,control);
 const server = createServer(async (req,res)=>{
   const p = new URL(req.url,"http://localhost").pathname;
@@ -69,6 +69,34 @@ try{
     assert.equal(await page.locator('[data-operation="start"]').isVisible(),true);
     assert.equal(await page.locator('#publicAccessToggle').isVisible(),false);
     assert.equal(await page.locator('[data-operation-tab="laptop"]').getAttribute("aria-selected"),"true");
+
+    const progress = await page.evaluate(() => {
+      const api = window.__auditOps;
+      api.setOperation(api.normaliseOperation({id:"progress-browser",action:"update",
+        title:"Update HGR",phase:"Installing",state:"running",progress:42}));
+      const toast = document.getElementById("operationToast");
+      const track = document.getElementById("operationProgressTrack");
+      const info = () => ({height:track.getBoundingClientRect().height,
+        display:getComputedStyle(track).display, aria:track.getAttribute("aria-valuenow"),
+        hidden:track.getAttribute("aria-hidden"),
+        bar:document.getElementById("operationProgressBar").style.width});
+      toast.classList.remove("is-minimized");
+      const expanded = info();
+      toast.classList.add("is-minimized");
+      const minimized = info();
+      api.setOperation(api.normaliseOperation({id:"lifecycle-browser",action:"restart",
+        title:"Restart HGR window",phase:"Restarting",state:"running",progress:99}));
+      const lifecycle = info();
+      return {expanded,minimized,lifecycle};
+    });
+    assert(progress.expanded.height>=11,label+": update bar must be at least 12px while expanded");
+    assert(progress.minimized.height>=8,label+": update bar must stay visible when minimized");
+    assert.notEqual(progress.minimized.display,"none",label+": minimized update bar hidden");
+    assert.equal(progress.expanded.aria,"42",label+": server progress must reach aria-valuenow");
+    assert.equal(progress.expanded.bar,"42%",label+": actual width is receipt-driven");
+    assert.equal(progress.expanded.hidden,"false",label+": Update must expose progress accessibly");
+    assert.equal(progress.lifecycle.display,"none",label+": Restart must hide Update progress");
+    assert.equal(progress.lifecycle.hidden,"true",label+": Restart must hide accessible Update meter");
     assert.deepEqual(errors,[],label+" unexpected errors");
     console.log("PASS "+label+": maintenance-first tabs, keyboard access, isolated commands, honest version rows");
     await page.close();

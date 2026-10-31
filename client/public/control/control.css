@@ -679,3 +679,18 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
   .development-delivery-track::before{left:6px}
   .development-delivery-item::before{left:-16px}
 }
+
+/* Show actual update progress in the floating Control notification. */
+.operation-toast[data-action="update"] .operation-progress{
+  height:12px;margin:0 13px 12px;border:1px solid rgba(153,177,223,.28);
+  border-radius:999px;background:#242e42;overflow:hidden;
+}
+.operation-toast[data-action="update"] .operation-progress i{
+  height:100%;border-radius:inherit;transition:width .25s ease;
+}
+.operation-toast.is-minimized[data-action="update"] .operation-progress{
+  display:block!important;height:9px;margin:0 10px 9px;
+}
+@media(prefers-reduced-motion:reduce){
+  .operation-toast[data-action="update"] .operation-progress i{transition:none}
+}

@@ -677,6 +677,10 @@
     if (progressTrack) progressTrack.hidden = !isUpdate;
     percentLabel.textContent = !isUpdate || operation.state === "rejected" ? "—" : `${Math.round(displayedProgress)}%`;
     $("operationProgressBar").style.width = isUpdate ? `${displayedProgress}%` : "0%";
+    if (progressTrack) {
+      progressTrack.setAttribute("aria-hidden", String(!isUpdate));
+      if (isUpdate) progressTrack.setAttribute("aria-valuenow", String(Math.round(displayedProgress)));
+    }
     $("operationToastToggle").title = terminalReason || operation.phase;
     $("operationDetailAction").textContent = operation.title;
     $("operationStarted").textContent = operation.startedAt ? formatWhen(operation.startedAt) : "Unavailable";

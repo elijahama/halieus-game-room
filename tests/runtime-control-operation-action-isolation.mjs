@@ -7,6 +7,10 @@ const cloud = await readFile(new URL("../client/public/control/cloud-update.js",
 const html = await readFile(new URL("../client/public/control/index.html", import.meta.url), "utf8");
 assert.match(html, /id="operationToast"/);
 assert.match(html, /id="operationProgressBar"/);
+assert.match(html, /id="operationProgressTrack" role="progressbar"/);
+assert.doesNotMatch(html, /id="controlUpdateMeter"/);
+assert.match(css, /\.operation-toast\.is-minimized\[data-action="update"\] \.operation-progress\s*\{[\s\S]*?display:block!important/);
+assert.match(css, /\.operation-toast\[data-action="update"\] \.operation-progress\s*\{[\s\S]*?height:12px/);
 assert.match(cloud, /querySelector\(['"]\.operation-grid button\[data-operation="update"\]['"]\)/,
   "Update tile must be selected by exact action ID instead of label text.");
 assert.match(css, /operation-toast:not\(\[data-action="update"\]\) \.operation-progress/);
@@ -66,6 +70,8 @@ assert.equal(el("operationPercent").hidden,false);
 assert.equal(el("operationProgressTrack").hidden,false);
 assert.equal(el("operationProgressBar").style.width,"42%");
 assert.equal(el("operationPercent").textContent,"42%");
+assert.equal(el("operationProgressTrack").attrs["aria-valuenow"], "42");
+assert.equal(el("operationProgressTrack").attrs["aria-hidden"], "false");
 control.setOperation(control.normaliseOperation({
   id:"old-failed-update",action:"update",title:"Update HGR",phase:"Publishing",
   state:"failed",progress:88,reason:"Oracle local health was unavailable",
@@ -80,4 +86,5 @@ const unknown = control.normaliseOperation({ id:"unknown",title:"unknown",phase:
 control.setOperation(unknown);
 assert.equal(el("operationToast").dataset.action,"unknown");
 assert.equal(el("operationProgressTrack").hidden,true,"Missing action must never be interpreted as an Update.");
+assert.equal(el("operationProgressTrack").attrs["aria-hidden"],"true");
 console.log("PASS HGR Control: Open/Restart/Close render no Update spinner or progress bar; Update alone displays percentages, missing action cannot impersonate updater.");
