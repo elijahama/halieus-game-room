@@ -18,6 +18,8 @@ export interface HgrPushMessage {
   body: string;
   url: string;
   tag: string;
+  /** Optional canonical HGR game ID; never an arbitrary image URL. */
+  game?: string;
 }
 
 interface DeviceSubscription {
@@ -229,6 +231,7 @@ export async function sendHgrPush(accountIds: readonly string[], notice: HgrPush
       ? (notice.url.startsWith("/control/") ? notice.url.slice(0,250) : "/control/")
       : notice.url.startsWith("/?") ? notice.url.slice(0,250) : "/?inbox=1",
     tag:String(notice.tag).slice(0,120),
+    game: typeof notice.game === "string" ? notice.game.slice(0,40) : undefined,
   });
   const expired=new Set<string>();
   await Promise.allSettled(subscriptions.map(async (item) => {
