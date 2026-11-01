@@ -378,6 +378,8 @@ export interface LiveTradePreview {
 
 export interface TradeOffer {
   id: string;
+  /** A rejected pending proposal was replaced by this new, separately-approved offer. */
+  counterOfTradeId?: string;
 
   proposerId: PlayerId;
   /** Primary/legacy recipient. Multi-party trades use participantIds/transfers. */

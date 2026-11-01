@@ -36,6 +36,9 @@ interface TradePanelProps {
   };
   onDraftChange: (nextDraft: TradeDraft) => void;
   onPropose: () => void;
+  counterOfferTradeId?: string | null;
+  onCounter: (tradeId: string) => void;
+  onCancelCounter: () => void;
   onAccept: (tradeId: string) => void;
   onDecline: (tradeId: string) => void;
   onRejectAllTrades: (enabled: boolean) => void;
@@ -389,6 +392,9 @@ export function TradePanel({
   theme,
   onDraftChange,
   onPropose,
+  counterOfferTradeId,
+  onCounter,
+  onCancelCounter,
   onAccept,
   onDecline,
   onRejectAllTrades,
@@ -397,10 +403,11 @@ export function TradePanel({
   const pendingTrade = gameState.pendingTrade;
   const lastTradeResult = gameState.lastTradeResult;
   const rejectAllThisTurn = gameState.tradeRejectAllTurnByPlayerId?.[playerId] === gameState.turnNumber;
+  const isCountering = Boolean(counterOfferTradeId && pendingTrade?.id === counterOfferTradeId);
 
   if (!currentPlayer) return null;
 
-  if (pendingTrade) {
+  if (pendingTrade && !isCountering) {
     const participantIds = pendingTrade.participantIds ?? [pendingTrade.proposerId, pendingTrade.recipientId];
     const isParticipant = participantIds.includes(playerId);
     const isProposer = pendingTrade.proposerId === playerId;
@@ -447,6 +454,15 @@ export function TradePanel({
             </button>
             <button
               type="button"
+              onClick={() => onCounter(pendingTrade.id)}
+              disabled={isSubmittingTrade || gameState.players.some(player =>
+                (participantIds.includes(player.id)) && player.isAi)}
+              className="mega-trade-counter-button"
+            >
+              Counter offer
+            </button>
+            <button
+              type="button"
               onClick={() => onRejectAllTrades(true)}
               disabled={isSubmittingTrade}
               className="trade-reject-all-button"
@@ -486,10 +502,10 @@ export function TradePanel({
 
   const activePlayer = gameState.players[gameState.currentPlayerIndex];
   const canPropose =
-    activePlayer?.id === playerId &&
+    isCountering || (activePlayer?.id === playerId &&
     (gameState.turnPhase === "roll" ||
       gameState.turnPhase === "optional-actions" ||
-      gameState.turnPhase === "jail-decision");
+      gameState.turnPhase === "jail-decision"));
 
   const availableRecipients = gameState.players.filter(
     (player) => player.id !== playerId && !player.isBankrupt,
@@ -540,14 +556,15 @@ export function TradePanel({
       <header className="mega-trade-card-header">
         <span className="mega-trade-card-emblem" aria-hidden="true">↔</span>
         <div className="mega-trade-card-heading">
-          <small>MEGA BOARD · TRADE</small>
-          <h3>Make a deal</h3>
-          <p>Select up to three opponents and build an offer. Nothing transfers until everyone accepts.</p>
+          <small>{isCountering ? "MEGA BOARD · COUNTER OFFER" : "MEGA BOARD · TRADE"}</small>
+          <h3>{isCountering ? "Revise the deal" : "Make a deal"}</h3>
+          <p>{isCountering ? "Edit the original terms. Sending replaces the pending deal and resets everybody's approval." : "Select up to three opponents and build an offer. Nothing transfers until everyone accepts."}</p>
         </div>
         <span className="mega-trade-header-status">{selectedRecipients.length}/3 selected</span>
       </header>
 
-      <div className="mega-trade-preference-strip trade-preference-row">
+      {isCountering && <button type="button" className="mega-trade-counter-cancel" onClick={onCancelCounter} disabled={isSubmittingTrade}>Back to original offer</button>}
+      {!isCountering && <div className="mega-trade-preference-strip trade-preference-row">
         <div>
           <strong>{rejectAllThisTurn ? "Incoming offers blocked" : "Incoming offers enabled"}</strong>
           <small>{rejectAllThisTurn ? "Declining new offers for this turn only." : "Other players may propose trades to you."}</small>
@@ -555,7 +572,7 @@ export function TradePanel({
         <button type="button" className={rejectAllThisTurn ? "is-enabled" : ""} disabled={isSubmittingTrade} onClick={() => onRejectAllTrades(!rejectAllThisTurn)}>
           {rejectAllThisTurn ? "Allow offers" : "Decline all this turn"}
         </button>
-      </div>
+      </div>}
 
       {!canPropose && (
         <p style={{ ...styles.tradeHelp, color: theme.mutedText }}>
@@ -585,7 +602,7 @@ export function TradePanel({
                   type="checkbox"
                   aria-label={`Include ${player.name} in the deal`}
                   checked={checked}
-                  disabled={!canPropose || atLimit}
+                  disabled={!canPropose || isCountering || atLimit}
                   onChange={(event) => toggleRecipient(player.id, event.target.checked)}
                 />
               </label>
@@ -655,10 +672,10 @@ export function TradePanel({
         }}
       >
         {selectedRecipients.length >= 2
-          ? `Send ${participants.length}-way deal`
-          : "Send trade proposal"}
+          ? (isCountering ? "Send counter offer" : `Send ${participants.length}-way deal`)
+          : (isCountering ? "Send counter offer" : "Send trade proposal")}
       </button>
-      <small>{!canPropose ? "Trades are available on your turn during the permitted phases." : !hasAnyValue ? "Add at least one item or amount before sending." : "Everyone must accept the exact proposed terms."}</small>
+      <small>{!canPropose ? "Trades are available on your turn during the permitted phases." : !hasAnyValue ? "Add at least one item or amount before sending." : isCountering ? "The existing deal stays pending until your revised terms are accepted by the server." : "Everyone must accept the exact proposed terms."}</small>
       </div>
     </section>
   );

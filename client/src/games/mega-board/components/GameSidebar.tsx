@@ -34,6 +34,9 @@ interface GameSidebarProps {
   onSellDepot: (spaceId: number) => void;
   onTradeDraftChange: (draft: TradeDraft) => void;
   onTradePropose: () => void;
+  counterOfferTradeId?: string | null;
+  onTradeCounter: (tradeId: string) => void;
+  onCancelCounter: () => void;
   onTradeAccept: (tradeId: string) => void;
   onTradeDecline: (tradeId: string) => void;
   onRejectAllTrades: (enabled: boolean) => void;
@@ -80,6 +83,9 @@ export function GameSidebar({
   onSellDepot,
   onTradeDraftChange,
   onTradePropose,
+  counterOfferTradeId,
+  onTradeCounter,
+  onCancelCounter,
   onTradeAccept,
   onTradeDecline,
   onRejectAllTrades,
@@ -456,6 +462,9 @@ export function GameSidebar({
                     theme={theme}
                     onDraftChange={onTradeDraftChange}
                     onPropose={onTradePropose}
+                    counterOfferTradeId={counterOfferTradeId}
+                    onCounter={onTradeCounter}
+                    onCancelCounter={onCancelCounter}
                     onAccept={onTradeAccept}
                     onDecline={onTradeDecline}
                     onRejectAllTrades={onRejectAllTrades}

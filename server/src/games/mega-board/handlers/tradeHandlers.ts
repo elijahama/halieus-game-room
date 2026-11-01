@@ -87,6 +87,11 @@ interface TradeDecisionPayload {
   tradeId: string;
 }
 
+interface CounterTradePayload extends ProposeTradePayload {
+  /** Must identify the exact live proposal that the sender is countering. */
+  tradeId: string;
+}
+
 interface TradeRejectAllPayload {
   code: string;
   enabled: boolean;
@@ -406,7 +411,7 @@ function isMultiPartyTrade(trade: TradeOffer): boolean {
   return Boolean(
     trade.multiParty &&
     trade.participantIds &&
-    trade.participantIds.length >= 3 &&
+    trade.participantIds.length >= 2 &&
     trade.transfers,
   );
 }
@@ -426,13 +431,14 @@ export function buildMultiPartyTrade(
   gameState: GameState,
   proposer: GamePlayer,
   payload: ProposeTradePayload,
+  allowTwoPartyCounter = false,
 ): { trade?: TradeOffer; error?: string } {
   const requestedRecipientIds = [
     ...new Set((payload.recipientIds ?? []).map((id) => id?.trim()).filter(Boolean)),
   ].filter((id) => id !== proposer.id);
 
-  if (requestedRecipientIds.length < 2 || requestedRecipientIds.length > 3) {
-    return { error: "A multi-party deal must involve exactly 3 or 4 total players." };
+  if (requestedRecipientIds.length < (allowTwoPartyCounter ? 1 : 2) || requestedRecipientIds.length > 3) {
+    return { error: allowTwoPartyCounter ? "A counter offer must involve 2 to 4 players." : "A multi-party deal must involve exactly 3 or 4 total players." };
   }
 
   const participantIds = [proposer.id, ...requestedRecipientIds];
@@ -1243,6 +1249,83 @@ export function registerTradeHandlers(
         state: publicProgressionState(gameState),
       });
       console.log(activityMessage);
+    },
+  );
+
+  // A counter is an atomic replacement of the exact pending human-to-human
+  // proposal, never a separate out-of-turn standard trade or a local accept.
+  // Existing multi-leg validation safely handles both 2- and 3/4-player counters.
+  socket.on(
+    "game:trade-counter",
+    (payload: CounterTradePayload, acknowledge: (response: GameStateResponse) => void) => {
+      const code = typeof payload?.code === "string" ? payload.code.trim().toUpperCase() : "";
+      const room = code ? rooms.get(code) : undefined;
+      if (!code || !room?.started || !room.gameState) {
+        acknowledge({ ok: false, reason: "The game could not be found." });
+        return;
+      }
+      const gameState = room.gameState;
+      const original = gameState.pendingTrade;
+      if (!original || typeof payload.tradeId !== "string" || original.id !== payload.tradeId) {
+        acknowledge({ ok: false, reason: "That offer has changed. Review the current deal before countering." });
+        return;
+      }
+      const ids = original.participantIds ?? [original.proposerId, original.recipientId];
+      const current = findPlayer(gameState, socket.id);
+      if (!current || current.isBankrupt || !ids.includes(socket.id) ||
+          socket.id === original.proposerId || original.acceptedPlayerIds?.includes(socket.id)) {
+        acknowledge({ ok: false, reason: "Only an invited player who has not accepted may counter this deal." });
+        return;
+      }
+      if (ids.some(id => findPlayer(gameState, id)?.isAi)) {
+        acknowledge({ ok: false, reason: "Counter offers currently require human participants." });
+        return;
+      }
+      if (gameState.phase !== "playing" || gameState.pendingCard || gameState.pendingDebt ||
+          gameState.pendingPurchase || requireTurnPhase(gameState, ["roll", "optional-actions", "jail-decision"])) {
+        acknowledge({ ok: false, reason: "The match is not in a trade-eligible phase." });
+        return;
+      }
+      if (!Array.isArray(payload.recipientIds) || new Set(payload.recipientIds).size !== ids.length - 1 ||
+          payload.recipientIds.length !== ids.length - 1 ||
+          payload.recipientIds.some(id => id === socket.id || !ids.includes(id)) ||
+          !ids.every(id => id === socket.id || payload.recipientIds.includes(id))) {
+        acknowledge({ ok: false, reason: "A counter must keep exactly the original deal participants." });
+        return;
+      }
+      if (payload.recipientIds[0] !== original.proposerId) {
+        acknowledge({ ok: false, reason: "The original proposer must review the counter offer first." });
+        return;
+      }
+      const built = buildMultiPartyTrade(gameState, current, payload, true);
+      if (!built.trade) {
+        acknowledge({ ok: false, reason: built.error ?? "The counter offer is invalid." });
+        return;
+      }
+      const counter = built.trade;
+      counter.counterOfTradeId = original.id;
+      const validationError = validateMultiPartyTradeStillValid(gameState, counter);
+      if (validationError) {
+        acknowledge({ ok: false, reason: validationError });
+        return;
+      }
+      original.status = "declined";
+      // No transfer takes place here. All previous acceptances are void.
+      gameState.pendingTrade = counter;
+      gameState.lastTradeResult = null;
+      clearLiveTrade(io, code);
+      const message = `${current.name} rejected the previous deal and sent a counter offer. Everyone must approve the new terms.`;
+      pushGlobalNotice(gameState, {
+        kind: "trade-declined",
+        title: "Counter offer sent",
+        message,
+        playerId: current.id,
+        presentation: "standard",
+        durationMs: 3600,
+      });
+      recordActivity(gameState, message, "trade", current.id);
+      emitGameState(io, code, gameState);
+      acknowledge({ ok: true, state: publicProgressionState(gameState), reason: message });
     },
   );
 
