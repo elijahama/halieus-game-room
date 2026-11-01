@@ -37,8 +37,28 @@ let writes: Promise<unknown> = Promise.resolve();
 let reopenTimer: ReturnType<typeof setTimeout> | null = null;
 const MAX_TIMER_DELAY_MS = 2_147_483_647;
 const ROOM_RETRY_MS = 15_000;
+// A periodic independent recovery pass catches overdue windows when a deadline
+// callback is delayed or lost; the source of truth remains persisted UTC time.
+const WATCHDOG_MS = 5_000;
 let maintenanceRoomCount: (() => number) | null = null;
 let maintenanceSchedulerReady = false;
+let maintenanceWatchdog: ReturnType<typeof setInterval> | null = null;
+let lastSchedulerCheckAt = 0;
+let lastSchedulerError: string | null = null;
+export function getMaintenanceSchedulerStatus(): { ready: boolean; checkedAt: number; error: string | null } {
+  return { ready: maintenanceSchedulerReady, checkedAt: lastSchedulerCheckAt, error: lastSchedulerError };
+}
+export async function reconcileDuePublicMaintenance(): Promise<void> {
+  if (!maintenanceSchedulerReady) return;
+  const now = Date.now();
+  const window = state.scheduledWindow;
+  if (window && ((["scheduled", "waiting-for-rooms"].includes(window.status) && now >= window.startAt) ||
+    (window.status === "active" && now >= window.endAt))) {
+    await processScheduledWindow();
+  } else if (!window && state.closed && state.reopenAt !== null && now >= state.reopenAt) {
+    await reopenWhenDue();
+  }
+}
 
 /** Room count is supplied by the same authoritative registry as owner Control. */
 export function configureMaintenanceRoomCount(check: () => number): void {
@@ -47,6 +67,14 @@ export function configureMaintenanceRoomCount(check: () => number): void {
 export function enableMaintenanceScheduler(): void {
   maintenanceSchedulerReady = true;
   armScheduledReopen();
+  if (!maintenanceWatchdog) {
+    maintenanceWatchdog = setInterval(() => void reconcileDuePublicMaintenance().catch(error => {
+      lastSchedulerError = "Scheduled maintenance reconciliation failed.";
+      console.error("[HGR] Maintenance watchdog failed.", error);
+    }), WATCHDOG_MS);
+    maintenanceWatchdog.unref?.();
+  }
+  void reconcileDuePublicMaintenance();
 }
 
 export function getPublicAccessState(): HgrPublicAccessState { return { ...state }; }
@@ -177,6 +205,7 @@ export function setPublicAccessState(
 
 async function reopenWhenDue(): Promise<void> {
   try {
+    lastSchedulerCheckAt = Date.now();
     await enqueueAccessChange(() => {
       if (!state.closed || state.reopenAt === null || state.reopenAt > Date.now()) return null;
       return {
@@ -188,7 +217,9 @@ async function reopenWhenDue(): Promise<void> {
         scheduledWindow: null,
       };
     });
+    lastSchedulerError = null;
   } catch (error) {
+    lastSchedulerError = "Could not persist scheduled reopening.";
     console.error("[HGR] Scheduled public reopening could not be persisted; retrying.", error);
     // A write failure must not report the site reopened. Retry while server remains alive.
     if (state.closed && state.reopenAt !== null) {
@@ -199,6 +230,7 @@ async function reopenWhenDue(): Promise<void> {
 }
 
 export async function processScheduledWindow(): Promise<void> {
+  lastSchedulerCheckAt = Date.now();
   try {
     await enqueueAccessChange(() => {
       const window = state.scheduledWindow;
@@ -232,7 +264,9 @@ export async function processScheduledWindow(): Promise<void> {
     // A waiting window may make no state change while games continue. Even in
     // that case it needs another check; enqueue's no-op path does not re-arm.
     armScheduledReopen();
+    lastSchedulerError = null;
   } catch (error) {
+    lastSchedulerError = "Could not evaluate live rooms or persist the scheduled transition.";
     console.error("[HGR] Could not persist scheduled maintenance transition; retrying.", error);
     reopenTimer = setTimeout(() => void processScheduledWindow(), ROOM_RETRY_MS);
     reopenTimer.unref?.();
@@ -285,6 +319,13 @@ export function renderPublicClosedPage(reason: string, reopenAt: number | null =
       }).format(validReopenAt);
     }
   }
+  const countdownHtml = validReopenAt === null
+    ? '<p id="noReopenDeadline">No automatic reopening time has been set. Please check for an owner update.</p>'
+    : '<section class="maintenance-countdown" aria-label="Time until scheduled reopening">' +
+      '<small>Scheduled reopening in</small>' +
+      '<output id="maintenanceCountdown" role="timer" aria-live="off" data-reopen-at="' +
+      validReopenAt + '" data-server-now="' + Date.now() + '">Calculating?</output>' +
+      '<p id="maintenanceCountdownStatus" role="status">The site will check reopening automatically.</p></section>';
   const reopenNotice = validReopenAt === null ? "" :
     `<p>Scheduled reopening: <time datetime="${new Date(validReopenAt).toISOString()}">${escapeHtml(endLabel + " (" + zone + ")")}</time></p>`;
   return `<!doctype html>
@@ -298,18 +339,66 @@ small{letter-spacing:.14em;color:#96baff;text-transform:uppercase}
 h1{font-size:clamp(1.7rem,6vw,2.6rem);line-height:1.13;margin:.7em 0}
 p{color:#b9c6d9;line-height:1.6;overflow-wrap:anywhere}
 a{color:#86b8ff}details{border-top:1px solid #35445d;margin-top:24px;padding-top:18px}
+.maintenance-countdown{margin:20px 0;padding:19px;border:1px solid #536b94;border-radius:14px;background:#172843}
+.maintenance-countdown small{color:#a8c9ff;letter-spacing:.1em}
+.maintenance-countdown output{display:block;margin:12px 0 4px;font-size:clamp(1.5rem,6vw,2.4rem);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.3;color:#fff}
+.maintenance-countdown p{font-size:.87rem;margin:7px 0 0;color:#c4d8ef}
 summary{cursor:pointer;color:#cad8ef}label{display:grid;gap:5px;margin:12px 0;color:#d2dcf0}
 input{width:100%;padding:12px;border-radius:10px;border:1px solid #536784;background:#0b1526;color:#fff;font:inherit}
 button{min-height:44px;cursor:pointer;background:#298aff;color:#07111c;border:0;border-radius:11px;padding:10px 19px;font:700 1rem system-ui}
 button:disabled{opacity:.55}button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </style></head><body><main><small>Halieus Game Room · Maintenance</small>
 <h1>The Game Room is temporarily closed</h1>
-<p>${safeReason}</p>${reopenNotice}<p>Existing account information and saved game history are preserved. Please return after reopening.</p>
+<p>${safeReason}</p>${reopenNotice}<p>Existing account information and saved game history are preserved. Please return after reopening.</p>${countdownHtml}
 <details><summary>Owner access to Control</summary><p>If you are already signed in, <a href="/control/">open HGR Control</a>. Otherwise sign in below.</p>
 <form id="controlLogin"><label>Username<input name="username" autocomplete="username" required maxlength="32"></label>
 <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
 <button type="submit">Sign in to Control</button><p id="loginResult" role="status"></p></form></details>
 </main><script>
+(function(){
+  const output=document.getElementById("maintenanceCountdown");
+  if(!output)return;
+  const end=Number(output.dataset.reopenAt);
+  const serverAtRender=Number(output.dataset.serverNow);
+  const clockOrigin=performance.now();
+  const info=document.getElementById("maintenanceCountdownStatus");
+  if(!Number.isSafeInteger(end)||!Number.isFinite(serverAtRender)){
+    output.textContent="Reopening time unavailable";return;
+  }
+  const serverNow=()=>serverAtRender+Math.max(0,performance.now()-clockOrigin);
+  let checking=false,lastCheck=-Infinity;
+  async function verifyOpen(){
+    if(checking||performance.now()-lastCheck<4000)return;
+    lastCheck=performance.now();checking=true;
+    try{
+      const result=await fetch("/public-access/status?maintenance-reopen-check="+Date.now(),{
+        method:"GET",cache:"no-store",credentials:"same-origin",
+        headers:{"Accept":"application/json","Cache-Control":"no-cache"}
+      });
+      if(result.ok){
+        const state=await result.json();
+        if(state && state.closed===false){location.replace("/");return}
+      }
+      if(serverNow()>=end)
+        info.textContent="Scheduled time reached; waiting for the server to confirm reopening.";
+    }catch{
+      if(serverNow()>=end)info.textContent="Reopening check unavailable. Retrying automatically.";
+    }finally{checking=false}
+  }
+  function tick(){
+    const seconds=Math.max(0,Math.ceil((end-serverNow())/1000));
+    const days=Math.floor(seconds/86400),hours=Math.floor(seconds%86400/3600);
+    const mins=Math.floor(seconds%3600/60),secs=seconds%60;
+    output.textContent=(days?days+"d ":"")+String(hours).padStart(2,"0")+":"+
+      String(mins).padStart(2,"0")+":"+String(secs).padStart(2,"0");
+    if(seconds===0){info.textContent="Checking whether the Game Room is open?";void verifyOpen()}
+  }
+  tick();
+  setInterval(tick,1000);
+  setInterval(()=>void verifyOpen(),15000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();void verifyOpen()}});
+})();
+</script><script>
 document.getElementById("controlLogin").addEventListener("submit",async function(e){
  e.preventDefault();const button=this.querySelector("button"),status=document.getElementById("loginResult");
  button.disabled=true;status.textContent="Checking account…";

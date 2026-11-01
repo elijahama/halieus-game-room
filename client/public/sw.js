@@ -1,4 +1,4 @@
-const CACHE = 'halieus-shell-v4-7-9-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
+const CACHE = 'halieus-shell-v4-7-10-' + (new URL(self.location.href).searchParams.get('release') || 'unversioned');
 const SHELL = ['/', '/site.webmanifest?identity=install-h6', '/app-icon-192.png?identity=install-h6', '/app-icon-512.png?identity=install-h6', '/notification-badges/hgr.png', '/notification-badges/mega-board.png'];
 const IDENTITY_PATHS = new Set(['/site.webmanifest', '/halieus-mark.svg', '/halieus-app-icon.svg', '/halieus-app-icon.png', '/app-icon.svg', '/app-icon-180.png', '/app-icon-192.png', '/app-icon-512.png', '/favicon-32.png', '/favicon.ico']);
 self.addEventListener('install', (event) => {
@@ -13,7 +13,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/socket.io/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/accounts/') || url.pathname.startsWith('/admin/') || url.pathname === '/health') return;
+  if (url.pathname.startsWith('/socket.io/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/accounts/') || url.pathname.startsWith('/admin/') || url.pathname === '/health' || url.pathname === '/public-access/status') return;
   if (url.pathname === '/control' || url.pathname.startsWith('/control/')) return;
   if (IDENTITY_PATHS.has(url.pathname)) {
     event.respondWith(fetch(event.request, { cache: 'reload' }).then((response) => {

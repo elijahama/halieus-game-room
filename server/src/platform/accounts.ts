@@ -7,7 +7,7 @@ import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/them
 import { readPlayerProgression } from "./progression.js";
 import { getGuildPeerAccountIds } from "./guilds.js";
 import { sendHgrPush } from "./pushNotifications.js";
-import { getPublicAccessState, setPublicAccessState, schedulePublicMaintenance, cancelPublicMaintenance } from "./publicAccess.js";
+import { getPublicAccessState, setPublicAccessState, schedulePublicMaintenance, cancelPublicMaintenance, getMaintenanceSchedulerStatus, reconcileDuePublicMaintenance } from "./publicAccess.js";
 import { validateMaintenanceWindow } from "./maintenanceTimeZones.js";
 import type { Express, Request, Response } from "express";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
@@ -962,11 +962,15 @@ function publicGameInvites(accountId: string): HalieusGameInviteSummary[] {
 export function registerAccountRoutes(app: Express): void {
   // Public closure is a distinct, persisted Oracle visitor mode. It never
   // invokes the Windows HGR Close launcher or terminates the Oracle process.
-  app.get("/admin/public-access", (request, response) => {
+  app.get("/admin/public-access", async (request, response) => {
     const owner = requireOwner(request, response);
     if (!owner) return;
+    try { await reconcileDuePublicMaintenance(); }
+    catch (error) { console.error("[HGR] Owner maintenance state reconciliation failed.", error); }
     response.setHeader("Cache-Control", "no-store");
-    response.json({ ok: true, state: getPublicAccessState(), activeRooms: adminRuntimeControls?.getRoomCount() ?? 0 });
+    response.json({ ok: true, state: getPublicAccessState(),
+      activeRooms: adminRuntimeControls?.getRoomCount() ?? null,
+      scheduler: getMaintenanceSchedulerStatus() });
   });
   app.post("/admin/public-access", async (request, response) => {
     const owner = requireOwner(request, response);

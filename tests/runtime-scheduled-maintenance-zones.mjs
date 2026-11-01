@@ -12,7 +12,8 @@ try {
   const {
     loadPublicAccessState, getPublicAccessState, setPublicAccessState,
     schedulePublicMaintenance, cancelPublicMaintenance, enableMaintenanceScheduler,
-    configureMaintenanceRoomCount, processScheduledWindow,
+    configureMaintenanceRoomCount, processScheduledWindow, reconcileDuePublicMaintenance,
+    getMaintenanceSchedulerStatus, renderPublicClosedPage,
   } = await import("../server/src/platform/publicAccess.ts");
 
   assert.equal(resolveMaintenanceWallTime("2026-11-01T12:00", "Europe/London"),
@@ -35,13 +36,40 @@ try {
     Date.parse("2026-11-01T00:00Z"));
   assert.equal(consistent.startAt, Date.parse("2026-11-03T21:00Z"));
   assert.equal(consistent.endAt, Date.parse("2026-11-03T22:00Z"));
+  const deadline = Date.parse("2026-11-03T22:00Z");
+  const maintenanceHtml = renderPublicClosedPage("Server update & repairs",deadline,"Europe/London");
+  assert.match(maintenanceHtml, /role="timer"/, "visitor must see a real countdown");
+  assert.match(maintenanceHtml, /id="maintenanceCountdown"/);
+  assert.match(maintenanceHtml, /data-reopen-at="1793743200000"/);
+  assert.match(maintenanceHtml, /public-access\/status\?maintenance-reopen-check/, "recovery must verify an uncached API, not an offline PWA shell");
+  assert.match(maintenanceHtml, /Scheduled reopening/);
+  assert.match(maintenanceHtml, /Owner access to Control/);
+  assert.doesNotMatch(renderPublicClosedPage("Manual only"), /id="maintenanceCountdown"/,
+    "Never invent a countdown when the owner has not set an end");
+  assert.match(renderPublicClosedPage("Manual only"), /No automatic reopening time/);
+  assert.doesNotMatch(renderPublicClosedPage("<script>"), /<p><script>/, "Visitor message must be escaped");
+
   assert.throws(() => validateMaintenanceWindow(
     "2026-11-03T21:00","UTC","2026-11-03T20:30","UTC",Date.parse("2026-11-01T00:00Z")), /at least one minute/);
 
   let rooms = 2;
   configureMaintenanceRoomCount(() => rooms);
   assert.equal((await loadPublicAccessState()).closed, false);
-  enableMaintenanceScheduler();
+  // Capture and fire the real watchdog callback without waiting five wall-clock
+  // seconds; the deadline timer remains independent and untouched.
+  let watchdogCallback;
+  const nativeSetInterval = globalThis.setInterval;
+  globalThis.setInterval = (callback, delay, ...rest) => {
+    if (delay === 5000) {
+      watchdogCallback = callback;
+      return { unref() {} };
+    }
+    return nativeSetInterval(callback, delay, ...rest);
+  };
+  try { enableMaintenanceScheduler(); }
+  finally { globalThis.setInterval = nativeSetInterval; }
+  assert.equal(typeof watchdogCallback, "function", "Independent maintenance watchdog must be armed");
+  assert.equal(getMaintenanceSchedulerStatus().ready,true);
   const base = oldNow() + 100_000;
   let now = base;
   Date.now = () => now;
@@ -61,7 +89,9 @@ try {
     "Not accepted","owner-test"), /Cancel the existing/);
 
   now = startAt + 1000;
-  await processScheduledWindow();
+  watchdogCallback(); // The real periodic callback reconciles the due window.
+  for (let i = 0; i < 100 && getPublicAccessState().scheduledWindow?.status !== "waiting-for-rooms"; i++)
+    await new Promise(done => setTimeout(done, 20));
   assert.equal(getPublicAccessState().closed, false, "Active rooms must never be kicked");
   assert.equal(getPublicAccessState().scheduledWindow?.status,"waiting-for-rooms");
   await processScheduledWindow();
@@ -69,14 +99,18 @@ try {
 
   rooms = 0;
   now = startAt + 17_000;
-  await processScheduledWindow();
+  watchdogCallback();
+  for (let i = 0; i < 100 && !getPublicAccessState().closed; i++)
+    await new Promise(done => setTimeout(done, 20));
   assert.equal(getPublicAccessState().closed, true, "Close only after rooms are empty");
   assert.equal(getPublicAccessState().scheduledWindow?.status,"active");
   assert.equal(getPublicAccessState().reopenAt,endAt, "Exact original end is retained after a delayed start");
   await loadPublicAccessState();
   assert.equal(getPublicAccessState().closed,true,"Active window recovered after restart");
   now=endAt+1000;
-  await processScheduledWindow();
+  watchdogCallback();
+  for (let i = 0; i < 100 && getPublicAccessState().closed; i++)
+    await new Promise(done => setTimeout(done, 20));
   assert.equal(getPublicAccessState().closed,false,"Reopen at exact end");
   assert.equal(getPublicAccessState().scheduledWindow?.status,"completed");
   assert.equal(getPublicAccessState().reopenAt,null);
