@@ -1286,10 +1286,11 @@ export function registerTradeHandlers(
         acknowledge({ ok: false, reason: "The match is not in a trade-eligible phase." });
         return;
       }
-      if (!Array.isArray(payload.recipientIds) || new Set(payload.recipientIds).size !== ids.length - 1 ||
-          payload.recipientIds.length !== ids.length - 1 ||
-          payload.recipientIds.some(id => id === socket.id || !ids.includes(id)) ||
-          !ids.every(id => id === socket.id || payload.recipientIds.includes(id))) {
+      const recipients = payload.recipientIds;
+      if (!Array.isArray(recipients) || new Set(recipients).size !== ids.length - 1 ||
+          recipients.length !== ids.length - 1 ||
+          recipients.some(id => id === socket.id || !ids.includes(id)) ||
+          !ids.every(id => id === socket.id || recipients.includes(id))) {
         acknowledge({ ok: false, reason: "A counter must keep exactly the original deal participants." });
         return;
       }
