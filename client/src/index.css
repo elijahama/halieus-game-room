@@ -26998,3 +26998,72 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
  .halieus-guild-fixture-heading>button{width:100%}
  .halieus-guild-fixture-card>header{align-items:flex-start;flex-direction:column}
 }
+
+
+/* HGR wide-desktop spectator screen: use the available fullscreen area.
+   On phones/tablets and compact desktop widths, preserve the approved
+   board-above-players layout. This changes spectator presentation only. */
+@media (min-width: 1400px) and (min-height: 650px) and (orientation: landscape) {
+  .game-page.mega-live-page.mega-spectator-mode
+  > .game-layout.mega-live-layout-v3.mega-spectator-layout {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    grid-template-columns: minmax(0, 1fr) minmax(440px, 37%) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: clamp(10px, 1.2vw, 20px) !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+  .mega-live-page.mega-spectator-mode
+  .mega-spectator-layout > .board-frame {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    place-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    container-type: size !important;
+  }
+  .mega-live-page.mega-spectator-mode
+  .mega-spectator-layout .board-grid {
+    width: min(100cqw, 100cqh) !important;
+    height: min(100cqw, 100cqh) !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+  .mega-live-page.mega-spectator-mode
+  .mega-spectator-layout > .mega-spectator-player-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    align-self: stretch !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    padding: clamp(8px, 1vw, 14px) !important;
+  }
+  .mega-live-page.mega-spectator-mode
+  .mega-spectator-player-rail .player-rail-list {
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    align-content: start !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .mega-live-page.mega-spectator-mode
+  .mega-spectator-layout > .right-game-stack {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+  }
+}
