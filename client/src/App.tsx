@@ -417,6 +417,7 @@ export default function App() {
   const [counterOfferTradeId, setCounterOfferTradeId] = useState<string | null>(null);
   const [liveTradePreview, setLiveTradePreview] = useState<LiveTradePreview | null>(null);
   const tradeLiveRevisionRef = useRef(0);
+  const tradeCloseNoticeSentRef = useRef(false);
   const [lobby, setLobby] = useState<LobbyState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -3906,12 +3907,15 @@ function handleLeaveSpectator() {
               onOpenChange={(open, panel) => {
                 setMegaToolsOpen(open);
                 if (open) {
+                  if (panel === "trade") tradeCloseNoticeSentRef.current = false;
                   setPlayersDrawerOpen(false);
                   setGameMenuOpen(false);
-                } else if (panel === "trade" && !gameState.pendingTrade) {
-                  // A recipient selection may still be in flight when the panel
-                  // closes. Always clear the server-side draft, even before the
-                  // first live preview has reached this client.
+                } else if (panel === "trade" && !gameState.pendingTrade && !tradeCloseNoticeSentRef.current) {
+                  // Close only once. GameSidebar can report the same closed
+                  // state on re-renders while its callback identity changes.
+                  // Sending the close even before the preview arrives clears
+                  // an in-flight recipient-selection announcement safely.
+                  tradeCloseNoticeSentRef.current = true;
                   closeLiveTradeDraft();
                 }
               }}
