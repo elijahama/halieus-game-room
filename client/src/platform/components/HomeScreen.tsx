@@ -479,7 +479,10 @@ export function HomeScreen(props: HomeScreenProps) {
         newest.kind === "room" ? "Halieus room invitation" : "Halieus game request",
         {
           body: `${newest.sender} invited you to ${newest.gameTitle}.`,
-          icon: "/app-icon-192.png",
+          icon: `/game-icons/${newest.game}.svg`,
+          badge: newest.game === "mega-board"
+            ? "/notification-badges/mega-board.png"
+            : "/notification-badges/hgr.png",
           tag: `halieus-invite-${newest.key}`,
           data: { url: "/?inbox=1" },
         },
