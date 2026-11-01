@@ -34,6 +34,10 @@ assert.match(panel, /mega-trade-recipient-card/, "Selectable players need proper
 assert.match(panel, /mega-trade-party-heading/, "Offer editor must show player identity");
 assert.match(panel, /mega-trade-asset-row/, "Transfer rows must use compact asset cards");
 assert.match(panel, /mega-trade-submit/, "Final send button must have a dedicated action area");
+assert.match(panel, /Counter offer/, "Recipient must have a visible option to counter pending terms.");
+assert.match(panel, /Back to original offer/, "Counter editor must offer an explicit cancel without declining the original.");
+assert.match(panel, /isCountering \|\|/, "A human counter must be editable while not the active turn.");
+assert.match(panel, /isCountering \|\| atLimit/, "Countering cannot silently replace the approved participant set.");
 const designCss = css.slice(css.lastIndexOf("/* Mega Board Trade: shared Player Details visual structure"));
 assert(designCss.startsWith("/* Mega Board Trade:"), "Scoped Player Details reference CSS must exist");
 const bannerCss = css.match(/\.trade-result-banner\s*\{[^}]*\}/)?.[0] ?? "";

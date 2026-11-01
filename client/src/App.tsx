@@ -2775,6 +2775,13 @@ function handleLeaveSpectator() {
     setLiveTradePreview(null);
   }
 
+  // A counter draft cannot apply to any other live proposal.
+  useEffect(() => {
+    if (counterOfferTradeId && gameState?.pendingTrade?.id !== counterOfferTradeId) {
+      setCounterOfferTradeId(null);
+    }
+  }, [counterOfferTradeId, gameState?.pendingTrade?.id]);
+
   function handleTradeCounter(tradeId: string) {
     if (!gameState?.pendingTrade || gameState.pendingTrade.id !== tradeId || !lobby) return;
     try {
@@ -2810,6 +2817,12 @@ function handleLeaveSpectator() {
 
     const recipientId = recipientIds[0];
     const isCounter = Boolean(counterOfferTradeId && gameState.pendingTrade?.id === counterOfferTradeId);
+    if (counterOfferTradeId && !isCounter) {
+      setIsSubmittingTrade(false);
+      setMessage("The original deal has changed. Review the current proposal.");
+      setCounterOfferTradeId(null);
+      return;
+    }
     const isMultiParty = recipientIds.length >= 2 || isCounter;
     const proposerId = lobby.playerId;
     const proposerCash = isMultiParty ? 0 : (tradeDraft.cashTransfers[tradeTransferKey(proposerId, recipientId)] ?? 0);

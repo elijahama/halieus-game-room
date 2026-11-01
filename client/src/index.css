@@ -27224,3 +27224,34 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 @media (prefers-reduced-motion: reduce) {
   .mega-trade-recipient-card { transition: none !important; }
 }
+
+
+/* Counter offers follow the approved Player Details-inspired trade cards.
+   New terms always require explicit approval; this is not auto-accept. */
+.mega-trade-actions .mega-trade-counter-button {
+  grid-column: 1 / -1;
+  min-height: 44px;
+  border: 1px solid var(--hgr-brand, #ca9d31);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--hgr-brand, #ca9d31) 13%, var(--mm-surface-2));
+  color: var(--mm-text);
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.mega-trade-actions > .trade-reject-all-button { grid-column: 1 / -1; }
+.mega-trade-counter-button:disabled { opacity: .5; cursor: not-allowed; }
+.mega-trade-counter-cancel {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--mm-border);
+  border-radius: 11px;
+  background: var(--mm-surface-2);
+  color: var(--mm-text);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+.mega-trade-counter-cancel:focus-visible,
+.mega-trade-counter-button:focus-visible { outline: 2px solid var(--hgr-brand, #ca9d31); outline-offset: 2px; }

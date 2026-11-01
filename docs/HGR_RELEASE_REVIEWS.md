@@ -40,3 +40,11 @@ Both versions require independently checked /health fingerprint and zero-active-
 - **Expected structure:** Player Details-inspired header, clear selection count, player identity tokens and checked cards, compact grouped offer editors, accessible asset transfer selects, status strip, fixed-clear primary Send button. 320/390px one-column, 820px two-column player choices, no clipping/extra scrollbars.
 - **Behaviours to verify:** Recipient selection, cash and destination mapping, 2–4 participant cards, pending approval, Decline/Cancel/Reject all, no inadvertent trade completion, room state stays server-owned. Declined result appears in-game, centred and readable.
 - **Gate:** Branch/CI and live phone acceptance distinct. Game and tournament changes are out of scope.
+
+
+### Counter-offer negotiation — staged on PR #206 trade-redesign branch
+
+- Owner requested a Counter offer action when receiving a deal. The editable draft is copied from the pending two-, three-, or four-person offer, with the rejected recipient taking proposer authority without needing to own the active turn. Back restores original unmodified offer.
+- Server `game:trade-counter` accepts only an exact current pending ID and original human invited participants, rejects duplicate/stale/cross-room/wrong-role/invalid cash or assets, and replaces old offer atomically with a new pending offer and reset accepted-player set. Reuse multi-leg validation and expiry/turn protection. No transfers until every invited participant accepts.
+- New response status in server game history and visible counter-offer notice; no new manual outcome or trust in browser-provided account privilege. AI auto-negotiation intentionally out of scope.
+- Dedicated counter lifecycle tests and client controls gate required; source CI, merge, zero-room-safe Oracle deployment and actual on-phone multiplayer acceptance are separate statuses.

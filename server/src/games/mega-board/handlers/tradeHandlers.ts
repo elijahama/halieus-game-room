@@ -1266,7 +1266,7 @@ export function registerTradeHandlers(
       }
       const gameState = room.gameState;
       const original = gameState.pendingTrade;
-      if (!original || typeof payload.tradeId !== "string" || original.id !== payload.tradeId) {
+      if (!payload || !original || typeof payload.tradeId !== "string" || original.id !== payload.tradeId) {
         acknowledge({ ok: false, reason: "That offer has changed. Review the current deal before countering." });
         return;
       }
