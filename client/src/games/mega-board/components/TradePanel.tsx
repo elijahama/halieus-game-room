@@ -511,7 +511,7 @@ export function TradePanel({
   return (
     <section className="mega-trade-panel" style={styles.tradePanel}>
       {lastTradeResult && lastResultInvolvesMe && (
-        <div className={`trade-result-banner is-${lastTradeResult.status}`}>
+        <div className={`trade-result-banner is-${lastTradeResult.status}`} role="status" aria-live="polite">
           <strong>
             {lastTradeResult.status === "accepted" ? "✓ Deal accepted" :
               lastTradeResult.status === "cancelled" ? "Deal cancelled" : "✕ Deal rejected"}

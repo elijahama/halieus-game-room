@@ -7049,6 +7049,10 @@ textarea {
   border: 1px solid;
   border-radius: 10px;
   font-size: 10px;
+  text-align: center;
+  justify-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .trade-result-banner.is-accepted { border-color:#22a363; background:rgba(34,163,99,.12); }
 .trade-result-banner.is-declined,
@@ -8287,6 +8291,8 @@ textarea {
 .global-game-notice.is-auction-result { border-color: rgba(250,204,21,.7); }
 .global-game-notice.is-purchase-complete { border-color: rgba(52,211,153,.56); }
 .global-game-notice.is-trade-complete { border-color: rgba(167,139,250,.64); }
+.global-game-notice.is-trade-declined { border-color: rgba(248,113,113,.78) !important; }
+.global-game-notice.is-trade-cancelled { border-color: rgba(156,163,175,.7) !important; }
 
 /* The old lower-right gameplay status toast is intentionally retired. Game
    action/loading copy now appears inside the centre turn-status box. */
@@ -8460,6 +8466,9 @@ textarea {
   gap: 0 !important;
 }
 .global-game-notice.is-single-line > span {
+  display: block;
+  width: 100%;
+  text-align: center;
   font-size: .9rem !important;
   font-weight: 760;
   line-height: 1.3;

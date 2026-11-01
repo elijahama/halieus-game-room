@@ -994,6 +994,14 @@ export function registerTradeHandlers(
           message,
           resolvedAt: Date.now(),
         };
+        pushGlobalNotice(gameState, {
+          kind: "trade-declined",
+          title: "Trade declined",
+          message,
+          playerId: recipient.id,
+          presentation: "standard",
+          durationMs: 3300,
+        });
         recordActivity(gameState, message, "trade", recipient.id);
         emitGameState(io, code, gameState);
         acknowledge({
@@ -1555,8 +1563,15 @@ export function registerTradeHandlers(
       if (!wasCancelled && !isMultiPartyTrade(trade)) {
         rememberRejectedAutomatedTrade(code, gameState, trade);
       }
+      pushGlobalNotice(gameState, {
+        kind: wasCancelled ? "trade-cancelled" : "trade-declined",
+        title: wasCancelled ? "Deal cancelled" : "Deal declined",
+        message: activityMessage,
+        playerId: actor?.id,
+        presentation: "standard",
+        durationMs: 3500,
+      });
       recordActivity(gameState, activityMessage, "trade", actor?.id);
-
 
       emitGameState(io, code, gameState);
 
@@ -1619,6 +1634,14 @@ export function registerTradeHandlers(
           resolvedAt: Date.now(),
         };
         if (!isMultiPartyTrade(pending)) rememberRejectedAutomatedTrade(code, gameState, pending);
+        pushGlobalNotice(gameState, {
+          kind: "trade-declined",
+          title: "Deal declined",
+          message,
+          playerId: player.id,
+          presentation: "standard",
+          durationMs: 3500,
+        });
         recordActivity(gameState, message, "trade", player.id);
       }
 

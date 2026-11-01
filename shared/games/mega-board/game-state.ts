@@ -294,6 +294,8 @@ export interface GlobalGameNotice {
     | "development"
     | "purchase-complete"
     | "trade-complete"
+    | "trade-declined"
+    | "trade-cancelled"
     | "game-mode"
     | "player-action";
   title: string;
