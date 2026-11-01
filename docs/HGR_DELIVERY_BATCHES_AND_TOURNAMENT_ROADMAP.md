@@ -23,7 +23,7 @@
 | --- | --- | --- |
 | 4.6.x | Competition/replay infrastructure | Independent tournament ledger and fixture identities; canonical replay/store schema; no claim that all game adapters are complete |
 | 4.7.x | Playable two-board Guild-v-Guild Mega Board fixture | Eligible Guild teams, locked lineups, two independent normal games, results recorded once, scoring, reconnect, cancellation and tie policy |
-| 4.8.x | Fully working Solo and Guild tournament brackets | Entrants, matchmaking, elimination plus losers-bracket rules, finals/reset policy, progression, spectators and recovery |
+| 4.8.x | Real knockout brackets, followed by full Solo and Guild double elimination | First playable four-Guild verified-fixture bracket is a candidate; follow with Solo matches, losers bracket, finals/reset policy, spectators and recovery. See HGR_GUILD_TOURNAMENT_BRACKETS_4_8.md |
 | 4.9.x | Tournament experience and production assurance | Tournament-only ratings, player and Guild leaderboards, results/reports, tournament Mega Board replay and export, responsive UX, safety, regression and production rehearsals |
 | **5.0.0** | **Complete tournament, accepted by owner** | Register, play, score, advance and complete real Solo and Guild tournaments end-to-end, with verifiable outcomes, error/forfeit recovery, downloadable replay/report, all release gates and explicit owner sign-off |
 
