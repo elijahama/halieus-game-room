@@ -27007,3 +27007,220 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
  .halieus-guild-fixture-heading>button{width:100%}
  .halieus-guild-fixture-card>header{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Mega Board Trade: shared Player Details visual structure, not a new design family.
+   The parent Turn Actions dialog still owns its dimensions, close and scrolling. */
+.mega-trade-panel {
+  gap: 15px !important;
+  min-width: 0;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: 0 !important;
+}
+.mega-trade-card-header {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 4px 0 15px;
+  border-bottom: 1px solid rgba(127,127,127,.2);
+}
+.mega-trade-card-emblem,
+.mega-trade-player-token {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(255,255,255,.55);
+  border-radius: 50%;
+  background: var(--hgr-brand, #bd8c24);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 4px rgba(0,0,0,.45);
+}
+.mega-trade-card-heading { display: grid; gap: 3px; min-width: 0; }
+.mega-trade-card-heading small,
+.mega-trade-party-heading small {
+  color: var(--hgr-brand, #cf9a22);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+.mega-trade-card-heading h3 {
+  margin: 0;
+  color: var(--mm-text);
+  font-size: clamp(18px, 3.2vw, 26px);
+  line-height: 1.15;
+}
+.mega-trade-card-heading p { margin: 0; color: var(--mm-muted); font-size: 12px; line-height: 1.45; }
+.mega-trade-header-status,
+.mega-trade-asset-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 10px;
+  border: 1px solid var(--mm-border);
+  border-radius: 999px;
+  background: var(--mm-surface-2);
+  color: var(--mm-text);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.mega-trade-section { display: grid; gap: 9px; min-width: 0; }
+.mega-trade-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  min-width: 0;
+}
+.mega-trade-section-title strong { font-size: 15px; font-weight: 850; }
+.mega-trade-section-title small { color: var(--mm-muted); font-size: 11px; }
+.mega-trade-recipient-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.mega-trade-panel .mega-trade-recipient-card {
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) 24px;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0;
+  min-height: 66px;
+  padding: 10px 12px !important;
+  border: 1px solid var(--mm-border);
+  border-radius: 14px;
+  background: var(--mm-surface-2);
+  cursor: pointer;
+  transition: border-color .14s ease, background .14s ease;
+}
+.mega-trade-panel .mega-trade-recipient-card.is-selected {
+  border-color: var(--hgr-brand, #c89c2c);
+  background: color-mix(in srgb, var(--hgr-brand,#c89c2c) 10%, var(--mm-surface-2));
+}
+.mega-trade-panel .mega-trade-recipient-card:has(input:focus-visible) { outline: 2px solid var(--hgr-brand,#c89c2c); outline-offset: 2px; }
+.mega-trade-panel .mega-trade-recipient-card:has(input:disabled) { cursor: not-allowed; opacity: .65; }
+.mega-trade-panel .mega-trade-recipient-card .mega-trade-player-token { width: 39px; height: 39px; font-size: 15px; }
+.mega-trade-recipient-copy { display: grid; gap: 2px; min-width: 0; }
+.mega-trade-recipient-copy strong { overflow-wrap: anywhere; font-size: 13px; line-height: 1.2; }
+.mega-trade-recipient-copy small { color: var(--mm-muted); font-size: 10px; line-height: 1.3; }
+.mega-trade-panel .mega-trade-recipient-card input {
+  justify-self: end;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin: 0;
+  accent-color: var(--hgr-brand, #cf9a22);
+}
+.mega-trade-preference-strip.trade-preference-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--mm-surface-2);
+}
+.mega-trade-preference-strip > div { display: grid; gap: 3px; min-width: 0; }
+.mega-trade-preference-strip strong { font-size: 12px; }
+.mega-trade-preference-strip small { color: var(--mm-muted); font-size: 11px; }
+.mega-trade-preference-strip button { min-height: 38px; font-size: 11px; font-weight: 800; white-space: normal; }
+.mega-trade-preference-strip button.is-enabled { border-color: var(--mm-positive); }
+.mega-trade-info-card,
+.mega-trade-empty {
+  padding: 13px !important;
+  border: 1px solid var(--mm-border);
+  border-radius: 12px !important;
+  background: var(--mm-surface-2);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.mega-trade-empty { color: var(--mm-muted); text-align: center; }
+.mega-trade-offer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+.mega-trade-party-editor {
+  max-height: none !important;
+  overflow: visible !important;
+  gap: 9px !important;
+  padding: 13px !important;
+  border-radius: 14px !important;
+  background: var(--mm-surface-2);
+  box-shadow: none !important;
+}
+.mega-trade-party-heading {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--mm-border);
+}
+.mega-trade-party-heading > div { display: grid; gap: 3px; min-width: 0; }
+.mega-trade-party-heading strong { overflow-wrap: anywhere; font-size: 14px; }
+.mega-trade-party-heading .mega-trade-player-token { width: 39px; height: 39px; font-size: 15px; }
+.mega-trade-asset-count { font-size: 10px; padding-inline: 8px; }
+.mega-trade-cash-field { font-size: 11px !important; }
+.mega-trade-cash-field span { color: var(--mm-text); font-weight: 800; }
+.mega-trade-cash-field input { width: 100%; min-width: 0; min-height: 40px; }
+.mega-trade-party-editor > span { font-weight: 850; padding-top: 4px; }
+.mega-trade-asset-row {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) minmax(124px, 170px);
+  align-items: center !important;
+  gap: 9px !important;
+  min-width: 0;
+  padding: 9px !important;
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mm-surface) 65%, var(--mm-surface-2));
+}
+.mega-trade-asset-name { min-width: 0; overflow-wrap: anywhere; font-size: 11px; line-height: 1.45; }
+.mega-trade-destination-select { min-width: 0 !important; max-width: 100%; min-height: 39px; font-size: 11px !important; }
+.mega-trade-summary-card { border-radius: 13px !important; padding: 13px !important; min-width: 0; overflow-wrap: anywhere; }
+.mega-trade-actions { gap: 9px !important; }
+.mega-trade-actions button { min-height: 43px; }
+.mega-trade-actions > :nth-child(3) { grid-column: 1 / -1; }
+.mega-trade-submit {
+  position: sticky;
+  bottom: -1px;
+  z-index: 1;
+  display: grid;
+  gap: 7px;
+  padding: 11px 0 2px;
+  border-top: 1px solid var(--mm-border);
+  background: var(--mm-surface);
+  min-width: 0;
+}
+.mega-trade-submit button { width: 100%; min-height: 45px; }
+.mega-trade-submit small { text-align: center; font-size: 11px; color: var(--mm-muted); }
+@media (max-width: 720px) {
+  .mega-trade-card-header { grid-template-columns: 42px minmax(0, 1fr); gap: 9px; }
+  .mega-trade-header-status { grid-column: 2; justify-self: start; }
+  .mega-trade-recipient-grid { grid-template-columns: 1fr; }
+  .mega-trade-panel .mega-trade-recipient-card { min-height: 60px; }
+}
+@media (max-width: 420px) {
+  .mega-trade-asset-row { grid-template-columns: minmax(0, 1fr); }
+  .mega-trade-destination-select { width: 100% !important; }
+  .mega-trade-party-heading { grid-template-columns: 39px minmax(0, 1fr); }
+  .mega-trade-party-heading .mega-trade-asset-count { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mega-trade-recipient-card { transition: none !important; }
+}

@@ -33,3 +33,10 @@ Both versions require independently checked /health fingerprint and zero-active-
 - **Correction:** Add distinct 3.3–3.5-second declined/cancelled notifications through the existing game-state queue (no new socket protocol, no gameplay impact). Retain real status in the Trade panel; centre banner heading/detail and single-line notice text on mobile, tablet and desktop.
 - **Acceptance:** 2-player and 3/4-way reject, manual cancel and reject-all with authoritative ledger unchanged. Test actor/proposer/spectator visibility and avoid duplicate delayed announcements. Confirm 320/390/820px text centre without overflow.
 - **Stage:** Source candidate only, not yet production or actual-device verified. Keep tournament PR #198 isolated.
+
+### Trade editor design coherence — source candidate
+
+- **Owner request:** Old deal editor is visually inferior to the redesigned Player Options; the rejected-deal feedback and attached uncentred text should be corrected in the same audited UI batch.
+- **Expected structure:** Player Details-inspired header, clear selection count, player identity tokens and checked cards, compact grouped offer editors, accessible asset transfer selects, status strip, fixed-clear primary Send button. 320/390px one-column, 820px two-column player choices, no clipping/extra scrollbars.
+- **Behaviours to verify:** Recipient selection, cash and destination mapping, 2–4 participant cards, pending approval, Decline/Cancel/Reject all, no inadvertent trade completion, room state stays server-owned. Declined result appears in-game, centred and readable.
+- **Gate:** Branch/CI and live phone acceptance distinct. Game and tournament changes are out of scope.
