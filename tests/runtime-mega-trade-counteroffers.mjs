@@ -129,5 +129,25 @@ function counterPayload(tradeId, recipientIds, cashTransfers) {
     assert.equal(t.state.pendingTrade.id,original.id);
   }finally{t.cleanup();}
 }
+{
+  const t=setup(4);
+  try {
+    const original=t.origin(["p1","p2","p3","p4"]);
+    t.state.pendingTrade=original;
+    const changed=t.call("p2","game:trade-counter",counterPayload(original.id,["p1","p3","p4"],
+      {"p1->p2":10,"p3->p2":20,"p4->p2":40}));
+    assert.equal(changed.ok,true,changed.reason);
+    const id=t.state.pendingTrade.id;
+    assert.deepEqual(t.state.pendingTrade.acceptedPlayerIds,["p2"]);
+    for(const playerId of ["p1","p3"]){
+      assert.equal(t.call(playerId,"game:trade-accept",{tradeId:id}).ok,true);
+      assert(t.state.pendingTrade,"A four-person counter cannot settle with only three approvals.");
+      assert.equal(t.state.players[1].cash,1500,"No transfers until all four approve.");
+    }
+    assert.equal(t.call("p4","game:trade-accept",{tradeId:id}).ok,true);
+    assert.equal(t.state.pendingTrade,null);
+    assert.deepEqual(t.state.players.map(p=>p.cash),[1490,1570,1480,1460]);
+  } finally { t.cleanup(); }
+}
 assert.throws(()=>draftFromTradeOffer({proposerId:"p1",recipientId:"p2"},"outsider"));
 console.log("PASS HGR counteroffers: prefilled original, exact stale-ID guard, participant restrictions, out-of-turn replacement, no early transfers, final approvals, multi-party, AI and reject-all protections.");
