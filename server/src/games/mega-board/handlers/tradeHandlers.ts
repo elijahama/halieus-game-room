@@ -761,11 +761,9 @@ function buildLiveTradePreview(
     (leg) => leg.cash > 0 || leg.propertyIds.length > 0 || leg.busTicketIds.length > 0 || leg.jailCardIds.length > 0,
   );
 
-  // Choosing a recipient is not a negotiation by itself. Do not announce a
-  // "deal in progress" until at least one real term (cash/property/card/ticket)
-  // has been added. Returning null also clears an earlier preview when every
-  // term is removed again.
-  if (transfers.length === 0) return null;
+  // A valid recipient selection signals deal intent even before any terms are
+  // added. The preview is ephemeral, never a submitted offer or match-history
+  // event. Live-close and turn changes still clear it.
 
   return {
     proposerId: proposer.id,
