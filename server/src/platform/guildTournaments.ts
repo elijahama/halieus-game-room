@@ -39,8 +39,9 @@ function newMatch(id: HgrGuildTournamentMatch["id"], home: string | null, away: 
   return { id, round: id === "final" ? "final" : "semifinal", homeGuildId: home, awayGuildId: away,
     fixtureId: null, status: home && away ? "ready" : "awaiting-teams", winnerGuildId: null };
 }
-function verifiedWinner(fixture: HgrGuildFixture | null, home: string, away: string): string | null {
-  if (!fixture || fixture.status !== "completed" || fixture.boardResults?.length !== 2 ||
+function verifiedWinner(fixture: HgrGuildFixture | null, home: string, away: string, startedAt: number | null): string | null {
+  if (!fixture || !startedAt || fixture.createdAt < startedAt ||
+      fixture.status !== "completed" || fixture.boardResults?.length !== 2 ||
       !fixture.boards || fixture.boards.length !== 2 ||
       new Set([fixture.homeGuildId, fixture.awayGuildId]).size !== 2 ||
       ![fixture.homeGuildId, fixture.awayGuildId].includes(home) ||
@@ -48,7 +49,9 @@ function verifiedWinner(fixture: HgrGuildFixture | null, home: string, away: str
   const expectedBoardIds = new Set(fixture.boards.map(board => board.boardMatchId));
   const receipts = fixture.boardResults;
   if (expectedBoardIds.size !== 2 || receipts.some(row =>
-      !expectedBoardIds.has(row.boardMatchId) || ![home, away].includes(row.winnerGuildId)) ||
+      !expectedBoardIds.has(row.boardMatchId) || ![home, away].includes(row.winnerGuildId) ||
+      !Number.isSafeInteger(row.gameStartedAt) || row.gameStartedAt < startedAt ||
+      !Number.isSafeInteger(row.completedAt) || row.completedAt < startedAt) ||
       new Set(receipts.map(row => row.boardMatchId)).size !== 2) return null;
   const homeWins = receipts.filter(row => row.winnerGuildId === home).length;
   const awayWins = receipts.filter(row => row.winnerGuildId === away).length;
@@ -152,7 +155,8 @@ export function createGuildTournamentCoordinator(
         throw new TournamentError(403, "Only a competing Guild manager may bind this match.");
       }
       const game = fixture(fixtureId);
-      if (!game || !["rooms-bound", "completed"].includes(game.status) || game.boards?.length !== 2 ||
+      if (!game || !t.startedAt || !Number.isSafeInteger(game.createdAt) || game.createdAt < t.startedAt ||
+          !["rooms-bound", "completed"].includes(game.status) || game.boards?.length !== 2 ||
           ![match.homeGuildId, match.awayGuildId].includes(game.homeGuildId) ||
           ![match.homeGuildId, match.awayGuildId].includes(game.awayGuildId) ||
           game.homeGuildId === game.awayGuildId) {
@@ -177,7 +181,7 @@ export function createGuildTournamentCoordinator(
         for (const match of matches) {
           if (!match.fixtureId || match.status === "completed" || !match.homeGuildId || !match.awayGuildId) continue;
           const receipt = fixture(match.fixtureId);
-          const winner = verifiedWinner(receipt, match.homeGuildId, match.awayGuildId);
+          const winner = verifiedWinner(receipt, match.homeGuildId, match.awayGuildId, t.startedAt);
           const status = winner ? "completed" : receipt?.status === "completed" ? "tied" : "playing";
           if (match.status !== status || match.winnerGuildId !== winner) {
             match.status = status; match.winnerGuildId = winner; changed = true;

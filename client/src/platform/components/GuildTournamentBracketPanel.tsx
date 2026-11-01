@@ -130,7 +130,7 @@ export function GuildTournamentBracketPanel({ account, guild }: Props) {
             match.status === "ready" && (match.homeGuildId === guild.id || match.awayGuildId === guild.id);
           const candidates = fixtures.filter(fixture =>
             (fixture.status === "rooms-bound" || fixture.status === "completed") &&
-            fixture.boards?.length === 2 &&
+            fixture.boards?.length === 2 && fixture.createdAt >= (tournament.startedAt ?? Infinity) &&
             ((fixture.homeGuildId === match.homeGuildId && fixture.awayGuildId === match.awayGuildId) ||
              (fixture.homeGuildId === match.awayGuildId && fixture.awayGuildId === match.homeGuildId)));
           return <section key={match.id} className="halieus-guild-fixture-board">

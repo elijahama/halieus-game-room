@@ -13,8 +13,8 @@ const game = id => fixtures.get(id) ?? null;
 const denied=(promise,code)=>assert.rejects(promise,e=>e instanceof TournamentError && e.statusCode===code);
 function receipt(id,home,away,winners=[],status="rooms-bound") {
   const boards = [1,2].map(n=>({boardMatchId:id+"-"+n,roomCode:id+n,roomCreatedAt:n,seatAccountIds:[]}));
-  return { id,homeGuildId:home,awayGuildId:away,status,boards,
-    boardResults:status==="completed"?winners.map((guildId,n)=>({boardMatchId:id+"-"+(n+1),winnerGuildId:guildId})):[] };
+  return { id,homeGuildId:home,awayGuildId:away,status,createdAt:Date.now()+5000,boards,
+    boardResults:status==="completed"?winners.map((guildId,n)=>({boardMatchId:id+"-"+(n+1),winnerGuildId:guildId,gameStartedAt:Date.now()+5000,completedAt:Date.now()+6000})):[] };
 }
 try {
   const c=createGuildTournamentCoordinator(file); await c.load();
@@ -34,6 +34,8 @@ try {
   await denied(c.start("red-manager",t.id,lookup),409);
   await denied(c.link("green-manager",t.id,"semi-1","fake",lookup,game),403);
   await denied(c.link("red-manager",t.id,"semi-1","fake",lookup,game),409);
+  fixtures.set("historical",{...receipt("historical","red","gold",["red","red"],"completed"),createdAt:started.startedAt-1});
+  await denied(c.link("red-manager",t.id,"semi-1","historical",lookup,game),409);
   fixtures.set("one",receipt("one","red","gold"));
   fixtures.set("two",receipt("two","blue","green"));
   await c.link("red-manager",t.id,"semi-1","one",lookup,game);
