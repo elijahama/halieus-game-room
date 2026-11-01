@@ -26998,3 +26998,107 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
  .halieus-guild-fixture-heading>button{width:100%}
  .halieus-guild-fixture-card>header{align-items:flex-start;flex-direction:column}
 }
+
+
+/* Mega Board spectator fullscreen landscape: reclaim the dead side margins.
+ * The 4.6 desktop vertical "board above 230px roster" rule shrank a large
+ * 16:9 board to ~500px. Wide landscape gets a square board + roster sidebar.
+ * Portrait/mobile and the active-player 3-column controls are not touched. */
+@media (min-width: 1181px) and (min-aspect-ratio: 4/3) {
+  .game-page.mega-live-page.mega-spectator-mode > .game-layout.mega-live-layout-v3.mega-spectator-layout {
+    flex: 1 1 0% !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) clamp(315px, 29vw, 430px) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    justify-items: stretch !important;
+    gap: clamp(10px, 1vw, 16px) !important;
+    width: min(100%, 1400px) !important;
+    max-width: 1400px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    margin-inline: auto !important;
+    overflow: hidden !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout > .board-frame {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-self: stretch !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    container-type: size !important;
+    place-items: center !important;
+    overflow: hidden !important;
+    background: transparent !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout .board-grid {
+    width: min(100cqw, 100cqh) !important;
+    height: min(100cqw, 100cqh) !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    align-self: center !important;
+    justify-self: center !important;
+    margin: 0 auto !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout > .mega-spectator-player-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    align-self: stretch !important;
+    justify-self: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    padding: 12px !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    min-width: 0 !important;
+    gap: 9px !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-header > div {
+    text-align: left !important;
+    min-width: 0 !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-header > span {
+    flex: 0 0 auto !important;
+    justify-self: auto !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-list {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-content: start !important;
+    align-items: start !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .spectator-rail-section {
+    flex: 0 0 auto !important;
+    max-height: min(29%, 160px) !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+  }
+}

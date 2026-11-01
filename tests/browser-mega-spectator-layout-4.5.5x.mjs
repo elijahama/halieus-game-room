@@ -38,7 +38,7 @@ assert.match(tsx,/className="mega-spectator-banner"/,"Spectating bar must be vis
 
 const browsers = await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try{
-  for(const viewport of [{width:360,height:780},{width:390,height:844},{width:820,height:900},{width:1280,height:720},{width:1408,height:900},{width:1536,height:900}]){
+  for(const viewport of [{width:360,height:780},{width:390,height:844},{width:820,height:900},{width:1280,height:720},{width:1408,height:900},{width:1536,height:900},{width:1650,height:927}]){
     const page=await browsers.newPage({viewport});
     const players=Array.from({length:8},(_,i)=>
       '<article class="player-rail-card" data-player="'+i+'"><div class="player-rail-main-row">'+
@@ -58,7 +58,8 @@ try{
       '<div class="game-layout mega-live-layout-v3 mega-spectator-layout">'+
       '<div class="board-frame"><div class="board-grid"><div class="board-space">BOARD</div></div></div>'+
       '<aside class="player-rail player-rail-single mega-live-player-rail mega-spectator-player-rail" aria-label="Players and owned properties">'+
-      '<header class="player-rail-header"><div><h2>Live players</h2></div></header><div class="player-rail-list">'+players+'</div></aside>'+
+      '<header class="player-rail-header"><div><h2>Live players</h2></div></header><div class="player-rail-list">'+players+'</div>'+ 
+      '<section class="spectator-rail-section" aria-label="Spectators"><div class="spectator-rail-heading"><span>Spectators</span><strong>3</strong></div><div class="spectator-rail-list"><span>Former player A</span><span>Former player B</span><span>Former player C</span></div></section></aside>'+
       '<div class="right-game-stack"></div></div></main></body></html>');
     for(const sheet of css) await page.addStyleTag({content:sheet});
     const info=await page.evaluate(()=>{
@@ -72,9 +73,10 @@ try{
       const first=rect(".player-rail-card");
       return {
         banner:{top:banner.top,bottom:banner.bottom},
-        board:{top:board.top,bottom:board.bottom,width:board.width,height:board.height},
-        rail:{top:rail.top,bottom:rail.bottom},frame:{top:frame.top,bottom:frame.bottom,height:frame.height,display:computedFrame.display,gridRow:computedFrame.gridRow,overflow:computedFrame.overflow,position:computedFrame.position},layout:{top:layout.top,bottom:layout.bottom,display:style(".mega-spectator-layout").display,gridRows:style(".mega-spectator-layout").gridTemplateRows}, boardCss:{position:computedGrid.position,alignSelf:computedGrid.alignSelf,transform:computedGrid.transform,margin:computedGrid.margin,height:computedGrid.height},
+        board:{top:board.top,bottom:board.bottom,left:board.left,right:board.right,width:board.width,height:board.height},
+        rail:{top:rail.top,bottom:rail.bottom,left:rail.left,right:rail.right},frame:{top:frame.top,bottom:frame.bottom,height:frame.height,display:computedFrame.display,gridRow:computedFrame.gridRow,overflow:computedFrame.overflow,position:computedFrame.position},layout:{top:layout.top,bottom:layout.bottom,display:style(".mega-spectator-layout").display,gridRows:style(".mega-spectator-layout").gridTemplateRows}, boardCss:{position:computedGrid.position,alignSelf:computedGrid.alignSelf,transform:computedGrid.transform,margin:computedGrid.margin,height:computedGrid.height},
         first:{top:first.top,left:first.left,right:first.right},
+        footer:{top:rect(".spectator-rail-section").top,bottom:rect(".spectator-rail-section").bottom},
         cardCount:document.querySelectorAll(".mega-spectator-player-rail .player-rail-card").length,
         rosterDisplay:style(".mega-spectator-player-rail").display,
         gridColumns:style(".mega-spectator-layout").gridTemplateColumns,
@@ -93,10 +95,24 @@ try{
       };
     });
     assert.ok(info.banner.bottom <= info.board.top+1,"Spectating banner must precede board "+JSON.stringify({viewport,info}));
-    assert.ok(info.board.bottom <= info.rail.top+1,"Board must precede player strip "+JSON.stringify({viewport,info}));
+    const wideLandscape=viewport.width>=1181 && viewport.width/viewport.height>=4/3;
+    if(wideLandscape){
+      assert.ok(info.board.right <= info.rail.left+1,"Wide spectator board and player sidebar must not overlap "+JSON.stringify({viewport,info}));
+      assert.ok(info.rail.top <= info.board.bottom+1,"Side roster must share the board row "+JSON.stringify({viewport,info}));
+      assert.ok(info.board.width >= Math.min(540,viewport.height*.7),
+        "Wide fullscreen spectator board must not remain tiny inside a dead stage "+JSON.stringify({viewport,info}));
+    }else{
+      assert.ok(info.board.bottom <= info.rail.top+1,"Portrait spectator player strip must follow board "+JSON.stringify({viewport,info}));
+    }
     assert.ok(Math.abs(info.board.width-info.board.height)<3,"Board square distorted "+JSON.stringify({viewport,info}));
     assert.ok(info.board.width>150 && info.board.width<=viewport.width,"Board should fit viewport "+JSON.stringify({viewport,info}));
-    assert.ok(info.first.top>=info.board.bottom && info.first.left>=-1 && info.first.right<=viewport.width+1,"Player must be under board, not clipped "+JSON.stringify({viewport,info}));
+    assert.ok(info.first.left>=-1 && info.first.right<=viewport.width+1,
+      "Player card must remain within viewport "+JSON.stringify({viewport,info}));
+    if(wideLandscape){
+      assert.ok(info.first.top>=info.rail.top-1,"Side roster players must be inside sidebar "+JSON.stringify({viewport,info}));
+    }else{
+      assert.ok(info.first.top>=info.board.bottom,"Portrait player cards stay under board "+JSON.stringify({viewport,info}));
+    }
     assert.ok(info.first.top<viewport.height-40,"First player should be visible at bottom of first screen "+JSON.stringify({viewport,info}));
     assert.equal(info.cardCount,8,"All eight players remain in the roster");
     if(viewport.width>=1181){
@@ -106,11 +122,17 @@ try{
       assert.ok(info.railListScrollHeight>info.railListClientHeight+1 || info.lastCardBottom<=info.railListBottom+1,"Every player is visible or reachable by internal roster scrolling "+JSON.stringify({viewport,info}));
       assert.equal(info.scroller,"auto","Roster scroll remains accessible");
       assert.equal(info.headerCellAlign,"center","Header metadata text is centred");
+      if(wideLandscape){
+        assert.ok(info.footer.bottom<=info.rail.bottom+2,"Spectator footer must remain visible inside sidebar "+JSON.stringify({viewport,info}));
+        assert.ok(info.rail.right<=viewport.width+1 && info.rail.left>=0,
+          "Sidebar must remain inside viewport "+JSON.stringify({viewport,info}));
+      }
     }
     assert.notEqual(info.rosterDisplay,"none","Spectator player list must display even on phone/tablet");
     assert.equal(info.pageOverflow,false,"No horizontal page overflow "+JSON.stringify({viewport,info}));
     console.log("PASS Mega Board spectator "+viewport.width+"x"+viewport.height+
-      ": banner > square board > "+info.cardCount+" players without overlap, page scrolling or horizontal clipping");
+      ": banner > square board "+(wideLandscape?"beside":"above")+" "+info.cardCount+
+      " players without overlap, unwanted desktop page scrolling or horizontal clipping");
     await page.close();
   }
 }finally{await browsers.close();}
