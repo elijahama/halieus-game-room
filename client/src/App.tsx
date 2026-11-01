@@ -3908,7 +3908,10 @@ function handleLeaveSpectator() {
                 if (open) {
                   setPlayersDrawerOpen(false);
                   setGameMenuOpen(false);
-                } else if (panel === "trade" && !gameState.pendingTrade && liveTradePreview) {
+                } else if (panel === "trade" && !gameState.pendingTrade) {
+                  // A recipient selection may still be in flight when the panel
+                  // closes. Always clear the server-side draft, even before the
+                  // first live preview has reached this client.
                   closeLiveTradeDraft();
                 }
               }}
