@@ -54,7 +54,7 @@ import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthent
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
-import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler } from "./platform/publicAccess.js";
+import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
 import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHandlers.js";
@@ -691,19 +691,37 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
+// The public read-only maintenance status is intentionally outside the PWA
+// service-worker cache. Never infer reopening from a cached HTML shell.
+app.get("/public-access/status", async (_request: Request, response: Response) => {
+  response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  try {
+    await reconcileDuePublicMaintenance();
+    const gate = getPublicAccessState();
+    response.json({ closed: gate.closed, reopenAt: gate.reopenAt, serverNow: Date.now() });
+  } catch (error) {
+    console.error("[HGR] Public access status could not be reconciled.", error);
+    response.status(503).json({ closed: true, reopenAt: null, serverNow: Date.now() });
+  }
+});
 // Keep authentication, Control, API health and account-owned recovery routes
 // available. Only ordinary visitor HTML navigations become a 503 notice.
 app.use((request: Request, response: Response, next: NextFunction) => {
-  const gate = getPublicAccessState();
-  if (!gate.closed || request.method !== "GET" ||
+  if (request.method !== "GET" ||
       request.path === "/control" || request.path.startsWith("/control/")) return next();
   const hasFileExtension = /\.[a-z0-9]{1,8}$/i.test(request.path);
   if (hasFileExtension && !request.path.endsWith(".html")) return next();
-  response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-  response.setHeader("Pragma", "no-cache");
-  response.setHeader("X-Robots-Tag", "noindex,nofollow,noarchive");
-  response.status(503).type("html").send(renderPublicClosedPage(
-    gate.reason, gate.reopenAt, gate.scheduledWindow?.endTimeZone ?? "Europe/London"));
+  // Reconcile a due schedule before returning public HTML, even after a lost
+  // timer tick. Only persisted, game-safe transitions can change the gate.
+  void reconcileDuePublicMaintenance().then(() => {
+    const gate = getPublicAccessState();
+    if (!gate.closed) { next(); return; }
+    response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    response.setHeader("Pragma", "no-cache");
+    response.setHeader("X-Robots-Tag", "noindex,nofollow,noarchive");
+    response.status(503).type("html").send(renderPublicClosedPage(
+      gate.reason, gate.reopenAt, gate.scheduledWindow?.endTimeZone ?? "Europe/London"));
+  }).catch(next);
 });
 
 const shouldServeClient =

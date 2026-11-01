@@ -730,7 +730,8 @@
       const result = await api("/admin/public-access");
       publicAccessState = result.state;
       const closed = publicAccessState?.closed === true;
-      const active = Number(result.activeRooms || 0);
+      const knownRoomCount = Number.isInteger(result.activeRooms) && result.activeRooms >= 0;
+      const active = knownRoomCount ? result.activeRooms : null;
       const window = publicAccessState?.scheduledWindow || null;
       const pending = window && ["scheduled", "waiting-for-rooms"].includes(window.status);
       const activeWindow = window && window.status === "active";
@@ -751,28 +752,39 @@
         : "";
       const statusLabels = {
         scheduled: "Scheduled for the selected start time.",
-        "waiting-for-rooms": "Start reached · waiting for live rooms to finish. End time will not be extended.",
+        "waiting-for-rooms": knownRoomCount && active > 0
+          ? "Scheduled start has passed. " + active + " live room(s) are preventing closure. Existing games are protected; the end time will not be extended."
+          : knownRoomCount
+            ? "Scheduled start has passed with zero live rooms reported, but closure has not activated. Oracle is retrying; inspect scheduler diagnostics."
+            : "Scheduled start has passed, but live-room occupancy could not be confirmed. Closure is deferred safely; the end time will not be extended.",
         active: "Maintenance currently active; scheduled reopening is fixed.",
         completed: "Last maintenance window completed.",
-        missed: "Scheduled window ended before rooms became empty; no interruption occurred.",
+        missed: "The scheduled window elapsed without activation. It will not close late; review the room count, saved window and Oracle scheduler health.",
       };
-      $("publicAccessScheduleStatus").textContent = window
+      const scheduler = result.scheduler;
+      const warning = scheduler && !scheduler.ready
+        ? " Warning: Oracle maintenance scheduler has not started."
+        : scheduler?.error ? " Scheduler warning: " + scheduler.error : "";
+      $("publicAccessScheduleStatus").textContent = (window
         ? (statusLabels[window.status] || "Schedule state unavailable.") + " " + detail
-        : "No maintenance window scheduled.";
+        : "No maintenance window scheduled.") + warning;
       $("publicAccessSchedule").disabled = closed || Boolean(pending) || Boolean(activeWindow);
       $("publicAccessCancelSchedule").hidden = !pending;
       $("publicAccessCancelSchedule").disabled = !pending;
       for (const id of ["publicAccessStart", "publicAccessEnd", "publicAccessStartZone", "publicAccessEndZone"]) {
         $(id).disabled = closed || Boolean(pending) || Boolean(activeWindow);
       }
-      $("publicAccessRooms").textContent = active + " live room" + (active === 1 ? "" : "s") + ".";
+      $("publicAccessRooms").textContent = knownRoomCount
+        ? active + " live room" + (active === 1 ? "" : "s") + "."
+        : "Live-room count unavailable. Closure remains blocked for safety.";
       if (document.activeElement !== $("publicAccessReason") && closed) {
         $("publicAccessReason").value = publicAccessState.reason || "";
       }
       const button = $("publicAccessToggle");
       button.textContent = closed ? "Reopen Public Game Room" : "Close Public Game Room";
-      button.disabled = !closed && (active > 0 || Boolean(pending));
+      button.disabled = !closed && (!knownRoomCount || active > 0 || Boolean(pending));
       button.title = !closed && pending ? "Cancel the pending schedule before using immediate Close."
+        : !closed && !knownRoomCount ? "Cannot confirm that all rooms are empty."
         : !closed && active > 0 ? "Close is blocked while live rooms are occupied." : "";
       button.dataset.state = closed ? "closed" : "open";
     } catch (error) {
