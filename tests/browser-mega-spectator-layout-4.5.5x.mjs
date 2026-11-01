@@ -72,7 +72,7 @@ try{
       const first=rect(".player-rail-card");
       return {
         banner:{top:banner.top,bottom:banner.bottom},
-        board:{top:board.top,bottom:board.bottom,width:board.width,height:board.height},
+        board:{top:board.top,bottom:board.bottom,left:board.left,right:board.right,width:board.width,height:board.height},
         rail:{top:rail.top,bottom:rail.bottom,left:rail.left,right:rail.right,width:rail.width},frame:{top:frame.top,bottom:frame.bottom,left:frame.left,right:frame.right,height:frame.height,display:computedFrame.display,gridRow:computedFrame.gridRow,overflow:computedFrame.overflow,position:computedFrame.position},layout:{top:layout.top,bottom:layout.bottom,width:layout.width,display:style(".mega-spectator-layout").display,gridRows:style(".mega-spectator-layout").gridTemplateRows}, boardCss:{position:computedGrid.position,alignSelf:computedGrid.alignSelf,transform:computedGrid.transform,margin:computedGrid.margin,height:computedGrid.height},
         first:{top:first.top,left:first.left,right:first.right},
         cardCount:document.querySelectorAll(".mega-spectator-player-rail .player-rail-card").length,
