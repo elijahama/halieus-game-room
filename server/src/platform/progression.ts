@@ -49,9 +49,19 @@ export function captureProgression(payload: any): void {
     meta.lastActionAt = at; meta.lastActionKey = key;
   }
 }
-let chain = Promise.resolve();
+// Progression reads are rebuilt from verified session archives. Coalesce
+// simultaneous reads for ONE account, but do not block every other player's
+// Gamer Score and cosmetics behind one account's full archive scan.
+const inFlightProgressions = new Map<string, Promise<PlayerProgression>>();
 export function readPlayerProgression(accountId: string): Promise<PlayerProgression> {
-  const task = chain.then(() => rebuild(accountId)); chain = task.then(() => {}, () => {}); return task;
+  const existing = inFlightProgressions.get(accountId);
+  if (existing) return existing;
+  const task = Promise.resolve().then(() => rebuild(accountId));
+  inFlightProgressions.set(accountId, task);
+  void task.finally(() => {
+    if (inFlightProgressions.get(accountId) === task) inFlightProgressions.delete(accountId);
+  }).catch(() => { /* Rejection propagates to callers; cleanup must not be unhandled. */ });
+  return task;
 }
 async function rebuild(accountId: string): Promise<PlayerProgression> {
   const result: PlayerProgression = {
