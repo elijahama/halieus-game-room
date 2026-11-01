@@ -1294,7 +1294,7 @@ export function registerTradeHandlers(
         acknowledge({ ok: false, reason: "A counter must keep exactly the original deal participants." });
         return;
       }
-      if (payload.recipientIds[0] !== original.proposerId) {
+      if (recipients[0] !== original.proposerId) {
         acknowledge({ ok: false, reason: "The original proposer must review the counter offer first." });
         return;
       }
