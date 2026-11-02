@@ -72,9 +72,9 @@ try {
   assert.match(agent, /HGR_DEVELOPMENT_TIMELINE_SYNC === "1"/);
   assert.match(agent, /destination\.protocol !== "https:"/);
   assert.match(agent, /destination\.hostname !== "halieus\.remotewire\.net"/);
-  assert.match(agent, /if \\(!heartbeatResponse\\.ok \\|\\| !heartbeat\\?\\.approved\\) \\{/,
+  assert.match(agent, /if \(!heartbeatResponse\.ok \|\| !heartbeat\?\.approved\) \{/,
     "Rejected or unapproved Cloud heartbeat must fail closed before evidence forwarding.");
-  assert.match(agent, /await recordCloudHealth\\(enrollment === "pending"/,
+  assert.match(agent, /await recordCloudHealth\(enrollment === "pending"/,
     "Rejected heartbeats must produce a truthful local diagnostic without forwarding evidence.");
   assert.match(cloud, /path === "\/control\/cloud\/agent\/development-evidence"/);
   assert.match(cloud, /const auth = await authenticatedAgent\(body\)/);
