@@ -268,8 +268,7 @@ $CreatedShortcuts = @(
     $StartMenuCloseShortcut,
     $StartMenuUpdateShortcut,
     $StartMenuPowerShellShortcut,
-    $StartMenuOpenShardShortcut,
-    $StartMenuCloudRecoveryShortcut
+    $StartMenuOpenShardShortcut
 )
 foreach ($shortcutPath in $CreatedShortcuts) {
     if (-not (Test-Path -LiteralPath $shortcutPath)) {
@@ -302,8 +301,8 @@ foreach ($check in $ShortcutIconChecks) {
 Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript $UpdateScript
 Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript $UpdateScript
 Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuCloudRecoveryShortcut -ExpectedCommandScript $CloudRecoveryScript
-if ($CreatedShortcuts.Count -ne 13) {
-    throw "Expected six canonical launchers in both folders plus the Start Menu recovery utility; found $($CreatedShortcuts.Count)."
+if ($CreatedShortcuts.Count -ne 12) {
+    throw "Expected exactly six canonical launcher roles in both managed folders; found $($CreatedShortcuts.Count)."
 }
 foreach ($retiredName in @('HGR - Control.lnk', 'HGR - Stop Control.lnk', 'HGR - Update Site.lnk')) {
     foreach ($launcherRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
