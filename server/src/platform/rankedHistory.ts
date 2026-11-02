@@ -99,10 +99,20 @@ export function createRankedHistoryReader(locations: HistoryLocations = defaults
     if(loading)return loading;
     loading=(async()=>{
       const unique=new Map<string,HgrRankedHistoryMatch>();
+      const archivedRankedIds=new Set<string>();
       for(const directory of [...new Set(locations.sessionDirectories)]){
         for(const raw of await readDirectory(directory)){
           const projected=projectArchived(raw);
-          if(projected && !unique.has(projected.id))unique.set(projected.id,projected);
+          if(projected) {
+            if(!unique.has(projected.id))unique.set(projected.id,projected);
+            if(projected.game==="mega-board"){
+              const rawState=(raw as any)?.state?.gameState ?? (raw as any)?.state;
+              const historicalId=safeText(rawState?.rankedMatchId,180);
+              if(historicalId) archivedRankedIds.add(historicalId);
+              else if(safeText(rawState?.roomCode) && numeric(rawState?.gameStartedAt))
+                archivedRankedIds.add(`ranked-${rawState.roomCode}-${rawState.gameStartedAt}`);
+            }
+          }
         }
       }
       // Older Mega Board ranked summaries can exist without a finalized
@@ -110,24 +120,14 @@ export function createRankedHistoryReader(locations: HistoryLocations = defaults
       let snapshot:any=null;
       try {snapshot=JSON.parse(await readFile(resolve(locations.megaBoardDirectory,"rankings.json"),"utf8"));}
       catch(error){if((error as NodeJS.ErrnoException).code!=="ENOENT")console.warn("Ranked history: legacy summary unavailable.");}
-      const existingMegaIds=new Set<string>();
-      for(const item of unique.values()){
-        if(item.game!=="mega-board")continue;
-        // Finalized session IDs are different from the Ranked match IDs.
-        // If only the room and close time are available, use a conservative
-        // time-window dedupe, not player-name identity guessing.
-        existingMegaIds.add(item.id);
-      }
       for(const raw of Array.isArray(snapshot?.matches)?snapshot.matches:[]){
         const projected=projectLegacyRankedMatch(raw);
         if(!projected)continue;
-        // Archives can explicitly store a Ranked match ID, so check raw archive
-        // state before deciding the fallback is genuinely a separate record.
-        if(existingMegaIds.has(projected.id))continue;
-        const collision=[...unique.values()].some(entry=>
-          entry.game==="mega-board" && entry.roomCode===projected.roomCode
-          && Math.abs(entry.completedAt-projected.completedAt)<120_000);
-        if(!collision)unique.set(projected.id,projected);
+        // Session archives and the old Rankings save use different keys.
+        // Deduplicate only on a verified stable Ranked match ID. A fast new
+        // match in the same room must never be discarded by time proximity.
+        if(!archivedRankedIds.has(projected.id) && !unique.has(projected.id))
+          unique.set(projected.id,projected);
       }
       const entries=[...unique.values()].sort((a,b)=>b.completedAt-a.completedAt||a.id.localeCompare(b.id));
       cached={at:Date.now(),entries};
