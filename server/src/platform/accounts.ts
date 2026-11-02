@@ -108,6 +108,8 @@ interface AccountStore {
   ownerBootstrapHash: string | null;
   ownerBootstrapCreatedAt: number | null;
   accounts: StoredAccount[];
+  /** Per-account, bounded read receipts for actionable inbox notifications. */
+  inboxReadKeys: Record<string, string[]>;
   invites: StoredInvite[];
   sessions: StoredSession[];
   passwordResets: StoredPasswordReset[];
@@ -161,6 +163,7 @@ function emptyStore(): AccountStore {
     ownerBootstrapHash: null,
     ownerBootstrapCreatedAt: null,
     accounts: [],
+    inboxReadKeys: {},
     invites: [],
     sessions: [],
     passwordResets: [],
@@ -314,6 +317,7 @@ export async function loadAccountStore(): Promise<void> {
       store.gameInvites = Array.isArray(store.gameInvites) ? store.gameInvites : [];
       store.gameRequests = Array.isArray(store.gameRequests) ? store.gameRequests : [];
       store.friendRequests = Array.isArray(store.friendRequests) ? store.friendRequests : [];
+      store.inboxReadKeys = store.inboxReadKeys && typeof store.inboxReadKeys === "object" && !Array.isArray(store.inboxReadKeys) ? store.inboxReadKeys : {};
       for (const account of store.accounts) {
         account.visibility = account.visibility === "hidden" ? "hidden" : "visible";
         account.displayNameAliases = Array.isArray(account.displayNameAliases)
@@ -1277,6 +1281,35 @@ export function registerAccountRoutes(app: Express): void {
     response.json({ ok: true, entries });
   });
 
+
+  // Reading an inbox item never accepts an invitation or alters the game.
+  // Keys are stored per authenticated account and persist across devices.
+  app.get("/accounts/inbox/read", (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    response.setHeader("Cache-Control", "private, no-store");
+    response.json({ ok: true, keys: store.inboxReadKeys[auth.account.id] ?? [] });
+  });
+  app.post("/accounts/inbox/read", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    const keys: unknown = request.body?.keys;
+    if (!Array.isArray(keys) || keys.length > 180 || keys.some(key =>
+      typeof key !== "string" || key.length > 145 ||
+      !/^(request|room|guild-invite|friend):[a-zA-Z0-9._:-]+$/.test(key))) {
+      response.status(400).json({ ok: false, reason: "Invalid inbox read receipt." }); return;
+    }
+    const previous = new Set(store.inboxReadKeys[auth.account.id] ?? []);
+    for (const key of keys as string[]) previous.add(key);
+    store.inboxReadKeys[auth.account.id] = [...previous].slice(-320);
+    try {
+      await saveStore();
+      response.setHeader("Cache-Control", "private, no-store");
+      response.json({ ok: true, keys: store.inboxReadKeys[auth.account.id] });
+    } catch {
+      response.status(503).json({ ok: false, reason: "Could not save notification read state." });
+    }
+  });
 
   app.get("/accounts/game-invites", (request, response) => {
     const auth = currentSession(request);
