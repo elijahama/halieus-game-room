@@ -41,6 +41,9 @@ import { InstallAppButton } from "./InstallAppButton";
 import { NotificationPermissionButton } from "./NotificationPermissionButton";
 import { useSocialActivityNotifications } from "../socialActivityNotifications";
 import { GameInviteDropdown } from "./GameInviteDropdown";
+import { SocialRoomDropdown } from "./SocialRoomDropdown";
+import { buildInboxTimeline, inboxUnreadCount } from "../inboxTimeline";
+import type { HgrSocialActivityNotice } from "../socialActivityTransitions";
 import { GuildMessageDropdown } from "./GuildMessageDropdown";
 import { incomingGameNotifications, readSeenGameNotifications, saveSeenGameNotifications, type HgrIncomingGameNotification } from "./gameInviteNotifications";
 import { GameBrandIcon } from "./GameBrandIcon";
@@ -200,6 +203,10 @@ export function HomeScreen(props: HomeScreenProps) {
   const [preferredGuildId, setPreferredGuildId] = useState<string | null>(null);
   const [inboxOpen, setInboxOpen] = useState(false);
   const socialActivity = useSocialActivityNotifications(account?.id ?? null);
+  const [readInboxKeys, setReadInboxKeys] = useState<Set<string>>(new Set());
+  const [inboxReadError, setInboxReadError] = useState("");
+  const [socialRoomNotice, setSocialRoomNotice] = useState<HgrSocialActivityNotice | null>(null);
+  const seenSocialRoomNotice = useRef(new Set<string>());
   const [gameNotice, setGameNotice] = useState<HgrIncomingGameNotification | null>(null);
   const [gameNoticeBusy, setGameNoticeBusy] = useState(false);
   const [gameNoticeError, setGameNoticeError] = useState("");
@@ -374,6 +381,49 @@ export function HomeScreen(props: HomeScreenProps) {
     return () => { cancelled = true; window.clearInterval(timer); document.removeEventListener("visibilitychange", refreshOnFocus); };
   }, [account?.id]);
 
+  // Durable per-account inbox read state, synchronised between phone/desktop.
+  useEffect(() => {
+    setReadInboxKeys(new Set());
+    setInboxReadError("");
+    if (!account?.id) return;
+    let active = true;
+    const refresh = () => {
+      void accountApi<{ok:true;keys:string[]}>("/accounts/inbox/read")
+        .then(result => { if (active) setReadInboxKeys(new Set(result.keys)); })
+        .catch(() => { if (active) setInboxReadError("Notification read status could not sync."); });
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 10000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [account?.id]);
+
+  async function acknowledgeInboxKeys(keys: string[]): Promise<void> {
+    if (!account?.id || !keys.length) return;
+    const accountId = account.id;
+    setReadInboxKeys(current => new Set([...current, ...keys]));
+    try {
+      const result = await accountApi<{ok:true;keys:string[]}>("/accounts/inbox/read", {
+        method:"POST", body:JSON.stringify({keys}),
+      });
+      if (seenGameNoticeAccount.current === accountId) {
+        setReadInboxKeys(new Set(result.keys)); setInboxReadError("");
+      }
+    } catch {
+      if (seenGameNoticeAccount.current === accountId) {
+        setInboxReadError("Could not save read status. Retrying from your account.");
+        void accountApi<{ok:true;keys:string[]}>("/accounts/inbox/read")
+          .then(result => { if (seenGameNoticeAccount.current === accountId) setReadInboxKeys(new Set(result.keys)); })
+          .catch(() => undefined);
+      }
+    }
+  }
+
+  useEffect(() => {
+    const accountId = account?.id ?? null;
+    seenSocialRoomNotice.current = accountId ? readSeenGameNotifications(accountId, "social-popup") : new Set();
+    setSocialRoomNotice(null);
+  }, [account?.id]);
+
   useEffect(() => {
     const accountId = account?.id ?? null;
     seenGameNoticeAccount.current = accountId;
@@ -425,6 +475,52 @@ export function HomeScreen(props: HomeScreenProps) {
     }).catch(() => undefined).finally(() => { guildPopupClaimInFlight.current = false; });
   }, [account?.id, guildMessageNotices, guildPopupKeys, readGuildMessages,
     guildReceiptsReady, inboxOpen, createOpen, joinOpen, gameNotice, guildMessageNotice]);
+
+  async function markAllInboxRead(): Promise<void> {
+    if (!account?.id) return;
+    socialActivity.markRead();
+    const keys = inboxTimeline.filter(item => item.kind !== "social" && item.kind !== "guild-message")
+      .map(item => item.key).filter(key => !readInboxKeys.has(key));
+    const messages = guildMessageNotices.filter(item => !readGuildMessages.has(item.key)).map(item => item.key);
+    const accountId = account.id;
+    // The guild message store has its own durable server-authoritative receipts.
+    if (messages.length) {
+      try {
+        const response = await accountApi<{ok:true;readKeys:string[];popupKeys:string[]}>(
+          "/guilds/message-notifications/ack", {method:"POST",body:JSON.stringify({kind:"read",keys:messages})});
+        if (seenGameNoticeAccount.current === accountId) {
+          setReadGuildMessages(new Set(response.readKeys));
+          setGuildPopupKeys(new Set(response.popupKeys));
+        }
+      } catch { setInboxReadError("Some guild message receipts could not be saved."); }
+    }
+    if (keys.length) await acknowledgeInboxKeys(keys);
+  }
+
+  // Only verified friends and shared-guild peers may generate room activity.
+  // Popups are brief; older notices remain in the chronological inbox.
+  useEffect(() => {
+    if (!account?.id || inboxOpen || createOpen || joinOpen || gameNotice || guildMessageNotice || socialRoomNotice
+      || document.visibilityState !== "visible") return;
+    const now = Date.now();
+    const eligible = socialActivity.items.find(item => item.kind === "game" && !item.read &&
+      now >= item.at && now - item.at < 45000 && !seenSocialRoomNotice.current.has(item.id) &&
+      liveRooms.some(room => room.code === item.roomCode && room.game === item.gameId &&
+        (room.joinable || room.spectatable)));
+    if (!eligible) return;
+    seenSocialRoomNotice.current.add(eligible.id);
+    saveSeenGameNotifications(account.id, "social-popup", seenSocialRoomNotice.current);
+    setSocialRoomNotice(eligible);
+  }, [account?.id, inboxOpen, createOpen, joinOpen, gameNotice, guildMessageNotice,
+    socialRoomNotice, socialActivity.items, liveRooms]);
+
+  useEffect(() => {
+    if (!socialRoomNotice) return;
+    const delay = Math.max(0, socialRoomNotice.at + 45000 - Date.now());
+    const timer = window.setTimeout(() => setSocialRoomNotice(current =>
+      current?.id === socialRoomNotice.id ? null : current), delay);
+    return () => window.clearTimeout(timer);
+  }, [socialRoomNotice]);
 
   function markGuildMessageRead(message: HalieusGuildMessageNotification): void {
     if (!account?.id) return;
@@ -606,8 +702,12 @@ export function HomeScreen(props: HomeScreenProps) {
   const incomingFriendRequests = useMemo(() => friendRequests.filter((request) =>
     request.status === "pending" && request.recipientAccountId === account?.id),
   [friendRequests, account?.id]);
-  const inboxCount = activeGameRequests.length + gameInvites.length + guildInvites.length
-    + unreadGuildMessages.length + incomingFriendRequests.length + socialActivity.unreadCount;
+  const inboxTimeline = useMemo(() => buildInboxTimeline({
+    social: socialActivity.items, requests: activeGameRequests, roomInvites: gameInvites,
+    guildMessages: guildMessageNotices, friendRequests: incomingFriendRequests,
+    guildInvites,
+  }), [socialActivity.items, activeGameRequests, gameInvites, guildMessageNotices, incomingFriendRequests, guildInvites]);
+  const inboxCount = inboxUnreadCount(inboxTimeline, readInboxKeys, readGuildMessages);
   const discoveryGames = useMemo(() => {
     const mostPlayed = [...personalStats.byGame]
       .filter((row) => row.played > 0 && ACTIVE_GAME_IDS.has(row.game as GameId))
@@ -1120,75 +1220,116 @@ export function HomeScreen(props: HomeScreenProps) {
           <div><p>PLAYER INBOX</p><h2>Notifications & activity</h2><span>Requests, invitations and verified friends or guild contacts joining games appear here.</span></div>
           <button type="button" onClick={() => setInboxOpen(false)} aria-label="Close inbox">×</button>
         </header>
-        {inboxCount === 0 && <div className="halieus-inbox-empty"><strong>You’re all caught up.</strong><span>Game invitations, guild messages and friend activity will appear here.</span></div>}
-        {socialActivity.items.length > 0 && <section className="halieus-inbox-group hgr-social-activity-group" aria-label="Friends and guild activity">
-          <header><strong>Friends &amp; guild activity</strong><b>{socialActivity.unreadCount ? socialActivity.unreadCount + " new" : socialActivity.items.length + " saved"}</b>
-            <button type="button" className="button-muted" onClick={socialActivity.markRead}>Mark all read</button>
-            <button type="button" className="button-muted" onClick={socialActivity.clear}>Clear</button>
-          </header>
-          {socialActivity.items.slice(0, 20).map((notice) => {
+        <div className="hgr-inbox-toolbar">
+          <div><strong>{inboxCount > 0 ? `${inboxCount} unread` : "All caught up"}</strong>
+            <small>Newest first · Read messages stay here until resolved or cleared</small></div>
+          <button type="button" className="button-muted" disabled={inboxCount === 0}
+            onClick={() => void markAllInboxRead()}>Mark all as read</button>
+        </div>
+        {inboxReadError && <p role="alert" className="hgr-inbox-read-error">{inboxReadError}</p>}
+        {inboxTimeline.length === 0 && <div className="halieus-inbox-empty">
+          <strong>You’re all caught up.</strong><span>Room invitations, messages and social activity appear here.</span>
+        </div>}
+        <section className="halieus-inbox-group hgr-inbox-timeline" aria-label="Notifications ordered by date">
+        {inboxTimeline.map(event => {
+          const isRead = event.kind === "social" ? event.notice.read
+            : event.kind === "guild-message" ? readGuildMessages.has(event.key)
+            : readInboxKeys.has(event.key);
+          const markOne = () => event.kind === "social"
+            ? socialActivity.markOne(event.notice.id)
+            : event.kind === "guild-message"
+              ? markGuildMessageRead(event.notice)
+              : void acknowledgeInboxKeys([event.key]);
+          const actions = (node: React.ReactNode) => <div className="hgr-inbox-actions">
+            {node}
+            {!isRead && <button type="button" className="button-muted" onClick={markOne}>Mark read</button>}
+          </div>;
+          const stamp = <small className="hgr-inbox-date">
+            <time dateTime={new Date(event.at).toISOString()}>{new Date(event.at).toLocaleString()}</time>
+            <b>{isRead ? "Read" : "Unread"}</b>
+          </small>;
+          if (event.kind === "social") {
+            const notice = event.notice;
             const room = notice.gameId && notice.roomCode
-              ? liveRooms.find((candidate) => candidate.game === notice.gameId && candidate.code === notice.roomCode) : null;
-            return <article key={notice.id} className={"halieus-inbox-item is-guild hgr-social-activity-item" + (notice.read ? "" : " is-unread")}
-              style={{ ["--inbox-accent" as string]: notice.kind === "game" ? "#65d9ae" : "#83a9f0" }}>
-              <span className="halieus-inbox-guild-mark" aria-hidden="true">{notice.kind === "game" ? "🎮" : "●"}</span>
-              <span><small>{notice.kind === "game" ? "IN A GAME" : "ONLINE NOW"} · {new Date(notice.at).toLocaleString()}</small>
-                <strong>{notice.title}</strong><em>{notice.detail}</em></span>
-              <div>{room?.joinable && <button type="button" className="button-primary" onClick={() => { socialActivity.markRead(); setInboxOpen(false); openLiveRoom(room, "join"); }}>Join</button>}
-                {room?.spectatable && <button type="button" className="button-outline" onClick={() => { socialActivity.markRead(); setInboxOpen(false); openLiveRoom(room, "watch"); }}>Watch</button>}</div>
+              ? liveRooms.find(candidate => candidate.game === notice.gameId && candidate.code === notice.roomCode) : null;
+            return <article key={event.key} className={`halieus-inbox-item is-guild hgr-social-activity-item ${isRead?"is-read":"is-unread"}`}
+              style={{["--inbox-accent" as string]:notice.kind === "game" ? "#65d9ae" : "#83a9f0"}}>
+              <span className="halieus-inbox-guild-mark" aria-hidden="true">{notice.kind === "game" ? "●" : "○"}</span>
+              <span>{stamp}<strong>{notice.title}</strong><em>{notice.detail}</em></span>
+              {actions(<>
+                {room?.joinable && <button className="button-primary" type="button"
+                  onClick={() => { socialActivity.markOne(notice.id); setInboxOpen(false); openLiveRoom(room, "join"); }}>Join</button>}
+                {room?.spectatable && <button className="button-outline" type="button"
+                  onClick={() => { socialActivity.markOne(notice.id); setInboxOpen(false); openLiveRoom(room, "watch"); }}>Watch</button>}
+              </>)}
             </article>;
-          })}
-        </section>}
-        {activeGameRequests.length > 0 && <section className="halieus-inbox-group"><header><strong>Game requests</strong><b>{activeGameRequests.length}</b></header>{activeGameRequests.map((request) => {
-          const incoming = request.recipientAccountId === account?.id;
-          const accepted = request.status === "accepted";
-          const game = GAME_BY_ID[request.game as GameId];
-          return <article key={request.id} className="halieus-inbox-item" style={{ ["--inbox-accent" as string]: game.accent }}>
-            <img src={game.icon} alt="" />
-            <span><small>{incoming ? `${request.senderDisplayName.toUpperCase()} REQUESTED A GAME` : `REQUEST TO ${request.recipientDisplayName.toUpperCase()}`}</small><strong>{request.gameTitle}</strong><em>{accepted ? `Accepted${request.roomCode ? ` · Room ${request.roomCode}` : ""}` : incoming ? "Waiting for your response" : "Waiting for response"}</em></span>
-            <div>{accepted ? <button type="button" className="button-primary" onClick={() => void openAcceptedGameRequest(request)}>{incoming ? "Create room" : "Join room"}</button> : incoming ? <><button type="button" className="button-primary" onClick={() => void respondGameRequest(request.id, "accept")}>Accept</button><button type="button" className="button-outline" onClick={() => void respondGameRequest(request.id, "decline")}>Decline</button></> : <button type="button" className="button-muted" onClick={() => void cancelGameRequest(request.id)}>Cancel</button>}</div>
-          </article>;
-        })}</section>}
-        {gameInvites.length > 0 && <section className="halieus-inbox-group"><header><strong>Room invitations</strong><b>{gameInvites.length}</b></header>{gameInvites.map((invite) => {
-          const room = liveRooms.find((candidate) => candidate.game === invite.game && candidate.code === invite.roomCode) ?? null;
-          const game = GAME_BY_ID[invite.game as GameId];
-          return <article key={invite.id} className="halieus-inbox-item" style={{ ["--inbox-accent" as string]: game.accent }}>
-            <img src={game.icon} alt="" />
-            <span><small>{invite.senderDisplayName.toUpperCase()} INVITED YOU</small><strong>{invite.gameTitle}</strong><em>Room {invite.roomCode}</em></span>
-            <div>{room?.joinable && <button type="button" className="button-primary" onClick={() => { setInboxOpen(false); openLiveRoom(room, "join"); }}>Join</button>}{room?.spectatable && <button type="button" className="button-outline" onClick={() => { setInboxOpen(false); openLiveRoom(room, "watch"); }}>Spectate</button>}<button type="button" className="button-muted" onClick={() => void dismissGameInvite(invite.id)}>Dismiss</button></div>
-          </article>;
-        })}</section>}
-        {unreadGuildMessages.length > 0 && <section className="halieus-inbox-group" aria-label="Unread guild messages">
-          <header><strong>Guild messages</strong><b>{unreadGuildMessages.length}</b></header>
-          {unreadGuildMessages.slice(0, 20).map((notice) => (
-            <article key={notice.key} className="halieus-inbox-item is-guild" style={{ ["--inbox-accent" as string]: "#83a9f0" }}>
+          }
+          if (event.kind === "request") {
+            const request = event.request, incoming = request.recipientAccountId === account?.id;
+            const game = GAME_BY_ID[request.game as GameId];
+            return <article key={event.key} className={`halieus-inbox-item ${isRead?"is-read":"is-unread"}`}
+              style={{["--inbox-accent" as string]:game.accent}}>
+              <img src={game.icon} alt="" /><span>{stamp}<strong>{request.senderDisplayName} requested {request.gameTitle}</strong>
+                <em>{request.status === "accepted" ? "Accepted" : "Awaiting response"}</em></span>
+              {actions(request.status === "accepted"
+                ? <button className="button-primary" type="button" onClick={() => void openAcceptedGameRequest(request)}>
+                    {incoming ? "Create room" : "Join room"}</button>
+                : incoming ? <><button className="button-primary" type="button" onClick={() => void respondGameRequest(request.id, "accept")}>Accept</button>
+                    <button className="button-outline" type="button" onClick={() => void respondGameRequest(request.id, "decline")}>Decline</button></>
+                  : <button className="button-muted" type="button" onClick={() => void cancelGameRequest(request.id)}>Cancel</button>)}
+            </article>;
+          }
+          if (event.kind === "room") {
+            const invite=event.invite, game=GAME_BY_ID[invite.game as GameId];
+            const room=liveRooms.find(candidate=>candidate.game===invite.game && candidate.code===invite.roomCode);
+            return <article key={event.key} className={`halieus-inbox-item ${isRead?"is-read":"is-unread"}`}
+              style={{["--inbox-accent" as string]:game.accent}}>
+              <img src={game.icon} alt="" /><span>{stamp}<strong>{invite.senderDisplayName} invited you to {invite.gameTitle}</strong>
+                <em>Room {invite.roomCode}</em></span>
+              {actions(<>
+                {room?.joinable && <button className="button-primary" type="button" onClick={()=>{setInboxOpen(false);openLiveRoom(room,"join");}}>Join</button>}
+                {room?.spectatable && <button className="button-outline" type="button" onClick={()=>{setInboxOpen(false);openLiveRoom(room,"watch");}}>Spectate</button>}
+                <button className="button-muted" type="button" onClick={() => void dismissGameInvite(invite.id)}>Dismiss</button>
+              </>)}
+            </article>;
+          }
+          if (event.kind === "guild-message") {
+            const notice=event.notice;
+            return <article key={event.key} aria-label="Unread guild messages"
+              className={`halieus-inbox-item is-guild ${isRead?"is-read":"is-unread"}`}
+              style={{["--inbox-accent" as string]:"#83a9f0"}}>
               <span className="halieus-inbox-guild-mark" aria-hidden="true">✉</span>
-              <span><small>{notice.guildName} · {notice.senderDisplayName}</small><strong>New guild message</strong><em>{notice.preview}</em></span>
-              <div><button type="button" className="button-primary" onClick={() => openGuildMessage(notice)}>View chat</button>
-                <button type="button" className="button-muted" onClick={() => markGuildMessageRead(notice)}>Mark read</button></div>
-            </article>
-          ))}
-        </section>}
-        {incomingFriendRequests.length > 0 && <section className="halieus-inbox-group" aria-label="Incoming friend requests">
-          <header><strong>Friend requests</strong><b>{incomingFriendRequests.length}</b></header>
-          {incomingFriendRequests.map((friend) => (
-            <article key={friend.id} className="halieus-inbox-item" style={{ ["--inbox-accent" as string]: "#83a9f0" }}>
+              <span>{stamp}<strong>{notice.senderDisplayName} · {notice.guildName}</strong><em>{notice.preview}</em></span>
+              {actions(<button type="button" className="button-primary" onClick={() => openGuildMessage(notice)}>View chat</button>)}
+            </article>;
+          }
+          if (event.kind === "friend") {
+            const friend=event.request;
+            return <article key={event.key} aria-label="Incoming friend requests"
+              className={`halieus-inbox-item ${isRead?"is-read":"is-unread"}`}
+              style={{["--inbox-accent" as string]:"#83a9f0"}}>
               <span className="halieus-inbox-guild-mark" aria-hidden="true">@</span>
-              <span><small>@{friend.senderUsername}</small><strong>{friend.senderDisplayName}</strong><em>Wants to add you as a friend</em></span>
-              <div><button type="button" className="button-primary" disabled={friendBusy}
-                  onClick={() => void respondToFriend(friend.id, "accept")}>Accept</button>
-                <button type="button" className="button-outline" disabled={friendBusy}
-                  onClick={() => void respondToFriend(friend.id, "decline")}>Decline</button></div>
-            </article>
-          ))}
-        </section>}
-        {guildInvites.length > 0 && <section className="halieus-inbox-group"><header><strong>Guild invitations</strong><b>{guildInvites.length}</b></header>{guildInvites.map((invitation) => (
-          <article key={invitation.id} className="halieus-inbox-item is-guild" style={{ ["--inbox-accent" as string]: "#8b5cf6" }}>
-            {invitation.guildPicture ? <img className="halieus-inbox-guild-mark is-picture" src={invitation.guildPicture} alt="" /> : <span className="halieus-inbox-guild-mark">{invitation.guildName.slice(0, 2).toUpperCase()}</span>}
-            <span><small>{invitation.senderDisplayName.toUpperCase()} INVITED YOU</small><strong>{invitation.guildName}</strong><em>Guild membership request</em></span>
-            <div><button type="button" className="button-primary" onClick={() => void respondGuildInvitation(invitation, "accept")}>Accept</button><button type="button" className="button-outline" onClick={() => void respondGuildInvitation(invitation, "decline")}>Decline</button></div>
-          </article>
-        ))}</section>}
+              <span>{stamp}<strong>{friend.senderDisplayName}</strong><em>@{friend.senderUsername} wants to add you</em></span>
+              {actions(<>
+                <button className="button-primary" type="button" disabled={friendBusy} onClick={()=>void respondToFriend(friend.id,"accept")}>Accept</button>
+                <button className="button-outline" type="button" disabled={friendBusy} onClick={()=>void respondToFriend(friend.id,"decline")}>Decline</button>
+              </>)}
+            </article>;
+          }
+          const invite=event.invite;
+          return <article key={event.key} className={`halieus-inbox-item is-guild ${isRead?"is-read":"is-unread"}`}
+            style={{["--inbox-accent" as string]:"#8b5cf6"}}>
+            {invite.guildPicture ? <img className="halieus-inbox-guild-mark is-picture" src={invite.guildPicture} alt="" />
+              : <span className="halieus-inbox-guild-mark">{invite.guildName.slice(0,2).toUpperCase()}</span>}
+            <span>{stamp}<strong>{invite.senderDisplayName} invited you to {invite.guildName}</strong>
+              <em>Guild invitation</em></span>
+            {actions(<>
+              <button className="button-primary" type="button" onClick={()=>void respondGuildInvitation(invite,"accept")}>Accept</button>
+              <button className="button-outline" type="button" onClick={()=>void respondGuildInvitation(invite,"decline")}>Decline</button>
+            </>)}
+          </article>;
+        })}
+        </section>
       </section>
     </div>,
     overlayHost,
@@ -1605,6 +1746,16 @@ export function HomeScreen(props: HomeScreenProps) {
         />,
         overlayHost,
       )}
+      {socialRoomNotice && account && !gameNotice && !guildMessageNotice &&
+        !inboxOpen && !createOpen && !joinOpen && overlayHost &&
+        liveRooms.filter(room => room.game === socialRoomNotice.gameId && room.code === socialRoomNotice.roomCode &&
+          (room.joinable || room.spectatable)).map(room => createPortal(
+          <SocialRoomDropdown key={socialRoomNotice.id} notice={socialRoomNotice} room={room}
+            onJoin={() => { socialActivity.markOne(socialRoomNotice.id); setSocialRoomNotice(null); openLiveRoom(room, "join"); }}
+            onWatch={() => { socialActivity.markOne(socialRoomNotice.id); setSocialRoomNotice(null); openLiveRoom(room, "watch"); }}
+            onLater={() => setSocialRoomNotice(null)}
+            onOpenInbox={() => { setSocialRoomNotice(null); setInboxOpen(true); }}
+          />, overlayHost))}
       {gameNotice && account && !inboxOpen && !createOpen && !joinOpen && overlayHost && createPortal(
         <GameInviteDropdown
           notification={gameNotice}
