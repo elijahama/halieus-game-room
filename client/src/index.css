@@ -27288,3 +27288,45 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
  .mega-ranking-grid { min-width:720px }
  .mega-ranking-tabs button {flex:1 1 auto;font-size:.8rem}
 }
+
+/* Ranked hub lifetime archive: page records ALL retained completed matches in
+ * bounded pages; this does not change the season scoring window or Elo. */
+.halieus-ranked-history{display:grid;gap:12px;margin:22px 0 28px;padding:18px;border:1px solid var(--mm-border,rgba(144,164,199,.23));border-radius:18px;background:var(--mm-surface-1,rgba(20,29,48,.8));color:var(--mm-text,inherit)}
+.halieus-ranked-history-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.halieus-ranked-history-heading>div:first-child{flex:1 1 250px;min-width:0}
+.halieus-ranked-history-heading small{display:block;color:var(--mm-muted,#aab4c4);font-family:var(--hgr-font-caption,"Alata",sans-serif);font-size:10px;letter-spacing:.07em}
+.halieus-ranked-history-heading h2{margin:3px 0 5px;font-family:var(--hgr-font-heading,"Unbounded Variable",sans-serif);font-size:clamp(16px,2.4vw,22px);line-height:1.23}
+.halieus-ranked-history-heading p,.halieus-ranked-history-note{margin:0;max-width:760px;color:var(--mm-muted,#aab4c4);line-height:1.55;font-family:var(--hgr-interface-font,"Varela Round",sans-serif);font-size:12px}
+.halieus-ranked-history-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.halieus-ranked-history-controls label{font-family:var(--hgr-font-caption,"Alata",sans-serif);font-size:12px}
+.halieus-ranked-history-controls select,.halieus-ranked-history-controls button,.halieus-ranked-history-more{min-height:42px;max-width:100%;padding:8px 12px;border:1px solid var(--mm-border,rgba(144,164,199,.3));border-radius:10px;background:var(--mm-surface-2,#202e46);color:var(--mm-text,#f5f8ff);font:inherit;font-size:12px;cursor:pointer}
+.halieus-ranked-history-controls select{min-width:160px}
+.halieus-ranked-history-controls button:disabled,.halieus-ranked-history-more:disabled{opacity:.5;cursor:wait}
+.halieus-ranked-history-controls :is(select,button):focus-visible,.halieus-ranked-history-more:focus-visible,.halieus-ranked-history-match summary:focus-visible{outline:2px solid #9ab9ff;outline-offset:3px}
+.halieus-ranked-history-count{font-size:12px;color:var(--mm-muted,#aab4c4);margin:0}
+.halieus-ranked-history-list{display:grid;gap:8px;min-width:0}
+.halieus-ranked-history-match{padding:12px 14px;border:1px solid var(--mm-border,rgba(144,164,199,.2));border-radius:12px;background:var(--mm-surface-2,rgba(32,43,65,.73));min-width:0}
+.halieus-ranked-history-match-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.halieus-ranked-history-game{display:flex;align-items:center;gap:8px;min-width:0}
+.halieus-ranked-history-game img{width:26px;height:26px;object-fit:contain;flex:none}
+.halieus-ranked-history-game strong{font-size:13px;font-family:var(--hgr-font-medium,"Righteous",sans-serif);font-weight:500}
+.halieus-ranked-history-match time{font:11px var(--hgr-font-caption,"Alata",sans-serif);color:var(--mm-muted,#abb7c9)}
+.halieus-ranked-history-match-result{display:flex;gap:6px 15px;flex-wrap:wrap;margin:9px 0;color:var(--mm-muted,#abb7c9);font-size:12px}
+.halieus-ranked-history-match-result b{color:var(--mm-text,#f5f8ff);font-weight:700}
+.halieus-ranked-history-match details{margin-top:8px;padding-top:8px;border-top:1px solid var(--mm-border,rgba(144,164,199,.17))}
+.halieus-ranked-history-match summary{cursor:pointer;color:var(--mm-text,#f5f8ff);font-size:12px}
+.halieus-ranked-history-players{display:grid;gap:6px;margin:10px 0 0;padding:0;list-style:none}
+.halieus-ranked-history-players li{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;line-height:1.45}
+.halieus-ranked-history-players li strong{font-family:var(--hgr-font-caption,"Alata",sans-serif);font-size:11px;color:var(--mm-muted,#abb7c9)}
+.halieus-ranked-history-error{color:#f5a3a3;font-size:12px;margin:0}
+.halieus-ranked-history-empty{padding:20px;text-align:center;color:var(--mm-muted,#abb7c9)}
+.halieus-ranked-history-more{justify-self:center;min-width:180px}
+.halieus-ranked-history-note{padding-top:7px;border-top:1px solid var(--mm-border,rgba(144,164,199,.17));font-size:11px}
+@media(max-width:600px){
+ .halieus-ranked-history{padding:12px;gap:10px;margin:14px 0}
+ .halieus-ranked-history-controls{justify-content:stretch;width:100%}
+ .halieus-ranked-history-controls select{flex:1 1 145px;min-width:0}
+ .halieus-ranked-history-controls button{flex:0 0 auto}
+ .halieus-ranked-history-match{padding:11px}
+ .halieus-ranked-history-match-head{align-items:flex-start}
+}

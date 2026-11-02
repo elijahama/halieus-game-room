@@ -26,6 +26,7 @@ import type { WhotAiDifficulty, WhotMatchMode } from "../../../../shared/games/w
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
 import { rankedFormatFor } from "../../../../shared/platform/rankedFormats";
 import type { HalieusRankedLeaderboardSnapshot } from "../../../../shared/platform/rankedLeaderboard";
+import type { HgrRankedHistoryMatch, HgrRankedHistoryPage } from "../../../../shared/platform/rankedHistory";
 import type { HalieusGuildInvitation, HalieusGuildMessageNotification } from "../../../../shared/platform/guilds";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaMatchMode, WordGameMode } from "../../../../shared/games/word-arena/types";
 import type { ClassicAiDifficulty, ClassicCreateOptions, ClassicGameId, ClassicMatchMode } from "../../../../shared/games/classic-table/types";
@@ -163,6 +164,14 @@ export function HomeScreen(props: HomeScreenProps) {
   const [genericRankedSnapshot, setGenericRankedSnapshot] = useState<HalieusRankedLeaderboardSnapshot | null>(null);
   const [genericRankedLoading, setGenericRankedLoading] = useState(false);
   const [genericRankedError, setGenericRankedError] = useState("");
+  const [rankedHistoryGame, setRankedHistoryGame] = useState<GameId | "all">("all");
+  const [rankedHistoryMatches, setRankedHistoryMatches] = useState<HgrRankedHistoryMatch[]>([]);
+  const [rankedHistoryTotal, setRankedHistoryTotal] = useState(0);
+  const [rankedHistoryNextOffset, setRankedHistoryNextOffset] = useState<number | null>(null);
+  const [rankedHistoryLoading, setRankedHistoryLoading] = useState(false);
+  const [rankedHistoryError, setRankedHistoryError] = useState("");
+  const [rankedHistoryRefresh, setRankedHistoryRefresh] = useState(0);
+  const rankedHistoryTicket = useRef(0);
   const [joinIntent, setJoinIntent] = useState<"join" | "watch">("join");
   const [createOpen, setCreateOpen] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
@@ -562,6 +571,59 @@ export function HomeScreen(props: HomeScreenProps) {
       .finally(() => { if (!cancelled) setGenericRankedLoading(false); });
     return () => { cancelled = true; };
   }, [rankedLeaderboardGame, account?.id]);
+
+  // Ranking hub history is distinct from the 12-match season calculation and
+  // from the lifetime rating ladder. A bounded page is fetched when visible.
+  useEffect(() => {
+    const ticket = ++rankedHistoryTicket.current;
+    setRankedHistoryMatches([]);
+    setRankedHistoryTotal(0);
+    setRankedHistoryNextOffset(null);
+    setRankedHistoryError("");
+    if (view !== "rankings" || !account?.id) {
+      setRankedHistoryLoading(false);
+      return;
+    }
+    setRankedHistoryLoading(true);
+    const filter = rankedHistoryGame === "all" ? "" : `&game=${encodeURIComponent(rankedHistoryGame)}`;
+    void accountApi<{ok:true} & HgrRankedHistoryPage>(`/accounts/ranked/matches?offset=0${filter}`)
+      .then(page => {
+        if(ticket !== rankedHistoryTicket.current)return;
+        setRankedHistoryMatches(page.matches);
+        setRankedHistoryTotal(page.total);
+        setRankedHistoryNextOffset(page.nextOffset);
+      }).catch(error => {
+        if(ticket !== rankedHistoryTicket.current)return;
+        setRankedHistoryError(error instanceof Error ? error.message : "Ranked history is unavailable.");
+      }).finally(() => {
+        if(ticket === rankedHistoryTicket.current)setRankedHistoryLoading(false);
+      });
+    return () => { ++rankedHistoryTicket.current; };
+  }, [view, account?.id, rankedHistoryGame, rankedHistoryRefresh]);
+
+  async function loadMoreRankedMatches() {
+    if(rankedHistoryLoading || rankedHistoryNextOffset === null || view !== "rankings")return;
+    const ticket = rankedHistoryTicket.current;
+    const offset = rankedHistoryNextOffset;
+    const filter = rankedHistoryGame === "all" ? "" : `&game=${encodeURIComponent(rankedHistoryGame)}`;
+    setRankedHistoryLoading(true);
+    setRankedHistoryError("");
+    try {
+      const page = await accountApi<{ok:true} & HgrRankedHistoryPage>(`/accounts/ranked/matches?offset=${offset}${filter}`);
+      if(ticket !== rankedHistoryTicket.current)return;
+      setRankedHistoryMatches(previous => {
+        const previousIds = new Set(previous.map(match => match.id));
+        return [...previous,...page.matches.filter(match => !previousIds.has(match.id))];
+      });
+      setRankedHistoryTotal(page.total);
+      setRankedHistoryNextOffset(page.nextOffset);
+    } catch(error) {
+      if(ticket === rankedHistoryTicket.current)
+        setRankedHistoryError(error instanceof Error ? error.message : "Could not load more Ranked results.");
+    } finally {
+      if(ticket === rankedHistoryTicket.current)setRankedHistoryLoading(false);
+    }
+  }
 
   const joinAction = classicSelected && selectedClassicGame ? () => onJoinClassic(selectedClassicGame) : wordArenaSelected && selectedWordArenaGame ? () => onJoinWordArena(selectedWordArenaGame) : pokerSelected ? onJoinPoker : blackjackSelected ? onJoinBlackjack : whotSelected ? onJoinWhot : ludoSelected ? onJoinLudo : connectFourSelected ? onJoinConnectFour : ayoSelected ? onJoinAyo : wordBoardSelected ? onJoinWordBoard : hiddenDictatorSelected ? onJoinHiddenDictator : onJoinGame;
   const spectateAction = classicSelected && selectedClassicGame ? () => onSpectateClassic(selectedClassicGame) : wordArenaSelected && selectedWordArenaGame ? () => onSpectateWordArena(selectedWordArenaGame) : pokerSelected ? onSpectatePoker : blackjackSelected ? onSpectateBlackjack : whotSelected ? onSpectateWhot : ludoSelected ? onSpectateLudo : connectFourSelected ? onSpectateConnectFour : ayoSelected ? onSpectateAyo : wordBoardSelected ? onSpectateWordBoard : hiddenDictatorSelected ? onSpectateHiddenDictator : onSpectateGame;
@@ -1572,6 +1634,54 @@ export function HomeScreen(props: HomeScreenProps) {
               </button>;
             })}
           </div>
+          <section className="halieus-ranked-history" aria-label="All Ranked matches">
+            <header className="halieus-ranked-history-heading">
+              <div>
+                <small>COMPETITIVE ARCHIVE</small>
+                <h2>All Ranked matches</h2>
+                <p>Every retained completed Ranked result, newest first. The season's recent-match scoring window does not restrict this history.</p>
+              </div>
+              <div className="halieus-ranked-history-controls">
+                <label htmlFor="rankedHistoryGameFilter">Game</label>
+                <select id="rankedHistoryGameFilter" value={rankedHistoryGame} onChange={event=>setRankedHistoryGame(event.target.value as GameId | "all")}>
+                  <option value="all">All Ranked games</option>
+                  {RANKED_HUB_GAMES.map(gameId=><option value={gameId} key={gameId}>{GAME_BY_ID[gameId].name}</option>)}
+                </select>
+                <button type="button" onClick={()=>setRankedHistoryRefresh(n=>n+1)} disabled={rankedHistoryLoading}>Refresh</button>
+              </div>
+            </header>
+            <p className="halieus-ranked-history-count" role="status">{rankedHistoryLoading && !rankedHistoryMatches.length
+              ? "Loading recorded results…" : `${rankedHistoryTotal} recorded Ranked match${rankedHistoryTotal===1?"":"es"} · showing ${rankedHistoryMatches.length}`}</p>
+            {rankedHistoryError && <p role="alert" className="halieus-ranked-history-error">{rankedHistoryError}</p>}
+            <div className="halieus-ranked-history-list">
+              {rankedHistoryMatches.map(match=><article className="halieus-ranked-history-match" key={match.id}>
+                <div className="halieus-ranked-history-match-head">
+                  <span className="halieus-ranked-history-game">
+                    <img src={GAME_BY_ID[match.game as GameId]?.icon ?? "/game-icons/mega-board.svg"} alt="" />
+                    <strong>{GAME_BY_ID[match.game as GameId]?.name ?? match.game}</strong>
+                  </span>
+                  <time dateTime={new Date(match.completedAt).toISOString()}>{new Date(match.completedAt).toLocaleString()}</time>
+                </div>
+                <div className="halieus-ranked-history-match-result">
+                  <span>Room <b>{match.roomCode || "—"}</b></span>
+                  <span>Winner <b>{match.winnerName ?? "Not recorded"}</b></span>
+                  {match.status === "forfeit-completed" && <span>Finished by forfeit</span>}
+                </div>
+                <details>
+                  <summary>Match details · {match.players.length} players</summary>
+                  <ol className="halieus-ranked-history-players">{match.players.map((p,i)=><li key={i}>
+                    <span>{p.finishPosition ? `#${p.finishPosition}` : "—"} {p.name}</span>
+                    <strong>{p.ratingDelta === null ? "Rating unavailable" : `${p.ratingDelta>0?"+":""}${p.ratingDelta} rating`}</strong>
+                  </li>)}</ol>
+                </details>
+              </article>)}
+            </div>
+            {!rankedHistoryLoading && !rankedHistoryMatches.length && !rankedHistoryError && <p className="halieus-ranked-history-empty">No recorded completed Ranked matches for this selection.</p>}
+            {rankedHistoryNextOffset !== null && <button type="button" className="halieus-ranked-history-more" onClick={()=>void loadMoreRankedMatches()} disabled={rankedHistoryLoading}>
+              {rankedHistoryLoading ? "Loading…" : "Load older Ranked matches"}
+            </button>}
+            <p className="halieus-ranked-history-note">This list includes retained finalized session records and available historical Mega Board ranking summaries. Results that were never recorded or were previously discarded cannot be reconstructed.</p>
+          </section>
         </section>}
 
         {view === "guilds" && account && (
