@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room-client",
-  "version": "4.7.11",
+  "version": "4.7.12",
   "private": true,
   "type": "module",
   "scripts": {
