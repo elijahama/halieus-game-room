@@ -32,7 +32,7 @@ try {
         Copy-Item -LiteralPath (Join-Path $sourceRoot "assets/branding/references/$name") -Destination $references
     }
     Copy-Item -LiteralPath (Join-Path $sourceRoot 'server/control-ui/control-icon.png') -Destination $delivery
-    foreach ($name in @('Start Halieus Game Room.cmd','Restart Halieus Game Room.cmd','Close Halieus Game Room.cmd','Update HGR GitHub.cmd','Start HGR Control.cmd','Stop HGR Control.cmd','scripts/windows/OpenShard-HGR.cmd')) {
+    foreach ($name in @('Start Halieus Game Room.cmd','Restart Halieus Game Room.cmd','Close Halieus Game Room.cmd','Update HGR GitHub.cmd','Start HGR Control.cmd','Stop HGR Control.cmd','Reconnect HGR Cloud Bridge.cmd','scripts/windows/OpenShard-HGR.cmd')) {
         Set-Content -LiteralPath (Join-Path $fixture $name) -Value '@exit /b 0'
     }
     Set-Content -LiteralPath (Join-Path $exports 'stale.ico') -Value 'stale'
