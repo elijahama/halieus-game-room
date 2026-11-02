@@ -56,7 +56,8 @@ function rankedArchive(record: any): HgrRankedMatchHistoryEntry | null {
     };
   });
   const id = isMega
-    ? String(state.rankedMatchId || `ranked-${state.roomCode || record.roomCode}-${state.gameStartedAt}`)
+    ? String(state.rankedMatchId || (validTime(state.gameStartedAt)
+      ? `ranked-${state.roomCode || record.roomCode}-${state.gameStartedAt}` : record.sessionId ?? ""))
     : String(record.sessionId ?? "");
   const roomCode = String(record.roomCode ?? state.roomCode ?? "").slice(0, 20);
   if (!id || !roomCode) return null;
