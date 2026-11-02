@@ -17,7 +17,7 @@ type Row = RankedLeaderboardEntry | SeasonLeaderboardEntry;
 const medals = ["1st", "2nd", "3rd"];
 function avatar(entry: Row) {
   return <span className="leaderboard-podium-avatar"
-    style={entry.profilePicture ? undefined : {background: entry.playerColor ?? "#64748b"}}>
+    style={entry.profilePicture ? undefined : { background: entry.playerColor ?? "#64748b" }}>
     {entry.profilePicture ? <img src={entry.profilePicture} alt="" /> :
       entry.avatar ?? entry.playerName.slice(0, 2).toUpperCase()}
   </span>;
