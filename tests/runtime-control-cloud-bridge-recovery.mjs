@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import vm from "node:vm";
 import { readFileSync } from "node:fs";
 const read = path => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const launcher=read("scripts/windows/launcher-shortcuts.ps1");
+const cloudUi=read("client/public/control/cloud-update.js");
 const repair=read("scripts/windows/recover-control-cloud.ps1");
 const wrapper=read("Reconnect HGR Cloud Bridge.cmd");
 const bridge=read("server/src/control-cloud-agent.ts");
@@ -36,4 +38,18 @@ assert.match(bridge,/const healthPath = resolve\(runtimeDirectory, "hgr-control-
 assert.doesNotMatch(bridge,/atomicJson\(healthPath,\s*\{[^}]*secret/s,"Diagnostic must never persist cloud identity secrets.");
 assert.match(start,/hgr-control-cloud-bridge-state\.json/,"Existing ownership state retained.");
 assert.match(doc,/No inbound PC port, private Tailscale Serve route/i);
+const chooseDeviceSource = cloudUi.match(/function chooseDevice\\(devices\\) \\{[\\s\\S]*?\\n  \\}/)?.[0];
+assert.ok(chooseDeviceSource, "Cloud Control must retain the approved device selector.");
+const chooseDevice = vm.runInNewContext("(" + chooseDeviceSource + ")");
+const staleApproved = {deviceId:"old-approved",approval:"approved",online:false};
+const livePending = {deviceId:"lagz-pending",approval:"pending",online:true};
+const liveApproved = {deviceId:"live-approved",approval:"approved",online:true};
+assert.equal(chooseDevice([staleApproved,livePending]).deviceId,"lagz-pending",
+  "Pending live Lagz must be shown for approval instead of the old disconnected record.");
+assert.equal(chooseDevice([livePending,liveApproved]).deviceId,"live-approved",
+  "A real connected and approved owner machine remains first preference.");
+assert.equal(chooseDevice([staleApproved,{deviceId:"pending-stale",approval:"pending",online:false}]).deviceId,"old-approved",
+  "Offline fallback must remain deterministic.");
+assert.match(cloudUi,/showApproveButton\\(device\\)/,
+  "Pending enrollment must expose the existing authenticated owner approval button.");
 console.log("PASS HGR Cloud bridge recovery: real-heartbeat diagnosis, PID/operation guards, canonical Start Menu shortcut and no Tailscale or secret reset.");
