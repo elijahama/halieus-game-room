@@ -16,7 +16,7 @@ const readKeys=new Set(["room:invite1","guild-invite:g1","friend:f1","request:r1
 const guildReads=new Set(["guild-message:g1"]);
 assert.equal(inboxUnreadCount(sorted,readKeys,guildReads),1,"Unread social events remain distinct.");
 assert.equal(inboxUnreadCount(buildInboxTimeline({...args,social:[{...social[0],read:true}]}),readKeys,guildReads),0);
-assert.equal(buildInboxTimeline({...args,requests:[{...request,id:"r2",createdAt:500}]}).slice(0,2).map(x=>x.key).join(":"),"room:invite1:request:r2");
+assert.equal(buildInboxTimeline({...args,requests:[{...request,id:"r2",createdAt:500}]}).slice(0,2).map(x=>x.key).join(":"),"request:r2:room:invite1");
 const root=new URL("../",import.meta.url);
 const home=readFileSync(new URL("client/src/platform/components/HomeScreen.tsx",root),"utf8");
 const account=readFileSync(new URL("server/src/platform/accounts.ts",root),"utf8");

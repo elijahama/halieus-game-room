@@ -66,6 +66,6 @@ for(const name of [
  assert.match(content,/verifiedAccountIds:\s*verifiedRoomAccountIds\(room\.players\)/,"All 14 games share verified presence: "+name);
 }
 const home=readFileSync(resolve(root,"client/src/platform/components/HomeScreen.tsx"),"utf8");
-assert.match(home,/socialActivity\.unreadCount/);
+assert.match(home,/inboxUnreadCount\(inboxTimeline, readInboxKeys, readGuildMessages\)/, "Read receipts must drive the combined unread badge");
 assert.match(home,/verifiedSocialRoomByAccountId\.get\(person\.id\)/);
 console.log("PASS HGR social activity: socket identity, 14 games, privacy, stable transitions, unread Inbox wiring");
