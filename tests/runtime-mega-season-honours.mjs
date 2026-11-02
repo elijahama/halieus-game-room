@@ -45,7 +45,7 @@ for(const key of ["mega:property-empire","mega:rent-survivor","mega:comeback-vic
 assert.match(server,/progressionIdentity\?\.accountId === accountId/,"Backfill must use account ID not display name.");
 assert.match(server,/sessions\.has\(record\.sessionId\)/,"Backfill must deduplicate.");
 assert.match(server,/\.betaTournamentTest === true/,"Beta games cannot generate real honours.");
-assert.match(ranking,/seasonStartedAt\\?: number/,"Season boundary remains backward-compatible and persists in the Ranked ledger.");
+assert.match(ranking,/seasonStartedAt\?: number/,"Season boundary remains backward-compatible and persists in the Ranked ledger.");
 assert.match(ranking,/preseasonStandings/,"Founding podium snapshot must persist.");
 assert.match(spectator,/aria-pressed/);
 assert.match(app,/followedId=\{spectatorFollowId/);
