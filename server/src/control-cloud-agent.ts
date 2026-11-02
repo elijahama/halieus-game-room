@@ -87,6 +87,11 @@ const identityPath = resolve(runtimeDirectory, ".hgr-control-cloud-device.json")
 const localTokenPath = resolve(runtimeDirectory, ".hgr-control-token");
 const updateResultPath = resolve(runtimeDirectory, "hgr-control-update-result.json");
 const pendingPath = resolve(runtimeDirectory, "hgr-control-cloud-pending.json");
+const healthPath = resolve(runtimeDirectory, "hgr-control-cloud-health.json");
+// Local diagnostic only: no cloud device ID, secret, token or operation content.
+let lastHealthWrite = 0;
+let lastHealthState = "";
+
 interface PendingUpdate {
   requestId: string;
   localOperationId: string;
@@ -113,6 +118,23 @@ async function atomicJson(path: string, value: unknown): Promise<void> {
   const temporary = `${path}.tmp`;
   await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, "utf8");
   await rename(temporary, path);
+}
+
+type CloudHealthState = "connected" | "disconnected" | "pending" | "revoked";
+async function recordCloudHealth(state: CloudHealthState, localControlOnline: boolean, httpStatus: number | null = null): Promise<void> {
+  const now = Date.now();
+  const key = state + ":" + localControlOnline + ":" + httpStatus;
+  if (now - lastHealthWrite < 10_000 && key === lastHealthState) return;
+  lastHealthWrite = now;
+  lastHealthState = key;
+  try {
+    await atomicJson(healthPath, {
+      updatedAt: new Date(now).toISOString(), state, localControlOnline, httpStatus,
+    });
+  } catch (error) {
+    // Diagnostic failure must never disrupt an authenticated cloud Update.
+    console.error("HGR Cloud health status could not be saved:", error instanceof Error ? error.message : error);
+  }
 }
 
 async function readOrCreateIdentity(): Promise<DeviceIdentity> {
@@ -502,20 +524,37 @@ async function cycle(identity: DeviceIdentity): Promise<void> {
       localControlOnline: Boolean(status),
     });
   } catch (error) {
+    await recordCloudHealth("disconnected", Boolean(status));
     console.error("HGR Control Cloud heartbeat failed:", error instanceof Error ? error.message : error);
     return;
   }
   const heartbeat = await heartbeatResponse.json().catch(() => null) as { approved?: boolean; enrollment?: string } | null;
-  if (!heartbeatResponse.ok || !heartbeat?.approved) return;
+  if (!heartbeatResponse.ok || !heartbeat?.approved) {
+    const enrollment = heartbeat?.enrollment;
+    await recordCloudHealth(enrollment === "pending" ? "pending" :
+      enrollment === "revoked" ? "revoked" : "disconnected", Boolean(status), heartbeatResponse.status);
+    return;
+  }
+  await recordCloudHealth("connected", Boolean(status), heartbeatResponse.status);
 
   await publishDevelopmentEvidence(identity);
 
-  const pollResponse = await cloudRequest("/control/cloud/agent/poll", {
-    protocol: HGR_CONTROL_CLOUD_PROTOCOL,
-    deviceId: identity.deviceId,
-    secret: identity.secret,
-  });
-  if (!pollResponse.ok) return;
+  let pollResponse: Response;
+  try {
+    pollResponse = await cloudRequest("/control/cloud/agent/poll", {
+      protocol: HGR_CONTROL_CLOUD_PROTOCOL,
+      deviceId: identity.deviceId,
+      secret: identity.secret,
+    });
+  } catch (error) {
+    await recordCloudHealth("disconnected", Boolean(status));
+    console.error("HGR Control Cloud poll failed:", error instanceof Error ? error.message : error);
+    return;
+  }
+  if (!pollResponse.ok) {
+    await recordCloudHealth("disconnected", Boolean(status), pollResponse.status);
+    return;
+  }
   const poll = await pollResponse.json() as { request?: HalieusCloudControlRequest | null };
   if (poll.request?.action === "update" && !inFlightRequestId) {
     void executeUpdate(identity, poll.request);

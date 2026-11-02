@@ -39,6 +39,7 @@ $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
 $UpdateScript = Join-Path $ProjectRoot 'Update HGR GitHub.cmd'
 $LegacyPrivateDeployScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
+$CloudRecoveryScript = Join-Path $ProjectRoot 'Reconnect HGR Cloud Bridge.cmd'
 # Cloud Control continues to use the owner-PC Control agent in the background.
 # Its private Tailscale pairing/start/stop wrappers are retained for recovery
 # but no longer occupy user-facing Windows launcher slots.
@@ -76,6 +77,7 @@ $StartMenuCloseShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.C
 $StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Update
 $StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
 $StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
+$StartMenuCloudRecoveryShortcut = Join-Path $StartMenuLauncherDirectory 'HGR - Reconnect Cloud Bridge.lnk'
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -217,6 +219,13 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
 
 }
 
+# This is a Start Menu maintenance utility, not a replacement or new image
+# in the six approved HGR launcher artwork families.
+if (-not (Test-Path -LiteralPath $CloudRecoveryScript -PathType Leaf)) {
+    throw "Missing verified HGR Cloud recovery target: $CloudRecoveryScript"
+}
+New-HalieusShortcut -ShortcutPath $StartMenuCloudRecoveryShortcut -CommandScript $CloudRecoveryScript -Description 'Restore the local HGR Control Agent and outbound Cloud bridge; no site deployment' -IconPath $PowerShellIconPath
+
 # Remove loose/legacy shortcuts so HGR launchers only live inside the two
 # organised launcher folders.
 $LooseShortcutNames = @(
@@ -281,7 +290,8 @@ $ShortcutIconChecks = @(
     [pscustomobject]@{ Shortcut = $StartMenuCloseShortcut; Icon = $CloseIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuUpdateShortcut; Icon = $UpdateIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuPowerShellShortcut; Icon = $PowerShellIconPath },
-    [pscustomobject]@{ Shortcut = $StartMenuOpenShardShortcut; Icon = $OpenShardIconPath }
+    [pscustomobject]@{ Shortcut = $StartMenuOpenShardShortcut; Icon = $OpenShardIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuCloudRecoveryShortcut; Icon = $PowerShellIconPath }
 )
 foreach ($check in $ShortcutIconChecks) {
     Assert-HalieusShortcutIcon -ShortcutPath $check.Shortcut -ExpectedIconPath $check.Icon
@@ -290,8 +300,9 @@ foreach ($check in $ShortcutIconChecks) {
 # Update is mandatory, and must target the full GitHub sync/build/deploy CMD.
 Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript $UpdateScript
 Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript $UpdateScript
+Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuCloudRecoveryShortcut -ExpectedCommandScript $CloudRecoveryScript
 if ($CreatedShortcuts.Count -ne 12) {
-    throw "Expected exactly six owner launcher roles in both managed folders; found $($CreatedShortcuts.Count)."
+    throw "Expected exactly six canonical launcher roles in both managed folders; found $($CreatedShortcuts.Count)."
 }
 foreach ($retiredName in @('HGR - Control.lnk', 'HGR - Stop Control.lnk', 'HGR - Update Site.lnk')) {
     foreach ($launcherRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
@@ -314,7 +325,7 @@ Write-Host 'HGR launcher family refreshed and verified against generated icon me
 Write-Host "  Project:    $ProjectLauncherDirectory" -ForegroundColor DarkGray
 Write-Host "  Start Menu: $StartMenuLauncherDirectory" -ForegroundColor DarkGray
 Write-Host ''
-Write-Host 'Six HGR launchers (Start, Restart, Close, Update, PowerShell, OpenShard) verified in both managed folders.' -ForegroundColor Green
+Write-Host 'Six canonical HGR launchers verified in both managed folders; additional Cloud recovery shortcut verified in Start Menu.' -ForegroundColor Green
 
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null
