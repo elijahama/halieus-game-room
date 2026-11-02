@@ -50,7 +50,7 @@ import { APP_VERSION } from "../../shared/version.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
 import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
-import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
+import { configureAccountAdminRuntimeControls, getAccountSummaryById, resolveUniqueAccountIdByDisplayName, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
@@ -74,6 +74,7 @@ import {
   flushRankingsSave,
   getRankingsPath,
   loadRankingsFromDisk,
+  bindFoundingPodiumAccounts,
 } from "./games/mega-board/utils/rankings.js";
 
 const parsedPort = Number.parseInt(
@@ -633,6 +634,9 @@ const recoveredRoomCount =
   await loadRoomsFromDisk();
 const recoveredRankedPlayers =
   await loadRankingsFromDisk();
+// Legacy pre-season rankings used player names. Bind unique unchanged names
+// to account IDs once; subsequent rewards never depend on a mutable name.
+await bindFoundingPodiumAccounts(resolveUniqueAccountIdByDisplayName);
 
 let recoveredRankedMatches = 0;
 for (const room of rooms.values()) {

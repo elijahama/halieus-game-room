@@ -9,7 +9,7 @@ export interface SeasonLeaderboardEntry {
 }
 export interface SeasonSnapshot {
   startedAt: number; scoringWindow: number; entries: SeasonLeaderboardEntry[];
-  preseasonStandings: Array<Pick<RankedLeaderboardEntry, "playerKey" | "playerName" | "rating" | "wins" | "podiums">>;
+  preseasonStandings: Array<Pick<RankedLeaderboardEntry, "playerKey" | "playerName" | "rating" | "wins" | "podiums"> & { accountId?: string }>;
 }
 export function seasonPoints(result: RankedMatchPlayerResult): number {
   if (!Number.isInteger(result.finishPosition) || result.finishPosition < 1) return 0;

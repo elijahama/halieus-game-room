@@ -261,6 +261,25 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
     };
   });
 
+  // Founding podium awards come from the frozen one-time old-ranked snapshot.
+  // Name is used only during unique account binding at server startup.
+  // Subsequent unlock checks use the immutable account ID.
+  try {
+    const { getMegaBoardDataDirectory } = await import("./dataPaths.js");
+    const oldRankings = JSON.parse(await readFile(resolve(getMegaBoardDataDirectory(), "rankings.json"), "utf8"));
+    if (Number.isFinite(oldRankings.seasonStartedAt) && oldRankings.seasonStartedAt > 0 &&
+        Array.isArray(oldRankings.preseasonStandings)) {
+      const rank = oldRankings.preseasonStandings.findIndex((entry: any) => entry.accountId === accountId);
+      const identifiers = ["mega:founding-first", "mega:founding-second", "mega:founding-third"];
+      if (rank >= 0 && rank < identifiers.length) {
+        award(identifiers[rank], {
+          finalisedAt: oldRankings.seasonStartedAt,
+          sessionId: "historical-ranked-podium:" + String(oldRankings.seasonStartedAt),
+        });
+      }
+    }
+  } catch { /* No verified one-time founding attribution available. */ }
+
   result.gamerScore = result.awards.reduce((sum, award) => sum + award.points, 0);
 
   // The archive is the durable outbox. Rebuilding makes crash/retry/restart idempotent.

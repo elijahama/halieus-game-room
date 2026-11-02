@@ -113,6 +113,25 @@ export async function loadRankingsFromDisk(): Promise<number> {
   }
 }
 
+/** Resolve the frozen founding podium once using the current account registry.
+ * Never guess on duplicate names, and never change an already assigned account.
+ * Award attribution remains stable even if an account changes display name later. */
+export async function bindFoundingPodiumAccounts(resolveAccountId: (name: string) => string | null): Promise<number> {
+  let linked = 0;
+  const used = new Set(preseasonStandings.map(entry => entry.accountId).filter((id): id is string => Boolean(id)));
+  for (const row of preseasonStandings) {
+    if (row.accountId) continue;
+    const id = resolveAccountId(row.playerName);
+    if (!id || used.has(id)) continue;
+    row.accountId = id;
+    used.add(id);
+    linked++;
+  }
+  if (linked) queueRankingsSave();
+  await saveChain;
+  return linked;
+}
+
 export async function flushRankingsSave(): Promise<void> {
   queueRankingsSave();
   await saveChain;
