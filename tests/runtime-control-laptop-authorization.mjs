@@ -22,7 +22,7 @@ assert.match(source, /authorisationInFlight\.has\(device\.deviceId\)/, "Prevent 
 assert.match(source, /device\.deviceId\)\}\/approve/, "Approval targets the selected registered ID.");
 assert.match(source, /window\.confirm\(/, "Never silently approve.");
 assert.doesNotMatch(source, /automaticApproval|autoApprove|resetDeviceSecret/);
-assert.match(runbook, /pending cloud-device enrollment/i);
+assert.match(runbook, /enrollment: "pending"/i, "Runbook records the observed pending heartbeat response.");
 assert.match(master, /device approval \/ stale-device selection incident/i);
 
 class Element {
