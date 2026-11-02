@@ -72,7 +72,7 @@ export function LeaderboardModal({entries,season,recentMatches,loading,error,the
             <span>1st 20 · 2nd 12 · 3rd 8 · 4th 5 · Others 2 · performance bonus capped at 4 · awards capped at 3</span>
           </div>}
           <div className="leaderboard-podium" aria-label="Top three competitors">
-            {[visible[1],visible[0],visible[2]].filter((p):p is Row=>Boolean(p)).map(p=>{
+            {(seasonal ? [visible[1], visible[0], visible[2]] : [entries[1], entries[0], entries[2]]).filter((p):p is Row=>Boolean(p)).map(p=>{
               const rank=visible.findIndex(r=>r.playerKey===p.playerKey)+1;
               const value=seasonal?(p as SeasonLeaderboardEntry).points:p.rating;
               const matches="seasonMatches" in p?p.seasonMatches:p.gamesPlayed;
