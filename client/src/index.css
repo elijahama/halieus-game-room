@@ -27255,3 +27255,26 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 }
 .mega-trade-counter-cancel:focus-visible,
 .mega-trade-counter-button:focus-visible { outline: 2px solid var(--hgr-brand, #ca9d31); outline-offset: 2px; }
+
+/* Account-scoped inbox read receipts and one newest-first timeline. */
+.hgr-inbox-toolbar { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 12px;border:1px solid var(--hgr-border);border-radius:12px;background:var(--hgr-surface-soft);margin:10px 0 }
+.hgr-inbox-toolbar > div { display:grid;gap:3px }
+.hgr-inbox-toolbar strong { font-size:.92rem }
+.hgr-inbox-toolbar small { color:var(--hgr-muted);font-size:.75rem }
+.hgr-inbox-toolbar button { min-height:40px }
+.hgr-inbox-read-error { color:var(--hgr-text);border-left:3px solid #d97706;padding:8px 12px }
+.hgr-inbox-timeline { display:grid;gap:8px }
+.hgr-inbox-timeline .halieus-inbox-item { min-width:0;align-items:center }
+.hgr-inbox-timeline .halieus-inbox-item.is-read { opacity:.76 }
+.hgr-inbox-timeline .halieus-inbox-item.is-unread { border-left:3px solid var(--hgr-brand);opacity:1 }
+.hgr-inbox-date { display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.72rem;color:var(--hgr-muted) }
+.hgr-inbox-date b { padding:2px 6px;border-radius:5px;background:var(--hgr-surface);border:1px solid var(--hgr-border);font-size:.68rem }
+.hgr-inbox-timeline .is-unread .hgr-inbox-date b { border-color:var(--hgr-brand);color:var(--hgr-text) }
+.hgr-inbox-actions { display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px;min-width:0 }
+.hgr-inbox-actions button { min-height:34px;white-space:nowrap }
+@media (max-width:600px) {
+ .hgr-inbox-toolbar { align-items:stretch }
+ .hgr-inbox-toolbar button { width:100% }
+ .hgr-inbox-timeline .halieus-inbox-item { gap:8px }
+ .hgr-inbox-actions {justify-content:flex-start}
+}
