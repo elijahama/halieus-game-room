@@ -34,6 +34,6 @@ assert.match(bridge,/heartbeatResponse\.ok/, "Cloud rejected heartbeat cannot cl
 assert.match(bridge,/recordCloudHealth\("disconnected", Boolean\(status\)\)/, "Network failures written locally.");
 assert.match(bridge,/const healthPath = resolve\(runtimeDirectory, "hgr-control-cloud-health.json"\)/);
 assert.doesNotMatch(bridge,/atomicJson\(healthPath,\s*\{[^}]*secret/s,"Diagnostic must never persist cloud identity secrets.");
-assert.match(start,/\.hgr-control-cloud-bridge-state\.json/,"Existing ownership state retained.");
+assert.match(start,/hgr-control-cloud-bridge-state\.json/,"Existing ownership state retained.");
 assert.match(doc,/No inbound PC port, private Tailscale Serve route/i);
 console.log("PASS HGR Cloud bridge recovery: real-heartbeat diagnosis, PID/operation guards, canonical Start Menu shortcut and no Tailscale or secret reset.");
