@@ -258,6 +258,18 @@ export function getAccountSummaryByDisplayName(displayName: string): HalieusAcco
   return account ? publicAccount(account) : null;
 }
 
+/** One-time migration bridge for unchanged legacy Ranked display names.
+ * Fail closed if multiple current/previous aliases refer to different accounts.
+ * The resulting durable award is keyed by immutable account ID, not name. */
+export function resolveUniqueAccountIdByDisplayName(displayName: string): string | null {
+  const key = normaliseDisplayName(displayName).toLocaleLowerCase("en-GB");
+  if (!key) return null;
+  const matches = store.accounts.filter(account =>
+    account.status === "active" && [account.displayName, ...(account.displayNameAliases ?? [])]
+      .some(alias => normaliseDisplayName(alias).toLocaleLowerCase("en-GB") === key));
+  return matches.length === 1 ? matches[0].id : null;
+}
+
 function addAudit(actorAccountId: string | null, action: string, targetType: HalieusAuditEntry["targetType"], targetId: string | null, summary: string): void {
   store.audit.unshift({ id: id("audit"), at: Date.now(), actorAccountId, action, targetType, targetId, summary });
   if (store.audit.length > MAX_AUDIT) store.audit.length = MAX_AUDIT;

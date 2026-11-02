@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { getMegaBoardDataDirectory } from "../../../platform/dataPaths.js";
 import type { GameState } from "../../../../../shared/games/mega-board/game-state.js";
+import { buildSeasonSnapshot, rankedRecentForm, type SeasonSnapshot } from "../../../../../shared/games/mega-board/season.js";
 import {
   DEFAULT_RANKED_RATING,
   MINIMUM_RANKED_RATING,
@@ -20,6 +21,8 @@ interface RankedSaveDocument {
   savedAt: number;
   leaderboard: RankedLeaderboardEntry[];
   matches: RankedMatchSummary[];
+  seasonStartedAt?: number;
+  preseasonStandings?: SeasonSnapshot["preseasonStandings"];
 }
 
 const DATA_DIRECTORY = getMegaBoardDataDirectory();
@@ -29,6 +32,8 @@ const TEMP_PATH = `${RANKINGS_PATH}.tmp`;
 const leaderboard = new Map<string, RankedLeaderboardEntry>();
 const rankedMatches = new Map<string, RankedMatchSummary>();
 let saveChain: Promise<void> = Promise.resolve();
+let seasonStartedAt = 0;
+let preseasonStandings: SeasonSnapshot["preseasonStandings"] = [];
 
 function createEntry(playerName: string): RankedLeaderboardEntry {
   return {
@@ -53,6 +58,8 @@ async function writeSnapshot(): Promise<void> {
     savedAt: Date.now(),
     leaderboard: getRankedLeaderboard(),
     matches: [...rankedMatches.values()].sort((a, b) => b.completedAt - a.completedAt).slice(0, 500),
+    seasonStartedAt,
+    preseasonStandings,
   };
   await writeFile(TEMP_PATH, JSON.stringify(document, null, 2), "utf8");
   await rename(TEMP_PATH, RANKINGS_PATH);
@@ -81,13 +88,48 @@ export async function loadRankingsFromDisk(): Promise<number> {
     for (const match of document.matches ?? []) {
       if (match?.matchId) rankedMatches.set(match.matchId, match);
     }
+    if (Number.isFinite(document.seasonStartedAt) && Number(document.seasonStartedAt) > 0) {
+      seasonStartedAt = Number(document.seasonStartedAt);
+      preseasonStandings = Array.isArray(document.preseasonStandings) ? document.preseasonStandings : [];
+    } else {
+      seasonStartedAt = Date.now();
+      preseasonStandings = getRankedLeaderboard().slice(0, 3).map(p => ({
+        playerKey: p.playerKey, playerName: p.playerName, rating: p.rating,
+        wins: p.wins, podiums: p.podiums,
+      }));
+      queueRankingsSave();
+    }
     return leaderboard.size;
   } catch (error) {
     const nodeError = error as NodeJS.ErrnoException;
-    if (nodeError.code === "ENOENT") return 0;
+    if (nodeError.code === "ENOENT") {
+      seasonStartedAt = Date.now();
+      preseasonStandings = [];
+      queueRankingsSave();
+      return 0;
+    }
     console.error("Unable to load ranked leaderboard:", error);
     return 0;
   }
+}
+
+/** Resolve the frozen founding podium once using the current account registry.
+ * Never guess on duplicate names, and never change an already assigned account.
+ * Award attribution remains stable even if an account changes display name later. */
+export async function bindFoundingPodiumAccounts(resolveAccountId: (name: string) => string | null): Promise<number> {
+  let linked = 0;
+  const used = new Set(preseasonStandings.map(entry => entry.accountId).filter((id): id is string => Boolean(id)));
+  for (const row of preseasonStandings) {
+    if (row.accountId) continue;
+    const id = resolveAccountId(row.playerName);
+    if (!id || used.has(id)) continue;
+    row.accountId = id;
+    used.add(id);
+    linked++;
+  }
+  if (linked) queueRankingsSave();
+  await saveChain;
+  return linked;
 }
 
 export async function flushRankingsSave(): Promise<void> {
@@ -107,6 +149,13 @@ export function getRankedLeaderboard(): RankedLeaderboardEntry[] {
   );
 }
 
+export function getSeasonStandings(): SeasonSnapshot {
+  return buildSeasonSnapshot([...rankedMatches.values()], seasonStartedAt || Date.now(),
+    preseasonStandings, getRankedLeaderboard());
+}
+export function getRankedRecentForm(playerKey: string): number[] {
+  return rankedRecentForm([...rankedMatches.values()], playerKey);
+}
 export function getRecentRankedMatches(limit = 20): RankedMatchSummary[] {
   return [...rankedMatches.values()]
     .sort((a, b) => b.completedAt - a.completedAt)
