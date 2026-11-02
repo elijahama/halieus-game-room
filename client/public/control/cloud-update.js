@@ -317,6 +317,7 @@
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = `Authorise ${label}`;
+      button.dataset.deviceId = String(device.deviceId);
       button.disabled = authorisationInFlight.has(device.deviceId);
       button.addEventListener("click", () => void authoriseDevice(device));
       row.append(content, button);
@@ -336,10 +337,11 @@
     if (!device || (actorRole !== "owner" && actorRole !== "admin")
       || authorisationInFlight.has(device.deviceId)) return;
     const name = String(device.machineName || "this laptop").slice(0, 64);
-    if (!window.confirm(`Authorise ${name} for HGR Cloud Control? Only approve a laptop you recognise. This permits approved remote operations; it does not run an update or restart the game server.`)) return;
+    const shortId = String(device.deviceId || "").slice(-6);
+    if (!window.confirm(`Authorise ${name} (device …${shortId}) for HGR Cloud Control? Only approve a laptop you recognise. This permits approved remote operations; it does not run an update or restart the game server.`)) return;
     authorisationInFlight.add(device.deviceId);
     const clicked = Array.from(document.querySelectorAll("#controlEnrollmentList button"))
-      .find(button => button.textContent === `Authorise ${name}`);
+      .find(button => button.dataset.deviceId === device.deviceId);
     if (clicked) clicked.disabled = true;
     try {
       // Re-verify that this exact registered laptop is still pending and online
@@ -361,7 +363,7 @@
       authorisationInFlight.delete(device.deviceId);
       // Refresh naturally updates the button; retain feedback if approval failed.
       const activeButton = Array.from(document.querySelectorAll("#controlEnrollmentList button"))
-        .find(button => button.textContent === `Authorise ${name}`);
+        .find(button => button.dataset.deviceId === device.deviceId);
       if (activeButton) activeButton.disabled = false;
     }
   }
