@@ -33,6 +33,7 @@ import { accountApi } from "../accounts/api";
 import { ACTIVE_GAME_CATALOG, ACTIVE_GAME_IDS, FUTURE_GAME_QUEUE, GAME_BY_ID, type GameId } from "../games/catalog";
 import { filterGameLibrary, type GameLibraryCategory } from "../games/libraryDiscovery";
 import { GameLibrarySearchPanel } from "./GameLibrarySearchPanel";
+import { RankedMatchHistory } from "./RankedMatchHistory";
 import { ThemeButton } from "./ThemeButton";
 import { AchievementBar } from "./AchievementBar";
 import { fullscreenUnavailableMessage, stableFullscreenAvailable } from "../fullscreen";
@@ -1572,6 +1573,7 @@ export function HomeScreen(props: HomeScreenProps) {
               </button>;
             })}
           </div>
+          <RankedMatchHistory accountId={account?.id ?? null} games={RANKED_HUB_GAMES.map(id => ({ id, name: GAME_BY_ID[id].name }))} />
         </section>}
 
         {view === "guilds" && account && (
