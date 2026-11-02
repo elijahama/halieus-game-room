@@ -9,7 +9,7 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.7.10-scheduled-maintenance" />
+  <link rel="stylesheet" href="/control/control.css?v=4.7.11-laptop-authorisation" />
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/control/control.js?v=4.7.10-scheduled-maintenance" defer></script>
   <script src="/control/development.js?v=development-roadmap-v1" defer></script>
@@ -69,6 +69,21 @@
         <p id="accessCopy">Control uses your normal Halieus account. Owner or administrator access is required.</p>
         <a class="primary-action" href="/">Open Halieus Game Room</a>
       </div>
+    </section>
+
+    <!-- Always visible above Control sections when a newly connected owner PC awaits approval.
+         Access remains gated by the authenticated Control Cloud API and explicit user consent. -->
+    <section class="control-enrollment-panel" id="controlEnrollment" aria-label="Laptop authorisation" hidden>
+      <div class="control-enrollment-heading">
+        <div>
+          <p class="eyebrow">SECURE DEVICE CONNECTION</p>
+          <h2>Authorise your laptop</h2>
+          <p>HGR has detected a laptop awaiting approval. Confirm the correct machine before enabling remote Control.</p>
+        </div>
+        <span class="control-enrollment-status">Approval required</span>
+      </div>
+      <div class="control-enrollment-list" id="controlEnrollmentList"></div>
+      <p class="control-enrollment-feedback" id="controlEnrollmentFeedback" role="status" aria-live="polite" hidden></p>
     </section>
 
     <section class="control-section is-active" data-panel="overview">

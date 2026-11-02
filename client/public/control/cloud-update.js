@@ -12,6 +12,8 @@
   let updateInFlight = false;
   let pendingRequestAction = null;
   let actorRole = null;
+  let enrollmentSignature = "";
+  const authorisationInFlight = new Set();
   const LIFECYCLE_ACTIONS = ["start", "restart", "close"];
   const lifecycleButtons = () => Array.from(document.querySelectorAll(".operation-grid button[data-operation]"))
     .filter((button) => LIFECYCLE_ACTIONS.includes(button.dataset.operation));
@@ -241,6 +243,8 @@
         : busy ? "Wait for the current owner-PC action to finish."
           : ready ? "Update HGR on the owner PC" : "Approve enrollment and connect owner-PC Control first.";
     }
+    const approve = $("approveCloudOwnerPc");
+    if (approve) approve.disabled = !selectedDevice?.online || authorisationInFlight.has(selectedDevice?.deviceId);
     const revoke = $("revokeCloudOwnerPc");
     if (revoke) {
       revoke.disabled = busy;
@@ -272,6 +276,96 @@
     $("revokeCloudOwnerPc")?.remove();
   }
 
+  function renderPendingEnrollments(devices) {
+    const panel = $("controlEnrollment");
+    const list = $("controlEnrollmentList");
+    if (!panel || !list) return;
+    // A stale approved record must never mask a newly arrived pending laptop.
+    // Only a currently heartbeating device may be authorised from this panel.
+    const pending = (Array.isArray(devices) ? devices : [])
+      .filter(device => device && device.approval === "pending" && device.online === true)
+      .slice().sort((a, b) => String(a.machineName || "").localeCompare(String(b.machineName || ""))
+        || String(a.deviceId || "").localeCompare(String(b.deviceId || "")));
+    const authorisedActor = actorRole === "owner" || actorRole === "admin";
+    const signature = JSON.stringify(pending.map(device => [
+      device.deviceId, device.machineName, device.releaseCheckoutVersion, authorisedActor
+    ]));
+    panel.hidden = pending.length === 0 || !authorisedActor;
+    if (panel.hidden) {
+      enrollmentSignature = "";
+      list.replaceChildren();
+      const feedback = $("controlEnrollmentFeedback");
+      if (feedback) feedback.hidden = true;
+      return;
+    }
+    // Preserve button focus while the 2.5-second heartbeat polling continues.
+    if (signature === enrollmentSignature) return;
+    enrollmentSignature = signature;
+    list.replaceChildren();
+    for (const device of pending) {
+      const row = document.createElement("div");
+      row.className = "control-enrollment-device";
+      const content = document.createElement("div");
+      const name = document.createElement("strong");
+      const label = String(device.machineName || "Unidentified laptop").slice(0, 64);
+      name.textContent = label;
+      const detail = document.createElement("small");
+      const version = typeof device.releaseCheckoutVersion === "string"
+        ? device.releaseCheckoutVersion.slice(0, 32) : "Version unverified";
+      detail.textContent = `Connected · ${version} · Device …${String(device.deviceId || "").slice(-6)}`;
+      content.append(name, detail);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = `Authorise ${label}`;
+      button.disabled = authorisationInFlight.has(device.deviceId);
+      button.addEventListener("click", () => void authoriseDevice(device));
+      row.append(content, button);
+      list.appendChild(row);
+    }
+  }
+
+  function showAuthorisationFeedback(message) {
+    const feedback = $("controlEnrollmentFeedback");
+    if (feedback) {
+      feedback.hidden = false;
+      feedback.textContent = message;
+    }
+  }
+
+  async function authoriseDevice(device) {
+    if (!device || (actorRole !== "owner" && actorRole !== "admin")
+      || authorisationInFlight.has(device.deviceId)) return;
+    const name = String(device.machineName || "this laptop").slice(0, 64);
+    if (!window.confirm(`Authorise ${name} for HGR Cloud Control? Only approve a laptop you recognise. This permits approved remote operations; it does not run an update or restart the game server.`)) return;
+    authorisationInFlight.add(device.deviceId);
+    const clicked = Array.from(document.querySelectorAll("#controlEnrollmentList button"))
+      .find(button => button.textContent === `Authorise ${name}`);
+    if (clicked) clicked.disabled = true;
+    try {
+      // Re-verify that this exact registered laptop is still pending and online
+      // immediately before the existing owner/admin-only approval request.
+      const status = await request("/control/cloud/status");
+      const current = (Array.isArray(status.devices) ? status.devices : [])
+        .find(item => item.deviceId === device.deviceId);
+      if ((status.actorRole !== "owner" && status.actorRole !== "admin")
+        || !current || current.approval !== "pending" || current.online !== true) {
+        throw new Error("This laptop is no longer online and awaiting approval. Refresh Control.");
+      }
+      await request(`/control/cloud/devices/${encodeURIComponent(device.deviceId)}/approve`,
+        { method: "POST", body: "{}" });
+      showAuthorisationFeedback(`${name} authorised. Checking its next Cloud heartbeat…`);
+      await refreshCloudControl();
+    } catch (error) {
+      showAuthorisationFeedback(error instanceof Error ? error.message : "Laptop authorisation failed.");
+    } finally {
+      authorisationInFlight.delete(device.deviceId);
+      // Refresh naturally updates the button; retain feedback if approval failed.
+      const activeButton = Array.from(document.querySelectorAll("#controlEnrollmentList button"))
+        .find(button => button.textContent === `Authorise ${name}`);
+      if (activeButton) activeButton.disabled = false;
+    }
+  }
+
   function showApproveButton(device) {
     const container = readiness();
     if (!container || $("approveCloudOwnerPc")) return;
@@ -279,18 +373,9 @@
     button.id = "approveCloudOwnerPc";
     button.type = "button";
     button.className = "secondary-action";
-    button.textContent = "Approve owner PC";
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      try {
-        await request(`/control/cloud/devices/${encodeURIComponent(device.deviceId)}/approve`, { method: "POST", body: "{}" });
-        await refreshCloudControl();
-      } catch (error) {
-        setReadiness("Owner-PC approval failed", error instanceof Error ? error.message : "Unable to approve this owner PC.", false);
-      } finally {
-        button.disabled = false;
-      }
-    });
+    button.textContent = "Authorise laptop";
+    button.disabled = !device.online;
+    button.addEventListener("click", () => void authoriseDevice(device));
     container.appendChild(button);
   }
 
@@ -372,7 +457,9 @@
       removeEnrollmentButtons();
       if (badge) badge.textContent = "Approve";
       if (button) button.disabled = true;
-      setReadiness("Owner PC awaiting approval", "Approve this machine once from an owner/admin session before Cloud Update can dispatch anything.", false);
+      setReadiness("Owner PC awaiting approval", device.online
+        ? "This connected laptop needs explicit owner authorisation. Use the authorisation panel above or the button here."
+        : "This registration is pending, but the laptop has no fresh heartbeat. Connect it before authorising.", false);
       showApproveButton(device);
       showRevokeButton(device, true);
       return;
@@ -442,7 +529,9 @@
         request("/control/operation-history").catch(() => ({ operations: [] })),
       ]);
       actorRole = status.actorRole || null;
-      renderDevice(chooseDevice(Array.isArray(status.devices) ? status.devices : []));
+      const cloudDevices = Array.isArray(status.devices) ? status.devices : [];
+      renderDevice(chooseDevice(cloudDevices));
+      renderPendingEnrollments(cloudDevices);
       // Cloud lifecycle receipts are durable on Oracle; local Control audit is
       // supplementary, never a prerequisite for observing terminal success.
       const history = new Map();
@@ -455,6 +544,8 @@
       const operation = operationStatus.operation || status.activeOperation || null;
       dispatchOperation(operation);
     } catch (error) {
+      actorRole = null;
+      renderPendingEnrollments([]);
       const button = updateButton();
       if (button) button.disabled = true;
       const running = lastOperation?.state === "running";
