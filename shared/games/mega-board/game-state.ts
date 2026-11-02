@@ -294,6 +294,8 @@ export interface GlobalGameNotice {
     | "development"
     | "purchase-complete"
     | "trade-complete"
+    | "trade-declined"
+    | "trade-cancelled"
     | "game-mode"
     | "player-action";
   title: string;
@@ -376,6 +378,8 @@ export interface LiveTradePreview {
 
 export interface TradeOffer {
   id: string;
+  /** A rejected pending proposal was replaced by this new, separately-approved offer. */
+  counterOfTradeId?: string;
 
   proposerId: PlayerId;
   /** Primary/legacy recipient. Multi-party trades use participantIds/transfers. */

@@ -67,7 +67,7 @@ import { buildGameReport, downloadGameReport } from "./games/mega-board/utils/ga
 import { styles } from "./games/mega-board/styles/gameStyles";
 import { clearCustomThemeVariables, customThemeVariables, readableInk, isDarkColour, readDensity, readLogoPreset, readTextScale, resolveThemeMode, themeProfileVariables, THEME_PROFILES, type HalieusCustomTheme, type HalieusDensity, type HalieusTextScale, type HalieusThemeMode, type HalieusThemeProfileId, THEME_KEY } from "./platform/theme";
 import { saveSkinPreferences, clearBetaSkinPreview, readEffectiveSkinPreferences, type HalieusSkinPreferences } from "./platform/skins";
-import { emptyTradeDraft, tradeTransferKey, type TradeDraft } from "./games/mega-board/types/trade";
+import { emptyTradeDraft, tradeTransferKey, draftFromTradeOffer, type TradeDraft } from "./games/mega-board/types/trade";
 import type {
   DiceResponse,
   GameResponse,
@@ -414,8 +414,10 @@ export default function App() {
     useState(false);
   const [isUpdatingTurnTimer, setIsUpdatingTurnTimer] = useState(false);
   const [tradeDraft, setTradeDraft] = useState<TradeDraft>(() => emptyTradeDraft());
+  const [counterOfferTradeId, setCounterOfferTradeId] = useState<string | null>(null);
   const [liveTradePreview, setLiveTradePreview] = useState<LiveTradePreview | null>(null);
   const tradeLiveRevisionRef = useRef(0);
+  const tradeCloseNoticeSentRef = useRef(false);
   const [lobby, setLobby] = useState<LobbyState | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -2774,6 +2776,30 @@ function handleLeaveSpectator() {
     setLiveTradePreview(null);
   }
 
+  // A counter draft cannot apply to any other live proposal.
+  useEffect(() => {
+    if (counterOfferTradeId && gameState?.pendingTrade?.id !== counterOfferTradeId) {
+      setCounterOfferTradeId(null);
+    }
+  }, [counterOfferTradeId, gameState?.pendingTrade?.id]);
+
+  function handleTradeCounter(tradeId: string) {
+    if (!gameState?.pendingTrade || gameState.pendingTrade.id !== tradeId || !lobby) return;
+    try {
+      setTradeDraft(draftFromTradeOffer(gameState.pendingTrade, lobby.playerId));
+      setCounterOfferTradeId(tradeId);
+      setMessage("Edit the counter offer and send it for everyone to review.");
+    } catch {
+      setMessage("Only a participant receiving this offer can counter it.");
+    }
+  }
+
+  function handleCancelCounter() {
+    setCounterOfferTradeId(null);
+    setTradeDraft(emptyTradeDraft());
+    setMessage("Counter offer cancelled. The original deal is still pending.");
+  }
+
   function handleTradePropose() {
     if (!lobby || !gameState) {
       setMessage("The game state is not ready.");
@@ -2791,7 +2817,14 @@ function handleLeaveSpectator() {
     }
 
     const recipientId = recipientIds[0];
-    const isMultiParty = recipientIds.length >= 2;
+    const isCounter = Boolean(counterOfferTradeId && gameState.pendingTrade?.id === counterOfferTradeId);
+    if (counterOfferTradeId && !isCounter) {
+      setIsSubmittingTrade(false);
+      setMessage("The original deal has changed. Review the current proposal.");
+      setCounterOfferTradeId(null);
+      return;
+    }
+    const isMultiParty = recipientIds.length >= 2 || isCounter;
     const proposerId = lobby.playerId;
     const proposerCash = isMultiParty ? 0 : (tradeDraft.cashTransfers[tradeTransferKey(proposerId, recipientId)] ?? 0);
     const recipientCash = isMultiParty ? 0 : (tradeDraft.cashTransfers[tradeTransferKey(recipientId, proposerId)] ?? 0);
@@ -2800,9 +2833,10 @@ function handleLeaveSpectator() {
     const selectedJailCards = Object.entries(tradeDraft.jailCardRecipients);
 
     socket.emit(
-      "game:trade-propose",
+      isCounter ? "game:trade-counter" : "game:trade-propose",
       {
         code: lobby.code,
+        ...(isCounter ? { tradeId: counterOfferTradeId } : {}),
         recipientId,
         recipientIds,
         cashTransfers: tradeDraft.cashTransfers,
@@ -2827,7 +2861,8 @@ function handleLeaveSpectator() {
         }
 
         setLiveTradePreview(null);
-        setMessage("Trade proposal sent.");
+        if (isCounter) setCounterOfferTradeId(null);
+        setMessage(isCounter ? "Counter offer sent. The revised deal now needs approval." : "Trade proposal sent.");
       },
     );
   }
@@ -2881,6 +2916,7 @@ function handleLeaveSpectator() {
           return;
         }
 
+        setCounterOfferTradeId(null);
         setMessage("Trade closed.");
       },
     );
@@ -3340,7 +3376,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.7.10-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.7.11-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3856,6 +3892,9 @@ function handleLeaveSpectator() {
               onSellDepot={handleSellDepot}
               onTradeDraftChange={publishLiveTradeDraft}
               onTradePropose={handleTradePropose}
+              counterOfferTradeId={counterOfferTradeId}
+              onTradeCounter={handleTradeCounter}
+              onCancelCounter={handleCancelCounter}
               onTradeAccept={handleTradeAccept}
               onTradeDecline={handleTradeDecline}
               onRejectAllTrades={handleRejectAllTrades}
@@ -3868,9 +3907,15 @@ function handleLeaveSpectator() {
               onOpenChange={(open, panel) => {
                 setMegaToolsOpen(open);
                 if (open) {
+                  if (panel === "trade") tradeCloseNoticeSentRef.current = false;
                   setPlayersDrawerOpen(false);
                   setGameMenuOpen(false);
-                } else if (panel === "trade" && !gameState.pendingTrade && liveTradePreview) {
+                } else if (panel === "trade" && !gameState.pendingTrade && !tradeCloseNoticeSentRef.current) {
+                  // Close only once. GameSidebar can report the same closed
+                  // state on re-renders while its callback identity changes.
+                  // Sending the close even before the preview arrives clears
+                  // an in-flight recipient-selection announcement safely.
+                  tradeCloseNoticeSentRef.current = true;
                   closeLiveTradeDraft();
                 }
               }}

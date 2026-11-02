@@ -36,6 +36,9 @@ interface TradePanelProps {
   };
   onDraftChange: (nextDraft: TradeDraft) => void;
   onPropose: () => void;
+  counterOfferTradeId?: string | null;
+  onCounter: (tradeId: string) => void;
+  onCancelCounter: () => void;
   onAccept: (tradeId: string) => void;
   onDecline: (tradeId: string) => void;
   onRejectAllTrades: (enabled: boolean) => void;
@@ -110,6 +113,7 @@ function LegacyTradeSummary({
 
   return (
     <div
+      className="mega-trade-summary-card"
       style={{
         ...styles.tradeSummary,
         background: theme.secondaryBackground,
@@ -157,6 +161,7 @@ function MultiPartyTradeSummary({
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <div
+        className="mega-trade-summary-card"
         style={{
           ...styles.tradeSummary,
           background: theme.secondaryBackground,
@@ -217,6 +222,7 @@ function destinationSelect(
       value={value}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
+      className="mega-trade-destination-select"
       style={{
         ...styles.tradeInput,
         width: "auto",
@@ -276,13 +282,24 @@ function ParticipantOfferEditor({
         padding: 12,
       }}
     >
-      <strong>{player.id === participants[0]?.id ? "You give" : `${player.name} gives`}</strong>
+      <header className="mega-trade-party-heading">
+        <span className="mega-trade-player-token" style={{ background: player.colour }} aria-hidden="true">
+          {player.name.charAt(0).toUpperCase()}
+        </span>
+        <div>
+          <small>{player.id === participants[0]?.id ? "YOUR OFFER" : "PLAYER OFFER"}</small>
+          <strong>{player.id === participants[0]?.id ? "You give" : `${player.name} gives`}</strong>
+        </div>
+        <span className="mega-trade-asset-count">
+          {player.properties.length} asset{player.properties.length === 1 ? "" : "s"}
+        </span>
+      </header>
 
       {otherPlayers.map((target) => {
         const key = tradeTransferKey(player.id, target.id);
         return (
-          <label key={key} style={styles.tradeLabel}>
-            Cash → {target.name}
+          <label key={key} className="mega-trade-cash-field" style={styles.tradeLabel}>
+            <span>Cash to {target.name}</span>
             <input
               type="number"
               min={0}
@@ -320,8 +337,8 @@ function ParticipantOfferEditor({
               ? ` · mortgaged £${mortgageInterest(propertyId)} interest`
               : "";
         return (
-          <div key={propertyId} style={{ ...styles.tradeCheckRow, justifyContent: "space-between", gap: 8 }}>
-            <span>{propertyName(propertyId)}{detail}</span>
+          <div key={propertyId} className="mega-trade-asset-row" style={{ ...styles.tradeCheckRow, justifyContent: "space-between", gap: 8 }}>
+            <span className="mega-trade-asset-name">{propertyName(propertyId)}{detail}</span>
             {destinationSelect(
               tradeDraft.propertyRecipients[String(propertyId)] ?? "",
               player,
@@ -338,8 +355,8 @@ function ParticipantOfferEditor({
         <span style={styles.tradeSectionLabel}>Special cards</span>
       )}
       {player.busTicketIds.map((ticketId, index) => (
-        <div key={ticketId} style={{ ...styles.tradeCheckRow, justifyContent: "space-between", gap: 8 }}>
-          <span>{busTicketName(ticketId)} #{index + 1}</span>
+        <div key={ticketId} className="mega-trade-asset-row" style={{ ...styles.tradeCheckRow, justifyContent: "space-between", gap: 8 }}>
+          <span className="mega-trade-asset-name">{busTicketName(ticketId)} #{index + 1}</span>
           {destinationSelect(
             tradeDraft.busTicketRecipients[ticketId] ?? "",
             player,
@@ -351,8 +368,8 @@ function ParticipantOfferEditor({
         </div>
       ))}
       {player.getOutOfJailCardIds.map((cardId) => (
-        <div key={cardId} style={{ ...styles.tradeCheckRow, justifyContent: "space-between", gap: 8 }}>
-          <span>{jailCardName(cardId)}</span>
+        <div key={cardId} className="mega-trade-asset-row" style={{ ...styles.tradeCheckRow, justifyContent: "space-between", gap: 8 }}>
+          <span className="mega-trade-asset-name">{jailCardName(cardId)}</span>
           {destinationSelect(
             tradeDraft.jailCardRecipients[cardId] ?? "",
             player,
@@ -375,6 +392,9 @@ export function TradePanel({
   theme,
   onDraftChange,
   onPropose,
+  counterOfferTradeId,
+  onCounter,
+  onCancelCounter,
   onAccept,
   onDecline,
   onRejectAllTrades,
@@ -383,10 +403,11 @@ export function TradePanel({
   const pendingTrade = gameState.pendingTrade;
   const lastTradeResult = gameState.lastTradeResult;
   const rejectAllThisTurn = gameState.tradeRejectAllTurnByPlayerId?.[playerId] === gameState.turnNumber;
+  const isCountering = Boolean(counterOfferTradeId && pendingTrade?.id === counterOfferTradeId);
 
   if (!currentPlayer) return null;
 
-  if (pendingTrade) {
+  if (pendingTrade && !isCountering) {
     const participantIds = pendingTrade.participantIds ?? [pendingTrade.proposerId, pendingTrade.recipientId];
     const isParticipant = participantIds.includes(playerId);
     const isProposer = pendingTrade.proposerId === playerId;
@@ -396,13 +417,16 @@ export function TradePanel({
       : pendingTrade.recipientId === playerId);
 
     return (
-      <section style={styles.tradePanel}>
-        <div>
-          <p style={styles.eyebrow}>Pending trade</p>
-          <h3 style={styles.tradeTitle}>
-            {pendingTrade.multiParty ? `${participantIds.length}-way deal` : "Trade proposal"}
-          </h3>
-        </div>
+      <section className="mega-trade-panel is-pending" style={styles.tradePanel}>
+        <header className="mega-trade-card-header">
+          <span className="mega-trade-card-emblem" aria-hidden="true">↔</span>
+          <div className="mega-trade-card-heading">
+            <small>MEGA BOARD · PENDING DEAL</small>
+            <h3>{pendingTrade.multiParty ? `${participantIds.length}-way deal` : "Trade proposal"}</h3>
+            <p>Players must confirm the offer before any cash or property moves.</p>
+          </div>
+          <span className="mega-trade-header-status">Under review</span>
+        </header>
 
         {pendingTrade.multiParty ? (
           <MultiPartyTradeSummary trade={pendingTrade} gameState={gameState} theme={theme} />
@@ -411,7 +435,7 @@ export function TradePanel({
         )}
 
         {needsMyApproval && (
-          <div style={styles.tradeButtons}>
+          <div className="mega-trade-actions" style={styles.tradeButtons}>
             <button
               type="button"
               onClick={() => onAccept(pendingTrade.id)}
@@ -427,6 +451,15 @@ export function TradePanel({
               style={styles.dangerButton}
             >
               Decline
+            </button>
+            <button
+              type="button"
+              onClick={() => onCounter(pendingTrade.id)}
+              disabled={isSubmittingTrade || gameState.players.some(player =>
+                (participantIds.includes(player.id)) && player.isAi)}
+              className="mega-trade-counter-button"
+            >
+              Counter offer
             </button>
             <button
               type="button"
@@ -469,10 +502,10 @@ export function TradePanel({
 
   const activePlayer = gameState.players[gameState.currentPlayerIndex];
   const canPropose =
-    activePlayer?.id === playerId &&
+    isCountering || (activePlayer?.id === playerId &&
     (gameState.turnPhase === "roll" ||
       gameState.turnPhase === "optional-actions" ||
-      gameState.turnPhase === "jail-decision");
+      gameState.turnPhase === "jail-decision"));
 
   const availableRecipients = gameState.players.filter(
     (player) => player.id !== playerId && !player.isBankrupt,
@@ -511,7 +544,7 @@ export function TradePanel({
   return (
     <section className="mega-trade-panel" style={styles.tradePanel}>
       {lastTradeResult && lastResultInvolvesMe && (
-        <div className={`trade-result-banner is-${lastTradeResult.status}`}>
+        <div className={`trade-result-banner is-${lastTradeResult.status}`} role="status" aria-live="polite">
           <strong>
             {lastTradeResult.status === "accepted" ? "✓ Deal accepted" :
               lastTradeResult.status === "cancelled" ? "Deal cancelled" : "✕ Deal rejected"}
@@ -520,20 +553,26 @@ export function TradePanel({
         </div>
       )}
 
-      <div>
-        <p style={styles.eyebrow}>Trading</p>
-        <h3 style={styles.tradeTitle}>Make a deal</h3>
-        <p style={{ ...styles.tradeHelp, color: theme.mutedText }}>
-          Invite up to three other players for a 2-player, 3-way or 4-way atomic deal. Cash and individual assets can move directly between any participants. Nothing transfers until every invited player accepts the exact deal.
-        </p>
-      </div>
+      <header className="mega-trade-card-header">
+        <span className="mega-trade-card-emblem" aria-hidden="true">↔</span>
+        <div className="mega-trade-card-heading">
+          <small>{isCountering ? "MEGA BOARD · COUNTER OFFER" : "MEGA BOARD · TRADE"}</small>
+          <h3>{isCountering ? "Revise the deal" : "Make a deal"}</h3>
+          <p>{isCountering ? "Edit the original terms. Sending replaces the pending deal and resets everybody's approval." : "Select up to three opponents and build an offer. Nothing transfers until everyone accepts."}</p>
+        </div>
+        <span className="mega-trade-header-status">{selectedRecipients.length}/3 selected</span>
+      </header>
 
-      <div className="trade-preference-row">
-        <span>{rejectAllThisTurn ? "Rejecting all incoming deals this turn" : "Incoming deals allowed"}</span>
-        <button type="button" onClick={() => onRejectAllTrades(!rejectAllThisTurn)}>
-          {rejectAllThisTurn ? "Accept deals again" : "Reject all deals this turn"}
+      {isCountering && <button type="button" className="mega-trade-counter-cancel" onClick={onCancelCounter} disabled={isSubmittingTrade}>Back to original offer</button>}
+      {!isCountering && <div className="mega-trade-preference-strip trade-preference-row">
+        <div>
+          <strong>{rejectAllThisTurn ? "Incoming offers blocked" : "Incoming offers enabled"}</strong>
+          <small>{rejectAllThisTurn ? "Declining new offers for this turn only." : "Other players may propose trades to you."}</small>
+        </div>
+        <button type="button" className={rejectAllThisTurn ? "is-enabled" : ""} disabled={isSubmittingTrade} onClick={() => onRejectAllTrades(!rejectAllThisTurn)}>
+          {rejectAllThisTurn ? "Allow offers" : "Decline all this turn"}
         </button>
-      </div>
+      </div>}
 
       {!canPropose && (
         <p style={{ ...styles.tradeHelp, color: theme.mutedText }}>
@@ -541,30 +580,40 @@ export function TradePanel({
         </p>
       )}
 
-      <div className="mega-trade-recipient-grid">
-        <span className="mega-trade-section-heading" style={styles.tradeSectionLabel}>Deal participants · choose 1–3</span>
-        {availableRecipients.map((player) => {
-          const checked = tradeDraft.recipientIds.includes(player.id);
-          const atLimit = tradeDraft.recipientIds.length >= 3 && !checked;
-          return (
-            <label key={player.id} style={styles.tradeCheckRow}>
-              <input
-                type="checkbox"
-                checked={checked}
-                disabled={!canPropose || atLimit}
-                onChange={(event) => toggleRecipient(player.id, event.target.checked)}
-              />
-              <span>
-                {player.name}
-                {player.isAi ? ` · AI ${player.aiDifficulty ?? "normal"}` : player.autopilotEnabled ? " · Autopilot" : ""}
-              </span>
-            </label>
-          );
-        })}
-      </div>
+      <section className="mega-trade-section" aria-label="Select trade participants">
+        <div className="mega-trade-section-title">
+          <strong>Choose players</strong>
+          <small>{selectedRecipients.length} selected · up to 3 opponents</small>
+        </div>
+        <div className="mega-trade-recipient-grid">
+          {availableRecipients.map((player) => {
+            const checked = tradeDraft.recipientIds.includes(player.id);
+            const atLimit = tradeDraft.recipientIds.length >= 3 && !checked;
+            return (
+              <label key={player.id} className={`mega-trade-recipient-card${checked ? " is-selected" : ""}`} style={styles.tradeCheckRow}>
+                <span className="mega-trade-player-token" style={{ background: player.colour }} aria-hidden="true">
+                  {player.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="mega-trade-recipient-copy">
+                  <strong>{player.name}</strong>
+                  <small>{player.isAi ? `AI · ${player.aiDifficulty ?? "normal"}` : player.autopilotEnabled ? "Autopilot" : player.isConnected ? "Connected" : "Reconnecting"}</small>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label={`Include ${player.name} in the deal`}
+                  checked={checked}
+                  disabled={!canPropose || isCountering || atLimit}
+                  onChange={(event) => toggleRecipient(player.id, event.target.checked)}
+                />
+              </label>
+            );
+          })}
+        </div>
+      </section>
 
       {isMultiParty && (
         <div
+          className="mega-trade-info-card"
           style={{
             border: `1px solid ${theme.border}`,
             borderRadius: 10,
@@ -579,8 +628,13 @@ export function TradePanel({
         </div>
       )}
 
-      {selectedRecipients.length > 0 && (
-        <div className="mega-trade-offer-grid">
+      {selectedRecipients.length > 0 ? (
+        <section className="mega-trade-section" aria-label="Edit trade offers">
+          <div className="mega-trade-section-title">
+            <strong>Build the offer</strong>
+            <small>Choose cash, properties and cards to exchange</small>
+          </div>
+          <div className="mega-trade-offer-grid">
           {participants.map((participant) => (
             <ParticipantOfferEditor
               key={participant.id}
@@ -593,9 +647,13 @@ export function TradePanel({
               onDraftChange={onDraftChange}
             />
           ))}
-        </div>
+          </div>
+        </section>
+      ) : (
+        <div className="mega-trade-empty">Select another player above to start building a deal.</div>
       )}
 
+      <div className="mega-trade-submit">
       <button
         type="button"
         onClick={onPropose}
@@ -614,9 +672,11 @@ export function TradePanel({
         }}
       >
         {selectedRecipients.length >= 2
-          ? `Send ${participants.length}-way deal`
-          : "Send trade proposal"}
+          ? (isCountering ? "Send counter offer" : `Send ${participants.length}-way deal`)
+          : (isCountering ? "Send counter offer" : "Send trade proposal")}
       </button>
+      <small>{!canPropose ? "Trades are available on your turn during the permitted phases." : !hasAnyValue ? "Add at least one item or amount before sending." : isCountering ? "The existing deal stays pending until your revised terms are accepted by the server." : "Everyone must accept the exact proposed terms."}</small>
+      </div>
     </section>
   );
 }
