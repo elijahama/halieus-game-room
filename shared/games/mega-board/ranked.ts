@@ -20,6 +20,8 @@ export interface RankedLeaderboardEntry {
   averageFinish: number;
   awardsWon: number;
   performancePoints: number;
+  /** Read-only recent match form, added by ranked:get at response time. */
+  recentForm?: number[];
   lastPlayedAt: number;
 }
 

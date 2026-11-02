@@ -59,7 +59,7 @@ import { GameSidebar } from "./games/mega-board/components/GameSidebar";
 import { LiveTradeOverlay } from "./games/mega-board/components/LiveTradeOverlay";
 import { PlayerRail } from "./games/mega-board/components/PlayerRail";
 import { SpectatorControls } from "./games/mega-board/components/SpectatorControls";
-import type { SeasonSnapshot } from "../shared/games/mega-board/season";
+import type { SeasonSnapshot } from "../../shared/games/mega-board/season";
 import { PlayerDetailsModal } from "./games/mega-board/components/PlayerDetailsModal";
 import { AvailablePropertiesModal } from "./games/mega-board/components/AvailablePropertiesModal";
 import { WinnerScreen } from "./games/mega-board/components/WinnerScreen";
