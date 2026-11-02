@@ -405,7 +405,8 @@ assert.match(surfaceCss,/data-theme-mode="blue"[\s\S]*?data-theme-mode="profile"
 assert.match(app,/root\.dataset\.themeContrast = darkMode \? "dark" : "light"/,"Resolved theme contrast must be exposed to semantic game-surface CSS");
 assert.match(surfaceCss,/data-theme-contrast="dark"[\s\S]*?\.board-space\.is-jail-corner[\s\S]*?color:\s*#ffffff !important/s,"Dark Mega Board themes must force Jail / Just Visiting text to white");
 assert.match(indexCss,/HGR Part 20 — 100% desktop fit for Mega Board[\s\S]*?var\(--mega-board-size[\s\S]*?grid-template-rows:\s*repeat\(var\(--rail-player-count/s,"Mega Board desktop must size the square from available width\/height and keep player rails non-scrolling");
-assert.match(playerRail,/orderedOwnedSpaces\.map\(\(space\)/,"Desktop player rails must list the complete owned property portfolio");
+assert.match(playerRail,/groupOwnedPortfolio\(ownedSpaceIds\)/,"Desktop player rails must group the complete owned property portfolio");
+assert.match(playerRail,/group\.owned\.map\(\(space\)/,"Every grouped holding must be rendered without cutting off assets");
 assert.doesNotMatch(playerRail,/compactOwnedSpaces|hiddenOwnedSpaceCount|orderedOwnedSpaces\.slice\(0,\s*6\)/,"No holdings may be hidden behind a six-property summary");
 assert.match(playerRail,/player-property-count/,"Owned-property count must remain visible even when the card scrolls");
 assert.doesNotMatch(surfaceCss,/data-theme-mode="system"[\s\S]*?\.mega-live-page \.board-grid/s,"System theme must preserve authored board palettes");

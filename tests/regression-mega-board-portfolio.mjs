@@ -17,11 +17,15 @@ assert.match(skin, /\.board-space\.is-mortgaged-space/, "Legacy skin rule must e
 assert.match(css, /board-space\.is-mortgaged-space[\s\S]*?linear-gradient\(155deg, #b91c1c/, "Mortgaged tiles must use explicit dark red paint");
 assert.match(css, /board-space\.is-mortgaged-space[\s\S]*?filter: none !important/, "Mortgages may not be desaturated by board skins");
 assert.match(css, /board-space\.is-mortgaged-space[\s\S]*?\.board-space-name[\s\S]*?color: #fff !important/, "Red mortgages need readable high-contrast names");
-assert.match(rail, /orderedOwnedSpaces\.map\(\(space\)/, "Rail must render all owned assets");
+assert.match(rail, /groupOwnedPortfolio\(ownedSpaceIds\)/, "Rail must group all owned assets");
+assert.match(rail, /group\.owned\.map\(\(space\)/, "Grouped rail must render all assets");
+assert.match(rail, /<details[\s\S]*?player-property-group-fold/, "Full and majority sets remain expandable");
+assert.match(rail, /const collapsedLabel = owned\.length === spaces\.length/, "Full set requires complete ownership");
+assert.match(rail, /owned\.length > spaces\.length \/ 2/, "Majority set means more than half");
 assert.doesNotMatch(rail, /orderedOwnedSpaces\.slice\(0,\s*6\)|compactOwnedSpaces|hiddenOwnedSpaceCount/, "Never hide all properties behind the six-chip cutoff");
 assert.match(rail, /player-property-count/, "Show an actual total when holdings exceed the visible area");
 assert.match(css, /player-property-strip[\s\S]*?overflow-y: auto !important/, "Property list must scroll inside its player card");
-assert.match(css, /player-property-strip[\s\S]*?repeat\(2, minmax\(0, 1fr\)\)/, "Asset chips need readable columns");
+assert.match(css, /player-property-group-chips[\s\S]*?repeat\(auto-fit, minmax/, "Assets adapt to width");
 assert.equal((sidebar.match(/<DebtPanel/g) ?? []).length, 1, "Keep one debt panel");
 const scrollStart = sidebar.indexOf('className={`turn-actions-popup-scroll');
 assert.ok(scrollStart > 0 && sidebar.indexOf("<DebtPanel", scrollStart) > scrollStart, "Debt panel must be within the scrollable dialog body");

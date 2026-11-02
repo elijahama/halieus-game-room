@@ -17,7 +17,7 @@ try {
     // Test the desktop split rail only above 1180px. Tablet/mobile replace it
     // with the Players drawer; testing the hidden desktop rail there is invalid.
     const playerCard = (name, items) => `<article class="player-rail-card"><div class="player-rail-main-row">${name}</div>
-      <div class="player-property-strip"><span class="player-property-count">Owned · ${items ? 26 : 1}</span>${items ? chips : '<span class="player-property-chip">Property</span>'}</div></article>`;
+      <div class="player-property-strip"><span class="player-property-count">Owned · ${items ? 26 : 1}</span>${items ? `<section class="player-property-group"><details class="player-property-group-fold" open><summary class="player-property-group-heading">Full set</summary><div class="player-property-group-chips">${chips}</div></details></section>` : '<section class="player-property-group"><div class="player-property-group-chips"><span class="player-property-chip">Property</span></div></section>'}</div></article>`;
     const playerCards = [playerCard("Player 1", true), ...Array.from({length:6}, (_,i)=>playerCard(`Player ${i+2}`,false))].join("");
     const roster = `<div class="player-rail-list">${playerCards}</div>`;
     const railShell = viewport.width > 1180
