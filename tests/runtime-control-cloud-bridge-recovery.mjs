@@ -38,7 +38,7 @@ assert.match(bridge,/const healthPath = resolve\(runtimeDirectory, "hgr-control-
 assert.doesNotMatch(bridge,/atomicJson\(healthPath,\s*\{[^}]*secret/s,"Diagnostic must never persist cloud identity secrets.");
 assert.match(start,/hgr-control-cloud-bridge-state\.json/,"Existing ownership state retained.");
 assert.match(doc,/No inbound PC port, private Tailscale Serve route/i);
-const chooseDeviceSource = cloudUi.match(/function chooseDevice\\(devices\\) \\{[\\s\\S]*?\\n  \\}/)?.[0];
+const chooseDeviceSource = cloudUi.match(/function chooseDevice\(devices\) \{[\s\S]*?\n  \}/)?.[0];
 assert.ok(chooseDeviceSource, "Cloud Control must retain the approved device selector.");
 const chooseDevice = vm.runInNewContext("(" + chooseDeviceSource + ")");
 const staleApproved = {deviceId:"old-approved",approval:"approved",online:false};
@@ -50,6 +50,6 @@ assert.equal(chooseDevice([livePending,liveApproved]).deviceId,"live-approved",
   "A real connected and approved owner machine remains first preference.");
 assert.equal(chooseDevice([staleApproved,{deviceId:"pending-stale",approval:"pending",online:false}]).deviceId,"old-approved",
   "Offline fallback must remain deterministic.");
-assert.match(cloudUi,/showApproveButton\\(device\\)/,
+assert.match(cloudUi,/showApproveButton\(device\)/,
   "Pending enrollment must expose the existing authenticated owner approval button.");
 console.log("PASS HGR Cloud bridge recovery: real-heartbeat diagnosis, PID/operation guards, canonical Start Menu shortcut and no Tailscale or secret reset.");
