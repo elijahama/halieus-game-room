@@ -423,11 +423,15 @@
   }
 
   function chooseDevice(devices) {
-    const approved = devices.find((device) => device.approval === "approved" && device.online)
+    // A stale approved record must never conceal the currently heartbeating
+    // pending owner laptop: the owner needs its visible approval action.
+    // Prefer live approved devices first, then live pending enrollments.
+    const selected = devices.find((device) => device.approval === "approved" && device.online)
+      || devices.find((device) => device.approval === "pending" && device.online)
       || devices.find((device) => device.approval === "approved")
       || devices.find((device) => device.approval === "pending")
       || devices.find((device) => device.approval === "revoked");
-    return approved || null;
+    return selected || null;
   }
 
   async function doRefreshCloudControl() {
