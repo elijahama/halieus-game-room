@@ -1,6 +1,7 @@
 import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
 import { rooms as megaBoardRooms } from "../games/mega-board/state/rooms.js";
 import { buildRankedLeaderboard } from "./ranked.js";
+import { listRankedHistory, RANKED_HISTORY_GAMES } from "./rankedHistory.js";
 import { normaliseRankedPlayerKey } from "../../../shared/games/mega-board/ranked.js";
 import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES, isSkinUnlocked, type HalieusSkinPreferences, type HalieusSkinSlot } from "../../../shared/platform/skins.js";
 import { themeEntitlements, CORE_THEME_IDS } from "../../../shared/platform/themeProgression.js";
@@ -1239,6 +1240,27 @@ export function registerAccountRoutes(app: Express): void {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     response.json({ ok: true, entries: await gamerScoreLeaderboard(auth.account) });
+  });
+
+  // Rankings hub: complete *retained* Ranked match history, not a recent-only
+  // widget. Read-only, paged, projected to public result fields and signed-in.
+  app.get("/accounts/ranked/matches", async (request, response) => {
+    const auth = currentSession(request);
+    if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
+    const game = typeof request.query.game === "string" && request.query.game ? request.query.game : null;
+    const rawOffset = typeof request.query.offset === "string" ? request.query.offset : "0";
+    const offset = /^\\d{1,8}$/.test(rawOffset) ? Number(rawOffset) : NaN;
+    if ((game && !RANKED_HISTORY_GAMES.has(game)) || !Number.isSafeInteger(offset)) {
+      response.status(400).json({ok:false,reason:"Invalid Ranked history filter or page."});
+      return;
+    }
+    try {
+      const page = await listRankedHistory({ game, offset, limit: 25 });
+      response.setHeader("Cache-Control", "private, no-store");
+      response.json({ ok: true, ...page });
+    } catch {
+      response.status(503).json({ ok: false, reason: "Ranked match history is temporarily unavailable." });
+    }
   });
 
   app.get("/accounts/ranked/:game/leaderboard", async (request, response) => {
