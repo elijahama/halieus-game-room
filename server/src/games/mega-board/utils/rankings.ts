@@ -52,7 +52,7 @@ async function writeSnapshot(): Promise<void> {
     version: 1,
     savedAt: Date.now(),
     leaderboard: getRankedLeaderboard(),
-    matches: [...rankedMatches.values()].sort((a, b) => b.completedAt - a.completedAt).slice(0, 500),
+    matches: [...rankedMatches.values()].sort((a, b) => b.completedAt - a.completedAt || a.matchId.localeCompare(b.matchId)),
   };
   await writeFile(TEMP_PATH, JSON.stringify(document, null, 2), "utf8");
   await rename(TEMP_PATH, RANKINGS_PATH);
@@ -105,6 +105,12 @@ export function getRankedLeaderboard(): RankedLeaderboardEntry[] {
       b.gamesPlayed - a.gamesPlayed ||
       a.playerName.localeCompare(b.playerName),
   );
+}
+
+/** The complete retained ledger, including matches beyond former 500-row snapshots. */
+export function getAllRankedMatches(): RankedMatchSummary[] {
+  return [...rankedMatches.values()]
+    .sort((a, b) => b.completedAt - a.completedAt || a.matchId.localeCompare(b.matchId));
 }
 
 export function getRecentRankedMatches(limit = 20): RankedMatchSummary[] {
