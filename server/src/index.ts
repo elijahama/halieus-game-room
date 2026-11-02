@@ -1,5 +1,6 @@
 import { archiveCompletedMegaGame } from "./games/mega-board/utils/mega-history.js";
 import { registerGameHistoryRoutes } from "./platform/game-history.js";
+import { registerRankedMatchHistoryRoutes } from "./platform/ranked-match-history.js";
 import { registerActiveMatchRoutes } from "./platform/active-match.js";
 import {registerProgressionIdentity, verifiedRoomAccountIds } from "./platform/progression.js";
 import cors from "cors";
@@ -170,6 +171,7 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
 });
 registerAccountRoutes(app);
 registerGameHistoryRoutes(app, getAuthenticatedAccount);
+registerRankedMatchHistoryRoutes(app, getAuthenticatedAccount);
 registerActiveMatchRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 registerPushRoutes(app, getAuthenticatedAccount);
