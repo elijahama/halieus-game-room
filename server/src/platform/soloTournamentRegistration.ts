@@ -29,6 +29,9 @@ export interface SoloTournamentMatch {
   winnerAccountId: string | null;
   gameStartedAt: number | null;
   completedAt: number | null;
+  /** Two original authenticated seats must approve before a never-started room is replaced. */
+  resetApprovedAccountIds: string[];
+  resetRequestedAt: number | null;
   status: SoloMatchStatus;
 }
 export interface SoloTournament {
@@ -48,6 +51,12 @@ export interface SoloTournament {
 type Store = { version: 1; tournaments: SoloTournament[] };
 const MAX_TOURNAMENTS = 500;
 const MAX_OPEN_PER_HOST = 5;
+const SOLO_PRESTART_RESET_APPROVAL_MS = 10 * 60_000;
+// Only the server with a real Socket.IO room lifecycle can retire a prior lobby.
+let closeOriginalSoloRoom: ((code: string) => boolean) | null = null;
+export function configureSoloRoomResetCloser(closer: (code: string) => boolean) {
+  closeOriginalSoloRoom = closer;
+}
 
 export class SoloTournamentError extends Error {
   constructor(public readonly statusCode: number, message: string) {
@@ -103,6 +112,18 @@ function validateStore(doc: unknown): asserts doc is Store {
           m.round !== (i===2?"final":"semifinal") ||
           m.homeAccountId === m.awayAccountId && m.homeAccountId !== null) {
         throw new Error("Invalid seeded Solo bracket identity.");
+      }
+      if (!Array.isArray(m.resetApprovedAccountIds) ||
+          m.resetApprovedAccountIds.length > 1 ||
+          new Set(m.resetApprovedAccountIds).size !== m.resetApprovedAccountIds.length ||
+          (m.resetApprovedAccountIds.length === 1 &&
+            (m.status !== "room-bound" ||
+             (m.resetApprovedAccountIds[0] !== m.homeAccountId &&
+              m.resetApprovedAccountIds[0] !== m.awayAccountId) ||
+             !Number.isSafeInteger(m.resetRequestedAt) ||
+             m.resetRequestedAt! < t.createdAt)) ||
+          (m.resetApprovedAccountIds.length === 0 && m.resetRequestedAt !== null)) {
+        throw new Error("Invalid Solo pre-start reset approvals.");
       }
       const recorded = m.status === "room-bound" || m.status === "completed";
       if (recorded) {
@@ -169,6 +190,7 @@ function match(id: SoloTournamentMatch["id"], a: string | null, b: string | null
     homeAccountId: a, awayAccountId: b,
     roomCode: null, roomCreatedAt: null, boardMatchId: null, winnerAccountId: null,
     gameStartedAt: null, completedAt: null,
+    resetApprovedAccountIds: [], resetRequestedAt: null,
     status: a && b ? "awaiting-room" : "awaiting-opponents",
   };
 }
@@ -200,6 +222,7 @@ export function createSoloTournamentRegistrationCoordinator(
   let tournaments = new Map<string, SoloTournament>();
   let loaded = false;
   let pending: Promise<unknown> = Promise.resolve();
+  const resetInFlight=new Set<string>();
 
   async function load() {
     if (loaded) return;
@@ -221,6 +244,8 @@ export function createSoloTournamentRegistrationCoordinator(
         match.boardMatchId ??= null;
         match.gameStartedAt ??= null;
         match.completedAt ??= null;
+        match.resetApprovedAccountIds ??= [];
+        match.resetRequestedAt ??= null;
       }
     }
     validateStore(doc);
@@ -231,21 +256,33 @@ export function createSoloTournamentRegistrationCoordinator(
     if (!loaded) throw new SoloTournamentError(503, "Solo tournament registration is unavailable.");
   }
   function change<T>(mutation: (current: Map<string, SoloTournament>) =>
-    { next: Map<string, SoloTournament>; value: T }): Promise<T> {
+    { next: Map<string, SoloTournament>; value: T; afterCommit?: () => void; afterFailure?: () => void }): Promise<T> {
     const task = pending.then(async () => {
       ensureLoaded();
-      const { next, value } = mutation(tournaments);
-      if (next !== tournaments) {
-        validateStore({ version: 1, tournaments: [...next.values()] });
-        const dir = dirname(path);
-        await mkdir(dir, { recursive: true });
-        const temp = path + "." + randomUUID() + ".tmp";
-        await writeFile(temp,
-          JSON.stringify({ version: 1, tournaments: [...next.values()] }, null, 2),
-          { encoding: "utf8", mode: 0o600 });
-        await rename(temp, path);
-        tournaments = next;
+      const { next, value, afterCommit, afterFailure } = mutation(tournaments);
+      try {
+        if (next !== tournaments) {
+          validateStore({ version: 1, tournaments: [...next.values()] });
+          const dir = dirname(path);
+          await mkdir(dir, { recursive: true });
+          const temp = path + "." + randomUUID() + ".tmp";
+          await writeFile(temp,
+            JSON.stringify({ version: 1, tournaments: [...next.values()] }, null, 2),
+            { encoding: "utf8", mode: 0o600 });
+          await rename(temp, path);
+          tournaments = next;
+        }
+        // Execute synchronously in this microtask after durable state is updated,
+        // before another socket event can start or join the old room.
+      } catch(error) {
+        // A failed durable write must not release the original room lock as if
+        // the reset had succeeded.
+        afterFailure?.();
+        throw error;
       }
+      // If an unexpected post-commit room-close failure occurs, retain the
+      // pending start guard for operator recovery instead of enabling the old lobby.
+      afterCommit?.();
       return copy(value);
     });
     pending = task.then(() => undefined, () => undefined);
@@ -369,6 +406,80 @@ export function createSoloTournamentRegistrationCoordinator(
       return { next, value: updated };
     });
   }
+  /**
+   * Neither player may discard a tournament game alone. A second original
+   * registered account must consent while the exact original lobby is proven
+   * unstarted. Close the original room only AFTER the reset is durable.
+   */
+  function approvePrestartReset(accountId: string, id: string, matchId: string) {
+    return change(current => {
+      const tournament=current.get(id);
+      if (!tournament || tournament.status !== "seeded") {
+        throw new SoloTournamentError(404, "Active Solo tournament not found.");
+      }
+      const m=tournament.matches.find(row=>row.id === matchId);
+      if (!m || m.status !== "room-bound" ||
+          !m.homeAccountId || !m.awayAccountId ||
+          (accountId !== m.homeAccountId && accountId !== m.awayAccountId)) {
+        throw new SoloTournamentError(403, "Only the two original Solo match entrants may approve a reset.");
+      }
+      const code=m.roomCode;
+      const original=code && megaRooms.get(code);
+      if (!original || original.code !== code || original.createdAt !== m.roomCreatedAt ||
+          original.started || original.gameState !== null ||
+          original.players.length !== 2 ||
+          original.ranked || original.blitz || original.betaTournamentTest ||
+          original.players.some(seat => seat.isAi || seat.hasLeft || !seat.replayAccountId) ||
+          new Set(original.players.map(seat => seat.replayAccountId)).size !== 2 ||
+          !original.players.some(seat => seat.replayAccountId === m.homeAccountId) ||
+          !original.players.some(seat => seat.replayAccountId === m.awayAccountId)) {
+        throw new SoloTournamentError(409, "No verified never-started original lobby is available for a safe reset.");
+      }
+      if (resetInFlight.has(code)) throw new SoloTournamentError(409, "This room is already being reset.");
+      const now=Date.now();
+      const approvals=m.resetRequestedAt !== null &&
+        now-m.resetRequestedAt <= SOLO_PRESTART_RESET_APPROVAL_MS &&
+        now >= m.resetRequestedAt ? [...m.resetApprovedAccountIds] : [];
+      if (approvals.includes(accountId)) {
+        throw new SoloTournamentError(409, "You have already approved this pending lobby reset.");
+      }
+      approvals.push(accountId);
+      if (approvals.length === 1) {
+        const amended:SoloTournamentMatch={...m,resetApprovedAccountIds:approvals,resetRequestedAt:now};
+        const updated:SoloTournament={
+          ...tournament,updatedAt:now,
+          matches:tournament.matches.map(row=>row.id===m.id?amended:row)
+        };
+        const next=new Map(current);next.set(id,updated);
+        return {next,value:updated};
+      }
+      if (!closeOriginalSoloRoom) {
+        throw new SoloTournamentError(503, "Safe server-side room closure is unavailable.");
+      }
+      resetInFlight.add(code);
+      const reset:SoloTournamentMatch=match(m.id,m.homeAccountId,m.awayAccountId);
+      const updated:SoloTournament={
+        ...tournament,updatedAt:now,
+        matches:tournament.matches.map(row=>row.id===m.id?reset:row)
+      };
+      const next=new Map(current);next.set(id,updated);
+      return {
+        next,value:updated,
+        afterCommit:()=>{
+          try {
+            if (!closeOriginalSoloRoom!(code)) {
+              console.error("[HGR] Solo room reset was persisted but old room closure failed:",code);
+              throw new Error("The previous Solo room could not be closed.");
+            }
+          } finally {
+            resetInFlight.delete(code);
+          }
+        },
+        afterFailure:()=>resetInFlight.delete(code)
+      };
+    });
+  }
+
   function boundRoom(code: string) {
     if (!loaded) return null;
     for (const tournament of tournaments.values()) {
@@ -379,6 +490,7 @@ export function createSoloTournamentRegistrationCoordinator(
     return null;
   }
   function startBlock(room: GameRoom) {
+    if (resetInFlight.has(room.code)) return "Solo room reset is in progress.";
     const binding = boundRoom(room.code);
     if (!binding) return null;
     try {
@@ -451,6 +563,7 @@ export function createSoloTournamentRegistrationCoordinator(
       const receipt: SoloTournamentMatch = {
         ...matching,status:"completed",winnerAccountId:winner,
         gameStartedAt:state.gameStartedAt,completedAt,
+        resetApprovedAccountIds:[],resetRequestedAt:null,
       };
       let nextMatches=tournament.matches.map(row=>row.id === receipt.id ? receipt : row);
       const semi1=nextMatches.find(row=>row.id === "semi-1")!;
@@ -486,7 +599,7 @@ export function createSoloTournamentRegistrationCoordinator(
       return {next,value:update};
     });
   }
-  return { load, visible, create, join, leave, seed, bindRoom, boundRoom, startBlock, recordFinishedGame, cancel };
+  return { load, visible, create, join, leave, seed, bindRoom, approvePrestartReset, boundRoom, startBlock, recordFinishedGame, cancel };
 }
 // One shared live coordinator; HTTP, game:start and join protection must agree.
 let liveSoloCoordinator: ReturnType<typeof createSoloTournamentRegistrationCoordinator> | null = null;
@@ -542,5 +655,7 @@ export function registerSoloTournamentRegistrationRoutes(app:Express, authentica
   app.post("/tournaments/solo/:id/seed",handler((r,a)=>coordinator.seed(a,String(r.params.id))));
   app.post("/tournaments/solo/:id/matches/:matchId/bind-room",
     handler((r,a)=>coordinator.bindRoom(a,String(r.params.id),String(r.params.matchId),r.body?.roomCode)));
+  app.post("/tournaments/solo/:id/matches/:matchId/approve-prestart-reset",
+    handler((r,a)=>coordinator.approvePrestartReset(a,String(r.params.id),String(r.params.matchId))));
   app.post("/tournaments/solo/:id/cancel",handler((r,a)=>coordinator.cancel(a,String(r.params.id))));
 }

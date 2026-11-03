@@ -53,7 +53,7 @@ import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
-import { loadSoloTournamentRegistration, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
+import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
@@ -63,9 +63,10 @@ import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHand
 import { registerTradeHandlers } from "./games/mega-board/handlers/tradeHandlers.js";
 import { registerTurnHandlers } from "./games/mega-board/handlers/turnHandlers.js";
 import { rooms } from "./games/mega-board/state/rooms.js";
+import { endRoom } from "./games/mega-board/utils/room-lifecycle.js";
 import { listSpectators } from "./games/mega-board/state/spectators.js";
 import { syncAuctionTimer } from "./games/mega-board/utils/auction-timer.js";
-import { restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
+import { cancelHostGrace, restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
 import {
   flushRoomSave,
   getSavePath,
@@ -393,6 +394,13 @@ const io = new Server(httpServer, {
   pingInterval: 25000,
   pingTimeout: 20000,
 });
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  // Do not expose a recovery endpoint without the real Socket.IO room closer.
+  configureSoloRoomResetCloser(code => {
+    cancelHostGrace(code);
+    return endRoom(io,code,"Both registered Solo players approved replacing this never-started lobby.");
+  });
+}
 
 let activeMaintenanceNotice: HalieusMaintenanceNotice | null = null;
 
