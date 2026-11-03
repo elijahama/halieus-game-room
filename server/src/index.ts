@@ -53,6 +53,7 @@ import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
+import { registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
@@ -145,10 +146,19 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
   response.setHeader("Cache-Control", "no-store");
   next();
 });
+// Hide experimental Solo entrant identities from all shared/browser caches.
+app.use("/tournaments/solo", (_request, response, next) => {
+  response.setHeader("Cache-Control", "no-store");
+  next();
+});
 registerAccountRoutes(app);
 registerGameHistoryRoutes(app, getAuthenticatedAccount);
 registerActiveMatchRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
+// Incomplete 4.8 Solo bracket staging stays unavailable on production by default.
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  registerSoloTournamentRegistrationRoutes(app, getAuthenticatedAccount);
+}
 registerPushRoutes(app, getAuthenticatedAccount);
 registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);
 
