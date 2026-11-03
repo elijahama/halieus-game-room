@@ -1,4 +1,4 @@
-# DEVELOPMENT/ADMIN ONLY: production play.halieus.net is hosted on Oracle and does not depend on this Funnel.
+# DEVELOPMENT/ADMIN ONLY: production halieus.remotewire.net is hosted on Oracle, not this Funnel.
 param(
     [int]$Port = 3000,
     [ValidateSet("start", "status", "stop", "reset")]

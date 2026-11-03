@@ -1,6 +1,6 @@
 param(
     [int]$Port = 3000,
-    [string]$PublicAppUrl = "https://play.halieus.net"
+    [string]$PublicAppUrl = "https://halieus.remotewire.net"
 )
 
 Set-StrictMode -Version Latest
