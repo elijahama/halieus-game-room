@@ -1005,6 +1005,7 @@
       state.account = auth.account;
       hideAccess();
       renderIdentity();
+      window.dispatchEvent(new Event("hgr-control-authorized"));
       bindOperationChannels();
       if (auth.account.role === "owner") {
         $("publicAccessCard").hidden = false;

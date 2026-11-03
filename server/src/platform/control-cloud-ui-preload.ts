@@ -8,6 +8,7 @@ import type { Request as ExpressRequest } from "express";
 import { getAuthenticatedAccount } from "./accounts.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
 import { loadLocalDevelopmentTimeline } from "./control-development-timeline.js";
+import { currentReleaseAvailability } from "./control-release-availability.js";
 import { readOwnerRelay } from "./control-development-relay.js";
 
 interface StoredRequest {
@@ -75,6 +76,20 @@ async function readOperationHistory(): Promise<StoredRequest[]> {
     .slice()
     .sort((left, right) => right.requestedAt.localeCompare(left.requestedAt))
     .slice(0, 40);
+}
+
+async function serveReleaseAvailability(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  if (!hasAdmin(request)) {
+    sendJson(response, 403, { ok: false, reason: "Owner or administrator access is required." });
+    return;
+  }
+  try {
+    const release = await currentReleaseAvailability();
+    sendJson(response, 200, { ok: true, ...release });
+  } catch {
+    // Remote discovery must never look like a confirmed available update.
+    sendJson(response, 503, { ok: false, reason: "Release availability could not be verified." });
+  }
 }
 
 async function serveOperationStatus(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -277,6 +292,10 @@ function wrapListener(listener: RequestListener): RequestListener {
     })();
     if (request.method === "GET" && path === "/control/development-timeline") {
       void serveLocalDevelopmentTimeline(request, response);
+      return;
+    }
+    if (request.method === "GET" && path === "/control/release-availability") {
+      void serveReleaseAvailability(request, response);
       return;
     }
     if (request.method === "GET" && path === "/control/development-status") {
