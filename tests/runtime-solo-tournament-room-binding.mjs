@@ -113,7 +113,7 @@ try {
   const saved=raw.tournaments.find(v=>v.id===t.id);
   saved.matches[0].winnerAccountId="fake-winner";
   await writeFile(file,JSON.stringify(raw));
-  await assert.rejects(create(file).load(),/Invalid seeded Solo bracket/);
+  await assert.rejects(create(file).load(),/Unfinished Solo room cannot claim a result/);
   assert.equal(JSON.parse(await readFile(file,"utf8")).tournaments.find(v=>v.id===t.id).matches[0].winnerAccountId,"fake-winner");
 
   // Live route shares the same match coordinator used by socket lobby/start guards.

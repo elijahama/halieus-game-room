@@ -5,6 +5,7 @@ import type { Express, Request, Response } from "express";
 import type { HalieusAccountSummary } from "../../../shared/platform/accounts.js";
 import { getMegaBoardDataDirectory } from "./dataPaths.js";
 import type { GameRoom } from "../games/mega-board/types/game.js";
+import type { GameState } from "../../../shared/games/mega-board/game-state.js";
 import { rooms as megaRooms } from "../games/mega-board/state/rooms.js";
 import { getGuildFixtureBoundRoom } from "./guildFixtures.js";
 
@@ -12,8 +13,8 @@ import { getGuildFixtureBoundRoom } from "./guildFixtures.js";
  * Source-only first Solo tournament slice. No fixture linking, winners, rating
  * payouts, or route activation in production is implied by registration.
  */
-export type SoloTournamentStatus = "registration" | "seeded" | "cancelled";
-export type SoloMatchStatus = "awaiting-room" | "awaiting-opponents" | "room-bound";
+export type SoloTournamentStatus = "registration" | "seeded" | "completed" | "cancelled";
+export type SoloMatchStatus = "awaiting-room" | "awaiting-opponents" | "room-bound" | "completed";
 export interface SoloTournamentMatch {
   id: "semi-1" | "semi-2" | "final";
   round: "semifinal" | "final";
@@ -24,7 +25,10 @@ export interface SoloTournamentMatch {
   roomCreatedAt: number | null;
   /** Server-minted immutable match identity for later verified receipts. */
   boardMatchId: string | null;
-  winnerAccountId: null;
+  /** Null unless verified from a real finished server-owned game. */
+  winnerAccountId: string | null;
+  gameStartedAt: number | null;
+  completedAt: number | null;
   status: SoloMatchStatus;
 }
 export interface SoloTournament {
@@ -38,6 +42,7 @@ export interface SoloTournament {
   createdAt: number;
   updatedAt: number;
   startedAt: number | null;
+  championAccountId: string | null;
   matches: SoloTournamentMatch[];
 }
 type Store = { version: 1; tournaments: SoloTournament[] };
@@ -62,8 +67,8 @@ function validateStore(doc: unknown): asserts doc is Store {
     throw new Error("Unsupported Solo tournament store format.");
   }
   const ids = new Set<string>();
-  const boundCodes = new Set<string>();
-  const boundMatchIds = new Set<string>();
+  const roomGenerations = new Set<string>();
+  const matchIds = new Set<string>();
   for (const t of value.tournaments) {
     if (!t || typeof t.id !== "string" || !t.id || ids.has(t.id) ||
         t.game !== "mega-board" || t.format !== "four-player-single-elimination" ||
@@ -73,47 +78,89 @@ function validateStore(doc: unknown): asserts doc is Store {
         t.entrantAccountIds[0] !== t.hostAccountId ||
         t.entrantAccountIds.some(id => !validAccountId(id)) ||
         new Set(t.entrantAccountIds).size !== t.entrantAccountIds.length ||
-        !["registration", "seeded", "cancelled"].includes(t.status) ||
+        !["registration", "seeded", "completed", "cancelled"].includes(t.status) ||
         !Number.isSafeInteger(t.createdAt) || !Number.isSafeInteger(t.updatedAt) ||
         !Array.isArray(t.matches)) {
       throw new Error("Malformed Solo tournament; refusing to overwrite.");
     }
-    if (t.status === "seeded" || (t.status === "cancelled" && t.matches.length === 3)) {
-      const expectedIds = ["semi-1", "semi-2", "final"];
-      if (t.entrantAccountIds.length !== 4 ||
-          !Number.isSafeInteger(t.startedAt) || t.startedAt! < t.createdAt ||
-          t.matches.length !== 3 ||
-          t.matches.some((m, i) => {
-            if (!m || m.id !== expectedIds[i] ||
-                m.round !== (i === 2 ? "final" : "semifinal") ||
-                m.winnerAccountId !== null) return true;
-            if (m.status === "room-bound") {
-              if (i === 2 || t.status !== "seeded" ||
-                  typeof m.roomCode !== "string" || !/^[A-Z0-9]{4,12}$/.test(m.roomCode) ||
-                  !Number.isSafeInteger(m.roomCreatedAt) || m.roomCreatedAt! <= 0 ||
-                  typeof m.boardMatchId !== "string" ||
-                  !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(m.boardMatchId) ||
-                  boundCodes.has(m.roomCode) || boundMatchIds.has(m.boardMatchId)) return true;
-              boundCodes.add(m.roomCode);
-              boundMatchIds.add(m.boardMatchId);
-              return false;
-            }
-            return m.roomCode != null || m.roomCreatedAt != null ||
-              m.boardMatchId != null ||
-              m.status !== (i === 2 ? "awaiting-opponents" : "awaiting-room");
-          })) {
-        throw new Error("Invalid seeded Solo bracket; refusing to overwrite.");
-      }
-      const [a,b,c,d] = t.entrantAccountIds;
-      if (t.matches[0].homeAccountId !== a || t.matches[0].awayAccountId !== d ||
-          t.matches[1].homeAccountId !== b || t.matches[1].awayAccountId !== c ||
-          t.matches[2].homeAccountId !== null || t.matches[2].awayAccountId !== null) {
-        throw new Error("Seed order mismatch; refusing to overwrite.");
-      }
-    } else if (t.matches.length || t.startedAt !== null) {
-      throw new Error("Unstarted Solo tournament must have no matches or winners.");
-    }
     ids.add(t.id);
+    const bracketExists = t.status === "seeded" || t.status === "completed" ||
+      (t.status === "cancelled" && t.matches.length === 3);
+    if (!bracketExists) {
+      if (t.matches.length || t.startedAt !== null || t.championAccountId != null) {
+        throw new Error("Unstarted Solo tournament must have no matches or winners.");
+      }
+      continue;
+    }
+    if (t.entrantAccountIds.length !== 4 || !Number.isSafeInteger(t.startedAt) ||
+        t.startedAt! < t.createdAt || t.matches.length !== 3) {
+      throw new Error("Invalid seeded Solo bracket; refusing to overwrite.");
+    }
+    const [a,b,c,d] = t.entrantAccountIds;
+    for(let i=0;i<t.matches.length;i++) {
+      const m=t.matches[i]!;
+      if (!m || m.id !== (i===0?"semi-1":i===1?"semi-2":"final") ||
+          m.round !== (i===2?"final":"semifinal") ||
+          m.homeAccountId === m.awayAccountId && m.homeAccountId !== null) {
+        throw new Error("Invalid seeded Solo bracket identity.");
+      }
+      const recorded = m.status === "room-bound" || m.status === "completed";
+      if (recorded) {
+        if (typeof m.roomCode !== "string" || !/^[A-Z0-9]{4,12}$/.test(m.roomCode) ||
+            !Number.isSafeInteger(m.roomCreatedAt) || m.roomCreatedAt! <= 0 ||
+            typeof m.boardMatchId !== "string" ||
+            !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(m.boardMatchId) ||
+            !validAccountId(m.homeAccountId) || !validAccountId(m.awayAccountId) ||
+            roomGenerations.has(m.roomCode+":"+m.roomCreatedAt) || matchIds.has(m.boardMatchId)) {
+          throw new Error("Invalid bound Solo room generation or match identity.");
+        }
+        roomGenerations.add(m.roomCode+":"+m.roomCreatedAt);
+        matchIds.add(m.boardMatchId);
+        if (m.status === "completed") {
+          if (t.status === "cancelled" || !validAccountId(m.winnerAccountId) ||
+              (m.winnerAccountId !== m.homeAccountId && m.winnerAccountId !== m.awayAccountId) ||
+              !Number.isSafeInteger(m.gameStartedAt) || m.gameStartedAt! < m.roomCreatedAt! ||
+              !Number.isSafeInteger(m.completedAt) || m.completedAt! < m.gameStartedAt!) {
+            throw new Error("Invalid verified Solo match receipt.");
+          }
+        } else if (m.winnerAccountId !== null ||
+                   m.gameStartedAt != null || m.completedAt != null || t.status === "cancelled") {
+          throw new Error("Unfinished Solo room cannot claim a result.");
+        }
+      } else if (m.roomCode != null || m.roomCreatedAt != null || m.boardMatchId != null ||
+                 m.winnerAccountId !== null || m.gameStartedAt != null || m.completedAt != null ||
+                 !["awaiting-room", "awaiting-opponents"].includes(m.status)) {
+        throw new Error("Invalid unbound Solo match receipt.");
+      }
+    }
+    const [semi1,semi2,final] = t.matches;
+    if (semi1!.homeAccountId !== a || semi1!.awayAccountId !== d ||
+        semi2!.homeAccountId !== b || semi2!.awayAccountId !== c ||
+        [semi1,semi2].some(m=>m!.status === "awaiting-opponents")) {
+      throw new Error("Seed order mismatch; refusing to overwrite.");
+    }
+    const semisDone = semi1!.status === "completed" && semi2!.status === "completed";
+    if (semisDone) {
+      if (final!.homeAccountId !== semi1!.winnerAccountId ||
+          final!.awayAccountId !== semi2!.winnerAccountId ||
+          final!.status === "awaiting-opponents") {
+        throw new Error("Final participants must derive only from verified semifinals.");
+      }
+    } else if (final!.homeAccountId !== null || final!.awayAccountId !== null ||
+               final!.status !== "awaiting-opponents") {
+      throw new Error("Unverified semifinal cannot advance a finalist.");
+    }
+    if (t.status === "completed") {
+      if (final!.status !== "completed" || !semisDone ||
+          t.championAccountId !== final!.winnerAccountId) {
+        throw new Error("Completed Solo champion must be the verified final winner.");
+      }
+    } else if (final!.status === "completed" || t.championAccountId != null) {
+      throw new Error("No Solo champion before the real final is verified.");
+    }
+    if (t.status === "cancelled" && t.matches.some(m=>m.status !== "awaiting-room" && m.status !== "awaiting-opponents")) {
+      throw new Error("A cancelled Solo tournament cannot retain verified or bound results.");
+    }
   }
 }
 function match(id: SoloTournamentMatch["id"], a: string | null, b: string | null): SoloTournamentMatch {
@@ -121,6 +168,7 @@ function match(id: SoloTournamentMatch["id"], a: string | null, b: string | null
     id, round: id === "final" ? "final" : "semifinal",
     homeAccountId: a, awayAccountId: b,
     roomCode: null, roomCreatedAt: null, boardMatchId: null, winnerAccountId: null,
+    gameStartedAt: null, completedAt: null,
     status: a && b ? "awaiting-room" : "awaiting-opponents",
   };
 }
@@ -165,16 +213,17 @@ export function createSoloTournamentRegistrationCoordinator(
       }
       throw error;
     }
-    validateStore(doc);
-    // Previous alpha stores have no room identity until a real match is bound.
+    // Earlier default-off alpha stores have no winner timestamp or champion fields.
     for (const tournament of doc.tournaments) {
+      tournament.championAccountId ??= null;
       for (const match of tournament.matches) {
-        if (match.status !== "room-bound") {
-          match.roomCreatedAt ??= null;
-          match.boardMatchId ??= null;
-        }
+        match.roomCreatedAt ??= null;
+        match.boardMatchId ??= null;
+        match.gameStartedAt ??= null;
+        match.completedAt ??= null;
       }
     }
+    validateStore(doc);
     tournaments = new Map(doc.tournaments.map(t => [t.id, t]));
     loaded = true;
   }
@@ -187,6 +236,7 @@ export function createSoloTournamentRegistrationCoordinator(
       ensureLoaded();
       const { next, value } = mutation(tournaments);
       if (next !== tournaments) {
+        validateStore({ version: 1, tournaments: [...next.values()] });
         const dir = dirname(path);
         await mkdir(dir, { recursive: true });
         const temp = path + "." + randomUUID() + ".tmp";
@@ -225,7 +275,7 @@ export function createSoloTournamentRegistrationCoordinator(
         id: randomUUID(), name, game:"mega-board",
         format: "four-player-single-elimination", hostAccountId: accountId,
         entrantAccountIds:[accountId], status:"registration",
-        createdAt:now, updatedAt:now, startedAt:null, matches:[],
+        createdAt:now, updatedAt:now, startedAt:null, championAccountId:null, matches:[],
       };
       const next = new Map(current); next.set(record.id,record);
       return { next, value: record };
@@ -289,8 +339,8 @@ export function createSoloTournamentRegistrationCoordinator(
       if (accountId !== tournament.hostAccountId) {
         throw new SoloTournamentError(403, "Only the tournament host may bind a match.");
       }
-      if (tournament.status !== "seeded" || !["semi-1", "semi-2"].includes(matchId)) {
-        throw new SoloTournamentError(409, "Only seeded semifinals can bind live rooms.");
+      if (tournament.status !== "seeded" || !["semi-1", "semi-2", "final"].includes(matchId)) {
+        throw new SoloTournamentError(409, "Only seeded matches with verified opponents can bind live rooms.");
       }
       const match = tournament.matches.find(row => row.id === matchId);
       if (!match || match.status !== "awaiting-room" ||
@@ -343,21 +393,100 @@ export function createSoloTournamentRegistrationCoordinator(
     }
   }
 
+  /**
+   * Only a live server-owned Mega Board GameState can settle a linked Solo match.
+   * This is intentionally NOT an HTTP route; duplicative finish emissions are
+   * idempotent, while a mismatching later game/replay is rejected.
+   */
+  function recordFinishedGame(room: GameRoom, state: GameState): Promise<SoloTournament | null> {
+    return change(current => {
+      let tournament: SoloTournament | null = null;
+      let matching: SoloTournamentMatch | null = null;
+      for (const candidate of current.values()) {
+        if (candidate.status !== "seeded" && candidate.status !== "completed") continue;
+        const m=candidate.matches.find(row =>
+          (row.status === "room-bound" || row.status === "completed") &&
+          row.roomCode === room.code && row.roomCreatedAt === room.createdAt);
+        if (m) {
+          tournament=candidate;
+          matching=m;
+          break;
+        }
+      }
+      if (!tournament || !matching) return { next: current, value: null };
+      if (megaRooms.get(room.code) !== room || room.gameState !== state || !room.started ||
+          room.ranked || room.blitz || room.betaTournamentTest ||
+          state.phase !== "finished" || !state.winnerId ||
+          state.roomCode !== room.code ||
+          !Number.isSafeInteger(state.gameStartedAt) ||
+          state.gameStartedAt < room.createdAt ||
+          room.players.length !== 2 || state.players.length !== 2 ||
+          !matching.homeAccountId || !matching.awayAccountId ||
+          room.players.some(seat => seat.isAi || !seat.replayAccountId ||
+            (seat.replayAccountId !== matching!.homeAccountId &&
+             seat.replayAccountId !== matching!.awayAccountId)) ||
+          new Set(room.players.map(seat=>seat.replayAccountId)).size !== 2 ||
+          state.players.some(player => player.isAi ||
+            !room.players.some(seat => seat.id === player.id)) ||
+          new Set(state.players.map(player=>player.id)).size !== 2) {
+        throw new SoloTournamentError(409, "Completed Solo match does not match its original server-owned room and accounts.");
+      }
+      const seat=room.players.find(row=>row.id === state.winnerId);
+      const winner=seat?.replayAccountId;
+      if (!winner || (winner !== matching.homeAccountId && winner !== matching.awayAccountId)) {
+        throw new SoloTournamentError(409, "Solo winner is not an original registered human seat.");
+      }
+      if (matching.status === "completed") {
+        if (matching.winnerAccountId !== winner ||
+            matching.gameStartedAt !== state.gameStartedAt ||
+            !matching.boardMatchId) {
+          throw new SoloTournamentError(409, "Previously recorded Solo result is immutable.");
+        }
+        return { next: current, value: tournament };
+      }
+      if (tournament.status !== "seeded") {
+        throw new SoloTournamentError(409, "Completed tournament cannot accept another result.");
+      }
+      const completedAt=Date.now();
+      const receipt: SoloTournamentMatch = {
+        ...matching,status:"completed",winnerAccountId:winner,
+        gameStartedAt:state.gameStartedAt,completedAt,
+      };
+      let nextMatches=tournament.matches.map(row=>row.id === receipt.id ? receipt : row);
+      const semi1=nextMatches.find(row=>row.id === "semi-1")!;
+      const semi2=nextMatches.find(row=>row.id === "semi-2")!;
+      if (semi1.status === "completed" && semi2.status === "completed" &&
+          matching.id !== "final") {
+        const verifiedFinal=match("final",semi1.winnerAccountId,semi2.winnerAccountId);
+        nextMatches=nextMatches.map(row=>row.id === "final" ? verifiedFinal : row);
+      }
+      const finishedFinal=receipt.id === "final";
+      const updated: SoloTournament = {
+        ...tournament, matches:nextMatches,
+        status: finishedFinal ? "completed" : "seeded",
+        championAccountId: finishedFinal ? winner : null,
+        updatedAt:completedAt,
+      };
+      const next=new Map(current);next.set(tournament.id,updated);
+      return {next,value:updated};
+    });
+  }
+
   function cancel(accountId: string, id: string) {
     return change(current => {
       const tournament=current.get(id);
       if (!tournament) throw new SoloTournamentError(404, "Solo tournament not found.");
       if (tournament.hostAccountId !== accountId) throw new SoloTournamentError(403, "Only the host may cancel.");
       if (tournament.status === "cancelled") throw new SoloTournamentError(409, "Tournament already cancelled.");
-      if (tournament.matches.some(row => row.status === "room-bound")) {
-        throw new SoloTournamentError(409, "A bound Solo match cannot be cancelled while its original lobby is locked.");
+      if (tournament.matches.some(row => row.status === "room-bound" || row.status === "completed")) {
+        throw new SoloTournamentError(409, "A played or bound Solo match cannot be cancelled without verified recovery.");
       }
       const update: SoloTournament={...tournament,status:"cancelled",updatedAt:Date.now()};
       const next=new Map(current);next.set(id,update);
       return {next,value:update};
     });
   }
-  return { load, visible, create, join, leave, seed, bindRoom, boundRoom, startBlock, cancel };
+  return { load, visible, create, join, leave, seed, bindRoom, boundRoom, startBlock, recordFinishedGame, cancel };
 }
 // One shared live coordinator; HTTP, game:start and join protection must agree.
 let liveSoloCoordinator: ReturnType<typeof createSoloTournamentRegistrationCoordinator> | null = null;
@@ -369,6 +498,10 @@ export function getSoloTournamentStartBlock(room: GameRoom) {
 }
 export async function loadSoloTournamentRegistration() {
   await liveSoloCoordinator?.load();
+}
+/** Verified real game state, never a user-submitted tournament winner. */
+export function recordFinishedSoloTournamentBoard(room: GameRoom, state: GameState) {
+  return liveSoloCoordinator?.recordFinishedGame(room,state) ?? Promise.resolve(null);
 }
 type AccountResolver = (request:Request)=>HalieusAccountSummary|null;
 

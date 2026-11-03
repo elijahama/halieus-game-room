@@ -61,7 +61,7 @@ try {
   mutated.tournaments[0].matches[0].winnerAccountId="forged-winner";
   await writeFile(store,JSON.stringify(mutated));
   const invalid=create(store);
-  await assert.rejects(invalid.load(),/Invalid seeded Solo bracket/);
+  await assert.rejects(invalid.load(),/Invalid unbound Solo match receipt/);
   await assert.rejects(invalid.create("attacker","Overwrite this"),/unavailable/);
   assert.equal(JSON.parse(await readFile(store,"utf8")).tournaments[0].matches[0].winnerAccountId,
     "forged-winner","malformed persisted data must never be replaced by an empty store");

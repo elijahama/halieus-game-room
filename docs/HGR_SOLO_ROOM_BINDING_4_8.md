@@ -21,3 +21,7 @@ npm run test:solo:room-binding tests genuine in-memory server room objects (the 
 - Final room binding after both verified semifinal winners, losers bracket / double elimination and reset rules as accepted, actual match spectator routes and mobile UI. Full Guild+Solo owner acceptance remains mandatory; no actual tournament mode release is implied.
 
 The canonical HGR launcher glyphs, Control UI and all permanent account/rating data remain untouched.
+
+## Subsequent verified-results source batch
+
+A separate small development candidate adds server-owned, once-only finished Mega Board result receipts, winner-derived final progression and original match identity checks. The default-off flag is retained. See [Solo Verified Results](HGR_SOLO_VERIFIED_RESULTS_4_8.md). The full 4.8 and 5.0 acceptance requirements remain open.
