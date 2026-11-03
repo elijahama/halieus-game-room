@@ -1,4 +1,5 @@
 import { publicProgressionState } from "../../../platform/progression.js";
+import { getSoloTournamentBoundRoom } from "../../../platform/soloTournamentRegistration.js";
 import type {
   Server,
   Socket,
@@ -111,6 +112,10 @@ export function registerSessionHandlers(
         return;
       }
 
+      if (!room.started && getSoloTournamentBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "This Solo tournament lineup is locked. Reconnect to your original seat." });
+        return;
+      }
       if (player.isHost) {
         cancelHostGrace(code);
         endRoom(
