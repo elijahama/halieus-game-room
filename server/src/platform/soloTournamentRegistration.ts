@@ -697,7 +697,7 @@ export function createSoloTournamentRegistrationCoordinator(
   }
   function isResetClosing(code: string) {
     const binding = boundRoom(code);
-    return resetInFlight.has(code) && binding?.match.resetPendingAt !== null;
+    return resetInFlight.has(code) && Boolean(binding && binding.match.resetPendingAt !== null);
   }
   return { load, visible, create, join, leave, seed, bindRoom, approvePrestartReset, reconcilePendingPrestartResets, boundRoom, startBlock, isResetClosing, recordFinishedGame, cancel };
 }
