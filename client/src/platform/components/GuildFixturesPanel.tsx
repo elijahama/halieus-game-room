@@ -4,6 +4,7 @@ import type { HalieusGuildDetail } from "../../../../shared/platform/guilds";
 import type { HgrGuildFixture } from "../../../../shared/platform/guildFixtures";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
 import { accountApi } from "../accounts/api";
+import { GuildTournamentBracketPanel } from "./GuildTournamentBracketPanel";
 
 interface Props {
   account: HalieusAccountSummary;
@@ -91,6 +92,7 @@ export function GuildFixturesPanel({ account, guild, liveRooms, onOpenLiveRoom }
       </div>
       <button type="button" className="button-outline" onClick={() => void refresh(true)} disabled={busy || loading}>Refresh fixtures</button>
     </header>
+    <GuildTournamentBracketPanel account={account} guild={guild} />
     <div className="halieus-guild-fixture-id">
       <span>Your Guild ID: <code>{guild.id}</code></span>
       <button type="button" className="button-muted" onClick={() => void copyId()}>Copy Guild ID</button>
