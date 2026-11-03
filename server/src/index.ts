@@ -53,7 +53,7 @@ import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
-import { registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
+import { loadSoloTournamentRegistration, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
@@ -613,6 +613,10 @@ io.on(
 await loadAccountStore();
 await loadPublicAccessState();
 await loadGuildStore();
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  // Restore locked Solo lobbies before accepting any real game:start or join events.
+  await loadSoloTournamentRegistration();
+}
 await loadFeedbackStore();
 await initializePushNotifications();
 

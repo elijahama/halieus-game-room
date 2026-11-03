@@ -4,19 +4,26 @@ import { dirname, resolve } from "node:path";
 import type { Express, Request, Response } from "express";
 import type { HalieusAccountSummary } from "../../../shared/platform/accounts.js";
 import { getMegaBoardDataDirectory } from "./dataPaths.js";
+import type { GameRoom } from "../games/mega-board/types/game.js";
+import { rooms as megaRooms } from "../games/mega-board/state/rooms.js";
+import { getGuildFixtureBoundRoom } from "./guildFixtures.js";
 
 /**
  * Source-only first Solo tournament slice. No fixture linking, winners, rating
  * payouts, or route activation in production is implied by registration.
  */
 export type SoloTournamentStatus = "registration" | "seeded" | "cancelled";
-export type SoloMatchStatus = "awaiting-room" | "awaiting-opponents";
+export type SoloMatchStatus = "awaiting-room" | "awaiting-opponents" | "room-bound";
 export interface SoloTournamentMatch {
   id: "semi-1" | "semi-2" | "final";
   round: "semifinal" | "final";
   homeAccountId: string | null;
   awayAccountId: string | null;
-  roomCode: null;
+  roomCode: string | null;
+  /** Exact lobby generation, not just a reusable room code. */
+  roomCreatedAt: number | null;
+  /** Server-minted immutable match identity for later verified receipts. */
+  boardMatchId: string | null;
   winnerAccountId: null;
   status: SoloMatchStatus;
 }
@@ -55,6 +62,8 @@ function validateStore(doc: unknown): asserts doc is Store {
     throw new Error("Unsupported Solo tournament store format.");
   }
   const ids = new Set<string>();
+  const boundCodes = new Set<string>();
+  const boundMatchIds = new Set<string>();
   for (const t of value.tournaments) {
     if (!t || typeof t.id !== "string" || !t.id || ids.has(t.id) ||
         t.game !== "mega-board" || t.format !== "four-player-single-elimination" ||
@@ -74,10 +83,25 @@ function validateStore(doc: unknown): asserts doc is Store {
       if (t.entrantAccountIds.length !== 4 ||
           !Number.isSafeInteger(t.startedAt) || t.startedAt! < t.createdAt ||
           t.matches.length !== 3 ||
-          t.matches.some((m, i) => m.id !== expectedIds[i] ||
-            m.round !== (i === 2 ? "final" : "semifinal") ||
-            m.roomCode !== null || m.winnerAccountId !== null ||
-            m.status !== (i === 2 ? "awaiting-opponents" : "awaiting-room"))) {
+          t.matches.some((m, i) => {
+            if (!m || m.id !== expectedIds[i] ||
+                m.round !== (i === 2 ? "final" : "semifinal") ||
+                m.winnerAccountId !== null) return true;
+            if (m.status === "room-bound") {
+              if (i === 2 || t.status !== "seeded" ||
+                  typeof m.roomCode !== "string" || !/^[A-Z0-9]{4,12}$/.test(m.roomCode) ||
+                  !Number.isSafeInteger(m.roomCreatedAt) || m.roomCreatedAt! <= 0 ||
+                  typeof m.boardMatchId !== "string" ||
+                  !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(m.boardMatchId) ||
+                  boundCodes.has(m.roomCode) || boundMatchIds.has(m.boardMatchId)) return true;
+              boundCodes.add(m.roomCode);
+              boundMatchIds.add(m.boardMatchId);
+              return false;
+            }
+            return m.roomCode != null || m.roomCreatedAt != null ||
+              m.boardMatchId != null ||
+              m.status !== (i === 2 ? "awaiting-opponents" : "awaiting-room");
+          })) {
         throw new Error("Invalid seeded Solo bracket; refusing to overwrite.");
       }
       const [a,b,c,d] = t.entrantAccountIds;
@@ -96,9 +120,29 @@ function match(id: SoloTournamentMatch["id"], a: string | null, b: string | null
   return {
     id, round: id === "final" ? "final" : "semifinal",
     homeAccountId: a, awayAccountId: b,
-    roomCode: null, winnerAccountId: null,
+    roomCode: null, roomCreatedAt: null, boardMatchId: null, winnerAccountId: null,
     status: a && b ? "awaiting-room" : "awaiting-opponents",
   };
+}
+
+/** Validate a real, unstarted two-human lobby with exactly the seeded account seats. */
+function validateSoloRoom(room: GameRoom | undefined, home: string, away: string): void {
+  if (!room || megaRooms.get(room.code) !== room || room.started || room.gameState ||
+      !Number.isSafeInteger(room.createdAt) || room.createdAt <= 0 ||
+      room.ranked || room.blitz || room.betaTournamentTest ||
+      room.players.length !== 2 || room.hostDisconnectDeadline !== null ||
+      !room.players.some(seat => seat.id === room.hostId && seat.isHost) ||
+      room.players.some(seat => seat.isAi || seat.hasLeft || !seat.isConnected ||
+        !seat.replayAccountId || !seat.reconnectToken || seat.disconnectedAt !== null)) {
+    throw new SoloTournamentError(409, "Solo binding requires one real, unstarted, fully connected two-human Mega Board lobby.");
+  }
+  const seats = room.players.map(seat => seat.replayAccountId!);
+  if (seats[0] === seats[1] || !seats.includes(home) || !seats.includes(away)) {
+    throw new SoloTournamentError(409, "Solo lobby accounts do not match the two seeded entrants.");
+  }
+  if (getGuildFixtureBoundRoom(room.code)) {
+    throw new SoloTournamentError(409, "A Guild fixture room cannot also be used in a Solo tournament.");
+  }
 }
 
 /** Durable, queued, account-scoped registration with no fake game results. */
@@ -122,6 +166,15 @@ export function createSoloTournamentRegistrationCoordinator(
       throw error;
     }
     validateStore(doc);
+    // Previous alpha stores have no room identity until a real match is bound.
+    for (const tournament of doc.tournaments) {
+      for (const match of tournament.matches) {
+        if (match.status !== "room-bound") {
+          match.roomCreatedAt ??= null;
+          match.boardMatchId ??= null;
+        }
+      }
+    }
     tournaments = new Map(doc.tournaments.map(t => [t.id, t]));
     loaded = true;
   }
@@ -228,25 +281,102 @@ export function createSoloTournamentRegistrationCoordinator(
       return { next, value:update };
     });
   }
+  /** Host links an already-existing ordinary two-human lobby; no game is created. */
+  function bindRoom(accountId: string, id: string, matchId: string, suppliedCode: unknown) {
+    return change(current => {
+      const tournament = current.get(id);
+      if (!tournament) throw new SoloTournamentError(404, "Solo tournament not found.");
+      if (accountId !== tournament.hostAccountId) {
+        throw new SoloTournamentError(403, "Only the tournament host may bind a match.");
+      }
+      if (tournament.status !== "seeded" || !["semi-1", "semi-2"].includes(matchId)) {
+        throw new SoloTournamentError(409, "Only seeded semifinals can bind live rooms.");
+      }
+      const match = tournament.matches.find(row => row.id === matchId);
+      if (!match || match.status !== "awaiting-room" ||
+          !match.homeAccountId || !match.awayAccountId) {
+        throw new SoloTournamentError(409, "Match is not awaiting a room.");
+      }
+      const code = typeof suppliedCode === "string" ? suppliedCode.trim().toUpperCase() : "";
+      if (!/^[A-Z0-9]{4,12}$/.test(code)) {
+        throw new SoloTournamentError(400, "A real Mega Board room code is required.");
+      }
+      if ([...current.values()].some(other => other.status === "seeded" &&
+          other.matches.some(row => row.status === "room-bound" && row.roomCode === code))) {
+        throw new SoloTournamentError(409, "This room is already bound to a Solo match.");
+      }
+      const room = megaRooms.get(code);
+      validateSoloRoom(room, match.homeAccountId, match.awayAccountId);
+      const updatedMatch: SoloTournamentMatch = {
+        ...match, status: "room-bound",
+        roomCode: code, roomCreatedAt: room!.createdAt, boardMatchId: randomUUID(),
+      };
+      const updated: SoloTournament = {
+        ...tournament, matches: tournament.matches.map(row => row.id === matchId ? updatedMatch : row),
+        updatedAt: Date.now(),
+      };
+      const next = new Map(current); next.set(id, updated);
+      return { next, value: updated };
+    });
+  }
+  function boundRoom(code: string) {
+    if (!loaded) return null;
+    for (const tournament of tournaments.values()) {
+      if (tournament.status !== "seeded") continue;
+      const match = tournament.matches.find(row => row.status === "room-bound" && row.roomCode === code);
+      if (match) return { tournamentId: tournament.id, match: copy(match) };
+    }
+    return null;
+  }
+  function startBlock(room: GameRoom) {
+    const binding = boundRoom(room.code);
+    if (!binding) return null;
+    try {
+      if (room.createdAt !== binding.match.roomCreatedAt ||
+          !binding.match.homeAccountId || !binding.match.awayAccountId) {
+        throw new SoloTournamentError(409, "Bound Solo match room was replaced.");
+      }
+      validateSoloRoom(room, binding.match.homeAccountId, binding.match.awayAccountId);
+      return null;
+    } catch(error) {
+      return error instanceof Error ? error.message : "Solo tournament room validation failed.";
+    }
+  }
+
   function cancel(accountId: string, id: string) {
     return change(current => {
       const tournament=current.get(id);
       if (!tournament) throw new SoloTournamentError(404, "Solo tournament not found.");
       if (tournament.hostAccountId !== accountId) throw new SoloTournamentError(403, "Only the host may cancel.");
-      // No real matches are bindable in this first slice.
       if (tournament.status === "cancelled") throw new SoloTournamentError(409, "Tournament already cancelled.");
+      if (tournament.matches.some(row => row.status === "room-bound")) {
+        throw new SoloTournamentError(409, "A bound Solo match cannot be cancelled while its original lobby is locked.");
+      }
       const update: SoloTournament={...tournament,status:"cancelled",updatedAt:Date.now()};
       const next=new Map(current);next.set(id,update);
       return {next,value:update};
     });
   }
-  return { load, visible, create, join, leave, seed, cancel };
+  return { load, visible, create, join, leave, seed, bindRoom, boundRoom, startBlock, cancel };
+}
+// One shared live coordinator; HTTP, game:start and join protection must agree.
+let liveSoloCoordinator: ReturnType<typeof createSoloTournamentRegistrationCoordinator> | null = null;
+export function getSoloTournamentBoundRoom(code: string) {
+  return liveSoloCoordinator?.boundRoom(code) ?? null;
+}
+export function getSoloTournamentStartBlock(room: GameRoom) {
+  return liveSoloCoordinator?.startBlock(room) ?? null;
+}
+export async function loadSoloTournamentRegistration() {
+  await liveSoloCoordinator?.load();
 }
 type AccountResolver = (request:Request)=>HalieusAccountSummary|null;
 
 /** Feature flag is enforced at startup; never exposed on production by default. */
 export function registerSoloTournamentRegistrationRoutes(app:Express, authenticate:AccountResolver) {
-  const coordinator=createSoloTournamentRegistrationCoordinator();
+  // Same coordinator is read by live lobby/AI/start/reconnect guards.
+  const coordinator=liveSoloCoordinator ?? createSoloTournamentRegistrationCoordinator();
+  liveSoloCoordinator = coordinator;
   const handler=(action:(r:Request, id:string)=>Promise<unknown>|unknown)=>
     async (request:Request,response:Response)=>{
       const account=authenticate(request);
@@ -277,5 +407,7 @@ export function registerSoloTournamentRegistrationRoutes(app:Express, authentica
   app.post("/tournaments/solo/:id/join",handler((r,a)=>coordinator.join(a,String(r.params.id))));
   app.post("/tournaments/solo/:id/leave",handler((r,a)=>coordinator.leave(a,String(r.params.id))));
   app.post("/tournaments/solo/:id/seed",handler((r,a)=>coordinator.seed(a,String(r.params.id))));
+  app.post("/tournaments/solo/:id/matches/:matchId/bind-room",
+    handler((r,a)=>coordinator.bindRoom(a,String(r.params.id),String(r.params.matchId),r.body?.roomCode)));
   app.post("/tournaments/solo/:id/cancel",handler((r,a)=>coordinator.cancel(a,String(r.params.id))));
 }

@@ -24,3 +24,7 @@
 4. Integrate the live UI and owner/device mobile acceptance with the four-Guild bracket and independent tournament standings. Do not call 4.8.0 complete until **both** Solo and Guild formats work end to end.
 
 This first batch deliberately introduces no production-visible incomplete tournament controls and preserves canonical HGR artwork.
+
+## Subsequent isolated room-binding candidate
+
+A second source-only draft extends this registration foundation to host-authorised semifinals bound to existing real authenticated two-human Mega Board rooms, with immutable room generation and match UUID plus socket join/start/reconnect/AI guards. It remains default-off and results are not yet settled. See [4.8 Solo Room Binding](HGR_SOLO_ROOM_BINDING_4_8.md).
