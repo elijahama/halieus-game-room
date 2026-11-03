@@ -53,6 +53,20 @@ import {
   toPublicGameRoom,
 } from "../utils/room-view.js";
 
+/** A bound Solo host forfeits their seat rather than deleting the match. */
+function preserveSoloHostAfterForfeit(room: import("../types/game.js").GameRoom, forfeiterId: string): void {
+  if (!getSoloTournamentBoundRoom(room.code) || room.hostId !== forfeiterId) return;
+  const surviving = room.players.find(seat =>
+    seat.id !== forfeiterId && !seat.isAi && !seat.hasLeft && seat.isConnected &&
+    Boolean(seat.replayAccountId));
+  if (!surviving) return;
+  const former = room.players.find(seat => seat.id === forfeiterId);
+  if (former) former.isHost = false;
+  surviving.isHost = true;
+  room.hostId = surviving.id;
+  cancelHostGrace(room.code);
+}
+
 function findRoomPlayer(
   code: string,
   socketId: string,
@@ -116,7 +130,8 @@ export function registerSessionHandlers(
         acknowledge({ ok: false, reason: "This Solo tournament lineup is locked. Reconnect to your original seat." });
         return;
       }
-      if (player.isHost) {
+      // A bound Solo host leaving an active match forfeits via the ordinary game engine.
+      if (player.isHost && !getSoloTournamentBoundRoom(code)) {
         cancelHostGrace(code);
         endRoom(
           io,
@@ -209,6 +224,7 @@ export function registerSessionHandlers(
           return;
         }
 
+        preserveSoloHostAfterForfeit(room, socket.id);
         recordActivity(
           gameState,
           `${player.name} forfeited the match. Their assets returned to the Bank.`,
@@ -294,6 +310,13 @@ export function registerSessionHandlers(
         return;
       }
 
+      // Never mutate a winner after the game has finished, especially while
+      // an asynchronous tournament result receipt is still being persisted.
+      // Use Leave for harmless post-game navigation instead.
+      if (room.gameState.phase === "finished") {
+        acknowledge({ ok: false, reason: "This game has already finished. Use Leave to exit the results." });
+        return;
+      }
       if (player.hasLeft) {
         acknowledge({
           ok: false,
@@ -335,6 +358,7 @@ export function registerSessionHandlers(
       if (player.isHost) {
         cancelHostGrace(code);
       }
+      preserveSoloHostAfterForfeit(room, socket.id);
       addSpectator(
         code,
         socket.id,
@@ -408,6 +432,10 @@ export function registerSessionHandlers(
         return;
       }
 
+      if (getSoloTournamentBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "A bound Solo tournament match cannot be cancelled. Forfeit your own seat instead." });
+        return;
+      }
       if (room.hostId !== socket.id) {
         acknowledge({
           ok: false,
