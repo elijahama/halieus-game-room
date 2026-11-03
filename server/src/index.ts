@@ -53,7 +53,7 @@ import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
-import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
+import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentPendingResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
@@ -69,6 +69,7 @@ import { syncAuctionTimer } from "./games/mega-board/utils/auction-timer.js";
 import { cancelHostGrace, restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
 import {
   flushRoomSave,
+  flushRoomSaveStrict,
   getSavePath,
   loadRoomsFromDisk,
 } from "./games/mega-board/utils/persistence.js";
@@ -396,9 +397,12 @@ const io = new Server(httpServer, {
 });
 if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
   // Do not expose a recovery endpoint without the real Socket.IO room closer.
-  configureSoloRoomResetCloser(code => {
+  configureSoloRoomResetCloser(async code => {
     cancelHostGrace(code);
-    return endRoom(io,code,"Both registered Solo players approved replacing this never-started lobby.");
+    if (!endRoom(io,code,"Both registered Solo players approved replacing this never-started lobby.",
+      {allowVerifiedSoloReset:true})) return false;
+    await flushRoomSaveStrict();
+    return true;
   });
 }
 
@@ -630,6 +634,12 @@ await initializePushNotifications();
 
 const recoveredRoomCount =
   await loadRoomsFromDisk();
+// Resolve durable two-phase Solo resets before any restored room timers run.
+// A changed or started original room is a hard startup failure, not a
+// unilateral forfeit or an invitation to create a replacement lobby.
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  await reconcileSoloTournamentPendingResets();
+}
 const recoveredRankedPlayers =
   await loadRankingsFromDisk();
 
