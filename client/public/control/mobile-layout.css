@@ -1,0 +1,161 @@
+/* HGR 4.8 Control mobile shell — layout principles from the owner's
+   Logic & Philo responsive design standard, not its assets or branding. */
+.control-mobile-headmark,.control-mobile-wordmark{display:none}
+.control-mobile-more[hidden]{display:none!important}
+.control-mobile-more{display:none}
+@media(max-width:960px){
+  html,body{min-width:0;overflow-x:clip}
+  .control-rail{display:none!important}
+  .control-main{
+    width:100%;max-width:100%;min-width:0;margin:0!important;
+    padding:0 20px calc(98px + env(safe-area-inset-bottom))!important
+  }
+  .control-topbar{
+    position:sticky;top:0;z-index:45;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;
+    gap:8px 12px;align-items:center;
+    margin:0 -20px 17px;padding:10px max(20px,env(safe-area-inset-left))
+      10px max(20px,env(safe-area-inset-right));
+    min-height:67px;
+    background:rgba(9,14,23,.96);border-bottom:1px solid rgba(157,178,217,.16);
+    backdrop-filter:blur(16px);
+  }
+  .control-mobile-heading{
+    display:grid;grid-template-columns:36px minmax(0,1fr);
+    grid-template-rows:auto auto;align-items:center;column-gap:9px;min-width:0
+  }
+  .control-mobile-headmark{
+    display:block;width:36px;height:36px;grid-row:1/3;grid-column:1;
+    object-fit:contain;border-radius:9px;flex-shrink:0
+  }
+  .control-mobile-wordmark{
+    display:block;grid-column:2;grid-row:1;color:#aebddd;
+    font-size:9px;letter-spacing:.095em;font-weight:800;line-height:1.25
+  }
+  .control-mobile-heading>.eyebrow{display:none}
+  .control-topbar #sectionTitle{
+    grid-column:2;grid-row:2;min-width:0;
+    font-size:15px;line-height:1.24;letter-spacing:-.02em;
+    overflow-wrap:break-word
+  }
+  .control-topbar .topbar-actions{
+    width:auto;min-width:0;display:flex;flex-wrap:wrap;
+    justify-content:flex-end;align-items:center;gap:7px
+  }
+  .control-topbar .cloud-state{display:none}
+  .control-topbar .control-fullscreen-toggle:not([hidden]){
+    order:0;min-width:0;max-width:100px;min-height:44px;
+    padding:8px 10px;font-size:11px;line-height:1.25;
+    white-space:normal;text-align:center
+  }
+  .control-topbar .profile-chip{
+    order:1;min-width:44px;min-height:44px;width:44px;height:44px;
+    padding:4px;margin-left:0;justify-content:center;flex:0 0 44px;
+    border-radius:12px
+  }
+  .control-topbar .profile-chip>span:first-child{width:34px;height:34px}
+  .control-topbar .profile-chip>span:last-child{display:none}
+  .control-topbar .control-game-room-return{display:none!important}
+  .control-topbar #installControl:not([hidden]){
+    order:2;flex:1 1 100%;min-height:40px;font-size:11px
+  }
+  .control-section,.control-section>*{min-width:0}
+  .hero-grid,.overview-grid,.games-layout{grid-template-columns:minmax(0,1fr)}
+  .metric-grid,.performance-strip,.agent-coming-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .room-grid,.player-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .development-columns{grid-template-columns:minmax(0,1fr)}
+  .now-playing-card,.status-card,.panel-card,.room-card,.player-card{
+    min-width:0;border-radius:15px
+  }
+  .now-playing-card{min-height:0}
+  .now-playing-body{margin-top:14px}
+  .now-playing-body p{font-size:12px;line-height:1.5}
+  .infrastructure-list>div{grid-template-columns:26px minmax(0,1fr) auto;gap:7px;padding:10px}
+  .infrastructure-list p{min-width:0;overflow-wrap:anywhere}
+  .infrastructure-list b{max-width:95px;text-align:right;overflow-wrap:anywhere}
+  .metric-grid article,.performance-strip article{min-width:0}
+  .metric-grid strong{font-size:clamp(21px,3vw,27px)}
+  .control-section :is(input,textarea,select){max-width:100%;min-width:0}
+  .control-section :is(.recent-result,.compact-game,.development-entry){min-width:0;overflow-wrap:anywhere}
+  .control-mobile-nav{
+    display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;
+    position:fixed;z-index:65;inset:auto 0 0;
+    margin:0;padding:7px max(8px,env(safe-area-inset-right))
+      calc(7px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+    border:0;border-top:1px solid rgba(167,184,215,.19);border-radius:0;
+    background:rgba(12,18,29,.97);backdrop-filter:blur(16px);
+    box-shadow:0 -8px 30px rgba(0,0,0,.24)
+  }
+  .control-mobile-nav button{
+    min-width:0;min-height:57px;padding:7px 2px 5px;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    gap:3px;border-radius:11px;background:transparent;color:#a0aec8
+  }
+  .control-mobile-nav button svg{display:block;width:21px;height:21px;flex-shrink:0}
+  .control-mobile-nav button b{display:block;font-size:10px;line-height:1.1;font-weight:700;margin:0}
+  .control-mobile-nav button.is-active{
+    background:rgba(99,140,227,.14);color:#bcd4ff;
+    box-shadow:inset 0 0 0 1px rgba(118,159,240,.23)
+  }
+  .control-mobile-nav button:focus-visible,.control-mobile-more button:focus-visible{
+    outline:2px solid #adc9ff;outline-offset:2px
+  }
+  .control-mobile-more{
+    display:block;position:fixed;z-index:64;
+    inset:auto max(9px,env(safe-area-inset-right)) calc(77px + env(safe-area-inset-bottom)) max(9px,env(safe-area-inset-left));
+    width:auto;max-height:min(58dvh,460px);overflow-y:auto;overscroll-behavior:contain;
+    border:1px solid rgba(151,177,219,.31);border-radius:17px;
+    padding:14px;background:#141e2d;box-shadow:0 14px 40px rgba(0,0,0,.5);
+    color:#eaf1ff
+  }
+  .control-mobile-more-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+  .control-mobile-more-heading strong{font-size:15px}
+  .control-mobile-more-heading button{min-width:54px;min-height:44px;padding:7px 12px;border-radius:10px;border:1px solid #344661;background:#202d42;color:#e4eeff;font:inherit;font-size:12px}
+  .control-mobile-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .control-mobile-more-grid button{
+    appearance:none;text-align:left;min-width:0;min-height:70px;padding:12px;
+    border:1px solid rgba(162,186,230,.18);border-radius:12px;
+    background:#1a2739;color:#e7eeff;font:inherit
+  }
+  .control-mobile-more-grid button span{display:block;font-size:13px;font-weight:800}
+  .control-mobile-more-grid button small{display:block;font-size:10px;line-height:1.4;color:#acbdd7;margin-top:3px}
+  .control-mobile-more-grid button.is-active{border-color:#83a9ef;background:#263b58}
+  .control-mobile-home-link{
+    display:flex;justify-content:center;align-items:center;min-height:44px;
+    border:1px solid #344661;border-radius:10px;margin-top:10px;
+    font-size:12px;font-weight:700;color:#bcd4ff;text-decoration:none
+  }
+  .operation-toast:not(.is-inline):not(.is-minimized){
+    max-height:calc(100dvh - 140px - env(safe-area-inset-bottom))
+  }
+  .operation-toast.is-minimized[data-corner^="bottom"]{
+    bottom:calc(82px + env(safe-area-inset-bottom))
+  }
+}
+@media(max-width:700px){
+  .control-main{padding-inline:14px!important}
+  .control-topbar{margin-inline:-14px;padding-inline:14px;gap:6px}
+  .now-playing-card,.status-card,.panel-card{padding:14px}
+  .hero-grid,.overview-grid,.games-layout,.room-grid,.player-grid{grid-template-columns:minmax(0,1fr)}
+  .chart-card{min-height:0}
+  .line-chart{height:180px}
+  .section-heading-large{margin-bottom:13px}
+  .section-heading-large h2{font-size:20px}
+  .section-heading-large p:last-child{font-size:12px;line-height:1.4}
+  .metric-grid,.performance-strip{gap:9px}
+  .metric-grid article,.performance-strip article{padding:11px 12px}
+  .control-release-notice{padding:12px 14px}
+}
+@media(max-width:370px){
+  .control-mobile-nav{padding-left:3px;padding-right:3px;gap:1px}
+  .control-mobile-nav button b{font-size:9px}
+  .control-topbar #sectionTitle{font-size:13px}
+  .control-mobile-wordmark{font-size:8px}
+  .control-mobile-heading{grid-template-columns:32px minmax(0,1fr);column-gap:6px}
+  .control-mobile-headmark{width:32px;height:32px}
+  .control-topbar .control-fullscreen-toggle:not([hidden]){max-width:82px;padding:7px 5px;font-size:10px}
+  .control-mobile-more-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  .control-mobile-nav,.control-mobile-more,.control-topbar{scroll-behavior:auto}
+}

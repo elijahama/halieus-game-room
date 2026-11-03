@@ -15,6 +15,7 @@
   <script src="/control/development.js?v=development-roadmap-v1" defer></script>
   <script src="/control/release-notice.js?v=control-release-notice-1" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.5.5z-fonts-fullscreen-1" />
+  <link rel="stylesheet" href="/control/mobile-layout.css?v=lp-layout-mobile-1" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
   <link rel="manifest" href="/control/manifest.webmanifest?v=4.5.4.19" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -46,7 +47,9 @@
 
   <main class="control-main">
     <header class="control-topbar">
-      <div>
+      <div class="control-mobile-heading">
+        <img class="control-mobile-headmark" src="/control/control-icon.png?v=part26-control-approved2" alt="" aria-hidden="true" />
+        <span class="control-mobile-wordmark">HALIEUS CONTROL</span>
         <p class="eyebrow">ADMINISTRATION · LIVE OPERATIONS</p>
         <h1 id="sectionTitle">Control overview</h1>
       </div>
@@ -357,12 +360,25 @@
     </div>
   </aside>
 
+  <div class="control-mobile-more" id="controlMobileMore" role="region" aria-label="More Control sections" hidden>
+    <div class="control-mobile-more-heading">
+      <strong>More Control</strong>
+      <button type="button" id="controlMobileMoreClose" aria-label="Close additional sections">Close</button>
+    </div>
+    <div class="control-mobile-more-grid">
+      <button type="button" data-section="players"><span>Players</span><small>Accounts &amp; online presence</small></button>
+      <button type="button" data-section="performance"><span>Performance</span><small>Cloud status &amp; telemetry</small></button>
+      <button type="button" data-section="development"><span>Development</span><small>Builds, delivery &amp; roadmap</small></button>
+      <button type="button" data-section="audit"><span>Audit</span><small>Control history &amp; receipts</small></button>
+    </div>
+    <a href="/" class="control-mobile-home-link">Open Game Room</a>
+  </div>
   <nav class="control-mobile-nav" aria-label="Control mobile sections">
-    <button class="is-active" data-section="overview"><span>⌂</span><b>Home</b></button>
-    <button data-section="live"><span>◉</span><b>Live</b></button>
-    <button data-section="games"><span>▣</span><b>Games</b></button>
-    <button data-section="performance"><span>⌁</span><b>Stats</b></button>
-    <button data-section="operations"><span>↻</span><b>Ops</b></button>
+    <button type="button" class="is-active" data-section="overview" aria-current="page"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-7h6v7"/></svg><b>Home</b></button>
+    <button type="button" data-section="live"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg><b>Live</b></button>
+    <button type="button" data-section="games"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="15.5" cy="11" r=".7"/><circle cx="18" cy="14" r=".7"/></svg><b>Games</b></button>
+    <button type="button" data-section="operations"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="#101620"/><circle cx="16" cy="12" r="2" fill="#101620"/><circle cx="11" cy="18" r="2" fill="#101620"/></svg><b>Operations</b></button>
+    <button type="button" id="controlMobileMoreButton" aria-controls="controlMobileMore" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/></svg><b>More</b></button>
   </nav>
 </body>
 </html>
