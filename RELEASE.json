@@ -1,9 +1,9 @@
 {
   "product": "Halieus Game Room",
-  "version": "4.7.12",
-  "fingerprint": "hgr-4.7.12-2aed8094bbb4159b",
+  "version": "4.7.13",
+  "fingerprint": "hgr-4.7.13-22ede3abb5021b36",
   "algorithm": "sha256",
-  "sourceHash": "2aed8094bbb4159b2c0dbd3dd1db4f6441108e420c393dc2e602f831300cdc93",
+  "sourceHash": "22ede3abb5021b36a95c9f7e723f2e87728c9d8cf43f62af9ceecd80f449dd16",
   "integrityFileCount": 591,
   "integrityFiles": [
     ".github/workflows/pull-request-validation.yml",
@@ -296,7 +296,6 @@
     "deploy/oracle/halieus-game-room.service",
     "deploy/oracle/halieus.env.example",
     "deploy/oracle/nginx-halieus.remotewire.net.conf",
-    "deploy/oracle/nginx-play.halieus.net.conf",
     "desktop/package.json",
     "docs/AUDIT_4.0.0.md",
     "docs/DEPLOYMENT_FIX_4.0.0.md",
@@ -468,6 +467,7 @@
     "server/src/platform/maintenanceTimeZones.ts",
     "server/src/platform/progression.ts",
     "server/src/platform/publicAccess.ts",
+    "server/src/platform/publicOrigin.ts",
     "server/src/platform/pushNotifications.ts",
     "server/src/platform/ranked.ts",
     "server/src/platform/roomChat.ts",

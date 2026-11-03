@@ -32,7 +32,7 @@ function Get-HgrVisibleAppProcess {
     )
     foreach ($candidate in $browserCandidates) {
         if (-not $candidate.CommandLine -or
-            $candidate.CommandLine -notmatch '(?i)https://(?:halieus\.remotewire\.net|play\.halieus\.net)(?:/|["\s]|$)') {
+            $candidate.CommandLine -notmatch '(?i)https://halieus\.remotewire\.net(?:/|["\s]|$)') {
             continue
         }
         $process = Get-Process -Id $candidate.ProcessId -ErrorAction SilentlyContinue
