@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { getAccountDataDirectory, getSessionDataDirectory } from "./dataPaths.js";
+import { perAccountSingleFlight } from "./perAccountSingleFlight.js";
 import { ACHIEVEMENT_CATALOG, MAX_GAMER_SCORE, achievementDefinition, type AchievementDefinition, type PlayerProgression } from "../../../shared/platform/progression.js";
 type Identity = { accountId: string; beta: boolean };
 const identities = new Map<string, () => Identity | null>();
@@ -49,10 +50,10 @@ export function captureProgression(payload: any): void {
     meta.lastActionAt = at; meta.lastActionKey = key;
   }
 }
-let chain = Promise.resolve();
-export function readPlayerProgression(accountId: string): Promise<PlayerProgression> {
-  const task = chain.then(() => rebuild(accountId)); chain = task.then(() => {}, () => {}); return task;
-}
+// Independent accounts no longer block one another; same-account reads
+// coalesce until a durable snapshot is written (or a failure is settled).
+export const readPlayerProgression: (accountId: string) => Promise<PlayerProgression> =
+  perAccountSingleFlight(rebuild);
 async function rebuild(accountId: string): Promise<PlayerProgression> {
   const result: PlayerProgression = {
     gamerScore: 0,
