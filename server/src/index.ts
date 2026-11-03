@@ -47,6 +47,7 @@ import { closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomS
 import { closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
 import { getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
+import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
 import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
@@ -84,41 +85,17 @@ const PORT = Number.isFinite(parsedPort)
   ? parsedPort
   : 3000;
 
-function normaliseOrigin(
-  value: string | undefined,
-): string | null {
-  const trimmed = value?.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(trimmed);
-
-    if (
-      parsed.protocol !== "http:" &&
-      parsed.protocol !== "https:"
-    ) {
-      return null;
-    }
-
-    return parsed.origin;
-  } catch {
-    return null;
-  }
-}
-
-const PUBLIC_APP_URL = normaliseOrigin(
-  process.env.PUBLIC_APP_URL,
-);
+const PUBLIC_APP_URL = normaliseHgrPublicOrigin(process.env.PUBLIC_APP_URL);
 
 const clientOrigins = (
   process.env.CLIENT_ORIGINS ??
   "https://halieus.remotewire.net,http://localhost:5173,http://localhost:3000,http://127.0.0.1:3000"
 )
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => {
+    const value = origin.trim();
+    return normaliseHgrPublicOrigin(value) ?? value;
+  })
   .filter(Boolean);
 
 const allowEveryOrigin =

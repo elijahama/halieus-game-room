@@ -74,7 +74,7 @@ assert.match(postUpdateClient,/function Get-HgrVisibleAppProcess/,"The post-upda
 assert.ok(postUpdateClient.includes("Name='brave.exe'"),"Brave must be recognized when Edge is unavailable");
 assert.ok(postUpdateClient.includes("Name='chrome.exe'"),"Chrome fallback must be recognized without treating background renderer processes as visible windows");
 assert.ok(postUpdateClient.includes("MainWindowTitle -match '^Halieus Game Room"),"Fallback browser windows must match the HGR title");
-assert.ok(postUpdateClient.includes("halieus") && postUpdateClient.includes("remotewire") && postUpdateClient.includes("play"),"Fallback window recognition must require a canonical HGR URL");
+assert.ok(postUpdateClient.includes("halieus") && postUpdateClient.includes("remotewire") && !postUpdateClient.includes("play\\.halieus\\.net"),"Fallback window recognition must require a canonical HGR URL");
 assert.ok(postUpdateClient.includes("$process = Get-HgrVisibleAppProcess") && postUpdateClient.includes("SetForegroundWindow"),"The verified fallback window must be foregroundable");
 assert.match(postUpdateClient,/No visible dedicated HGR app window was found\. Opening HGR/,"A successful update must explicitly open HGR when no visible app window exists");
 assert.match(postUpdateClient,/Wait-HgrVisibleAppWindow/,"Post-update Start/Restart must verify that a visible HGR window actually appeared");

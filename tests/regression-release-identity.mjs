@@ -84,7 +84,6 @@ try {
     'deploy/oracle/halieus-game-room.service',
     'deploy/oracle/halieus.env.example',
     'deploy/oracle/nginx-halieus.remotewire.net.conf',
-    'deploy/oracle/nginx-play.halieus.net.conf',
     'server/data/word-board/scowl-en-us.dic',
   ]) {
     const target = resolve(fixture, textFile);
