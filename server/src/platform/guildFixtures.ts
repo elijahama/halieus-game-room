@@ -313,10 +313,18 @@ export function createGuildFixtureCoordinator(
       guild(f.homeGuildId)?.memberIds.includes(accountId) || guild(f.awayGuildId)?.memberIds.includes(accountId))
       .sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 100).map((f) => structuredClone(f));
   }
-  return { load, propose, accept, bindRooms, recordFinishedGame, boundRoom, cancel, list };
+  function getForTournament(id: string): HgrGuildFixture | null {
+    if (!loaded) return null;
+    const fixture = fixtures.get(id);
+    return fixture ? structuredClone(fixture) : null;
+  }
+  return { load, propose, accept, bindRooms, recordFinishedGame, boundRoom, cancel, list, getForTournament };
 }
 const coordinator = createGuildFixtureCoordinator();
 export const loadGuildFixtures = () => coordinator.load();
+/** Bracket settlement reads only existing authenticated, durable two-board receipts.
+ * This internal lookup is never an unauthenticated HTTP result. */
+export const getGuildFixtureForTournament = (id: string) => coordinator.getForTournament(id);
 /** Read-only lobby guards; regular non-fixture games remain unchanged. */
 export function getGuildFixtureBoundRoom(code: string) { return coordinator.boundRoom(code); }
 export function recordFinishedGuildFixtureBoard(room: GameRoom, state: GameState) {
