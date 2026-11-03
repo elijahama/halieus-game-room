@@ -694,3 +694,15 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
 @media(prefers-reduced-motion:reduce){
   .operation-toast[data-action="update"] .operation-progress i{transition:none}
 }
+
+/* Owner-visible released-version notice. Uses the existing Control UI family,
+   never a new launcher symbol or a fake progress indicator. */
+.control-release-notice[hidden]{display:none!important}
+.control-release-notice{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 18px;padding:14px 18px;border:1px solid rgba(126,170,246,.44);border-radius:14px;background:rgba(34,54,88,.62);color:#edf4ff}
+.control-release-copy{flex:1 1 260px;min-width:0}
+.control-release-label{display:block;margin-bottom:5px;font-size:10px;letter-spacing:.09em;font-weight:700;color:#bdd5ff}
+.control-release-copy strong{display:block;font-size:15px;line-height:1.35;font-family:inherit}
+.control-release-copy p{margin:4px 0 0;color:#c6d8f3;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#controlReleaseReview{min-height:42px;flex:0 0 auto}
+#operationTabUpdate.has-release::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;vertical-align:middle;border-radius:50%;background:#9dc5ff;box-shadow:0 0 0 2px rgba(157,197,255,.15)}
+@media(max-width:720px){.control-release-notice{align-items:stretch;margin-bottom:14px;padding:13px 14px;gap:12px}.control-release-copy{flex-basis:100%}#controlReleaseReview{width:100%}}
