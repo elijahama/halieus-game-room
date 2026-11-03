@@ -281,6 +281,19 @@ export async function flushRoomSave(): Promise<void> {
   await saveChain;
 }
 
+/**
+ * For two-store Solo reset reconciliation the success of the room snapshot
+ * MUST be observable. The ordinary room-save queue intentionally swallows
+ * errors for game continuity, but a tournament handoff cannot.
+ */
+export function flushRoomSaveStrict(): Promise<void> {
+  const task = saveChain.catch(() => undefined).then(writeSnapshot);
+  saveChain = task.catch(error => {
+    console.error("Unable to durably save rooms for Solo reset:", error);
+  });
+  return task;
+}
+
 export function getSavePath(): string {
   return SAVE_PATH;
 }
