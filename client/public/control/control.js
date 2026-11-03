@@ -125,7 +125,18 @@
     return state.rooms.find((room) => room.humanPlayers?.some((player) => normalise(player) === name)) || null;
   }
 
+  function closeMobileMore(returnFocus = false) {
+    const panel = $("controlMobileMore");
+    const trigger = $("controlMobileMoreButton");
+    if (!panel || panel.hidden) return false;
+    panel.hidden = true;
+    trigger?.setAttribute("aria-expanded", "false");
+    if (returnFocus) trigger?.focus();
+    return true;
+  }
+
   function setSection(section) {
+    const wasMobileMenuOpen = closeMobileMore();
     // The expanded mobile report lives inside Operations and must never float
     // over unrelated pages. Going elsewhere restores the small status chip.
     if (section !== "operations" && operationToastIsMobile()
@@ -136,7 +147,17 @@
     }
     state.currentSection = section;
     queryAll(".control-section").forEach((panel) => panel.classList.toggle("is-active", panel.dataset.panel === section));
-    queryAll("[data-section]").forEach((button) => button.classList.toggle("is-active", button.dataset.section === section));
+    queryAll("[data-section]").forEach((button) => {
+      const active = button.dataset.section === section;
+      button.classList.toggle("is-active", active);
+      if (active) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    });
+    const extraSection = ["players", "performance", "development", "audit"].includes(section);
+    const moreButton = $("controlMobileMoreButton");
+    moreButton?.classList.toggle("is-active", extraSection);
+    if (extraSection) moreButton?.setAttribute("aria-current", "page");
+    else moreButton?.removeAttribute("aria-current");
     const titles = {
       overview: "Control overview",
       live: "Live HGR",
@@ -148,6 +169,10 @@
       audit: "Audit history",
     };
     $("sectionTitle").textContent = titles[section] || "HGR Control";
+    if (wasMobileMenuOpen) {
+      $("sectionTitle").tabIndex = -1;
+      $("sectionTitle").focus({ preventScroll: true });
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -951,6 +976,26 @@
       });
     });
     queryAll("[data-section]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.section)));
+    const moreTrigger = $("controlMobileMoreButton");
+    const morePanel = $("controlMobileMore");
+    moreTrigger?.addEventListener("click", () => {
+      if (!morePanel) return;
+      if (!morePanel.hidden) { closeMobileMore(); return; }
+      morePanel.hidden = false;
+      moreTrigger.setAttribute("aria-expanded", "true");
+      morePanel.querySelector("button[data-section]")?.focus();
+    });
+    $("controlMobileMoreClose")?.addEventListener("click", () => closeMobileMore(true));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && closeMobileMore(true)) event.preventDefault();
+    });
+    document.addEventListener("pointerdown", (event) => {
+      if (morePanel && !morePanel.hidden && !morePanel.contains(event.target) &&
+          !moreTrigger?.contains(event.target)) closeMobileMore();
+    });
+    window.matchMedia("(min-width: 961px)").addEventListener("change", (event) => {
+      if (event.matches) closeMobileMore();
+    });
     $("publicAccessToggle")?.addEventListener("click", () => void togglePublicAccess());
     $("publicAccessSchedule")?.addEventListener("click", () => void schedulePublicAccessWindow());
     $("publicAccessCancelSchedule")?.addEventListener("click", () => void cancelPublicAccessWindow());
