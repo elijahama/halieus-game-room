@@ -38,7 +38,7 @@ assert.match(tsx,/className="mega-spectator-banner"/,"Spectating bar must be vis
 
 const browsers = await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try{
-  for(const viewport of [{width:360,height:780},{width:390,height:844},{width:820,height:900},{width:1280,height:720},{width:1408,height:900},{width:1536,height:900}]){
+  for(const viewport of [{width:360,height:780},{width:390,height:844},{width:820,height:900},{width:1280,height:720},{width:1408,height:900},{width:1536,height:900},{width:1648,height:928},{width:1920,height:1080}]){
     const page=await browsers.newPage({viewport});
     const players=Array.from({length:8},(_,i)=>
       '<article class="player-rail-card" data-player="'+i+'"><div class="player-rail-main-row">'+
@@ -72,8 +72,8 @@ try{
       const first=rect(".player-rail-card");
       return {
         banner:{top:banner.top,bottom:banner.bottom},
-        board:{top:board.top,bottom:board.bottom,width:board.width,height:board.height},
-        rail:{top:rail.top,bottom:rail.bottom},frame:{top:frame.top,bottom:frame.bottom,height:frame.height,display:computedFrame.display,gridRow:computedFrame.gridRow,overflow:computedFrame.overflow,position:computedFrame.position},layout:{top:layout.top,bottom:layout.bottom,display:style(".mega-spectator-layout").display,gridRows:style(".mega-spectator-layout").gridTemplateRows}, boardCss:{position:computedGrid.position,alignSelf:computedGrid.alignSelf,transform:computedGrid.transform,margin:computedGrid.margin,height:computedGrid.height},
+        board:{top:board.top,bottom:board.bottom,left:board.left,right:board.right,width:board.width,height:board.height},
+        rail:{top:rail.top,bottom:rail.bottom,left:rail.left,right:rail.right,width:rail.width},frame:{top:frame.top,bottom:frame.bottom,left:frame.left,right:frame.right,height:frame.height,display:computedFrame.display,gridRow:computedFrame.gridRow,overflow:computedFrame.overflow,position:computedFrame.position},layout:{top:layout.top,bottom:layout.bottom,width:layout.width,display:style(".mega-spectator-layout").display,gridRows:style(".mega-spectator-layout").gridTemplateRows}, boardCss:{position:computedGrid.position,alignSelf:computedGrid.alignSelf,transform:computedGrid.transform,margin:computedGrid.margin,height:computedGrid.height},
         first:{top:first.top,left:first.left,right:first.right},
         cardCount:document.querySelectorAll(".mega-spectator-player-rail .player-rail-card").length,
         rosterDisplay:style(".mega-spectator-player-rail").display,
@@ -93,11 +93,19 @@ try{
       };
     });
     assert.ok(info.banner.bottom <= info.board.top+1,"Spectating banner must precede board "+JSON.stringify({viewport,info}));
-    assert.ok(info.board.bottom <= info.rail.top+1,"Board must precede player strip "+JSON.stringify({viewport,info}));
+    const wide=viewport.width>=1400 && viewport.height>=650 && viewport.width>viewport.height;
+    if(wide){
+      assert.ok(info.board.right <= info.rail.left+1,"Wide spectator layout must place player roster beside board "+JSON.stringify({viewport,info}));
+      assert.ok(Math.abs(info.board.top-info.rail.top)<=Math.max(95,viewport.height*.15),"Board and player roster must start at comparable heights "+JSON.stringify({viewport,info}));
+      assert.ok(info.board.width>=viewport.height*.68,"Wide fullscreen board must use available height, not a tiny stacked-board strip "+JSON.stringify({viewport,info}));
+      assert.ok(info.layout.width>=viewport.width*.94,"Fullscreen spectator grid must use the width available "+JSON.stringify({viewport,info}));
+    }else{
+      assert.ok(info.board.bottom <= info.rail.top+1,"Narrow spectator layout must preserve board above player strip "+JSON.stringify({viewport,info}));
+    }
     assert.ok(Math.abs(info.board.width-info.board.height)<3,"Board square distorted "+JSON.stringify({viewport,info}));
     assert.ok(info.board.width>150 && info.board.width<=viewport.width,"Board should fit viewport "+JSON.stringify({viewport,info}));
-    assert.ok(info.first.top>=info.board.bottom && info.first.left>=-1 && info.first.right<=viewport.width+1,"Player must be under board, not clipped "+JSON.stringify({viewport,info}));
-    assert.ok(info.first.top<viewport.height-40,"First player should be visible at bottom of first screen "+JSON.stringify({viewport,info}));
+    assert.ok((wide ? info.first.left>=info.board.right-1 : info.first.top>=info.board.bottom) && info.first.left>=-1 && info.first.right<=viewport.width+1,"Player must be alongside board on wide screens or below on narrow screens "+JSON.stringify({viewport,info}));
+    assert.ok(info.first.top<viewport.height-40,"First player should be visible without scrolling "+JSON.stringify({viewport,info}));
     assert.equal(info.cardCount,8,"All eight players remain in the roster");
     if(viewport.width>=1181){
       assert.equal(info.pageOverflowY,"hidden","Desktop spectator page must not scroll "+JSON.stringify({viewport,info}));
@@ -110,7 +118,7 @@ try{
     assert.notEqual(info.rosterDisplay,"none","Spectator player list must display even on phone/tablet");
     assert.equal(info.pageOverflow,false,"No horizontal page overflow "+JSON.stringify({viewport,info}));
     console.log("PASS Mega Board spectator "+viewport.width+"x"+viewport.height+
-      ": banner > square board > "+info.cardCount+" players without overlap, page scrolling or horizontal clipping");
+      ": banner, square board "+(wide?"beside":"above")+" "+info.cardCount+" players without overlap or horizontal clipping");
     await page.close();
   }
 }finally{await browsers.close();}
