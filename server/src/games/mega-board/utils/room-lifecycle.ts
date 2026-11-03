@@ -5,6 +5,7 @@ import type {
 import {
   rooms,
 } from "../state/rooms.js";
+import { getSoloTournamentBoundRoom } from "../../../platform/soloTournamentRegistration.js";
 
 import {
   cancelAuctionTimer,
@@ -27,6 +28,11 @@ export function endRoom(
   const room = rooms.get(code);
 
   if (!room) {
+    return false;
+  }
+  // General cleanup must never discard an unsettled tournament match.
+  if (getSoloTournamentBoundRoom(code)) {
+    console.warn("[HGR] Refused deleting an unsettled Solo tournament room:", code);
     return false;
   }
 

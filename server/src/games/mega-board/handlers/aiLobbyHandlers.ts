@@ -10,6 +10,7 @@ import type {
 
 import { rooms } from "../state/rooms.js";
 import { getGuildFixtureBoundRoom } from "../../../platform/guildFixtures.js";
+import { getSoloTournamentBoundRoom } from "../../../platform/soloTournamentRegistration.js";
 
 import type {
   AddAiPayload,
@@ -163,6 +164,10 @@ export function registerAiLobbyHandlers(
         acknowledge({ ok: false, reason: "Guild fixture boards cannot add AI after lineup locking." });
         return;
       }
+      if (getSoloTournamentBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "Bound Solo tournament rooms cannot add AI players." });
+        return;
+      }
       if (!socketIsCurrentHost(room, socket.id)) {
         acknowledge({
           ok: false,
@@ -276,6 +281,10 @@ export function registerAiLobbyHandlers(
         return;
       }
 
+      if (getSoloTournamentBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "A bound Solo tournament room cannot change its lineup." });
+        return;
+      }
       if (!socketIsCurrentHost(room, socket.id)) {
         acknowledge({
           ok: false,
