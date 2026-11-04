@@ -18,4 +18,6 @@ assert.match(runner, /shell\.Run command,\s*4,\s*False/i);
 assert.match(runner, /%ComSpec%/);
 assert.doesNotMatch(runner, /shell\.Run command,\s*1,/i);
 
+assert.doesNotMatch(generator, /Get-ChildItem\s+-LiteralPath\s+\$LauncherDirectory\s+-Filter\s+'\*\.lnk'/, 'Must not delete and rebuild all pinned launcher shortcuts');
+
 console.log('HGR Windows nonactivating launch contracts PASS');
