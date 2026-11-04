@@ -52,13 +52,8 @@ if (-not (Test-Path -LiteralPath $NoActivateRunner -PathType Leaf) -or
 if (-not (Test-Path -LiteralPath $UpdateScript -PathType Leaf)) {
     throw "Mandatory HGR Update launcher target is missing: $UpdateScript. Existing shortcuts have been preserved."
 }
-# Validate first; never erase working shortcuts just because Update is absent.
-# Both managed folders are generated collections, so retired private Control and
-# old Update Site links are removed when a complete set can be recreated.
-foreach ($LauncherDirectory in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
-    Get-ChildItem -LiteralPath $LauncherDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
-        Remove-Item -Force -ErrorAction Stop
-}
+# Preserve Start Menu pin identities: do not delete every .lnk and recreate it.
+# New-HalieusShortcut updates existing paths in place; Windows owns the pin state.
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
