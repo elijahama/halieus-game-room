@@ -46,13 +46,8 @@ $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
 if (-not (Test-Path -LiteralPath $UpdateScript -PathType Leaf)) {
     throw "Mandatory HGR Update launcher target is missing: $UpdateScript. Existing shortcuts have been preserved."
 }
-# Validate first; never erase working shortcuts just because Update is absent.
-# Both managed folders are generated collections, so retired private Control and
-# old Update Site links are removed when a complete set can be recreated.
-foreach ($LauncherDirectory in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
-    Get-ChildItem -LiteralPath $LauncherDirectory -Filter '*.lnk' -File -ErrorAction SilentlyContinue |
-        Remove-Item -Force -ErrorAction Stop
-}
+# Never delete all Start Menu shortcuts during refresh. Pinned items can lose their identity when .lnk files are removed.
+# Reuse the existing .lnk at its stable path, preserving user Start pins and their order.
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
