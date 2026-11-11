@@ -1971,3 +1971,12 @@ Integrated the functional changes from PR #224 (per-account Gamer Score single-f
 ## 4.8 support batch — complete Rankings and Inbox (11 November 2026)
 
 Integrated #212 historical honours/season views/spectator follow controls, #216 complete retained Ranked history, and #213 persistent chronological Inbox/read receipts/activity dropdowns. Reconciled season metadata with unbounded future match retention so neither feature overwrites the other. Preserved existing 4.7.15 board layout and release identity. Season, historical-award evidence/idempotence, 57-match pagination/filter/privacy, Inbox ordering/read persistence and both TypeScript checks pass. Corrected the Ranked history test command to load TypeScript consistently. No historical results are invented and no production account data was modified.
+
+
+### 4.8 integration — maintenance return and laptop authorisation (11 November 2026)
+
+The device approval / stale-device selection incident is addressed by showing every fresh pending laptop in Control, even when an older approved laptop record is offline. Authorise remains an explicit owner/admin action; heartbeat, role and device identity are rechecked. Recovery uses the existing loopback agent and outbound bridge, never resets credentials or deploys the game.
+
+Maintenance return rechecks public access and serves fresh navigation after reopening. Launcher refresh updates stable shortcut paths without deleting all shortcuts. Noninteractive launchers use the canonical existing artwork through a windowless WScript bridge with SW_HIDE (0), and hidden Update uses the existing noninteractive path. Recovery does not pause for invisible input. User-invoked PowerShell/OpenShard terminals retain their intended interactive behavior. These are source changes only: no Start pins or live laptop services were changed by this integration.
+
+Validation: maintenance return passed at 320/390/820px, including manual reopening and an older phone tab; Control authorisation, bridge recovery and hidden-launch contracts passed.

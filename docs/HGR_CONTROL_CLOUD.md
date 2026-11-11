@@ -207,3 +207,24 @@ Real-device acceptance requires one fresh Cloud Update after installing this bat
 - guided local identity reset/re-enrollment recovery.
 
 The private Tailscale route remains available as the recovery/fallback path while cloud capabilities are introduced incrementally.
+
+## 2 November 2026 incident — laptop process running but Cloud Control disconnected
+
+**Observed:** Lagz remained powered on and Remote Desktop Commander could access the machine. The authenticated local HGR Control Agent answered on `127.0.0.1:43127`, and both the outer `tsx` and worker Node processes for the outbound bridge were alive. The Windows Start Menu recovery command reported that the bridge had started, while the HGR Control page displayed **Bridge disconnected**. Repeated restarts did not restore authorisation.
+
+**Definitive test:** A credential-preserving outbound HTTPS heartbeat from the laptop to `/control/cloud/agent/heartbeat` received HTTP 200, but the JSON was **`approved: false, enrollment: "pending"`**. An HTTP 200 alone means only that the request reached the cloud relay: it does **not** mean approval or dispatch eligibility. The bridge was not offline because Windows was switched off, the loopback listener was missing, or HTTPS was unavailable. Remote Desktop Commander is a separate connection and must not be conflated with Control status.
+
+**Why Control masked the remedy:** Earlier Control device selection prioritised any approved registration record before pending registrations, even if the approved record had no recent heartbeat. A disconnected legacy entry therefore hid the newly connected pending Lagz device and its existing approval action.
+
+**How recovery was achieved:** The registered device was authorised explicitly through the existing owner-session-protected `POST /control/cloud/devices/:deviceId/approve` route. No registration secrets were rotated or posted in the chat, and the game server did not need restarting. The owner subsequently confirmed that Control was online. The laptop-side Start Menu recovery command was updated to report **PENDING OWNER APPROVAL** and exit without restarting an otherwise healthy bridge. This is different from a network timeout or a revoked device.
+
+**Permanent UX:** When a pending laptop is reporting a fresh heartbeat, the Control page displays an **Authorise your laptop** panel directly below the Control header, visible across all tabs (not buried in Operations). It lists each online pending device with its name, reported release and a shortened identifier. The **Authorise [device]** action requires an explicit owner/admin confirmation and re-reads the current authenticated device list before calling the existing same-origin approval endpoint. The panel never auto-approves, never resets a revoked credential, never exposes a secret, and disappears once the pending state clears. It polls via the existing 2.5-second Control status cycle while the page is visible; it does not imply a background notification when Control is closed. The older Operations approval button remains available and shares the same verification and confirmation.
+
+**Operational troubleshooting procedure:**
+1. Check Oracle `/health` independently of the laptop.
+2. Verify local Control Agent `/api/status` via the existing loopback bearer token without printing credentials.
+3. Check the Cloud relay response: `approved=true` and a fresh heartbeat mean authorisation; `pending` means explicit owner approval required; `revoked` requires a fresh, separately authorised registration; timeout means investigate DNS, HTTPS and latency.
+4. On a pending device, open signed-in Control and use **Authorise your laptop**. Never require the developer console, never script approval without the owner, and do not repeatedly restart an unauthorised bridge.
+5. Verify the new heartbeat and Control's Owner PC status before reporting the bridge healthy. Preserve the canonical bridge and local action boundaries.
+
+**Source versus release:** The permanent global banner and selection fix are source changes in PR #214 and are not proof of Oracle deployment. The owner-approved existing connection may already be live independently of these changes. Preserve gameplay and the six canonical launcher roles during release.

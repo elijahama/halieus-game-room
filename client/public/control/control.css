@@ -706,3 +706,32 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
 #controlReleaseReview{min-height:42px;flex:0 0 auto}
 #operationTabUpdate.has-release::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;vertical-align:middle;border-radius:50%;background:#9dc5ff;box-shadow:0 0 0 2px rgba(157,197,255,.15)}
 @media(max-width:720px){.control-release-notice{align-items:stretch;margin-bottom:14px;padding:13px 14px;gap:12px}.control-release-copy{flex-basis:100%}#controlReleaseReview{width:100%}}
+
+/* HGR owner-approved laptop registration: visible from every Control section.
+   Balanced site hierarchy: Unbounded headings, Righteous subsection, Varela
+   explanations/buttons and Alata compact metadata, never new H artwork. */
+.control-enrollment-panel{
+  margin:0 0 18px;padding:18px 20px;border:1px solid rgba(128,169,255,.40);
+  border-radius:18px;background:linear-gradient(125deg,rgba(34,57,99,.9),rgba(17,28,49,.96));
+  color:#eef4ff;box-shadow:0 12px 28px rgba(0,0,0,.13);min-width:0;
+}
+.control-enrollment-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.control-enrollment-heading .eyebrow{margin:0 0 4px;color:#a8c4ff;font-family:var(--hgr-font-caption,"Alata",sans-serif)}
+.control-enrollment-heading h2{margin:0 0 5px;font-family:var(--hgr-font-medium,"Righteous",sans-serif);font-size:clamp(17px,2vw,22px);font-weight:500;line-height:1.25}
+.control-enrollment-heading p:not(.eyebrow){margin:0;color:#c6d6ef;font:inherit;font-size:13px;line-height:1.5}
+.control-enrollment-status{align-self:flex-start;white-space:nowrap;color:#d5e3ff;background:rgba(116,153,226,.16);border:1px solid rgba(153,190,250,.31);border-radius:999px;padding:6px 10px;font:12px "Alata",sans-serif}
+.control-enrollment-list{display:grid;gap:10px;margin-top:14px}
+.control-enrollment-device{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid rgba(149,181,241,.20);border-radius:13px;background:rgba(4,12,30,.29)}
+.control-enrollment-device div{display:grid;gap:3px;min-width:0;flex:1 1 180px}
+.control-enrollment-device strong{font-size:14px;overflow-wrap:anywhere}
+.control-enrollment-device small{font:12px "Alata",sans-serif;color:#b3c5de;overflow-wrap:anywhere}
+.control-enrollment-device button{flex:0 1 auto;min-height:44px;padding:10px 16px;border-radius:11px;border:1px solid #93b7ff;background:#2b508e;color:#fff;font:13px "Varela Round",sans-serif;font-weight:700;cursor:pointer}
+.control-enrollment-device button:hover:not(:disabled){background:#365f9f}
+.control-enrollment-device button:focus-visible{outline:2px solid #f5d776;outline-offset:3px}
+.control-enrollment-device button:disabled{cursor:wait;opacity:.6}
+.control-enrollment-feedback{margin:10px 0 0;color:#cfe2ff;line-height:1.5;font-size:12px;overflow-wrap:anywhere}
+@media(max-width:600px){
+  .control-enrollment-panel{padding:14px;border-radius:14px}
+  .control-enrollment-device{padding:12px}
+  .control-enrollment-device button{width:100%;flex:1 1 100%}
+}

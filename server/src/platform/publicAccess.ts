@@ -320,7 +320,7 @@ export function renderPublicClosedPage(reason: string, reopenAt: number | null =
     }
   }
   const countdownHtml = validReopenAt === null
-    ? '<p id="noReopenDeadline">No automatic reopening time has been set. Please check for an owner update.</p>'
+    ? '<p id="noReopenDeadline">No automatic reopening time has been set. The page will return you to the Game Room after the owner reopens it.</p>'
     : '<section class="maintenance-countdown" aria-label="Time until scheduled reopening">' +
       '<small>Scheduled reopening in</small>' +
       '<output id="maintenanceCountdown" role="timer" aria-live="off" data-reopen-at="' +
@@ -349,7 +349,9 @@ button{min-height:44px;cursor:pointer;background:#298aff;color:#07111c;border:0;
 button:disabled{opacity:.55}button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:3px}
 </style></head><body><main><small>Halieus Game Room · Maintenance</small>
 <h1>The Game Room is temporarily closed</h1>
-<p>${safeReason}</p>${reopenNotice}<p>Existing account information and saved game history are preserved. Please return after reopening.</p>${countdownHtml}
+<p>${safeReason}</p>${reopenNotice}<p>Existing account information and saved game history are preserved.</p>${countdownHtml}
+<p id="maintenanceAvailabilityStatus" role="status" aria-live="polite">Checking whether the Game Room has reopened…</p>
+<button type="button" id="maintenanceCheckNow">Check reopening status</button>
 <details><summary>Owner access to Control</summary><p>If you are already signed in, <a href="/control/">open HGR Control</a>. Otherwise sign in below.</p>
 <form id="controlLogin"><label>Username<input name="username" autocomplete="username" required maxlength="32"></label>
 <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
@@ -357,46 +359,68 @@ button:disabled{opacity:.55}button:focus-visible,input:focus-visible,summary:foc
 </main><script>
 (function(){
   const output=document.getElementById("maintenanceCountdown");
-  if(!output)return;
-  const end=Number(output.dataset.reopenAt);
-  const serverAtRender=Number(output.dataset.serverNow);
-  const clockOrigin=performance.now();
   const info=document.getElementById("maintenanceCountdownStatus");
-  if(!Number.isSafeInteger(end)||!Number.isFinite(serverAtRender)){
-    output.textContent="Reopening time unavailable";return;
-  }
+  const availability=document.getElementById("maintenanceAvailabilityStatus");
+  const checkButton=document.getElementById("maintenanceCheckNow");
+  const end=output?Number(output.dataset.reopenAt):null;
+  const serverAtRender=output?Number(output.dataset.serverNow):null;
+  const clockOrigin=performance.now();
+  const hasDeadline=output&&Number.isSafeInteger(end)&&end>0&&Number.isFinite(serverAtRender);
   const serverNow=()=>serverAtRender+Math.max(0,performance.now()-clockOrigin);
-  let checking=false,lastCheck=-Infinity;
-  async function verifyOpen(){
-    if(checking||performance.now()-lastCheck<4000)return;
-    lastCheck=performance.now();checking=true;
+  let checking=false,redirecting=false,lastCheck=-Infinity;
+  async function verifyOpen(force=false){
+    const now=performance.now();
+    if(checking||redirecting||(!force&&now-lastCheck<4000))return;
+    checking=true;lastCheck=now;checkButton.disabled=true;
     try{
-      const result=await fetch("/public-access/status?maintenance-reopen-check="+Date.now(),{
+      // A 503 notice, a browser-restored tab and a manually closed site must
+      // all use the same uncached server authority. Never trust the old HTML.
+      const response=await fetch("/public-access/status?maintenance-reopen-check="+Date.now(),{
         method:"GET",cache:"no-store",credentials:"same-origin",
         headers:{"Accept":"application/json","Cache-Control":"no-cache"}
       });
-      if(result.ok){
-        const state=await result.json();
-        if(state && state.closed===false){location.replace("/");return}
+      if(!response.ok||!response.headers.get("content-type")?.includes("application/json"))
+        throw Error("Reopening check unavailable");
+      const state=await response.json();
+      if(state&&state.closed===false){
+        redirecting=true;
+        availability.textContent="The Game Room is open. Returning you now…";
+        // Fresh navigation avoids an old PWA/browser cache or back-forward page.
+        location.replace("/?maintenance-return="+Date.now());
+        return;
       }
-      if(serverNow()>=end)
+      availability.textContent="The Game Room is still closed. We will check again automatically.";
+      if(info&&hasDeadline&&serverNow()>=end)
         info.textContent="Scheduled time reached; waiting for the server to confirm reopening.";
     }catch{
-      if(serverNow()>=end)info.textContent="Reopening check unavailable. Retrying automatically.";
-    }finally{checking=false}
+      availability.textContent="Reopening status unavailable. Retrying automatically.";
+      if(info&&hasDeadline&&serverNow()>=end)
+        info.textContent="The reopening check is temporarily unavailable.";
+    }finally{checking=false;checkButton.disabled=false}
   }
   function tick(){
+    if(!output)return;
+    if(!hasDeadline){output.textContent="Reopening time unavailable";return}
     const seconds=Math.max(0,Math.ceil((end-serverNow())/1000));
     const days=Math.floor(seconds/86400),hours=Math.floor(seconds%86400/3600);
     const mins=Math.floor(seconds%3600/60),secs=seconds%60;
     output.textContent=(days?days+"d ":"")+String(hours).padStart(2,"0")+":"+
       String(mins).padStart(2,"0")+":"+String(secs).padStart(2,"0");
-    if(seconds===0){info.textContent="Checking whether the Game Room is open?";void verifyOpen()}
+    if(seconds===0)void verifyOpen();
   }
+  checkButton.addEventListener("click",()=>void verifyOpen(true));
   tick();
+  // Re-check on first display and regularly even with NO scheduled deadline.
+  // Throttled mobile/PWA tabs check again as soon as the user returns.
+  void verifyOpen();
   setInterval(tick,1000);
-  setInterval(()=>void verifyOpen(),15000);
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden){tick();void verifyOpen()}});
+  setInterval(()=>void verifyOpen(),10000);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden){tick();void verifyOpen(true)}
+  });
+  window.addEventListener("pageshow",()=>void verifyOpen(true));
+  window.addEventListener("focus",()=>void verifyOpen(true));
+  window.addEventListener("online",()=>void verifyOpen(true));
 })();
 </script><script>
 document.getElementById("controlLogin").addEventListener("submit",async function(e){

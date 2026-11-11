@@ -23,7 +23,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).then((response) => {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }).then((response) => {
       // A maintenance 503 is authoritative and must never overwrite the
       // healthy offline shell cache with a stale "closed" document.
       if (response.ok) {

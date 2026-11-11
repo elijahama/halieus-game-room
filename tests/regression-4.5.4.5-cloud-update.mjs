@@ -88,7 +88,8 @@ assert.match(uiRelay, /\/control\/control\.js/);
 assert.match(uiRelay, /cloud-update\.js/);
 assert.match(uiRelay, /\/control\/operation-status/);
 
-assert.match(cloudUi, /Approve owner PC/);
+assert.match(cloudUi, /Authorise laptop/, "Explicit owner-PC authorisation action remains available in Operations.");
+assert.match(cloudUi, /renderPendingEnrollments\(cloudDevices\)/, "Live pending laptops also appear in the persistent authorisation banner.");
 assert.match(cloudUi, /Owner-PC Control ready/,"Owner-PC window commands must not be presented as an active deployment");
 assert.match(cloudUi, /\/control\/cloud\/actions\/update\/confirm/);
 assert.match(cloudUi, /\/control\/cloud\/actions\/update/);

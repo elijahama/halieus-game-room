@@ -84,6 +84,21 @@
       </div>
     </section>
 
+    <!-- Always visible above Control sections when a newly connected owner PC awaits approval.
+         Access remains gated by the authenticated Control Cloud API and explicit user consent. -->
+    <section class="control-enrollment-panel" id="controlEnrollment" aria-label="Laptop authorisation" hidden>
+      <div class="control-enrollment-heading">
+        <div>
+          <p class="eyebrow">SECURE DEVICE CONNECTION</p>
+          <h2>Authorise your laptop</h2>
+          <p>HGR has detected a laptop awaiting approval. Confirm the correct machine before enabling remote Control.</p>
+        </div>
+        <span class="control-enrollment-status">Approval required</span>
+      </div>
+      <div class="control-enrollment-list" id="controlEnrollmentList"></div>
+      <p class="control-enrollment-feedback" id="controlEnrollmentFeedback" role="status" aria-live="polite" hidden></p>
+    </section>
+
     <section class="control-section is-active" data-panel="overview">
       <section class="hero-grid">
         <article class="now-playing-card" id="nowPlayingCard">

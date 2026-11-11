@@ -39,6 +39,13 @@ $CloseScript = Join-Path $ProjectRoot 'Close Halieus Game Room.cmd'
 $UpdateScript = Join-Path $ProjectRoot 'Update HGR GitHub.cmd'
 $LegacyPrivateDeployScript = Join-Path $ProjectRoot 'Update Halieus Website.cmd'
 $OpenShardScript = Join-Path $ProjectRoot 'scripts\windows\OpenShard-HGR.cmd'
+$CloudRecoveryScript = Join-Path $ProjectRoot 'Reconnect HGR Cloud Bridge.cmd'
+$NoActivateRunner = Join-Path $ProjectRoot 'scripts\windows\launcher-noactivate.vbs'
+$WindowsScriptHost = Join-Path $env:SystemRoot 'System32\wscript.exe'
+if (-not (Test-Path -LiteralPath $NoActivateRunner -PathType Leaf) -or
+    -not (Test-Path -LiteralPath $WindowsScriptHost -PathType Leaf)) {
+    throw 'The nonactivating HGR launcher runtime is missing. Existing shortcuts have been preserved.'
+}
 # Cloud Control continues to use the owner-PC Control agent in the background.
 # Its private Tailscale pairing/start/stop wrappers are retained for recovery
 # but no longer occupy user-facing Windows launcher slots.
@@ -48,6 +55,8 @@ if (-not (Test-Path -LiteralPath $UpdateScript -PathType Leaf)) {
 }
 # Never delete all Start Menu shortcuts during refresh. Pinned items can lose their identity when .lnk files are removed.
 # Reuse the existing .lnk at its stable path, preserving user Start pins and their order.
+# Preserve Start Menu pin identities: do not delete every .lnk and recreate it.
+# New-HalieusShortcut updates existing paths in place; Windows owns the pin state.
 
 $LauncherNames = [ordered]@{
     Start = 'HGR - Start.lnk'
@@ -71,6 +80,7 @@ $StartMenuCloseShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.C
 $StartMenuUpdateShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.Update
 $StartMenuPowerShellShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.PowerShell
 $StartMenuOpenShardShortcut = Join-Path $StartMenuLauncherDirectory $LauncherNames.OpenShard
+$StartMenuCloudRecoveryShortcut = Join-Path $StartMenuLauncherDirectory 'HGR - Reconnect Cloud Bridge.lnk'
 $UpdatePowerShell = Join-Path $ProjectRoot 'update-website.ps1'
 $FolderDesktopIni = Join-Path $ProjectRoot 'desktop.ini'
 
@@ -122,8 +132,9 @@ function New-HalieusShortcut {
     )
 
     $shortcut = $wsh.CreateShortcut($ShortcutPath)
-    $shortcut.TargetPath = $cmd
-    $shortcut.Arguments = "/d /c `"`"$CommandScript`"`""
+    # WScript is a windowless GUI host; its bridge starts CMD with SW_HIDE.
+    $shortcut.TargetPath = $WindowsScriptHost
+    $shortcut.Arguments = "//B //Nologo `"$NoActivateRunner`" `"$CommandScript`""
     $shortcut.WorkingDirectory = $ProjectRoot
     $shortcut.Description = $Description
     $shortcut.IconLocation = "$IconPath,0"
@@ -166,12 +177,13 @@ function Assert-HalieusShortcutCommandScript {
     }
 
     $check = $wsh.CreateShortcut($ShortcutPath)
-    if (-not ([string]$check.TargetPath).Equals($cmd, [System.StringComparison]::OrdinalIgnoreCase) -or
+    if (-not ([string]$check.TargetPath).Equals($WindowsScriptHost, [System.StringComparison]::OrdinalIgnoreCase) -or
         -not ([string]$check.WorkingDirectory).Equals($ProjectRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "Halieus shortcut executable or working directory mismatch: $ShortcutPath"
     }
     $arguments = [string]$check.Arguments
-    if ($arguments.IndexOf($ExpectedCommandScript, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
+    if ($arguments.IndexOf($ExpectedCommandScript, [System.StringComparison]::OrdinalIgnoreCase) -lt 0 -or
+        $arguments.IndexOf($NoActivateRunner, [System.StringComparison]::OrdinalIgnoreCase) -lt 0) {
         throw "Halieus shortcut target mismatch: $ShortcutPath must route through $ExpectedCommandScript"
     }
 }
@@ -211,6 +223,13 @@ foreach ($ShortcutRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirecto
     $openShard.Save()
 
 }
+
+# This is a Start Menu maintenance utility, not a replacement or new image
+# in the six approved HGR launcher artwork families.
+if (-not (Test-Path -LiteralPath $CloudRecoveryScript -PathType Leaf)) {
+    throw "Missing verified HGR Cloud recovery target: $CloudRecoveryScript"
+}
+New-HalieusShortcut -ShortcutPath $StartMenuCloudRecoveryShortcut -CommandScript $CloudRecoveryScript -Description 'Restore the local HGR Control Agent and outbound Cloud bridge; no site deployment' -IconPath $PowerShellIconPath
 
 # Remove loose/legacy shortcuts so HGR launchers only live inside the two
 # organised launcher folders.
@@ -276,7 +295,8 @@ $ShortcutIconChecks = @(
     [pscustomobject]@{ Shortcut = $StartMenuCloseShortcut; Icon = $CloseIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuUpdateShortcut; Icon = $UpdateIconPath },
     [pscustomobject]@{ Shortcut = $StartMenuPowerShellShortcut; Icon = $PowerShellIconPath },
-    [pscustomobject]@{ Shortcut = $StartMenuOpenShardShortcut; Icon = $OpenShardIconPath }
+    [pscustomobject]@{ Shortcut = $StartMenuOpenShardShortcut; Icon = $OpenShardIconPath },
+    [pscustomobject]@{ Shortcut = $StartMenuCloudRecoveryShortcut; Icon = $PowerShellIconPath }
 )
 foreach ($check in $ShortcutIconChecks) {
     Assert-HalieusShortcutIcon -ShortcutPath $check.Shortcut -ExpectedIconPath $check.Icon
@@ -285,8 +305,9 @@ foreach ($check in $ShortcutIconChecks) {
 # Update is mandatory, and must target the full GitHub sync/build/deploy CMD.
 Assert-HalieusShortcutCommandScript -ShortcutPath $ProjectUpdateShortcut -ExpectedCommandScript $UpdateScript
 Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuUpdateShortcut -ExpectedCommandScript $UpdateScript
+Assert-HalieusShortcutCommandScript -ShortcutPath $StartMenuCloudRecoveryShortcut -ExpectedCommandScript $CloudRecoveryScript
 if ($CreatedShortcuts.Count -ne 12) {
-    throw "Expected exactly six owner launcher roles in both managed folders; found $($CreatedShortcuts.Count)."
+    throw "Expected exactly six canonical launcher roles in both managed folders; found $($CreatedShortcuts.Count)."
 }
 foreach ($retiredName in @('HGR - Control.lnk', 'HGR - Stop Control.lnk', 'HGR - Update Site.lnk')) {
     foreach ($launcherRoot in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {
@@ -309,7 +330,7 @@ Write-Host 'HGR launcher family refreshed and verified against generated icon me
 Write-Host "  Project:    $ProjectLauncherDirectory" -ForegroundColor DarkGray
 Write-Host "  Start Menu: $StartMenuLauncherDirectory" -ForegroundColor DarkGray
 Write-Host ''
-Write-Host 'Six HGR launchers (Start, Restart, Close, Update, PowerShell, OpenShard) verified in both managed folders.' -ForegroundColor Green
+Write-Host 'Six canonical HGR launchers verified in both managed folders; additional Cloud recovery shortcut verified in Start Menu.' -ForegroundColor Green
 
 if ($UnhideScripts) {
     attrib -h $StartScript 2>$null | Out-Null
