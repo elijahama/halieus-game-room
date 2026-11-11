@@ -43,7 +43,7 @@ const syncReleaseQueryVersion = (source) => source.replace(
   /(\?v=)\d+\.\d+\.\d+[a-z]?/g,
   `$1${version}`,
 );
-for (const file of ['client/index.html', 'client/src/App.tsx', 'client/public/site.webmanifest']) {
+for (const file of ['client/index.html', 'client/src/App.tsx', 'client/public/site.webmanifest', 'client/public/control/index.html']) {
   artifact(file, syncReleaseQueryVersion(readText(file)));
 }
 artifact('README.md', readText('README.md').replace(/(\*\*Current milestone:\*\* )\S+/, `$1${version}`));

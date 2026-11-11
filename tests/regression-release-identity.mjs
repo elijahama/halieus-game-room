@@ -113,6 +113,7 @@ try {
     ['client/index.html', (s) => s.replaceAll(`?v=${version}`, '?v=4.1.1')],
     ['client/src/App.tsx', (s) => s.replace(`?v=${version}`, '?v=4.1.1')],
     ['client/public/site.webmanifest', (s) => s.replaceAll(`?v=${version}`, '?v=4.1.1')],
+    ['client/public/control/index.html', (s) => s.replaceAll(`?v=${version}`, '?v=4.1.1')],
     ['client/src/platform/accounts/AccountPanel.tsx', (s) => s.replace('Build {APP_RELEASE_LABEL}', 'Build 4.1.1')],
     ['server/src/index.ts', (s) => s.replace('version: APP_VERSION', 'version: "4.1.1"')],
   ];
