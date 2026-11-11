@@ -1,38 +1,45 @@
-# Mega Board Tournament Mode — Guild knockout candidate for 4.8.0
+# Mega Board Guild tournaments — 4.8 integration candidate
 
-## What is actually being implemented
+## Approved formats and results
 
-The first 4.8.x tournament milestone is an **operational four-Guild, single-elimination bracket** within the existing **Guilds → Tournaments** area. It uses the established real two-board Mega Board fixtures rather than mocks, AI results or manually entered wins.
+Four distinct Guilds register through their owners/admins. The host starts once all four have entered. Registration order seeds first versus fourth and second versus third. The manager selects single or double elimination when creating the tournament; formats cannot change after creation.
 
-An eligible Guild owner/admin may create a named knockout. The host shares its invitation ID with three other Guild managers. Each manager explicitly registers their Guild, and the host starts only when four distinct real Guilds have signed up. The transparent seed order is registration order (first versus fourth, second versus third), **not an invented rating or ranking**.
+Each bracket match uses a fresh approved two-board Guild fixture. Guild managers propose and approve original lineups, assemble two independent ordinary Mega Board rooms, and link the fixture. The games keep normal cash, rent and property rules. Official rooms reject AI, Beta practice, Ranked and Blitz. The fixture must be created after the tournament starts and cannot be reused by another bracket match.
 
-In each semifinal, competing Guild managers use the already-working two-board Guild fixture system: manager proposals, opponent approval, real separate Mega Board lobbies, authenticated locked rosters, standard economic rules, real game start and finished-game receipts. A manager links that verified fixture to the bracket match. Official tournament fixtures must be created after that tournament starts: historical finished games cannot be retroactively credited to a new knockout. The tournament coordinator reads the **server-persisted completed two-board receipts** and advances the Guild winning both boards. No browser API accepts arbitrary winner IDs, points, F1 awards or manual match outcomes. Once both semifinals have verified winners, the final becomes ready; another authenticated two-board fixture determines the champion. Completion and progress persist across server restarts.
+The server records real finished-game receipts. A 2–0 fixture produces its winner directly. **Owner-approved on 11 November 2026: a 1–1 split requires a deciding third game.** Each Guild manager nominates one current member from that fixture's original lineup. A manager cannot nominate for the opposing Guild or substitute someone outside the original lineup. Both nominees must join a fresh, unstarted, ordinary two-human room created after the original boards finish. Either participating manager may link it. Linking locks both nominees and mints a new server match identity. Membership is rechecked at game start; later membership changes cannot rewrite completed results.
 
-**A 1–1 split is deliberately unresolved** until a formal tiebreak rule has been approved. It does not fake a winner or auto-advance a Guild. Tournament ratings remain independent and unmodified; no new rating awards occur in this slice. The system is separate from non-scoring Beta practice and never binds a Beta, AI, Ranked or Blitz lobby as an official fixture (the underlying verified fixture guards enforce these restrictions).
+Only that real game's verified winning account settles the split fixture. Original board receipts and the 1–1 board score remain intact; the deciding result is recorded separately. No browser endpoint accepts a winner, points or result. Duplicate result delivery is idempotent; conflicting results, mismatched room generations or invalid persisted deciders fail closed.
 
-## API, state and permission boundary
+| Format | Progression | Championship |
+| --- | --- | --- |
+| Single elimination | Two semifinals and final; one lost fixture eliminates a Guild | Verified final fixture winner |
+| Double elimination | Semifinals; winners final; losers round 1; losers final; Grand Final | The undefeated finalist wins immediately if it wins the Grand Final. If the losers finalist wins, the same Guilds play a fresh reset fixture. Its winner is champion. |
 
-- `GET /guild-tournaments`: authenticated, returns only tournaments where the viewer belongs to a registered Guild; reconciles finished receipts.
-- `POST /guild-tournaments`: authenticated Guild manager creates a four-team tournament.
-- `POST /guild-tournaments/:id/register`: invite-ID registration restricted to the registering Guild's manager.
-- `POST /guild-tournaments/:id/start`: host Guild manager starts exactly four confirmed entrants.
-- `POST /guild-tournaments/:id/matches/:matchId/link`: competing Guild manager attaches a server-verified fixture for the correct Guild pair. Duplicate reuse across tournament matches is rejected.
-- `POST /guild-tournaments/:id/cancel`: host manager may cancel only before starting.
-- Mutations require JSON and same-origin requests. The competition ledger is a separate atomic-write file under the durable Guild data directory; corrupted records fail closed. No private results are exposed through unauthenticated list operations.
+A Guild must lose two fixtures to be eliminated from double elimination. A loss in one of a fixture's individual boards is not itself a bracket loss. Every final/reset fixture can itself require a third game after a 1–1 split. No byes, timed wins or manual disqualifications are introduced.
 
-The UI lives inside the already existing Guild Tournament tab, with the invitation ID, registration and start controls, two semifinal cards, final, linked fixture status and champion. It does **not** replace the existing real Guild fixture panel or alter the main Mega Board engine or canonical branding.
+## Player and recovery controls
 
-## Not yet complete (must not be represented as 5.0)
+Guilds → Tournaments contains registration, format selection, invitation, bracket, existing fixture linking and decider controls. Original nominated players get Return to deciding game; the existing spectator route provides Watch. Same-device return uses the saved recovery token when available. UI shows saving, saved and retry feedback. Light/dark text uses existing HGR theme tokens; canonical artwork is unchanged.
 
-- Full Solo player-registration and solo bracket match binding.
-- Double elimination, loser bracket, Grand Final reset semantics, byes and multi-round eight-or-more-entrant brackets.
-- Owner-approved tie/forfeit and no-show arbitration, automatic cancellation/recovery of abandoned brackets.
-- Formula One-inspired individual and team point policy and tournament-only rating settlement.
-- Dedicated tournament discovery/search, bracket spectator routing and finished Mega Board replay/report presentation.
-- Physical Android PWA testing with four real Guild managers, real live games and reconnects; independent Windows/Ubuntu CI; tagged 4.8.0 release packaging and safe Oracle rollout.
+An unsettled bound Guild room cannot be deleted through ordinary End-room or cleanup. Pre-start Leave cannot break the locked roster. Disconnect alone never awards a loss and retains the recovery slot. Once started, authenticated Leave/Forfeit forfeits only that player's normal Mega Board seat; a surviving human gains host continuity where needed. The result is settled through the same finished-game receipt path. Bound lobbies use extended tournament host grace. Existing completed receipts and pending deciders survive restart.
 
-## Release gate
+Both original unstarted fixture rooms may be released through the existing manager cancellation policy. A started fixture or bound decider cannot be silently reset, replaced or cancelled. A genuinely missing started room remains unresolved pending recovery; this candidate does not invent an arbitration winner or a new Guild reset-consent policy.
 
-This is a source candidate for **4.8.0**, not an automatic 5.0 milestone and not a live deployment. The last approved live source release is 4.7.10. Authoritative VERSION and release fingerprint must advance together only after final green CI and release preparation. Do not auto-run a scheduled maintenance window to deploy this. Existing Mega Board game safety, roster, replay, account, UI and production data are protected.
+## API and persistence
 
-See [version roadmap](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md), the existing real Guild fixture description, and the corresponding source PR for the current acceptance status.
+- GET /guild-tournaments: authenticated, membership-scoped list; reconciles saved fixture results.
+- POST /guild-tournaments: manager creates single or double format.
+- POST /guild-tournaments/:id/register, /start, /cancel: authorized registration and host controls; cancellation only before bracket start.
+- POST /guild-tournaments/:id/matches/:matchId/link: competing manager attaches an eligible unused fixture.
+- POST /guild-fixtures/:fixtureId/tiebreaker/nominate: each Guild manager nominates its own original player.
+- POST /guild-fixtures/:fixtureId/tiebreaker/bind-room: participating manager links the fresh deciding room.
+
+Private reads are no-store. Mutations require authenticated JSON and same-origin requests. Fixture and bracket ledgers use atomic sequential writes in the durable Guild data directory. Malformed persisted rosters, bracket dependencies, deciding receipts and champions fail closed. Tournament results do not change normal Ranked or Gamer Score awards; separate tournament ratings remain on the 4.9 path.
+
+## Validation and release gates
+
+Real HTTP and Mega Board handler tests cover original board starts, split-result nomination permissions, room eligibility, membership-at-start, actual disconnect and authenticated forfeit, host continuity, immutable result delivery, saved nominations/results and bracket advancement. Coordinator tests exercise real-room receipt validation through both reset champions and a no-reset champion, second-loss elimination, duplicate fixture refusal, per-round disk restoration and tampered dependencies. The shared bracket engine also passes all 96 double-elimination result paths through the Solo suite. These tests are not claims of four humans playing full matches.
+
+Real React browser checks cover 390/820/1440px, light/dark themes, 100–200% text, format submission, original-player options, error/retry feedback, locked nominations, Return/Watch and completed-decider presentation.
+
+This is the source candidate in [PR #246](https://github.com/elijahama/halieus-game-room/pull/246), built on main's preserved 4.7.15 hotfix baseline. It is not a deployed 4.8 release. The Solo alpha remains default off. Remaining acceptance includes physical Android/iPad PWA background recovery and closed-app push, missing-room/cross-device recovery policy, integrated Windows/Ubuntu CI, owner end-to-end acceptance and safe release packaging/Oracle rollout. Reports, replay navigation, tournament ratings and broader tournament discovery belong to the later roadmap. Eight-or-more entrant brackets are not included.

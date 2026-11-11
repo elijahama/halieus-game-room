@@ -6,6 +6,7 @@ import {
   rooms,
 } from "../state/rooms.js";
 import { getSoloTournamentBoundRoom } from "../../../platform/soloTournamentRegistration.js";
+import { getGuildFixtureBoundRoom } from "../../../platform/guildFixtures.js";
 
 import {
   cancelAuctionTimer,
@@ -36,8 +37,8 @@ export function endRoom(
   const authorisedReset = binding?.match.status === "reset-pending" &&
     binding.match.boardMatchId === options.soloResetMatchId &&
     binding.match.roomCreatedAt === room.createdAt && !room.started && room.gameState === null;
-  if (binding && !authorisedReset) {
-    console.warn("[HGR] Refused deleting an unsettled Solo tournament room:", code);
+  if ((binding && !authorisedReset) || getGuildFixtureBoundRoom(code)) {
+    console.warn("[HGR] Refused deleting an unsettled tournament room:", code);
     return false;
   }
 

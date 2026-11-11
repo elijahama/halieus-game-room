@@ -847,6 +847,9 @@ export function HomeScreen(props: HomeScreenProps) {
   function openGuildCreate(game: GameId, roomCode: string) { prepareCreate(game, roomCode); }
   function openJoin(intent: "join" | "watch" = "join") { setJoinIntent(intent); setJoinOpen(true); setShowRecovery(false); }
   function openLiveRoom(room: HalieusLiveRoomSummary, intent: "join" | "watch") {
+    if (room.game === "mega-board" && intent === "join" && savedSession?.code === room.code) {
+      onGameSelect("mega-board"); onResumeSavedSession(); return;
+    }
     onGameSelect(room.game);
     onRoomCodeChange(room.code);
     setJoinIntent(intent);

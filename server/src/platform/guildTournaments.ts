@@ -7,6 +7,7 @@ import type { HgrGuildFixture } from "../../../shared/platform/guildFixtures.js"
 import type { HgrGuildTournament, HgrGuildTournamentMatch } from "../../../shared/platform/guildTournaments.js";
 import type { GuildFixtureAuthority } from "./guildFixtures.js";
 import { getGuildFixtureForTournament } from "./guildFixtures.js";
+import { eliminationMatchPlan, eliminationChampion } from "../../../shared/platform/fourEntrantBracket.js";
 import { getGuildDataDirectory } from "./dataPaths.js";
 
 type GuildLookup = (guildId: string) => GuildFixtureAuthority | null;
@@ -20,23 +21,56 @@ export class TournamentError extends Error {
 function requireManager(guild: GuildFixtureAuthority | null, id: string): asserts guild is GuildFixtureAuthority {
   if (!guild || !guild.managerIds.includes(id)) throw new TournamentError(403, "A participating Guild owner or admin is required.");
 }
+function guildBracketRows(t: HgrGuildTournament) {
+  return t.matches.map(m=>({id:m.id,round:m.round,status:m.status,homeId:m.homeGuildId,awayId:m.awayGuildId,winnerId:m.winnerGuildId}));
+}
+function guildPlan(t: HgrGuildTournament) {
+  return eliminationMatchPlan(t.format==="four-guild-double-elimination",t.entrants,guildBracketRows(t));
+}
 function validateStore(raw: unknown): asserts raw is Store {
   const doc = raw as Store;
   if (!doc || doc.version !== 1 || !Array.isArray(doc.tournaments)) throw new Error("Unsupported Guild tournament store.");
   const ids = new Set<string>();
   for (const t of doc.tournaments) {
     if (!t || !t.id || ids.has(t.id) || t.game !== "mega-board" ||
-        t.format !== "four-guild-knockout" || !["registration", "active", "completed", "cancelled"].includes(t.status) ||
+        !["four-guild-knockout","four-guild-double-elimination"].includes(t.format) || !["registration", "active", "completed", "cancelled"].includes(t.status) ||
         !Array.isArray(t.entrants) || t.entrants.length < 1 || t.entrants.length > 4 ||
         t.hostGuildId !== t.entrants[0] || new Set(t.entrants).size !== t.entrants.length ||
-        !Array.isArray(t.matches) || (t.status !== "registration" && t.status !== "cancelled" && t.matches.length !== 3)) {
+        !Array.isArray(t.matches) || (t.status !== "registration" && t.status !== "cancelled" && t.matches.length !== (t.format==="four-guild-double-elimination"?7:3))) {
       throw new Error("Invalid persisted Guild tournament; refusing to overwrite.");
     }
     ids.add(t.id);
+    if (t.status==="registration" || (t.status==="cancelled" && !t.matches.length)) {
+      if(t.matches.length || t.championGuildId!==null || t.startedAt!==null) throw new Error("Unstarted Guild bracket cannot claim results.");
+      continue;
+    }
+    if(t.entrants.length!==4 || !Number.isSafeInteger(t.startedAt)) throw new Error("Invalid Guild bracket start.");
+    const plan=guildPlan(t);
+    if(plan.length!==t.matches.length) throw new Error("Invalid Guild bracket shape.");
+    for(let i=0;i<plan.length;i++) {
+      const expected=plan[i]!,m=t.matches[i]!;
+      if(m.id!==expected.id || m.round!==expected.round || m.homeGuildId!==expected.homeId ||
+          m.awayGuildId!==expected.awayId || !["awaiting-teams","ready","playing","tied","completed","not-required"].includes(m.status) ||
+          (expected.notRequired ? m.status!=="not-required" :
+            expected.homeId && expected.awayId ? m.status==="awaiting-teams" || m.status==="not-required" :
+              m.status!=="awaiting-teams") ||
+          (m.status==="completed" ? !m.fixtureId || !m.winnerGuildId ||
+              (m.winnerGuildId!==m.homeGuildId && m.winnerGuildId!==m.awayGuildId) :
+            m.winnerGuildId!==null) ||
+          (["playing","tied"].includes(m.status) ? !m.fixtureId :
+            m.status!=="completed" && m.fixtureId!==null)) {
+        throw new Error("Guild bracket seats must derive from verified earlier matches.");
+      }
+    }
+    const champion=eliminationChampion(t.format==="four-guild-double-elimination",guildBracketRows(t));
+    if((t.status==="completed")!==Boolean(champion) || t.championGuildId!==champion) {
+      throw new Error("Guild champion must derive from the verified final.");
+    }
+
   }
 }
 function newMatch(id: HgrGuildTournamentMatch["id"], home: string | null, away: string | null): HgrGuildTournamentMatch {
-  return { id, round: id === "final" ? "final" : "semifinal", homeGuildId: home, awayGuildId: away,
+  return { id, round: id === "final" ? "final" : id === "winners-final" ? "winners" : id.startsWith("losers-") ? "losers" : id==="grand-final" ? "grand-final" : id==="reset-final" ? "reset-final" : "semifinal", homeGuildId: home, awayGuildId: away,
     fixtureId: null, status: home && away ? "ready" : "awaiting-teams", winnerGuildId: null };
 }
 function verifiedWinner(fixture: HgrGuildFixture | null, home: string, away: string, startedAt: number | null): string | null {
@@ -55,7 +89,24 @@ function verifiedWinner(fixture: HgrGuildFixture | null, home: string, away: str
       new Set(receipts.map(row => row.boardMatchId)).size !== 2) return null;
   const homeWins = receipts.filter(row => row.winnerGuildId === home).length;
   const awayWins = receipts.filter(row => row.winnerGuildId === away).length;
-  return homeWins === 2 ? home : awayWins === 2 ? away : null; // A 1-1 result awaits an approved tiebreaker.
+  if (homeWins===2) return home;
+  if (awayWins===2) return away;
+  const tie=fixture.tiebreaker, board=tie?.board, result=tie?.result;
+  if (!tie || !board || !result || !tie.homeAccountId || !tie.awayAccountId ||
+      !fixture.homeLineups.flat().includes(tie.homeAccountId) ||
+      !fixture.awayLineups?.flat().includes(tie.awayAccountId) ||
+      board.seatAccountIds.length!==2 || !board.seatAccountIds.includes(tie.homeAccountId) ||
+      !board.seatAccountIds.includes(tie.awayAccountId) ||
+      expectedBoardIds.has(board.boardMatchId) ||
+      board.roomCreatedAt<Math.max(...receipts.map(row=>row.completedAt)) ||
+      result.boardMatchId!==board.boardMatchId || result.roomCode!==board.roomCode ||
+      result.roomCreatedAt!==board.roomCreatedAt || !Number.isSafeInteger(result.gameStartedAt) ||
+      result.gameStartedAt<board.roomCreatedAt || !Number.isSafeInteger(result.completedAt) ||
+      result.completedAt<result.gameStartedAt ||
+      (result.winnerAccountId!==tie.homeAccountId && result.winnerAccountId!==tie.awayAccountId) ||
+      result.winnerGuildId!==(result.winnerAccountId===tie.homeAccountId?fixture.homeGuildId:fixture.awayGuildId)) return null;
+  return result.winnerGuildId;
+
 }
 
 export function createGuildTournamentCoordinator(
@@ -81,6 +132,7 @@ export function createGuildTournamentCoordinator(
       if (!loaded) throw new Error("Guild tournament store not loaded.");
       const { next, value } = mutate(tournaments);
       if (next !== tournaments) {
+        validateStore({version:1,tournaments:[...next.values()]});
         await mkdir(dirname(filePath), { recursive: true });
         const temp = filePath + "." + randomUUID() + ".tmp";
         await writeFile(temp, JSON.stringify({ version: 1, tournaments: [...next.values()] }, null, 2), { encoding: "utf8", mode: 0o600 });
@@ -97,14 +149,15 @@ export function createGuildTournamentCoordinator(
     return [...tournaments.values()].filter(t => t.entrants.some(id => guild(id)?.memberIds.includes(accountId)))
       .sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 40).map(row => structuredClone(row));
   }
-  function create(accountId: string, guildId: string, name: unknown, guild: GuildLookup) {
+  function create(accountId: string, guildId: string, name: unknown, guild: GuildLookup, format: unknown = "four-guild-knockout") {
     return change(current => {
       requireManager(guild(guildId), accountId);
+      if(format!=="four-guild-knockout" && format!=="four-guild-double-elimination") throw new TournamentError(400,"Choose a supported four-Guild format.");
       const title = typeof name === "string" ? name.trim() : "";
       if (title.length < 3 || title.length > 70) throw new TournamentError(400, "Tournament name must contain 3–70 characters.");
       const now = Date.now();
       const tournament: HgrGuildTournament = { id: randomUUID(), name: title, game: "mega-board",
-        format: "four-guild-knockout", hostGuildId: guildId, entrants: [guildId], status: "registration",
+        format, hostGuildId: guildId, entrants: [guildId], status: "registration",
         matches: [], championGuildId: null, createdAt: now, updatedAt: now, startedAt: null, completedAt: null };
       const next = new Map(current); next.set(tournament.id, tournament);
       return { next, value: tournament };
@@ -137,7 +190,7 @@ export function createGuildTournamentCoordinator(
       // Registration order is the transparent seed order, not fabricated ratings.
       const [a, b, c, d] = t.entrants;
       const updated: HgrGuildTournament = { ...t, status: "active", startedAt: Date.now(), updatedAt: Date.now(),
-        matches: [newMatch("semi-1", a!, d!), newMatch("semi-2", b!, c!), newMatch("final", null, null)] };
+        matches: guildPlan(t).map(m=>newMatch(m.id,m.homeId,m.awayId)) };
       const next = new Map(current); next.set(id, updated);
       return { next, value: updated };
     });
@@ -187,15 +240,16 @@ export function createGuildTournamentCoordinator(
             match.status = status; match.winnerGuildId = winner; changed = true;
           }
         }
-        const final = matches[2]!;
-        if (final.status === "awaiting-teams" && matches[0]?.winnerGuildId && matches[1]?.winnerGuildId) {
-          final.homeGuildId = matches[0].winnerGuildId;
-          final.awayGuildId = matches[1].winnerGuildId;
-          final.status = "ready";
-          changed = true;
+        for(const expected of guildPlan({...t,matches})) {
+          const m=matches.find(row=>row.id===expected.id)!;
+          if(m.status!=="awaiting-teams") continue;
+          if(expected.notRequired){m.status="not-required";changed=true;}
+          else if(expected.homeId && expected.awayId) {
+            m.homeGuildId=expected.homeId;m.awayGuildId=expected.awayId;m.status="ready";changed=true;
+          }
         }
         if (!changed) continue;
-        const champion = final.status === "completed" ? final.winnerGuildId : null;
+        const champion=eliminationChampion(t.format==="four-guild-double-elimination",guildBracketRows({...t,matches}));
         const updated: HgrGuildTournament = { ...t, matches, championGuildId: champion,
           status: champion ? "completed" : "active", completedAt: champion ? Date.now() : null,
           updatedAt: Date.now() };
@@ -249,7 +303,7 @@ export function registerGuildTournamentRoutes(app: Express, resolveAccount: Acco
     await tournamentStore.reconcile(getGuildFixtureForTournament);
     return tournamentStore.visible(a.id, guild);
   }, true));
-  app.post("/guild-tournaments", run((r, a) => tournamentStore.create(a.id, r.body?.guildId, r.body?.name, guild)));
+  app.post("/guild-tournaments", run((r, a) => tournamentStore.create(a.id, r.body?.guildId, r.body?.name, guild, r.body?.format)));
   app.post("/guild-tournaments/:id/register", run((r, a) =>
     tournamentStore.register(a.id, String(r.params.id), r.body?.guildId, guild)));
   app.post("/guild-tournaments/:id/start", run((r, a) => tournamentStore.start(a.id, String(r.params.id), guild)));

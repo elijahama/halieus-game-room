@@ -218,3 +218,12 @@ report a real local release VERSION; missing/old bridge fields remain
 explicitly Unverified. No made-up match with Oracle. Preserve game rules,
 identity security, PWA art, existing maintenance, updater and release
 safeguards. 4.7.3 is a source candidate, not deployed by documentation.
+
+
+### Current 4.8 integration — approved Guild third game and double elimination (11 November 2026)
+
+The owner selected a deciding third Mega Board game for a 1–1 Guild split. This supersedes the earlier unresolved-policy checkpoint above. Each Guild manager nominates a current member from the fixture's original lineup; both original nominees join a fresh two-human room. The server locks nominations at binding, rechecks membership at start and settles only its real finished-game receipt. Original two-board results stay 1–1 and unchanged; the decider is a separate immutable receipt.
+
+Guild single/double elimination now shares the verified four-entrant bracket engine with Solo. A losers-bracket champion must beat the undefeated finalist in the Grand Final and then win a fresh reset fixture. Each fixture can require the approved third game. Ordinary End-room, cleanup and pre-start Leave preserve unsettled Guild rooms; disconnect does not award a loss; authenticated forfeits settle the real game and preserve a surviving host. Missing started games still require recovery, without manufactured winners.
+
+Real handler tests passed the deciding game, role/roster guards, disconnect/forfeit, saved receipts and bracket settlement. Coordinator tests passed both reset winners, no-reset champion, duplicate fixture refusal and restoration after every round. Responsive Guild controls passed 390/820/1440px with enlarged text. Exact integrated checks are recorded with the final candidate commit. See HGR_GUILD_TOURNAMENT_BRACKETS_4_8.md. Physical PWA background/closed-app push acceptance, broader geometry/badge work, remote CI and owner end-to-end release acceptance remain outstanding. Source VERSION remains 4.7.15; production is unchanged.

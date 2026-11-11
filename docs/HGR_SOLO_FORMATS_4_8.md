@@ -22,7 +22,7 @@ Completed receipts and champions are immutable. New rounds receive new room gene
 
 Games → Mega Board tournaments opens Solo registration and brackets, with a Guild tournaments route alongside it. Share the invitation ID with the other three players. The host starts only after all four accounts register. Each pairing creates an ordinary two-human, unranked, non-Blitz, non-Beta room; the tournament host links its code before the players start. Existing room controls remain authoritative. Return uses the existing same-device recovery token when available; Watch enters the existing spectator flow. The UI refreshes on focus, online, pageshow and visible-tab polling and shows saving, success and failure feedback.
 
-Two original players may approve replacing a never-started lobby. The UI cannot name a winner or bypass server recovery guards. Existing Guild brackets still require their two real board receipts; **a 1–1 Guild split remains unresolved**. This candidate does not invent Guild scoring or a tiebreaker.
+Two original players may approve replacing a never-started lobby. The UI cannot name a winner or bypass server recovery guards. Guild single/double brackets use two real board receipts and the owner-approved third-game decider after a 1–1 split. See [Guild tournament policy](HGR_GUILD_TOURNAMENT_BRACKETS_4_8.md).
 
 ## Validation and remaining acceptance
 
@@ -30,5 +30,5 @@ Two original players may approve replacing a never-started lobby. The UI cannot 
 - Coordinator tests cover both reset champions, an undefeated champion, duplicate receipts, restoration after every round and tampered participant refusal.
 - Existing real-start single-elimination, registration and six crash-boundary reset tests remain passing.
 - Real React controls pass at 390/820/1440px and 100–200% text size, including creation, seed, link, return/watch, reset consent and truthful API rejection.
-- Separate remaining work: Guild tiebreak policy and double-elimination extension, physical Android/iPad PWA background recovery and closed-app push delivery, cross-device recovery policy, match report/replay navigation, integrated CI and owner acceptance. These are not replaced by component tests.
+- Separate remaining work: physical Android/iPad PWA background recovery and closed-app push delivery, cross-device recovery policy, match report/replay navigation, integrated CI and owner acceptance. These are not replaced by component tests.
 - Source VERSION stays 4.7.15 while the complete 4.8 milestone is unfinished. No production deployment is implied.
