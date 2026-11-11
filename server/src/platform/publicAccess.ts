@@ -217,6 +217,9 @@ async function reopenWhenDue(): Promise<void> {
         scheduledWindow: null,
       };
     });
+    // A timer can run just before the wall-clock deadline. A no-op must
+    // rearm that deadline instead of waiting for the recovery watchdog.
+    if (state.closed && state.reopenAt !== null) armScheduledReopen();
     lastSchedulerError = null;
   } catch (error) {
     lastSchedulerError = "Could not persist scheduled reopening.";
