@@ -96,3 +96,40 @@ for (const drawPath of ["board-space", "speed-die"]) {
   auditPool(state);
   console.log("PASS " + drawPath + ": all previously held tickets expire permanently; protected new card and finite 16-ticket pool intact");
 }
+
+
+{
+  // A restored room or handler can carry stale denormalized counts.
+  // Every server broadcast must repair them from the real deck and hands.
+  const { emitGameState } = await import("../server/src/games/mega-board/utils/game-state.ts");
+  const state = createInitialGameState("BTCOUNT", [
+    { id: "p1", name: "Alpha", isAi: true },
+    { id: "p2", name: "Beta", isAi: true },
+  ]);
+  state.phase = "playing";
+  state.turnPhase = "roll";
+  state.busTicketDeck = ["bus-standard-4", "bus-standard-5"];
+  state.busTicketsDiscarded = ["bus-standard-1"];
+  state.players[0].busTicketIds = ["bus-standard-2"];
+  state.players[0].busTickets = 99;
+  state.busTicketsRemaining = 16;
+  const emitted = [];
+  const io = { to: () => ({ emit: (name, payload) => emitted.push([name, payload]) }) };
+  emitGameState(io, "BTCOUNT", state);
+  assert.equal(state.busTicketsRemaining, 2, "Server counter is repaired before broadcast");
+  assert.equal(state.players[0].busTickets, 1, "Held-ticket count is repaired before broadcast");
+  const broadcast = emitted.find(([name]) => name === "game:state")?.[1]?.state;
+  assert.ok(broadcast, "The repaired authoritative state was broadcast");
+  assert.equal(broadcast.busTicketsRemaining, 2);
+  assert.equal(broadcast.players[0].busTickets, 1);
+
+  const { readFile } = await import("node:fs/promises");
+  const boardSource = await readFile(
+    new URL("../client/src/games/mega-board/components/GameBoard.tsx", import.meta.url), "utf8"
+  );
+  assert.match(boardSource, /const remainingBusTickets = Array\.isArray\(gameState\.busTicketDeck\)/,
+    "The board should derive remaining cards from the live draw pile");
+  assert.equal((boardSource.match(/\{remainingBusTickets\}/g) ?? []).length, 3,
+    "The badge, accessible label and Bus Ticket dialog all use the same count");
+  console.log("PASS Bus Ticket counter: server broadcast and board derive from the live draw pile");
+}
