@@ -24,6 +24,7 @@ import { queueRoomSave } from "../utils/persistence.js";
 import { reconnectRoomPlayer } from "../utils/reconnection.js";
 import { activeMegaMatch } from "../../../platform/active-match.js";
 import { getGuildFixtureBoundRoom, getGuildFixtureStartBlock } from "../../../platform/guildFixtures.js";
+import { getSoloTournamentBoundRoom, getSoloTournamentStartBlock } from "../../../platform/soloTournamentRegistration.js";
 import { cancelHostGrace } from "../utils/host-grace.js";
 import { toPublicGameRoom } from "../utils/room-view.js";
 import { syncAuctionTimer } from "../utils/auction-timer.js";
@@ -135,9 +136,11 @@ export function registerLobbyHandlers(
 
       const reason = room.started
         ? "This game has already started."
-        : roomIsFull
-          ? "This lobby is full."
-          : undefined;
+        : getSoloTournamentBoundRoom(code)
+          ? "This Solo tournament room is locked to its registered players."
+          : roomIsFull
+            ? "This lobby is full."
+            : undefined;
 
       acknowledge({
         ok: true,
@@ -291,6 +294,10 @@ export function registerLobbyHandlers(
         acknowledge({ ok: false, reason: "This Guild fixture lineup is locked. Only registered seats can reconnect." });
         return;
       }
+      if (getSoloTournamentBoundRoom(code)) {
+        acknowledge({ ok: false, reason: "This Solo tournament room is locked. Only its original seats may reconnect." });
+        return;
+      }
       if (room.betaTournamentTest) {
         const invited = getAuthenticatedAccount(socket.request as Request);
         if (!invited || !hasBetaTournamentRoomInvitation(invited.id, code)) {
@@ -394,6 +401,16 @@ export function registerLobbyHandlers(
             room.createdAt !== boundGuildBoard.link.roomCreatedAt ||
             !boundGuildBoard.link.seatAccountIds.includes(account.id)) {
           acknowledge({ ok: false, reason: "This Guild fixture seat must be recovered by its original signed-in account." });
+          return;
+        }
+      }
+      const boundSolo = getSoloTournamentBoundRoom(code);
+      if (boundSolo) {
+        const account = getAuthenticatedAccount(socket.request as Request);
+        if (!existingPlayer || !account || account.id !== existingPlayer.replayAccountId ||
+            room.createdAt !== boundSolo.match.roomCreatedAt ||
+            (account.id !== boundSolo.match.homeAccountId && account.id !== boundSolo.match.awayAccountId)) {
+          acknowledge({ ok: false, reason: "Only the original signed-in Solo tournament seat may reconnect." });
           return;
         }
       }
@@ -572,6 +589,11 @@ socket.on(
       const fixtureBlock = getGuildFixtureStartBlock(room);
       if (fixtureBlock) {
         acknowledge({ ok: false, reason: fixtureBlock });
+        return;
+      }
+      const soloBlock = getSoloTournamentStartBlock(room);
+      if (soloBlock) {
+        acknowledge({ ok: false, reason: soloBlock });
         return;
       }
       const connectedPlayers = room.players.filter(

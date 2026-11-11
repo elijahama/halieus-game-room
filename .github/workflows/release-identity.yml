@@ -77,7 +77,7 @@ jobs:
         run: npm ci
 
       - name: Install canonical identity renderer
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Regenerate canonical main HGR identity assets
         run: node scripts/generate-platform-icons.mjs

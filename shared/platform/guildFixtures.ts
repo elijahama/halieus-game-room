@@ -20,7 +20,15 @@ export interface HgrGuildFixtureBoardResult {
   completedAt: number;
   placements: Array<{ accountId: string; guildId: string; finishPosition: number }>;
 }
+export interface HgrGuildFixtureTiebreaker {
+  homeAccountId: string | null;
+  awayAccountId: string | null;
+  board: HgrGuildFixtureBoardLink | null;
+  result: HgrGuildFixtureBoardResult | null;
+}
 export interface HgrGuildFixture {
+  /** Optional third game, nominated only after a verified 1–1 original fixture. */
+  tiebreaker?: HgrGuildFixtureTiebreaker | null;
   id: string;
   game: "mega-board";
   homeGuildId: string;

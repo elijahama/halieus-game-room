@@ -66,6 +66,12 @@ try {
       </style></head><body>${fixtures.map(f=>`<section class="gallery-case" data-game="${f.id}">
         <div class="gallery-host">${f.html}</div></section>`).join("")}</body></html>`);
     await page.addStyleTag({content:css});
+    // Measure settled layout: fractional entrance translations can round a 36px
+    // rectangle to 35.99988px on Chromium. Wait for finite row animations.
+    await page.locator(".card-game-player-row,.poker-player-list-card").evaluateAll(async rows=>{
+      await Promise.all(rows.flatMap(row=>row.getAnimations()).filter(animation=>
+        Number.isFinite(animation.effect.getTiming().iterations)).map(animation=>animation.finished.catch(()=>{})));
+    });
     for (const {id,cls} of fixtures) {
       const element=page.locator(`[data-game="${id}"] ${cls}`).first();
       assert.equal(await element.count(),1, `${id}: roster found`);
@@ -87,7 +93,7 @@ try {
     const buttons=page.locator('[data-game="connect-four"] .card-game-player-row button');
     assert.equal(await buttons.count(),4,"All roster action buttons preserved");
     const touch=await buttons.first().evaluate(node=>({w:node.getBoundingClientRect().width,h:node.getBoundingClientRect().height}));
-    assert(touch.w>=36&&touch.h>=36,"Existing AI removal button must stay touch-accessible");
+    assert(touch.w>=36&&touch.h>=36,"Existing AI removal button must stay touch-accessible: "+JSON.stringify({viewport,touch}));
     const mega=await page.locator('[data-game="mega-board"] .player-property-strip').first()
       .evaluate(node=>getComputedStyle(node).gridTemplateColumns.split(/\s+/).filter(Boolean).length);
     assert.equal(mega,2,"Mega Board property strips use a gallery");

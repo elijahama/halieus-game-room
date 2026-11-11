@@ -58,6 +58,8 @@ import { GameBoard } from "./games/mega-board/components/GameBoard";
 import { GameSidebar } from "./games/mega-board/components/GameSidebar";
 import { LiveTradeOverlay } from "./games/mega-board/components/LiveTradeOverlay";
 import { PlayerRail } from "./games/mega-board/components/PlayerRail";
+import { SpectatorControls } from "./games/mega-board/components/SpectatorControls";
+import type { SeasonSnapshot } from "../../shared/games/mega-board/season";
 import { PlayerDetailsModal } from "./games/mega-board/components/PlayerDetailsModal";
 import { AvailablePropertiesModal } from "./games/mega-board/components/AvailablePropertiesModal";
 import { WinnerScreen } from "./games/mega-board/components/WinnerScreen";
@@ -391,6 +393,8 @@ export default function App() {
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState("");
   const [leaderboardEntries, setLeaderboardEntries] = useState<RankedLeaderboardEntry[]>([]);
+  const [seasonStandings, setSeasonStandings] = useState<SeasonSnapshot | null>(null);
+  const [spectatorFollowId, setSpectatorFollowId] = useState<string | null>(null);
   const [recentRankedMatches, setRecentRankedMatches] = useState<RankedMatchSummary[]>([]);
   const [freeParkingJackpotEnabled, setFreeParkingJackpotEnabled] = useState(false);
   const [isSpectator, setIsSpectator] = useState(false);
@@ -1892,13 +1896,14 @@ function handleLeaveSpectator() {
   function loadRankedLeaderboard() {
     setLeaderboardLoading(true);
     setLeaderboardError("");
-    socket.emit("ranked:get", {}, (response: { ok?: boolean; reason?: string; leaderboard?: RankedLeaderboardEntry[]; recentMatches?: RankedMatchSummary[] }) => {
+    socket.emit("ranked:get", {}, (response: { ok?: boolean; reason?: string; leaderboard?: RankedLeaderboardEntry[]; recentMatches?: RankedMatchSummary[]; season?: SeasonSnapshot }) => {
       setLeaderboardLoading(false);
       if (!response?.ok) {
         setLeaderboardError(response?.reason ?? "Unable to load the Ranked leaderboard.");
         return;
       }
       setLeaderboardEntries(response.leaderboard ?? []);
+      setSeasonStandings(response.season ?? null);
       setRecentRankedMatches(response.recentMatches ?? []);
     });
   }
@@ -3376,7 +3381,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.7.15-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.8.0-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>
@@ -3705,6 +3710,9 @@ function handleLeaveSpectator() {
           <div className="mega-spectator-banner" role="status" aria-label="Spectating live Mega Board">
             <strong>Spectating</strong>
             <span>Live Mega Board • Room {lobby.code} • Read-only view</span>
+            <SpectatorControls gameState={gameState}
+              followedId={spectatorFollowId && nonBankruptPlayers.some(p=>p.id===spectatorFollowId) ? spectatorFollowId : null}
+              onFollow={setSpectatorFollowId} />
           </div>
         )}
 
@@ -3819,6 +3827,7 @@ function handleLeaveSpectator() {
               gameState={gameState}
               players={nonBankruptPlayers}
               headerTitle="Live players"
+              highlightedPlayerId={spectatorFollowId}
               isSpectator
               spectators={spectators}
               showSpectators
@@ -4205,6 +4214,7 @@ function handleLeaveSpectator() {
     {leaderboardOpen && (
       <LeaderboardModal
         entries={leaderboardEntries}
+        season={seasonStandings}
         recentMatches={recentRankedMatches}
         loading={leaderboardLoading}
         error={leaderboardError}

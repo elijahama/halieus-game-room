@@ -160,4 +160,18 @@
     max-height: none !important;
     overflow: visible !important;
   }
+
+  /* Match the legacy spectator selector so its 120px !important cap cannot
+     win over the shared portfolio rule when a colour group is expanded. */
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-property-strip {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: max-content !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
 }

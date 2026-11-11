@@ -5,6 +5,8 @@ import type {
 import {
   rooms,
 } from "../state/rooms.js";
+import { getSoloTournamentBoundRoom } from "../../../platform/soloTournamentRegistration.js";
+import { getGuildFixtureBoundRoom } from "../../../platform/guildFixtures.js";
 import type { GameRoom } from "../types/game.js";
 
 import {
@@ -24,6 +26,8 @@ export const ACTIVE_HOST_RECONNECT_GRACE_MS = 24 * 60 * 60 * 1000;
 export const PAUSED_HOST_RECONNECT_GRACE_MS = 24 * 60 * 60 * 1000;
 
 export function hostReconnectGraceMs(room: GameRoom): number {
+  // Unsettled tournament rooms must not use the ordinary 90-second lobby expiry.
+  if (getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)) return ACTIVE_HOST_RECONNECT_GRACE_MS;
   return room.gameState?.pauseState ? PAUSED_HOST_RECONNECT_GRACE_MS
     : room.started && room.gameState && room.gameState.phase !== "finished"
       ? ACTIVE_HOST_RECONNECT_GRACE_MS : HOST_RECONNECT_GRACE_MS;

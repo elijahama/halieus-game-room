@@ -36,13 +36,44 @@ try {
   assert.equal((await loadPublicAccessState()).closed,true,"Corrupt existing file fails closed");
   assert.equal((await setPublicAccessState(false,"Recovered","owner-test")).closed,false,"Owner can repair corrupt file");
   detach();
+  // A timer may run just before Date.now reaches its deadline. It must arm the
+  // remaining delay rather than rely on the independent five-second watchdog.
+  const realTimeout=globalThis.setTimeout, realClear=globalThis.clearTimeout, realNow=Date.now;
+  const timers=[];let clock=realNow();
+  try {
+    Date.now=()=>clock;
+    globalThis.setTimeout=(fn,delay)=>{const timer={fn,delay,unref(){},testTimer:true};timers.push(timer);return timer;};
+    globalThis.clearTimeout=timer=>{if(!timer?.testTimer)realClear(timer);};
+    const deadline=clock+1000;
+    await setPublicAccessState(true,"Early timer callback","owner-test",deadline);
+    const armed=timers.at(-1);assert.equal(armed.delay,1000);
+    clock=deadline-1;armed.fn();
+    await new Promise(resolve=>realTimeout(resolve,0));
+    assert.equal(getPublicAccessState().closed,true,"An early callback must not reopen before the deadline");
+    assert.notEqual(timers.at(-1),armed,"Early callback must rearm the remaining deadline");
+    assert.equal(timers.at(-1).delay,1);
+    let timer;const reopened=new Promise((resolve,reject)=>{
+      timer=realTimeout(()=>reject(Error("Rearmed callback did not persist reopening")),2000);
+      onPublicAccessChanged(state=>{if(!state.closed){realClear(timer);resolve();}});
+    });
+    clock=deadline;timers.at(-1).fn();await reopened;
+    assert.equal(JSON.parse(await readFile(path,"utf8")).closed,false);
+  } finally {
+    Date.now=realNow;globalThis.setTimeout=realTimeout;globalThis.clearTimeout=realClear;
+    await setPublicAccessState(false,"Timer fixture cleanup","owner-test");
+  }
+  let notifyReopened;
+  const reopenedPersisted=new Promise(resolve=>{notifyReopened=resolve;});
+  const stopReopenListener=onPublicAccessChanged(state=>{if(!state.closed)notifyReopened();});
   const reopenAt = Date.now() + 75;
   const timed = await setPublicAccessState(true, "Short test closure", "owner-test", reopenAt);
   assert.equal(timed.closed, true);
   assert.equal(timed.reopenAt, reopenAt, "Expiry must be stored in private state");
   assert.equal((await loadPublicAccessState()).reopenAt, reopenAt, "Expiry survives reload");
   assert.match(renderPublicClosedPage("Time-limited access", reopenAt), /Scheduled reopening:/);
-  await new Promise(resolve => setTimeout(resolve, 200));
+  let reopenTimeout;
+  try { await Promise.race([reopenedPersisted,new Promise((_,reject)=>{reopenTimeout=setTimeout(()=>reject(Error("Automatic reopening did not persist within 2 seconds")),2000);})]); }
+  finally {clearTimeout(reopenTimeout);stopReopenListener();}
   assert.equal(getPublicAccessState().closed, false, "Oracle-owned timer automatically reopens");
   assert.equal(getPublicAccessState().reopenAt, null, "Reopen removes the deadline");
   assert.equal(JSON.parse(await readFile(path, "utf8")).closed, false, "Automatic reopen is persisted");

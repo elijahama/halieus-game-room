@@ -46,6 +46,11 @@ const syncReleaseQueryVersion = (source) => source.replace(
 for (const file of ['client/index.html', 'client/src/App.tsx', 'client/public/site.webmanifest']) {
   artifact(file, syncReleaseQueryVersion(readText(file)));
 }
+// Control CSS/JS follow the release; approved artwork identity tags are fixed.
+artifact('client/public/control/index.html', readText('client/public/control/index.html').replace(
+  /(\/control\/control\.(?:css|js)\?v=)\d+\.\d+\.\d+[a-z]?/g,
+  '$1' + version,
+));
 artifact('README.md', readText('README.md').replace(/(\*\*Current milestone:\*\* )\S+/, `$1${version}`));
 for (const file of packages) {
   const actual = JSON.parse(readText(file)).version;

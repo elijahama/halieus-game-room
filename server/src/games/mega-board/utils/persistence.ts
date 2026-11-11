@@ -185,7 +185,7 @@ function prepareLoadedRoom(
   return room;
 }
 
-export async function loadRoomsFromDisk(): Promise<number> {
+export async function loadRoomsFromDisk(options: { strict?: boolean } = {}): Promise<number> {
   try {
     const raw = await readFile(
       SAVE_PATH,
@@ -228,6 +228,8 @@ export async function loadRoomsFromDisk(): Promise<number> {
     if (nodeError.code === "ENOENT") {
       return 0;
     }
+
+    if (options.strict) throw error;
 
     console.error(
       "Unable to load saved rooms:",
@@ -283,4 +285,11 @@ export async function flushRoomSave(): Promise<void> {
 
 export function getSavePath(): string {
   return SAVE_PATH;
+}
+
+/** Durability barrier for cross-store transactions; callers must see write failures. */
+export async function flushRoomSaveStrict(): Promise<void> {
+  const task = saveChain.catch(() => undefined).then(writeSnapshot);
+  saveChain = task.catch(() => undefined);
+  await task;
 }

@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { getAccountDataDirectory, getSessionDataDirectory } from "./dataPaths.js";
+import { perAccountSingleFlight } from "./perAccountSingleFlight.js";
 import { ACHIEVEMENT_CATALOG, MAX_GAMER_SCORE, achievementDefinition, type AchievementDefinition, type PlayerProgression } from "../../../shared/platform/progression.js";
 type Identity = { accountId: string; beta: boolean };
 const identities = new Map<string, () => Identity | null>();
@@ -49,11 +50,35 @@ export function captureProgression(payload: any): void {
     meta.lastActionAt = at; meta.lastActionKey = key;
   }
 }
-let chain = Promise.resolve();
-export function readPlayerProgression(accountId: string): Promise<PlayerProgression> {
-  const task = chain.then(() => rebuild(accountId)); chain = task.then(() => {}, () => {}); return task;
-}
+// Independent accounts no longer block one another; same-account reads
+// coalesce until a durable snapshot is written (or a failure is settled).
+export const readPlayerProgression: (accountId: string) => Promise<PlayerProgression> =
+  perAccountSingleFlight(rebuild);
 async function rebuild(accountId: string): Promise<PlayerProgression> {
+  try {
+    return await rebuildFromArchive(accountId);
+  } catch (error) {
+    // Only this account's last successful server-written snapshot is eligible.
+    // A partial/unreadable archive must never revoke verified lifetime awards.
+    try {
+      const path = resolve(getAccountDataDirectory(), "progression",
+        Buffer.from(accountId).toString("hex") + ".json");
+      const saved: PlayerProgression = JSON.parse(await readFile(path, "utf8"));
+      if (!Number.isFinite(saved.gamerScore) || saved.gamerScore < 0 ||
+          !Number.isFinite(saved.played) || !Number.isFinite(saved.wins) ||
+          !Number.isFinite(saved.activePlayMs) || !Array.isArray(saved.awards) ||
+          !Array.isArray(saved.achievements) || !saved.byGame ||
+          saved.awards.some(a => !achievementDefinition(a.id) ||
+            a.points !== achievementDefinition(a.id)!.points) ||
+          new Set(saved.awards.map(a => a.id)).size !== saved.awards.length ||
+          saved.gamerScore !== saved.awards.reduce((sum, a) => sum + a.points, 0)) {
+        throw new Error("Invalid verified progression snapshot.");
+      }
+      return saved;
+    } catch { throw error; }
+  }
+}
+async function rebuildFromArchive(accountId: string): Promise<PlayerProgression> {
   const result: PlayerProgression = {
     gamerScore: 0,
     maxGamerScore: MAX_GAMER_SCORE,
@@ -71,8 +96,7 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
 
   const records: any[] = [];
   for (const file of files.filter(file => file.endsWith(".json"))) {
-    try { records.push(JSON.parse(await readFile(resolve(directory, file), "utf8"))); }
-    catch { /* An incomplete archive is not evidence for an award. */ }
+    records.push(JSON.parse(await readFile(resolve(directory, file), "utf8")));
   }
   records.sort((a,b) => a.finalisedAt - b.finalisedAt || String(a.sessionId).localeCompare(String(b.sessionId)));
 
@@ -82,6 +106,19 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
   const specialEarned = new Set<string>();
   let kassTotal = 0;
   let completedTrades = 0;
+  let rankedMegaPodiums = 0;
+  const recentRankedMegaPodiums: boolean[] = [];
+  // The first season boundary is written once by the Ranked ledger.
+  // A missing boundary is not evidence that a historical match is pre-season.
+  let seasonStartedAt: number | null = null;
+  try {
+    const { getMegaBoardDataDirectory } = await import("./dataPaths.js");
+    const ledger = JSON.parse(await readFile(resolve(getMegaBoardDataDirectory(), "rankings.json"), "utf8"));
+    if (Number.isFinite(ledger.seasonStartedAt) && ledger.seasonStartedAt > 0) {
+      seasonStartedAt = ledger.seasonStartedAt;
+    }
+  } catch (error: any) { if (error.code !== "ENOENT") throw error; }
+
 
   const award = (id: string, record: any) => {
     if (awarded.has(id)) return;
@@ -175,6 +212,37 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
       kassTotal += Number(state.playerStats?.[player.id]?.kassManeuvers) || 0;
       completedTrades += Number(state.playerStats?.[player.id]?.completedTrades) || 0;
       if ((state.playerStats?.[player.id]?.initiatedThreeWayDeals ?? 0) > 0) specialEarned.add("mega:three-way");
+      const stats = state.playerStats?.[player.id];
+      const wonMega = won && !player.isBankrupt;
+      const podiumFinish = wonMega ? 1 : Number(stats?.finishPosition);
+      const verifiedPodium = Number.isInteger(podiumFinish) && podiumFinish >= 1 && podiumFinish <= 3;
+      if (Number(stats?.peakProperties) >= 12) specialEarned.add("mega:property-empire");
+      if (Number(stats?.rentPaid) >= 1000 && verifiedPodium) specialEarned.add("mega:rent-survivor");
+      if (wonMega && Array.isArray(stats?.history) && stats.history.some((point: any) =>
+        Number.isFinite(point?.cash) && point.cash >= 0 && point.cash <= 150 &&
+        Number.isFinite(point?.turnNumber) && point.turnNumber > 0
+      )) specialEarned.add("mega:comeback-victory");
+      if (state.ranked === true && verifiedPodium) {
+        rankedMegaPodiums++;
+        if (rankedMegaPodiums >= 3) specialEarned.add("mega:rising-contender");
+        if (seasonStartedAt !== null && Number(record.finalisedAt) < seasonStartedAt) {
+          specialEarned.add("mega:preseason-podium");
+        }
+      }
+      if (state.ranked === true) {
+        recentRankedMegaPodiums.push(verifiedPodium);
+        if (recentRankedMegaPodiums.length > 5) recentRankedMegaPodiums.shift();
+        if (recentRankedMegaPodiums.length === 5 &&
+            recentRankedMegaPodiums.filter(Boolean).length >= 3) specialEarned.add("mega:consistency");
+        const ratings = Array.isArray(state.rankedResults) ? state.rankedResults : [];
+        const ownResult = ratings.find((r: any) => r.playerId === player.id);
+        if (wonMega && ownResult && Number.isFinite(ownResult.ratingBefore) &&
+            ratings.some((r: any) => r.playerId !== player.id &&
+              Number.isFinite(r.ratingBefore) && r.ratingBefore > ownResult.ratingBefore)) {
+          specialEarned.add("mega:underdog");
+        }
+      }
+
     }
     if (
       game === "connect-four" &&
@@ -216,6 +284,25 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
       earnedAt: earnedAward?.earnedAt ?? null,
     };
   });
+
+  // Founding podium awards come from the frozen one-time old-ranked snapshot.
+  // Name is used only during unique account binding at server startup.
+  // Subsequent unlock checks use the immutable account ID.
+  try {
+    const { getMegaBoardDataDirectory } = await import("./dataPaths.js");
+    const oldRankings = JSON.parse(await readFile(resolve(getMegaBoardDataDirectory(), "rankings.json"), "utf8"));
+    if (Number.isFinite(oldRankings.seasonStartedAt) && oldRankings.seasonStartedAt > 0 &&
+        Array.isArray(oldRankings.preseasonStandings)) {
+      const rank = oldRankings.preseasonStandings.findIndex((entry: any) => entry.accountId === accountId);
+      const identifiers = ["mega:founding-first", "mega:founding-second", "mega:founding-third"];
+      if (rank >= 0 && rank < identifiers.length) {
+        award(identifiers[rank], {
+          finalisedAt: oldRankings.seasonStartedAt,
+          sessionId: "historical-ranked-podium:" + String(oldRankings.seasonStartedAt),
+        });
+      }
+    }
+  } catch (error: any) { if (error.code !== "ENOENT") throw error; }
 
   result.gamerScore = result.awards.reduce((sum, award) => sum + award.points, 0);
 

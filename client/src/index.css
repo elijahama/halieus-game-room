@@ -26981,25 +26981,25 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 .halieus-guild-fixture-panel{display:grid;gap:14px;min-width:0;padding:12px 0}
 .halieus-guild-fixture-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .halieus-guild-fixture-heading h3{font-size:1.15rem;margin:4px 0}
-.halieus-guild-fixture-heading p,.halieus-guild-fixture-form p,.halieus-guild-fixture-disclaimer{font-size:.82rem;line-height:1.5;color:var(--text-muted,#aab7cd)}
-.halieus-guild-fixture-id{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--border-subtle,rgba(255,255,255,.16));border-radius:12px}
+.halieus-guild-fixture-heading p,.halieus-guild-fixture-form p,.halieus-guild-fixture-disclaimer{font-size:.82rem;line-height:1.5;color:var(--hgr-muted, #667085)}
+.halieus-guild-fixture-id{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:10px;padding:10px;border:1px solid var(--hgr-border-strong, #8491a655);border-radius:12px}
 .halieus-guild-fixture-id code{font-size:.76rem;overflow-wrap:anywhere;user-select:all}
-.halieus-guild-fixture-form,.halieus-guild-fixture-card{display:grid;gap:10px;padding:14px;border:1px solid var(--border-subtle,rgba(255,255,255,.16));border-radius:14px;min-width:0}
+.halieus-guild-fixture-form,.halieus-guild-fixture-card{display:grid;gap:10px;padding:14px;border:1px solid var(--hgr-border-strong, #8491a655);border-radius:14px;min-width:0}
 .halieus-guild-fixture-form h4,.halieus-guild-fixture-list h4{margin:0;font-size:1rem}
 .halieus-guild-fixture-form label{display:grid;gap:5px;font-size:.8rem;min-width:0}
 .halieus-guild-fixture-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.halieus-guild-fixture-form input,.halieus-guild-fixture-form select{width:100%;max-width:100%;min-width:0;min-height:44px;padding:10px;border-radius:9px;color:inherit;background:var(--surface,rgba(15,24,40,.75));border:1px solid var(--border-subtle,rgba(255,255,255,.22))}
+.halieus-guild-fixture-form input,.halieus-guild-fixture-form select{width:100%;max-width:100%;min-width:0;min-height:44px;padding:10px;border-radius:9px;color:inherit;background:var(--surface,rgba(15,24,40,.75));border:1px solid var(--hgr-border-strong, #8491a655)}
 .halieus-guild-fixture-form button,.halieus-guild-fixture-card button{min-height:44px}
 .halieus-guild-fixture-list{display:grid;gap:12px;min-width:0}
 .halieus-guild-fixture-card>header,.halieus-guild-fixture-board{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .halieus-guild-fixture-card>header strong{font-size:.96rem}
-.halieus-guild-fixture-card>header span,.halieus-guild-fixture-board span{font-size:.75rem;color:var(--text-muted,#b5c4d8)}
+.halieus-guild-fixture-card>header span,.halieus-guild-fixture-board span{font-size:.75rem;color:var(--hgr-muted, #667085)}
 .halieus-guild-fixture-card>small{overflow-wrap:anywhere}
-.halieus-guild-fixture-board{padding:8px 0;border-top:1px solid var(--border-subtle,rgba(255,255,255,.12))}
+.halieus-guild-fixture-board{padding:8px 0;border-top:1px solid var(--hgr-border-strong, #8491a655)}
 .halieus-guild-fixture-board strong{font-size:.83rem}
 .halieus-guild-fixture-score{font-size:.9rem;font-weight:700}
-.halieus-guild-fixture-error{color:#ff8d96}
-.halieus-guild-fixture-notice{color:#a3eec6}
+.halieus-guild-fixture-error{color:var(--hgr-text);border-left:3px solid var(--hgr-danger);padding-left:10px}
+.halieus-guild-fixture-notice{color:var(--hgr-text);border-left:3px solid var(--hgr-success);padding-left:10px}
 .halieus-guild-tabs{flex-wrap:wrap}
 @media(max-width:600px){.halieus-guild-fixture-fields{grid-template-columns:minmax(0,1fr)}
  .halieus-guild-fixture-panel{padding:8px 0}
@@ -27255,3 +27255,66 @@ html[data-theme="light"] .mega-live-page .centre-roll-readout > span {
 }
 .mega-trade-counter-cancel:focus-visible,
 .mega-trade-counter-button:focus-visible { outline: 2px solid var(--hgr-brand, #ca9d31); outline-offset: 2px; }
+
+
+/* Mega Board: separate lifetime/season standings, read-only spectator focus. */
+.mega-ranking-tabs { display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 16px }
+.mega-ranking-tabs button { border:1px solid var(--hgr-border);background:var(--hgr-surface-soft);border-radius:10px;color:var(--hgr-text);padding:10px 12px;font:inherit;min-height:42px;cursor:pointer }
+.mega-ranking-tabs button[aria-current="page"] { border-color:var(--hgr-brand);box-shadow:inset 0 -3px var(--hgr-brand);font-weight:800 }
+.mega-season-rules { display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:11px 14px;margin-bottom:12px;border:1px solid var(--hgr-border);border-radius:11px;background:var(--hgr-surface-soft) }
+.mega-season-rules strong {font-size:.9rem}.mega-season-rules span {font-size:.79rem;color:var(--hgr-muted)}
+.mega-ranking-grid { grid-template-columns:35px minmax(115px,2fr) minmax(56px,1fr) 52px 44px 57px minmax(80px,1fr) minmax(105px,1.5fr); }
+.mega-ranking-grid > * { min-width:0;overflow-wrap:anywhere }
+.mega-leader-form { display:flex;align-items:center;flex-wrap:wrap;gap:4px }
+.mega-leader-form > span {display:inline-grid;place-items:center;min-width:28px;padding:5px 3px;background:var(--hgr-surface);border:1px solid var(--hgr-border);border-radius:6px;font-weight:750;font-size:.7rem}
+.mega-leader-form .is-podium {border-color:var(--hgr-brand)}
+.mega-ranking-history {display:grid;gap:12px;padding:10px 0}.mega-ranking-history p {margin:0;color:var(--hgr-muted)}
+.mega-ranking-history-list {display:grid;gap:8px}.mega-ranking-history-list > div {display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--hgr-border);background:var(--hgr-surface-soft);border-radius:11px;padding:12px}
+.mega-ranking-history-list > div > span {font-weight:800;flex:1 1 100px}.mega-ranking-history-list > div > small {color:var(--hgr-muted)}
+.mega-ranking-history-note {font-size:.8rem}
+.mega-spectator-controls {display:flex;align-items:center;gap:8px 16px;flex:1 1 100%;min-width:0;flex-wrap:wrap}
+.mega-spectator-current {display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;font-size:.78rem}
+.mega-spectator-current > b {color:var(--hgr-text)}
+.mega-spectator-current .mega-spectator-followed {color:var(--hgr-text);font-weight:700}
+.mega-spectator-follow-list {display:flex;gap:6px;flex:1 1 100%;overflow-x:auto;scrollbar-width:thin;padding:0 0 3px}
+.mega-spectator-follow-list button {display:inline-flex;align-items:center;white-space:nowrap;gap:6px;min-height:34px;padding:5px 9px;border:1px solid var(--hgr-border);border-radius:9px;background:var(--hgr-surface-soft);color:var(--hgr-text);font:inherit;font-size:.76rem;cursor:pointer}
+.mega-spectator-follow-list button[aria-pressed="true"] {border-color:var(--hgr-brand);box-shadow:inset 0 -2px var(--hgr-brand);font-weight:800}
+.mega-spectator-follow-list button > i {width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.mega-spectator-player-rail .player-rail-card.is-followed {outline:2px solid var(--hgr-brand);outline-offset:-2px}
+@media (max-width:600px) {
+ .mega-spectator-current {font-size:.7rem;justify-content:center;width:100%}
+ .mega-spectator-follow-list {justify-content:flex-start}
+ .mega-spectator-follow-list button {min-height:30px;font-size:.7rem}
+ .mega-ranking-grid { min-width:720px }
+ .mega-ranking-tabs button {flex:1 1 auto;font-size:.8rem}
+}
+
+/* Account-scoped inbox read receipts and one newest-first timeline. */
+.hgr-inbox-toolbar { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 12px;border:1px solid var(--hgr-border);border-radius:12px;background:var(--hgr-surface-soft);margin:10px 0 }
+.hgr-inbox-toolbar > div { display:grid;gap:3px }
+.hgr-inbox-toolbar strong { font-size:.92rem }
+.hgr-inbox-toolbar small { color:var(--hgr-muted);font-size:.75rem }
+.hgr-inbox-toolbar button { min-height:40px }
+.hgr-inbox-read-error { color:var(--hgr-text);border-left:3px solid #d97706;padding:8px 12px }
+.hgr-inbox-timeline { display:grid;gap:8px }
+.hgr-inbox-timeline .halieus-inbox-item { min-width:0;align-items:center }
+.hgr-inbox-timeline .halieus-inbox-item.is-read { opacity:.76 }
+.hgr-inbox-timeline .halieus-inbox-item.is-unread { border-left:3px solid var(--hgr-brand);opacity:1 }
+.hgr-inbox-date { display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.72rem;color:var(--hgr-muted) }
+.hgr-inbox-date b { padding:2px 6px;border-radius:5px;background:var(--hgr-surface);border:1px solid var(--hgr-border);font-size:.68rem }
+.hgr-inbox-timeline .is-unread .hgr-inbox-date b { border-color:var(--hgr-brand);color:var(--hgr-text) }
+.hgr-inbox-actions { display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px;min-width:0 }
+.hgr-inbox-actions button { min-height:34px;white-space:nowrap }
+@media (max-width:600px) {
+ .hgr-inbox-toolbar { align-items:stretch }
+ .hgr-inbox-toolbar button { width:100% }
+ .hgr-inbox-timeline .halieus-inbox-item { gap:8px }
+ .hgr-inbox-actions {justify-content:flex-start}
+}
+
+.hgr-guild-decider{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0}
+.hgr-guild-decider p,.hgr-guild-decider h4{margin:0;overflow-wrap:anywhere}
+.hgr-guild-decider form{min-width:0}
+
+.hgr-guild-decider-actions{display:flex;gap:.65rem;flex-wrap:wrap}
+.hgr-guild-decider-actions button{min-height:44px;white-space:normal}

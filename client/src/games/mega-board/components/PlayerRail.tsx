@@ -73,6 +73,7 @@ interface PlayerRailProps {
   headerTitle?: string;
   className?: string;
   isSpectator?: boolean;
+  highlightedPlayerId?: string | null;
   spectators?: Array<{ id: string; name: string }>;
   showSpectators?: boolean;
   onPlayerSelect?: (playerId: string) => void;
@@ -92,6 +93,7 @@ export function PlayerRail({
   headerTitle = "Table",
   className = "",
   isSpectator = false,
+  highlightedPlayerId = null,
   spectators = [],
   showSpectators = true,
   onPlayerSelect,
@@ -142,7 +144,7 @@ export function PlayerRail({
               key={player.id}
               className={`player-rail-card ${isCurrent ? "is-current" : ""} ${
                 isYou ? "is-you" : ""
-              } ${player.isBankrupt ? "is-bankrupt" : ""} ${onPlayerSelect ? "is-clickable" : ""}`}
+              } ${player.isBankrupt ? "is-bankrupt" : ""} ${player.id === highlightedPlayerId ? "is-followed" : ""} ${onPlayerSelect ? "is-clickable" : ""}`}
               style={{
                 background: theme.secondaryBackground,
                 borderColor: isCurrent ? "#e3ad25" : theme.border,

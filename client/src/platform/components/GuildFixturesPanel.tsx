@@ -1,9 +1,11 @@
+import { GuildTiebreakerPanel } from "./GuildTiebreakerPanel";
 import { useEffect, useMemo, useState } from "react";
 import type { HalieusAccountSummary } from "../../../../shared/platform/accounts";
 import type { HalieusGuildDetail } from "../../../../shared/platform/guilds";
 import type { HgrGuildFixture } from "../../../../shared/platform/guildFixtures";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games";
 import { accountApi } from "../accounts/api";
+import { GuildTournamentBracketPanel } from "./GuildTournamentBracketPanel";
 
 interface Props {
   account: HalieusAccountSummary;
@@ -91,6 +93,7 @@ export function GuildFixturesPanel({ account, guild, liveRooms, onOpenLiveRoom }
       </div>
       <button type="button" className="button-outline" onClick={() => void refresh(true)} disabled={busy || loading}>Refresh fixtures</button>
     </header>
+    <GuildTournamentBracketPanel account={account} guild={guild} />
     <div className="halieus-guild-fixture-id">
       <span>Your Guild ID: <code>{guild.id}</code></span>
       <button type="button" className="button-muted" onClick={() => void copyId()}>Copy Guild ID</button>
@@ -168,12 +171,13 @@ export function GuildFixturesPanel({ account, guild, liveRooms, onOpenLiveRoom }
               <span>{result
                 ? `Won by ${result.winnerGuildId === guild.id ? "your Guild" : "opposing Guild"}`
                 : live?.started ? "Match ongoing" : "Awaiting match start"}</span>
-              {live && !result && <button type="button" className="button-outline" onClick={() => onOpenLiveRoom(live, live.started ? "watch" : "join")}>{live.started ? "Watch board" : "Join board"}</button>}
+              {live && !result && <button type="button" className="button-outline" onClick={() => onOpenLiveRoom(live, link.seatAccountIds.includes(account.id) ? "join" : live.started ? "watch" : "join")}>{link.seatAccountIds.includes(account.id) ? "Return to board" : live.started ? "Watch board" : "Join board"}</button>}
             </div>;
           })}
+          <GuildTiebreakerPanel account={account} guild={guild} fixture={fixture} liveRooms={liveRooms} onOpenLiveRoom={onOpenLiveRoom} onUpdated={()=>void refresh()} />
           {fixture.boardResults?.length ? <p className="halieus-guild-fixture-score">
             Board wins: Your Guild {home ? fixture.homeBoardWins ?? 0 : fixture.awayBoardWins ?? 0} – {home ? fixture.awayBoardWins ?? 0 : fixture.homeBoardWins ?? 0} Opponent
-            {fixture.status === "completed" && fixture.homeBoardWins === fixture.awayBoardWins ? " · Split result; tiebreaker unresolved" : ""}
+            {fixture.status === "completed" && fixture.homeBoardWins === fixture.awayBoardWins ? fixture.tiebreaker?.result ? " · Decider completed" : " · Deciding game required" : ""}
           </p> : null}
           {canCancel && <button type="button" className="button-muted" disabled={busy} onClick={() =>
             void mutate(`/guild-fixtures/${fixture.id}/cancel`, {}, "Fixture cancelled before the games began.")}>Cancel fixture</button>}

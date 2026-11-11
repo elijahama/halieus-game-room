@@ -1,5 +1,6 @@
 import { archiveCompletedMegaGame } from "./games/mega-board/utils/mega-history.js";
 import { registerGameHistoryRoutes } from "./platform/game-history.js";
+import { registerRankedMatchHistoryRoutes } from "./platform/ranked-match-history.js";
 import { registerActiveMatchRoutes } from "./platform/active-match.js";
 import {registerProgressionIdentity, verifiedRoomAccountIds } from "./platform/progression.js";
 import cors from "cors";
@@ -51,8 +52,9 @@ import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
 import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
-import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
+import { configureAccountAdminRuntimeControls, getAccountSummaryById, resolveUniqueAccountIdByDisplayName, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
+import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
@@ -62,19 +64,22 @@ import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHand
 import { registerTradeHandlers } from "./games/mega-board/handlers/tradeHandlers.js";
 import { registerTurnHandlers } from "./games/mega-board/handlers/turnHandlers.js";
 import { rooms } from "./games/mega-board/state/rooms.js";
+import { endRoom } from "./games/mega-board/utils/room-lifecycle.js";
 import { listSpectators } from "./games/mega-board/state/spectators.js";
 import { syncAuctionTimer } from "./games/mega-board/utils/auction-timer.js";
-import { restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
+import { cancelHostGrace, restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
 import {
   flushRoomSave,
   getSavePath,
   loadRoomsFromDisk,
+  flushRoomSaveStrict,
 } from "./games/mega-board/utils/persistence.js";
 import {
   finalizeRankedMatch,
   flushRankingsSave,
   getRankingsPath,
   loadRankingsFromDisk,
+  bindFoundingPodiumAccounts,
 } from "./games/mega-board/utils/rankings.js";
 
 const parsedPort = Number.parseInt(
@@ -145,10 +150,28 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
   response.setHeader("Cache-Control", "no-store");
   next();
 });
+// Solo entrant identities never belong in shared/browser caches.
+// 4.8 exposes the completed formats by default; the legacy flag remains an explicit opt-out.
+const soloTournamentEnabled = process.env.HGR_SOLO_TOURNAMENT_ALPHA === undefined ||
+  process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1";
+app.use("/tournaments/solo", (_request, response, next) => {
+  response.setHeader("Cache-Control", "no-store");
+  next();
+});
 registerAccountRoutes(app);
 registerGameHistoryRoutes(app, getAuthenticatedAccount);
+registerRankedMatchHistoryRoutes(app, getAuthenticatedAccount);
 registerActiveMatchRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
+app.get("/tournaments/capabilities", (request, response) => {
+  response.setHeader("Cache-Control", "no-store");
+  if (!getAuthenticatedAccount(request)) { response.status(401).json({ok:false}); return; }
+  response.json({ok:true, solo:soloTournamentEnabled});
+});
+// Registration, room recovery and durable loading use the same release switch.
+if (soloTournamentEnabled) {
+  registerSoloTournamentRegistrationRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
+}
 registerPushRoutes(app, getAuthenticatedAccount);
 registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);
 
@@ -383,6 +406,20 @@ const io = new Server(httpServer, {
   pingInterval: 25000,
   pingTimeout: 20000,
 });
+if (soloTournamentEnabled) {
+  // Do not expose a recovery endpoint without the real Socket.IO room closer.
+  configureSoloRoomResetCloser(async (code, boardMatchId, roomCreatedAt) => {
+    const room = rooms.get(code);
+    if (room) {
+      if (room.createdAt !== roomCreatedAt) return false;
+      cancelHostGrace(code);
+      if (!endRoom(io, code, "Both registered Solo players approved replacing this never-started lobby.",
+          { soloResetMatchId: boardMatchId })) return false;
+    }
+    await flushRoomSaveStrict();
+    return true;
+  });
+}
 
 let activeMaintenanceNotice: HalieusMaintenanceNotice | null = null;
 
@@ -603,13 +640,23 @@ io.on(
 await loadAccountStore();
 await loadPublicAccessState();
 await loadGuildStore();
+if (soloTournamentEnabled) {
+  // Restore locked Solo lobbies before accepting any real game:start or join events.
+  await loadSoloTournamentRegistration();
+}
 await loadFeedbackStore();
 await initializePushNotifications();
 
 const recoveredRoomCount =
-  await loadRoomsFromDisk();
+  await loadRoomsFromDisk({ strict: soloTournamentEnabled });
+if (soloTournamentEnabled) {
+  await reconcileSoloTournamentResets();
+}
 const recoveredRankedPlayers =
   await loadRankingsFromDisk();
+// Legacy pre-season rankings used player names. Bind unique unchanged names
+// to account IDs once; subsequent rewards never depend on a mutable name.
+await bindFoundingPodiumAccounts(resolveUniqueAccountIdByDisplayName);
 
 let recoveredRankedMatches = 0;
 for (const room of rooms.values()) {
