@@ -45,6 +45,7 @@
 ) .player-property-strip {
   height: auto !important;
   max-height: none !important;
+  overflow-x: visible !important;
   overflow-y: visible !important;
 }
 
