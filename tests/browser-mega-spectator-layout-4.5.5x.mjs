@@ -110,7 +110,7 @@ try{
         "Tablet spectator board should not retain the old 64dvh size cap "+JSON.stringify({viewport,info}));
     }
     if (viewport.width>=1181) {
-      const rows=info.layout.gridRows.split(/\\s+/).filter(Boolean).map(Number);
+      const rows=(info.layout.gridRows.match(/[\d.]+px/g) ?? []).map(parseFloat);
       assert.ok(rows.length>=2 && rows[1]<=155.5,
         "Desktop spectator roster reservation must not shrink board below the readable fit "+JSON.stringify({viewport,info}));
     }
