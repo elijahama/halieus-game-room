@@ -1,0 +1,99 @@
+/* Mega Board 4.7.15 hotfix: property inventories must be reachable, not cropped.
+   Only roster/popup presentation changes. Never change match state or ownership. */
+
+/* Desktop: the old equal-height/fixed-height roster cropped long portfolios.
+   Scroll the player list, never each player's actual owned-asset content. */
+@media (min-width: 1181px) {
+  .mega-live-page .player-rail-side .player-rail-list {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-rows: none !important;
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    align-items: stretch !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin !important;
+  }
+
+  .mega-live-page .player-rail-side .player-rail-card {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: max-content !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .mega-live-page .player-rail-side .player-property-strip {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: max-content !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+/* Keep the full portfolio in the existing page/drawer scroller on smaller
+   screens. A 170px nested strip otherwise obscures the lower colour groups. */
+.mega-live-page :is(
+  .tablet-players-drawer,
+  .mega-mobile-participant-player-rail,
+  .mega-spectator-player-rail
+) .player-property-strip {
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+}
+
+/* The original one-line/ellipsis property chips cut off long street names.
+   Keep the canonical group ordering and disclosure controls unchanged. */
+.mega-live-page .player-property-group {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.mega-live-page .player-property-group-chips {
+  min-width: 0;
+  width: 100%;
+}
+
+.mega-live-page .player-property-group-chips .player-property-chip {
+  min-width: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  line-height: 1.3 !important;
+  box-sizing: border-box;
+}
+
+.mega-live-page .player-property-chip-name {
+  min-width: 0 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+}
+
+.mega-live-page .player-property-group-heading {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.mega-live-page .player-property-group-heading strong {
+  min-width: 0;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+}
+
+.mega-live-page .player-property-group-set {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

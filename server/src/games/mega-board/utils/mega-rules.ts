@@ -90,12 +90,12 @@ export function collectBusTicket(
     // First expire every ticket that was already being held, then place the
     // newly-drawn expiry ticket into the drawer's hand. This matches the
     // Mega Edition behaviour the table expects: the new ticket survives while
-    // every older held Bus Ticket is returned to the draw deck.
+    // every older held Bus Ticket is retired to the discarded pile, permanently.
     for (const gamePlayer of gameState.players) {
       gamePlayer.busTicketIds ??= [];
       expiredTicketCount += gamePlayer.busTicketIds.length;
 
-      gameState.busTicketDeck.push(...gamePlayer.busTicketIds);
+      gameState.busTicketsDiscarded.push(...gamePlayer.busTicketIds);
       gamePlayer.busTicketIds = [];
       gamePlayer.busTickets = 0;
     }
@@ -172,7 +172,7 @@ export function collectAutomaticBusResultTicket(
       for (const gamePlayer of gameState.players) {
         gamePlayer.busTicketIds ??= [];
         thisExpiryCount += gamePlayer.busTicketIds.length;
-        gameState.busTicketDeck.push(...gamePlayer.busTicketIds);
+        gameState.busTicketsDiscarded.push(...gamePlayer.busTicketIds);
         gamePlayer.busTicketIds = [];
         gamePlayer.busTickets = 0;
       }

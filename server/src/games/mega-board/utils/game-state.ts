@@ -9,6 +9,7 @@ import { syncSpeedDieRetirement } from "./speed-die-lifecycle.js";
 import { captureMegaReplayFrame } from "./replay.js";
 import { pushGlobalNotice, recordActivity } from "./activity.js";
 import { syncBlockingTurnPhase } from "./turn-engine.js";
+import { syncBusTicketCounts } from "./mega-rules.js";
 import { finalizeRankedMatch } from "./rankings.js";
 import { getMatchAwards } from "../../../../../shared/games/mega-board/ranked.js";
 import { finalizeSession, recordWorkingSession } from "../../../platform/sessionArchive.js";
@@ -201,6 +202,11 @@ export function emitGameState(
       durationMs: 3400,
     });
   }
+
+  // A resumed or unusual gameplay path can retain a stale counter even
+  // though the authoritative draw deck and player hands have changed.
+  // Ordering rooms have not initialized their 16-card deck yet.
+  if (gameState.phase !== "ordering") syncBusTicketCounts(gameState);
 
   // Lifecycle changes such as Speed Die retirement are presentation/state
   // updates, never blockers. Re-derive the actionable phase before every
