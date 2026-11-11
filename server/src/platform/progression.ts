@@ -55,6 +55,30 @@ export function captureProgression(payload: any): void {
 export const readPlayerProgression: (accountId: string) => Promise<PlayerProgression> =
   perAccountSingleFlight(rebuild);
 async function rebuild(accountId: string): Promise<PlayerProgression> {
+  try {
+    return await rebuildFromArchive(accountId);
+  } catch (error) {
+    // Only this account's last successful server-written snapshot is eligible.
+    // A partial/unreadable archive must never revoke verified lifetime awards.
+    try {
+      const path = resolve(getAccountDataDirectory(), "progression",
+        Buffer.from(accountId).toString("hex") + ".json");
+      const saved: PlayerProgression = JSON.parse(await readFile(path, "utf8"));
+      if (!Number.isFinite(saved.gamerScore) || saved.gamerScore < 0 ||
+          !Number.isFinite(saved.played) || !Number.isFinite(saved.wins) ||
+          !Number.isFinite(saved.activePlayMs) || !Array.isArray(saved.awards) ||
+          !Array.isArray(saved.achievements) || !saved.byGame ||
+          saved.awards.some(a => !achievementDefinition(a.id) ||
+            a.points !== achievementDefinition(a.id)!.points) ||
+          new Set(saved.awards.map(a => a.id)).size !== saved.awards.length ||
+          saved.gamerScore !== saved.awards.reduce((sum, a) => sum + a.points, 0)) {
+        throw new Error("Invalid verified progression snapshot.");
+      }
+      return saved;
+    } catch { throw error; }
+  }
+}
+async function rebuildFromArchive(accountId: string): Promise<PlayerProgression> {
   const result: PlayerProgression = {
     gamerScore: 0,
     maxGamerScore: MAX_GAMER_SCORE,
@@ -72,8 +96,7 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
 
   const records: any[] = [];
   for (const file of files.filter(file => file.endsWith(".json"))) {
-    try { records.push(JSON.parse(await readFile(resolve(directory, file), "utf8"))); }
-    catch { /* An incomplete archive is not evidence for an award. */ }
+    records.push(JSON.parse(await readFile(resolve(directory, file), "utf8")));
   }
   records.sort((a,b) => a.finalisedAt - b.finalisedAt || String(a.sessionId).localeCompare(String(b.sessionId)));
 
@@ -94,7 +117,7 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
     if (Number.isFinite(ledger.seasonStartedAt) && ledger.seasonStartedAt > 0) {
       seasonStartedAt = ledger.seasonStartedAt;
     }
-  } catch { /* Older archives may predate seasonal rankings. */ }
+  } catch (error: any) { if (error.code !== "ENOENT") throw error; }
 
 
   const award = (id: string, record: any) => {
@@ -279,7 +302,7 @@ async function rebuild(accountId: string): Promise<PlayerProgression> {
         });
       }
     }
-  } catch { /* No verified one-time founding attribution available. */ }
+  } catch (error: any) { if (error.code !== "ENOENT") throw error; }
 
   result.gamerScore = result.awards.reduce((sum, award) => sum + award.points, 0);
 

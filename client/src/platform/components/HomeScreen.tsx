@@ -49,6 +49,7 @@ import { GuildMessageDropdown } from "./GuildMessageDropdown";
 import { incomingGameNotifications, readSeenGameNotifications, saveSeenGameNotifications, type HgrIncomingGameNotification } from "./gameInviteNotifications";
 import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
+import { SoloTournamentPanel } from "./SoloTournamentPanel";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
@@ -56,7 +57,7 @@ import { themeAtmosphereSymbols, usesCustomAtmosphereEngine, type HalieusThemeMo
 
 export type GameSelection = GameId;
 export interface SavedSessionSummary { code: string; reconnectToken: string; playerName: string; }
-type HomeView = "home" | "games" | "players" | "rankings" | "guilds";
+type HomeView = "home" | "games" | "players" | "rankings" | "guilds" | "tournaments";
 type DiscoveryShelf = "featured" | "most-played" | "recommended" | "recent" | "friends";
 
 type GameLibraryLayout = "tiles" | "list" | "gallery";
@@ -184,6 +185,16 @@ export function HomeScreen(props: HomeScreenProps) {
   const [personalStats, setPersonalStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
   const [quickPlay, setQuickPlay] = useState<HalieusQuickPlayProfile>({ preferences: [] });
   const [dataError, setDataError] = useState("");
+  const [soloAvailable, setSoloAvailable] = useState(false);
+  useEffect(() => {
+    setSoloAvailable(false);
+    if (!account || betaMode) return;
+    const controller = new AbortController();
+    void accountApi<{solo:boolean}>("/tournaments/capabilities", {signal:controller.signal,cache:"no-store"})
+      .then(result => { if (!controller.signal.aborted) setSoloAvailable(result.solo === true); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [account?.id, betaMode]);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [selectedPlayerStats, setSelectedPlayerStats] = useState<HalieusPersonalStats>(EMPTY_STATS);
   const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
@@ -1558,6 +1569,7 @@ export function HomeScreen(props: HomeScreenProps) {
         </section>}
 
         {view === "games" && <section className="halieus-view view-games panel-enter" data-game-layout={gameLibraryView}>
+          {soloAvailable && <button type="button" className="button-outline" onClick={()=>setView("tournaments")}>Mega Board tournaments →</button>}
           <header className="halieus-page-heading halieus-game-library-heading">
             <div><p>GAMES</p><h1>Choose your game</h1><span>Browse the library, then open a focused room setup when you are ready to play.</span></div>
             <div className="halieus-game-layout-switch" role="group" aria-label="Game library display">
@@ -1715,6 +1727,16 @@ export function HomeScreen(props: HomeScreenProps) {
             })}
           </div>
           <RankedMatchHistory accountId={account?.id ?? null} games={RANKED_HUB_GAMES.map(id => ({ id, name: GAME_BY_ID[id].name }))} />
+        </section>}
+
+        {view === "tournaments" && account && soloAvailable && <section className="halieus-view panel-enter">
+          <SoloTournamentPanel key={account.id} account={account}
+            onOpenGuilds={()=>setView("guilds")}
+            onCreateRoom={()=>{onMatchModeChange("casual");prepareCreate("mega-board");}}
+            onOpenRoom={(code,intent)=>{
+              if(intent==="join" && savedSession?.code===code){onGameSelect("mega-board");onResumeSavedSession();return;}
+              onGameSelect("mega-board");onRoomCodeChange(code);openJoin(intent);
+            }} />
         </section>}
 
         {view === "guilds" && account && (

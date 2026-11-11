@@ -64,6 +64,27 @@ try {
   const saved=JSON.parse(await readFile(join(root,"accounts","progression",Buffer.from("account-a").toString("hex")+".json"),"utf8"));
   assert.deepEqual(saved,JSON.parse(JSON.stringify(owned)),"durable JSON snapshot matches verified rebuilt progression");
   assert.deepEqual(await readPlayerProgression("account-a"),owned,"retry is idempotent");
+
+  const snapshotPath=join(root,"accounts","progression",Buffer.from("account-a").toString("hex")+".json");
+  const snapshotBefore=await readFile(snapshotPath,"utf8");
+  await writeFile(join(dir,"broken.json"),"{unfinished");
+  assert.deepEqual(await readPlayerProgression("account-a"),JSON.parse(JSON.stringify(owned)),
+    "An unreadable archive retains this account's last verified score and unlock evidence");
+  assert.equal(await readFile(snapshotPath,"utf8"),snapshotBefore,
+    "A partial scan must never replace the durable verified snapshot");
+  await assert.rejects(readPlayerProgression("new-account"),
+    "An account without verified history cannot borrow someone else's snapshot");
+  await rm(join(dir,"broken.json"));
+  await writeFile(join(dir,"new-match.json"),JSON.stringify({
+    sessionId:"verified-second",finalisedAt:123457,status:"completed",game:"connect-four",
+    state:{started:true,winnerPlayerId:"p1",players:[
+      {id:"p1",name:"One",isAi:false,progressionIdentity:{accountId:"account-a",activePlayMs:60000}}
+    ]}
+  }));
+  const fresh=await readPlayerProgression("account-a");
+  assert.equal(fresh.played,2,"Recovery triggers a fresh rebuild; fallback never becomes a permanent cache");
+  assert.equal(JSON.parse(await readFile(snapshotPath,"utf8")).played,2);
+
 } finally {
   if(original===undefined) delete process.env.HALIEUS_DATA_DIR;
   else process.env.HALIEUS_DATA_DIR=original;

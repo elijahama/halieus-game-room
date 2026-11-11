@@ -4,6 +4,26 @@
 
 **Current source/live clarification (31 October 2026):** HGR 4.7.5 was independently verified live with exact start/end maintenance scheduling. The corrective 4.7.6 source (Oracle health-gate diagnostics, PR #190) has passed both CI platforms and merged, but is **not** thereby confirmed deployed. The complete 4.7 Guild fixture acceptance is still separate, not automatically achieved by the 4.7.5 release number. For the actionable audited mini-batches in the owner Control Development timeline, see [Delivery Batches and Tournament Roadmap](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md).
 
+## Owner-confirmed functional milestone contracts — 3 November 2026
+
+**The target number is a promise of completed functionality, not a calendar or source-snapshot label.** The owner has reaffirmed the separate functional objectives for 4.8, 4.9 and 5.0. The half-step markers specify hardening/checkpoints on that same journey. Preserve the planned shorthand and its canonical release version without promoting incomplete work.
+
+| Owner milestone | Canonical version | **Goal that must actually work before acceptance** |
+| --- | --- | --- |
+| 4.7 | 4.7.x | Playable authenticated two-board Mega Board Guild-v-Guild fixtures and real immutable scoring, ordinary property/rent economics, tie/cancel/reconnect safeguards |
+| **4.8** | **4.8.0** | **Working Solo and Guild Mega Board tournament formats:** legitimate entrants, rooms, registration, server-owned match/fixture links, bracket advancement, single/double elimination as approved, losers/finals/reset policies, spectator routes, persist/recover outcomes |
+| **4.85** | **4.8.5** | **4.8 tournament-format hardening:** integrate Solo/Guild flows, handle ties/forfeits and crashes, verify restarts/reconnect and mobile behavior; accepted independently recoverable development checkpoint |
+| **4.9** | **4.9.0** | **Tournament experience and integration:** distinct tournament ratings/leaderboards, Guild standings, match result history and reports, complete tournament Mega Board replay/download/viewer, profiles, permissions and accessible mobile/tablet presentation |
+| **4.95** | **4.9.5** | **Production-readiness and integration gate:** end-to-end regression, cross-device UX, abuse/privacy/recovery tests, deployment and rollback rehearsal, verified preserved baseline; any known launch-blocking gap remains open |
+| **5.0** | **5.0.0** | **Fully realised Tournament Mode:** owner can run genuine Solo **and** Guild tournaments on production from enrolment to scored final, normal Mega Board play, independent standings and reports/replays, forfeit/reconnect/error recovery, complete CI/release/health and explicit owner acceptance |
+| **5.05** | **5.0.5** | **Accepted post-launch stabilisation:** production findings corrected and verified without losing the preserved 5.0.0 baseline, with a further independently restorable development checkpoint |
+
+**Version gate:** never advance the release number merely because a PR merged, a component renders a bracket, a test fixture passes, or an archived checkout exists. Every named goal requires real authenticated end-to-end acceptance. In particular a four-Guild semifinal/final coordinator is partial 4.8 development, **not** completed 4.8.0, and 5.0.0 remains reserved for the **entire** operational tournament. Feature PRs may be reviewed on 4.7.x while incomplete; only an accepted working milestone gets the milestone identifier.
+
+**Protected source checkpoints:** once the functional milestone has been **accepted**, preserve exact Git SHA, SOURCE release fingerprint, protected Git tag and separately restorable read-only development snapshot at the owner markers 4.8 / 4.85 / 4.9 / 4.95 / 5.0 / 5.05 (SemVer above). Test restoration before declaring it preserved; original development, laptop release and Oracle deployment sources remain separate. Normal patch releases rely on Git history. Checkpoints do not themselves authorise deployment or advance VERSION.
+
+**Public release gate:** after Windows/Ubuntu CI, deterministic integration tests, release-integrity manifest, no-active-room preflight and approved deployment, independently check /health version **and** exact fingerprint. Retain rollback reference and protect original HGR branding. The Google Drive Master Book contains the owner-approved wording and acceptance evidence; this file is the repository goal authority. There is no owner-signed acceptance for any future 4.8–5.05 milestone merely because this table exists.
+
 ## Release numbering rule
 
 - `MAJOR.MINOR.PATCH` tracks actual product maturity. Never label a pre-5.0 tournament foundation as fully implemented Tournament Mode.

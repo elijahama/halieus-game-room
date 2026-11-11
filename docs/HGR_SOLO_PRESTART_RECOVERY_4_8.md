@@ -7,9 +7,9 @@
 - The only permitted reset concerns an existing, positively verified **never-started** room whose exact server room generation, identity and the two original human account seats still match the bound Solo semifinal or final.
 - Each of those two **distinct authenticated HGR accounts** calls the private JSON/same-origin POST .../approve-prestart-reset for its own pending match. Neither the tournament host nor an admin can approve on behalf of another entrant. Duplicate approval is rejected; approval expires after ten minutes. A second genuine recent approval is required.
 - No one receives a forfeit win for disconnection, PWA backgrounding, missing the grace timer or being absent. The lobby can contain a disconnected original player; their authenticated account approval remains required.
-- While final approval is durably saved, a pending lock prevents the old room from starting. Once the Solo bracket's state has safely returned to awaiting-room (and its old room code/createdAt/boardMatchId cleared), the real Socket.IO room lifecycle closes and informs the old lobby and saves the updated room store. The tournament host may bind a **new** genuinely unstarted two-human lobby with a new server-minted match UUID. Original pairing, other tournament match receipts and winner-free state remain intact.
+- Final approval durably records reset-pending with both approvals and the old room identity, preventing normal start or cleanup. The real Socket.IO lifecycle closes exactly that lobby and strictly saves room deletion before the bracket returns to awaiting-room. The tournament host may bind a **new** genuinely unstarted two-human lobby with a new server-minted match UUID. Original pairing, other tournament match receipts and winner-free state remain intact.
 - Missing original rooms, reused room codes with a different creation time, played or started lobbies, changed human account seats, AI, Beta, Ranked/Blitz, outsider approval, double approval and unavailable server-side close operation all fail closed. No client winner route or trusted-game receipt is invented. Source-only alpha legacy records migrate to empty approval fields without rewriting earlier results.
-- If an unexpected post-persist original-room closure failure occurs, it is logged and returned as an error rather than silently claiming an active match was reset. This edge needs a specific crash/recovery audit and owner acceptance before public enablement; an administrative reset must never be inferred from a disappeared room.
+- If an unexpected post-persist original-room closure failure occurs, it is logged and returned as an error rather than silently claiming an active match was reset. This edge is covered by the durable recovery and interruption tests below; physical-device and release acceptance remain separate. an administrative reset must never be inferred from a disappeared room.
 
 ## Verification
 
@@ -17,7 +17,7 @@ Test tests/runtime-solo-prestart-rebind-consent.mjs with the genuine server room
 
 ## Remaining before 4.8 goal
 
-Unexpected crash during the multi-store handoff, persisted room save reconciliation after restart, administrative adjudication of genuinely missing original rooms or interrupted games, full real-player PWA reconnect testing, Solo and Guild tournament screens, approved double-elimination losers bracket/final reset, results/reports/replay and explicit owner acceptance. The production 4.7.13 website is separate and unchanged.
+The multi-store crash window, Solo screen and four-player Solo double elimination are implemented in this candidate; see HGR_SOLO_FORMATS_4_8.md. Remaining: genuinely missing/interrupted-game adjudication, Guild tie and double-elimination policy, full physical-PWA return/push acceptance, reports/replays and explicit release acceptance. Production state is separate from source.
 
 ## Durable recovery implementation — 11 November 2026
 

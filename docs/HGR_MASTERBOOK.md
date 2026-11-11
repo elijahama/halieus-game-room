@@ -1980,3 +1980,12 @@ The device approval / stale-device selection incident is addressed by showing ev
 Maintenance return rechecks public access and serves fresh navigation after reopening. Launcher refresh updates stable shortcut paths without deleting all shortcuts. Noninteractive launchers use the canonical existing artwork through a windowless WScript bridge with SW_HIDE (0), and hidden Update uses the existing noninteractive path. Recovery does not pause for invisible input. User-invoked PowerShell/OpenShard terminals retain their intended interactive behavior. These are source changes only: no Start pins or live laptop services were changed by this integration.
 
 Validation: maintenance return passed at 320/390/820px, including manual reopening and an older phone tab; Control authorisation, bridge recovery and hidden-launch contracts passed.
+
+
+### 4.8 integration — playable Solo formats and progression preservation (11 November 2026)
+
+Added Games → Mega Board tournaments for normal authenticated players, with four-player single and double elimination, seeded room linking, player return, spectator entry and two-entrant recovery controls. The double bracket advances only verified original seats and requires a fresh Grand Final reset when the losers finalist wins the first final; an undefeated winner needs no reset. All 96 result paths and per-round restart/tamper cases passed. Real React controls passed at 390/820/1440px and 100–200% text size. The default-off alpha remains unchanged. See HGR_SOLO_FORMATS_4_8.md for exact policy and remaining acceptance. Guild 1–1 fixtures stay unresolved; no new Guild tiebreak/scoring rule was inferred.
+
+Gamer Score rebuild now refuses partial/corrupt archives and returns only the requesting account’s validated last successful durable snapshot. It never overwrites verified awards with a partial scan, shares another account’s data, or permanently caches a fallback; the next healthy read rebuilds new results. Failure, snapshot preservation, account isolation and subsequent fresh-result tests passed.
+
+The approved milestone roadmap from PR #228 is incorporated. All existing 4.7.15 Bus Ticket, property clipping, spectator and readability fixes are preserved. Integrated regression/build/CI remain separate from these focused receipts; this entry does not declare 4.8 deployed.

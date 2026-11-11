@@ -160,9 +160,14 @@ registerGameHistoryRoutes(app, getAuthenticatedAccount);
 registerRankedMatchHistoryRoutes(app, getAuthenticatedAccount);
 registerActiveMatchRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
-// Incomplete 4.8 Solo bracket staging stays unavailable on production by default.
+app.get("/tournaments/capabilities", (request, response) => {
+  response.setHeader("Cache-Control", "no-store");
+  if (!getAuthenticatedAccount(request)) { response.status(401).json({ok:false}); return; }
+  response.json({ok:true, solo:process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1"});
+});
+// 4.8 Solo remains default-off until integrated release acceptance.
 if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
-  registerSoloTournamentRegistrationRoutes(app, getAuthenticatedAccount);
+  registerSoloTournamentRegistrationRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 }
 registerPushRoutes(app, getAuthenticatedAccount);
 registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);

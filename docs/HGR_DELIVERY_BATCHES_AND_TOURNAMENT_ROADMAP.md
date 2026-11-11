@@ -17,6 +17,10 @@
 
 **Order is provisional** within safety constraints. A regression that prevents game access outranks presentation polish. Keep all current fixes intact. Batch D may be divided into separate audited reconnect, push, and notification-acknowledgement changes; batches F/G/H likewise require their own testable feature slices.
 
+## Goal-gated versions versus delivery batches
+
+The owner-approved acceptance conditions are in the [HGR Version Roadmap](HGR_VERSION_ROADMAP.md). Mini-batches may be merged and regression-tested as supporting pieces, but the named functional goal (4.8 formats, 4.9 experience, 5.0 complete Tournament Mode) must be independently verified before declaring that milestone achieved. The 4.85 and 4.95 intermediate markers are explicitly acceptance and preserved-source checkpoints, **not** a substitute for incomplete Solo, Guild or replay functionality. Each accepted step preserves a restorable development SHA/tag/archive separately from the currently published website.
+
 ## Path to 5.0.0 — Mega Board Tournament Mode
 
 | Version family | Owner acceptance milestone | Evidence needed |
