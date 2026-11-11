@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Application code must remain traversable/readable by the service account even
+# when an owner launches Update from a private (077) background job. Secrets and
+# deployment receipts keep their explicit private modes.
+umask 022
+
 SOURCE_ZIP="${SOURCE_ZIP:-/tmp/halieus-game-room-source.zip}"
 LEGACY_DATA_ARCHIVE="${LEGACY_DATA_ARCHIVE:-/tmp/halieus-game-room-data.tar.gz}"
 APP_DIR="${APP_DIR:-/opt/halieus-game-room}"
@@ -217,6 +222,12 @@ verify_live_rooms_idle() {
     return 1
   fi
 }
+# Validate the actual service user before touching the running installation.
+if ! runuser -u "$SERVICE_USER" -- test -r "$CANDIDATE_DIR/server/dist/server/src/index.js"; then
+  echo "Candidate application permissions prevent the service account from reading its entry point. Refusing activation." >&2
+  exit 1
+fi
+
 verify_live_rooms_idle "maintenance announcement"
 MAINTENANCE_GRACE_SECONDS="${MAINTENANCE_GRACE_SECONDS:-12}"
 MAINTENANCE_JSON="$(node -e 'const version=process.argv[1];const seconds=Number(process.argv[2])||12;process.stdout.write(JSON.stringify({state:"scheduled",reason:"HGR is about to restart for an update.",targetVersion:version,estimatedSeconds:seconds}))' "$EXPECTED_VERSION" "$MAINTENANCE_GRACE_SECONDS")"

@@ -1,10 +1,10 @@
 {
   "product": "Halieus Game Room",
-  "version": "4.8.0",
-  "fingerprint": "hgr-4.8.0-1a90ac2958e15989",
+  "version": "4.8.1",
+  "fingerprint": "hgr-4.8.1-60905c43b1dbbde4",
   "algorithm": "sha256",
-  "sourceHash": "1a90ac2958e15989d748c93428b9888cac8ce23a2ccfab497f8e82a4c8578791",
-  "integrityFileCount": 615,
+  "sourceHash": "60905c43b1dbbde407e387d24d8974dcbd22f1fe377257538eedf7d20543c257",
+  "integrityFileCount": 616,
   "integrityFiles": [
     ".github/workflows/pull-request-validation.yml",
     ".github/workflows/release-identity.yml",
@@ -473,6 +473,7 @@
     "server/src/platform/dailyWordAttempt.ts",
     "server/src/platform/dataPaths.ts",
     "server/src/platform/feedback.ts",
+    "server/src/platform/finalisedSessionSummaries.ts",
     "server/src/platform/game-history.ts",
     "server/src/platform/game-replay-store.ts",
     "server/src/platform/game-replay-timeline.ts",
