@@ -1,5 +1,6 @@
 import { archiveCompletedMegaGame } from "./games/mega-board/utils/mega-history.js";
 import { registerGameHistoryRoutes } from "./platform/game-history.js";
+import { registerRankedMatchHistoryRoutes } from "./platform/ranked-match-history.js";
 import { registerActiveMatchRoutes } from "./platform/active-match.js";
 import {registerProgressionIdentity, verifiedRoomAccountIds } from "./platform/progression.js";
 import cors from "cors";
@@ -51,7 +52,7 @@ import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
 import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance.js";
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
-import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
+import { configureAccountAdminRuntimeControls, getAccountSummaryById, resolveUniqueAccountIdByDisplayName, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
@@ -78,6 +79,7 @@ import {
   flushRankingsSave,
   getRankingsPath,
   loadRankingsFromDisk,
+  bindFoundingPodiumAccounts,
 } from "./games/mega-board/utils/rankings.js";
 
 const parsedPort = Number.parseInt(
@@ -155,6 +157,7 @@ app.use("/tournaments/solo", (_request, response, next) => {
 });
 registerAccountRoutes(app);
 registerGameHistoryRoutes(app, getAuthenticatedAccount);
+registerRankedMatchHistoryRoutes(app, getAuthenticatedAccount);
 registerActiveMatchRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 // Incomplete 4.8 Solo bracket staging stays unavailable on production by default.
@@ -643,6 +646,9 @@ if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
 }
 const recoveredRankedPlayers =
   await loadRankingsFromDisk();
+// Legacy pre-season rankings used player names. Bind unique unchanged names
+// to account IDs once; subsequent rewards never depend on a mutable name.
+await bindFoundingPodiumAccounts(resolveUniqueAccountIdByDisplayName);
 
 let recoveredRankedMatches = 0;
 for (const room of rooms.values()) {

@@ -93,10 +93,12 @@ export function useSocialActivityNotifications(accountId: string | null) {
 
   const markRead = useCallback(() => updateItems((current) =>
     current.map((item) => item.read ? item : { ...item, read: true })), [updateItems]);
+  const markOne = useCallback((id: string) => updateItems((current) =>
+    current.map((item) => item.id === id && !item.read ? { ...item, read: true } : item)), [updateItems]);
   const clear = useCallback(() => updateItems(() => []), [updateItems]);
   return {
     items, active, error,
     unreadCount: items.filter((item) => !item.read).length,
-    markRead, clear,
+    markRead, markOne, clear,
   };
 }

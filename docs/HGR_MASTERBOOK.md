@@ -1967,3 +1967,7 @@ Owner greenlit the 4.8 readiness review. Integrated the existing Guild candidate
 ## 4.8 support batch — theme selection and score concurrency (11 November 2026)
 
 Integrated the functional changes from PR #224 (per-account Gamer Score single-flight), #227 (immediate pending/equipped/failure feedback, confirmed saves and stale-response protection) and #205 (shuffle only available themes, Beta preview preserved). Retained current release metadata and existing 4.7.15 fixes. Targeted concurrency/durable-score fixtures, existing progression refresh, shuffle rules and real component browser checks at 390/1440px all pass. Archive-read failure resilience and all-board geometry still need separate completion; this receipt does not claim all theme defects solved.
+
+## 4.8 support batch — complete Rankings and Inbox (11 November 2026)
+
+Integrated #212 historical honours/season views/spectator follow controls, #216 complete retained Ranked history, and #213 persistent chronological Inbox/read receipts/activity dropdowns. Reconciled season metadata with unbounded future match retention so neither feature overwrites the other. Preserved existing 4.7.15 board layout and release identity. Season, historical-award evidence/idempotence, 57-match pagination/filter/privacy, Inbox ordering/read persistence and both TypeScript checks pass. Corrected the Ranked history test command to load TypeScript consistently. No historical results are invented and no production account data was modified.
