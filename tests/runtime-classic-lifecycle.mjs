@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
@@ -7,7 +8,15 @@ import { io } from 'socket.io-client';
 
 const root = resolve(import.meta.dirname, '..');
 const data = await mkdtemp(resolve(tmpdir(), 'hgr-classic-lifecycle-'));
-const port = process.env.HGR_CLASSIC_TEST_PORT || '39472';
+// Isolate lifecycle sockets from other CI suites on shared runners.
+const port = process.env.HGR_CLASSIC_TEST_PORT || String(await new Promise((resolvePort, rejectPort) => {
+  const reservation = createServer();
+  reservation.once('error', rejectPort);
+  reservation.listen(0, '127.0.0.1', () => {
+    const address = reservation.address();
+    reservation.close(() => resolvePort(address.port));
+  });
+}));
 const base = `http://127.0.0.1:${port}`;
 const child = spawn(process.execPath, ['--import', 'tsx', resolve(root, 'tests/fixtures/classic-lifecycle-server.mjs')], {
   cwd: resolve(root, 'server'), env: { ...process.env, PORT: port, HALIEUS_DATA_DIR: data, HALIEUS_OWNER_BOOTSTRAP_FILE: resolve(data, 'bootstrap.txt') }, stdio: 'pipe',
