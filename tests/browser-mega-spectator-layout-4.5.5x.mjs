@@ -26,6 +26,7 @@ const cssPaths=[
   "client/src/styles/hgr-4.5.5p-social-lists.css",
   "client/src/styles/hgr-4.5.5r-invitation-dropdown.css",
   "client/src/styles/hgr-4.5.5s-guild-message-notices.css",
+  "client/src/styles/hgr-mega-spectator-readability-hotfix.css",
 ];
 const css=await Promise.all(cssPaths.map(path=>readFile(resolve(root,path),"utf8")));
 const tsx=await readFile(resolve(root,"client/src/App.tsx"),"utf8");
@@ -89,6 +90,8 @@ try{
         lastCardBottom:rect(".mega-spectator-player-rail .player-rail-card:last-child").bottom,
         lastCardRight:rect(".mega-spectator-player-rail .player-rail-card:last-child").right,
         headerCellAlign:style(".mega-game-meta > span").textAlign,
+        propertyChipFont:parseFloat(style(".mega-spectator-player-rail .player-property-chip").fontSize),
+        playerNameFont:parseFloat(style(".mega-spectator-player-rail .player-rail-copy strong").fontSize),
         pageOverflowY:style(".mega-live-page").overflowY,
       };
     });
@@ -99,6 +102,18 @@ try{
     assert.ok(info.first.top>=info.board.bottom && info.first.left>=-1 && info.first.right<=viewport.width+1,"Player must be under board, not clipped "+JSON.stringify({viewport,info}));
     assert.ok(info.first.top<viewport.height-40,"First player should be visible at bottom of first screen "+JSON.stringify({viewport,info}));
     assert.equal(info.cardCount,8,"All eight players remain in the roster");
+    assert.ok(info.propertyChipFont>=10.9,"Spectator property names must remain readable without browser zoom "+JSON.stringify({viewport,info}));
+    assert.ok(info.playerNameFont>=11.9,"Spectator player names must remain readable without browser zoom "+JSON.stringify({viewport,info}));
+    if (viewport.width>=601 && viewport.width<=1180) {
+      const expectedWidth=Math.min(viewport.width,viewport.height*0.72,820);
+      assert.ok(info.board.width>=expectedWidth-6,
+        "Tablet spectator board should not retain the old 64dvh size cap "+JSON.stringify({viewport,info}));
+    }
+    if (viewport.width>=1181) {
+      const rows=info.layout.gridRows.split(/\\s+/).filter(Boolean).map(Number);
+      assert.ok(rows.length>=2 && rows[1]<=155.5,
+        "Desktop spectator roster reservation must not shrink board below the readable fit "+JSON.stringify({viewport,info}));
+    }
     if(viewport.width>=1181){
       assert.equal(info.pageOverflowY,"hidden","Desktop spectator page must not scroll "+JSON.stringify({viewport,info}));
       assert.ok(info.bodyHeight<=viewport.height+2 && info.documentHeight<=viewport.height+2,"Desktop spectator page must fit the viewport "+JSON.stringify({viewport,info}));
