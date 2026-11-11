@@ -150,7 +150,10 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
   response.setHeader("Cache-Control", "no-store");
   next();
 });
-// Hide experimental Solo entrant identities from all shared/browser caches.
+// Solo entrant identities never belong in shared/browser caches.
+// 4.8 exposes the completed formats by default; the legacy flag remains an explicit opt-out.
+const soloTournamentEnabled = process.env.HGR_SOLO_TOURNAMENT_ALPHA === undefined ||
+  process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1";
 app.use("/tournaments/solo", (_request, response, next) => {
   response.setHeader("Cache-Control", "no-store");
   next();
@@ -163,10 +166,10 @@ registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 app.get("/tournaments/capabilities", (request, response) => {
   response.setHeader("Cache-Control", "no-store");
   if (!getAuthenticatedAccount(request)) { response.status(401).json({ok:false}); return; }
-  response.json({ok:true, solo:process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1"});
+  response.json({ok:true, solo:soloTournamentEnabled});
 });
-// 4.8 Solo remains default-off until integrated release acceptance.
-if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+// Registration, room recovery and durable loading use the same release switch.
+if (soloTournamentEnabled) {
   registerSoloTournamentRegistrationRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
 }
 registerPushRoutes(app, getAuthenticatedAccount);
@@ -403,7 +406,7 @@ const io = new Server(httpServer, {
   pingInterval: 25000,
   pingTimeout: 20000,
 });
-if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+if (soloTournamentEnabled) {
   // Do not expose a recovery endpoint without the real Socket.IO room closer.
   configureSoloRoomResetCloser(async (code, boardMatchId, roomCreatedAt) => {
     const room = rooms.get(code);
@@ -637,7 +640,7 @@ io.on(
 await loadAccountStore();
 await loadPublicAccessState();
 await loadGuildStore();
-if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+if (soloTournamentEnabled) {
   // Restore locked Solo lobbies before accepting any real game:start or join events.
   await loadSoloTournamentRegistration();
 }
@@ -645,8 +648,8 @@ await loadFeedbackStore();
 await initializePushNotifications();
 
 const recoveredRoomCount =
-  await loadRoomsFromDisk({ strict: process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1" });
-if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  await loadRoomsFromDisk({ strict: soloTournamentEnabled });
+if (soloTournamentEnabled) {
   await reconcileSoloTournamentResets();
 }
 const recoveredRankedPlayers =

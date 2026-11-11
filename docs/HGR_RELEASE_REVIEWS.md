@@ -1,5 +1,17 @@
 # HGR Release Review ? owner validation guide
 
+## 4.8.0 release activation — 11 November 2026
+
+The owner greenlit the update and then instructed: “So lets get this update running.” This supersedes the earlier default-off development checkpoint. VERSION is now 4.8.0. Solo single/double elimination is available to ordinary signed-in accounts by default; the existing HGR_SOLO_TOURNAMENT_ALPHA=0 remains an explicit opt-out. Guild single/double elimination includes the owner-approved original-player third game after a 1–1 fixture split. This delivers the 4.8 format milestone; separate tournament standings/reports/replays and full 5.0 owner acceptance remain later work.
+
+- **End-to-end evidence:** the assembled source server created real isolated accounts through owner invitations; normal account cookies authenticated HTTP and real Socket.IO clients. Both Solo formats and both Guild formats completed, including both Grand Final resets and a 1–1 third-game decision in each Guild format. All 32 boards ended through authenticated game:start/game:forfeit; no winner or receipt was injected. All four champions and exact receipts survived a full server restart. Explicit Solo opt-out also passed. These are deterministic forfeit matches, not a claim of completed human playtesting.
+- **Screenshot correction:** desktop spectators retain a legible square board and a vertically scrollable page. Full-height player cards and the bankrupt spectator section are checked together at 1280×720, 1536×864 and 2048×1152, with five/eight active players. A remaining legacy 120px property cap is removed with matching specificity; colour groups use one column inside each card so expanded property labels remain readable. No smaller fonts or replacement artwork.
+- **Other integrated repairs:** Bus Ticket expiry/counts, property access/readability, theme selection and verified shuffle, progression refresh, complete retained ranked history, season honours, chronological Inbox/read receipts, maintenance return, Control laptop authorization and hidden launchers.
+- **CI dependency repair:** hosted runners already supplied Chromium system libraries; Ubuntu's optional-font apt mirror failed DNS. Install the pinned Playwright Chromium browser without re-running apt. Keep the full browser suite, Windows/Ubuntu matrix, type checks, builds and high/critical audit gate.
+- **Release state:** source candidate in PR #246; actual merge and production activation must be recorded separately with exact SHA/fingerprint. Deployment preserves the existing two idle-room gates, isolated build, persistent data and automatic rollback. The source identity is generated from VERSION and RELEASE.json. No production success is implied by this source entry.
+- **Remaining device acceptance:** physical Android/iPad PWA background/resume, closed-app push and cross-device recovery remain explicitly unclaimed.
+
+
 ## Operating rule (effective 4.7.8 onward)
 Every pushed source version and every **actually deployed** Oracle release receives a concise owner-facing review covering: source/production version and immutable fingerprint; changed features and where to find them; what correct behaviour looks like; what to troubleshoot; game/account safety tests; known limitations; rollback/issue link; and separate *source merged*, *production verified*, and *owner-device accepted* statuses. Never describe a GitHub merge alone as a website deploy.
 

@@ -1,5 +1,7 @@
 # HGR 4.8 Solo tournament — real forfeit and pending-room preservation
 
+> **Historical implementation checkpoint:** the default-off/source-only status below is superseded by the owner-authorized [4.8.0 activation and full-server acceptance](HGR_RELEASE_REVIEWS.md). The original engineering evidence is retained.
+
 Status: **source-only candidate** layered on unmerged Solo registration, real binding and verified-results drafts; public flag HGR_SOLO_TOURNAMENT_ALPHA remains disabled by default. This is NOT an accepted 4.8 milestone, 5.0 mode, public website update, or recovered abandoned match.
 
 ## Implemented guarantees

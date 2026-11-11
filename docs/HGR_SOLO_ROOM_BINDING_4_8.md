@@ -1,5 +1,7 @@
 # 4.8 Solo semifinal binding to real Mega Board rooms — reviewed development slice
 
+> **Historical implementation checkpoint:** the default-off/source-only status below is superseded by the owner-authorized [4.8.0 activation and full-server acceptance](HGR_RELEASE_REVIEWS.md). The original engineering evidence is retained.
+
 **Status:** Source candidate only. Builds on server-side Solo registration/seeding draft PR #229; still requires later actual finished-game receipt and advancement logic. Public HGR_SOLO_TOURNAMENT_ALPHA remains **off by default**. No production rollout, milestone promotion, PWA/artwork change, ranked/tournament score grant or gameplay economy change.
 
 ## What works

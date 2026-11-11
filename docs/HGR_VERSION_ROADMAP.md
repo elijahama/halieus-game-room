@@ -1,5 +1,7 @@
 # HGR version roadmap — 4.6.x to fully actualized 5.0.0
 
+**11 November 2026 activation:** the owner authorized running 4.8.0. Both Solo and Guild single/double formats now pass full-server authenticated HTTP/Socket.IO acceptance through real forfeit results, Grand Final resets, Guild third games and persisted champions after restart. Solo is enabled by default with an explicit legacy opt-out. Source, production identity and physical-device acceptance remain separate; see [release evidence](HGR_RELEASE_REVIEWS.md).
+
 **Approved owner direction, 26 October 2026. This file is the release-number planning authority for the current development cycle.**
 
 **Current source/live clarification (31 October 2026):** HGR 4.7.5 was independently verified live with exact start/end maintenance scheduling. The corrective 4.7.6 source (Oracle health-gate diagnostics, PR #190) has passed both CI platforms and merged, but is **not** thereby confirmed deployed. The complete 4.7 Guild fixture acceptance is still separate, not automatically achieved by the 4.7.5 release number. For the actionable audited mini-batches in the owner Control Development timeline, see [Delivery Batches and Tournament Roadmap](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md).

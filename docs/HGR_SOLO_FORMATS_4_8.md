@@ -1,6 +1,6 @@
-# Solo tournament formats — 4.8 integration candidate
+# Solo tournament formats — 4.8.0
 
-The Games area exposes authenticated Solo tournaments only when the server's existing HGR_SOLO_TOURNAMENT_ALPHA switch is enabled. It remains **off by default**. Any ordinary signed-in non-Beta player can host or join; no owner/admin privilege is needed.
+For the owner-authorized 4.8.0 release, the Games area exposes authenticated Solo tournaments **by default**. HGR_SOLO_TOURNAMENT_ALPHA=0 explicitly disables both capability and routes; unset or 1 enables them. Any ordinary signed-in non-Beta player can host or join; no owner/admin privilege is needed.
 
 ## Format rules
 
@@ -31,4 +31,4 @@ Two original players may approve replacing a never-started lobby. The UI cannot 
 - Existing real-start single-elimination, registration and six crash-boundary reset tests remain passing.
 - Real React controls pass at 390/820/1440px and 100–200% text size, including creation, seed, link, return/watch, reset consent and truthful API rejection.
 - Separate remaining work: physical Android/iPad PWA background recovery and closed-app push delivery, cross-device recovery policy, match report/replay navigation, integrated CI and owner acceptance. These are not replaced by component tests.
-- Source VERSION stays 4.7.15 while the complete 4.8 milestone is unfinished. No production deployment is implied.
+- The assembled server completed both formats using real invited accounts, authenticated sockets and actual game forfeits; champions and receipts survived restart. VERSION is 4.8.0 under the owner’s release instruction. Deployment remains separately verified by exact public identity.

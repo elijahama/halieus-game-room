@@ -1,5 +1,7 @@
 # 4.8 Solo tournament: unanimous pre-start lobby recovery
 
+> **Historical implementation checkpoint:** the default-off/source-only status below is superseded by the owner-authorized [4.8.0 activation and full-server acceptance](HGR_RELEASE_REVIEWS.md). The original engineering evidence is retained.
+
 **Isolated development draft.** Builds on source-only Solo registration, true match binding, trusted result settlement and forfeit protection. Public HGR_SOLO_TOURNAMENT_ALPHA remains default-off. Not a complete 4.8 or 5.0 milestone and not installed in production.
 
 ## Server-authoritative recovery contract

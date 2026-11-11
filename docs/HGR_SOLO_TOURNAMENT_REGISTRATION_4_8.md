@@ -1,5 +1,7 @@
 # Solo Mega Board tournament registration and deterministic bracket seeding
 
+> **Historical implementation checkpoint:** the default-off/source-only status below is superseded by the owner-authorized [4.8.0 activation and full-server acceptance](HGR_RELEASE_REVIEWS.md). The original engineering evidence is retained.
+
 **Source scope:** first small 4.8 development slice from current verified 4.7.13 main. This is **not** complete Solo tournaments, the accepted 4.8 milestone, or the 5.0 Tournament Mode release.
 
 ## Working implemented behavior
