@@ -466,6 +466,11 @@ export function GameBoard({
   const [freeParkingInfoOpen, setFreeParkingInfoOpen] = useState(false);
   const [busTicketInfoOpen, setBusTicketInfoOpen] = useState(false);
   const [selectedInfoSpaceId, setSelectedInfoSpaceId] = useState<number | null>(null);
+  // The deck itself is the source of truth. A persisted/display-only count can
+  // lag behind draws, ticket expiry or a recovered game; never show a stale value.
+  const remainingBusTickets = Array.isArray(gameState.busTicketDeck)
+    ? gameState.busTicketDeck.length
+    : gameState.busTicketsRemaining;
   const expiringBusTicketsRemaining = (gameState.busTicketDeck ?? []).filter((id) => id.startsWith("bus-expire-")).length;
 
   // Presentation state is deliberately separate from authoritative game state.
@@ -1492,10 +1497,10 @@ export function GameBoard({
               type="button"
               className="board-deck board-deck-bus board-bus-ticket-button"
               onClick={() => setBusTicketInfoOpen(true)}
-              aria-label={`Bus Ticket deck. ${gameState.busTicketsRemaining} tickets remain, including ${expiringBusTicketsRemaining} expiry tickets.`}
+              aria-label={`Bus Ticket deck. ${remainingBusTickets} tickets remain, including ${expiringBusTicketsRemaining} expiry tickets.`}
             >
               <span>🚌</span>
-              <small>{gameState.busTicketsRemaining} tickets</small>
+              <small>{remainingBusTickets} tickets</small>
             </button>
           </div>
 
@@ -1882,7 +1887,7 @@ export function GameBoard({
             <button type="button" className="modal-close-button" aria-label="Close Bus Ticket information" onClick={() => setBusTicketInfoOpen(false)}>×</button>
             <span className="bus-ticket-info-icon">🚌</span>
             <p className="modal-eyebrow">Bus Ticket deck</p>
-            <h2>{gameState.busTicketsRemaining} remaining</h2>
+            <h2>{remainingBusTickets} remaining</h2>
             <div className="bus-ticket-info-stats">
               <span><small>Expiry tickets left</small><strong>{expiringBusTicketsRemaining}</strong></span>
               <span><small>Your held tickets</small><strong>{currentGamePlayer?.busTickets ?? 0}</strong></span>
