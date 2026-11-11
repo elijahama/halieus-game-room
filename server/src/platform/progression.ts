@@ -1,4 +1,5 @@
-import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
+import { readFinalisedSessionSummaries } from "./finalisedSessionSummaries.js";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { getAccountDataDirectory, getSessionDataDirectory } from "./dataPaths.js";
 import { perAccountSingleFlight } from "./perAccountSingleFlight.js";
@@ -90,14 +91,7 @@ async function rebuildFromArchive(accountId: string): Promise<PlayerProgression>
     byGame: {},
   };
   const directory = resolve(getSessionDataDirectory(), "finalized");
-  let files: string[] = [];
-  try { files = await readdir(directory); }
-  catch (error: any) { if (error.code !== "ENOENT") throw error; }
-
-  const records: any[] = [];
-  for (const file of files.filter(file => file.endsWith(".json"))) {
-    records.push(JSON.parse(await readFile(resolve(directory, file), "utf8")));
-  }
+  const records = await readFinalisedSessionSummaries([directory], { strict: true });
   records.sort((a,b) => a.finalisedAt - b.finalisedAt || String(a.sessionId).localeCompare(String(b.sessionId)));
 
   const sessions = new Set<string>();

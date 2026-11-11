@@ -1,5 +1,17 @@
 # HGR Release Review ? owner validation guide
 
+## 4.8.1 production stability patch — 11 November 2026
+
+4.8.0 was merged in PR #246 after Windows/Ubuntu CI passed and preserved as protected tag v4.8.0. Its Oracle activation failed and automatically restored 4.7.14. This 4.8.1 candidate preserves every 4.8 tournament, spectator-layout and gameplay fix while correcting the two findings below. Source validation is not a claim of successful production activation.
+
+- **Archive memory:** the existing 4.7.14 service repeatedly exhausted its JavaScript heap before the update began. A short CPU sample identified full-archive reads in account statistics and progression; the live archive contained 192 files totalling 133,618,113 bytes. Both consumers now share file-metadata-validated compact summaries. Only one full archive is parsed at a time per directory, replay/board payloads are discarded, and unchanged files are not reparsed. Replacements/deletions invalidate the index immediately. Damaged files retain history's best-effort policy and progression's last verified snapshot.
+- **Measured regression:** a synthetic 192-file, 134.4 MB archive used 147 MiB of heap before the fix and 32 MiB afterward. The same check covers twelve concurrent readers, multiple accounts, exact counts/awards, replacement, deletion, malformed data and recovery under a 96 MiB heap budget. No private production archive was copied into tests.
+- **Installation permissions:** the one-time deployment runner's private 077 umask was inherited by application extraction. The service user then failed to enter the application directory (systemd 200/CHDIR). The canonical installer now normalizes application creation to 022 and checks that the actual service user can read the compiled entry point before announcing maintenance or stopping production. Credentials and private job records keep explicit restricted permissions; both idle-room gates and rollback remain mandatory.
+- **Operational record:** 4.8.0 never passed production acceptance. The failed installer restored the exact 4.7.14 identity. A diagnostic inspector-cleanup expression caused one additional service restart while no game rooms were present; it was distinct from the pre-existing heap crashes. The diagnostic endpoint ended with that process. Do not repeat that cleanup expression.
+- **Validation/activation:** focused regressions and the new memory case are required, followed by the normal Windows/Ubuntu CI and guarded Oracle update. Record the final source fingerprint and actual production result separately. Retain physical PWA and later tournament milestones as open.
+
+
+
 ## 4.8.0 release activation — 11 November 2026
 
 The owner greenlit the update and then instructed: “So lets get this update running.” This supersedes the earlier default-off development checkpoint. VERSION is now 4.8.0. Solo single/double elimination is available to ordinary signed-in accounts by default; the existing HGR_SOLO_TOURNAMENT_ALPHA=0 remains an explicit opt-out. Guild single/double elimination includes the owner-approved original-player third game after a 1–1 fixture split. This delivers the 4.8 format milestone; separate tournament standings/reports/replays and full 5.0 owner acceptance remain later work.

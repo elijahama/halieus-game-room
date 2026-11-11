@@ -1,3 +1,4 @@
+import { readFinalisedSessionSummaries } from "./finalisedSessionSummaries.js";
 import { getRankedLeaderboard } from "../games/mega-board/utils/rankings.js";
 import { rooms as megaBoardRooms } from "../games/mega-board/state/rooms.js";
 import { buildRankedLeaderboard } from "./ranked.js";
@@ -574,30 +575,12 @@ async function readFinalisedSessionFiles(): Promise<any[]> {
     resolve(process.cwd(), "data", "sessions", "finalized"),
     resolve(process.cwd(), "server", "data", "sessions", "finalized"),
   ])];
-  const results: any[] = [];
-  const seen = new Set<string>();
-  for (const root of roots) {
-    try {
-      for (const file of await readdir(root)) {
-        if (!file.endsWith(".json")) continue;
-        const path = resolve(root, file);
-        if (seen.has(path)) continue;
-        seen.add(path);
-        try {
-          const record = JSON.parse(await readFile(path, "utf8"));
-          // A classic-table closure is an operational archive, not played/won
-          // history. Keep this narrow: other games retain their existing policy.
-          if ((record.game === "dominoes" || record.game === "cheat") && (
-            record.state?.startedAt == null
-            || !["completed", "forfeit-completed"].includes(record.status)
-            || record.state?.outcome?.countsAsCompletedPlay === false
-          )) continue;
-          results.push(record);
-        } catch { /* malformed archive is ignored */ }
-      }
-    } catch { /* archive root may not exist on a fresh install */ }
-  }
-  return results;
+  return (await readFinalisedSessionSummaries(roots)).filter(record =>
+    !((record.game === "dominoes" || record.game === "cheat") && (
+      record.state?.startedAt == null ||
+      !["completed", "forfeit-completed"].includes(record.status) ||
+      record.state?.outcome?.countsAsCompletedPlay === false
+    )));
 }
 
 function quickPlayKey(game: string, state: any): { key: string; preference: HalieusQuickPlayPreference } {
