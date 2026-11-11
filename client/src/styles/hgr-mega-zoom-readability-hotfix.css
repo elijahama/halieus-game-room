@@ -1,0 +1,65 @@
+/* Mega Board readability hotfix.
+   The board is resized independently to fit its frame, but long-lived legacy
+   5–8px labels become unreadable when the browser or a fullscreen window
+   reduces the apparent size of the game. Keep type legible without applying
+   CSS zoom or transforming the game/interaction layer. */
+
+/* Full board slots are much smaller on phones, where the native deed/info
+   action already exposes the complete name. Improve the floor conservatively. */
+.mega-live-page .board-grid .board-space-name {
+  font-size: clamp(6.5px, 0.62vw, 9px) !important;
+  line-height: 1.12 !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+.mega-live-page .board-grid .board-space.is-corner .board-space-name {
+  font-size: clamp(7.5px, 0.72vw, 10px) !important;
+}
+
+.mega-live-page .board-grid .board-space-price {
+  font-size: clamp(6.5px, 0.56vw, 8.5px) !important;
+}
+
+@media (max-width: 760px) {
+  .mega-live-page .board-grid .board-space-name {
+    font-size: clamp(6.5px, 1.6vw, 7.5px) !important;
+  }
+  .mega-live-page .board-grid .board-space.is-corner .board-space-name {
+    font-size: clamp(7px, 1.8vw, 8.5px) !important;
+  }
+  .mega-live-page .board-grid .board-space-price {
+    font-size: clamp(6px, 1.5vw, 7px) !important;
+  }
+}
+
+/* Player information must not use the old 7.5–8.5px compression rule.
+   The portfolio scroll/flow fix handles the additional content height. */
+.mega-live-page .player-rail-side .player-property-chip {
+  font-size: clamp(10px, 0.82vw, 11.5px) !important;
+  line-height: 1.3 !important;
+}
+
+.mega-live-page .player-rail-side .player-held-cards > span {
+  font-size: 10.5px !important;
+  line-height: 1.35 !important;
+}
+
+.mega-live-page .player-property-count {
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+.mega-live-page .player-property-group-heading {
+  font-size: 11.5px !important;
+  line-height: 1.35 !important;
+}
+
+.mega-live-page .player-property-group-heading small,
+.mega-live-page .player-property-group-set {
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+}
+
+/* Existing text disclosure must remain the complete, readable source.
+   Do not auto-zoom the page, enlarge the board hitboxes or alter match state. */
