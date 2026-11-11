@@ -53,6 +53,7 @@ import type { HalieusMaintenanceNotice } from "../../shared/platform/maintenance
 import { registerRoomChatHandlers } from "./platform/roomChat.js";
 import { configureAccountAdminRuntimeControls, getAccountSummaryById, getAuthenticatedAccount, hasAdminSession, loadAccountStore, registerAccountRoutes } from "./platform/accounts.js";
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
+import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
@@ -62,13 +63,15 @@ import { registerSessionHandlers } from "./games/mega-board/handlers/sessionHand
 import { registerTradeHandlers } from "./games/mega-board/handlers/tradeHandlers.js";
 import { registerTurnHandlers } from "./games/mega-board/handlers/turnHandlers.js";
 import { rooms } from "./games/mega-board/state/rooms.js";
+import { endRoom } from "./games/mega-board/utils/room-lifecycle.js";
 import { listSpectators } from "./games/mega-board/state/spectators.js";
 import { syncAuctionTimer } from "./games/mega-board/utils/auction-timer.js";
-import { restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
+import { cancelHostGrace, restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
 import {
   flushRoomSave,
   getSavePath,
   loadRoomsFromDisk,
+  flushRoomSaveStrict,
 } from "./games/mega-board/utils/persistence.js";
 import {
   finalizeRankedMatch,
@@ -145,10 +148,19 @@ app.use(["/auth", "/accounts", "/admin", "/guilds", "/feedback"], (_request, res
   response.setHeader("Cache-Control", "no-store");
   next();
 });
+// Hide experimental Solo entrant identities from all shared/browser caches.
+app.use("/tournaments/solo", (_request, response, next) => {
+  response.setHeader("Cache-Control", "no-store");
+  next();
+});
 registerAccountRoutes(app);
 registerGameHistoryRoutes(app, getAuthenticatedAccount);
 registerActiveMatchRoutes(app, getAuthenticatedAccount);
 registerGuildRoutes(app, getAuthenticatedAccount, getAccountSummaryById);
+// Incomplete 4.8 Solo bracket staging stays unavailable on production by default.
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  registerSoloTournamentRegistrationRoutes(app, getAuthenticatedAccount);
+}
 registerPushRoutes(app, getAuthenticatedAccount);
 registerFeedbackRoutes(app, getAuthenticatedAccount, hasAdminSession);
 
@@ -383,6 +395,20 @@ const io = new Server(httpServer, {
   pingInterval: 25000,
   pingTimeout: 20000,
 });
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  // Do not expose a recovery endpoint without the real Socket.IO room closer.
+  configureSoloRoomResetCloser(async (code, boardMatchId, roomCreatedAt) => {
+    const room = rooms.get(code);
+    if (room) {
+      if (room.createdAt !== roomCreatedAt) return false;
+      cancelHostGrace(code);
+      if (!endRoom(io, code, "Both registered Solo players approved replacing this never-started lobby.",
+          { soloResetMatchId: boardMatchId })) return false;
+    }
+    await flushRoomSaveStrict();
+    return true;
+  });
+}
 
 let activeMaintenanceNotice: HalieusMaintenanceNotice | null = null;
 
@@ -603,11 +629,18 @@ io.on(
 await loadAccountStore();
 await loadPublicAccessState();
 await loadGuildStore();
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  // Restore locked Solo lobbies before accepting any real game:start or join events.
+  await loadSoloTournamentRegistration();
+}
 await loadFeedbackStore();
 await initializePushNotifications();
 
 const recoveredRoomCount =
-  await loadRoomsFromDisk();
+  await loadRoomsFromDisk({ strict: process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1" });
+if (process.env.HGR_SOLO_TOURNAMENT_ALPHA === "1") {
+  await reconcileSoloTournamentResets();
+}
 const recoveredRankedPlayers =
   await loadRankingsFromDisk();
 

@@ -14,6 +14,7 @@ import { finalizeRankedMatch } from "./rankings.js";
 import { getMatchAwards } from "../../../../../shared/games/mega-board/ranked.js";
 import { finalizeSession, recordWorkingSession } from "../../../platform/sessionArchive.js";
 import { getGuildFixtureBoundRoom, recordFinishedGuildFixtureBoard } from "../../../platform/guildFixtures.js";
+import { getSoloTournamentBoundRoom, recordFinishedSoloTournamentBoard } from "../../../platform/soloTournamentRegistration.js";
 
 const optionalActionTimers = new Map<
   string,
@@ -231,6 +232,10 @@ export function emitGameState(
       if (!room.betaTournamentTest && getGuildFixtureBoundRoom(code)) {
         void recordFinishedGuildFixtureBoard(room, gameState).catch((error) =>
           console.error("[HGR] Guild fixture board result could not be persisted; retry on next verified finish emission:", error));
+      }
+      if (!room.betaTournamentTest && getSoloTournamentBoundRoom(code)) {
+        void recordFinishedSoloTournamentBoard(room, gameState).catch((error) =>
+          console.error("[HGR] Solo tournament board result could not be persisted; retry on next verified finish emission:", error));
       }
       const surviving = gameState.players.filter((player) => !player.isBankrupt);
       const winner = surviving.length === 1 ? surviving[0]?.name ?? null : null;
