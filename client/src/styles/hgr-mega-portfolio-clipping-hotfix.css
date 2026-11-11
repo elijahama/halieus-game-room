@@ -97,3 +97,67 @@
   flex: 0 0 auto;
   white-space: nowrap;
 }
+
+/* Desktop spectator photo regression (11 Nov 2026):
+   Legacy fixed-height spectator view allotted 150–230px to the entire six-seat
+   roster and hid overflow, clipping live players. Keep a larger board and make
+   the VIEWPORT itself scroll: all players and properties stay reachable.
+   Active participants and tablet/phone layouts are deliberately untouched. */
+@media (min-width: 1181px) {
+  .game-page.mega-live-page.mega-spectator-mode {
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    scrollbar-width: thin;
+    padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .mega-live-page.mega-spectator-mode > .game-layout.mega-live-layout-v3.mega-spectator-layout {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    grid-template-rows: auto auto !important;
+    overflow: visible !important;
+  }
+
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout > .board-frame {
+    width: min(100%, 78dvh, 850px) !important;
+    height: auto !important;
+    max-height: none !important;
+    aspect-ratio: 1 / 1 !important;
+    container-type: normal !important;
+    padding: 2px !important;
+    overflow: visible !important;
+    justify-self: center !important;
+  }
+
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout .board-grid {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout > .mega-spectator-player-rail {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-list {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)) !important;
+    overflow: visible !important;
+  }
+
+  .mega-live-page.mega-spectator-mode .mega-spectator-player-rail .player-rail-card {
+    height: auto !important;
+    min-height: max-content !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
