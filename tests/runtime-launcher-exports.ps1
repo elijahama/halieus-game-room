@@ -25,7 +25,7 @@ try {
     $delivery = Join-Path $fixture 'server/control-ui'
     $exports = Join-Path $fixture 'server/data/runtime/launcher-icons'
     New-Item -ItemType Directory -Force $helpers, $references, $delivery, $exports | Out-Null
-    foreach ($name in @('generate-launcher-icons.ps1','launcher-shortcuts.ps1')) {
+    foreach ($name in @('generate-launcher-icons.ps1','launcher-shortcuts.ps1','launcher-noactivate.vbs')) {
         Copy-Item -LiteralPath (Join-Path $sourceRoot "scripts/windows/$name") -Destination $helpers
     }
     foreach ($name in @('HGR Main.png','HGR Start.png','HGR Restart.png','HGR Close.png','HGR Update.png','HGR PowerShell.png','HGR OpenShard.png','HGR Control Launcher.png','control-artwork.json')) {
@@ -47,6 +47,8 @@ try {
 
     # Real Windows COM .lnk metadata, but only in an isolated fake Start Menu.
     $env:APPDATA = Join-Path $fixture 'appdata'
+    # Verify cache command handling without clearing the user's real icon cache.
+    function Start-Process { [pscustomobject]@{ ExitCode = 0 } }
     . (Join-Path $helpers 'launcher-shortcuts.ps1') -UnhideScripts
     if ($CreatedShortcuts.Count -ne 12) { throw 'Expected six core launchers in both managed folders' }
     foreach ($root in @($ProjectLauncherDirectory, $StartMenuLauncherDirectory)) {

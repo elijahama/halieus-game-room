@@ -100,8 +100,8 @@ try {
     const created=await api("/tournaments/solo","owner","POST",{name:"HTTP tournament"});
     assert.equal(created.status,200);
     assert.equal(created.data.tournament.entrantAccountIds[0],"owner");
-    assert.equal(created.headers.get("cache-control"),null,
-      "test application does not pretend to install production cache middleware");
+    assert.equal(created.headers.get("cache-control"),"no-store",
+      "Authenticated tournament responses explicitly forbid stale account cache reuse");
     const tid=created.data.tournament.id;
     assert.equal((await api("/tournaments/solo","outsider")).data.tournament.length,0);
     assert.equal((await api("/tournaments/solo/"+tid+"/join","outsider","POST",{})).status,200);
@@ -116,7 +116,7 @@ try {
   }
   const serverEntry=await readFile(join(process.cwd(),"server","src","index.ts"),"utf8");
   assert.match(serverEntry,/HGR_SOLO_TOURNAMENT_ALPHA === "1"/);
-  assert.match(serverEntry,/registerSoloTournamentRegistrationRoutes\(app, getAuthenticatedAccount\)/);
+  assert.match(serverEntry,/registerSoloTournamentRegistrationRoutes\(app, getAuthenticatedAccount, getAccountSummaryById\)/);
   assert.match(serverEntry,/app\.use\("\/tournaments\/solo"[\s\S]*?Cache-Control"[\s\S]*?"no-store"/);
   console.log("PASS Solo tournament registration: host/auth, max four, deterministic bracket, no fake winners or rooms, durable restore, concurrent join, fail closed, HTTP/CSRF and default-off gate");
 } finally {

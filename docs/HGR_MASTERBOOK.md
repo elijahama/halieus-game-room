@@ -1989,3 +1989,10 @@ Added Games → Mega Board tournaments for normal authenticated players, with fo
 Gamer Score rebuild now refuses partial/corrupt archives and returns only the requesting account’s validated last successful durable snapshot. It never overwrites verified awards with a partial scan, shares another account’s data, or permanently caches a fallback; the next healthy read rebuilds new results. Failure, snapshot preservation, account isolation and subsequent fresh-result tests passed.
 
 The approved milestone roadmap from PR #228 is incorporated. All existing 4.7.15 Bus Ticket, property clipping, spectator and readability fixes are preserved. Integrated regression/build/CI remain separate from these focused receipts; this entry does not declare 4.8 deployed.
+
+
+### Integrated checkpoint validation — 11 November 2026
+
+All 136 commands in the expanded regression suite passed after correcting the isolated launcher fixture dependency and the Solo no-store/lookup assertions. Fifteen additional Guild fixture, Beta, active-match return, gallery, built-release identity, personal-history/authentication, social activity and public maintenance checks passed. Client and server TypeScript checks and production builds passed. Windows COM icon/shortcut checks ran only against a disposable fixture; the user icon-cache refresh was stubbed. The hidden-process test harness restored the host’s missing PATHEXT and retained Node’s promisified exec result shape; no application behavior was bypassed. No existing player rooms, installed services or Start pins were changed.
+
+This checkpoint is a review candidate on the preserved 4.7.15 source baseline. It is not a completed/deployed 4.8 milestone. Remaining release gates are the Guild 1–1 tie decision and double-elimination extension, physical PWA return/push acceptance, broader cosmetics geometry/badge work and integrated remote CI. Reports, replays and separate tournament ratings remain on the documented 4.9 path.
