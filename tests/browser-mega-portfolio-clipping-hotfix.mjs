@@ -10,7 +10,7 @@ assert.equal(entry.split(hotfixName).length, 2, "Hotfix CSS must be imported exa
 assert.ok(entry.lastIndexOf(hotfixName) > entry.lastIndexOf("./styles/hgr-account-workspace.css"),
   "Portfolio hotfix must load after all legacy game style overrides");
 
-const cssPaths = [...entry.matchAll(/import "([^"]+\\.css)";/g)]
+const cssPaths = [...entry.matchAll(/import "([^"]+\.css)";/g)]
   .map((match) => match[1])
   .filter((path) => path.startsWith("./"));
 assert.ok(cssPaths.includes(hotfixName));
