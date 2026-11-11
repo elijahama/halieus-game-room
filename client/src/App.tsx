@@ -3704,7 +3704,7 @@ function handleLeaveSpectator() {
         {viewerIsSpectator && (
           <div className="mega-spectator-banner" role="status" aria-label="Spectating live Mega Board">
             <strong>Spectating</strong>
-            <span>Live Mega Board • Room {lobby.code} • Read-only view</span>
+            <span>Room {lobby.code} • Tap any square for details</span>
           </div>
         )}
 
