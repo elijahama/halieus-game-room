@@ -1,7 +1,7 @@
 import { ModalPortal } from "./ModalPortal";
 import { accountApi } from "../accounts/api";
 import { subscribeToProgressionUpdates } from "../progressionRefresh";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
 import type { HalieusPersonalStats } from "../../../../shared/platform/accounts";
@@ -64,6 +64,11 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [checking, setChecking] = useState(false);
+  const [verifiedUnlocks, setVerifiedUnlocks] = useState(false);
+  const [choosingSkin, setChoosingSkin] = useState<string | null>(null);
+  const choosingRef = useRef(false);
+  const selectionRevision = useRef(0);
+  const [selectionNotice, setSelectionNotice] = useState("");
   useEffect(() => {
     if (!open || betaMode) return;
     return subscribeToProgressionUpdates(() => setRefreshKey((key) => key + 1));
@@ -71,13 +76,18 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
   useEffect(() => {
     if (!open || betaMode) return;
     let live = true;
+    const startedRevision = selectionRevision.current;
     setChecking(true);
     void accountApi<{ preferences: HalieusSkinPreferences; entitlements: string[] }>("/accounts/me/cosmetics")
       .then((result) => {
         if (!live) return;
         setEntitlements(result.entitlements);
-        setPreferences(result.preferences);
-        saveSkinPreferences(result.preferences);
+        setVerifiedUnlocks(true);
+        // A slower refresh must never undo an acknowledged in-flight selection.
+        if (!choosingRef.current && selectionRevision.current === startedRevision) {
+          setPreferences(result.preferences);
+          saveSkinPreferences(result.preferences);
+        }
         setError("");
       }).catch(() => {
         if (live) setError("Unable to check earned cosmetics. Retry when connected.");
@@ -87,13 +97,41 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
   const skins = useMemo(() => skinsForSlot(slot), [slot]);
 
   const choose = async (skinId: string, unlocked: boolean) => {
-    if (!unlocked || readOnly) return;
-    if (roomStyle !== undefined) {
-      try { await onRoomStyleChange?.(skinId); setError(""); } catch (e) { setError(e instanceof Error ? e.message : "Unable to change Room Style."); }
-      return;
+    if (!unlocked || readOnly || choosingRef.current) return;
+    const selectedSlot = slot;
+    choosingRef.current = true;
+    setChoosingSkin(skinId);
+    setSelectionNotice("");
+    setError("");
+    try {
+      if (roomStyle !== undefined) {
+        if (!onRoomStyleChange) throw new Error("Room styles cannot be changed here.");
+        await onRoomStyleChange(skinId);
+        // The room host/server remains the authority for the real active style.
+        setSelectionNotice("Room style change acknowledged.");
+      } else if (betaMode) {
+        setPreferences(saveSkinPreference(selectedSlot, skinId, true));
+        setSelectionNotice("Beta preview selected for this session.");
+      } else {
+        const result = await accountApi<{ preferences: HalieusSkinPreferences }>(
+          "/accounts/me/cosmetics",
+          { method: "POST", body: JSON.stringify({ slot: selectedSlot, id: skinId }) },
+        );
+        if (result.preferences[selectedSlot] !== skinId) {
+          throw new Error("The server did not confirm this cosmetic selection.");
+        }
+        selectionRevision.current += 1;
+        setPreferences(result.preferences);
+        saveSkinPreferences(result.preferences);
+        const name = skinsForSlot(selectedSlot).find((skin) => skin.id === skinId)?.label ?? "Cosmetic";
+        setSelectionNotice(name + " equipped.");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? "Not equipped — " + e.message : "Not equipped — retry.");
+    } finally {
+      choosingRef.current = false;
+      setChoosingSkin(null);
     }
-    if (betaMode) { setPreferences(saveSkinPreference(slot, skinId, true)); return; }
-    try { const result = await accountApi<{ preferences: HalieusSkinPreferences }>("/accounts/me/cosmetics", { method: "POST", body: JSON.stringify({ slot, id: skinId }) }); setPreferences(result.preferences); saveSkinPreferences(result.preferences); setError(""); } catch { setError("Unable to equip this cosmetic. Your saved selection is unchanged."); }
   };
 
   return (
@@ -128,14 +166,18 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
               {skins.map((skin) => {
                 const unlocked = betaMode || entitlements.includes(skin.id);
                 const active = (roomStyle ?? preferences[slot]) === skin.id;
-                const state = active
-                  ? "Equipped"
-                  : betaMode
-                    ? "Beta preview"
-                    : unlocked
-                      ? "Unlocked"
-                      : "🔒 " + skin.unlock.label;
-                return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked")} disabled={!unlocked || readOnly} onClick={() => void choose(skin.id, unlocked)}>
+                const state = choosingSkin === skin.id
+                  ? roomStyle !== undefined ? "Applying room style…" : "Equipping…"
+                  : active
+                    ? "Equipped"
+                    : betaMode
+                      ? "Beta preview"
+                      : !verifiedUnlocks
+                        ? checking ? "Checking unlocks…" : "Unlock status unavailable"
+                        : unlocked
+                          ? "Unlocked"
+                          : "🔒 " + skin.unlock.label;
+                return <button type="button" key={skin.id} className={(active ? "is-active " : "") + (unlocked ? "is-unlocked" : "is-locked") + (choosingSkin === skin.id ? " is-pending" : "")} aria-busy={choosingSkin === skin.id} disabled={!unlocked || readOnly || choosingSkin !== null} onClick={() => void choose(skin.id, unlocked)}>
                   {skin.previewPalette ? (
                     <span className="halieus-skin-preview halieus-skin-palette" aria-hidden="true">
                       {skin.previewPalette.map((colour, index) => <i key={`${skin.id}-${index}`} style={{ "--skin-source-colour": colour } as CSSProperties} />)}
@@ -149,7 +191,8 @@ export function SkinLibraryButton({ stats, betaMode, ratings = {}, slots = ["int
               })}
             </div>
 
-            {error && <p role="status">{error}</p>}
+            {selectionNotice && <p role="status" className="halieus-skin-feedback">{selectionNotice}</p>}
+            {error && <p role="alert">{error}</p>}
             <footer>
               <span>{betaMode ? "Leaving Test Lab automatically restores your normal equipped cosmetics." : "Cosmetics are visual only. Account role does not bypass player progression. Rating gates use a game’s real ranking data; games without a live rating model use play/win unlocks instead."}</span>
             </footer>

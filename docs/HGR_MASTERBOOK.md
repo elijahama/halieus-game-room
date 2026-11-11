@@ -1963,3 +1963,7 @@ A new separately reviewable, default-disabled Solo tournament recovery batch imp
 ## 4.8 integration — durable Solo reset and current hotfix baseline (11 November 2026)
 
 Owner greenlit the 4.8 readiness review. Integrated the existing Guild candidate #239 and cumulative Solo #229–#233 source once onto current main b2748a7, preserving the 4.7.15 Bus Ticket, portfolio/spectator readability and Control fixes. Both tournament registrations remain pre-release candidates. The reset-pending journal and strict room-save/restart reconciliation repair #233's cross-store crash window; exact implementation and six restart-boundary tests are recorded in HGR_SOLO_PRESTART_RECOVERY_4_8.md. Local Solo consent, real-process crash tests, Guild knockout and both TypeScript checks pass. This is source implementation, not a 4.8 release or production deployment.
+
+## 4.8 support batch — theme selection and score concurrency (11 November 2026)
+
+Integrated the functional changes from PR #224 (per-account Gamer Score single-flight), #227 (immediate pending/equipped/failure feedback, confirmed saves and stale-response protection) and #205 (shuffle only available themes, Beta preview preserved). Retained current release metadata and existing 4.7.15 fixes. Targeted concurrency/durable-score fixtures, existing progression refresh, shuffle rules and real component browser checks at 390/1440px all pass. Archive-read failure resilience and all-board geometry still need separate completion; this receipt does not claim all theme defects solved.

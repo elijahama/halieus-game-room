@@ -1,6 +1,7 @@
 import { CORE_LIBRARY_THEME_IDS, CORE_THEME_IDS, themeIsAvailable, themeUnlockLabel } from "../../../../shared/platform/themeProgression";
 import { accountApi } from "../accounts/api";
 import { subscribeToProgressionUpdates } from "../progressionRefresh";
+import { nextShuffledThemeId } from "../themeShuffle";
 import { useModalLifecycle } from "./useModalLifecycle";
 import { committedTheme, previewTheme, commitTheme, type ThemeSelection } from "../themePreview";
 import { Fragment, useEffect, useRef, useState } from "react";
@@ -108,6 +109,7 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   const [entitlementRefreshKey, setEntitlementRefreshKey] = useState(0);
   const [checkingEntitlements, setCheckingEntitlements] = useState(false);
   const [themeError, setThemeError] = useState("");
+  const [shuffleNotice, setShuffleNotice] = useState("");
   const [applying, setApplying] = useState(false);
   const pending = useRef<ThemeSelection | null>(null);
   const [mode, setMode] = useState<HalieusThemeMode>(() => committedTheme().mode);
@@ -231,7 +233,21 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
   }
   function selectProfile(id: HalieusThemeProfileId) {
     if (!themeIsAvailable(id, entitlements, betaMode)) return;
+    setShuffleNotice("");
     preview({ ...committedTheme(), mode: "profile", profile: id });
+  }
+  function shuffleTheme() {
+    // Only visible, server-verified earned or always-available Core presets.
+    // In Test Lab, Beta's session-only preview rules remain unchanged.
+    const visible = THEME_LIBRARY_GROUPS.flatMap(group => group.profiles);
+    const selected = pending.current ?? committedTheme();
+    const id = nextShuffledThemeId(visible, entitlements, betaMode,
+      selected.mode === "profile" ? selected.profile : null, Math.random());
+    if (!id) { setShuffleNotice("No other available themes to shuffle."); return; }
+    const profile = THEME_PROFILES.find(theme => theme.id === id);
+    if (!profile) return;
+    preview({ ...committedTheme(), mode: "profile", profile: profile.id });
+    setShuffleNotice("Previewing " + profile.label + ". Choose Apply theme to equip it.");
   }
 
   function openCustom() {
@@ -325,6 +341,9 @@ export function ThemeButton({ background, colour, borderColour }: ThemeButtonPro
             </> : <>
               <button type="button" className="halieus-theme-library-back" onClick={() => setLibraryOpen(false)}>← Appearance</button>
               <button type="button" className="theme-custom-always" onClick={openCustom}>Edit workspace palette · RGB / HSL</button>
+              <button type="button" className="theme-custom-always" onClick={shuffleTheme}
+                aria-label="Shuffle through available unlocked themes">Shuffle theme</button>
+              {shuffleNotice && <small role="status">{shuffleNotice}</small>}
               <div className="halieus-unlock-refresh-actions">
                 <button type="button" disabled={checkingEntitlements} onClick={() => setEntitlementRefreshKey((key) => key + 1)}>Refresh earned themes</button>
                 <small role="status">{checkingEntitlements ? "Checking verified Gamer Score and achievements…" : "Only completed, verified matches count toward unlocks."}</small>
