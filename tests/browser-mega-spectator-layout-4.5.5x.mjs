@@ -36,6 +36,7 @@ assert.match(tsx,/viewerIsSpectator && \(\s*<PlayerRail[\s\S]*?className="mega-l
 assert.match(tsx,/!viewerIsSpectator && <PlayerRail/,"Active players retain separate rails");
 assert.match(tsx,/!viewerIsSpectator && playersDrawerOpen/,"Spectator roster does not require a drawer");
 assert.match(tsx,/className="mega-spectator-banner"/,"Spectating bar must be visible");
+assert.match(tsx,/Tap any square for details/,"Spectator can discover full-size property inspection without page zoom");
 
 const browsers = await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try{
