@@ -57,6 +57,9 @@ try {
     {width:900,height:1000,expected:3},
   ]) {
     const page = await browser.newPage({viewport});
+    // The hitbox assertion concerns the resting layout, not the entrance animation.
+    // Windows Chromium may snapshot the card during its scale-in transition.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setContent(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
       <style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0;
         --mm-border:#64748b;--mm-surface-1:#121b2b;--mm-surface-2:#263141;--game-accent:#5b85de;
