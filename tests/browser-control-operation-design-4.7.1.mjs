@@ -19,9 +19,10 @@ assert.match(html, /id="pcWindowActionsHeading"/);
 assert.match(html, /id="softwareUpdateHeading"/);
 assert.match(html, /id="publicAccessCard"/);
 assert.match(html, /id="controlUpdateAlerts"/);
-const cssVersion = original.match(/control\/control\.css\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
-const scriptVersion = original.match(/control\/control\.js\?v=(4\.7\.[0-9]+-[a-z0-9-]+)/)?.[1];
-assert.ok(cssVersion, "Control stylesheet needs a versioned release asset URL.");
+const cssVersion = original.match(/control\/control\.css\?v=(\d+\.\d+\.\d+-[a-z0-9-]+)/)?.[1];
+const scriptVersion = original.match(/control\/control\.js\?v=(\d+\.\d+\.\d+-[a-z0-9-]+)/)?.[1];
+const releaseVersion=(await readFile(new URL("../VERSION",import.meta.url),"utf8")).trim();
+assert.ok(cssVersion?.startsWith(releaseVersion+"-"), "Control stylesheet must use the current VERSION.");
 assert.equal(scriptVersion, cssVersion, "Control CSS and script must use the same cache-busting version.");
 assert.match(css, /font-family: var\(--hgr-interface-font\)/);
 
