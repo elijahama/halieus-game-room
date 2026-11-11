@@ -41,7 +41,7 @@ try {
       'display:flex;flex-direction:column;min-width:0;max-width:100%;overflow:hidden;position:relative}' +
       '.hotfix-test-host .player-rail-list{flex:1 1 auto;min-height:0;overflow:auto}' +
       '</style></head><body><main class="game-page mega-live-page"><div class="game-layout">' +
-      '<aside class="player-rail ' + cls + ' hotfix-test-host"><header class="player-rail-header"><h2>Players</h2></header>' +
+      '<aside class="player-rail ' + cls + ' hotfix-test-host" style="height:460px!important;max-height:460px!important;overflow:hidden!important"><header class="player-rail-header"><h2>Players</h2></header>' +
       '<div class="player-rail-list">' + card(1) + card(2) + '</div></aside></div></main></body></html>');
     for (const css of sheets) await page.addStyleTag({content:css});
     const read = () => page.evaluate(() => {
