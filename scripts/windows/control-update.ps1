@@ -147,13 +147,19 @@ if (-not (Test-Path -LiteralPath $finalizerPath)) {
     throw "The HGR Control update finalizer is missing."
 }
 
-# Cloud Update must not switch or rebase an owner's unfinished feature branch.
-# When the PC is not on main, use a fresh, independent, canonical main clone.
+# Cloud Update must never rebase or stage the owner's live room records
+# or unfinished source. Use isolated, canonical GitHub main for either a
+# feature branch OR any tracked modifications (including data/rooms.json).
+# A clean main worktree retains the existing full local update workflow.
 $currentBranch = (& git -C $projectRoot branch --show-current | Out-String).Trim()
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($currentBranch)) {
     throw "Control could not identify the current Git branch; no update started."
 }
-$useIsolatedMain = $currentBranch -ne "main"
+$trackedChanges = @(& git -C $projectRoot status --porcelain --untracked-files=no)
+if ($LASTEXITCODE -ne 0) {
+    throw "Control could not safely inspect local changes; no update started."
+}
+$useIsolatedMain = $currentBranch -ne "main" -or $trackedChanges.Count -gt 0
 if ($useIsolatedMain) {
     if ($OperationId -notmatch '^[A-Za-z0-9_-]{8,80}$') {
         throw "Cloud operation ID is not valid for isolated release checkout."
@@ -302,7 +308,7 @@ if (-not $finalizerStarted) {
 # The detached finalizer owns the Control restart and is the only process that
 # can authoritatively write the final succeeded/failed marker after that restart.
 if ($useIsolatedMain) {
-    Write-Output "Verified main website deployment completed from isolated checkout. Owner Control and feature branch remain unchanged."
+    Write-Output "Verified approved GitHub main release from isolated checkout. Website is current or safely updated; owner checkout unchanged."
 } else {
     Write-Output "HGR update/deploy core completed. Independent Control handoff finalizer is running."
 }
