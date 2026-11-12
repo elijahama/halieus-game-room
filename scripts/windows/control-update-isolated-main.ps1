@@ -67,6 +67,23 @@ try {
             Write-Output "[AUDIT] Clean main release verified. No dependencies, deploy or PC services touched."
             return
         }
+        # Reinstalling an identical live release would unnecessarily restart
+        # a healthy website. Only accept the exact canonical HTTPS health
+        # identity as proof that the current release needs no deployment.
+        $liveHealth = $null
+        try {
+            $liveHealth = Invoke-RestMethod -Method Get -Uri "https://halieus.remotewire.net/health" -TimeoutSec 10 -ErrorAction Stop
+        } catch {
+            Write-Output "[CHECK] Current website identity unavailable; retaining full deployment gates."
+        }
+        if ($null -ne $liveHealth -and
+            [string]$liveHealth.version -eq $declaredVersion -and
+            [string]$liveHealth.releaseFingerprint -ceq [string]$declaredManifest.fingerprint -and
+            [string]$liveHealth.status -eq "online") {
+            Write-Output "[OK] Already up to date: the public website serves the exact verified GitHub main release."
+            Write-Output "[OK] No Oracle deployment, restart, dependency installation or owner-PC changes required."
+            return
+        }
         Write-Output "STEP 3 - Installing isolated release dependencies..."
         Invoke-Gate "Dependency installation" { & npm.cmd ci --no-fund --no-audit }
         Write-Output "STEP 4 - Checking security and HGR release..."
