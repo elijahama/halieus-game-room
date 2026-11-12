@@ -38,6 +38,7 @@ import "./styles/hgr-flat-mobile-join.css";
 import "./styles/hgr-account-workspace.css";
 import "./styles/hgr-mega-portfolio-clipping-hotfix.css";
 import "./styles/hgr-mega-zoom-readability-hotfix.css";
+import "./styles/hgr-intro-viewport-hotfix.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.
