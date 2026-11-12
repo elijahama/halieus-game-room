@@ -16,10 +16,15 @@ assert.match(legacy, /git branch --show-current/);
 assert.match(legacy, /Current branch is/);
 assert.match(legacy, /git rebase --autostash/);
 
-// Only Cloud Update (authenticated, fixed action) switches to isolated deploy
-// when the checked-out source is not main.
+// Authenticated Cloud Update uses isolated, verified GitHub main whenever
+// the owner PC is on a feature branch OR its tracked files are modified.
+// In particular game data must not be committed, discarded or rebased.
 assert.match(controller, /\$currentBranch = \(& git -C \$projectRoot branch --show-current/);
-assert.match(controller, /\$useIsolatedMain = \$currentBranch -ne "main"/);
+assert.match(controller, /\$trackedChanges = @\(& git -C \$projectRoot status --porcelain --untracked-files=no\)/);
+assert.match(controller, /\$useIsolatedMain = \$currentBranch -ne "main" -or \$trackedChanges\.Count -gt 0/);
+assert.doesNotMatch(controller, /git (?:checkout|switch|reset --hard|restore).*data[\\/]rooms\.json/i);
+assert.match(legacy, /Remote\/non-interactive Update found local source changes/,
+  "The manual/legacy updater must never auto-commit live room data");
 assert.match(controller, /\$isolatedMainHelper = Join-Path \$PSScriptRoot "control-update-isolated-main\.ps1"/);
 assert.match(controller, /if \(\$useIsolatedMain\) \{/);
 assert.match(controller, /"powershell\.exe -NoProfile -ExecutionPolicy Bypass -File/);
@@ -43,6 +48,11 @@ assert.ok(helper.includes('$env:GIT_TERMINAL_PROMPT = "0"'));
 assert.match(helper, /\$branch -ne "main" -or \$origin -ne \$repoUrl -or \$dirty.Count -ne 0/);
 assert.match(helper, /node "scripts\\release-integrity\.mjs" --verify/);
 assert.match(helper, /\$AuditOnly/);
+assert.match(helper, /Invoke-RestMethod -Method Get -Uri "https:\/\/halieus\.remotewire\.net\/health" -TimeoutSec 10/);
+assert.match(helper, /\$liveHealth\.releaseFingerprint -ceq \[string\]\$declaredManifest\.fingerprint/);
+assert.match(helper, /Already up to date: the public website serves the exact verified GitHub main release/);
+assert.ok(helper.indexOf("Already up to date:") < helper.indexOf("npm.cmd ci"),
+  "Current release must not reinstall/restart before performing identity no-op check");
 assert.ok(helper.includes('$env:HGR_UPDATE_NONINTERACTIVE -ne "1"'));
 assert.ok(helper.includes('$env:HGR_CONTROL_DEFER_REFRESH -ne "1"'));
 assert.match(helper, /npm\.cmd audit --audit-level=high/);
