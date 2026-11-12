@@ -74,8 +74,13 @@ try {
     assert.ok(layout.pageWidth <= viewport.width+2, "No horizontal intro overflow "+JSON.stringify({viewport,layout}));
     assert.equal(layout.cardHalo,"none","Remove the old upper off-centre halo");
     assert.equal(layout.glowTranslate,"-50% -50%","Glow tracks the canonical logo centre even during breathing animation");
-    assert.equal(layout.glowTop,"50%");
-    assert.equal(layout.glowLeft,"50%");
+    // Chromium serialises computed percentage offsets as used pixels.
+    const centred = (value, dimension) => value === "50%" ||
+      Math.abs(Number.parseFloat(value) - dimension / 2) <= 1;
+    assert.ok(centred(layout.glowTop, layout.logo.height),
+      "Glow must have its centre on the logo's vertical centre");
+    assert.ok(centred(layout.glowLeft, layout.logo.width),
+      "Glow must have its centre on the logo's horizontal centre");
     if (!viewport.mobile) {
       assert.ok(layout.card.x>=-2 && layout.card.x+layout.card.width<=viewport.width+2,
         "Intro horizontally centred within viewport "+JSON.stringify({viewport,layout}));
