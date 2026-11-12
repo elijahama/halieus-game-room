@@ -51,8 +51,12 @@ export function TournamentHub({
         data.guilds.some((guild) => guild.id === old)
           ? old : data.guilds[0]?.id ?? "");
     }).catch((error) => {
-      if (!controller.signal.aborted) setGuildError(
-        error instanceof Error ? error.message : "Could not load Guilds.");
+      if (!controller.signal.aborted) {
+        setGuilds([]);
+        setSelectedGuild(null);
+        setSelectedGuildId("");
+        setGuildError(error instanceof Error ? error.message : "Could not load Guilds.");
+      }
     }).finally(() => {
       if (!controller.signal.aborted) setLoadingGuilds(false);
     });
@@ -76,8 +80,10 @@ export function TournamentHub({
         setGuildError("");
       }
     }).catch((error) => {
-      if (!controller.signal.aborted) setGuildError(
-        error instanceof Error ? error.message : "Could not load Guild details.");
+      if (!controller.signal.aborted) {
+        setSelectedGuild(null);
+        setGuildError(error instanceof Error ? error.message : "Could not load Guild details.");
+      }
     }).finally(() => {
       if (!controller.signal.aborted) setLoadingDetail(false);
     });
@@ -94,16 +100,14 @@ export function TournamentHub({
         </div>
       </header>
 
-      <div className="hgr-tournament-format-tabs" role="tablist" aria-label="Tournament format">
-        <button type="button" role="tab" id="hgr-tournament-solo-tab"
-          aria-selected={format === "solo"} aria-controls="hgr-tournament-format-panel"
+      <div className="hgr-tournament-format-tabs" role="group" aria-label="Tournament format">
+        <button type="button" aria-pressed={format === "solo"}
           className={format === "solo" ? "is-active" : ""}
           onClick={() => setFormat("solo")}>
           <strong>Solo</strong>
           <small>Individual entrants and brackets</small>
         </button>
-        <button type="button" role="tab" id="hgr-tournament-guild-tab"
-          aria-selected={format === "guild"} aria-controls="hgr-tournament-format-panel"
+        <button type="button" aria-pressed={format === "guild"}
           className={format === "guild" ? "is-active" : ""}
           onClick={() => setFormat("guild")}>
           <strong>Guild</strong>
@@ -111,9 +115,7 @@ export function TournamentHub({
         </button>
       </div>
 
-      <div id="hgr-tournament-format-panel" role="tabpanel"
-        aria-labelledby={format === "solo" ? "hgr-tournament-solo-tab" : "hgr-tournament-guild-tab"}
-        className="hgr-tournament-format-panel">
+      <div className="hgr-tournament-format-panel" aria-label={format === "solo" ? "Solo tournament format" : "Guild tournament format"}>
         {format === "solo" && (soloAvailable
           ? <SoloTournamentPanel account={account} onCreateRoom={onCreateRoom}
               onOpenRoom={onOpenRoom} onOpenGuilds={() => setFormat("guild")} />
