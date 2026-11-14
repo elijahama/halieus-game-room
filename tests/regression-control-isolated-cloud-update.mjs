@@ -6,6 +6,7 @@ import path from "node:path";
 
 const read = (file) => readFileSync(new URL("../" + file, import.meta.url), "utf8");
 const controller = read("scripts/windows/control-update.ps1");
+const ownerControl = read("server/src/control-agent.ts");
 const helper = read("scripts/windows/control-update-isolated-main.ps1");
 const finalizer = read("scripts/windows/control-update-finalize.ps1");
 const legacy = read("Update HGR GitHub.cmd");
@@ -25,6 +26,18 @@ assert.match(controller, /\$useIsolatedMain = \$currentBranch -ne "main" -or \$t
 assert.doesNotMatch(controller, /git (?:checkout|switch|reset --hard|restore).*data[\\/]rooms\.json/i);
 assert.match(legacy, /Remote\/non-interactive Update found local source changes/,
   "The manual/legacy updater must never auto-commit live room data");
+const updateGuard = ownerControl.slice(
+  ownerControl.indexOf("async function blockingRemoteUpdateChanges"),
+  ownerControl.indexOf("const operation: HalieusControlActiveOperation", ownerControl.indexOf("async function blockingRemoteUpdateChanges"))
+);
+assert.match(updateGuard, /if \(blockingChanges === null\)/,
+  "Unknown Git status still fails closed");
+assert.match(updateGuard, /preserving \$\{blockingChanges\.length\} local change/,
+  "Dirty source must be handed to the isolated updater with an explicit, read-only log");
+assert.doesNotMatch(updateGuard, /Remote Update refused because tracked source changes/,
+  "Local room data cannot be rejected before the isolated updater is called");
+assert.doesNotMatch(updateGuard, /if \(blockingChanges\.length > 0\)\s*\{[\s\S]*?sendJson\(response, 409/,
+  "Tracked edits must never trigger the obsolete early 409");
 assert.match(controller, /\$isolatedMainHelper = Join-Path \$PSScriptRoot "control-update-isolated-main\.ps1"/);
 assert.match(controller, /if \(\$useIsolatedMain\) \{/);
 assert.match(controller, /"powershell\.exe -NoProfile -ExecutionPolicy Bypass -File/);
