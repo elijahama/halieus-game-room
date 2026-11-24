@@ -131,3 +131,11 @@ if (process.platform === "win32") {
 }
 
 console.log("PASS Control feature-branch Cloud Update isolation: GitHub main source only, exact release gates, finalizer-only completion and original Control handoff preserved");
+
+// Protect isolated updater fingerprint and generated Control cache tags.
+const identityGenerator = read("scripts/release-integrity.mjs");
+const identityWorkflow = read(".github/workflows/release-identity.yml");
+assert.ok(identityGenerator.includes("'scripts/windows/control-update-isolated-main.ps1'"));
+assert.ok(identityGenerator.includes("'tests/regression-control-isolated-cloud-update.mjs'"));
+assert.equal(identityWorkflow.split("client/public/control/index.html").length, 3,
+  "Check and stage the generated Control index in the release identity workflow");
