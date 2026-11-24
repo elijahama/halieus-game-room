@@ -39,7 +39,8 @@ const server = createServer(async (req, res) => {
   const file = route === '/control/' ? '/control/index.html' : route;
   const allowedControl = file.startsWith('/control/') && file.slice(9).length > 0 && !file.slice(9).includes('/');
   const allowedNav = file === '/control-navigation.js' || file === '/control-navigation.css';
-  if ((!allowedControl && !allowedNav) || file.includes('..')) {
+  const approvedFont = /^\/control\/fonts\/(?:unbounded-latin-wght|righteous-latin-400|varela-round-latin-400|alata-latin-400)\.woff2$/.test(file);
+  if ((!allowedControl && !allowedNav && !approvedFont) || file.includes('..')) {
     res.writeHead(404); res.end(); return;
   }
   try {
@@ -47,6 +48,7 @@ const server = createServer(async (req, res) => {
     res.setHeader('Content-Type',
       file.endsWith('.js') ? 'application/javascript' :
       file.endsWith('.css') ? 'text/css' :
+      file.endsWith('.woff2') ? 'font/woff2' :
       file.endsWith('.png') ? 'image/png' :
       file.endsWith('.webmanifest') ? 'application/manifest+json' : 'text/html');
     res.end(bytes);
