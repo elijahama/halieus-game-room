@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { SparAiDifficulty, SparCard, SparPlayer, SparPublicState, SparSuit } from "../../../../shared/games/spar/types";
-import { legalSparCards, sparRank, sparSuit } from "../../../../shared/games/spar/rules";
+import { legalSparCards, sparRank, sparSuit } from "../../../../shared/games/spar/clientRules";
 import { GameBrandIcon } from "../../platform/components/GameBrandIcon";
 import { InviteLobbyPanel } from "../../platform/components/InviteLobbyPanel";
 import { DisplaySettingsPanel } from "../../platform/components/DisplaySettingsPanel";
