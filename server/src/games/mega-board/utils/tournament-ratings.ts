@@ -67,13 +67,24 @@ function validateBoard(state: GameState, assignment: TournamentBoardAssignment):
       state.players.some((player) => player.isAi || !playerIds.has(player.id))) {
     throw new Error("Tournament assignment has an AI or unregistered player");
   }
+  if (new Set(state.players.map(player => player.id)).size !== state.players.length) {
+    throw new Error("Duplicate game-state player identity");
+  }
+  for (const player of state.players) {
+    if (player.id === state.winnerId) continue;
+    const position = state.playerStats[player.id]?.finishPosition ?? state.players.length;
+    if (!Number.isSafeInteger(position) || position < 2 || position > state.players.length) {
+      throw new Error("Invalid tournament finish position");
+    }
+  }
 }
+/** Socket IDs can change on reconnect; account IDs and the trusted board generation cannot. */
 function matchesAssignment(board: TournamentBoardResult, assignment: TournamentBoardAssignment): boolean {
   return board.tournamentId === assignment.tournamentId && board.fixtureId === assignment.fixtureId &&
     board.boardMatchId === assignment.boardMatchId && board.roomCode === assignment.roomCode &&
     board.gameStartedAt === assignment.gameStartedAt && board.players.length === assignment.seats.length &&
     board.players.every((result) => assignment.seats.some((seat) =>
-      seat.playerId === result.playerId && seat.accountId === result.accountId && seat.guildId === result.guildId));
+      seat.accountId === result.accountId && seat.guildId === result.guildId));
 }
 function computeResult(state: GameState, assignment: TournamentBoardAssignment,
   entries: Map<string, TournamentRatingEntry>) {
@@ -170,6 +181,14 @@ export function createTournamentRatingLedger(filePath: string = TOURNAMENT_RATIN
       const existing = boards.get(assignment.boardMatchId);
       if (existing) {
         if (!matchesAssignment(existing, assignment)) throw new Error("Tournament board ID already belongs to another fixture");
+        const currentWinner = assignment.seats.find(seat => seat.playerId === state.winnerId)?.accountId;
+        const storedWinner = existing.players.find(player => player.finishPosition === 1)?.accountId;
+        if (!currentWinner || currentWinner !== storedWinner || existing.players.some(result => {
+          const seat = assignment.seats.find(candidate => candidate.accountId === result.accountId)!;
+          const position = seat.playerId === state.winnerId ? 1 :
+            state.playerStats[seat.playerId]?.finishPosition ?? state.players.length;
+          return result.finishPosition !== position;
+        })) throw new Error("Previously recorded tournament board result is immutable");
         return structuredClone(existing);
       }
       if ([...boards.values()].some((board) => board.roomCode === assignment.roomCode &&
