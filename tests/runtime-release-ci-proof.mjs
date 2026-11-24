@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { validateReleaseCiProof } from "../scripts/verify-release-ci-proof.mjs";
 
@@ -42,3 +43,14 @@ const cases = [
 for (const mutate of cases) {const data=fixture();mutate(data);assert.equal(validateReleaseCiProof(data).verified,false);}
 assert.equal(validateReleaseCiProof().verified,false);
 console.log("PASS exact release CI proof: 2 acceptance and "+(cases.length+1)+" rejection fixtures; no deployment authorization");
+
+const workflow = readFileSync(new URL("../.github/workflows/release-identity.yml", import.meta.url),"utf8");
+assert.match(workflow,/updater-windows-full-validation:\s*\n\s*needs: refresh-release-identity/);
+assert.match(workflow,/publish-fast-path-receipt:\s*\n\s*needs: \[refresh-release-identity, updater-windows-full-validation\]/);
+assert.match(workflow,/ref: \$\{\{ needs\.refresh-release-identity\.outputs\.release_sha \}\}/);
+assert.ok(workflow.includes("Release identity changed during Linux validation."));
+assert.ok(workflow.includes("Validated source hash changed"));
+assert.ok(workflow.includes("gh api --method POST"));
+assert.ok(workflow.includes("context=hgr/validated-release-v1"));
+assert.ok(workflow.includes("description=sha256:$SOURCE_HASH"));
+assert.ok(workflow.includes("actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT"));
