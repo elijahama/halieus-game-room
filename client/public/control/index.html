@@ -9,11 +9,11 @@
   <title>HGR Control</title>
   <link rel="icon" href="/control/control-icon.png?v=4.5.4.4-control-favicon1" />
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
-  <link rel="stylesheet" href="/control/control.css?v=4.8.3-operation-receipt-tabs-1" />
+  <link rel="stylesheet" href="/control/control.css?v=4.8.3-greenlight-dropdown-1" />
   <script src="/socket.io/socket.io.js" defer></script>
   <script src="/control/control.js?v=4.8.3-operation-receipt-tabs-1" defer></script>
   <script src="/control/development.js?v=development-roadmap-v1" defer></script>
-  <script src="/control/release-notice.js?v=control-release-notice-1" defer></script>
+  <script src="/control/release-notice.js?v=control-release-notice-2" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.8.0-fonts-fullscreen-1" />
   <link rel="stylesheet" href="/control/mobile-layout.css?v=lp-layout-mobile-2" />
   <script src="/control-navigation.js?v=control-portrait-fullscreen-2" defer></script>
@@ -65,12 +65,14 @@
       </div>
     </header>
 
-    <aside class="control-release-notice" id="controlReleaseNotice" aria-label="Software update available" role="status" aria-live="polite" hidden>
-      <div class="control-release-copy">
-        <span class="control-release-label">UPDATE AVAILABLE</span>
+    <aside class="control-release-notice" id="controlReleaseNotice" aria-label="Software update available" hidden>
+      <img class="control-release-icon" src="/control/control-icon.png?v=part26-control-approved2" alt="" aria-hidden="true" />
+      <div class="control-release-copy" role="status" aria-live="polite" aria-atomic="true">
+        <span class="control-release-label">GREENLIGHT · UPDATE AVAILABLE</span>
         <strong id="controlReleaseTitle">A newer HGR release is ready</strong>
         <p id="controlReleaseDetail"></p>
       </div>
+      <button type="button" id="controlReleaseDismiss" class="secondary-action control-release-dismiss" aria-label="Dismiss update notification">×</button>
       <button type="button" id="controlReleaseReview" class="secondary-action">Review update</button>
     </aside>
 

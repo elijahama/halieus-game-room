@@ -66,6 +66,42 @@ export function classifyRelease(
   return base;
 }
 
+// A well-formed manifest alone is not a packaging greenlight. Confirm the
+// pinned canonical commit and successful release-identity run before notifying.
+export async function verifyPackagedRelease(candidate: ReleaseAvailability, fetcher: typeof fetch = fetch): Promise<boolean> {
+  if (candidate.status !== "available" || !candidate.candidateFingerprint) return false;
+  const api = "https://api.github.com/repos/" + REPO;
+  async function json(url: string): Promise<any> {
+    const response = await fetcher(url, {
+      headers: { Accept: "application/json", "User-Agent": "HGR-Control-release-notice" },
+      signal: AbortSignal.timeout(8000), redirect: "error",
+    });
+    if (!response.ok) throw new Error("Packaging evidence unavailable");
+    return response.json();
+  }
+  try {
+    const head = await json(api + "/commits/main");
+    const sha = head?.sha;
+    if (typeof sha !== "string" || !/^[a-f0-9]{40}$/.test(sha)) return false;
+    const pinned = classifyRelease(await json("https://raw.githubusercontent.com/" + REPO + "/" + sha + "/RELEASE.json"),
+      candidate.installedVersion, candidate.installedFingerprint);
+    if (pinned.status !== "available" || pinned.candidateVersion !== candidate.candidateVersion ||
+        pinned.candidateFingerprint !== candidate.candidateFingerprint) return false;
+    // The identity workflow may generate one final commit or leave an already
+    // current manifest untouched. Require a successful run for the exact source.
+    const parent = head?.parents?.[0]?.sha;
+    const source = head?.commit?.message === "chore: refresh HGR release identity" &&
+      head?.parents?.length === 1 && typeof parent === "string" && /^[a-f0-9]{40}$/.test(parent) ? parent : sha;
+    const runs = await json(api + "/actions/workflows/release-identity.yml/runs?branch=main&head_sha=" + source + "&per_page=10");
+    const run = runs?.workflow_runs?.find((item: any) =>
+      item?.head_sha === source && item?.head_branch === "main" &&
+      item?.path === ".github/workflows/release-identity.yml");
+    return Boolean(run && run.status === "completed" && run.conclusion === "success" &&
+      (run.event === "push" || run.event === "workflow_dispatch") &&
+      run.repository?.full_name === REPO && run.head_repository?.full_name === REPO);
+  } catch { return false; }
+}
+
 let cached: { at: number; data: ReleaseAvailability } | null = null;
 let pending: Promise<ReleaseAvailability> | null = null;
 
@@ -84,6 +120,9 @@ export async function currentReleaseAvailability(
       if (!response.ok) throw new Error("Merged GitHub release not available.");
       const raw = await response.json();
       const data = classifyRelease(raw);
+      if (data.status === "available" && !await verifyPackagedRelease(data, fetcher)) {
+        return { ...data, status: "unverified" as const };
+      }
       if (data.status !== "unverified") cached = { at: Date.now(), data };
       return data;
     })().finally(() => { pending = null; });
