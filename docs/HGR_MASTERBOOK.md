@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.3 Mega Board layout candidate — 24 November 2026
+
+Owner requested a centred board interior and compact, non-redundant property presentation. The candidate anchors the centre core on a single explicitly centred grid track, removes legacy minimum-width constraints and limits the logo and content to the available inner board. Partial colour groups render their actual properties directly without repeated headings; full/majority sets retain native disclosures, accessible group counts and canonical colour order. Property chips keep a 10px readability floor, full wrapping, mortgage/development semantics and existing scrolling protections. Deck actions, dice, room lifecycle, ownership and game rules remain unchanged. Desktop real-component tests check square board and centred core, full ownership and disclosure behavior; existing browser suite remains required. This is an independent source batch based on main; VERSION is not advanced until 4.8.2 lands and the combined release candidate passes CI. No visual acceptance or deployment claimed.
+
 ## 4.8.1 production stability patch — 11 November 2026
 
 4.8.0 was merged in PR #246 after Windows/Ubuntu CI passed and preserved as protected tag v4.8.0. Its Oracle activation failed and automatically restored 4.7.14. This 4.8.1 candidate preserves every 4.8 tournament, spectator-layout and gameplay fix while correcting the two findings below. Source validation is not a claim of successful production activation.
