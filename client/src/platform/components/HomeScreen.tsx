@@ -49,7 +49,7 @@ import { GuildMessageDropdown } from "./GuildMessageDropdown";
 import { incomingGameNotifications, readSeenGameNotifications, saveSeenGameNotifications, type HgrIncomingGameNotification } from "./gameInviteNotifications";
 import { GameBrandIcon } from "./GameBrandIcon";
 import { GuildsPanel } from "./GuildsPanel";
-import { SoloTournamentPanel } from "./SoloTournamentPanel";
+import { TournamentHub } from "./TournamentHub";
 import { HgrIcon } from "./HgrIcon";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import { PlayerIdentityCard, type PlayerIdentityAction } from "./PlayerIdentityCard";
@@ -1439,6 +1439,7 @@ export function HomeScreen(props: HomeScreenProps) {
           </header>
           <nav className="halieus-mobile-more-nav">
             <button type="button" onClick={() => { setView("rankings"); setMobileMenuOpen(false); }}><HgrIcon name="leaderboard" size={20} /><span><strong>Rankings</strong><small>Global ladders</small></span></button>
+            {account && <button type="button" onClick={() => { setView("tournaments"); setMobileMenuOpen(false); }}><HgrIcon name="leaderboard" size={20} /><span><strong>Tournament Mode</strong><small>Solo and Guild formats</small></span></button>}
             <button type="button" onClick={() => { openJoin("watch"); setMobileMenuOpen(false); }}><HgrIcon name="info" size={20} /><span><strong>Watch Game</strong><small>Spectate a live room</small></span></button>
           </nav>
           <div className="halieus-mobile-admin-utility"><AdminControlLauncher account={account} /></div>
@@ -1461,6 +1462,7 @@ export function HomeScreen(props: HomeScreenProps) {
           <button type="button" className={view === "games" ? "is-active" : ""} onClick={() => { setView("games"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="games" /></span><b>Games</b></button>
           <button type="button" className={view === "players" ? "is-active" : ""} onClick={() => { setView("players"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="players" /></span><b>Friends</b></button>
           <button type="button" className={view === "rankings" ? "is-active" : ""} onClick={() => { setView("rankings"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="leaderboard" /></span><b>Rankings</b></button>
+          {account && <button type="button" className={view === "tournaments" ? "is-active" : ""} onClick={() => { setView("tournaments"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="leaderboard" /></span><b>Tournaments</b></button>}
           {account && <button type="button" className={view === "guilds" ? "is-active" : ""} onClick={() => { setView("guilds"); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="guilds" /></span><b>Guilds</b></button>}
           {account && <button type="button" className={inboxOpen ? "is-active halieus-inbox-nav" : "halieus-inbox-nav"} onClick={() => { setInboxOpen(true); setMobileMenuOpen(false); }}><span className="halieus-nav-icon"><HgrIcon name="inbox" /></span><b>Inbox</b>{inboxCount > 0 && <span className="halieus-inbox-badge">{inboxCount > 99 ? "99+" : inboxCount}</span>}</button>}
         </nav>
@@ -1572,7 +1574,7 @@ export function HomeScreen(props: HomeScreenProps) {
         </section>}
 
         {view === "games" && <section className="halieus-view view-games panel-enter" data-game-layout={gameLibraryView}>
-          {soloAvailable && <button type="button" className="button-outline" onClick={()=>setView("tournaments")}>Mega Board tournaments →</button>}
+          {account && <button type="button" className="button-outline" onClick={() => setView("tournaments")}>Tournament Mode →</button>}
           <header className="halieus-page-heading halieus-game-library-heading">
             <div><p>GAMES</p><h1>Choose your game</h1><span>Browse the library, then open a focused room setup when you are ready to play.</span></div>
             <div className="halieus-game-layout-switch" role="group" aria-label="Game library display">
@@ -1732,14 +1734,17 @@ export function HomeScreen(props: HomeScreenProps) {
           <RankedMatchHistory accountId={account?.id ?? null} games={RANKED_HUB_GAMES.map(id => ({ id, name: GAME_BY_ID[id].name }))} />
         </section>}
 
-        {view === "tournaments" && account && soloAvailable && <section className="halieus-view panel-enter">
-          <SoloTournamentPanel key={account.id} account={account}
-            onOpenGuilds={()=>setView("guilds")}
-            onCreateRoom={()=>{onMatchModeChange("casual");prepareCreate("mega-board");}}
-            onOpenRoom={(code,intent)=>{
-              if(intent==="join" && savedSession?.code===code){onGameSelect("mega-board");onResumeSavedSession();return;}
-              onGameSelect("mega-board");onRoomCodeChange(code);openJoin(intent);
-            }} />
+        {view === "tournaments" && account && <section className="halieus-view view-tournaments panel-enter">
+          <TournamentHub key={account.id} account={account} soloAvailable={soloAvailable}
+            liveRooms={liveRooms} onOpenGuilds={() => setView("guilds")}
+            onCreateRoom={() => { onMatchModeChange("casual"); prepareCreate("mega-board"); }}
+            onOpenRoom={(code,intent) => {
+              if (intent === "join" && savedSession?.code === code) {
+                onGameSelect("mega-board"); onResumeSavedSession(); return;
+              }
+              onGameSelect("mega-board"); onRoomCodeChange(code); openJoin(intent);
+            }}
+            onOpenLiveRoom={openLiveRoom} />
         </section>}
 
         {view === "guilds" && account && (
