@@ -61,11 +61,12 @@ for(const name of [
   "server/src/games/hidden-dictator/handlers.ts","server/src/games/ludo/handlers.ts",
   "server/src/games/poker/handlers.ts","server/src/games/whot/rebuild.ts",
   "server/src/games/word-arena/handlers.ts","server/src/games/word-board/handlers.ts",
+  "server/src/games/spar/handlers.ts",
 ]) {
  const content=readFileSync(resolve(root,name),"utf8");
- assert.match(content,/verifiedAccountIds:\s*verifiedRoomAccountIds\(room\.players\)/,"All 14 games share verified presence: "+name);
+ assert.match(content,/verifiedAccountIds:\s*verifiedRoomAccountIds\(room\.players\)/,"All 15 games share verified presence: "+name);
 }
 const home=readFileSync(resolve(root,"client/src/platform/components/HomeScreen.tsx"),"utf8");
 assert.match(home,/inboxUnreadCount\(inboxTimeline, readInboxKeys, readGuildMessages\)/, "Read receipts must drive the combined unread badge");
 assert.match(home,/verifiedSocialRoomByAccountId\.get\(person\.id\)/);
-console.log("PASS HGR social activity: socket identity, 14 games, privacy, stable transitions, unread Inbox wiring");
+console.log("PASS HGR social activity: socket identity, 15 games, privacy, stable transitions, unread Inbox wiring");
