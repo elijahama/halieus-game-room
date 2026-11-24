@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.4 exact packaged baseline — 24 November 2026
+
+Queued integration passed Windows and Ubuntu in run 45482252356. Re-anchor to published 4.8.3 generated main commit b12fe402b173c990fa8263d42a233f284845aa15 (hgr-4.8.3-15ba7fca2014621c), retaining its generated package versions, lockfile, PWA and Control identity. Do not advance VERSION or merge until 4.8.3 production activation is verified and current integrated tests pass. The greenlight dropdown #266 is a separate draft awaiting checks, not silently included here.
+
 ## 4.8.4 queued integration — 24 November 2026
 
 Reconcile #248 onto the queued versioned 4.8.3 candidate `38a989fce7c6bfac521a5658626b9bacc2583b82`; retain newer Control/Windows/Oracle and Mega Board fixes, preserve existing 139 regression groups and add the two previously reviewed intro/navigation groups (141 total). Include both test sources in the release fingerprint. The prior combined #248 passed Windows and Linux in run 45454505571 against its older baseline, not this new integration. This is a stacked draft for next-release preparation only; do not merge or advance VERSION before 4.8.3 is deployed and verified, re-anchor to its exact generated main release, and validate fresh. No new branding or production changes.
