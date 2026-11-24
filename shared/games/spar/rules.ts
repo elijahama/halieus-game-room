@@ -4,16 +4,17 @@
  * No code or original assets have been copied from other Spar applications.
  */
 import { randomInt } from "node:crypto";
-import type { SparCard, SparRank, SparSuit, SparTrickPlay } from "./types.js";
+import { SPAR_MAX_PLAYERS, type SparCard, type SparRank, type SparSuit, type SparTrickPlay } from "./types.js";
 
 export const SPAR_SUITS: readonly SparSuit[] = ["C", "D", "H", "S"];
-export const SPAR_RANKS: readonly SparRank[] = ["6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+export const SPAR_RANKS: readonly SparRank[] = ["5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
 export const SPAR_STONE_POOL = 5;
 export const SPAR_TRICKS_PER_HAND = 5;
 
-export function makeSparDeck(): SparCard[] {
+/** Eight seats use a 40-card house pack (5–A, all suits). Otherwise keep the canonical 35. */
+export function makeSparDeck(playerCount = 2): SparCard[] {
   return SPAR_SUITS.flatMap((suit) =>
-    SPAR_RANKS.filter((rank) => !(rank === "A" && suit === "S"))
+    SPAR_RANKS.filter((rank) => playerCount === SPAR_MAX_PLAYERS || (rank !== "5" && !(rank === "A" && suit === "S")))
       .map((rank) => `${rank}${suit}` as SparCard));
 }
 
@@ -43,8 +44,8 @@ export function sparFinalTrickPoints(card: SparCard): number {
 export function dealSparHands(
   playerIds: readonly string[], dealerSeat: number, deck: readonly SparCard[],
 ): { hands: Record<string, SparCard[]>; remaining: SparCard[] } {
-  if (playerIds.length < 2 || playerIds.length > 4 || new Set(playerIds).size !== playerIds.length) {
-    throw new Error("Spar requires 2–4 unique seated players.");
+  if (playerIds.length < 2 || playerIds.length > SPAR_MAX_PLAYERS || new Set(playerIds).size !== playerIds.length) {
+    throw new Error("Spar requires 2–8 unique seated players.");
   }
   if (!Number.isInteger(dealerSeat) || dealerSeat < 0 || dealerSeat >= playerIds.length) {
     throw new Error("Invalid Spar dealer seat.");

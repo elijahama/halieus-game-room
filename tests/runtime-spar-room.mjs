@@ -28,7 +28,7 @@ const hostToken=response.reconnectToken;
 response=await call("guest","spar:join",{code:"SPAR01",playerName:"Guest"});
 assert.equal(response.ok,true);
 const guestToken=response.reconnectToken;
-assert.equal(getSparLiveRoomSummaries()[0].maximumPlayers,4);
+assert.equal(getSparLiveRoomSummaries()[0].maximumPlayers,8);
 assert.equal((await call("guest","spar:join",{code:"SPAR01",playerName:"Duplicate"})).ok,false,"One socket cannot occupy two seats");
 assert.equal((await call("guest","spar:reconnect",{code:"SPAR01",reconnectToken:hostToken})).ok,false,"A seated socket cannot take another seat");
 assert.equal((await call("guest","spar:spectate",{code:"SPAR01"})).ok,false,"A seated player cannot also receive spectator state");
@@ -121,3 +121,47 @@ assert.equal((await call("host","spar:end-game",{code:"SPAR02"})).ok,true);
 assert.equal(getSparRoomCount(),0);
 assert.equal(closeAllSparRooms(),0);
 console.log("PASS Spar live 2-seat room: authenticated Bra/plays, private hands, spectator, last trick stones and finish");
+
+// Full eight-human table: capacity, unique private hands, every seat in every trick.
+const eight=Array.from({length:8},(_,i)=>`eight-${i}`);
+for(const id of [...eight,"ninth"])registerSparHandlers(io,socket(id));
+const code="SPAR08";
+assert.equal((await call(eight[0],"spar:create",{code,playerName:eight[0]})).ok,true);
+for(const id of eight.slice(1))assert.equal((await call(id,"spar:join",{code,playerName:id})).ok,true);
+assert.equal(getSparLiveRoomSummaries()[0].maximumPlayers,8);
+assert.equal(getSparLiveRoomSummaries()[0].joinable,false);
+assert.equal((await call("ninth","spar:join",{code,playerName:"Ninth"})).ok,false);
+assert.equal((await call(eight[0],"spar:add-ai",{code,difficulty:"hard"})).ok,false);
+assert.equal((await call("watch","spar:spectate",{code})).ok,true);
+assert.equal((await call(eight[0],"spar:start",{code})).ok,true);
+const allCards=eight.flatMap(id=>{const v=latest.get(id);assert.equal(v.hand.length,5);return v.hand;});
+assert.equal(new Set(allCards).size,40);
+assert.equal(latest.get("watch").hand.length,0);
+assert.equal((await call(eight[1],"spar:bra",{code})).ok,true);
+for(let trick=1;trick<=5;trick++){
+ const seats=new Set();
+ for(let i=0;i<8;i++){
+  const id=latest.get(eight[0]).currentTurnPlayerId;
+  assert.ok(eight.includes(id));assert.ok(!seats.has(id));seats.add(id);
+  const view=latest.get(id), lead=view.plays.length?sparSuit(view.plays[0].card):null;
+  assert.equal(view.trickNumber,trick);
+  assert.equal((await call(id,"spar:play",{code,card:legalSparCards(view.hand,lead)[0]})).ok,true);
+  assert.equal(latest.get("watch").hand.length,0);
+ }
+ assert.equal(seats.size,8);
+ if(trick<5){assert.equal(latest.get(eight[0]).lastTrick.plays.length,8);assert.equal(latest.get(eight[0]).stonesRemaining,5);}
+}
+assert.equal(latest.get(eight[0]).lastAward.hand,1);
+assert.ok(latest.get(eight[0]).lastAward.awarded>0);
+assert.equal((await call(eight[0],"spar:end-game",{code})).ok,true);
+assert.equal(closeAllSparRooms(),0);
+// Mixed table admits CPUs to the same cap and refuses a ninth seat.
+assert.equal((await call(eight[0],"spar:create",{code:"SPARAI",playerName:"Host"})).ok,true);
+for(let i=0;i<7;i++)assert.equal((await call(eight[0],"spar:add-ai",{code:"SPARAI",difficulty:"normal"})).ok,true);
+assert.equal(latest.get(eight[0]).players.length,8);
+assert.equal((await call(eight[0],"spar:add-ai",{code:"SPARAI",difficulty:"hard"})).ok,false);
+assert.equal((await call("ninth","spar:join",{code:"SPARAI",playerName:"Ninth"})).ok,false);
+assert.equal((await call(eight[0],"spar:start",{code:"SPARAI"})).ok,true);
+assert.equal(latest.get(eight[0]).hand.length,5);
+closeAllSparRooms();
+console.log("PASS Spar eight-seat variant: 40 unique cards, eight turns per trick, private hands, CPU capacity and ninth-seat rejection");

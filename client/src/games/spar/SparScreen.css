@@ -212,3 +212,17 @@
 @media (prefers-reduced-motion:reduce) {
   .spar-playing-card,.spar-seat { transition:none!important;animation:none!important; }
 }
+
+/* Larger tables keep every seat and played card visible, without changing the small-table layout. */
+.spar-current-plays.is-expanded { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px 6px; }
+.spar-current-plays.is-expanded .spar-playing-card { width: clamp(42px,8vw,76px); height: clamp(65px,12vw,108px); }
+@media (min-width: 1100px) {
+  .spar-opponents.is-expanded { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .spar-opponents.is-expanded .spar-seat { padding: 8px 6px; gap: 5px; }
+  .spar-opponents.is-expanded .spar-seat-avatar { width: 28px; height: 28px; }
+}
+@media (max-width: 640px) {
+  .spar-current-plays.is-expanded { gap: 6px 3px; }
+  .spar-current-plays.is-expanded .spar-playing-card { width: min(15vw,58px); height: clamp(64px,21vw,86px); }
+  .spar-current-plays.is-expanded .spar-play small { max-width: 100%; }
+}

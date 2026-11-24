@@ -15,17 +15,27 @@ assert.equal(sparRank("10S"),"10");
 assert.equal(sparSuit("10S"),"S");
 assert.equal(SPAR_STONE_POOL,5);
 
-for(const count of [2,3,4]) {
+for(const count of [2,3,4,5,6,7,8]) {
   const ids=Array.from({length:count},(_,n)=>String(n));
-  const dealt=dealSparHands(ids,0,deck);
+  const pack=makeSparDeck(count);
+  const dealt=dealSparHands(ids,0,pack);
   assert.ok(ids.every(id=>dealt.hands[id].length===5));
-  assert.equal(dealt.remaining.length,35-count*5);
-  assert.equal(new Set([...ids.flatMap(id=>dealt.hands[id]),...dealt.remaining]).size,35);
-  assert.deepEqual(dealt.hands[ids[1]].slice(0,3),deck.slice(0,3),
+  assert.equal(dealt.remaining.length,pack.length-count*5);
+  assert.equal(new Set([...ids.flatMap(id=>dealt.hands[id]),...dealt.remaining]).size,pack.length);
+  assert.deepEqual(dealt.hands[ids[1]].slice(0,3),pack.slice(0,3),
     "Cards are dealt 3 then 2, beginning with the player after dealer");
-  assert.deepEqual(dealt.hands[ids[0]].slice(0,3),deck.slice((count-1)*3,count*3));
-  assert.deepEqual(dealt.hands[ids[1]].slice(3),deck.slice(count*3,count*3+2));
+  assert.deepEqual(dealt.hands[ids[0]].slice(0,3),pack.slice((count-1)*3,count*3));
+  assert.deepEqual(dealt.hands[ids[1]].slice(3),pack.slice(count*3,count*3+2));
 }
+const expanded=makeSparDeck(8);
+assert.equal(expanded.length,40);
+assert.equal(new Set(expanded).size,40);
+assert.ok(expanded.includes("AS"));
+for(const suit of ["C","D","H","S"]) assert.ok(expanded.includes("5"+suit));
+assert.ok(sparValue("5H")<sparValue("6H"));
+assert.equal(sparFinalTrickPoints("5H"),1);
+assert.throws(()=>dealSparHands(Array.from({length:8},(_,i)=>String(i)),0,deck));
+assert.throws(()=>dealSparHands(Array.from({length:9},(_,i)=>String(i)),0,expanded));
 assert.throws(()=>dealSparHands(["same","same"],0,deck));
 assert.throws(()=>dealSparHands(["a"],0,deck));
 assert.throws(()=>dealSparHands(["a","b"],2,deck));

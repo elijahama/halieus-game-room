@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.4 Spar expanded tables — 24 November 2026
+
+Owner requests up to eight seats in Spar (Cha-Cha). Use a shared server/client cap of eight for humans and CPUs combined. Two to seven seats retain the canonical 35-card deck (6–A without A♠); five to eight seats are a Casual Beta house extension. Eight seats need 40 unique cards for five tricks, so add all four fives and A♠ only at eight seats. Five is lowest and scores one stone on the fifth trick; six and seven retain 3/2 scoring and all other ranks one. No change to the five-stone pool, follow-suit, Bra, Ranked exclusion or privacy. Adapt roster and public played-card grid, and cover capacity, full eight-seat deal and turn cycle, spectator privacy and mixed CPU limit in regression tests. Fresh combined CI and real-device layout acceptance required; no deployment claimed.
+
 ## Control greenlight drop-down — 24 November 2026
 
 Owner requests automatic top drop-downs in HGR Control. Preserve approved Control icon and typography; only show a greenlight after authenticated release availability verifies a newer pinned canonical main manifest and successful exact-source packaging workflow. Review/dismiss, session acknowledgement per fingerprint and persistent Update-tab indicator; no automatic deployment, permission change or interference with active operation receipts. Safe areas and reduced motion retained. PR #266 standalone CI passed; combined and physical device acceptance remain required. Included in the 4.8.4 candidate with Spar, intro and Tournament navigation; owner greenlight received, production still gated by successful validation and exact release packaging.

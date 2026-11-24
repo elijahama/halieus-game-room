@@ -2,7 +2,8 @@
  * Server is authoritative; each viewer receives only their own private hand.
  */
 export type SparSuit = "C" | "D" | "H" | "S";
-export type SparRank = "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A";
+export const SPAR_MAX_PLAYERS = 8;
+export type SparRank = "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A";
 export type SparCard = `${SparRank}${SparSuit}`;
 export type SparAiDifficulty = "easy" | "normal" | "hard";
 export type SparPhase = "lobby" | "bra" | "playing" | "finished";
