@@ -63,3 +63,89 @@
 
 /* Existing text disclosure must remain the complete, readable source.
    Do not auto-zoom the page, enlarge the board hitboxes or alter match state. */
+
+/* Compact portfolio and true centre axis — 4.8.3 candidate.
+   Keep the board geometry, deck buttons, mortgage colours and readable text floors. */
+.mega-live-page .board-grid .board-centre-authentic {
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr) !important;
+  place-items: center !important;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(4px, 1vw, 16px) !important;
+}
+.mega-live-page .board-grid .board-centre-authentic > .board-centre-core {
+  grid-area: 1 / 1;
+  place-self: center;
+  justify-items: center;
+  min-width: 0 !important;
+  width: min(72%, 420px) !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  gap: clamp(3px, .75vh, 8px) !important;
+  box-sizing: border-box;
+}
+.mega-live-page .board-grid .board-centre-core .board-centre-logo {
+  justify-self: center;
+  text-align: center;
+  justify-items: center;
+  max-width: 100% !important;
+}
+.mega-live-page .board-grid .board-centre-logo > b {
+  text-align: center;
+  white-space: normal;
+  font-size: clamp(15px, 2.1vw, 34px);
+}
+.mega-live-page .board-grid .board-centre-core .centre-turn-status {
+  min-width: 0 !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.mega-live-page .player-property-strip {
+  align-content: start !important;
+  gap: 3px !important;
+  padding-top: 4px !important;
+}
+.mega-live-page :is(.player-rail-side, .tablet-players-drawer, .mega-mobile-participant-player-rail, .mega-spectator-player-rail) .player-property-strip {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+.mega-live-page .player-property-group.is-partial-group,
+.mega-live-page .player-property-group.has-set-disclosure {
+  padding-left: 0;
+  border-left: 0;
+  flex: 0 0 auto;
+}
+.mega-live-page .player-property-group-chips {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 2px;
+  padding: 0;
+}
+.mega-live-page .player-property-group-fold[open] .player-property-group-chips {
+  margin-top: 2px;
+}
+.mega-live-page .player-property-group-fold > .player-property-group-heading {
+  min-height: 24px;
+  padding: 2px 3px;
+  gap: 4px;
+  background: transparent;
+}
+.mega-live-page .player-property-group-chips .player-property-chip {
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+  min-height: 18px !important;
+  padding: 2px 4px !important;
+  gap: 4px !important;
+  border-radius: 5px !important;
+}
+.mega-live-page .player-property-chip-name {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .mega-live-page .board-grid .board-centre-logo > b {
+    font-size: clamp(13px, 4vw, 22px);
+  }
+}

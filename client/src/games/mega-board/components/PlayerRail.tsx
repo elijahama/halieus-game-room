@@ -257,7 +257,7 @@ export function PlayerRail({
                   );
                   return (
                     <section
-                      className="player-property-group"
+                      className={`player-property-group ${group.collapsedLabel ? "has-set-disclosure" : "is-partial-group"}`}
                       key={group.key}
                       style={{ ["--portfolio-group-colour" as string]: group.colour }}
                       aria-label={`${group.label}: ${group.owned.length} of ${group.total} owned`}
@@ -277,14 +277,7 @@ export function PlayerRail({
                           {groupContents}
                         </details>
                       ) : (
-                        <>
-                          <div className="player-property-group-heading">
-                            <span className="player-property-group-dot" aria-hidden="true" />
-                            <strong>{group.label}</strong>
-                            <small>{group.owned.length}/{group.total}</small>
-                          </div>
-                          {groupContents}
-                        </>
+                        groupContents
                       )}
                     </section>
                   );
