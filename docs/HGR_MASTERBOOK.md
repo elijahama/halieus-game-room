@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.3 infrastructure maintenance — GitHub Actions runtime (24 November 2026)
+
+Owner flagged the Node.js 20 deprecation annotation on the 4.8.2 Windows smoke check. Both repository release workflows now target checkout@v5 and setup-node@v5 (Node.js 24 action runtime, minimum runner 2.327.1), rather than relying on compatibility coercion. Keep the actual application build/test runtime at Node.js 22; explicitly disable setup-node automatic package-manager caching to preserve the previous uncached security posture, especially for the write-enabled identity job. Retain all regression, audit, build and release-identity gates, including 4.8.2 Control artifact fixes. Stage in PR #253 for 4.8.3 only; do not interrupt 4.8.2 packaging. Require both CI platforms and check annotations for remaining deprecated action runtimes before acceptance. Report real deployment progress alongside other work and prompt owner when actionable; no simulated percentage or background-work claim.
+
 ### 4.8.3 release validation follow-up — 24 November 2026
 
 Windows CI run 45454127074 passed the Guild gameplay assertions but failed when test teardown deleted the temporary archive before DECIDE1 finalization renamed the file. Carry forward the exact 4.8.2 Solo archive barrier and test, then await the same barrier in the Guild fixture regression and assert a durable deciding-game upload queue and unique index receipt. No production storage is modified by this test fix. Revalidate 4.8.3 on the preceding accepted release before version advancement; do not combine with later feature batches. Owner requests incremental actual deployments via Control, not additional unreleased feature work.
