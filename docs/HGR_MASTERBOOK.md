@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.9.0 competitive infrastructure — stable rating receipts candidate (24 November 2026)
+
+The existing tournament-only rating ledger remains isolated from ordinary Ranked persistence and is not yet wired to live tournament settlement. Its duplicate check previously used transient socket IDs and accepted duplicate deliveries without comparing outcome. Duplicate receipts now identify original accounts and locked Guild IDs, tournament/fixture/board IDs and room generation, allow a legitimate socket remap, reject conflicting winner/placements and reject duplicate game-state identities or invalid non-winner placements. Regression covers socket replacement, unchanged ratings and conflicting receipts; existing replay/rating tests remain in CI. No scoring formula, ladder privacy rule or rating policy changed. Live settlement integration, durable recovery, standings, reporting/replay UI and physical acceptance remain separate 4.9.0 work. No version advancement or deployment. Owner involvement: prompt for concrete device or multiplayer acceptance checks and unresolved game-design choices at the relevant stage, not routine CI tasks; deployments through authenticated HGR Control on Lagz.
+
 ## 4.8.1 production stability patch — 11 November 2026
 
 4.8.0 was merged in PR #246 after Windows/Ubuntu CI passed and preserved as protected tag v4.8.0. Its Oracle activation failed and automatically restored 4.7.14. This 4.8.1 candidate preserves every 4.8 tournament, spectator-layout and gameplay fix while correcting the two findings below. Source validation is not a claim of successful production activation.
