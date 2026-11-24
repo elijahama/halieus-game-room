@@ -3,7 +3,16 @@
  */
 export type SparSuit = "C" | "D" | "H" | "S";
 export const SPAR_MAX_PLAYERS = 8;
-export type SparMatchMode = "casual" | "ranked";
+export type SparMatchMode = "casual" | "ranked" | "custom";
+export type SparDeckVariant = "traditional" | "full" | "noaces" | "expanded";
+export type SparScoringMode = "stones" | "target" | "free";
+export interface SparCustomSettings { handSize: 5 | 7; deck: SparDeckVariant; scoring: SparScoringMode; amount: number; underTen: boolean; showBottom: boolean; doubleFinish: boolean; }
+export const DEFAULT_SPAR_CUSTOM: Readonly<SparCustomSettings> = { handSize: 5, deck: "traditional", scoring: "stones", amount: 10, underTen: false, showBottom: false, doubleFinish: false };
+export const SPAR_DECK_SIZES: Record<SparDeckVariant,number> = { traditional:35, full:36, noaces:32, expanded:40 };
+export function sparCustomCapacity(settings: SparCustomSettings): number {
+  const reserve = (settings.underTen ? settings.handSize : 0) + (settings.showBottom ? 1 : 0);
+  return Math.min(SPAR_MAX_PLAYERS, Math.floor((SPAR_DECK_SIZES[settings.deck]-reserve)/settings.handSize));
+}
 export type SparTableFormat = "duel" | "multiplayer";
 export function sparSeatLimit(format: SparTableFormat): number { return format === "duel" ? 2 : SPAR_MAX_PLAYERS; }
 export type SparRank = "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A";
@@ -57,6 +66,14 @@ export interface SparPublicState {
   matchMode: SparMatchMode;
   tableFormat: SparTableFormat;
   maximumPlayers: number;
+  customSettings: SparCustomSettings | null;
+  handSize: 5 | 7;
+  scoring: SparScoringMode;
+  deckSize: number;
+  canExchange: boolean;
+  exchangePending: boolean;
+  bottomCard: SparCard | null;
+  canShowBottom: boolean;
   players: SparPlayer[];
   viewerPlayerId: string | null;
   isSpectator: boolean;

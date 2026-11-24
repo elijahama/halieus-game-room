@@ -1,15 +1,15 @@
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
-import { sparSeatLimit, type SparTableFormat, type SparMatchMode } from "../../../../shared/games/spar/types.js";
+import { sparSeatLimit, sparCustomCapacity, SPAR_DECK_SIZES, type SparCustomSettings, type SparTableFormat, type SparMatchMode } from "../../../../shared/games/spar/types.js";
 import type {
   SparAiDifficulty, SparCard, SparEvent, SparHandAward, SparPhase,
   SparPlayer, SparPublicState, SparResolvedTrick, SparTrickPlay,
 } from "../../../../shared/games/spar/types.js";
 import {
-  SPAR_STONE_POOL, SPAR_TRICKS_PER_HAND, chooseSparAiCard,
+  SPAR_STONE_POOL, chooseSparAiCard, parseSparCustomSettings, sparUnderTen, sparHandPoints,
   dealSparHands, legalSparCards, makeSparDeck, resolveSparTrick,
-  shuffleSparDeck, sparFinalTrickPoints, sparSuit,
+  shuffleSparDeck, sparSuit,
 } from "../../../../shared/games/spar/rules.js";
 import { getProgressionSocketIdentity, verifiedRoomAccountIds } from "../../platform/progression.js";
 import { finalizeSession, recordWorkingSession } from "../../platform/sessionArchive.js";
@@ -23,6 +23,10 @@ interface Room {
   code: string;
   tableFormat: SparTableFormat;
   matchMode: SparMatchMode;
+  customSettings: SparCustomSettings | null;
+  undealt: SparCard[];
+  pendingExchange: string[];
+  bottomCard: SparCard | null;
   createdAt: number;
   startedAt: number | null;
   updatedAt: number;
@@ -67,12 +71,21 @@ function publicPlayer(p: Player): SparPlayer {
     handCount: p.hand.length, result: p.result,
   };
 }
+function capacity(room: Room): number { return Math.min(sparSeatLimit(room.tableFormat), room.customSettings ? sparCustomCapacity(room.customSettings) : 8); }
+function handSize(room: Room): 5 | 7 { return room.customSettings?.handSize ?? 5; }
+function amount(room: Room): number { return room.customSettings?.amount ?? SPAR_STONE_POOL; }
+function scoring(room: Room) { return room.customSettings?.scoring ?? "stones"; }
 function state(room: Room, viewerId: string | null, spectator: boolean): SparPublicState {
   return {
     game: "spar", gameTitle: "Spar (Cha-Cha)", code: room.code,
     createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
     phase: room.phase, matchMode: room.matchMode,
-    tableFormat: room.tableFormat, maximumPlayers: sparSeatLimit(room.tableFormat),
+    tableFormat: room.tableFormat, maximumPlayers: capacity(room),
+    customSettings: room.customSettings ? {...room.customSettings} : null, handSize: handSize(room), scoring: scoring(room),
+    deckSize: room.customSettings ? SPAR_DECK_SIZES[room.customSettings.deck] : room.players.length === 8 ? 40 : 35,
+    canExchange: !spectator && viewerId !== null && room.phase === "bra" && room.pendingExchange.includes(viewerId),
+    exchangePending: room.pendingExchange.length > 0, bottomCard: room.bottomCard,
+    canShowBottom: !spectator && viewerId !== null && room.phase === "playing" && !!room.customSettings?.showBottom && room.trickNumber === handSize(room)-1 && room.undealt.length > 0 && !room.bottomCard,
     players: room.players.map(publicPlayer),
     viewerPlayerId: spectator ? null : viewerId,
     isSpectator: spectator, spectatorCount: room.spectators.size, spectatorNames: [...room.spectators.values()],
@@ -84,7 +97,7 @@ function state(room: Room, viewerId: string | null, spectator: boolean): SparPub
     plays: room.plays.map(p => ({ ...p })),
     lastTrick: room.lastTrick ? { ...room.lastTrick, plays: room.lastTrick.plays.map(p => ({ ...p })) } : null,
     lastAward: room.lastAward ? { ...room.lastAward } : null,
-    stonesRemaining: room.stonesRemaining, stonesTotal: SPAR_STONE_POOL,
+    stonesRemaining: room.stonesRemaining, stonesTotal: amount(room),
     winnerPlayerId: room.winnerPlayerId, status: room.status,
     events: room.events.slice(-36).map(e => ({ ...e })),
   };
@@ -106,9 +119,17 @@ function nextPlayer(room: Room, playerId: string): Player | undefined {
   return index < 0 ? undefined : room.players[(index + 1) % room.players.length];
 }
 function startHand(io: Server, room: Room) {
-  const deck = shuffleSparDeck(makeSparDeck(room.players.length));
-  const dealt = dealSparHands(room.players.map(p => p.id), room.dealerSeat, deck);
+  const deck = shuffleSparDeck(makeSparDeck(room.players.length, room.customSettings?.deck));
+  const dealt = dealSparHands(room.players.map(p => p.id), room.dealerSeat, deck, handSize(room));
+  room.undealt = dealt.remaining; room.bottomCard = null; room.pendingExchange = [];
   room.players.forEach(p => { p.hand = dealt.hands[p.id] ?? []; });
+  if (room.customSettings?.underTen) {
+    for (const p of room.players) if (sparUnderTen(p.hand) && room.undealt.length >= handSize(room) + (room.customSettings.showBottom ? 1 : 0)) {
+      if (p.isAi) p.hand = room.undealt.splice(0, handSize(room));
+      else room.pendingExchange.push(p.id);
+    }
+    trimExchange(room);
+  }
   room.handNumber++;
   room.trickNumber = 1;
   room.plays = [];
@@ -119,12 +140,16 @@ function startHand(io: Server, room: Room) {
   room.leadPlayerId = caller.id;
   room.currentTurnPlayerId = caller.id;
   room.status = `${caller.name} to call Bra. ${dealer.name} dealt the cards.`;
-  log(room, "table", `Hand ${room.handNumber}: cards dealt 3 + 2. ${caller.name} calls Bra.`);
+  log(room, "table", `Hand ${room.handNumber}: ${handSize(room)} cards dealt. ${caller.name} calls Bra.`);
   emit(io, room);
+}
+function trimExchange(room: Room) {
+  if (room.undealt.length < handSize(room) + (room.customSettings?.showBottom ? 1 : 0)) room.pendingExchange = [];
 }
 function finish(io: Server, room: Room, winner: Player | null, reason: string, status: "completed" | "forfeit-completed" | "host-ended" = "completed") {
   if (room.phase === "finished") return;
   room.phase = "finished";
+  room.pendingExchange = [];
   room.currentTurnPlayerId = null;
   room.winnerPlayerId = winner?.id ?? null;
   room.status = reason;
@@ -144,6 +169,7 @@ function finish(io: Server, room: Room, winner: Player | null, reason: string, s
 function bra(io: Server, room: Room, p: Player): string | null {
   if (room.phase !== "bra") return "The hand is not waiting for Bra.";
   if (room.currentTurnPlayerId !== p.id) return "Only the player after the dealer can call Bra.";
+  if (room.pendingExchange.length) return "Wait for opening hand exchange decisions.";
   room.phase = "playing";
   room.status = `${p.name} leads the first trick.`;
   log(room, "bra", `${p.name} calls Bra. Let the hand begin.`);
@@ -170,8 +196,9 @@ function play(io: Server, room: Room, player: Player, raw: unknown): string | nu
   }
   const resolved = resolveSparTrick(room.plays);
   const winner = room.players.find(p => p.id === resolved.winnerPlayerId)!;
-  const points = room.trickNumber === SPAR_TRICKS_PER_HAND
-    ? sparFinalTrickPoints(resolved.winningCard) : 0;
+  const prior = room.lastTrick?.number === handSize(room)-1 && room.lastTrick.winnerPlayerId === winner.id ? room.lastTrick.winningCard : null;
+  const points = room.trickNumber === handSize(room)
+    ? sparHandPoints(resolved.winningCard, prior, !!room.customSettings?.doubleFinish) : 0;
   room.lastTrick = {
     hand: room.handNumber, number: room.trickNumber, leadSuit: resolved.leadSuit,
     plays: room.plays.map(p => ({ ...p })), winnerPlayerId: winner.id,
@@ -179,7 +206,7 @@ function play(io: Server, room: Room, player: Player, raw: unknown): string | nu
   };
   log(room, "trick", `${winner.name} won trick ${room.trickNumber} with ${resolved.winningCard}.`);
   room.plays = [];
-  if (room.trickNumber < SPAR_TRICKS_PER_HAND) {
+  if (room.trickNumber < handSize(room)) {
     room.trickNumber++;
     room.currentTurnPlayerId = winner.id;
     room.leadPlayerId = winner.id;
@@ -188,15 +215,18 @@ function play(io: Server, room: Room, player: Player, raw: unknown): string | nu
     return null;
   }
   // Score only the fifth trick. The finite pool never goes negative.
-  const award = Math.min(room.stonesRemaining, points);
+  const award = scoring(room) === "stones" ? Math.min(room.stonesRemaining, points) : points;
   winner.stones += award;
-  room.stonesRemaining -= award;
+  if (scoring(room) === "stones") room.stonesRemaining -= award;
   room.lastAward = {
     hand: room.handNumber, playerId: winner.id, playerName: winner.name,
     winningCard: resolved.winningCard, offered: points, awarded: award,
   };
   log(room, "award", `${winner.name} earned ${award} of ${points} available points with ${resolved.winningCard}.`);
-  if (room.stonesRemaining === 0) {
+  if (scoring(room) === "target" && winner.stones >= amount(room)) {
+    finish(io, room, winner, `${winner.name} reaches ${winner.stones} points and wins Spar.`); return null;
+  }
+  if (scoring(room) === "stones" && room.stonesRemaining === 0) {
     const highest = Math.max(...room.players.map(p => p.stones));
     const leaders = room.players.filter(p => p.stones === highest);
     if (leaders.length === 1) {
@@ -216,14 +246,14 @@ function scheduleAi(io: Server, room: Room) {
   if (prior) clearTimeout(prior);
   aiTimers.delete(room.code);
   const player = room.players.find(p => p.id === room.currentTurnPlayerId);
-  if (!player?.isAi || room.phase === "finished") return;
+  if (!player?.isAi || room.phase === "finished" || room.pendingExchange.length) return;
   aiTimers.set(room.code, setTimeout(() => {
     aiTimers.delete(room.code);
     if (player.id !== room.currentTurnPlayerId || room.phase === "finished") return;
     if (room.phase === "bra") { bra(io, room, player); return; }
     if (room.phase !== "playing") return;
     const lead = room.plays.length ? sparSuit(room.plays[0].card) : null;
-    const card = chooseSparAiCard(player.hand, lead, room.trickNumber, player.aiDifficulty ?? "normal");
+    const card = chooseSparAiCard(player.hand, lead, room.trickNumber, player.aiDifficulty ?? "normal", handSize(room));
     play(io, room, player, card);
   }, 620));
 }
@@ -256,9 +286,12 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     if (payload?.tableFormat !== undefined && payload.tableFormat !== "duel" && payload.tableFormat !== "multiplayer")
       return ackOk(ack, { ok: false, reason: "Unknown Spar table format." });
     const tableFormat: SparTableFormat = payload?.tableFormat === "duel" ? "duel" : "multiplayer";
-    if (payload?.matchMode !== undefined && payload.matchMode !== "casual" && payload.matchMode !== "ranked")
+    if (payload?.matchMode !== undefined && payload.matchMode !== "casual" && payload.matchMode !== "ranked" && payload.matchMode !== "custom")
       return ackOk(ack, { ok: false, reason: "Unknown Spar match mode." });
-    const matchMode: SparMatchMode = payload?.matchMode === "ranked" ? "ranked" : "casual";
+    const matchMode: SparMatchMode = payload?.matchMode === "ranked" ? "ranked" : payload?.matchMode === "custom" ? "custom" : "casual";
+    const customSettings = matchMode === "custom" ? parseSparCustomSettings(payload?.customSettings) : null;
+    if (matchMode === "custom" && (!customSettings || sparCustomCapacity(customSettings) < 2)) return ackOk(ack, {ok:false,reason:"Invalid or incompatible Spar custom settings."});
+    if (matchMode !== "custom" && payload?.customSettings != null) return ackOk(ack, {ok:false,reason:"Custom rules are only available in Custom mode."});
     if (matchMode === "ranked") {
       const accountId = rankedAccount(socket.id);
       if (!accountId || tableFormat !== "duel" || /^\[BETA\]/i.test(name))
@@ -266,12 +299,12 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       p.rankedAccountId = accountId;
     }
     const room: Room = {
-      tableFormat, matchMode,
+      tableFormat, matchMode, customSettings, undealt: [], pendingExchange: [], bottomCard: null,
       code, createdAt: now, updatedAt: now, startedAt: null, phase: "lobby",
       players: [p], spectators: new Map(), dealerSeat: 0, handNumber: 0,
       trickNumber: 0, plays: [], lastTrick: null, lastAward: null,
       currentTurnPlayerId: null, leadPlayerId: null,
-      stonesRemaining: SPAR_STONE_POOL, winnerPlayerId: null,
+      stonesRemaining: customSettings ? (customSettings.scoring === "stones" ? customSettings.amount : 0) : SPAR_STONE_POOL, winnerPlayerId: null,
       status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
     };
     rooms.set(code, room);
@@ -281,7 +314,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
   });
   socket.on("spar:join", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload);
-    if (!room || room.phase !== "lobby" || room.players.length >= sparSeatLimit(room.tableFormat))
+    if (!room || room.phase !== "lobby" || room.players.length >= capacity(room))
       return ackOk(ack, { ok: false, reason: "That Spar table is full, started or unavailable." });
     if (room.players.some(p => p.id === socket.id))
       return ackOk(ack, { ok: false, reason: "You already have a seat. Recover that seat instead." });
@@ -319,6 +352,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     if (oldId !== socket.id) io.to(oldId).emit("platform:session-replaced", { reason: "Your Spar seat was recovered in another browser." });
     p.id = socket.id;
     p.isConnected = true;
+    room.pendingExchange = room.pendingExchange.map(id => id === oldId ? p.id : id);
     if (room.currentTurnPlayerId === oldId) room.currentTurnPlayerId = p.id;
     if (room.leadPlayerId === oldId) room.leadPlayerId = p.id;
     if (room.winnerPlayerId === oldId) room.winnerPlayerId = p.id;
@@ -345,7 +379,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
   socket.on("spar:add-ai", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload);
     const host = playerFor(room, socket.id);
-    if (!room || !host?.isHost || room.phase !== "lobby" || room.players.length >= sparSeatLimit(room.tableFormat))
+    if (!room || !host?.isHost || room.phase !== "lobby" || room.players.length >= capacity(room))
       return ackOk(ack, { ok: false, reason: "Only the host can add AI before play, and only while the selected format has a free seat." });
     if (room.matchMode === "ranked") return ackOk(ack, { ok: false, reason: "Ranked Spar is human versus human." });
     const n = room.players.length + 1;
@@ -372,22 +406,41 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     const host = playerFor(room, socket.id);
     if (!room || !host?.isHost || !["lobby", "finished"].includes(room.phase))
       return ackOk(ack, { ok: false, reason: "Only the host can start a waiting Spar table." });
-    if (room.players.length < 2 || room.players.length > sparSeatLimit(room.tableFormat))
+    if (room.players.length < 2 || room.players.length > capacity(room))
       return ackOk(ack, { ok: false, reason: room.tableFormat === "duel" ? "A 1v1 duel requires exactly two players." : "Spar needs two to eight players." });
     if (room.players.some(p => !p.isAi && !p.isConnected))
       return ackOk(ack, { ok: false, reason: "Wait for all human players to reconnect before dealing." });
     if (room.matchMode === "ranked" && (room.tableFormat !== "duel" || room.players.length !== 2 || new Set(room.players.map(p => p.rankedAccountId)).size !== 2 || room.players.some(p => p.isAi || !p.rankedAccountId || rankedAccount(p.id) !== p.rankedAccountId)))
       return ackOk(ack, { ok: false, reason: "Ranked requires two connected, distinct authenticated human accounts." });
     room.players.forEach(p => { p.stones = 0; p.hand = []; p.result = null; });
-    room.stonesRemaining = SPAR_STONE_POOL;
+    room.stonesRemaining = scoring(room) === "stones" ? amount(room) : 0;
     room.lastAward = null;
     room.winnerPlayerId = null;
     room.handNumber = 0;
     room.dealerSeat = 0;
     room.startedAt = Math.max(Date.now(), (room.startedAt ?? 0) + 1);
-    log(room, "start", `Spar started with ${room.players.length} players and ${SPAR_STONE_POOL} shared stones.`);
+    log(room, "start", `Spar started with ${room.players.length} players and ${scoring(room) === "free" ? "free play" : `${amount(room)} ${scoring(room) === "stones" ? "shared stones" : "target points"}`}.`);
     startHand(io, room);
     ackOk(ack, { ok: true });
+  });
+  socket.on("spar:exchange", (payload: any, ack: (r: unknown) => void) => {
+    const room = roomFor(payload), p = playerFor(room, socket.id);
+    if (!room || !p || room.phase !== "bra" || !room.pendingExchange.includes(p.id) || typeof payload?.exchange !== "boolean")
+      return ackOk(ack, {ok:false,reason:"No opening hand exchange is available."});
+    if (payload.exchange) {
+      if (room.undealt.length < handSize(room) + (room.customSettings?.showBottom ? 1 : 0)) return ackOk(ack,{ok:false,reason:"Not enough undealt cards."});
+      p.hand = room.undealt.splice(0, handSize(room));
+      log(room,"table",`${p.name} exchanged an opening hand.`);
+    }
+    room.pendingExchange = room.pendingExchange.filter(id => id !== p.id); trimExchange(room);
+    emit(io,room); ackOk(ack,{ok:true});
+  });
+  socket.on("spar:show-bottom", (payload: any, ack: (r: unknown) => void) => {
+    const room = roomFor(payload), p = playerFor(room, socket.id);
+    if (!room || !p || room.phase !== "playing" || !room.customSettings?.showBottom || room.trickNumber !== handSize(room)-1 || !room.undealt.length || room.bottomCard)
+      return ackOk(ack,{ok:false,reason:"Bottom card is not available."});
+    room.bottomCard = room.undealt[room.undealt.length-1];
+    log(room,"table",`Bottom card revealed: ${room.bottomCard}.`); emit(io,room); ackOk(ack,{ok:true});
   });
   socket.on("spar:bra", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload), p = playerFor(room, socket.id);
@@ -455,14 +508,14 @@ export function getSparChatIdentity(code: string, socketId: string) {
 export function getSparLiveRoomSummaries(): HalieusLiveRoomSummary[] {
   return [...rooms.values()].filter(isLiveSparRoom).map(room => ({
       game: "spar", gameTitle: "Spar (Cha-Cha)", code: room.code,
-      phase: room.phase, matchMode: room.matchMode, started: room.phase !== "lobby",
+      phase: room.phase, matchMode: room.matchMode === "ranked" ? "ranked" : "casual", started: room.phase !== "lobby",
       createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
-      playerCount: room.players.length, maximumPlayers: sparSeatLimit(room.tableFormat),
+      playerCount: room.players.length, maximumPlayers: capacity(room),
       humanPlayers: room.players.filter(p => !p.isAi && p.isConnected).map(p => p.name),
       verifiedAccountIds: verifiedRoomAccountIds(room.players),
       aiCount: room.players.filter(p => p.isAi).length,
       spectatorCount: room.spectators.size,
-      joinable: room.phase === "lobby" && room.players.length < sparSeatLimit(room.tableFormat), spectatable: true,
+      joinable: room.phase === "lobby" && room.players.length < capacity(room), spectatable: true,
     }));
 }
 export function closeAllSparRooms(): number {
