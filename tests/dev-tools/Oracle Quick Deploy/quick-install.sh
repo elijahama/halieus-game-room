@@ -231,7 +231,7 @@ fi
 verify_live_rooms_idle "maintenance announcement"
 MAINTENANCE_GRACE_SECONDS="${MAINTENANCE_GRACE_SECONDS:-12}"
 MAINTENANCE_JSON="$(node -e 'const version=process.argv[1];const seconds=Number(process.argv[2])||12;process.stdout.write(JSON.stringify({state:"scheduled",reason:"HGR is about to restart for an update.",targetVersion:version,estimatedSeconds:seconds}))' "$EXPECTED_VERSION" "$MAINTENANCE_GRACE_SECONDS")"
-if curl -fsS -X POST   -H 'Content-Type: application/json'   --data "$MAINTENANCE_JSON"   http://127.0.0.1:3000/internal/maintenance >/dev/null 2>&1; then
+if curl --connect-timeout 4 --max-time 8 -fsS -X POST   -H 'Content-Type: application/json'   --data "$MAINTENANCE_JSON"   http://127.0.0.1:3000/internal/maintenance >/dev/null 2>&1; then
   echo "Connected players notified of the incoming HGR restart."
   sleep "$MAINTENANCE_GRACE_SECONDS"
 else
@@ -264,7 +264,7 @@ HEALTH_FINGERPRINT=""
 SERVED_PWA_192_SHA256=""
 SERVED_PWA_512_SHA256=""
 for _attempt in $(seq 1 30); do
-  if HEALTH_JSON="$(curl -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health 2>/dev/null)"; then
+  if HEALTH_JSON="$(curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health 2>/dev/null)"; then
     HEALTH_VERSION="$(printf '%s' "$HEALTH_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{process.stdout.write(String(JSON.parse(s).version||""))}catch{process.exit(1)}})')" || HEALTH_VERSION=""
     HEALTH_FINGERPRINT="$(printf '%s' "$HEALTH_JSON" | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{process.stdout.write(String(JSON.parse(s).releaseFingerprint||""))}catch{process.exit(1)}})')" || HEALTH_FINGERPRINT=""
     if [[ "$HEALTH_VERSION" == "$EXPECTED_VERSION" && "$HEALTH_FINGERPRINT" == "$EXPECTED_FINGERPRINT" ]]; then
@@ -291,7 +291,7 @@ if [[ "$HEALTH_VERSION" != "$EXPECTED_VERSION" || "$HEALTH_FINGERPRINT" != "$EXP
     systemctl daemon-reload
     systemctl enable --now halieus-game-room
     sleep 2
-    curl -fsS http://127.0.0.1:3000/health || true
+    curl --connect-timeout 4 --max-time 8 -fsS http://127.0.0.1:3000/health || true
   fi
   exit 1
 fi
