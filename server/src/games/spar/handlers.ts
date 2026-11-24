@@ -227,7 +227,7 @@ function ackOk(ack: unknown, result: unknown) {
 }
 function roomFor(payload: any) { return rooms.get(cleanCode(payload?.code)); }
 function playerFor(room: Room | undefined, id: string) {
-  return room?.players.find(p => p.id === id && !p.isAi);
+  return room?.players.find(p => p.id === id && !p.isAi && p.isConnected);
 }
 export function registerSparHandlers(io: Server, socket: Socket) {
   socket.on("spar:create", (payload: any, ack: (r: unknown) => void) => {
@@ -258,6 +258,8 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     const room = roomFor(payload);
     if (!room || room.phase !== "lobby" || room.players.length >= 4)
       return ackOk(ack, { ok: false, reason: "That Spar table is full, started or unavailable." });
+    if (room.players.some(p => p.id === socket.id))
+      return ackOk(ack, { ok: false, reason: "You already have a seat. Recover that seat instead." });
     const name = cleanName(payload?.playerName);
     if (!name || room.players.some(p => p.name.toLowerCase() === name.toLowerCase()))
       return ackOk(ack, { ok: false, reason: "Enter a unique player name." });
@@ -266,6 +268,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       isAi: false, aiDifficulty: null, isConnected: true,
       stones: 0, hand: [], result: null, reconnectToken: token(),
     };
+    room.spectators.delete(socket.id);
     room.players.push(p);
     log(room, "join", `${name} joined the Spar table.`);
     emit(io, room);
@@ -276,6 +279,9 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     const key = typeof payload?.reconnectToken === "string" ? payload.reconnectToken.trim().toUpperCase() : "";
     const p = room?.players.find(x => !x.isAi && x.reconnectToken && x.reconnectToken === key);
     if (!room || !p) return ackOk(ack, { ok: false, reason: "The saved Spar seat is unavailable." });
+    if (room.players.some(other => other !== p && other.id === socket.id))
+      return ackOk(ack, { ok: false, reason: "A connection cannot recover another seat in the same table." });
+    room.spectators.delete(socket.id);
     const oldId = p.id;
     if (oldId !== socket.id) io.to(oldId).emit("platform:session-replaced", { reason: "Your Spar seat was recovered in another browser." });
     p.id = socket.id;
@@ -295,6 +301,8 @@ export function registerSparHandlers(io: Server, socket: Socket) {
   socket.on("spar:spectate", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload);
     if (!room) return ackOk(ack, { ok: false, reason: "Spar table not found." });
+    if (room.players.some(p => p.id === socket.id))
+      return ackOk(ack, { ok: false, reason: "You have a player seat. Recover it instead of spectating." });
     room.spectators.set(socket.id, cleanName(payload?.playerName) || "Spectator");
     emit(io, room);
     ackOk(ack, { ok: true, state: state(room, null, true) });
@@ -330,6 +338,8 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       return ackOk(ack, { ok: false, reason: "Only the host can start a waiting Spar table." });
     if (room.players.length < 2 || room.players.length > 4)
       return ackOk(ack, { ok: false, reason: "Spar needs two to four players." });
+    if (room.players.some(p => !p.isAi && !p.isConnected))
+      return ackOk(ack, { ok: false, reason: "Wait for all human players to reconnect before dealing." });
     room.players.forEach(p => { p.stones = 0; p.hand = []; p.result = null; });
     room.stonesRemaining = SPAR_STONE_POOL;
     room.lastAward = null;
@@ -385,9 +395,15 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     }
   });
 }
+/** Active hands remain protected even when everyone backgrounds the app.
+ * An empty, unstarted lobby may be ignored; a started hand is not idle.
+ */
+function isLiveSparRoom(room: Room): boolean {
+  return room.phase === "bra" || room.phase === "playing" ||
+    (room.phase === "lobby" && (room.players.some(p => !p.isAi && p.isConnected) || room.spectators.size > 0));
+}
 export function getSparRoomCount(): number {
-  return [...rooms.values()].filter(room => room.phase !== "finished" &&
-    (room.players.some(p => !p.isAi && p.isConnected) || room.spectators.size > 0)).length;
+  return [...rooms.values()].filter(isLiveSparRoom).length;
 }
 export function getSparChatIdentity(code: string, socketId: string) {
   const room = rooms.get(cleanCode(code));
@@ -397,8 +413,7 @@ export function getSparChatIdentity(code: string, socketId: string) {
   return spectator ? { name: spectator, role: "spectator" as const } : null;
 }
 export function getSparLiveRoomSummaries(): HalieusLiveRoomSummary[] {
-  return [...rooms.values()].filter(room => room.phase !== "finished" &&
-    (room.players.some(p => !p.isAi && p.isConnected) || room.spectators.size > 0)).map(room => ({
+  return [...rooms.values()].filter(isLiveSparRoom).map(room => ({
       game: "spar", gameTitle: "Spar (Cha-Cha)", code: room.code,
       phase: room.phase, matchMode: "casual", started: room.phase !== "lobby",
       createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
