@@ -1,5 +1,13 @@
 # Halieus Game Room Masterbook
 
+## 4.8.2 Control updater reliability candidate — 24 November 2026
+
+The owner greenlit the versioned delivery plan. PR #250 addresses the recorded Cloud Update failure caused by tracked live room state (data/rooms.json). The authenticated Control agent delegates tracked edits to the isolated canonical-main updater instead of rejecting them or mutating the owner's checkout. The isolated helper validates source integrity and treats an exact online HTTPS version/fingerprint match as a successful no-deploy result; unknown health retains full deployment checks. The ordinary clean-main local refresh workflow remains unchanged. Authentication, both idle-room checks and rollback stay mandatory. The isolated finalizer does not restart the existing owner Control agent.
+
+Release preparation includes the isolated updater and its regression in the fingerprint input list, parses the helper in the main identity workflow, and persists generated Control HTML cache tags alongside other version consumers. No artwork or game rules are changed. Prior CI passed for the earlier 4.8.1-based draft; the 4.8.2 candidate needs fresh Windows/Ubuntu checks and canonical manifest generation. The installed owner-PC Control agent must receive the corrected scripts through an authorised hidden refresh and be tested separately; publishing the website alone is insufficient. No deployment or acceptance is claimed.
+
+Windows CI run 45453747253 failed after the Solo forfeit assertions had passed: the test deleted its temporary session archive while the final upload-queue write was pending (ENOENT). The previous run 45453739288 passed. Add a final-session durability barrier and await it before fixture teardown, checking every semifinal/final queue entry and single index receipt rather than sleeping, swallowing errors or removing the test. No production data directory is changed by this fixture fix. Fresh validation is required.
+
 ## 4.8.1 production stability patch — 11 November 2026
 
 4.8.0 was merged in PR #246 after Windows/Ubuntu CI passed and preserved as protected tag v4.8.0. Its Oracle activation failed and automatically restored 4.7.14. This 4.8.1 candidate preserves every 4.8 tournament, spectator-layout and gameplay fix while correcting the two findings below. Source validation is not a claim of successful production activation.

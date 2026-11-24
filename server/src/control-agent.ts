@@ -870,23 +870,12 @@ async function runUpdate(response: ServerResponse): Promise<void> {
     return;
   }
   if (blockingChanges.length > 0) {
-    const now = new Date().toISOString();
-    const rejected: HalieusControlAuditEntry = {
-      id: randomUUID(),
-      action: "update",
-      state: "rejected",
-      startedAt: now,
-      finishedAt: now,
-      exitCode: null,
-      reason: "Remote Update refused because tracked source changes are present on the owner PC.",
-    };
-    await writeAudit(rejected);
-    sendJson(response, 409, {
-      ok: false,
-      reason: rejected.reason,
-      files: blockingChanges.slice(0, 8),
-    });
-    return;
+    // Do not treat legitimate persistent room data or unfinished source as an
+    // automatic website Update rejection. The authenticated updater checks
+    // the same tracked worktree state and uses a clean, isolated GitHub main
+    // checkout, never a rebase/commit/discard of these owner files.
+    // Git-status failure above remains fail-closed.
+    console.info(`HGR Control Update: preserving ${blockingChanges.length} local change(s) through isolated release mode.`);
   }
 
   const operation: HalieusControlActiveOperation = {
