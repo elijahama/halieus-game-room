@@ -26,6 +26,7 @@ const fixtures = [
   { id: "ludo", cls: ".ludo-progress-list", html: roster("ludo-progress-list") },
   { id: "connect-four", cls: ".connect-four-page .card-game-roster", html: `<div class="connect-four-page"><div class="card-game-lobby">${roster("card-game-roster",card(1)+card(2)+card(3)+card(4))}</div></div>` },
   { id: "ayo", cls: ".ayo-page .card-game-roster", html: `<div class="ayo-page"><div class="card-game-lobby">${roster("card-game-roster",card(1)+card(2)+card(3)+card(4))}</div></div>` },
+  { id: "spar", cls: ".spar-page .card-game-roster", html: `<div class="spar-page card-game-page"><div class="card-game-lobby spar-lobby">${roster("card-game-roster",card(1)+card(2)+card(3)+card(4))}</div></div>` },
   { id: "word-board", cls: ".word-board-page .card-game-roster", html: `<div class="word-board-page"><div class="card-game-lobby">${roster("card-game-roster",card(1)+card(2)+card(3)+card(4))}</div></div>` },
   { id: "poker", cls: ".poker-player-list", html: roster("poker-player-list",Array.from({length:4},(_,i)=>
       `<article class="poker-player-list-card"><span class="poker-avatar">P</span><div><strong>Player ${i+1}</strong><small>Connected</small></div><b>500 chips</b><button class="poker-remove-ai">×</button></article>`).join("")) },
@@ -43,7 +44,7 @@ const fixtures = [
   { id: "cheat", cls: ".classic-roster", html: roster("classic-roster") },
   { id: "dominoes", cls: ".classic-player-rail", html: roster("classic-player-rail") },
 ];
-assert.equal(gameIds.length, 14, "All 14 currently catalogued games are included");
+assert.equal(gameIds.length, 15, "Every current game, including Spar Beta, is covered");
 assert.deepEqual(new Set(fixtures.map(f=>f.id)), new Set(gameIds), "Gallery audit covers the entire current game catalog");
 assert.match(css, /HGR v4\.6\.6 · Gallery-first adaptive mobile/);
 
