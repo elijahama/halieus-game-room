@@ -28,6 +28,54 @@ if (-not $PackageOnly) {
 }
 
 
+
+# The read-only post-activation probe is isolated from the long-running installer.
+# SSH connection/keepalive options are not a wall-clock limit when a remote
+# session remains responsive but never exits. Bound the worker itself as well.
+function Invoke-HgrBoundedProbeWorker([string]$WorkerScript, [int]$TimeoutSeconds = 35) {
+    if ($TimeoutSeconds -lt 1 -or $TimeoutSeconds -gt 60) { throw "Invalid health-probe timeout." }
+    $exe = Join-Path $PSHOME "powershell.exe"
+    if (-not (Test-Path -LiteralPath $exe)) { $exe = Join-Path $PSHOME "pwsh.exe" }
+    if (-not (Test-Path -LiteralPath $exe)) { throw "PowerShell health-probe worker is unavailable." }
+    $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($WorkerScript))
+    $info = New-Object System.Diagnostics.ProcessStartInfo
+    $info.FileName = $exe
+    $info.Arguments = "-NoLogo -NoProfile -NonInteractive -EncodedCommand $encoded"
+    $info.UseShellExecute = $false
+    $info.CreateNoWindow = $true
+    $info.RedirectStandardOutput = $true
+    $info.RedirectStandardError = $true
+    $worker = New-Object System.Diagnostics.Process
+    $worker.StartInfo = $info
+    try {
+        if (-not $worker.Start()) { throw "Could not start the bounded Oracle health probe." }
+        $stdout = $worker.StandardOutput.ReadToEndAsync()
+        $stderr = $worker.StandardError.ReadToEndAsync()
+        if (-not $worker.WaitForExit($TimeoutSeconds * 1000)) {
+            # Only this newly-created read-only worker and its descendants.
+            # Never terminate the installer, bridge, Control, or another SSH session.
+            if (-not $worker.HasExited) {
+                $stopInfo = New-Object System.Diagnostics.ProcessStartInfo
+                $stopInfo.FileName = Join-Path ([Environment]::SystemDirectory) "taskkill.exe"
+                $stopInfo.Arguments = "/PID $($worker.Id) /T /F"
+                $stopInfo.UseShellExecute = $false
+                $stopInfo.CreateNoWindow = $true
+                $stop = [System.Diagnostics.Process]::Start($stopInfo)
+                try {
+                    if (-not $stop.WaitForExit(5000)) { $stop.Kill() }
+                } finally { $stop.Dispose() }
+                if (-not $worker.WaitForExit(2000)) { $worker.Kill() }
+            }
+            throw "Oracle post-activation health verification timed out. Release identity is unconfirmed; inspect the live fingerprint before any retry."
+        }
+        # Bound pipe draining too, including a descendant that inherited a pipe.
+        if (-not $stdout.Wait(3000) -or -not $stderr.Wait(3000)) {
+            throw "Oracle health-probe output did not close. Release identity is unconfirmed; inspect the live fingerprint before retrying."
+        }
+        return [pscustomobject]@{ ExitCode = $worker.ExitCode; Output = $stdout.Result }
+    } finally { $worker.Dispose() }
+}
+
 function Get-HalieusPublicHealth([string]$Uri, [int]$TimeoutSeconds = 8) {
     # Windows PowerShell 5.1 can negotiate legacy TLS for Invoke-RestMethod even
     # when Edge/Brave can open the same HTTPS site. Prefer the Windows curl.exe
@@ -295,8 +343,21 @@ try {
         "-o", "ServerAliveInterval=6",
         "-o", "ServerAliveCountMax=2"
     )
-    $healthRaw = & ssh @healthSshArgs $target "curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health"
-    if ($LASTEXITCODE -ne 0 -or -not $healthRaw) { throw "Oracle application health check was not confirmed after deployment; inspect the independent public fingerprint before retrying." }
+    $probeConfig = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes((@{ args = $healthSshArgs; target = $target } | ConvertTo-Json -Compress)))
+    $workerScript = @'
+$ErrorActionPreference = "Stop"
+$config = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String("__HGR_PROBE_CONFIG__")) | ConvertFrom-Json
+$healthSshArgs = @($config.args)
+$target = [string]$config.target
+$healthRaw = & ssh @healthSshArgs $target "curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health"
+$healthExit = $LASTEXITCODE
+$healthRaw
+exit $healthExit
+'@
+    $workerScript = $workerScript.Replace("__HGR_PROBE_CONFIG__", $probeConfig)
+    $probe = Invoke-HgrBoundedProbeWorker -WorkerScript $workerScript -TimeoutSeconds 35
+    $healthRaw = $probe.Output
+    if ($probe.ExitCode -ne 0 -or -not $healthRaw) { throw "Oracle application health check was not confirmed after deployment; inspect the independent public fingerprint before retrying." }
     try { $oracleHealth = (($healthRaw -join "`n") | ConvertFrom-Json -ErrorAction Stop) } catch { throw "Oracle returned an unreadable /health response after deployment." }
     $actualVersion = [string]$oracleHealth.version
     $actualFingerprint = [string]$oracleHealth.releaseFingerprint
