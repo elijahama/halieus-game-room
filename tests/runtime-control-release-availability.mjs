@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
-  classifyRelease, newerRelease, currentReleaseAvailability,
+  classifyRelease, newerRelease, currentReleaseAvailability, verifyPackagedRelease,
   RELEASE_AVAILABILITY_TTL_MS
 } from "../server/src/platform/control-release-availability.ts";
 
@@ -39,17 +39,39 @@ assert.equal(options({...valid("4.8.0"),product:"Another product"}).status,"unve
 assert.equal(options(null).status,"unverified");
 
 let fetchCount=0;
-const fetcher=async (url,options)=>{
-  fetchCount++;
-  assert.equal(url,"https://raw.githubusercontent.com/elijahama/halieus-game-room/main/RELEASE.json");
-  assert.equal(options.redirect,"error");
-  return {ok:true,json:async()=>valid("99.0.0")};
-};
-const response=await currentReleaseAvailability(fetcher);
+const repo="elijahama/halieus-game-room", sha="a".repeat(40), parent="b".repeat(40);
+const manifest=valid("99.0.0");
+const run={head_sha:parent,head_branch:"main",path:".github/workflows/release-identity.yml",
+  status:"completed",conclusion:"success",event:"push",repository:{full_name:repo},head_repository:{full_name:repo}};
+const candidate=options(manifest);
+function fetchFixture({packaging=run,pinned=manifest,headSha=sha}={}) {
+  return async (url,options)=>{
+    fetchCount++;
+    assert.equal(options.redirect,"error");
+    let value;
+    if(url==="https://raw.githubusercontent.com/"+repo+"/main/RELEASE.json") value=manifest;
+    else if(url==="https://api.github.com/repos/"+repo+"/commits/main")
+      value={sha:headSha,parents:[{sha:parent}],commit:{message:"chore: refresh HGR release identity"}};
+    else if(url==="https://raw.githubusercontent.com/"+repo+"/"+sha+"/RELEASE.json") value=pinned;
+    else if(url==="https://api.github.com/repos/"+repo+"/actions/workflows/release-identity.yml/runs?branch=main&head_sha="+parent+"&per_page=10")
+      value={workflow_runs:[packaging]};
+    else throw new Error("Unexpected URL "+url);
+    return {ok:true,json:async()=>value};
+  };
+}
+assert.equal(await verifyPackagedRelease(candidate,fetchFixture()),true);
+for (const packaging of [{...run,conclusion:"failure"},{...run,status:"in_progress"},{...run,head_sha:sha},{...run,head_branch:"feature"},{...run,event:"pull_request"},{...run,head_repository:{full_name:"fork/hgr"}}])
+  assert.equal(await verifyPackagedRelease(candidate,fetchFixture({packaging})),false);
+assert.equal(await verifyPackagedRelease(candidate,fetchFixture({pinned:valid("99.0.1")})),false);
+assert.equal(await verifyPackagedRelease(candidate,fetchFixture({headSha:"invalid"})),false);
+assert.equal(await verifyPackagedRelease(candidate,async()=>{throw Error("offline")}),false);
+assert.equal((await currentReleaseAvailability(fetchFixture({packaging:{...run,status:"in_progress"}}))).status,"unverified");
+fetchCount=0;
+const response=await currentReleaseAvailability(fetchFixture());
 assert.equal(response.status,"available");
 assert.equal(response.candidateVersion,"99.0.0");
-assert.equal((await currentReleaseAvailability(fetcher)).candidateVersion,"99.0.0");
-assert.equal(fetchCount,1,"cache avoids continuous upstream fetches");
+assert.equal((await currentReleaseAvailability(fetchFixture())).candidateVersion,"99.0.0");
+assert.equal(fetchCount,4,"cache avoids continuous upstream fetches");
 
 const server=await readFile(new URL("../server/src/platform/control-cloud-ui-preload.ts",import.meta.url),"utf8");
 const page=await readFile(new URL("../client/public/control/index.html",import.meta.url),"utf8");
@@ -58,7 +80,7 @@ assert.match(server,/path === "\/control\/release-availability"/);
 assert.match(server,/async function serveReleaseAvailability[\s\S]*if \(!hasAdmin\(request\)\)/);
 assert.match(server,/sendJson\(response, 503, \{ ok: false, reason: "Release availability could not be verified\."/);
 assert.match(page,/id="controlReleaseNotice"[\s\S]*id="controlReleaseReview"/);
-assert.match(page,/release-notice\.js\?v=control-release-notice-1/);
+assert.match(page,/release-notice\.js\?v=control-release-notice-2/);
 assert.match(js,/credentials: "include"/);
 assert.match(js,/release\.status !== "available"/);
 assert.doesNotMatch(js,/innerHTML|location\.href|fetch\([^)]*,\s*\{\s*method:\s*"POST"/i);
