@@ -3256,6 +3256,84 @@ function handleLeaveSpectator() {
   function endAyo(){if(!ayoState)return;const code=ayoState.code;socket.emit("ayo:end-game",{code},(response:AyoResponse)=>{if(!response.ok)return setMessage(response.reason??"Unable to end Ayo.");clearCardSession(AYO_SESSION_KEY);setAyoSavedSession(null);setAyoRecoveryCode("");setAyoState(null);setSelectedGame("ayo");updateBrowserPath("/");setRoomCode(code);setMessage("Ayo game ended and archived.")});}
   function leaveAyo(){if(!ayoState)return;const code=ayoState.code;socket.emit("ayo:leave",{code},()=>undefined);setAyoState(null);setSelectedGame("ayo");updateBrowserPath("/");setRoomCode(code);setMessage("Returned to Game Room. Your Ayo seat is recoverable.");}
 
+  function applySparResponse(response: SparResponse, name: string, spectator = false): boolean {
+    if (!response.ok || !response.state) return false;
+    const code = response.code ?? response.state.code;
+    setSparState(response.state);
+    setAyoState(null); setWordBoardState(null); setClassicState(null); setWordArenaState(null);
+    setHiddenDictatorState(null); setConnectFourState(null); setLudoState(null);
+    setWhotState(null); setBlackjackState(null); setPokerState(null);
+    setSelectedGame("spar"); setRoomCode(code); setPlayerName(name);
+    setInviteCode(null); setLobby(null); setGameStarted(false); setGameState(null);
+    if (!spectator && response.reconnectToken) {
+      const session = { code, playerName: name, reconnectToken: response.reconnectToken };
+      saveCardSession(SPAR_SESSION_KEY, session);
+      setSparSavedSession(session); setSparRecoveryCode(response.reconnectToken);
+    }
+    updateBrowserPath(`/spar/${code}`); setMessage("");
+    return true;
+  }
+  function createSpar(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!playerName.trim() || !roomCode.trim()) return setMessage("Enter your name and room code first.");
+    setIsCreating(true);
+    socket.emit("spar:create", { code:roomCode, playerName }, (response:SparResponse) => {
+      setIsCreating(false);
+      if (!applySparResponse(response,playerName)) setMessage(response.reason??"Unable to create Spar room.");
+    });
+  }
+  function joinSpar() {
+    if (!playerName.trim() || !roomCode.trim()) return setMessage("Enter your name and Spar room code.");
+    setIsJoining(true);
+    socket.emit("spar:join", { code:roomCode, playerName }, (response:SparResponse) => {
+      setIsJoining(false);
+      if (!applySparResponse(response,playerName)) setMessage(response.reason??"Unable to join Spar.");
+    });
+  }
+  function spectateSpar() {
+    if (!roomCode.trim()) return setMessage("Enter the Spar room code.");
+    const name=playerName||"Spectator";
+    setIsJoining(true);
+    socket.emit("spar:spectate", { code:roomCode, playerName:name }, (response:SparResponse) => {
+      setIsJoining(false);
+      if (!applySparResponse(response,name,true)) setMessage(response.reason??"Unable to spectate Spar.");
+    });
+  }
+  function recoverSpar(session: SavedSession) {
+    setIsRecovering(true);
+    socket.emit("spar:reconnect", session, (response:SparResponse) => {
+      setIsRecovering(false);
+      if (!applySparResponse(response,session.playerName)) setMessage(response.reason??"Spar seat could not be recovered.");
+    });
+  }
+  function forfeitSpar() {
+    if (!sparState || sparState.isSpectator) return;
+    const code=sparState.code;
+    socket.emit("spar:forfeit",{code},(response:SparResponse)=>{
+      if(!response.ok)return setMessage(response.reason??"Unable to forfeit Spar.");
+      clearCardSession(SPAR_SESSION_KEY);setSparSavedSession(null);setSparRecoveryCode("");
+      setSparState(null);setSelectedGame("spar");updateBrowserPath("/");setRoomCode(code);
+      setMessage("Spar seat forfeited.");
+    });
+  }
+  function endSpar() {
+    if (!sparState) return;
+    const code=sparState.code;
+    socket.emit("spar:end-game",{code},(response:SparResponse)=>{
+      if(!response.ok)return setMessage(response.reason??"Unable to end Spar.");
+      clearCardSession(SPAR_SESSION_KEY);setSparSavedSession(null);setSparRecoveryCode("");
+      setSparState(null);setSelectedGame("spar");updateBrowserPath("/");setRoomCode(code);
+      setMessage("Spar game ended and archived.");
+    });
+  }
+  function leaveSpar() {
+    if(!sparState)return;
+    const code=sparState.code;
+    socket.emit("spar:leave",{code},()=>undefined);
+    setSparState(null);setSelectedGame("spar");updateBrowserPath("/");setRoomCode(code);
+    setMessage("Returned to Game Room. Your Spar seat is recoverable.");
+  }
+
   function applyWordBoardResponse(response: WordBoardResponse, name: string, spectator = false): boolean {
     if (!response.ok || !response.state) return false;
     const code=response.code??response.state.code;
