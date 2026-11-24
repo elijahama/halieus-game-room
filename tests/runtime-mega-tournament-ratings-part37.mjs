@@ -100,6 +100,24 @@ try {
   }), /already been recorded/);
   assert.deepEqual(ledger.getLeaderboard(), allFirst);
 
+  // Same verified board after socket replacement: recover original receipt,
+  // without awarding again or letting a conflicting result rewrite history.
+  const reconnected = createBoard("TOURN1", ["new1","new2","new3","new4"]);
+  reconnected.gameStartedAt = first.gameStartedAt;
+  const rebound = assignment(reconnected, "board-1");
+  assert.deepEqual(await ledger.recordCompletedBoard(reconnected, rebound), firstRecord);
+  reconnected.winnerId = "new2";
+  reconnected.playerStats.new1.finishPosition = 2;
+  reconnected.playerStats.new2.finishPosition = 1;
+  await assert.rejects(ledger.recordCompletedBoard(reconnected, rebound), /immutable/);
+  reconnected.winnerId = "new1";
+  reconnected.playerStats.new1.finishPosition = 1;
+  reconnected.playerStats.new2.finishPosition = 3;
+  await assert.rejects(ledger.recordCompletedBoard(reconnected, rebound), /immutable/);
+  reconnected.playerStats.new2.finishPosition = 1;
+  await assert.rejects(ledger.recordCompletedBoard(reconnected, rebound), /Invalid tournament finish position/);
+  assert.deepEqual(ledger.getLeaderboard(), allFirst);
+
   // Account ID, not name, carries ratings across tournament games and renames.
   const second = createBoard("TOURN2", ["x1", "x2", "x3", "x4"]);
   second.players[0].name = "Renamed Alice";
