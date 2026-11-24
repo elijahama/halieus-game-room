@@ -20,15 +20,19 @@ export function ProjectTimeline({ currentVersion }: ProjectTimelineProps) {
 
       <div className="hgr-project-history-track">
         {PROJECT_TIMELINE.map((milestone) => {
-          const isCurrent = !milestone.planned && (milestone.current
-            || milestone.version === currentVersion
-            || (milestone.version.endsWith(".x") && currentVersion.startsWith(milestone.version.slice(0, -1))));
+          const exactCurrent = PROJECT_TIMELINE.some(entry => entry.version === currentVersion);
+          const isCurrent = milestone.version === currentVersion || (!exactCurrent && !milestone.planned &&
+            milestone.version.endsWith(".x") && currentVersion.startsWith(milestone.version.slice(0, -1)));
+          // A newer build does not prove that a skipped conditional patch or an
+          // owner-acceptance checkpoint was delivered. Only exact identity
+          // removes the planned label; older target entries are not auto-completed.
+          const isPlanned = Boolean(milestone.planned && !isCurrent);
           return (
           <article
             key={milestone.version}
-            className={`hgr-project-milestone${isCurrent ? " is-current" : ""}${milestone.planned ? " is-planned" : ""}`}
+            className={`hgr-project-milestone${isCurrent ? " is-current" : ""}${isPlanned ? " is-planned" : ""}`}
           >
-            <small>{milestone.planned ? "Planned · " : ""}{milestone.phase}</small>
+            <small>{isPlanned ? "Target · " : isCurrent ? "Current build · " : ""}{milestone.phase}</small>
             <strong>{milestone.version}</strong>
             <span>{milestone.title}</span>
             <p>{milestone.summary}</p>
