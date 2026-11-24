@@ -121,6 +121,15 @@ export function finalizeSession(game: ArchiveGame, code: string, createdAt: numb
   finalizations.set(key, task); return task;
 }
 
+/** Wait for final archive, upload-queue and index writes before disposing a data directory.
+ * Callers must first stop accepting new session work. Propagates any pending failure.
+ */
+export async function flushFinalSessionWrites(): Promise<void> {
+  while (finalizations.size > 0) {
+    await Promise.all([...finalizations.values()]);
+  }
+}
+
 async function writeFinalSession(
   game: ArchiveGame,
   code: string,
