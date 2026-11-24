@@ -6,6 +6,7 @@ import path from "node:path";
 
 const read = (file) => readFileSync(new URL("../" + file, import.meta.url), "utf8");
 const controller = read("scripts/windows/control-update.ps1");
+const ownerControl = read("server/src/control-agent.ts");
 const helper = read("scripts/windows/control-update-isolated-main.ps1");
 const finalizer = read("scripts/windows/control-update-finalize.ps1");
 const legacy = read("Update HGR GitHub.cmd");
@@ -16,10 +17,27 @@ assert.match(legacy, /git branch --show-current/);
 assert.match(legacy, /Current branch is/);
 assert.match(legacy, /git rebase --autostash/);
 
-// Only Cloud Update (authenticated, fixed action) switches to isolated deploy
-// when the checked-out source is not main.
+// Authenticated Cloud Update uses isolated, verified GitHub main whenever
+// the owner PC is on a feature branch OR its tracked files are modified.
+// In particular game data must not be committed, discarded or rebased.
 assert.match(controller, /\$currentBranch = \(& git -C \$projectRoot branch --show-current/);
-assert.match(controller, /\$useIsolatedMain = \$currentBranch -ne "main"/);
+assert.match(controller, /\$trackedChanges = @\(& git -C \$projectRoot status --porcelain --untracked-files=no\)/);
+assert.match(controller, /\$useIsolatedMain = \$currentBranch -ne "main" -or \$trackedChanges\.Count -gt 0/);
+assert.doesNotMatch(controller, /git (?:checkout|switch|reset --hard|restore).*data[\\/]rooms\.json/i);
+assert.match(legacy, /Remote\/non-interactive Update found local source changes/,
+  "The manual/legacy updater must never auto-commit live room data");
+const updateGuard = ownerControl.slice(
+  ownerControl.indexOf("async function blockingRemoteUpdateChanges"),
+  ownerControl.indexOf("const operation: HalieusControlActiveOperation", ownerControl.indexOf("async function blockingRemoteUpdateChanges"))
+);
+assert.match(updateGuard, /if \(blockingChanges === null\)/,
+  "Unknown Git status still fails closed");
+assert.match(updateGuard, /preserving \$\{blockingChanges\.length\} local change/,
+  "Dirty source must be handed to the isolated updater with an explicit, read-only log");
+assert.doesNotMatch(updateGuard, /Remote Update refused because tracked source changes/,
+  "Local room data cannot be rejected before the isolated updater is called");
+assert.doesNotMatch(updateGuard, /if \(blockingChanges\.length > 0\)\s*\{[\s\S]*?sendJson\(response, 409/,
+  "Tracked edits must never trigger the obsolete early 409");
 assert.match(controller, /\$isolatedMainHelper = Join-Path \$PSScriptRoot "control-update-isolated-main\.ps1"/);
 assert.match(controller, /if \(\$useIsolatedMain\) \{/);
 assert.match(controller, /"powershell\.exe -NoProfile -ExecutionPolicy Bypass -File/);
@@ -43,6 +61,11 @@ assert.ok(helper.includes('$env:GIT_TERMINAL_PROMPT = "0"'));
 assert.match(helper, /\$branch -ne "main" -or \$origin -ne \$repoUrl -or \$dirty.Count -ne 0/);
 assert.match(helper, /node "scripts\\release-integrity\.mjs" --verify/);
 assert.match(helper, /\$AuditOnly/);
+assert.match(helper, /Invoke-RestMethod -Method Get -Uri "https:\/\/halieus\.remotewire\.net\/health" -TimeoutSec 10/);
+assert.match(helper, /\$liveHealth\.releaseFingerprint -ceq \[string\]\$declaredManifest\.fingerprint/);
+assert.match(helper, /Already up to date: the public website serves the exact verified GitHub main release/);
+assert.ok(helper.indexOf("Already up to date:") < helper.indexOf("npm.cmd ci"),
+  "Current release must not reinstall/restart before performing identity no-op check");
 assert.ok(helper.includes('$env:HGR_UPDATE_NONINTERACTIVE -ne "1"'));
 assert.ok(helper.includes('$env:HGR_CONTROL_DEFER_REFRESH -ne "1"'));
 assert.match(helper, /npm\.cmd audit --audit-level=high/);
@@ -108,3 +131,11 @@ if (process.platform === "win32") {
 }
 
 console.log("PASS Control feature-branch Cloud Update isolation: GitHub main source only, exact release gates, finalizer-only completion and original Control handoff preserved");
+
+// Protect isolated updater fingerprint and generated Control cache tags.
+const identityGenerator = read("scripts/release-integrity.mjs");
+const identityWorkflow = read(".github/workflows/release-identity.yml");
+assert.ok(identityGenerator.includes("'scripts/windows/control-update-isolated-main.ps1'"));
+assert.ok(identityGenerator.includes("'tests/regression-control-isolated-cloud-update.mjs'"));
+assert.equal(identityWorkflow.split("client/public/control/index.html").length, 3,
+  "Check and stage the generated Control index in the release identity workflow");

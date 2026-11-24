@@ -1,5 +1,7 @@
 # HGR version roadmap — 4.6.x to fully actualized 5.0.0
 
+**24 November 2026 — allocated patch delivery targets:** [Versioned delivery allocation](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md#versioned-delivery-allocation--24-november-2026) assigns individual patches for Control (4.8.2), Mega Board layout (4.8.3), intro and Tournament navigation (4.8.4), and separate Spar Casual Beta (4.8.6). The 4.8.5, 4.9.0, 4.9.5, 5.0.0 and 5.0.5 functional contracts below remain unchanged; later refinement/contingency patches are targets only. Required milestone functionality must be implemented and accepted before advancing VERSION. No release or deployment follows from this documentation edit.
+
 **4.8.1 stability correction:** the 4.8.0 Oracle attempt rolled back after inherited application-folder permissions blocked startup. The follow-up retains the 4.8 format milestone and fixes archive-memory pressure plus installer permissions; it is not the separate 4.8.5 acceptance milestone. See [release evidence](HGR_RELEASE_REVIEWS.md).
 
 **11 November 2026 activation:** the owner authorized running 4.8.0. Both Solo and Guild single/double formats now pass full-server authenticated HTTP/Socket.IO acceptance through real forfeit results, Grand Final resets, Guild third games and persisted champions after restart. Solo is enabled by default with an explicit legacy opt-out. Source, production identity and physical-device acceptance remain separate; see [release evidence](HGR_RELEASE_REVIEWS.md).

@@ -36,6 +36,19 @@ try{
     assert.ok(geometry.cards.every(c=>c.height>=90&&c.contentHeight<=c.clientHeight+2),'Player cards must not clip their own content: '+JSON.stringify({viewport,count,geometry}));
     assert.equal(await page.locator(".mega-spectator-mode").evaluate(el=>getComputedStyle(el).overflowY),"auto");
     assert.ok(Math.abs(geometry.board.width-geometry.board.height)<2);
+    const centre=await page.evaluate(()=>{
+     const rect=sel=>document.querySelector(sel).getBoundingClientRect();
+     const a=rect(".board-centre-authentic"),b=rect(".board-centre-core"),c=rect(".board-centre-logo");
+     const x=r=>r.left+r.width/2,y=r=>r.top+r.height/2;
+     return {dx:Math.abs(x(a)-x(b)),dy:Math.abs(y(a)-y(b)),logoDx:Math.abs(x(a)-x(c)),coreWidth:b.width,centreWidth:a.width};
+    });
+    assert.ok(centre.dx<2&&centre.dy<2&&centre.logoDx<2&&centre.coreWidth<=centre.centreWidth, "Board centre uses true geometry: "+JSON.stringify({viewport,count,centre}));
+    const compact=await cards.first().evaluate(card=>({
+     partial: [...card.querySelectorAll(".is-partial-group")].every(g=>!g.querySelector(".player-property-group-heading")),
+     count:card.querySelectorAll(".player-property-chip").length,
+     named:[...card.querySelectorAll(".player-property-chip-name")].every(n=>n.textContent.trim().length>0),
+    }));
+    assert.ok(compact.partial&&compact.named&&compact.count===12,"All holdings kept without redundant headings: "+JSON.stringify(compact));
     assert.equal(geometry.overflow,false);
     await cards.last().scrollIntoViewIfNeeded();
     const lastVisible=await cards.last().evaluate(el=>{const a=el.getBoundingClientRect(),b=el.closest('.player-rail-list').getBoundingClientRect();return a.top<innerHeight&&a.bottom>0&&a.top<b.bottom&&a.bottom>b.top;});

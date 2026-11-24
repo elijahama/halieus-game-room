@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, readFile, readdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import express from "express";
@@ -13,6 +13,7 @@ const { loadGuildFixtures, registerGuildFixtureRoutes, getGuildFixtureBoundRoom,
 const { registerLobbyHandlers } = await import("../server/src/games/mega-board/handlers/lobbyHandlers.ts");
 const { registerAiLobbyHandlers } = await import("../server/src/games/mega-board/handlers/aiLobbyHandlers.ts");
 const { flushRoomSave } = await import("../server/src/games/mega-board/utils/persistence.ts");
+const { flushFinalSessionWrites } = await import("../server/src/platform/sessionArchive.ts");
 const { registerDisconnectHandler } = await import("../server/src/games/mega-board/handlers/disconnectHandler.ts");
 const { registerSessionHandlers } = await import("../server/src/games/mega-board/handlers/sessionHandlers.ts");
 const { endRoom } = await import("../server/src/games/mega-board/utils/room-lifecycle.ts");
@@ -237,10 +238,16 @@ try {
   assert.equal((await call("/guild-fixtures/" + secondFixtureId + "/cancel", "gold-lead", {})).status, 200);
   assert.equal(getGuildFixtureBoundRoom(third.code), null);
   await flushRoomSave();
+  await flushFinalSessionWrites();
+  const queue = await readdir(join(directory, "sessions", "upload-queue"));
+  const index = (await readFile(join(directory, "sessions", "sessions-index.ndjson"), "utf8")).trim().split("\n").map(line => JSON.parse(line));
+  assert.ok(queue.some(name => name.startsWith("mega-board-" + decider.code + "-")), "Decider upload queue must be durable");
+  assert.equal(index.filter(entry => entry.roomCode === decider.code).length, 1, "Exactly one decider archive index entry");
   console.log("PASS Guild fixtures: real board starts and 1–1 decider; manager-only original nominations, fresh room, membership-at-start, disconnect/forfeit guards, immutable receipts, restart and bracket advancement");
 } finally {
   await new Promise((resolve) => server.close(resolve));
   await flushRoomSave();
+  await flushFinalSessionWrites();
   rooms.clear();
   await rm(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
 }
