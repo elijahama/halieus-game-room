@@ -1,5 +1,22 @@
 # HGR Delivery Timeline and Tournament Roadmap
 
+## Planned update windows — agreed scheduling direction, 24 November 2026
+
+Production 4.8.2 was independently verified online on 24 November: `hgr-4.8.2-fc3b4fa0ad4a8768`, successful updater receipt (exit 0, 100%, 20:01:33–20:12:52 GMT, 11m19s). The owner wants substantially faster routine updates as well as honest incremental progress and notification communication. The following are provisional UK-date delivery windows, not timed automatic deployments. Work on release-speed improvements starts immediately alongside existing patch preparation; one release is activated and verified at a time.
+
+| Target | Provisional delivery window (GMT dates) | Scope and release acceptance |
+| --- | --- | --- |
+| 4.8.3 | 25–26 Nov | Existing Mega Board geometry/property readability; retain approved fixes and complete integration checks. |
+| 4.8.4 | 27–28 Nov | Existing intro fit/glow and separate Tournament destination; canonical assets unchanged. |
+| 4.8.5 | 29 Nov–1 Dec | Required tournament hardening and protected checkpoint; do not advance until functional gate is met. |
+| 4.8.6 | 2–3 Dec | Spar Casual Beta only if validated; preserve separate Beta status. |
+| 4.8.7 | 4–6 Dec | Verified-release fast deployment path: trust exact successful canonical CI proof, eliminate repeated local regression/build when safely proven, retain full-validation fallback, package integrity, idle-room gate, rollback and live verification. Initial owner-click-to-live target 3–5 minutes, measured rather than promised. |
+| 4.8.8 | 7–9 Dec | Granular truthful update progress, current stage, meaningful notification coalescing, mobile Control declutter; actual Android/PWA acceptance and private owner controls. |
+| 4.8.9 | 10–13 Dec | Investigate and validate prebuilt Linux release delivery, avoid redundant Oracle build, benchmark and preserve runtime compatibility, security, atomic rollback; 1–2 minute owner-click-to-live stretch target only if demonstrated. |
+| 4.9.0 onward | After preceding acceptance gates | Resume existing tournament experience slices; retain 4.9.5 and 5.0.0 functional contracts. December remains an aspiration, not a release promise. |
+
+These provisional allocations supersede the previous conditional Spar follow-up/contingency slots 4.8.7–4.8.9; any required Spar correction must be accommodated before advancing. Infrastructure cleanup (#261, #264) and performance measurement continue as separately reviewed work, not an excuse to delay an already validated release. Dates shift if tests or owner acceptance are outstanding. Preserve all pending candidate scopes; do not bump versions, mark items complete, trigger automatic updates or merge overlapping branches merely to meet a date. Owner greenlight and no-active-room verification precede activation. If a release-speed correction becomes ready sooner, review the allocation explicitly before reordering. Record timings from owner confirmation to exact live fingerprint and distinguish CI preparation time, deployment time and actual downtime. No fabricated progress or percentage smoothing; show verified phase completion and an honest activity/elapsed indicator when work is unmeasurable.
+
 **Source snapshot:** 31 October 2026. This is a planned delivery order, not a running job queue. The Development screen inside owner Control shows these mini-batches, and reads GitHub PR status separately. A code merge is never proof of an Oracle production deployment. Labels and links use feature names, not conversation numbering.
 
 ## Versioned delivery allocation — 24 November 2026
@@ -13,8 +30,9 @@ The owner requested that delivery batches be allocated specific patch versions. 
 | 4.8.4 | Intro viewport/glow and independent Tournament destination | Combined #248 (passed independent CI), #249 review record; integrate after 4.8.3; canonical H, desktop/tablet fit, Solo/Guild access and mobile navigation |
 | **4.8.5** | Tournament hardening checkpoint | PR #254 partial recovery candidate; real authenticated Solo/Guild flows, tie/forfeit/reconnect/restart recovery, mobile/PWA acceptance and restorable protected checkpoint |
 | 4.8.6 | Spar (Cha-Cha) Casual Beta | Draft #251; rules, privacy, multiplayer, AI and responsive acceptance; separate from tournament milestone |
-| 4.8.7 | Spar beta follow-up | Conditional on actual balancing or regression findings |
-| 4.8.8–4.8.9 | Unallocated contingency | Only if meaningful corrections are needed |
+| 4.8.7 | Verified-release fast deployment | Exact CI proof and full-validation fallback; 3–5 minute initial target |
+| 4.8.8 | Control progress, notification and mobile polish | Truthful stage-level progress and real-device acceptance |
+| 4.8.9 | Prebuilt release delivery | Verified Linux compatibility, rollback and timed deployment; 1–2 minute stretch target |
 | **4.9.0** | Tournament experience milestone | PR #255 rating-integrity slice only; paused. Distinct ratings, leaderboards, Guild standings, reports, working Mega Board tournament replay/download/viewer, profiles, permissions and responsive presentation. Individually audited implementation slices precede the milestone; do not defer required functionality to later patches. |
 | 4.9.1 | Competitive profile/statistics refinement | Preserve correct independent standings and scoring |
 | 4.9.2 | Replay/report refinement | Viewer navigation, export and report usability; preserve complete and privacy-safe records |

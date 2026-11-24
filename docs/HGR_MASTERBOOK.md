@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Update performance scheduling — 24 November 2026
+
+4.8.2 verified live; owner-approved scheduling direction is recorded in [Version Roadmap](HGR_VERSION_ROADMAP.md) and [Delivery Timeline](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md). Initial deployment target 3–5 minutes, stretch 1–2 minutes for prebuilt validated artifacts; not yet measured. Keep exact CI evidence, fallback, protected data, idle-room and rollback gates. Dates are planning windows, not scheduled execution. Prior snapshot below remains historical.
+
 ## Milestone roadmap refresh — 24 November 2026
 
 Owner requests the milestones roadmap be updated and incremental deployments prioritised before 4.9 development. The roadmap now distinguishes the last verified production identity (4.8.1), merged 4.8.2 packaging, subsequent candidates 4.8.3–4.8.6 and paused 4.9.0. The Control Development and public project history source display exact release targets, including 4.8.5, 4.9.5 and 5.0.5, retain prior requirements and avoid hard-coded current badges or simulated progress. Actual publication/acceptance depends on the exact release identity and verified device/production evidence. This candidate is staged separately for integration after 4.8.2 production acceptance, so it cannot invalidate that in-flight fingerprint. No VERSION bump or deployment implied.
