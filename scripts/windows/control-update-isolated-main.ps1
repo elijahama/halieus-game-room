@@ -20,7 +20,7 @@ $created = $false
 function Invoke-Gate([string]$Label, [scriptblock]$Command) {
     Write-Output "[CHECK] $Label"
     & $Command
-    if ($LASTEXITCODE -ne 0) { throw "$Label failed; no website deployment has been started." }
+    if ($LASTEXITCODE -ne 0) { throw "$Label failed. Inspect the operation log and live release identity before retrying." }
 }
 try {
     if (Test-Path -LiteralPath $checkout) {

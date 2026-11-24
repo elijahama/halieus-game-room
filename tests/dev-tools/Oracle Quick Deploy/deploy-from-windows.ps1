@@ -277,34 +277,24 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Installer upload failed." }
 
     Write-Host "Installing/building Halieus $expectedVersion on Oracle..." -ForegroundColor Yellow
-    & ssh @sshArgs $target "sudo bash /tmp/halieus-quick-install.sh"
-    if ($LASTEXITCODE -ne 0) {
+    # The authenticated installer already performs exact local health and
+    # canonical PWA checks before returning success. Capture that same SSH
+    # session's receipt; do not open a redundant second SSH health connection.
+    $expectedReceipt = "Oracle local health and canonical PWA 192/512px bytes verified: $expectedVersion / $expectedFingerprint"
+    $verifiedReceipt = $false
+    & ssh @sshArgs $target "sudo bash /tmp/halieus-quick-install.sh" | ForEach-Object {
+        $line = [string]$_
+        Write-Host $line
+        if ($line.Trim() -ceq $expectedReceipt) { $verifiedReceipt = $true }
+    }
+    $installerExit = $LASTEXITCODE
+    if ($installerExit -ne 0) {
         throw "Oracle installation failed. The live production data was not replaced from the laptop. Read the output above for the rollback/build error."
     }
-
-    # Verify the exact release directly on Oracle. Public DNS/TLS is not a
-    # release-integrity gate because the browser-facing route can be temporarily
-    # unavailable even when the new application is correctly active on Oracle.
-    Write-Host "Verifying exact release on Oracle..." -ForegroundColor Cyan
-    # A previous successful deployment was followed by an unbounded second
-    # SSH verification call. Bound BOTH the SSH transport and remote curl.
-    # Never confuse a stalled receipt with a confirmed failed deployment.
-    $healthSshArgs = @($sshArgs) + @(
-        "-o", "ConnectTimeout=10",
-        "-o", "ConnectionAttempts=1",
-        "-o", "ServerAliveInterval=6",
-        "-o", "ServerAliveCountMax=2"
-    )
-    $healthRaw = & ssh @healthSshArgs $target "curl --connect-timeout 4 --max-time 8 -fsS -H 'Cache-Control: no-cache' http://127.0.0.1:3000/health"
-    if ($LASTEXITCODE -ne 0 -or -not $healthRaw) { throw "Oracle application health check was not confirmed after deployment; inspect the independent public fingerprint before retrying." }
-    try { $oracleHealth = (($healthRaw -join "`n") | ConvertFrom-Json -ErrorAction Stop) } catch { throw "Oracle returned an unreadable /health response after deployment." }
-    $actualVersion = [string]$oracleHealth.version
-    $actualFingerprint = [string]$oracleHealth.releaseFingerprint
-    if ($actualVersion -ne $expectedVersion -or $actualFingerprint -ne $expectedFingerprint) {
-        throw "Oracle is serving a different release than this ZIP. Expected $expectedVersion / $expectedFingerprint; got $actualVersion / $actualFingerprint."
+    if (-not $verifiedReceipt) {
+        throw "Oracle installer exited without the exact local release/PWA verification receipt. Inspect production identity before retrying."
     }
-
-    Write-Host "Oracle release verified: $actualVersion / $actualFingerprint" -ForegroundColor Green
+    Write-Host "Oracle release verified: $expectedVersion / $expectedFingerprint" -ForegroundColor Green
 
     # Public check is diagnostic only. It must never turn a successful Oracle
     # application deployment into a false failure.

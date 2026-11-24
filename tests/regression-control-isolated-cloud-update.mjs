@@ -76,6 +76,17 @@ assert.doesNotMatch(helper, /git (?:push|rebase|reset --hard|switch|checkout|rem
 assert.doesNotMatch(helper, /ssh -o StrictHostKeyChecking=no|set-url https:\/\/.*@/i);
 assert.doesNotMatch(helper, /\.openshard\/bridge\/prompt-journal|server\\data\\accounts/);
 
+// An exact installer receipt and successful SSH exit are both mandatory.
+const deploy = read("tests/dev-tools/Oracle Quick Deploy/deploy-from-windows.ps1");
+const installer = read("tests/dev-tools/Oracle Quick Deploy/quick-install.sh");
+assert.match(installer, /Oracle local health and canonical PWA 192\/512px bytes verified:/);
+assert.ok(deploy.includes('$line.Trim() -ceq $expectedReceipt'));
+assert.ok(deploy.includes('$installerExit = $LASTEXITCODE'));
+assert.ok(deploy.includes('if ($installerExit -ne 0)'));
+assert.ok(deploy.includes('if (-not $verifiedReceipt)'));
+assert.ok(!deploy.includes('$healthSshArgs'), "No redundant second SSH health connection");
+assert.ok(deploy.indexOf('if (-not $verifiedReceipt)') < deploy.indexOf('Oracle release verified:'));
+
 if (process.platform === "win32") {
   // Exercise the real finalizer against a private throwaway fixture, never the
   // owner's installed HGR Control service or actual operation marker.
