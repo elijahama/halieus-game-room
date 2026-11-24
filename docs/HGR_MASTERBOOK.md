@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.4 versioned release candidate — 24 November 2026
+
+4.8.3 activation independently confirmed through public /health: online, exact fingerprint hgr-4.8.3-15ba7fca2014621c, zero active rooms at check. Exact packaged-baseline integration of #248 passed Windows and Ubuntu in CI run 45487200625. Advance VERSION to 4.8.4 only in this candidate; require fresh version-specific CI before merge and exact successful packaging before owner greenlight. Scope remains intro viewport/glow and independent Tournament navigation. Greenlight drop-down #266 failed the separate Control overview cache-identity assertion and has been corrected for independent retest; not included in this patch. No new deployment claimed.
+
 ## 4.8.4 exact packaged baseline — 24 November 2026
 
 Queued integration passed Windows and Ubuntu in run 45482252356. Re-anchor to published 4.8.3 generated main commit b12fe402b173c990fa8263d42a233f284845aa15 (hgr-4.8.3-15ba7fca2014621c), retaining its generated package versions, lockfile, PWA and Control identity. Do not advance VERSION or merge until 4.8.3 production activation is verified and current integrated tests pass. The greenlight dropdown #266 is a separate draft awaiting checks, not silently included here.
