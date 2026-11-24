@@ -18,7 +18,7 @@ const [html, js, css, history, historyUi, versionPlan] = await Promise.all([
 for (const name of ["developmentDeliveryBatches", "developmentTournamentRoadmap", "deliveryTimelineHeading", "tournamentRoadmapHeading"]) {
   assert.match(html, new RegExp(`id="${name}"`), `Control needs a visible planned-work milestone target: ${name}`);
 }
-assert.match(html, /development\.js\?v=development-roadmap-v1/, "Refresh cached Development plan after release");
+assert.match(html, /development\.js\?v=development-roadmap-v2/, "Refresh cached Development plan after release");
 assert.match(html, /<ol id="developmentDeliveryBatches"/, "Timeline must expose ordered semantics");
 for (const name of ["renderDeliveryPlan", "renderTournamentRoadmap", "DELIVERY_BATCHES", "TOURNAMENT_ROADMAP"]) {
   assert.ok(js.includes(name), `Plan rendering missing ${name}`);
