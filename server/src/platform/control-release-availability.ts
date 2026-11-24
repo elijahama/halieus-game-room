@@ -90,3 +90,60 @@ export async function currentReleaseAvailability(
   }
   return pending;
 }
+
+
+/** The manifest is only a candidate until its exact generated main commit
+ * and preceding release-identity workflow have been verified. Never deploy here. */
+export async function verifyPackagedRelease(candidate: ReleaseAvailability, fetcher: typeof fetch = fetch): Promise<boolean> {
+  if (candidate.status !== "available" || !candidate.candidateFingerprint || !candidate.candidateVersion) return false;
+  const api = "https://api.github.com/repos/" + REPO;
+  async function json(url: string): Promise<any> {
+    const response = await fetcher(url, {
+      headers: { Accept: "application/json", "User-Agent": "HGR-Control-release-watch" },
+      signal: AbortSignal.timeout(8000), redirect: "error",
+    });
+    if (!response.ok) throw new Error("Release packaging evidence unavailable.");
+    return response.json();
+  }
+  try {
+    const head = await json(api + "/commits/main");
+    const sha = head?.sha;
+    const parent = head?.parents?.[0]?.sha;
+    if (typeof sha !== "string" || !/^[a-f0-9]{40}$/.test(sha) ||
+        typeof parent !== "string" || !/^[a-f0-9]{40}$/.test(parent) ||
+        head?.parents?.length !== 1 || head?.commit?.message !== "chore: refresh HGR release identity") return false;
+    const pinned = classifyRelease(await json("https://raw.githubusercontent.com/" + REPO + "/" + sha + "/RELEASE.json"),
+      candidate.installedVersion, candidate.installedFingerprint);
+    if (pinned.status !== "available" || pinned.candidateFingerprint !== candidate.candidateFingerprint ||
+        pinned.candidateVersion !== candidate.candidateVersion) return false;
+    const runs = await json(api + "/actions/workflows/release-identity.yml/runs?branch=main&head_sha=" + parent + "&status=success&per_page=10");
+    return Array.isArray(runs?.workflow_runs) && runs.workflow_runs.some((run: any) =>
+      run.head_sha === parent && run.head_branch === "main" &&
+      run.path === ".github/workflows/release-identity.yml" &&
+      run.status === "completed" && run.conclusion === "success");
+  } catch { return false; }
+}
+
+/** A single non-overlapping, read-only polling iteration, injectable for tests. */
+export function createControlReleaseCheck(deps: {
+  hasSubscribers: () => boolean;
+  readRelease: () => Promise<ReleaseAvailability>;
+  needsNotice: (release: ReleaseAvailability) => boolean;
+  verify: (release: ReleaseAvailability) => Promise<boolean>;
+  notify: (release: ReleaseAvailability) => Promise<void>;
+}) {
+  let running = false;
+  return async function check(): Promise<void> {
+    if (running || !deps.hasSubscribers()) return;
+    running = true;
+    try {
+      const release = await deps.readRelease();
+      if (release.status === "available" && deps.needsNotice(release) && await deps.verify(release)) {
+        await deps.notify(release);
+      }
+    } catch {
+      // Fail closed; the next five-minute tick retries discovery, not deployment.
+      console.warn("[HGR] Control release notification check unavailable.");
+    } finally { running = false; }
+  };
+}
