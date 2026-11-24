@@ -6,6 +6,12 @@
   // The ordered delivery plan is editorial. PR/CI states below are read
   // from GitHub independently, never invented from a checklist or timer.
   const DELIVERY_BATCHES = [
+    { id: "4.8.2", title: "Control reliability", plan: "Release target · production separate", pr: 250, gate: "Validated and merged on 24 November 2026; verify packaging, Control deployment and live health separately." },
+    { id: "4.8.3", title: "Mega Board layout and readability", plan: "Release target · production separate", pr: 253, gate: "Board centring, compact portfolios, cross-device checks; follows verified 4.8.2." },
+    { id: "4.8.4", title: "Intro and Tournament navigation", plan: "Release target · production separate", pr: 248, gate: "Canonical H, viewport/glow fit and independent Solo/Guild destination." },
+    { id: "4.8.5", title: "Tournament hardening checkpoint", plan: "Release target · production separate", pr: 254, gate: "Authenticated ties, forfeits, recovery, restart and mobile acceptance; protected restorable checkpoint." },
+    { id: "4.8.6", title: "Spar (Cha-Cha) Casual Beta", plan: "Release target · production separate", pr: 251, gate: "Original rules, privacy, AI, recovery and device acceptance; independent of tournament checkpoint." },
+    { id: "4.9.0", title: "Tournament competitive experience", plan: "Release target · production separate", pr: 255, gate: "Separate ratings, leaderboards, Guild standings, profiles, histories, reports, replay/download/viewer and permissions; all required before milestone acceptance." },
     {
       id: "A", title: "Update failure diagnostics",
       plan: "Release source merged", pr: 190,
@@ -56,24 +62,37 @@
     },
     {
       version: "4.7.x", stage: "Playable Guild fixtures",
-      status: "Current release line · owner acceptance still required",
+      status: "Earlier fixture foundation · owner acceptance still required",
       gate: "Two independent real Mega Board games per Guild-v-Guild fixture, locked lineups, unchanged rent, immutable results, reconnection, ties and settlement.",
     },
     {
       version: "4.8.x", stage: "Solo and Guild bracket formats",
-      status: "Planned milestone",
+      status: "4.8.1 production verified at 24 November 2026 snapshot; later patches require separate release checks",
       gate: "Real entrants, seeded fixtures, winners/losers bracket advancement, elimination/finals policy, room links, spectating and recovery.",
     },
+    { version: "4.8.2", stage: "Control reliability", status: "Target · verify GitHub and actual production separately", gate: "Next incremental deployment; validated and merged, packaging/Control/health gates remain separate." },
+    { version: "4.8.3", stage: "Mega Board layout and readability", status: "Target · verify GitHub and actual production separately", gate: "Board centring, compact portfolios, cross-device checks; follows verified 4.8.2." },
+    { version: "4.8.4", stage: "Intro and Tournament navigation", status: "Target · verify GitHub and actual production separately", gate: "Canonical H, viewport/glow fit and independent Solo/Guild destination." },
+    { version: "4.8.5", stage: "Tournament hardening checkpoint", status: "Target · verify GitHub and actual production separately", gate: "Authenticated ties, forfeits, recovery, restart and mobile acceptance; protected restorable checkpoint." },
+    { version: "4.8.6", stage: "Spar (Cha-Cha) Casual Beta", status: "Target · verify GitHub and actual production separately", gate: "Original rules, privacy, AI, recovery and device acceptance; independent of tournament checkpoint." },
+    { version: "4.8.7", stage: "Conditional Spar refinement", status: "Target · verify GitHub and actual production separately", gate: "Only genuine playability/balance findings." },
     {
       version: "4.9.x", stage: "Competitive polish and launch readiness",
-      status: "Planned milestone",
+      status: "Planned family · further implementation paused until incremental deployments",
       gate: "Separate tournament player/Guild ratings, scoring and standings, seasons if approved, reports, tournament match replay, mobile UX, abuse controls and release rehearsals.",
     },
+    { version: "4.9.0", stage: "Tournament competitive experience", status: "Target · verify GitHub and actual production separately", gate: "Separate ratings, leaderboards, Guild standings, profiles, histories, reports, replay/download/viewer and permissions; all required before milestone acceptance." },
+    { version: "4.9.1", stage: "Competitive profile refinements", status: "Target · verify GitHub and actual production separately", gate: "Conditional follow-up to accepted 4.9.0." },
+    { version: "4.9.2", stage: "Replay/report refinements", status: "Target · verify GitHub and actual production separately", gate: "Conditional viewer and export usability refinements." },
+    { version: "4.9.3", stage: "Responsive/accessibility refinements", status: "Target · verify GitHub and actual production separately", gate: "Phone, tablet and desktop acceptance." },
+    { version: "4.9.4", stage: "Security/recovery hardening", status: "Target · verify GitHub and actual production separately", gate: "Permissions, abuse controls and failure recovery." },
+    { version: "4.9.5", stage: "Production readiness checkpoint", status: "Target · verify GitHub and actual production separately", gate: "Integrated E2E, rollback rehearsal and restorable checkpoint." },
     {
       version: "5.0.0", stage: "Complete Mega Board Tournament Mode",
       status: "Reserved · not released",
       gate: "Run both Solo and Guild tournaments end-to-end on production: registration, boards, results, brackets, finals, fair recovery, downloadable replay and explicit owner sign-off.",
     },
+    { version: "5.0.5", stage: "Post-launch stabilisation", status: "Reserved · owner acceptance required", gate: "Preserve 5.0.0 and verified restorable checkpoint." },
   ];
 
   function renderDeliveryPlan(pulls = [], pullsAvailable = false) {

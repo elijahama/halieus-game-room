@@ -105,11 +105,16 @@ export const PROJECT_TIMELINE: ProjectMilestone[] = [
   },
   {
     version: "4.8.x",
-    phase: "Planned tournament milestone",
+    phase: "Tournament format foundation",
     title: "Solo and Guild tournament brackets",
-    summary: "Working entrants, elimination and loser-bracket progression, finals, room links, spectators, cancellations and reconnect recovery.",
-    planned: true,
+    summary: "Solo and Guild bracket foundations, verified result paths and room links; individual release targets follow.",
   },
+  { version: "4.8.2", phase: "Incremental release", title: "Control reliability", summary: "Preserve owner data and validate Control deployment; verify release identity.", planned: true },
+  { version: "4.8.3", phase: "Incremental release", title: "Mega Board layout and readability", summary: "Board centring, compact portfolios, cross-device checks; follows verified 4.8.2.", planned: true },
+  { version: "4.8.4", phase: "Incremental release", title: "Intro and Tournament navigation", summary: "Canonical H, viewport/glow fit and independent Solo/Guild destination.", planned: true },
+  { version: "4.8.5", phase: "Incremental release", title: "Tournament hardening checkpoint", summary: "Authenticated ties, forfeits, recovery, restart and mobile acceptance; protected restorable checkpoint.", planned: true },
+  { version: "4.8.6", phase: "Incremental release", title: "Spar (Cha-Cha) Casual Beta", summary: "Original rules, privacy, AI, recovery and device acceptance; independent of tournament checkpoint.", planned: true },
+  { version: "4.8.7", phase: "Incremental release", title: "Conditional Spar refinement", summary: "Only genuine playability/balance findings.", planned: true },
   {
     version: "4.9.x",
     phase: "Planned tournament milestone",
@@ -117,6 +122,12 @@ export const PROJECT_TIMELINE: ProjectMilestone[] = [
     summary: "Separate tournament ratings and standings, reports, tournament match replay, mobile and accessibility acceptance, security and full production rehearsals.",
     planned: true,
   },
+  { version: "4.9.0", phase: "Competitive milestone", title: "Tournament competitive experience", summary: "Separate ratings, leaderboards, Guild standings, profiles, histories, reports, replay/download/viewer and permissions; all required before milestone acceptance.", planned: true },
+  { version: "4.9.1", phase: "Competitive milestone", title: "Competitive profile refinements", summary: "Conditional follow-up to accepted 4.9.0.", planned: true },
+  { version: "4.9.2", phase: "Competitive milestone", title: "Replay/report refinements", summary: "Conditional viewer and export usability refinements.", planned: true },
+  { version: "4.9.3", phase: "Competitive milestone", title: "Responsive/accessibility refinements", summary: "Phone, tablet and desktop acceptance.", planned: true },
+  { version: "4.9.4", phase: "Competitive milestone", title: "Security/recovery hardening", summary: "Permissions, abuse controls and failure recovery.", planned: true },
+  { version: "4.9.5", phase: "Competitive milestone", title: "Production readiness checkpoint", summary: "Integrated E2E, rollback rehearsal and restorable checkpoint.", planned: true },
   {
     version: "5.0.0",
     phase: "Reserved · owner acceptance required",
@@ -124,4 +135,5 @@ export const PROJECT_TIMELINE: ProjectMilestone[] = [
     summary: "A fully playable Solo and Guild tournament from registration to verified final, scoring, recovery and downloadable match replay. No placeholder-only release; explicit owner sign-off required.",
     planned: true,
   },
+  { version: "5.0.5", phase: "Post-launch checkpoint", title: "Accepted stability checkpoint", summary: "Verified production findings, preserved baseline and restorable checkpoint.", planned: true },
 ];
