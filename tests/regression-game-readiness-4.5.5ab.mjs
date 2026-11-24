@@ -5,7 +5,9 @@ import { GAME_DEVELOPMENT, GAME_MATURITY_LABEL } from "../client/src/platform/ga
 const source = await readFile(new URL("../client/src/platform/games/catalog.ts", import.meta.url), "utf8");
 const account = await readFile(new URL("../client/src/platform/accounts/AccountPanel.tsx", import.meta.url), "utf8");
 const ids = [...source.matchAll(/\{ id: "([a-z-]+)", name:/g)].map(match => match[1]);
-assert.equal(ids.length, 14, "Track every current HGR game explicitly");
+assert.equal(ids.length, 15, "Track every current HGR game explicitly, including Spar Beta");
+assert.ok(ids.includes("spar"), "The new Ghanaian Spar table must be listed in the catalogue");
+assert.equal(GAME_DEVELOPMENT.spar.maturity, "beta", "Spar is not yet accepted as Stable");
 assert.equal(new Set(ids).size, ids.length, "Game IDs must be unique");
 assert.deepEqual(Object.keys(GAME_DEVELOPMENT).sort(), [...ids].sort(), "Metadata must exactly match catalogue IDs");
 for (const id of ids) {

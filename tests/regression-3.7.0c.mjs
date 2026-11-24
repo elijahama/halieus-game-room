@@ -7,7 +7,7 @@ assert.match(displayVersion,/^(?:3\.7\.0[c-z]|4\.\d+\.\d+)$/);
 const npmVersion=displayVersion.replace(/^(\d+\.\d+\.\d+)([a-z])$/,'$1-$2');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) assert.equal(json(file).version,npmVersion,`${file} version mismatch`);
 const archive=read('server/src/platform/sessionArchive.ts');
-assert.match(archive,/\| "ayo" \| "word-board";/,'session archive game union must include both new game modules');
+assert.match(archive,/\| "ayo" \| "spar" \| "word-board";/,'session archive game union must include the earlier and Spar game modules');
 const ayo=read('server/src/games/ayo/handlers.ts');
 assert.match(ayo,/function maybeFinish\(io:Server,room:Room\):boolean/,'Ayo finish evaluation must return an explicit result');
 assert.match(ayo,/const finished=maybeFinish\(io,room\);if\(!finished\)emit\(io,room\)/,'Ayo move flow must use finish result instead of an impossible phase comparison');

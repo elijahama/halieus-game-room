@@ -66,6 +66,7 @@ export const PROGRESSION_GAMES = [
   ["ludo", "Ludo"],
   ["connect-four", "Connect Four"],
   ["ayo", "Ayo"],
+  ["spar", "Spar (Cha-Cha)"],
   ["word-board", "Word Board"],
   ["word-game", "Word Game"],
   ["password", "Password"],

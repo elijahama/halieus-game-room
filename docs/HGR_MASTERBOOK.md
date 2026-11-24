@@ -1,5 +1,11 @@
 # Halieus Game Room Masterbook
 
+## 4.8.4 Spar (Cha-Cha) Casual Beta hardening candidate — 24 November 2026
+
+PR #251 previously passed Windows/Ubuntu CI for the original stand-alone card table. Review identified duplicate socket seating, dual spectator/player state, disconnected seat actions, and an idle-room safety gap: a started hand with every human offline was incorrectly treated as idle. The candidate rejects duplicate joins, cross-seat recovery and seated spectator requests, clears spectator role on legitimate recovery, requires connected human seats before dealing, restricts actions to connected seats, and keeps every active hand counted even with no connected players. Empty waiting lobbies and completed tables remain non-blocking. Tests cover private hand restoration, replaced-socket denial, correct Bra turn and offline deployment protection, with the existing tie overtime rule explicitly handled in the test. Five-stone house rule, scoring, original artwork and Casual Beta status are unchanged. No restart persistence or physical-device acceptance claimed; those remain gates before broader promotion. Fresh CI and prior release integration required; VERSION and production unchanged. Deploy accepted releases via authenticated Control on Lagz.
+
+Owner instruction 24 November 2026: include Spar Casual Beta in the 4.8.4 candidate with independent Tournament Mode and intro viewport corrections. Control recovery and greenlight notification integration remain separate gates. No production deployment.
+
 ## 4.8.4 versioned release candidate — 24 November 2026
 
 4.8.3 activation independently confirmed through public /health: online, exact fingerprint hgr-4.8.3-15ba7fca2014621c, zero active rooms at check. Exact packaged-baseline integration of #248 passed Windows and Ubuntu in CI run 45487200625. Advance VERSION to 4.8.4 only in this candidate; require fresh version-specific CI before merge and exact successful packaging before owner greenlight. Scope remains intro viewport/glow and independent Tournament navigation. Greenlight drop-down #266 failed the separate Control overview cache-identity assertion and has been corrected for independent retest; not included in this patch. No new deployment claimed.

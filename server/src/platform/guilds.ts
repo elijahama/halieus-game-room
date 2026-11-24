@@ -75,6 +75,7 @@ const GAME_TITLES: Record<HalieusGameStatLine["game"], string> = {
   cheat: "Cheat",
   dominoes: "Dominoes",
   ayo: "Ayo",
+  spar: "Spar (Cha-Cha)",
   "word-board": "Word Board",
 };
 

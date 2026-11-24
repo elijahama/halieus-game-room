@@ -1,4 +1,4 @@
-export type HalieusLiveGameId = "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "word-board";
+export type HalieusLiveGameId = "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "spar" | "word-board";
 
 /**
  * Privacy-safe room summary used by the signed-in Game Room. It intentionally
