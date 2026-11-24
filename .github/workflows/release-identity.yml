@@ -93,6 +93,14 @@ jobs:
       - name: Typecheck current HGR source
         run: npm run typecheck
 
+      - name: Control preflight - Control polish and offline cache
+        timeout-minutes: 8
+        run: node tests/browser-control-polish.mjs
+
+      - name: Control preflight - Control operation replay
+        timeout-minutes: 5
+        run: node tests/browser-control-operation-replay-4.5.5y.mjs
+
       - name: Run HGR regression chain
         run: npm run test:regression
 
@@ -117,69 +125,62 @@ jobs:
       - name: Verify Daily Word anti-farming in real sockets
         run: node tests/runtime-daily-word-fair-play-4.5.5e.mjs
 
-      - name: Browser gate 1/16 - Push enrollment
+      - name: Browser gate 1/14 - Push enrollment
         timeout-minutes: 5
         run: node tests/browser-push-enrollment-4.5.5v.mjs
 
-      - name: Browser gate 2/16 - Guild add friend
+      - name: Browser gate 2/14 - Guild add friend
         timeout-minutes: 5
         run: node tests/browser-guild-add-friend-4.5.5w.mjs
 
-      - name: Browser gate 3/16 - Mega Board spectator layout
+      - name: Browser gate 3/14 - Mega Board spectator layout
         timeout-minutes: 5
         run: node tests/browser-mega-spectator-layout-4.5.5x.mjs
 
-      - name: Browser gate 4/16 - Mega Board portrait
+      - name: Browser gate 4/14 - Mega Board portrait
         timeout-minutes: 5
         run: npm run test:browser:mega-portrait
 
-      - name: Browser gate 5/16 - Mega Board compact layout
+      - name: Browser gate 5/14 - Mega Board compact layout
         timeout-minutes: 5
         run: npm run test:browser:mega-compact
 
-      - name: Browser gate 6/16 - Built release identity
+      - name: Browser gate 6/14 - Built release identity
         timeout-minutes: 5
         run: npm run test:release:browser
 
-      - name: Browser gate 7/16 - Theme atmosphere
+      - name: Browser gate 7/14 - Theme atmosphere
         timeout-minutes: 5
         run: node tests/browser-theme-atmosphere.mjs
 
-      - name: Browser gate 8/16 - Mega Board portfolio
+      - name: Browser gate 8/14 - Mega Board portfolio
         timeout-minutes: 5
         run: node tests/browser-mega-board-portfolio.mjs
 
-      - name: Browser gate 9/16 - Mega Board auction
+      - name: Browser gate 9/14 - Mega Board auction
         timeout-minutes: 5
         run: node tests/browser-mega-auction-real-react.mjs
 
-      - name: Browser gate 10/16 - Mobile lobby and Test Lab
+      - name: Browser gate 10/14 - Mobile lobby and Test Lab
         timeout-minutes: 5
         run: node tests/browser-mobile-lobby-testlab-layout.mjs
 
-      - name: Browser gate 11/16 - Mega Board mobile overlays
+      - name: Browser gate 11/14 - Mega Board mobile overlays
         timeout-minutes: 5
         run: npm run test:browser:mega-mobile-overlays
 
-      - name: Browser gate 12/16 - Mega Board mobile integration
+      - name: Browser gate 12/14 - Mega Board mobile integration
         timeout-minutes: 5
         run: npm run test:browser:mobile-integration
 
-      - name: Browser gate 13/16 - Control state
+      - name: Browser gate 13/14 - Control state
         timeout-minutes: 5
         run: node tests/browser-control-state.mjs
 
-      - name: Browser gate 14/16 - Control branding
+      - name: Browser gate 14/14 - Control branding
         timeout-minutes: 5
         run: node tests/browser-control-branding.mjs
 
-      - name: Browser gate 15/16 - Control polish and offline cache
-        timeout-minutes: 8
-        run: node tests/browser-control-polish.mjs
-
-      - name: Browser gate 16/16 - Control operation replay
-        timeout-minutes: 5
-        run: node tests/browser-control-operation-replay-4.5.5y.mjs
 
       - name: Commit generated release identity when changed
         shell: bash
