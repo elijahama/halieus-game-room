@@ -1,0 +1,33 @@
+import assert from "node:assert/strict";
+import { mkdtemp, mkdir, writeFile, symlink, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { measure, inventory } from "../scripts/audit-infrastructure-footprint.mjs";
+const root = await mkdtemp(join(tmpdir(), "hgr-footprint-"));
+try {
+  const app=join(root,"game.room");
+  const data=join(root,"protected-data");
+  await mkdir(join(app,"nested"),{recursive:true});
+  await mkdir(data);
+  await writeFile(join(app,"a"),"1234");
+  await writeFile(join(app,"nested","b"),"567");
+  await writeFile(join(data,"private-file"),"private-test-marker");
+  await symlink(data,join(app,"external-link"),process.platform==="win32"?"junction":"dir");
+  const backup=app+".backup-test";
+  await mkdir(backup);
+  await writeFile(join(backup,"c"),"12");
+  const s=await measure(app);
+  assert.equal(s.logicalBytes,7);
+  assert.equal(s.files,2);
+  assert.equal(s.skippedLinks,1);
+  assert.equal(s.unreadable,0);
+  assert.equal((await measure(join(root,"missing"))).exists,false);
+  assert.equal((await measure(app,1)).truncated,true);
+  const result=await inventory({app,data});
+  assert.equal(result.groups.find(g=>g.label==="Oracle active application").logicalBytes,7);
+  assert.equal(result.groups.find(g=>g.label==="Oracle backup directories").logicalBytes,2);
+  assert.equal(result.groups.find(g=>g.label==="Durable production data (protected)").logicalBytes,19);
+  assert.ok(!JSON.stringify(result).includes("private-file"));
+  assert.ok(!JSON.stringify(result).includes("private-test-marker"));
+  console.log("PASS explicit read-only footprint inventory, bounded scan, symlink exclusion, protected data aggregation");
+} finally { await rm(root,{recursive:true,force:true}); }
