@@ -6,7 +6,7 @@
   // The ordered delivery plan is editorial. PR/CI states below are read
   // from GitHub independently, never invented from a checklist or timer.
   const DELIVERY_BATCHES = [
-    { id: "4.8.2", title: "Control reliability", plan: "Release target · production separate", pr: 250, gate: "Next incremental deployment; validated and merged, packaging/Control/health gates remain separate." },
+    { id: "4.8.2", title: "Control reliability", plan: "Release target · production separate", pr: 250, gate: "Validated and merged on 24 November 2026; verify packaging, Control deployment and live health separately." },
     { id: "4.8.3", title: "Mega Board layout and readability", plan: "Release target · production separate", pr: 253, gate: "Board centring, compact portfolios, cross-device checks; follows verified 4.8.2." },
     { id: "4.8.4", title: "Intro and Tournament navigation", plan: "Release target · production separate", pr: 248, gate: "Canonical H, viewport/glow fit and independent Solo/Guild destination." },
     { id: "4.8.5", title: "Tournament hardening checkpoint", plan: "Release target · production separate", pr: 254, gate: "Authenticated ties, forfeits, recovery, restart and mobile acceptance; protected restorable checkpoint." },
@@ -70,17 +70,17 @@
       status: "4.8.1 production verified at 24 November 2026 snapshot; later patches require separate release checks",
       gate: "Real entrants, seeded fixtures, winners/losers bracket advancement, elimination/finals policy, room links, spectating and recovery.",
     },
-    {
-      version: "4.9.x", stage: "Competitive polish and launch readiness",
-      status: "Planned family · further implementation paused until incremental deployments",
-      gate: "Separate tournament player/Guild ratings, scoring and standings, seasons if approved, reports, tournament match replay, mobile UX, abuse controls and release rehearsals.",
-    },
     { version: "4.8.2", stage: "Control reliability", status: "Target · verify GitHub and actual production separately", gate: "Next incremental deployment; validated and merged, packaging/Control/health gates remain separate." },
     { version: "4.8.3", stage: "Mega Board layout and readability", status: "Target · verify GitHub and actual production separately", gate: "Board centring, compact portfolios, cross-device checks; follows verified 4.8.2." },
     { version: "4.8.4", stage: "Intro and Tournament navigation", status: "Target · verify GitHub and actual production separately", gate: "Canonical H, viewport/glow fit and independent Solo/Guild destination." },
     { version: "4.8.5", stage: "Tournament hardening checkpoint", status: "Target · verify GitHub and actual production separately", gate: "Authenticated ties, forfeits, recovery, restart and mobile acceptance; protected restorable checkpoint." },
     { version: "4.8.6", stage: "Spar (Cha-Cha) Casual Beta", status: "Target · verify GitHub and actual production separately", gate: "Original rules, privacy, AI, recovery and device acceptance; independent of tournament checkpoint." },
     { version: "4.8.7", stage: "Conditional Spar refinement", status: "Target · verify GitHub and actual production separately", gate: "Only genuine playability/balance findings." },
+    {
+      version: "4.9.x", stage: "Competitive polish and launch readiness",
+      status: "Planned family · further implementation paused until incremental deployments",
+      gate: "Separate tournament player/Guild ratings, scoring and standings, seasons if approved, reports, tournament match replay, mobile UX, abuse controls and release rehearsals.",
+    },
     { version: "4.9.0", stage: "Tournament competitive experience", status: "Target · verify GitHub and actual production separately", gate: "Separate ratings, leaderboards, Guild standings, profiles, histories, reports, replay/download/viewer and permissions; all required before milestone acceptance." },
     { version: "4.9.1", stage: "Competitive profile refinements", status: "Target · verify GitHub and actual production separately", gate: "Conditional follow-up to accepted 4.9.0." },
     { version: "4.9.2", stage: "Replay/report refinements", status: "Target · verify GitHub and actual production separately", gate: "Conditional viewer and export usability refinements." },
