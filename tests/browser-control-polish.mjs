@@ -105,8 +105,12 @@ try{
   const page=await browser.newPage({viewport:{width,height}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/control/');await page.locator('#accessState').waitFor({state:'hidden'});
   if(width<=720){
-    const back=page.getByRole('link',{name:'← Game Room',exact:true});
-    assert.equal(await back.isVisible(),true);assert.equal(await back.getAttribute('href'),'/');
+    assert.equal(await page.locator('.control-game-room-return').isVisible(),false,'Mobile avoids a duplicate top-bar return link');
+    await page.locator('#controlMobileMoreButton').click();
+    const back=page.getByRole('link',{name:'Open Game Room',exact:true});
+    await back.waitFor({state:'visible'});assert.equal(await back.getAttribute('href'),'/');
+    await page.locator('#controlMobileMoreClose').click();
+    assert.equal(await page.locator('#controlMobileMore').isVisible(),false);
     assert.equal(await page.locator('.panel-card').first().evaluate(e=>getComputedStyle(e).boxShadow),'none');
   }
   if(process.env.HGR_SCREENSHOTS){await mkdir(process.env.HGR_SCREENSHOTS,{recursive:true});await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`control-${width}.png`),fullPage:true});}
