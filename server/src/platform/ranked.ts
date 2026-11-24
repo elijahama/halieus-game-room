@@ -8,7 +8,7 @@ import type {
   HalieusRankedLeaderboardSnapshot,
 } from "../../../shared/platform/rankedLeaderboard.js";
 
-type RankedGame = "connect-four" | "ludo" | "ayo";
+type RankedGame = "connect-four" | "ludo" | "ayo" | "spar";
 
 interface WorkingEntry {
   accountId: string;
@@ -129,6 +129,24 @@ function processAyo(map: Map<string, WorkingEntry>, state: any): void {
   second.scoreDifferential += secondCaptured - firstCaptured;
 }
 
+function processSpar(map: Map<string, WorkingEntry>, state: any): void {
+  const players = rankedPlayers(state);
+  if (state.tableFormat !== "duel" || state.phase !== "finished" || !Number.isFinite(state.startedAt) || state.startedAt <= 0 ||
+    !Array.isArray(state.players) || state.players.length !== 2 || players.length !== 2 ||
+    players.some(p => p.isAi || !p.rankedAccountId || p.rankedAccountId !== p.progressionIdentity?.accountId || !Number.isInteger(p.stones) || p.stones < 0) ||
+    new Set(players.map(p => p.rankedAccountId)).size !== 2 ||
+    !players.some(p => p.id === state.winnerPlayerId)) return;
+  const first = ensure(map, players[0]), second = ensure(map, players[1]);
+  if (!first || !second) return;
+  const firstScore = state.winnerPlayerId === players[0].id ? 1 : 0;
+  updateDuel(first, second, firstScore, 32);
+  first.matches++; second.matches++;
+  if (firstScore === 1) { first.wins++; second.losses++; }
+  else { second.wins++; first.losses++; }
+  const diff = players[0].stones - players[1].stones;
+  first.scoreDifferential += diff; second.scoreDifferential -= diff;
+}
+
 function processLudo(map: Map<string, WorkingEntry>, state: any): void {
   const players = rankedPlayers(state);
   if (players.length < 2) return;
@@ -183,7 +201,7 @@ function compareEntries(game: RankedGame, a: WorkingEntry, b: WorkingEntry): num
   const rating = b.rating - a.rating;
   if (Math.abs(rating) >= 0.5) return rating;
   if (game === "connect-four") return b.wins - a.wins || b.roundDifferential - a.roundDifferential || b.matches - a.matches;
-  if (game === "ayo") return b.wins - a.wins || b.scoreDifferential - a.scoreDifferential || b.matches - a.matches;
+  if (game === "ayo" || game === "spar") return b.wins - a.wins || b.scoreDifferential - a.scoreDifferential || b.matches - a.matches;
   const aAverage = a.placementCount ? a.placementTotal / a.placementCount : Number.POSITIVE_INFINITY;
   const bAverage = b.placementCount ? b.placementTotal / b.placementCount : Number.POSITIVE_INFINITY;
   return b.firstPlaces - a.firstPlaces || aAverage - bAverage || b.matches - a.matches;
@@ -213,11 +231,17 @@ export async function buildRankedLeaderboard(game: RankedGame): Promise<HalieusR
   records.sort((a, b) => Number(a?.finalisedAt ?? 0) - Number(b?.finalisedAt ?? 0) || String(a?.sessionId ?? "").localeCompare(String(b?.sessionId ?? "")));
 
   const map = new Map<string, WorkingEntry>();
+  const seenSparMatches = new Set<string>();
   for (const record of records) {
+    if (game === "spar") {
+      if (typeof record.sessionId !== "string" || !record.sessionId || seenSparMatches.has(record.sessionId)) continue;
+      seenSparMatches.add(record.sessionId);
+    }
     const state = record?.state?.gameState ?? record?.state;
     if (!state || state.matchMode !== "ranked") continue;
     if (game === "connect-four") processConnectFour(map, state);
     else if (game === "ludo") processLudo(map, state);
+    else if (game === "spar") processSpar(map, state);
     else processAyo(map, state);
   }
 
@@ -237,7 +261,7 @@ export async function buildRankedLeaderboard(game: RankedGame): Promise<HalieusR
       averagePlacement: entry.placementCount ? Number((entry.placementTotal / entry.placementCount).toFixed(2)) : undefined,
     } : {}),
     ...(game === "connect-four" ? { roundDifferential: entry.roundDifferential } : {}),
-    ...(game === "ayo" ? { scoreDifferential: entry.scoreDifferential } : {}),
+    ...(game === "ayo" || game === "spar" ? { scoreDifferential: entry.scoreDifferential } : {}),
   }));
 
   const value: HalieusRankedLeaderboardSnapshot = {

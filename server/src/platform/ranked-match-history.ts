@@ -11,7 +11,7 @@ const PAGE_SIZE = 25;
 const CACHE_TTL_MS = 15_000;
 const ALLOWED_GAMES = new Set([
   "mega-board", "poker", "blackjack", "whot", "ludo", "connect-four",
-  "ayo", "hidden-dictator", "cheat", "dominoes", "word-game",
+  "ayo", "spar", "hidden-dictator", "cheat", "dominoes", "word-game",
   "password", "anagrams-race", "word-board",
 ]);
 function limitedName(name: unknown): string {
@@ -36,6 +36,7 @@ function rankedArchive(record: any): HgrRankedMatchHistoryEntry | null {
     || /^\[BETA\]/i.test(String(player?.name ?? "")))) return null;
   const realPlayers = state.players.filter((player: any) => !player?.isAi && limitedName(player?.name));
   if (realPlayers.length < 2) return null;
+  if (record.game === "spar" && (state.tableFormat !== "duel" || state.phase !== "finished" || !validTime(state.startedAt) || state.players.length !== 2 || realPlayers.length !== 2 || realPlayers.some((p: any) => !p.rankedAccountId || p.rankedAccountId !== p.progressionIdentity?.accountId) || new Set(realPlayers.map((p: any) => p.rankedAccountId)).size !== 2 || !realPlayers.some((p: any) => p.id === state.winnerPlayerId))) return null;
   const winnerId = state.winnerPlayerId ?? state.winnerId ?? null;
   const rankedResults: any[] = isMega && Array.isArray(state.rankedResults) ? state.rankedResults : [];
   const positions = new Map<string, { placement: number | null; ratingDelta: number | null }>();

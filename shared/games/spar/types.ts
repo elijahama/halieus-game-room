@@ -3,6 +3,7 @@
  */
 export type SparSuit = "C" | "D" | "H" | "S";
 export const SPAR_MAX_PLAYERS = 8;
+export type SparMatchMode = "casual" | "ranked";
 export type SparTableFormat = "duel" | "multiplayer";
 export function sparSeatLimit(format: SparTableFormat): number { return format === "duel" ? 2 : SPAR_MAX_PLAYERS; }
 export type SparRank = "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A";
@@ -53,13 +54,14 @@ export interface SparPublicState {
   startedAt: number | null;
   updatedAt: number;
   phase: SparPhase;
-  matchMode: "casual";
+  matchMode: SparMatchMode;
   tableFormat: SparTableFormat;
   maximumPlayers: number;
   players: SparPlayer[];
   viewerPlayerId: string | null;
   isSpectator: boolean;
   spectatorCount: number;
+  spectatorNames: string[];
   // Server includes ONLY this viewer's own cards; no deck or other hands.
   hand: SparCard[];
   dealerPlayerId: string | null;

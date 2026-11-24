@@ -1232,12 +1232,12 @@ export function registerAccountRoutes(app: Express): void {
     const auth = currentSession(request);
     if (!auth) { response.status(401).json({ ok: false, reason: "Sign in first." }); return; }
     const game = String(request.params.game ?? "");
-    if (!["connect-four", "ludo", "ayo"].includes(game)) {
+    if (!["connect-four", "ludo", "ayo", "spar"].includes(game)) {
       response.status(404).json({ ok: false, reason: "That Ranked leaderboard is not active yet." });
       return;
     }
     try {
-      const leaderboard = await buildRankedLeaderboard(game as "connect-four" | "ludo" | "ayo");
+      const leaderboard = await buildRankedLeaderboard(game as "connect-four" | "ludo" | "ayo" | "spar");
       const visibleIds = new Set(playerDirectory(auth.account, "global").map((player) => player.id));
       response.json({ ok: true, leaderboard: { ...leaderboard, entries: leaderboard.entries.filter((entry) => visibleIds.has(entry.accountId)) } });
     } catch {

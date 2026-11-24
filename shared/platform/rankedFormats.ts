@@ -62,6 +62,13 @@ export const HGR_RANKED_FORMATS: Record<string, HalieusRankedFormat> = {
     tieBreakers: ["Rating", "Ranked wins", "Seed differential", "Games played"],
     provisionalMatches: 5,
   },
+  spar: {
+    game: "spar", model: "elo", label: "Duel rating",
+    summary: "Ranked Spar uses a fixed two-human table and traditional deck.",
+    format: "1v1 signed-in human players only. No AI or expanded deck.",
+    scoring: "Match win or loss drives Elo; stone differential is a tie-break statistic.",
+    tieBreakers: ["Rating", "Ranked wins", "Stone differential", "Games played"], provisionalMatches: 5,
+  },
   "word-game": {
     game: "word-game",
     model: "daily-time",
