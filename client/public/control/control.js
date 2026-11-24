@@ -578,8 +578,9 @@
     const inline = operationToastIsMobile() && !toast.hidden && !toast.classList.contains("is-minimized");
     toast.classList.toggle("is-inline", inline);
     if (inline) {
-      const grid = operations.querySelector(".operation-grid");
-      if (grid && grid.nextElementSibling !== toast) grid.after(toast);
+      // Keep expanded mobile receipts below the tab panels, never inside a hidden panel.
+      const anchor = operations.querySelector(".development-jump");
+      if (anchor && toast.nextElementSibling !== anchor) anchor.before(toast);
       if (state.currentSection !== "operations") setSection("operations");
     } else if (toast.parentElement !== document.body) {
       document.body.insertBefore(toast, document.querySelector(".control-mobile-nav"));
@@ -1008,6 +1009,9 @@
       if (Date.now() < operationToastClickSuppressedUntil) return;
       const toast = $("operationToast");
       if (toast.classList.contains("is-minimized")) {
+        if (operationToastIsMobile() && state.activeOperation) {
+          setOperationCategory(state.activeOperation.action === "update" ? "update" : "laptop");
+        }
         setOperationToastMinimized(false, false);
         const details = $("operationDetails");
         details.hidden = false;

@@ -26,6 +26,14 @@ jobs:
       - run: npx playwright install chromium
       - run: npm run prepare:release
       - run: npm run typecheck
+      - name: Control browser preflight (Linux)
+        if: runner.os == 'Linux'
+        timeout-minutes: 8
+        run: node tests/browser-control-polish.mjs
+      - name: Control operation replay preflight (Linux)
+        if: runner.os == 'Linux'
+        timeout-minutes: 5
+        run: node tests/browser-control-operation-replay-4.5.5y.mjs
       - run: npm run test:regression
       - run: npm run test:progression:refresh
       - run: npm run test:social:activity

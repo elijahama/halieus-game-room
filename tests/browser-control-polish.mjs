@@ -25,7 +25,7 @@ const server=createServer(async(req,res)=>{
     if(path==='/'){res.setHeader('Content-Type','text/html');res.end('<script src="/control-navigation.js" defer></script><button id="enter" onclick="document.documentElement.requestFullscreen()">Enter fullscreen</button><a href="/control/">Control</a>');return;}
     const file=path==='/control/'?'/control/index.html':path;
     const approvedFont=/^\/control\/fonts\/(?:unbounded-latin-wght|righteous-latin-400|varela-round-latin-400|alata-latin-400)\.woff2$/.test(file);
-    if(!/^\/control\/[a-z0-9.-]+$/.test(file)&&!/^\/control-navigation\.(js|css)$/.test(file)&&!approvedFont)throw Error('not found');
+    if(!/^\/control\/[a-z0-9.-]+$/.test(file)&&!/^\/control-navigation\.(js|css)$/.test(file)&&!approvedFont&&file!=='/notification-badges/control.png')throw Error('not found');
     let body=await readFile(resolve(root,'client/public'+file));
     if(file==='/control/control.js') body=Buffer.concat([body,Buffer.from('\n'),await readFile(resolve(root,'client/public/control/cloud-update.js'))]);
     res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.woff2')?'font/woff2':file.endsWith('.png')?'image/png':file.endsWith('.webmanifest')?'application/manifest+json':'text/html');
@@ -38,8 +38,10 @@ const browser=await chromium.launch({channel:'chromium',headless:true,executable
 try{
  const installed=await browser.newPage({viewport:{width:390,height:844}});
  await installed.goto(base+'/control/');
- await installed.evaluate(async()=>{await navigator.serviceWorker.ready;const cache=await caches.open('halieus-shell-fixture');await cache.put('/main-sentinel',new Response('main'));});
- await installed.waitForFunction(()=>!!navigator.serviceWorker.controller);
+ // Never await serviceWorker.ready without a deadline: an install failure
+ // (including one missing precache asset) otherwise hangs the entire release.
+ await installed.waitForFunction(()=>!!navigator.serviceWorker.controller,undefined,{timeout:15000});
+ await installed.evaluate(async()=>{const cache=await caches.open('halieus-shell-fixture');await cache.put('/main-sentinel',new Response('main'));});
  const approvedFonts=await installed.evaluate(async()=>{
    await document.fonts.ready;
    return Promise.all([
@@ -56,9 +58,10 @@ try{
  assert.deepEqual(manifest.icons.map(i=>i.sizes),['192x192','512x512']);
  assert.match(await installed.locator('link[rel="apple-touch-icon"]').getAttribute('href'),/control-icon.png/);
  await installed.evaluate(()=>fetch('/control/cloud/status'));
- const cached=await installed.evaluate(async()=>({names:await caches.keys(),urls:(await (await caches.open('hgr-cloud-control-v1')).keys()).map(r=>new URL(r.url).pathname)}));
+ const cached=await installed.evaluate(async()=>({names:await caches.keys(),urls:(await (await caches.open('hgr-cloud-control-v2')).keys()).map(r=>new URL(r.url).pathname)}));
  assert.ok(cached.names.includes('halieus-shell-fixture'));
- assert.deepEqual(cached.urls.sort(),['/control/control-icon-512.png','/control/control-icon.png','/control/offline.html']);
+ assert.ok(cached.names.includes('hgr-cloud-control-v2'),'Current scoped Control worker must own its shell cache');
+ assert.deepEqual(cached.urls.sort(),['/control/control-icon-512.png','/control/control-icon.png','/control/offline.html','/notification-badges/control.png']);
  await installed.context().setOffline(true);await installed.reload();
  await installed.getByRole('heading',{name:'Control is offline'}).waitFor();
  assert.equal(await installed.getByText('Owner Test',{exact:true}).count(),0,'offline shell has no cached account identity');
@@ -102,8 +105,12 @@ try{
   const page=await browser.newPage({viewport:{width,height}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base+'/control/');await page.locator('#accessState').waitFor({state:'hidden'});
   if(width<=720){
-    const back=page.getByRole('link',{name:'← Game Room',exact:true});
-    assert.equal(await back.isVisible(),true);assert.equal(await back.getAttribute('href'),'/');
+    assert.equal(await page.locator('.control-game-room-return').isVisible(),false,'Mobile avoids a duplicate top-bar return link');
+    await page.locator('#controlMobileMoreButton').click();
+    const back=page.getByRole('link',{name:'Open Game Room',exact:true});
+    await back.waitFor({state:'visible'});assert.equal(await back.getAttribute('href'),'/');
+    await page.locator('#controlMobileMoreClose').click();
+    assert.equal(await page.locator('#controlMobileMore').isVisible(),false);
     assert.equal(await page.locator('.panel-card').first().evaluate(e=>getComputedStyle(e).boxShadow),'none');
   }
   if(process.env.HGR_SCREENSHOTS){await mkdir(process.env.HGR_SCREENSHOTS,{recursive:true});await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`control-${width}.png`),fullPage:true});}
@@ -113,12 +120,18 @@ try{
   assert.equal(await page.locator('#playerGrid img').count(),1,'missing/broken photos use initials fallback');
   assert.equal(await page.locator('#playerGrid .player-avatar').nth(1).textContent(),'OT');
   await page.locator('[data-section="operations"]:visible').first().click();
-  const update=page.getByRole('button',{name:/Update HGR/});
+  assert.equal(await page.locator('#operationPanelMaintenance').isVisible(),true,'Maintenance remains default');
+  await page.locator('#operationTabUpdate').click();
+  const update=page.locator('[data-operation="update"]');
+  await update.waitFor({state:'visible'});
+  assert.match(await update.textContent(),/Update HGR/);
   await page.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button')].find(b=>b.textContent.includes('Update HGR'))?.disabled===false);
   assert.equal(await update.evaluate(b=>getComputedStyle(b).opacity),'1');
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`operations-${width}.png`),fullPage:true});
   const roleColors=await page.locator('.operation-grid button[data-operation] span').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).color));
   assert.equal(new Set(roleColors).size,4,'Four operation roles retain distinct colours');
+  await page.locator('#operationTabLaptop').click();
+  assert.equal(await page.locator('#operationPanelUpdate').isVisible(),false,'Update is separate from laptop actions');
   for(const action of ['start','restart','close']){
     const lifecycle=page.locator(`[data-operation="${action}"]`);
     await lifecycle.waitFor({state:'visible'});
@@ -126,7 +139,9 @@ try{
     assert.match(await lifecycle.textContent(),/owner confirmation/i);
     assert.equal(await lifecycle.evaluate(b=>getComputedStyle(b).opacity),'1');
   }
-  assert.equal(await page.getByRole('button',{name:/Start HGR/}).isDisabled(),false);
+  assert.equal(await page.getByRole('button',{name:/Open HGR Window/}).isDisabled(),false);
+  await page.locator('#operationTabUpdate').click();
+  await update.waitFor({state:'visible'});
   operation={id:'run1',action:'update',state:'running',title:'Updating HGR',phase:'Building client',progress:38,startedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
   await page.waitForFunction(()=>document.getElementById('revokeCloudOwnerPc')?.disabled===true);
   assert.equal(await update.isDisabled(),true);
@@ -141,11 +156,11 @@ try{
   operation={...operation,state:'succeeded',phase:'Update complete',progress:100};
   await page.waitForFunction(()=>document.getElementById('revokeCloudOwnerPc')?.disabled===false);
   assert.equal(await update.isDisabled(),false);
-  assert.equal(await page.locator('#operationTitle').textContent(),'Update complete');
+  assert.equal(await page.locator('#operationTitle').textContent(),'Update HGR complete');
   assert.equal(await page.locator('#operationPercent').textContent(),'100%');
   assert.equal(await page.locator('#operationProgressBar').evaluate(b=>getComputedStyle(b).animationName),'none');
   operation={...operation,state:'failed',phase:'Publishing to Oracle',progress:88,reason:'Deployment verification failed'};
-  await page.waitForFunction(()=>document.getElementById('operationTitle').textContent==='Update failed');
+  await page.waitForFunction(()=>document.getElementById('operationTitle').textContent==='Last update attempt failed');
   assert.equal(await page.locator('#operationPercent').textContent(),'88%');
   assert.match(await page.locator('#controlOperationReason').textContent(),/verification failed/);
   if (width <= 720) {
@@ -158,16 +173,18 @@ try{
     });
     assert.ok(position.height<=65,'Failed operation should collapse to a small chip: '+JSON.stringify(position));
     assert.equal(position.overlap,false,'Failed operation chip must not cover fixed mobile navigation');
+    await page.locator('#operationTabLaptop').click();
     await page.locator('#operationToastToggle').click();
+    assert.equal(await page.locator('#operationPanelUpdate').isVisible(),true,'Expanding an Update receipt selects its own tab');
     assert.equal(await page.locator('#operationDetails').isVisible(),true,'One tap reveals complete failure details');
     assert.match(await page.locator('#controlOperationReason').textContent(),/verification failed/);
     const detailsHeight = await page.locator('#operationDetails').evaluate(node=>node.getBoundingClientRect().height);
     assert.ok(detailsHeight <= 340,'Expanded failure details must be bounded and internally scrollable');
     assert.equal(await page.locator('#operationToast').evaluate(n=>getComputedStyle(n).position),'relative','Expanded phone report must flow BELOW the action tiles');
     assert.equal(await page.locator('#operationToast').evaluate(n=>n.parentElement?.dataset.panel),'operations','Expanded phone report must live on Operations page');
-    assert.ok(await page.evaluate(()=>document.getElementById('operationToast').getBoundingClientRect().top >= document.querySelector('.control-section[data-panel="operations"] .operation-grid').getBoundingClientRect().bottom - 2),'Expanded report must not cover the action tiles');
+    assert.ok(await page.evaluate(()=>document.getElementById('operationToast').getBoundingClientRect().top >= document.querySelector('#operationPanelUpdate .operation-grid').getBoundingClientRect().bottom - 2),'Expanded report must not cover the action tiles');
     operation={id:'run-rejected',action:'update',state:'rejected',title:'Updating HGR',phase:'Update was not started',progress:1,reason:'Remote Update refused because tracked source changes are present on the owner PC.',startedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
-    await page.waitForFunction(() => document.getElementById('operationTitle').textContent==='Update not started');
+    await page.waitForFunction(() => document.getElementById('operationTitle').textContent==='Update HGR not started');
     await page.waitForFunction(() => document.getElementById('operationToast').classList.contains('is-minimized'));
     assert.equal(await page.locator('#operationPercent').textContent(),'—','Rejected Update must never claim 1% progress');
     await page.locator('#operationToastToggle').click();
@@ -223,6 +240,7 @@ try{
  await actionsPage.goto(base+'/control/');
  await actionsPage.locator('#accessState').waitFor({state:'hidden'});
  await actionsPage.locator('[data-section="operations"]:visible').first().click();
+ await actionsPage.locator('#operationTabLaptop').click();
  await actionsPage.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button[data-operation]')].filter(b=>b.dataset.operation!=='update').every(b=>!b.disabled));
  for(const action of ['start','restart','close']){
    const prior=requests.length;
@@ -240,15 +258,19 @@ try{
    detail:{id:'terminal-start',action:'start',state:'succeeded',title:'Start HGR',
      startedAt:new Date().toISOString(),updatedAt:new Date().toISOString(),phase:'Start completed',progress:100},
  })));
- await actionsPage.waitForFunction(()=>document.getElementById('operationTitle')?.textContent==='Start complete');
+ await actionsPage.waitForFunction(()=>document.getElementById('operationTitle')?.textContent==='Open HGR window complete');
  await actionsPage.route('**/control/cloud/status',route=>route.fulfill({
    status:200,contentType:'application/json',
    body:JSON.stringify({ok:true,actorRole:'admin',devices:[{...device,online:true}],activeOperation:null}),
  }));
  await actionsPage.reload();
  await actionsPage.locator('#accessState').waitFor({state:'hidden'});
+ await actionsPage.locator('[data-section="operations"]:visible').first().click();
+ await actionsPage.locator('#operationTabLaptop').click();
  await actionsPage.waitForFunction(()=>[...document.querySelectorAll('.operation-grid button[data-operation]')].filter(b=>b.dataset.operation!=='update').every(b=>b.disabled));
+ await actionsPage.locator('#operationTabUpdate').click();
+ await actionsPage.locator('[data-operation="update"]').waitFor({state:'visible'});
  assert.equal(await actionsPage.locator('[data-operation="update"]').isDisabled(),false,'Admin can still request normal Update');
  await actionsPage.close();
  console.log('PASS owner-only Cloud lifecycle UI request sequence: Start / Restart / Close, admin refusal');
-}finally{await browser.close();await new Promise(r=>server.close(r));}
+}finally{try{await browser.close();}finally{await new Promise(r=>{server.close(r);server.closeAllConnections();});}}

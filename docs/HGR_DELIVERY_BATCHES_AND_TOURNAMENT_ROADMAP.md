@@ -2,6 +2,35 @@
 
 **Source snapshot:** 31 October 2026. This is a planned delivery order, not a running job queue. The Development screen inside owner Control shows these mini-batches, and reads GitHub PR status separately. A code merge is never proof of an Oracle production deployment. Labels and links use feature names, not conversation numbering.
 
+## Versioned delivery allocation — 24 November 2026
+
+The owner requested that delivery batches be allocated specific patch versions. These are planned targets, not deployed releases or acceptance claims. The source VERSION remains 4.8.1. The most recent recorded production identity is 4.8.1; current public identity has not been rechecked here. Functional milestone contracts and release gates in the Version Roadmap remain authoritative.
+
+| Target | Batch | Source / acceptance gate |
+| --- | --- | --- |
+| 4.8.2 | Control updater reliability | Draft #250; dirty live data preserved, exact-fingerprint no-op, existing CI, room and rollback gates |
+| 4.8.3 | Mega Board geometry and property readability | Centre board; compact grouped property presentation without redundant banners or wasted space; retain all gameplay and spectator fixes; responsive regression |
+| 4.8.4 | Intro viewport/glow and independent Tournament destination | Drafts #248 and #249; independently audit each slice; canonical H, desktop/tablet fit, Solo/Guild access and mobile navigation |
+| **4.8.5** | Tournament hardening checkpoint | Real authenticated Solo/Guild flows, tie/forfeit/reconnect/restart recovery, mobile/PWA acceptance and restorable protected checkpoint |
+| 4.8.6 | Spar (Cha-Cha) Casual Beta | Draft #251; rules, privacy, multiplayer, AI and responsive acceptance; separate from tournament milestone |
+| 4.8.7 | Spar beta follow-up | Conditional on actual balancing or regression findings |
+| 4.8.8–4.8.9 | Unallocated contingency | Only if meaningful corrections are needed |
+| **4.9.0** | Tournament experience milestone | Distinct ratings, leaderboards, Guild standings, reports, working Mega Board tournament replay/download/viewer, profiles, permissions and responsive presentation. Individually audited implementation slices precede the milestone; do not defer required functionality to later patches. |
+| 4.9.1 | Competitive profile/statistics refinement | Preserve correct independent standings and scoring |
+| 4.9.2 | Replay/report refinement | Viewer navigation, export and report usability; preserve complete and privacy-safe records |
+| 4.9.3 | Tournament interface refinement | Desktop/tablet/phone geometry and accessibility |
+| 4.9.4 | Security and recovery hardening | Permissions, abuse prevention, reconnect and failure recovery |
+| **4.9.5** | Production-readiness checkpoint | Integrated end-to-end regression, cross-device UX, deployment/rollback rehearsal and restorable protected checkpoint |
+| 4.9.6–4.9.9 | Unallocated contingency | Genuine launch-blocking corrections only |
+| **5.0.0** | Fully realised Tournament Mode | All existing milestone contracts, real production Solo/Guild acceptance and explicit owner approval |
+| 5.0.1 | Conditional gameplay fixes | Real production findings |
+| 5.0.2 | Conditional scoring/integrity fixes | Real production findings |
+| 5.0.3 | Conditional performance/interface fixes | Real production findings |
+| 5.0.4 | Conditional remaining launch fixes | Real production findings |
+| **5.0.5** | Accepted post-launch stability | Preserve 5.0.0 baseline and independently restorable accepted checkpoint |
+
+The above allocation supersedes the old delivery ordering only where a batch is explicitly covered; earlier notification, security, scheduled-release and universal replay requirements remain tracked, not silently completed or dropped. New findings can change patch allocation before release; do not manufacture patches or skip an unmet milestone. No production deployment, code merge, version bump, or change to Control UI is authorized by this documentation alone.
+
 ## Delivery mini-batches
 
 | Batch | Focus | Confirmed source status at snapshot | Acceptance and link |
