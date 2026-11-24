@@ -36,7 +36,7 @@ import type { WhotAiDifficulty, WhotMatchMode, WhotPublicState, WhotShape } from
 import type { LudoAiDifficulty, LudoMatchMode, LudoPublicState } from "../../shared/games/ludo/types";
 import type { ConnectFourAiDifficulty, ConnectFourBestOf, ConnectFourMatchMode, ConnectFourPublicState } from "../../shared/games/connect-four/types";
 import type { AyoAiDifficulty, AyoMatchMode, AyoPublicState } from "../../shared/games/ayo/types";
-import type { SparAiDifficulty, SparCard, SparPublicState } from "../../shared/games/spar/types";
+import type { SparAiDifficulty, SparCard, SparPublicState, SparTableFormat } from "../../shared/games/spar/types";
 import type { WordBoardAiDifficulty, WordBoardPlacement, WordBoardPublicState } from "../../shared/games/word-board/types";
 import type { HiddenDictatorAiDifficulty, HiddenDictatorMatchMode, HiddenDictatorPublicState } from "../../shared/games/hidden-dictator/types";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaPublicState } from "../../shared/games/word-arena/types";
@@ -3273,11 +3273,11 @@ function handleLeaveSpectator() {
     updateBrowserPath(`/spar/${code}`); setMessage("");
     return true;
   }
-  function createSpar(event: FormEvent<HTMLFormElement>) {
+  function createSpar(event: FormEvent<HTMLFormElement>, tableFormat: SparTableFormat = "multiplayer") {
     event.preventDefault();
     if (!playerName.trim() || !roomCode.trim()) return setMessage("Enter your name and room code first.");
     setIsCreating(true);
-    socket.emit("spar:create", { code:roomCode, playerName }, (response:SparResponse) => {
+    socket.emit("spar:create", { code:roomCode, playerName, tableFormat }, (response:SparResponse) => {
       setIsCreating(false);
       if (!applySparResponse(response,playerName)) setMessage(response.reason??"Unable to create Spar room.");
     });

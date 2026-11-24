@@ -165,3 +165,29 @@ assert.equal((await call(eight[0],"spar:start",{code:"SPARAI"})).ok,true);
 assert.equal(latest.get(eight[0]).hand.length,5);
 closeAllSparRooms();
 console.log("PASS Spar eight-seat variant: 40 unique cards, eight turns per trick, private hands, CPU capacity and ninth-seat rejection");
+
+// Dedicated 1v1 format: exactly two seats, both human and CPU opponents allowed.
+const duelCode="SPAR1V";
+assert.equal((await call(eight[0],"spar:create",{code:duelCode,playerName:"Host",tableFormat:"invalid"})).ok,false);
+assert.equal(getSparRoomCount(),0);
+let duel=await call(eight[0],"spar:create",{code:duelCode,playerName:"Host",tableFormat:"duel"});
+assert.equal(duel.ok,true);assert.equal(duel.state.tableFormat,"duel");assert.equal(duel.state.maximumPlayers,2);
+assert.equal((await call(eight[0],"spar:start",{code:duelCode})).ok,false);
+assert.equal((await call(eight[1],"spar:join",{code:duelCode,playerName:"Opponent"})).ok,true);
+assert.equal(getSparLiveRoomSummaries()[0].maximumPlayers,2);
+assert.equal(getSparLiveRoomSummaries()[0].joinable,false);
+assert.equal((await call("ninth","spar:join",{code:duelCode,playerName:"Extra"})).ok,false);
+assert.equal((await call(eight[0],"spar:add-ai",{code:duelCode})).ok,false);
+assert.equal((await call(eight[0],"spar:start",{code:duelCode})).ok,true);
+for(const id of eight.slice(0,2)){const view=latest.get(id);assert.equal(view.hand.length,5);assert.equal(view.tableFormat,"duel");assert.equal(view.maximumPlayers,2);assert.ok(view.hand.every(card=>card!=="AS"&&!card.startsWith("5")));}
+assert.equal((await call(eight[0],"spar:end-game",{code:duelCode})).ok,true);
+closeAllSparRooms();
+duel=await call(eight[0],"spar:create",{code:duelCode,playerName:"Host",tableFormat:"duel"});
+assert.equal(duel.ok,true);
+assert.equal((await call(eight[0],"spar:add-ai",{code:duelCode,difficulty:"hard"})).ok,true);
+assert.equal((await call(eight[0],"spar:add-ai",{code:duelCode})).ok,false);
+assert.equal((await call(eight[1],"spar:join",{code:duelCode,playerName:"Extra"})).ok,false);
+assert.equal((await call(eight[0],"spar:start",{code:duelCode})).ok,true);
+assert.equal(latest.get(eight[0]).players.length,2);
+closeAllSparRooms();
+console.log("PASS Spar 1v1: strict two-seat human/CPU duel and traditional deck");

@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Spar dedicated 1v1 format — 24 November 2026
+
+Owner requests a distinct 1v1 option alongside multiplayer. Create flow offers 1v1 or Multiplayer using existing match tabs. The server fixes the duel capacity at exactly two seats (human or one CPU) and advertises the actual cap in state and live-room summaries. Multiplayer stays 2–8 and remains the default for existing clients. Both formats are Casual Beta; 1v1 uses the traditional 35-card deck, same five-trick scoring and five-stone pool. No ranked mode, rule changes or third seat. Test invalid format, capacity, insufficient players, both opponent types and traditional deck. Fresh CI required before release.
+
 ## 4.8.4 Spar expanded tables — 24 November 2026
 
 Owner requests up to eight seats in Spar (Cha-Cha). Use a shared server/client cap of eight for humans and CPUs combined. Two to seven seats retain the canonical 35-card deck (6–A without A♠); five to eight seats are a Casual Beta house extension. Eight seats need 40 unique cards for five tricks, so add all four fives and A♠ only at eight seats. Five is lowest and scores one stone on the fifth trick; six and seven retain 3/2 scoring and all other ranks one. No change to the five-stone pool, follow-suit, Bra, Ranked exclusion or privacy. Adapt roster and public played-card grid, and cover capacity, full eight-seat deal and turn cycle, spectator privacy and mixed CPU limit in regression tests. Fresh combined CI and real-device layout acceptance required; no deployment claimed.

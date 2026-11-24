@@ -3,6 +3,8 @@
  */
 export type SparSuit = "C" | "D" | "H" | "S";
 export const SPAR_MAX_PLAYERS = 8;
+export type SparTableFormat = "duel" | "multiplayer";
+export function sparSeatLimit(format: SparTableFormat): number { return format === "duel" ? 2 : SPAR_MAX_PLAYERS; }
 export type SparRank = "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A";
 export type SparCard = `${SparRank}${SparSuit}`;
 export type SparAiDifficulty = "easy" | "normal" | "hard";
@@ -52,6 +54,8 @@ export interface SparPublicState {
   updatedAt: number;
   phase: SparPhase;
   matchMode: "casual";
+  tableFormat: SparTableFormat;
+  maximumPlayers: number;
   players: SparPlayer[];
   viewerPlayerId: string | null;
   isSpectator: boolean;

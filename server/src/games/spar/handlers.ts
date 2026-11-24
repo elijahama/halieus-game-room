@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
-import { SPAR_MAX_PLAYERS } from "../../../../shared/games/spar/types.js";
+import { sparSeatLimit, type SparTableFormat } from "../../../../shared/games/spar/types.js";
 import type {
   SparAiDifficulty, SparCard, SparEvent, SparHandAward, SparPhase,
   SparPlayer, SparPublicState, SparResolvedTrick, SparTrickPlay,
@@ -20,6 +20,7 @@ interface Player extends Omit<SparPlayer, "handCount"> {
 }
 interface Room {
   code: string;
+  tableFormat: SparTableFormat;
   createdAt: number;
   startedAt: number | null;
   updatedAt: number;
@@ -69,6 +70,7 @@ function state(room: Room, viewerId: string | null, spectator: boolean): SparPub
     game: "spar", gameTitle: "Spar (Cha-Cha)", code: room.code,
     createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
     phase: room.phase, matchMode: "casual",
+    tableFormat: room.tableFormat, maximumPlayers: sparSeatLimit(room.tableFormat),
     players: room.players.map(publicPlayer),
     viewerPlayerId: spectator ? null : viewerId,
     isSpectator: spectator, spectatorCount: room.spectators.size,
@@ -127,7 +129,7 @@ function finish(io: Server, room: Room, winner: Player | null, reason: string, s
   room.players.forEach(p => { p.result = winner ? p.id === winner.id ? "Winner" : "Runner-up" : "Finished"; });
   log(room, "finish", reason);
   void finalizeSession("spar", room.code, room.createdAt, status, archive(room), {
-    winner: winner?.name ?? null, players: room.players.length, mode: "casual",
+    winner: winner?.name ?? null, players: room.players.length, mode: "casual", tableFormat: room.tableFormat,
     hands: room.handNumber, durationMs: Date.now() - room.createdAt,
   });
   emit(io, room);
@@ -242,13 +244,18 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       isConnected: true, stones: 0, hand: [], result: null, reconnectToken: token(),
     };
     const now = Date.now();
+    // Omitted format preserves compatibility with older clients; explicit invalid formats are rejected.
+    if (payload?.tableFormat !== undefined && payload.tableFormat !== "duel" && payload.tableFormat !== "multiplayer")
+      return ackOk(ack, { ok: false, reason: "Unknown Spar table format." });
+    const tableFormat: SparTableFormat = payload?.tableFormat === "duel" ? "duel" : "multiplayer";
     const room: Room = {
+      tableFormat,
       code, createdAt: now, updatedAt: now, startedAt: null, phase: "lobby",
       players: [p], spectators: new Map(), dealerSeat: 0, handNumber: 0,
       trickNumber: 0, plays: [], lastTrick: null, lastAward: null,
       currentTurnPlayerId: null, leadPlayerId: null,
       stonesRemaining: SPAR_STONE_POOL, winnerPlayerId: null,
-      status: "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
+      status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
     };
     rooms.set(code, room);
     log(room, "join", `${name} opened the Spar table.`);
@@ -257,7 +264,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
   });
   socket.on("spar:join", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload);
-    if (!room || room.phase !== "lobby" || room.players.length >= SPAR_MAX_PLAYERS)
+    if (!room || room.phase !== "lobby" || room.players.length >= sparSeatLimit(room.tableFormat))
       return ackOk(ack, { ok: false, reason: "That Spar table is full, started or unavailable." });
     if (room.players.some(p => p.id === socket.id))
       return ackOk(ack, { ok: false, reason: "You already have a seat. Recover that seat instead." });
@@ -311,8 +318,8 @@ export function registerSparHandlers(io: Server, socket: Socket) {
   socket.on("spar:add-ai", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload);
     const host = playerFor(room, socket.id);
-    if (!room || !host?.isHost || room.phase !== "lobby" || room.players.length >= SPAR_MAX_PLAYERS)
-      return ackOk(ack, { ok: false, reason: "Only the host can add AI before the table starts (eight seats maximum)." });
+    if (!room || !host?.isHost || room.phase !== "lobby" || room.players.length >= sparSeatLimit(room.tableFormat))
+      return ackOk(ack, { ok: false, reason: "Only the host can add AI before play, and only while the selected format has a free seat." });
     const n = room.players.length + 1;
     room.players.push({
       id: `spar-ai-${token()}`, name: `Spar CPU ${n}`, seat: room.players.length,
@@ -337,8 +344,8 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     const host = playerFor(room, socket.id);
     if (!room || !host?.isHost || !["lobby", "finished"].includes(room.phase))
       return ackOk(ack, { ok: false, reason: "Only the host can start a waiting Spar table." });
-    if (room.players.length < 2 || room.players.length > SPAR_MAX_PLAYERS)
-      return ackOk(ack, { ok: false, reason: "Spar needs two to eight players." });
+    if (room.players.length < 2 || room.players.length > sparSeatLimit(room.tableFormat))
+      return ackOk(ack, { ok: false, reason: room.tableFormat === "duel" ? "A 1v1 duel requires exactly two players." : "Spar needs two to eight players." });
     if (room.players.some(p => !p.isAi && !p.isConnected))
       return ackOk(ack, { ok: false, reason: "Wait for all human players to reconnect before dealing." });
     room.players.forEach(p => { p.stones = 0; p.hand = []; p.result = null; });
@@ -418,12 +425,12 @@ export function getSparLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       game: "spar", gameTitle: "Spar (Cha-Cha)", code: room.code,
       phase: room.phase, matchMode: "casual", started: room.phase !== "lobby",
       createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
-      playerCount: room.players.length, maximumPlayers: SPAR_MAX_PLAYERS,
+      playerCount: room.players.length, maximumPlayers: sparSeatLimit(room.tableFormat),
       humanPlayers: room.players.filter(p => !p.isAi && p.isConnected).map(p => p.name),
       verifiedAccountIds: verifiedRoomAccountIds(room.players),
       aiCount: room.players.filter(p => p.isAi).length,
       spectatorCount: room.spectators.size,
-      joinable: room.phase === "lobby" && room.players.length < SPAR_MAX_PLAYERS, spectatable: true,
+      joinable: room.phase === "lobby" && room.players.length < sparSeatLimit(room.tableFormat), spectatable: true,
     }));
 }
 export function closeAllSparRooms(): number {
