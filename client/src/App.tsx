@@ -26,6 +26,7 @@ import { WhotRebuildScreen as WhotScreen } from "./games/whot/WhotRebuildScreen"
 import { LudoScreen } from "./games/ludo/LudoScreen";
 import { ConnectFourScreen } from "./games/connect-four/ConnectFourScreen";
 import { AyoScreen } from "./games/ayo/AyoScreen";
+import { SparScreen } from "./games/spar/SparScreen";
 import { WordBoardScreen } from "./games/word-board/WordBoardScreen";
 import { HiddenDictatorScreen } from "./games/hidden-dictator/HiddenDictatorScreen";
 import { WordArenaScreen } from "./games/word-arena/WordArenaScreen";
@@ -35,6 +36,7 @@ import type { WhotAiDifficulty, WhotMatchMode, WhotPublicState, WhotShape } from
 import type { LudoAiDifficulty, LudoMatchMode, LudoPublicState } from "../../shared/games/ludo/types";
 import type { ConnectFourAiDifficulty, ConnectFourBestOf, ConnectFourMatchMode, ConnectFourPublicState } from "../../shared/games/connect-four/types";
 import type { AyoAiDifficulty, AyoMatchMode, AyoPublicState } from "../../shared/games/ayo/types";
+import type { SparAiDifficulty, SparCard, SparPublicState } from "../../shared/games/spar/types";
 import type { WordBoardAiDifficulty, WordBoardPlacement, WordBoardPublicState } from "../../shared/games/word-board/types";
 import type { HiddenDictatorAiDifficulty, HiddenDictatorMatchMode, HiddenDictatorPublicState } from "../../shared/games/hidden-dictator/types";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaPublicState } from "../../shared/games/word-arena/types";
@@ -101,6 +103,7 @@ interface WhotResponse { ok: boolean; reason?: string; code?: string; playerId?:
 interface LudoResponse { ok: boolean; reason?: string; code?: string; playerId?: string; reconnectToken?: string; state?: LudoPublicState; }
 interface ConnectFourResponse { ok: boolean; reason?: string; code?: string; playerId?: string; reconnectToken?: string; state?: ConnectFourPublicState; }
 interface AyoResponse { ok: boolean; reason?: string; code?: string; playerId?: string; reconnectToken?: string; state?: AyoPublicState; }
+interface SparResponse { ok: boolean; reason?: string; code?: string; playerId?: string; reconnectToken?: string; state?: SparPublicState; }
 interface WordBoardResponse { ok: boolean; reason?: string; code?: string; playerId?: string; reconnectToken?: string; state?: WordBoardPublicState; }
 interface HiddenDictatorResponse { ok: boolean; reason?: string; code?: string; playerId?: string; reconnectToken?: string; state?: HiddenDictatorPublicState; }
 interface WordArenaResponse { ok: boolean; reason?: string; code?: string; playerId?: string; reconnectToken?: string; state?: WordArenaPublicState; }
@@ -115,6 +118,7 @@ const WHOT_SESSION_KEY = "halieus-whot-session-v1";
 const LUDO_SESSION_KEY = "halieus-ludo-session-v1";
 const CONNECT_FOUR_SESSION_KEY = "halieus-connect-four-session-v1";
 const AYO_SESSION_KEY = "halieus-ayo-session-v1";
+const SPAR_SESSION_KEY = "halieus-spar-session-v1";
 const WORD_BOARD_SESSION_KEY = "halieus-word-board-session-v1";
 const HIDDEN_DICTATOR_SESSION_KEY = "halieus-hidden-dictator-session-v1";
 const WORD_ARENA_GAMES: WordArenaGameId[] = ["word-game", "password", "anagrams-race"];
@@ -219,6 +223,7 @@ function readWhotCodeFromPath(): string | null { const match = window.location.p
 function readLudoCodeFromPath(): string | null { const match = window.location.pathname.match(/^\/ludo\/([A-Z0-9]{4,12})\/?$/i); return match?.[1]?.trim().toUpperCase() ?? null; }
 function readConnectFourCodeFromPath(): string | null { const match = window.location.pathname.match(/^\/connect-four\/([A-Z0-9]{4,12})\/?$/i); return match?.[1]?.trim().toUpperCase() ?? null; }
 function readAyoCodeFromPath(): string | null { const match = window.location.pathname.match(/^\/ayo\/([A-Z0-9]{4,12})\/?$/i); return match?.[1]?.trim().toUpperCase() ?? null; }
+function readSparCodeFromPath(): string | null { const match = window.location.pathname.match(/^\/spar\/([A-Z0-9]{4,12})\/?$/i); return match?.[1]?.trim().toUpperCase() ?? null; }
 function readWordBoardCodeFromPath(): string | null { const match = window.location.pathname.match(/^\/word-board\/([A-Z0-9]{4,12})\/?$/i); return match?.[1]?.trim().toUpperCase() ?? null; }
 function readHiddenDictatorCodeFromPath(): string | null { const match = window.location.pathname.match(/^\/hidden-dictator\/([A-Z0-9]{4,12})\/?$/i); return match?.[1]?.trim().toUpperCase() ?? null; }
 function readClassicRouteFromPath(): { game: ClassicGameId; code: string } | null { for (const game of CLASSIC_GAMES) { const match = window.location.pathname.match(new RegExp(`^/${game}/([A-Z0-9]{4,12})/?$`, "i")); if (match?.[1]) return { game, code: match[1].trim().toUpperCase() }; } return null; }
@@ -278,6 +283,7 @@ export default function App() {
     readHiddenDictatorCodeFromPath() ||
     readConnectFourCodeFromPath() ||
     readAyoCodeFromPath() ||
+    readSparCodeFromPath() ||
     readWordBoardCodeFromPath() ||
     readWordArenaRouteFromPath() ||
     readClassicRouteFromPath() ||
@@ -287,7 +293,7 @@ export default function App() {
   );
   const guestAccessRequested = directGuestRoute && readGuestAccessRequested();
 
-  const [selectedGame, setSelectedGame] = useState<GameId>(() => readPokerCodeFromPath() ? "poker" : readBlackjackCodeFromPath() ? "blackjack" : readWhotCodeFromPath() ? "whot" : readLudoCodeFromPath() ? "ludo" : readHiddenDictatorCodeFromPath() ? "hidden-dictator" : readConnectFourCodeFromPath() ? "connect-four" : readAyoCodeFromPath() ? "ayo" : readWordBoardCodeFromPath() ? "word-board" : readClassicRouteFromPath()?.game ?? readWordArenaRouteFromPath()?.game ?? "mega-board");
+  const [selectedGame, setSelectedGame] = useState<GameId>(() => readPokerCodeFromPath() ? "poker" : readBlackjackCodeFromPath() ? "blackjack" : readWhotCodeFromPath() ? "whot" : readLudoCodeFromPath() ? "ludo" : readHiddenDictatorCodeFromPath() ? "hidden-dictator" : readConnectFourCodeFromPath() ? "connect-four" : readAyoCodeFromPath() ? "ayo" : readSparCodeFromPath() ? "spar" : readWordBoardCodeFromPath() ? "word-board" : readClassicRouteFromPath()?.game ?? readWordArenaRouteFromPath()?.game ?? "mega-board");
   const [pokerState, setPokerState] = useState<PokerPublicState | null>(null);
   const [pokerSavedSession, setPokerSavedSession] = useState<PokerSession | null>(() => readPokerSavedSession());
   const [pokerRecoveryCode, setPokerRecoveryCode] = useState(() => readPokerSavedSession()?.reconnectToken ?? "");
@@ -296,6 +302,7 @@ export default function App() {
   const [ludoState, setLudoState] = useState<LudoPublicState | null>(null);
   const [connectFourState, setConnectFourState] = useState<ConnectFourPublicState | null>(null);
   const [ayoState, setAyoState] = useState<AyoPublicState | null>(null);
+  const [sparState, setSparState] = useState<SparPublicState | null>(null);
   const [wordBoardState, setWordBoardState] = useState<WordBoardPublicState | null>(null);
   const [hiddenDictatorState, setHiddenDictatorState] = useState<HiddenDictatorPublicState | null>(null);
   const [wordArenaState, setWordArenaState] = useState<WordArenaPublicState | null>(null);
@@ -305,6 +312,7 @@ export default function App() {
   const [ludoSavedSession, setLudoSavedSession] = useState<SavedSession | null>(() => readCardSavedSession(LUDO_SESSION_KEY));
   const [connectFourSavedSession, setConnectFourSavedSession] = useState<SavedSession | null>(() => readCardSavedSession(CONNECT_FOUR_SESSION_KEY));
   const [ayoSavedSession, setAyoSavedSession] = useState<SavedSession | null>(() => readCardSavedSession(AYO_SESSION_KEY));
+  const [sparSavedSession, setSparSavedSession] = useState<SavedSession | null>(() => readCardSavedSession(SPAR_SESSION_KEY));
   const [wordBoardSavedSession, setWordBoardSavedSession] = useState<SavedSession | null>(() => readCardSavedSession(WORD_BOARD_SESSION_KEY));
   const [hiddenDictatorSavedSession, setHiddenDictatorSavedSession] = useState<SavedSession | null>(() => readCardSavedSession(HIDDEN_DICTATOR_SESSION_KEY));
   const [wordArenaSavedSessions, setWordArenaSavedSessions] = useState<Record<WordArenaGameId, SavedSession | null>>(() => ({ "word-game": readCardSavedSession(WORD_ARENA_SESSION_KEYS["word-game"]), password: readCardSavedSession(WORD_ARENA_SESSION_KEYS.password), "anagrams-race": readCardSavedSession(WORD_ARENA_SESSION_KEYS["anagrams-race"]) }));
@@ -314,6 +322,7 @@ export default function App() {
   const [ludoRecoveryCode, setLudoRecoveryCode] = useState(() => readCardSavedSession(LUDO_SESSION_KEY)?.reconnectToken ?? "");
   const [connectFourRecoveryCode, setConnectFourRecoveryCode] = useState(() => readCardSavedSession(CONNECT_FOUR_SESSION_KEY)?.reconnectToken ?? "");
   const [ayoRecoveryCode, setAyoRecoveryCode] = useState(() => readCardSavedSession(AYO_SESSION_KEY)?.reconnectToken ?? "");
+  const [sparRecoveryCode, setSparRecoveryCode] = useState(() => readCardSavedSession(SPAR_SESSION_KEY)?.reconnectToken ?? "");
   const [wordBoardRecoveryCode, setWordBoardRecoveryCode] = useState(() => readCardSavedSession(WORD_BOARD_SESSION_KEY)?.reconnectToken ?? "");
   const [hiddenDictatorRecoveryCode, setHiddenDictatorRecoveryCode] = useState(() => readCardSavedSession(HIDDEN_DICTATOR_SESSION_KEY)?.reconnectToken ?? "");
   const [wordArenaRecoveryCodes, setWordArenaRecoveryCodes] = useState<Record<WordArenaGameId, string>>(() => ({ "word-game": readCardSavedSession(WORD_ARENA_SESSION_KEYS["word-game"])?.reconnectToken ?? "", password: readCardSavedSession(WORD_ARENA_SESSION_KEYS.password)?.reconnectToken ?? "", "anagrams-race": readCardSavedSession(WORD_ARENA_SESSION_KEYS["anagrams-race"])?.reconnectToken ?? "" }));
@@ -362,7 +371,7 @@ export default function App() {
     () => readSavedSession()?.playerName ?? "",
   );
   const [roomCode, setRoomCode] = useState(
-    () => readMegaSpectatorCodeFromPath() ?? readInviteCodeFromPath() ?? readPokerCodeFromPath() ?? readLudoCodeFromPath() ?? readHiddenDictatorCodeFromPath() ?? readConnectFourCodeFromPath() ?? readAyoCodeFromPath() ?? readWordBoardCodeFromPath() ?? readWordArenaRouteFromPath()?.code ?? generateRoomCode(),
+    () => readMegaSpectatorCodeFromPath() ?? readInviteCodeFromPath() ?? readPokerCodeFromPath() ?? readLudoCodeFromPath() ?? readHiddenDictatorCodeFromPath() ?? readConnectFourCodeFromPath() ?? readAyoCodeFromPath() ?? readSparCodeFromPath() ?? readWordBoardCodeFromPath() ?? readWordArenaRouteFromPath()?.code ?? generateRoomCode(),
   );
   const [recoveryCode, setRecoveryCode] =
     useState(
@@ -470,7 +479,7 @@ export default function App() {
     };
   }, [authLoadError, authStatus, guestAccessRequested]);
 
-  const hasRecoverableSession = Boolean(savedSession || pokerSavedSession || blackjackSavedSession || whotSavedSession || ludoSavedSession || connectFourSavedSession || ayoSavedSession || wordBoardSavedSession || hiddenDictatorSavedSession || Object.values(wordArenaSavedSessions).some(Boolean) || Object.values(classicSavedSessions).some(Boolean));
+  const hasRecoverableSession = Boolean(savedSession || pokerSavedSession || blackjackSavedSession || whotSavedSession || ludoSavedSession || connectFourSavedSession || ayoSavedSession || sparSavedSession || wordBoardSavedSession || hiddenDictatorSavedSession || Object.values(wordArenaSavedSessions).some(Boolean) || Object.values(classicSavedSessions).some(Boolean));
 
   // The branded arrival belongs to the start of a fresh signed-in Game Room
   // session. If this tab is continuing a recoverable game, treat the arrival as
