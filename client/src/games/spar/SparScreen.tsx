@@ -88,6 +88,7 @@ export function SparScreen({
   const [aiDifficulty, setAiDifficulty] = useState<SparAiDifficulty>("normal");
   const expandedDeck = state.players.length === SPAR_MAX_PLAYERS;
   const duel = state.tableFormat === "duel";
+  const ranked = state.matchMode === "ranked";
   const maximumPlayers = state.maximumPlayers;
   const viewer = state.players.find(p => p.id === state.viewerPlayerId);
   const isHost = Boolean(viewer?.isHost);
@@ -102,7 +103,7 @@ export function SparScreen({
   const report = () => {
     const content = [
       `HALIEUS SPAR (CHA-CHA) · ${state.code}`,
-      duel ? "1v1 duel · Traditional 35-card deck · Casual" : expandedDeck ? "40-card eight-seat house variant · Casual" : "Ghanaian 35-card final-trick deck · Casual",
+      duel ? `1v1 duel · Traditional 35-card deck · ${ranked ? "Ranked" : "Casual"}` : expandedDeck ? "40-card eight-seat house variant · Casual" : "Ghanaian 35-card final-trick deck · Casual",
       state.status, `Hands played: ${state.handNumber}`,
       ...ranks.map((p,i)=>`${i+1}. ${p.name}: ${p.stones} stones`),
       ...state.events.map(e=>new Date(e.at).toLocaleTimeString("en-GB")+" · "+e.description),
@@ -116,7 +117,7 @@ export function SparScreen({
     <header className="card-game-header card-game-header-polished spar-header">
       <div className="card-game-brand-lockup"><GameBrandIcon game="spar"/><div><p>GHANAIAN CARD TABLE</p><h1>Spar <small>Cha-Cha</small></h1></div></div>
       <div className="card-game-meta">
-        <span>Room {state.code}</span><span>{duel ? "1v1 · Casual Beta" : "Multiplayer · Casual Beta"}</span>
+        <span>Room {state.code}</span><span>{ranked ? "1v1 · Ranked Beta" : duel ? "1v1 · Casual Beta" : "Multiplayer · Casual Beta"}</span>
         <span>{state.players.length}/{maximumPlayers} players</span>
         <span className={connectionStatus === "Connected" ? "is-online" : ""}>{connectionStatus}</span>
         {state.isSpectator&&<span>Spectating · Read only</span>}
@@ -135,14 +136,14 @@ export function SparScreen({
             <span><b>6</b> = 3 stones</span><span><b>7</b> = 2 stones</span>
             <span><b>{expandedDeck ? "5, 8–A" : "8–A"}</b> = 1 stone</span><span><b>5</b> in pool</span>
           </div>
-          <p className="spar-rule-note">{duel ? "A fixed two-seat duel against another player or one CPU. Traditional 35-card deck and five-stone pool." : "Casual Beta uses a five-stone pool. Five to eight seats are an HGR house extension. Two to seven use the 35-card deck; eight use 40 cards (all 5s and A♠ added). Fives score one stone on the last trick."} Ranked ratings and bonus combinations are not enabled.</p>
+          <p className="spar-rule-note">{ranked ? "Ranked requires two authenticated human accounts. Traditional 35-card deck and five-stone pool. Forfeit concedes the match." : duel ? "A fixed two-seat duel against another player or one CPU. Traditional 35-card deck and five-stone pool." : "Casual Beta uses a five-stone pool. Five to eight seats are an HGR house extension. Two to seven use the 35-card deck; eight use 40 cards (all 5s and A♠ added). Fives score one stone on the last trick."} Bonus combinations are not enabled.</p>
           {isHost&&<div className="card-game-host-actions">
-            <label className="card-game-ai-control">CPU difficulty
+            {!ranked && <><label className="card-game-ai-control">CPU difficulty
               <select value={aiDifficulty} onChange={e=>setAiDifficulty(e.target.value as SparAiDifficulty)}>
                 <option value="easy">Easy</option><option value="normal">Normal</option><option value="hard">Hard</option>
               </select>
             </label>
-            <button type="button" className="button-outline" onClick={()=>onAddAi(aiDifficulty)} disabled={state.players.length>=maximumPlayers}>Add CPU</button>
+            <button type="button" className="button-outline" onClick={()=>onAddAi(aiDifficulty)} disabled={state.players.length>=maximumPlayers}>Add CPU</button></>}
             <button type="button" className="button-primary" onClick={onStart} disabled={state.players.length<2}>Deal cards · Start</button>
           </div>}
           <button type="button" className="button-muted" onClick={()=>setInviteOpen(true)}>Invite players</button>
@@ -212,7 +213,7 @@ export function SparScreen({
         <DisplaySettingsPanel darkMode={darkMode} soundEnabled={soundEnabled} onToggleDarkMode={onToggleDarkMode} onToggleSound={onToggleSound} onToggleFullscreen={onToggleFullscreen}/>
         <button type="button" className="menu-action" onClick={onLeave}>← Back to Game Room</button>
         {viewer&&!state.isSpectator&&state.phase!=="finished"&&<button type="button" className="menu-action menu-action-danger" onClick={()=>{setMenuOpen(false);setConfirm("forfeit")}}>Forfeit Spar</button>}
-        {isHost&&<button type="button" className="menu-action menu-action-danger" onClick={()=>{setMenuOpen(false);setConfirm("end")}}>End table</button>}
+        {isHost&&(!ranked||state.phase==="lobby"||state.phase==="finished")&&<button type="button" className="menu-action menu-action-danger" onClick={()=>{setMenuOpen(false);setConfirm("end")}}>End table</button>}
       </section>
     </div></ModalPortal>}
     <ConfirmDialog open={confirm!==null} title={confirm==="forfeit"?"Forfeit Spar?":"End Spar table?"}

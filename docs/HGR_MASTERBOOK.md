@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Spar Ranked duel and spectator parity — 24 November 2026
+
+Owner requests Ranked and existing HGR spectator logic alongside Casual. Initial competitive format is 1v1 only: two distinct signed-in non-Beta human accounts, traditional 35-card pack, unchanged five-trick/five-stone scoring. CPU and expanded multiplayer are Casual only. Reconnect is bound to the original account, active Ranked host cancellation is denied (forfeit instead), and completed or conceded verified results feed the separate Spar Elo ladder via the existing server archive/ranking service. Start at 1000, K=32, five provisional matches, stone differential as tie-break. Existing leaderboard visibility filter preserved; public state excludes account identifiers. History excludes invalid/ambiguous results. Spectators use the platform room chat and public spectator names/count, with separate viewer state and no private hand, token or Ranked account identifier. Existing player recovery and active-room protection retained. This is a staged design decision pending fresh tests; no production release claimed.
+
 ## Spar dedicated 1v1 format — 24 November 2026
 
 Owner requests a distinct 1v1 option alongside multiplayer. Create flow offers 1v1 or Multiplayer using existing match tabs. The server fixes the duel capacity at exactly two seats (human or one CPU) and advertises the actual cap in state and live-room summaries. Multiplayer stays 2–8 and remains the default for existing clients. Both formats are Casual Beta; 1v1 uses the traditional 35-card deck, same five-trick scoring and five-stone pool. No ranked mode, rule changes or third seat. Test invalid format, capacity, insufficient players, both opponent types and traditional deck. Fresh CI required before release.

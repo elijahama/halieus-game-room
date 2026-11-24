@@ -36,7 +36,7 @@ import type { WhotAiDifficulty, WhotMatchMode, WhotPublicState, WhotShape } from
 import type { LudoAiDifficulty, LudoMatchMode, LudoPublicState } from "../../shared/games/ludo/types";
 import type { ConnectFourAiDifficulty, ConnectFourBestOf, ConnectFourMatchMode, ConnectFourPublicState } from "../../shared/games/connect-four/types";
 import type { AyoAiDifficulty, AyoMatchMode, AyoPublicState } from "../../shared/games/ayo/types";
-import type { SparAiDifficulty, SparCard, SparPublicState, SparTableFormat } from "../../shared/games/spar/types";
+import type { SparAiDifficulty, SparCard, SparPublicState, SparTableFormat, SparMatchMode } from "../../shared/games/spar/types";
 import type { WordBoardAiDifficulty, WordBoardPlacement, WordBoardPublicState } from "../../shared/games/word-board/types";
 import type { HiddenDictatorAiDifficulty, HiddenDictatorMatchMode, HiddenDictatorPublicState } from "../../shared/games/hidden-dictator/types";
 import type { WordArenaCreateOptions, WordArenaGameId, WordArenaPublicState } from "../../shared/games/word-arena/types";
@@ -3273,11 +3273,11 @@ function handleLeaveSpectator() {
     updateBrowserPath(`/spar/${code}`); setMessage("");
     return true;
   }
-  function createSpar(event: FormEvent<HTMLFormElement>, tableFormat: SparTableFormat = "multiplayer") {
+  function createSpar(event: FormEvent<HTMLFormElement>, tableFormat: SparTableFormat = "multiplayer", matchMode: SparMatchMode = "casual") {
     event.preventDefault();
     if (!playerName.trim() || !roomCode.trim()) return setMessage("Enter your name and room code first.");
     setIsCreating(true);
-    socket.emit("spar:create", { code:roomCode, playerName, tableFormat }, (response:SparResponse) => {
+    socket.emit("spar:create", { code:roomCode, playerName, tableFormat, matchMode }, (response:SparResponse) => {
       setIsCreating(false);
       if (!applySparResponse(response,playerName)) setMessage(response.reason??"Unable to create Spar room.");
     });
@@ -3331,7 +3331,7 @@ function handleLeaveSpectator() {
     const code=sparState.code;
     socket.emit("spar:leave",{code},()=>undefined);
     setSparState(null);setSelectedGame("spar");updateBrowserPath("/");setRoomCode(code);
-    setMessage("Returned to Game Room. Your Spar seat is recoverable.");
+    setMessage(sparState.isSpectator ? "Returned to Game Room." : "Returned to Game Room. Your Spar seat is recoverable.");
   }
 
   function applyWordBoardResponse(response: WordBoardResponse, name: string, spectator = false): boolean {
@@ -3559,7 +3559,7 @@ function handleLeaveSpectator() {
       onPlay={(card:SparCard)=>respond("play",{card},"That Spar card cannot be played.")}
       onForfeit={forfeitSpar} onEndGame={endSpar} onLeave={leaveSpar}
       roomActivity={<RoomChatPanel embedded game="spar" code={sparState.code}
-        accent="#D6AB54" spectatorCount={sparState.spectatorCount}
+        accent="#D6AB54" spectatorCount={sparState.spectatorCount} spectatorNames={sparState.spectatorNames}
         gameLog={sparState.events.map(e=>({id:`spar-${e.id}`,at:e.at,label:e.description}))}/>}/>;
   }
   if (ayoState) {
