@@ -58,6 +58,7 @@
   window.addEventListener("hgr-control-authorized", () => {
     authorised = true;
     void checkRelease();
+    if (new URLSearchParams(location.search).get("review") === "update") review.click();
   });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && Date.now() - lastChecked > 60_000)
