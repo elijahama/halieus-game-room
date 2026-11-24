@@ -41,7 +41,7 @@ try{
  assert.equal(call("observer","forfeit").ok,false);
  assert.equal(views.get("observer").hand.length,0);
  assert.deepEqual(views.get("observer").spectatorNames,["Observer"]);
- for(const secret of ["rank-account-a","rank-account-b","rankedAccountId","progressionIdentity","reconnectToken","deck"])assert.ok(!JSON.stringify(views.get("observer")).includes(secret));
+ for(const secret of ["rank-account-a","rank-account-b","rankedAccountId","progressionIdentity","reconnectToken",'"deck"','"undealt"'])assert.ok(!JSON.stringify(views.get("observer")).includes(secret));
  const privateHand=[...views.get("bravo").hand];
  assert.equal(call("bravo","leave").ok,true);
  assert.equal(call("guest","reconnect",{reconnectToken:joined.reconnectToken}).ok,false);

@@ -67,3 +67,29 @@ for(const difficulty of ["easy","normal","hard"]){
 }
 assert.throws(()=>chooseSparAiCard([],null,1,"hard"));
 console.log("PASS Spar rules: canonical Ghanaian 35-card pack, 3+2 deal, follow-suit, 5-trick scoring, finite stones, AI legality");
+
+const {parseSparCustomSettings,sparUnderTen,sparHandPoints}=await import("../shared/games/spar/rules.ts");
+const {DEFAULT_SPAR_CUSTOM,sparCustomCapacity}=await import("../shared/games/spar/types.ts");
+assert.deepEqual(parseSparCustomSettings(undefined),DEFAULT_SPAR_CUSTOM);
+assert.equal(sparCustomCapacity(DEFAULT_SPAR_CUSTOM),7);
+assert.equal(sparCustomCapacity({...DEFAULT_SPAR_CUSTOM,handSize:7}),5);
+assert.equal(sparCustomCapacity({...DEFAULT_SPAR_CUSTOM,deck:"expanded"}),8);
+assert.equal(sparCustomCapacity({...DEFAULT_SPAR_CUSTOM,underTen:true,showBottom:true}),5);
+for(const [variant,size] of [["traditional",35],["full",36],["noaces",32],["expanded",40]]) {
+ const cards=makeSparDeck(2,variant);
+ assert.equal(cards.length,size);assert.equal(new Set(cards).size,size);
+ if(variant==="noaces")assert.ok(cards.every(c=>!c.startsWith("A")));
+ const ids=["a","b","c","d"];
+ const dealt=dealSparHands(ids,0,cards,7);
+ assert.ok(ids.every(id=>dealt.hands[id].length===7));
+ assert.equal(new Set([...ids.flatMap(id=>dealt.hands[id]),...dealt.remaining]).size,size);
+}
+for(const bad of [{handSize:6},{deck:"fake"},{amount:0},{scoring:"ranked"},{underTen:"yes"},{unknown:true}])assert.equal(parseSparCustomSettings(bad),null);
+assert.equal(sparUnderTen(["6C","7D","9H","8S","6D"]),true);
+assert.equal(sparUnderTen(["10C","7D","9H","8S","6D"]),false);
+assert.equal(sparHandPoints("6C","6D",true),6);
+assert.equal(sparHandPoints("7C","6D",true),5);
+assert.equal(sparHandPoints("7C","7D",true),4);
+assert.equal(sparHandPoints("8C","6D",true),1);
+assert.equal(sparHandPoints("6C","6D",false),3);
+console.log("PASS Custom Spar decks, hand sizes, capacity, validation and optional scoring rules");

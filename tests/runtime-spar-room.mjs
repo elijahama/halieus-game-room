@@ -191,3 +191,47 @@ assert.equal((await call(eight[0],"spar:start",{code:duelCode})).ok,true);
 assert.equal(latest.get(eight[0]).players.length,2);
 closeAllSparRooms();
 console.log("PASS Spar 1v1: strict two-seat human/CPU duel and traditional deck");
+
+// Custom defaults and the selected variants remain non-Ranked.
+const customCode="SPARCU";
+let custom=await call(eight[0],"spar:create",{code:customCode,playerName:"Host",tableFormat:"multiplayer",matchMode:"custom"});
+assert.equal(custom.ok,true);assert.equal(custom.state.matchMode,"custom");assert.equal(custom.state.deckSize,35);
+assert.equal(custom.state.maximumPlayers,7);assert.equal(custom.state.handSize,5);assert.equal(custom.state.stonesTotal,10);assert.equal(custom.state.stonesRemaining,10);
+assert.equal(custom.state.customSettings.underTen,false);assert.equal(custom.state.customSettings.showBottom,false);assert.equal(custom.state.customSettings.doubleFinish,false);
+for(const id of eight.slice(1,7))assert.equal((await call(id,"spar:join",{code:customCode,playerName:id})).ok,true);
+assert.equal((await call(eight[7],"spar:join",{code:customCode,playerName:"Extra"})).ok,false);
+assert.equal((await call(eight[0],"spar:start",{code:customCode})).ok,true);
+assert.equal(new Set(eight.slice(0,7).flatMap(id=>latest.get(id).hand)).size,35);
+assert.equal(latest.get(eight[0]).stonesRemaining,10);
+closeAllSparRooms();
+for(const settings of [{handSize:6},{amount:0},{deck:"invalid"}])assert.equal((await call(eight[0],"spar:create",{code:customCode,playerName:"Host",matchMode:"custom",customSettings:settings})).ok,false);
+assert.equal((await call(eight[0],"spar:create",{code:customCode,playerName:"Host",matchMode:"ranked",tableFormat:"duel",customSettings:{amount:10}})).ok,false);
+custom=await call(eight[0],"spar:create",{code:customCode,playerName:"Host",tableFormat:"duel",matchMode:"custom",customSettings:{handSize:7,deck:"full",scoring:"target",amount:10,showBottom:true,doubleFinish:true}});
+assert.equal(custom.ok,true);assert.equal(custom.state.scoring,"target");
+assert.equal((await call(eight[1],"spar:join",{code:customCode,playerName:"Opponent"})).ok,true);
+assert.equal((await call("watch","spar:spectate",{code:customCode})).ok,true);
+assert.equal((await call(eight[0],"spar:start",{code:customCode})).ok,true);
+assert.equal(latest.get(eight[0]).hand.length,7);assert.equal(latest.get(eight[1]).hand.length,7);
+assert.equal((await call(eight[1],"spar:bra",{code:customCode})).ok,true);
+assert.equal((await call(eight[0],"spar:show-bottom",{code:customCode})).ok,false);
+for(let trick=1;trick<=7;trick++){
+ if(trick===6){
+  assert.equal(latest.get(eight[0]).canShowBottom,true);
+  assert.equal((await call("watch","spar:show-bottom",{code:customCode})).ok,false);
+  assert.equal((await call(eight[0],"spar:show-bottom",{code:customCode})).ok,true);
+  assert.ok(latest.get("watch").bottomCard);
+  assert.equal((await call(eight[0],"spar:show-bottom",{code:customCode})).ok,false);
+ }
+ for(let i=0;i<2;i++){
+  const id=latest.get(eight[0]).currentTurnPlayerId,view=latest.get(id);
+  assert.equal(view.trickNumber,trick);
+  const lead=view.plays.length?sparSuit(view.plays[0].card):null;
+  assert.equal((await call(id,"spar:play",{code:customCode,card:legalSparCards(view.hand,lead)[0]})).ok,true);
+ }
+ if(trick<7)assert.equal(latest.get(eight[0]).players.reduce((a,p)=>a+p.stones,0),0);
+}
+assert.ok(latest.get(eight[0]).lastAward.awarded>=1);
+assert.equal(latest.get("watch").hand.length,0);
+assert.equal(latest.get(eight[0]).handNumber,2);
+closeAllSparRooms();
+console.log("PASS Spar Custom: ten-stone defaults, deck-derived capacity, seven tricks, bottom reveal and target scoring");

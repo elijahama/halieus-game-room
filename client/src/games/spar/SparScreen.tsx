@@ -136,7 +136,7 @@ export function SparScreen({
           <p className="card-game-intro-copy">{state.handSize} cards each. Follow suit whenever possible. The highest card of the lead suit wins each trick. {state.customSettings?.doubleFinish ? "Double Finish may score both final tricks." : "Only the last trick scores."}</p>
           <div className="spar-rule-summary">
             <span><b>{state.deckSize}</b> cards</span><span><b>{state.handSize}</b> tricks per hand</span>
-            <span><b>6</b> = 3 stones</span><span><b>7</b> = 2 stones</span>
+            <span><b>6</b> = 3 {scoreUnit}</span><span><b>7</b> = 2 {scoreUnit}</span>
             <span><b>Other</b> = 1 {state.scoring === "stones" ? "stone" : "point"}</span><span>{state.scoring==="free" ? "Free play" : <><b>{state.stonesTotal}</b> {state.scoring==="stones"?"in pool":"target"}</>}</span>
           </div>
           <p className="spar-rule-note">{custom ? `Under-Ten ${state.customSettings?.underTen?"on":"off"} · Bottom Card ${state.customSettings?.showBottom?"on":"off"} · Double Finish ${state.customSettings?.doubleFinish?"on":"off"}.` : ranked ? "Ranked requires two authenticated human accounts. Traditional 35-card deck and five-stone pool. Forfeit concedes the match." : duel ? "A fixed two-seat duel against another player or one CPU. Traditional 35-card deck and five-stone pool." : "Casual Beta uses a five-stone pool. Five to eight seats are an HGR house extension. Two to seven use the 35-card deck; eight use 40 cards (all 5s and A♠ added). Fives score one stone on the last trick."} {!custom && "Bonus combinations are not enabled."}</p>

@@ -305,7 +305,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       trickNumber: 0, plays: [], lastTrick: null, lastAward: null,
       currentTurnPlayerId: null, leadPlayerId: null,
       stonesRemaining: customSettings ? (customSettings.scoring === "stones" ? customSettings.amount : 0) : SPAR_STONE_POOL, winnerPlayerId: null,
-      status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
+      status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : matchMode === "custom" ? "Waiting for players. Custom table." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
     };
     rooms.set(code, room);
     log(room, "join", `${name} opened the Spar table.`);

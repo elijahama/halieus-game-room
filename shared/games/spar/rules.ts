@@ -105,7 +105,7 @@ export function parseSparCustomSettings(raw: unknown): SparCustomSettings | null
   if (raw === undefined) return {...DEFAULT_SPAR_CUSTOM};
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const v = raw as Record<string,unknown>;
-  if (Object.keys(v).some(k => !Object.hasOwn(DEFAULT_SPAR_CUSTOM,k))) return null;
+  if (Object.keys(v).some(k => !Object.prototype.hasOwnProperty.call(DEFAULT_SPAR_CUSTOM,k))) return null;
   const c = {...DEFAULT_SPAR_CUSTOM,...v} as SparCustomSettings;
   if (![5,7].includes(c.handSize) || !["traditional","full","noaces","expanded"].includes(c.deck) ||
     !["stones","target","free"].includes(c.scoring) || ![5,10,15,20,30].includes(c.amount) ||
