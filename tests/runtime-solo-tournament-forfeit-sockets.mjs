@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import express from "express";
@@ -16,6 +16,7 @@ const {endRoom}=await import("../server/src/games/mega-board/utils/room-lifecycl
 const {hostReconnectGraceMs,ACTIVE_HOST_RECONNECT_GRACE_MS,HOST_RECONNECT_GRACE_MS}=
   await import("../server/src/games/mega-board/utils/host-grace.ts");
 const {flushRoomSave}=await import("../server/src/games/mega-board/utils/persistence.ts");
+const {flushFinalSessionWrites}=await import("../server/src/platform/sessionArchive.ts");
 const app=express();app.use(express.json());
 registerSoloTournamentRegistrationRoutes(app,req=>{
   const id=req.get("x-account");
@@ -147,10 +148,18 @@ try {
   assert.equal(event(normal,"game:end-room",{code:ordinary.code}).ok,true,"ordinary close untouched");
   assert.equal(rooms.has(ordinary.code),false);
   await flushRoomSave();
+  await flushFinalSessionWrites();
+  const queueFiles=await readdir(join(dir,"sessions","upload-queue"));
+  const indexEntries=(await readFile(join(dir,"sessions","sessions-index.ndjson"),"utf8")).trim().split("\n").map(line=>JSON.parse(line));
+  for(const code of ["FORFEIT1","FORFEIT2","FORFINAL"]){
+    assert.ok(queueFiles.some(name=>name.startsWith("mega-board-"+code+"-")), "Final upload queue persisted for "+code);
+    assert.equal(indexEntries.filter(entry=>entry.roomCode===code).length,1,"Exactly one archive index receipt for "+code);
+  }
   console.log("PASS real Solo forfeits: host leave and explicit forfeit settle actual game wins, protect pending room from end/delete, promote surviving host, preserve spectator route and ordinary room close");
 } finally {
   await new Promise(resolve=>http.close(resolve));
   await flushRoomSave();
+  await flushFinalSessionWrites();
   rooms.clear();
   await rm(dir,{recursive:true,force:true,maxRetries:10,retryDelay:50});
 }
