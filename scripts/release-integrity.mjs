@@ -113,6 +113,7 @@ const singles = [
   'scripts/windows/control-close.ps1',
   'scripts/windows/control-update.ps1', 'scripts/windows/control-update-isolated-main.ps1', 'tests/regression-control-isolated-cloud-update.mjs',
   'scripts/windows/control-update-finalize.ps1',
+  'scripts/verify-release-ci-proof.mjs', 'tests/runtime-release-ci-proof.mjs',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
   'docs/HGR_4.5.1_PART19_NAVIGATION.md',
   'tests/runtime-part18.mjs', 'tests/browser-part18.mjs', 'docs/HGR_4.5.1_PART18_IMPLEMENTATION.md',
