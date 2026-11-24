@@ -77,14 +77,14 @@ type PokerVariant = "texas-holdem" | "omaha" | "five-card-draw" | "seven-card-st
 interface HomeScreenProps {
   onReturnActiveMatch?: (match: ActiveMatch) => Promise<string | null>;
   connectionStatus: string; selectedGame: GameSelection; playerName: string; roomCode: string; ranked: boolean; blitz: boolean; freeParkingJackpotEnabled: boolean; message: string;
-  recoveryCode: string; pokerRecoveryCode: string; blackjackRecoveryCode: string; whotRecoveryCode: string; ludoRecoveryCode: string; connectFourRecoveryCode: string; ayoRecoveryCode: string; wordBoardRecoveryCode: string; hiddenDictatorRecoveryCode: string;
-  savedSession: SavedSessionSummary | null; pokerSavedSession: SavedSessionSummary | null; blackjackSavedSession: SavedSessionSummary | null; whotSavedSession: SavedSessionSummary | null; ludoSavedSession: SavedSessionSummary | null; connectFourSavedSession: SavedSessionSummary | null; ayoSavedSession: SavedSessionSummary | null; wordBoardSavedSession: SavedSessionSummary | null; hiddenDictatorSavedSession: SavedSessionSummary | null;
+  recoveryCode: string; pokerRecoveryCode: string; blackjackRecoveryCode: string; whotRecoveryCode: string; ludoRecoveryCode: string; connectFourRecoveryCode: string; ayoRecoveryCode: string; sparRecoveryCode: string; wordBoardRecoveryCode: string; hiddenDictatorRecoveryCode: string;
+  savedSession: SavedSessionSummary | null; pokerSavedSession: SavedSessionSummary | null; blackjackSavedSession: SavedSessionSummary | null; whotSavedSession: SavedSessionSummary | null; ludoSavedSession: SavedSessionSummary | null; connectFourSavedSession: SavedSessionSummary | null; ayoSavedSession: SavedSessionSummary | null; sparSavedSession: SavedSessionSummary | null; wordBoardSavedSession: SavedSessionSummary | null; hiddenDictatorSavedSession: SavedSessionSummary | null;
   pokerStartingChips: number; pokerSmallBlind: number; pokerBigBlind: number; pokerMatchMode: "casual" | "ranked"; pokerVariant: PokerVariant; whotMatchMode: WhotMatchMode; ludoMatchMode: LudoMatchMode; blackjackMatchMode: BlackjackMatchMode; connectFourMatchMode: ConnectFourMatchMode; connectFourBestOf: ConnectFourBestOf; ayoMatchMode: AyoMatchMode; hiddenDictatorMatchMode: HiddenDictatorMatchMode;
   isCreating: boolean; isJoining: boolean; isRecovering: boolean; darkMode: boolean; account: HalieusAccountSummary | null; betaMode: boolean; onOpenAccount: () => void; onOpenFeedback?: (id: string) => void;
   theme: { pageBackground: string; cardBackground: string; secondaryBackground: string; inputBackground: string; text: string; mutedText: string; border: string; };
   themeMode: HalieusThemeMode; themeProfileId: HalieusThemeProfileId;
   onToggleDarkMode: () => void; onGameSelect: (game: GameSelection) => void; onPlayerNameChange: (value: string) => void; onRoomCodeChange: (value: string) => void;
-  onRecoveryCodeChange: (value: string) => void; onPokerRecoveryCodeChange: (value: string) => void; onBlackjackRecoveryCodeChange: (value: string) => void; onWhotRecoveryCodeChange: (value: string) => void; onLudoRecoveryCodeChange: (value: string) => void; onConnectFourRecoveryCodeChange: (value: string) => void; onAyoRecoveryCodeChange: (value: string) => void; onWordBoardRecoveryCodeChange: (value: string) => void; onHiddenDictatorRecoveryCodeChange: (value: string) => void;
+  onRecoveryCodeChange: (value: string) => void; onPokerRecoveryCodeChange: (value: string) => void; onBlackjackRecoveryCodeChange: (value: string) => void; onWhotRecoveryCodeChange: (value: string) => void; onLudoRecoveryCodeChange: (value: string) => void; onConnectFourRecoveryCodeChange: (value: string) => void; onAyoRecoveryCodeChange: (value: string) => void; onSparRecoveryCodeChange: (value: string) => void; onWordBoardRecoveryCodeChange: (value: string) => void; onHiddenDictatorRecoveryCodeChange: (value: string) => void;
   onPokerStartingChipsChange: (value: number) => void; onPokerSmallBlindChange: (value: number) => void; onPokerBigBlindChange: (value: number) => void; onPokerMatchModeChange: (value: "casual" | "ranked") => void; onPokerVariantChange: (value: PokerVariant) => void; onWhotMatchModeChange: (value: WhotMatchMode) => void; onLudoMatchModeChange: (value: LudoMatchMode) => void; onBlackjackMatchModeChange: (value: BlackjackMatchMode) => void; onConnectFourMatchModeChange: (value: ConnectFourMatchMode) => void; onConnectFourBestOfChange: (value: ConnectFourBestOf) => void; onAyoMatchModeChange: (value: AyoMatchMode) => void; onHiddenDictatorMatchModeChange: (value: HiddenDictatorMatchMode) => void;
   onGenerateRoomCode: () => void; onOpenLeaderboard: () => void; onOpenPokerLeaderboard: () => void; onMatchModeChange: (mode: "casual" | "ranked" | "blitz") => void; onFreeParkingJackpotChange: (value: boolean) => void;
   onCreateGame: (event: FormEvent<HTMLFormElement>) => void; onJoinGame: () => void; onSpectateGame: () => void; onManualReconnect: () => void; onResumeSavedSession: () => void; onForgetSavedSession: () => void;
@@ -94,6 +94,7 @@ interface HomeScreenProps {
   onCreateLudo: (event: FormEvent<HTMLFormElement>) => void; onJoinLudo: () => void; onSpectateLudo: () => void; onManualLudoReconnect: () => void; onResumeLudoSession: () => void; onForgetLudoSession: () => void;
   onCreateConnectFour: (event: FormEvent<HTMLFormElement>) => void; onJoinConnectFour: () => void; onSpectateConnectFour: () => void; onManualConnectFourReconnect: () => void; onResumeConnectFourSession: () => void; onForgetConnectFourSession: () => void;
   onCreateAyo: (event: FormEvent<HTMLFormElement>) => void; onJoinAyo: () => void; onSpectateAyo: () => void; onManualAyoReconnect: () => void; onResumeAyoSession: () => void; onForgetAyoSession: () => void;
+  onCreateSpar: (event: FormEvent<HTMLFormElement>) => void; onJoinSpar: () => void; onSpectateSpar: () => void; onManualSparReconnect: () => void; onResumeSparSession: () => void; onForgetSparSession: () => void;
   onCreateWordBoard: (event: FormEvent<HTMLFormElement>, options: { dictionaryMode: "standard" | "challenge" | "open" }) => void; onJoinWordBoard: () => void; onSpectateWordBoard: () => void; onManualWordBoardReconnect: () => void; onResumeWordBoardSession: () => void; onForgetWordBoardSession: () => void;
   onCreateHiddenDictator: (event: FormEvent<HTMLFormElement>) => void; onJoinHiddenDictator: () => void; onSpectateHiddenDictator: () => void; onManualHiddenDictatorReconnect: () => void; onResumeHiddenDictatorSession: () => void; onForgetHiddenDictatorSession: () => void;
   classicRecoveryCodes: Record<ClassicGameId, string>; classicSavedSessions: Record<ClassicGameId, SavedSessionSummary | null>; classicMatchModes: Record<ClassicGameId, ClassicMatchMode>;
@@ -132,11 +133,11 @@ function isRawNetworkFetchError(value: string): boolean {
 export function HomeScreen(props: HomeScreenProps) {
   const {
     connectionStatus, selectedGame, playerName, roomCode, ranked, blitz, freeParkingJackpotEnabled, message,
-    recoveryCode, pokerRecoveryCode, blackjackRecoveryCode, whotRecoveryCode, ludoRecoveryCode, connectFourRecoveryCode, ayoRecoveryCode, wordBoardRecoveryCode, hiddenDictatorRecoveryCode,
-    savedSession, pokerSavedSession, blackjackSavedSession, whotSavedSession, ludoSavedSession, connectFourSavedSession, ayoSavedSession, wordBoardSavedSession, hiddenDictatorSavedSession,
+    recoveryCode, pokerRecoveryCode, blackjackRecoveryCode, whotRecoveryCode, ludoRecoveryCode, connectFourRecoveryCode, ayoRecoveryCode, sparRecoveryCode, wordBoardRecoveryCode, hiddenDictatorRecoveryCode,
+    savedSession, pokerSavedSession, blackjackSavedSession, whotSavedSession, ludoSavedSession, connectFourSavedSession, ayoSavedSession, sparSavedSession, wordBoardSavedSession, hiddenDictatorSavedSession,
     pokerStartingChips, pokerSmallBlind, pokerBigBlind, pokerMatchMode, pokerVariant, whotMatchMode, ludoMatchMode, blackjackMatchMode, connectFourMatchMode, connectFourBestOf, ayoMatchMode, hiddenDictatorMatchMode,
     isCreating, isJoining, isRecovering, darkMode, account, betaMode, onOpenAccount, onOpenFeedback, onReturnActiveMatch, theme, themeMode, themeProfileId, onToggleDarkMode, onGameSelect, onPlayerNameChange, onRoomCodeChange,
-    onRecoveryCodeChange, onPokerRecoveryCodeChange, onBlackjackRecoveryCodeChange, onWhotRecoveryCodeChange, onLudoRecoveryCodeChange, onConnectFourRecoveryCodeChange, onAyoRecoveryCodeChange, onWordBoardRecoveryCodeChange, onHiddenDictatorRecoveryCodeChange,
+    onRecoveryCodeChange, onPokerRecoveryCodeChange, onBlackjackRecoveryCodeChange, onWhotRecoveryCodeChange, onLudoRecoveryCodeChange, onConnectFourRecoveryCodeChange, onAyoRecoveryCodeChange, onSparRecoveryCodeChange, onWordBoardRecoveryCodeChange, onHiddenDictatorRecoveryCodeChange,
     onPokerStartingChipsChange, onPokerSmallBlindChange, onPokerBigBlindChange, onPokerMatchModeChange, onPokerVariantChange, onWhotMatchModeChange, onLudoMatchModeChange, onBlackjackMatchModeChange, onConnectFourMatchModeChange, onConnectFourBestOfChange, onAyoMatchModeChange, onHiddenDictatorMatchModeChange,
     onGenerateRoomCode, onOpenLeaderboard, onOpenPokerLeaderboard, onMatchModeChange, onFreeParkingJackpotChange,
     onCreateGame, onJoinGame, onSpectateGame, onManualReconnect, onResumeSavedSession, onForgetSavedSession,
@@ -145,7 +146,7 @@ export function HomeScreen(props: HomeScreenProps) {
     onCreateWhot, onJoinWhot, onSpectateWhot, onManualWhotReconnect, onResumeWhotSession, onForgetWhotSession,
     onCreateLudo, onJoinLudo, onSpectateLudo, onManualLudoReconnect, onResumeLudoSession, onForgetLudoSession,
     onCreateConnectFour, onJoinConnectFour, onSpectateConnectFour, onManualConnectFourReconnect, onResumeConnectFourSession, onForgetConnectFourSession,
-    onCreateAyo, onJoinAyo, onSpectateAyo, onManualAyoReconnect, onResumeAyoSession, onForgetAyoSession,
+    onCreateAyo, onJoinAyo, onSpectateAyo, onManualAyoReconnect, onResumeAyoSession, onForgetAyoSession, onCreateSpar, onJoinSpar, onSpectateSpar, onManualSparReconnect, onResumeSparSession, onForgetSparSession,
     onCreateWordBoard, onJoinWordBoard, onSpectateWordBoard, onManualWordBoardReconnect, onResumeWordBoardSession, onForgetWordBoardSession,
     onCreateHiddenDictator, onJoinHiddenDictator, onSpectateHiddenDictator, onManualHiddenDictatorReconnect, onResumeHiddenDictatorSession, onForgetHiddenDictatorSession,
     classicRecoveryCodes, classicSavedSessions, classicMatchModes, onClassicRecoveryCodeChange, onClassicMatchModeChange, onCreateClassic, onJoinClassic, onSpectateClassic, onManualClassicReconnect, onResumeClassicSession, onForgetClassicSession,
@@ -263,6 +264,7 @@ export function HomeScreen(props: HomeScreenProps) {
   const megaSelected = selectedGame === "mega-board";
   const connectFourSelected = selectedGame === "connect-four";
   const ayoSelected = selectedGame === "ayo";
+  const sparSelected = selectedGame === "spar";
   const wordBoardSelected = selectedGame === "word-board";
   const hiddenDictatorSelected = selectedGame === "hidden-dictator";
   const wordArenaSelected = selectedGame === "word-game" || selectedGame === "password" || selectedGame === "anagrams-race";
@@ -281,6 +283,7 @@ export function HomeScreen(props: HomeScreenProps) {
     { game: "Hidden Dictator", id: "hidden-dictator" as const, session: hiddenDictatorSavedSession, resume: onResumeHiddenDictatorSession, forget: onForgetHiddenDictatorSession },
     { game: "Connect Four", id: "connect-four" as const, session: connectFourSavedSession, resume: onResumeConnectFourSession, forget: onForgetConnectFourSession },
     { game: "Ayo", id: "ayo" as const, session: ayoSavedSession, resume: onResumeAyoSession, forget: onForgetAyoSession },
+    { game: "Spar", id: "spar" as const, session: sparSavedSession, resume: onResumeSparSession, forget: onForgetSparSession },
     { game: "Word Board", id: "word-board" as const, session: wordBoardSavedSession, resume: onResumeWordBoardSession, forget: onForgetWordBoardSession },
     { game: "Word Game", id: "word-game" as const, session: wordArenaSavedSessions["word-game"], resume: () => onResumeWordArenaSession("word-game"), forget: () => onForgetWordArenaSession("word-game") },
     { game: "Password", id: "password" as const, session: wordArenaSavedSessions.password, resume: () => onResumeWordArenaSession("password"), forget: () => onForgetWordArenaSession("password") },
