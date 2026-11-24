@@ -27,7 +27,7 @@ fi
 
 require_runtime() {
   local missing=0
-  for cmd in unzip curl rsync node npm systemctl sha256sum; do
+  for cmd in unzip curl rsync node npm systemctl sha256sum flock; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
       echo "Missing required runtime command: $cmd" >&2
       missing=1
@@ -61,6 +61,14 @@ ensure_swap() {
 }
 
 require_runtime
+# Serialise installer runs before allocating staging or candidate directories.
+# This protects this installer lifecycle, not the owner's preceding ZIP upload.
+install -d -m 0700 /run/halieus-game-room-deploy
+exec 9>>/run/halieus-game-room-deploy/installer.lock
+if ! flock -n 9; then
+  echo "[STOPPED] Another Oracle HGR installer holds the deployment lock." >&2
+  exit 1
+fi
 ensure_swap
 
 if ! id "$SERVICE_USER" >/dev/null 2>&1; then
@@ -69,8 +77,25 @@ if ! id "$SERVICE_USER" >/dev/null 2>&1; then
   exit 1
 fi
 
+STAGE=""
+CANDIDATE_DIR=""
+# BEGIN OWNED CANDIDATE CLEANUP
+cleanup_deployment_stage() {
+  local status=$?
+  trap - EXIT
+  # Only remove the unique candidate allocated by THIS installer. Never sweep
+  # historical candidates, failed releases, the active app, backups or data.
+  if [[ -n "$CANDIDATE_DIR" && "$CANDIDATE_DIR" == "$APP_DIR".candidate-* && -d "$CANDIDATE_DIR" && ! -L "$CANDIDATE_DIR" ]]; then
+    rm -rf -- "$CANDIDATE_DIR" || echo "Warning: candidate cleanup incomplete." >&2
+  fi
+  if [[ -n "$STAGE" && -d "$STAGE" && ! -L "$STAGE" ]]; then
+    rm -rf -- "$STAGE" || echo "Warning: stage cleanup incomplete." >&2
+  fi
+  exit "$status"
+}
+trap cleanup_deployment_stage EXIT
+# END OWNED CANDIDATE CLEANUP
 STAGE="$(mktemp -d /tmp/halieus-stage.XXXXXX)"
-trap 'rm -rf "$STAGE"' EXIT
 unzip -q "$SOURCE_ZIP" -d "$STAGE/source"
 if [[ -f "$STAGE/source/package.json" && -f "$STAGE/source/package-lock.json" ]]; then
   SOURCE_ROOT="$STAGE/source"
@@ -160,10 +185,10 @@ echo "Candidate PWA 192/512px artwork matches signed canonical source."
 # Production only needs runtime dependencies after the build artifacts exist.
 npm prune --omit=dev
 
-CANDIDATE_DIR="${APP_DIR}.candidate-${STAMP}"
+CANDIDATE_DIR="$(mktemp -d "${APP_DIR}.candidate-${STAMP}.XXXXXX")"
+# mktemp starts at 0700; the service account must be able to traverse it.
+chmod 0755 "$CANDIDATE_DIR"
 BACKUP_DIR="${APP_DIR}.backup-${STAMP}"
-rm -rf "$CANDIDATE_DIR"
-mkdir -p "$CANDIDATE_DIR"
 rsync -a --delete --exclude 'server/data/' "$SOURCE_ROOT/" "$CANDIDATE_DIR/"
 
 mkdir -p "$DATA_DIR" "$DATA_DIR/accounts" "$DATA_DIR/sessions" "$DATA_DIR/mega-board" "$DATA_DIR/feedback"
@@ -250,6 +275,8 @@ if [[ -d "$APP_DIR" ]]; then
   mv "$APP_DIR" "$BACKUP_DIR"
 fi
 mv "$CANDIDATE_DIR" "$APP_DIR"
+# Ownership has transferred to the live path. The exit handler must not touch it.
+CANDIDATE_DIR=""
 
 cp "$APP_DIR/deploy/oracle/halieus-game-room.service" /etc/systemd/system/halieus-game-room.service
 
