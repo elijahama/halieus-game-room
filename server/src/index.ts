@@ -56,7 +56,7 @@ import { configureAccountAdminRuntimeControls, getAccountSummaryById, resolveUni
 import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
-import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
+import { initializePushNotifications, registerPushRoutes, startControlReleaseWatch } from "./platform/pushNotifications.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
@@ -645,7 +645,7 @@ if (soloTournamentEnabled) {
   await loadSoloTournamentRegistration();
 }
 await loadFeedbackStore();
-await initializePushNotifications();
+if (await initializePushNotifications()) startControlReleaseWatch(getAccountSummaryById);
 
 const recoveredRoomCount =
   await loadRoomsFromDisk({ strict: soloTournamentEnabled });

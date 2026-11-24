@@ -5,6 +5,7 @@ import type { Express, Request, Response } from "express";
 import webPush from "web-push";
 import type { HalieusAccountSummary } from "../../../shared/platform/accounts.js";
 import { getHalieusDataRoot } from "./dataPaths.js";
+import { createControlReleaseCheck, currentReleaseAvailability, verifyPackagedRelease, RELEASE_AVAILABILITY_TTL_MS, type ReleaseAvailability } from "./control-release-availability.js";
 
 /**
  * HGR 4.5.5t: background PWA push delivery is opt-in per browser/device.
@@ -28,6 +29,7 @@ interface DeviceSubscription {
   keys: { p256dh: string; auth: string };
   topics: HgrPushTopic[];
   updatedAt: number;
+  lastReleaseFingerprint?: string;
 }
 interface StoredPush {
   version: 1;
@@ -71,7 +73,7 @@ const supportedTopic = (item: unknown): item is HgrPushTopic =>
 async function save(): Promise<void> {
   if (!state) return;
   const snapshot = JSON.stringify(state);
-  writes = writes.then(async () => {
+  writes = writes.catch(() => {}).then(async () => {
     await mkdir(dir, {recursive:true});
     const temp = file + ".tmp";
     await writeFile(temp, snapshot, {encoding:"utf8",mode:0o600});
@@ -144,10 +146,11 @@ export function registerPushRoutes(app: Express, accountFor: AccountResolver): v
     const endpoint = sub.endpoint;
     // A browser subscription belongs to only one current account. Account
     // switching may not leak another player's messages to this device.
+    const prior = state.subscriptions.find(item=>item.endpoint===endpoint && item.accountId===account.id);
     state.subscriptions=state.subscriptions.filter(item=>item.endpoint!==endpoint);
     const duplicates=[...new Set(topicsInput as HgrPushTopic[])];
     state.subscriptions.push({accountId:account.id,endpoint,keys:sub.keys,
-      topics:duplicates,updatedAt:Date.now()});
+      topics:duplicates,updatedAt:Date.now(),lastReleaseFingerprint:prior?.lastReleaseFingerprint});
     const mine=state.subscriptions.filter(item=>item.accountId===account.id)
       .sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,5);
     state.subscriptions=state.subscriptions.filter(item=>item.accountId!==account.id).concat(mine);
@@ -247,4 +250,68 @@ export async function sendHgrPush(accountIds: readonly string[], notice: HgrPush
     state.subscriptions=state.subscriptions.filter(item=>!expired.has(item.endpoint));
     await save();
   }
+}
+
+
+type ControlAccountLookup = (accountId: string) => HalieusAccountSummary | null;
+let releaseWatchTimer: ReturnType<typeof setInterval> | null = null;
+
+function canReceiveRelease(item: DeviceSubscription, lookup: ControlAccountLookup, fingerprint?: string): boolean {
+  if (!item.topics.includes("operations") || (fingerprint && item.lastReleaseFingerprint === fingerprint)) return false;
+  const role = lookup(item.accountId)?.role;
+  return role === "owner" || role === "admin";
+}
+
+/** One durable attempt per opted-in device and fingerprint. Persist the
+ * reservation before delivering, so restarting cannot create a notification storm.
+ * If a gateway rejects a delivery the persistent foreground banner is still available. */
+export async function sendControlReleaseAvailable(release: ReleaseAvailability, lookup: ControlAccountLookup): Promise<void> {
+  const s = state;
+  const fingerprint = release.candidateFingerprint;
+  if (!s || release.status !== "available" || !fingerprint || !release.candidateVersion) return;
+  const targets = s.subscriptions.filter(item => canReceiveRelease(item, lookup, fingerprint));
+  if (!targets.length) return;
+  const before = targets.map(item => item.lastReleaseFingerprint);
+  for (const item of targets) item.lastReleaseFingerprint = fingerprint;
+  try { await save(); }
+  catch (error) {
+    targets.forEach((item, i) => { if (item.lastReleaseFingerprint === fingerprint) item.lastReleaseFingerprint = before[i]; });
+    throw error;
+  }
+  const payload = JSON.stringify({
+    title: "HGR " + release.candidateVersion + " — Update available",
+    body: "A verified release is ready. Tap to review in Control.",
+    url: "/control/?review=update",
+    tag: "hgr-control-release-" + fingerprint,
+  });
+  const expired = new Set<string>();
+  await Promise.allSettled(targets.map(async item => {
+    // Opt-out, account switching and role revocation during disk I/O must win.
+    if (state !== s || !s.subscriptions.includes(item) || !canReceiveRelease(item, lookup)) return;
+    try {
+      await webPush.sendNotification({endpoint:item.endpoint,keys:item.keys}, payload, { TTL: 3600, urgency: "normal" });
+    } catch (error) {
+      const status = typeof error === "object" && error && "statusCode" in error ? Number(error.statusCode) : 0;
+      if (status === 404 || status === 410) expired.add(item.endpoint);
+      else console.warn("[HGR] Release alert gateway delivery failed.");
+    }
+  }));
+  if (expired.size && state === s) {
+    s.subscriptions = s.subscriptions.filter(item => !expired.has(item.endpoint));
+    await save();
+  }
+}
+
+export function startControlReleaseWatch(lookup: ControlAccountLookup): void {
+  if (releaseWatchTimer) return;
+  const check = createControlReleaseCheck({
+    hasSubscribers: () => Boolean(state?.subscriptions.some(item => canReceiveRelease(item, lookup))),
+    readRelease: currentReleaseAvailability,
+    needsNotice: release => Boolean(state?.subscriptions.some(item => canReceiveRelease(item, lookup, release.candidateFingerprint ?? undefined))),
+    verify: verifyPackagedRelease,
+    notify: release => sendControlReleaseAvailable(release, lookup),
+  });
+  releaseWatchTimer = setInterval(() => { void check(); }, RELEASE_AVAILABILITY_TTL_MS);
+  releaseWatchTimer.unref();
+  void check();
 }

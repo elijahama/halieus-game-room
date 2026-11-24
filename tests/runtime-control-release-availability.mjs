@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
   classifyRelease, newerRelease, currentReleaseAvailability,
-  RELEASE_AVAILABILITY_TTL_MS
+  RELEASE_AVAILABILITY_TTL_MS, verifyPackagedRelease, createControlReleaseCheck
 } from "../server/src/platform/control-release-availability.ts";
 
 const valid=(version,hashChar="a")=>{
@@ -63,3 +63,50 @@ assert.match(js,/credentials: "include"/);
 assert.match(js,/release\.status !== "available"/);
 assert.doesNotMatch(js,/innerHTML|location\.href|fetch\([^)]*,\s*\{\s*method:\s*"POST"/i);
 console.log("PASS Control release availability: only valid newer merged-main RELEASE identity not dev PRs, same-version mismatch rejects, admin-only/no-store, cached GitHub discovery and read-only UI");
+
+
+// A newer manifest alone must never trigger the background alert.
+const candidate = options(valid("4.8.0"));
+const head = "a".repeat(40);
+const parent = "b".repeat(40);
+const commit = { sha: head, parents: [{sha:parent}], commit:{message:"chore: refresh HGR release identity"} };
+const run = {head_sha:parent,head_branch:"main",path:".github/workflows/release-identity.yml",status:"completed",conclusion:"success"};
+function githubFixture({commitDoc=commit,manifest=valid("4.8.0"),runs=[run]}={}) {
+  return async url => ({
+    ok:true,
+    json:async()=>url.endsWith("/commits/main") ? commitDoc :
+      url.endsWith("/"+head+"/RELEASE.json") ? manifest :
+      url.includes("head_sha="+parent) ? {workflow_runs:runs} : null,
+  });
+}
+assert.equal(await verifyPackagedRelease(candidate,githubFixture()),true);
+assert.equal(await verifyPackagedRelease(candidate,githubFixture({runs:[{...run,status:"in_progress",conclusion:null}]})),false);
+assert.equal(await verifyPackagedRelease(candidate,githubFixture({runs:[{...run,conclusion:"failure"}]})),false);
+assert.equal(await verifyPackagedRelease(candidate,githubFixture({runs:[{...run,head_sha:"c".repeat(40)}]})),false);
+assert.equal(await verifyPackagedRelease(candidate,githubFixture({manifest:valid("4.8.0","c")})),false);
+assert.equal(await verifyPackagedRelease(candidate,githubFixture({commitDoc:{...commit,commit:{message:"unpackaged changes"}}})),false);
+assert.equal(await verifyPackagedRelease(candidate,async()=>{throw Error("offline")}),false);
+
+let subscribers=false, reads=0, sends=0, ready=false, needs=true;
+let releaseGate;
+const check=createControlReleaseCheck({
+  hasSubscribers:()=>subscribers,
+  readRelease:async()=>{reads++;return candidate;},
+  needsNotice:()=>needs,
+  verify:async()=>{if(releaseGate)await releaseGate;return ready;},
+  notify:async()=>{sends++;needs=false;},
+});
+await check();assert.equal(reads,0,"no opted-in device means no upstream polling");
+subscribers=true;await check();assert.equal(sends,0,"unverified package cannot notify");
+ready=true;let resolveGate;releaseGate=new Promise(resolve=>{resolveGate=resolve;});
+const firstCheck=check();await check();assert.equal(reads,2,"overlapping checks are suppressed");
+resolveGate();await firstCheck;assert.equal(sends,1);
+await check();assert.equal(sends,1,"already reserved release cannot notify again");
+const push=await readFile(new URL("../server/src/platform/pushNotifications.ts",import.meta.url),"utf8");
+const sw=await readFile(new URL("../client/public/control/sw.js",import.meta.url),"utf8");
+assert.match(push,/setInterval\(\(\) => \{ void check\(\); \}, RELEASE_AVAILABILITY_TTL_MS\)/);
+assert.match(push,/item\.lastReleaseFingerprint = fingerprint;[\s\S]*?await save\(\);[\s\S]*?webPush\.sendNotification/);
+assert.match(push,/role === "owner" \|\| role === "admin"/);
+assert.match(sw,/\/control\/\?review=update/);
+assert.match(sw,/\/notification-badges\/control\.png/);
+console.log("PASS Control background release discovery: verified workflow, exact pinned manifest, no overlapping checks, opt-in suppression and durable reservation source guards");

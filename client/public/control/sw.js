@@ -35,7 +35,7 @@ self.addEventListener('push', (event) => {
     icon: '/control/control-icon.png?v=part26-control-approved2',
     // Exact Control H/cog silhouette extracted from the approved launcher art.
     badge: '/notification-badges/control.png',
-    data: { url: '/control/' },
+    data: { url: tag.startsWith('hgr-control-release-') ? '/control/?review=update' : '/control/' },
   }));
 });
 self.addEventListener('notificationclick', (event) => {
@@ -47,6 +47,10 @@ self.addEventListener('notificationclick', (event) => {
         return url.origin === self.location.origin && (url.pathname === '/control' || url.pathname.startsWith('/control/'));
       } catch { return false; }
     });
-    return control ? control.focus() : self.clients.openWindow('/control/');
+    const target = event.notification.data?.url === '/control/?review=update' ? '/control/?review=update' : '/control/';
+    if (control && target.includes('?review=update')) {
+      return control.navigate(target).then(client => client ? client.focus() : self.clients.openWindow(target));
+    }
+    return control ? control.focus() : self.clients.openWindow(target);
   }));
 });

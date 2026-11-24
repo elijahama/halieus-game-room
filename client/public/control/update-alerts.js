@@ -58,10 +58,10 @@
         : { enabled: false, topics: [] };
       enabled = Boolean(state.enabled && state.topics?.includes("operations"));
       show(enabled
-        ? "Enabled for this device. Android may group milestone alerts; tap one to return to Control."
+        ? "Enabled for this device. Get new-release and update-progress alerts; tap one to open Control."
         : Notification.permission === "denied"
           ? "Notifications are blocked in your browser or Android settings."
-          : "Get verified stage, quarter-progress and final Update alerts outside the app.");
+          : "Get verified new-release, stage, quarter-progress and final Update alerts outside the app.");
     } catch (error) {
       show(error instanceof Error ? error.message : "Could not check update notifications.");
     }
@@ -107,7 +107,7 @@
           throw error;
         }
         enabled = true;
-        show("Update alerts enabled for this device. You can switch apps while HGR updates.");
+        show("Update alerts enabled for this device, including verified new-release notices.");
       }
     } catch (error) {
       show(error instanceof Error ? error.message : "Could not change Control update alerts.");
