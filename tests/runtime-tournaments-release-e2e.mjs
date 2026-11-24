@@ -66,13 +66,38 @@ async function room(home,away){
  const code="E2E"+String(++roomSequence).padStart(5,"0");
  const a=await connect(home),b=await connect(away);
  await ack(a,"game:create",{code,playerName:home.name,ranked:false});
- await ack(b,"game:join",{code,playerName:away.name});
- return {code,a,b,home,away};
+ const joined=await ack(b,"game:join",{code,playerName:away.name});
+ return {code,a,b,home,away,awayToken:joined.reconnectToken};
 }
 async function finish(board,homeWins){
  await ack(board.a,"game:start",{code:board.code});
  await ack(homeWins?board.b:board.a,"game:forfeit",{code:board.code});
  board.winner=homeWins?board.a:board.b;
+}
+async function finishWithDisconnectedWinner(board){
+ await ack(board.a,"game:start",{code:board.code});
+ const oldId=board.b.id;
+ const offline=new Promise((resolve,reject)=>{
+  const timeout=setTimeout(()=>{board.a.off("lobby:updated",observe);reject(Error("Disconnected seat not reported"));},5000);
+  function observe(lobby){if(lobby.players.some(p=>p.id===oldId&&!p.isConnected&&!p.hasLeft)){
+   clearTimeout(timeout);board.a.off("lobby:updated",observe);resolve();
+  }}
+  board.a.on("lobby:updated",observe);
+ });
+ board.b.disconnect();sockets.delete(board.b);await offline;
+ const result=await ack(board.a,"game:forfeit",{code:board.code});
+ assert.equal(result.room.hostId,oldId,"The disconnected original winner owns the room");
+ assert.equal(result.state.winnerId,oldId,"Disconnect does not forfeit the winning seat");
+ board.winner=board.b;board.disconnectedWinner=true;
+}
+async function recoverFinishedWinner(board){
+ if(!board.disconnectedWinner)return;
+ board.b=await connect(board.away);
+ const recovered=await ack(board.b,"game:reconnect",{code:board.code,reconnectToken:board.awayToken,playerName:board.away.name});
+ assert.equal(recovered.room.hostId,board.b.id,"Recovered host authority follows the original winning seat");
+ assert.equal(recovered.state.winnerId,board.b.id,"Winner identity remaps without changing outcome");
+ assert.equal(recovered.room.players.filter(p=>p.isHost).length,1,"Exactly one host after recovery");
+ board.winner=board.b;
 }
 async function close(board){
  await ack(board.winner,"game:end-room",{code:board.code});
@@ -106,9 +131,11 @@ try{
    const board=await room(byId.get(m.homeAccountId),byId.get(m.awayAccountId));
    await post("/tournaments/solo/"+t.id+"/matches/"+m.id+"/bind-room",host,{roomCode:board.code});
    const homeWins=m.id!=="grand-final"; // Force a genuine reset in double elimination.
-   await finish(board,homeWins);
+   if(m.id==="grand-final") await finishWithDisconnectedWinner(board);
+   else await finish(board,homeWins);
    t=await until(get,x=>x.matches.find(y=>y.id===m.id).status==="completed","Solo receipt");
    assert.equal(t.matches.find(x=>x.id===m.id).winnerAccountId,homeWins?m.homeAccountId:m.awayAccountId);
+   await recoverFinishedWinner(board);
    await close(board);matches++;
   }
   assert.equal(matches,format.includes("double")?7:3);
@@ -138,9 +165,12 @@ try{
    await post("/guild-fixtures/"+fixture.id+"/bind-rooms",home.lead,{roomCodes:boards.map(b=>b.code)});
    await post("/guild-tournaments/"+t.id+"/matches/"+m.id+"/link",home.lead,{fixtureId:fixture.id});
    const homeWins=m.id!=="grand-final",tie=m.id==="semi-1";
-   await finish(boards[0],tie?true:homeWins);await finish(boards[1],tie?false:homeWins);
+   await finish(boards[0],tie?true:homeWins);
+   if(tie) await finishWithDisconnectedWinner(boards[1]);
+   else await finish(boards[1],homeWins);
    t=await until(get,x=>["completed","tied"].includes(x.matches.find(y=>y.id===m.id).status),"Guild fixture receipt");
    if(tie){
+    await recoverFinishedWinner(boards[1]);
     assert.equal(t.matches.find(x=>x.id===m.id).status,"tied");
     await post("/guild-fixtures/"+fixture.id+"/tiebreaker/nominate",home.lead,{guildId:home.id,accountId:home.members[0].id});
     await post("/guild-fixtures/"+fixture.id+"/tiebreaker/nominate",away.lead,{guildId:away.id,accountId:away.members[1].id});

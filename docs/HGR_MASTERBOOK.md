@@ -1,5 +1,11 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 tournament hardening — disconnected survivor candidate (24 November 2026)
+
+A bound tournament host forfeiting while the original opposing seat is disconnected previously failed to promote the surviving seat, leaving the former host in control of room cleanup. Host continuity must depend on the original eligible human seat, not its transient socket connection. The shared Solo/Guild forfeit handler now promotes the non-left authenticated survivor even when offline. The existing reconnect remap then transfers host and winner socket IDs to the same original player; no extra result, room or account authority is invented. Existing ordinary-room behavior is unchanged.
+
+The full-server authenticated Socket.IO regression now covers a disconnected winner in the Solo double-elimination Grand Final and the split Guild fixture, checks original host/winner seat identity before return, restores the original recovery token after receipt settlement, verifies one host and remapped winner, and closes through the recovered host. Existing reset/decider and restart checks remain. This is an independent source candidate; CI and physical PWA acceptance remain pending. Do not advance VERSION or deploy until preceding releases and milestone gates pass. All accepted deployments must use authenticated Control on Lagz.
+
 ## 4.8.1 production stability patch — 11 November 2026
 
 4.8.0 was merged in PR #246 after Windows/Ubuntu CI passed and preserved as protected tag v4.8.0. Its Oracle activation failed and automatically restored 4.7.14. This 4.8.1 candidate preserves every 4.8 tournament, spectator-layout and gameplay fix while correcting the two findings below. Source validation is not a claim of successful production activation.
