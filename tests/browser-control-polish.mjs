@@ -25,7 +25,7 @@ const server=createServer(async(req,res)=>{
     if(path==='/'){res.setHeader('Content-Type','text/html');res.end('<script src="/control-navigation.js" defer></script><button id="enter" onclick="document.documentElement.requestFullscreen()">Enter fullscreen</button><a href="/control/">Control</a>');return;}
     const file=path==='/control/'?'/control/index.html':path;
     const approvedFont=/^\/control\/fonts\/(?:unbounded-latin-wght|righteous-latin-400|varela-round-latin-400|alata-latin-400)\.woff2$/.test(file);
-    if(!/^\/control\/[a-z0-9.-]+$/.test(file)&&!/^\/control-navigation\.(js|css)$/.test(file)&&!approvedFont)throw Error('not found');
+    if(!/^\/control\/[a-z0-9.-]+$/.test(file)&&!/^\/control-navigation\.(js|css)$/.test(file)&&!approvedFont&&file!=='/notification-badges/control.png')throw Error('not found');
     let body=await readFile(resolve(root,'client/public'+file));
     if(file==='/control/control.js') body=Buffer.concat([body,Buffer.from('\n'),await readFile(resolve(root,'client/public/control/cloud-update.js'))]);
     res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.woff2')?'font/woff2':file.endsWith('.png')?'image/png':file.endsWith('.webmanifest')?'application/manifest+json':'text/html');
@@ -38,8 +38,10 @@ const browser=await chromium.launch({channel:'chromium',headless:true,executable
 try{
  const installed=await browser.newPage({viewport:{width:390,height:844}});
  await installed.goto(base+'/control/');
- await installed.evaluate(async()=>{await navigator.serviceWorker.ready;const cache=await caches.open('halieus-shell-fixture');await cache.put('/main-sentinel',new Response('main'));});
- await installed.waitForFunction(()=>!!navigator.serviceWorker.controller);
+ // Never await serviceWorker.ready without a deadline: an install failure
+ // (including one missing precache asset) otherwise hangs the entire release.
+ await installed.waitForFunction(()=>!!navigator.serviceWorker.controller,undefined,{timeout:15000});
+ await installed.evaluate(async()=>{const cache=await caches.open('halieus-shell-fixture');await cache.put('/main-sentinel',new Response('main'));});
  const approvedFonts=await installed.evaluate(async()=>{
    await document.fonts.ready;
    return Promise.all([
@@ -56,9 +58,10 @@ try{
  assert.deepEqual(manifest.icons.map(i=>i.sizes),['192x192','512x512']);
  assert.match(await installed.locator('link[rel="apple-touch-icon"]').getAttribute('href'),/control-icon.png/);
  await installed.evaluate(()=>fetch('/control/cloud/status'));
- const cached=await installed.evaluate(async()=>({names:await caches.keys(),urls:(await (await caches.open('hgr-cloud-control-v1')).keys()).map(r=>new URL(r.url).pathname)}));
+ const cached=await installed.evaluate(async()=>({names:await caches.keys(),urls:(await (await caches.open('hgr-cloud-control-v2')).keys()).map(r=>new URL(r.url).pathname)}));
  assert.ok(cached.names.includes('halieus-shell-fixture'));
- assert.deepEqual(cached.urls.sort(),['/control/control-icon-512.png','/control/control-icon.png','/control/offline.html']);
+ assert.ok(cached.names.includes('hgr-cloud-control-v2'),'Current scoped Control worker must own its shell cache');
+ assert.deepEqual(cached.urls.sort(),['/control/control-icon-512.png','/control/control-icon.png','/control/offline.html','/notification-badges/control.png']);
  await installed.context().setOffline(true);await installed.reload();
  await installed.getByRole('heading',{name:'Control is offline'}).waitFor();
  assert.equal(await installed.getByText('Owner Test',{exact:true}).count(),0,'offline shell has no cached account identity');
@@ -251,4 +254,4 @@ try{
  assert.equal(await actionsPage.locator('[data-operation="update"]').isDisabled(),false,'Admin can still request normal Update');
  await actionsPage.close();
  console.log('PASS owner-only Cloud lifecycle UI request sequence: Start / Restart / Close, admin refusal');
-}finally{await browser.close();await new Promise(r=>server.close(r));}
+}finally{try{await browser.close();}finally{await new Promise(r=>{server.close(r);server.closeAllConnections();});}}
