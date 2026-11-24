@@ -19,8 +19,24 @@ $created = $false
 
 function Invoke-Gate([string]$Label, [scriptblock]$Command) {
     Write-Output "[CHECK] $Label"
-    & $Command
-    if ($LASTEXITCODE -ne 0) { throw "$Label failed; no website deployment has been started." }
+    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    $outcome = "failed"
+    try {
+        & $Command
+        if ($LASTEXITCODE -ne 0) { throw "$Label failed; no website deployment has been started." }
+        $outcome = "passed"
+    } finally {
+        $timer.Stop()
+        # Fixed gate labels only; never include command arguments, output or credentials.
+        # Measurement is evidence, not an authorization to skip any validation.
+        $receipt = [ordered]@{
+            operationId = $OperationId
+            gate = $Label
+            outcome = $outcome
+            elapsedMs = $timer.ElapsedMilliseconds
+        }
+        Write-Output ("[HGR-GATE-TIMING] " + ($receipt | ConvertTo-Json -Compress))
+    }
 }
 try {
     if (Test-Path -LiteralPath $checkout) {
