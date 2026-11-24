@@ -43,6 +43,7 @@ export const GAME_DEVELOPMENT: Record<GameId, GameDevelopmentRecord> = {
     notes: "Owner-reported serious gameplay faults remain under review; do not report as stable.",
   },
   "word-board": { ...UNASSESSED },
+  "spar": { ...UNASSESSED, maturity:"beta", notes:"New Spar (Cha-Cha) Casual game. CI and owner acceptance are pending; do not call this stable." },
 };
 
 export const GAME_MATURITY_LABEL: Record<GameMaturity, string> = {
