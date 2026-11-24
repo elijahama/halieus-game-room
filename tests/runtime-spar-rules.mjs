@@ -36,7 +36,7 @@ assert.deepEqual(legalSparCards(["6S","7D"],null),["6S","7D"]);
 
 const trick=[
   {playerId:"a",playerName:"A",card:"6H"},
-  {playerId:"b",playerName:"B",card:"AS"}, // invalid deck card; only suit matters
+  {playerId:"b",playerName:"B",card:"9S"}, // off-suit card cannot win
   {playerId:"c",playerName:"C",card:"QH"},
   {playerId:"d",playerName:"D",card:"KD"},
 ];
