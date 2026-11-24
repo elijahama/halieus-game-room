@@ -1,0 +1,77 @@
+import assert from "node:assert/strict";
+import { mkdtemp, rm, writeFile, readdir, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+const root=await mkdtemp(join(tmpdir(),"hgr-spar-ranked-"));
+process.env.HALIEUS_DATA_DIR=root;
+const {registerSparHandlers,closeAllSparRooms,getSparChatIdentity,getSparLiveRoomSummaries}=await import("../server/src/games/spar/handlers.ts");
+const {registerProgressionIdentity}=await import("../server/src/platform/progression.ts");
+const {flushFinalSessionWrites}=await import("../server/src/platform/sessionArchive.ts");
+const {buildRankedLeaderboard}=await import("../server/src/platform/ranked.ts");
+const {createRankedMatchHistory}=await import("../server/src/platform/ranked-match-history.ts");
+const callbacks=new Map(), views=new Map(), identities=new Map(), clear=[];
+const io={to(id){return {emit(event,value){if(event==="spar:state")views.set(id,value)}}},emit(){}};
+for(const id of ["alpha","bravo","duplicate","guest","beta","observer","returning"]){
+ registerSparHandlers(io,{id,on(event,fn){callbacks.set(id+":"+event,fn)}});
+ clear.push(registerProgressionIdentity(id,()=>identities.get(id)??null));
+}
+identities.set("alpha",{accountId:"rank-account-a",beta:false});
+identities.set("duplicate",{accountId:"rank-account-a",beta:false});
+identities.set("bravo",{accountId:"rank-account-b",beta:false});
+identities.set("returning",{accountId:"rank-account-b",beta:false});
+identities.set("beta",{accountId:"rank-account-beta",beta:true});
+function call(id,action,payload={}){let result;callbacks.get(id+":spar:"+action)({code:"RANK01",...payload},r=>result=r);assert.ok(result);return result;}
+try{
+ const opts={playerName:"Host",tableFormat:"duel",matchMode:"ranked"};
+ assert.equal(call("guest","create",opts).ok,false);
+ assert.equal(call("beta","create",opts).ok,false);
+ assert.equal(call("alpha","create",{...opts,tableFormat:"multiplayer"}).ok,false);
+ assert.equal(call("alpha","create",opts).ok,true);
+ assert.equal(call("alpha","add-ai").ok,false);
+ for(const id of ["guest","beta","duplicate"])assert.equal(call(id,"join",{playerName:id}).ok,false);
+ const joined=call("bravo","join",{playerName:"Opponent"});assert.equal(joined.ok,true);
+ assert.equal(call("duplicate","spectate",{playerName:"Duplicate"}).ok,false);
+ assert.equal(call("observer","spectate",{playerName:"Observer"}).ok,true);
+ assert.equal(getSparChatIdentity("RANK01","observer").role,"spectator");
+ assert.equal(getSparLiveRoomSummaries()[0].matchMode,"ranked");
+ assert.equal(call("alpha","start").ok,true);
+ assert.equal(call("alpha","end-game").ok,false);
+ assert.equal(call("observer","bra").ok,false);
+ assert.equal(call("observer","play",{card:"6C"}).ok,false);
+ assert.equal(call("observer","forfeit").ok,false);
+ assert.equal(views.get("observer").hand.length,0);
+ assert.deepEqual(views.get("observer").spectatorNames,["Observer"]);
+ for(const secret of ["rank-account-a","rank-account-b","rankedAccountId","progressionIdentity","reconnectToken","deck"])assert.ok(!JSON.stringify(views.get("observer")).includes(secret));
+ const privateHand=[...views.get("bravo").hand];
+ assert.equal(call("bravo","leave").ok,true);
+ assert.equal(call("guest","reconnect",{reconnectToken:joined.reconnectToken}).ok,false);
+ assert.equal(call("returning","reconnect",{reconnectToken:joined.reconnectToken}).ok,true);
+ assert.deepEqual(views.get("returning").hand,privateHand);
+ assert.equal(call("bravo","bra").ok,false);
+ assert.equal(call("returning","bra").ok,true);
+ assert.equal(call("observer","leave").ok,true);
+ assert.equal(views.get("alpha").spectatorCount,0);
+ assert.equal(getSparChatIdentity("RANK01","observer"),null);
+ assert.equal(call("returning","forfeit").ok,true);
+ assert.equal(call("returning","forfeit").ok,false);
+ await flushFinalSessionWrites();
+ const dir=join(root,"sessions","finalized");
+ const names=await readdir(dir);
+ const record=JSON.parse(await readFile(join(dir,names.find(n=>n.startsWith("spar-RANK01-"))),"utf8"));
+ assert.equal(record.state.winnerPlayerId,"alpha");
+ await writeFile(join(dir,"duplicate.json"),JSON.stringify(record));
+ await writeFile(join(dir,"casual.json"),JSON.stringify({...record,sessionId:"casual",state:{...record.state,matchMode:"casual"}}));
+ await writeFile(join(dir,"wrong-account.json"),JSON.stringify({...record,sessionId:"wrong-account",state:{...record.state,players:[record.state.players[0],{...record.state.players[1],rankedAccountId:"rank-account-a"}]}}));
+ const ladder=await buildRankedLeaderboard("spar");
+ assert.deepEqual(ladder.entries.map(e=>[e.accountId,e.rating,e.matches,e.wins,e.losses]),[["rank-account-a",1016,1,1,0],["rank-account-b",984,1,0,1]]);
+ const history=await createRankedMatchHistory(dir,()=>[]).list(0,"spar");
+ assert.equal(history.total,1);
+ assert.ok(!JSON.stringify(history).includes("rank-account"));
+ console.log("PASS Ranked Spar: authentication, distinct accounts, no AI, protected reconnect, spectator privacy/chat/leave, forfeit, verified Elo and deduplicated history");
+}finally{
+ closeAllSparRooms();
+ await flushFinalSessionWrites();
+ clear.forEach(fn=>fn());
+ await new Promise(r=>setTimeout(r,500));
+ await rm(root,{recursive:true,force:true});
+}

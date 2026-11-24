@@ -120,10 +120,10 @@ export function SparScreen({
         <span>Room {state.code}</span><span>{ranked ? "1v1 · Ranked Beta" : duel ? "1v1 · Casual Beta" : "Multiplayer · Casual Beta"}</span>
         <span>{state.players.length}/{maximumPlayers} players</span>
         <span className={connectionStatus === "Connected" ? "is-online" : ""}>{connectionStatus}</span>
-        {state.isSpectator&&<span>Spectating · Read only</span>}
       </div>
       <button type="button" className="button-outline spar-menu-toggle" onClick={()=>setMenuOpen(true)}>Game menu</button>
     </header>
+    {state.isSpectator && <div className="mega-spectator-banner" role="status" aria-label="Spectating live Spar"><strong>Spectating</strong><span>Live Spar · Room {state.code} · Read-only view</span><button type="button" className="button-outline" onClick={onLeave}>Leave spectator view</button></div>}
 
     {state.phase === "lobby" ?
       <section className="card-game-lobby spar-lobby">
@@ -148,6 +148,7 @@ export function SparScreen({
           </div>}
           <button type="button" className="button-muted" onClick={()=>setInviteOpen(true)}>Invite players</button>
           {message&&<p className="status-toast" role="status">{message}</p>}
+          {state.isSpectator && roomActivity}
         </article>
         <section className="card-game-roster"><header><div><p className="modal-eyebrow">SEATS</p><h2>Players</h2></div><span>{state.players.length}/{maximumPlayers}</span></header>
           {state.players.map(p=><article key={p.id} className="card-game-player-row">

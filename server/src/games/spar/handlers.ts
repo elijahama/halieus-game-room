@@ -95,7 +95,7 @@ function archive(room: Room) {
 function emit(io: Server, room: Room) {
   room.updatedAt = Date.now();
   recordWorkingSession("spar", room.code, room.createdAt, archive(room));
-  for (const p of room.players) if (!p.isAi && p.isConnected) {
+  for (const p of room.players) if (playerFor(room, p.id)) {
     io.to(p.id).emit("spar:state", state(room, p.id, false));
   }
   for (const id of room.spectators.keys()) io.to(id).emit("spar:state", state(room, null, true));
