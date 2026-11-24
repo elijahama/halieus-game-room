@@ -1,6 +1,6 @@
 /** Browser-safe subset of the Spar rules (no Node.js crypto dependency).
  * Server independently validates every move using the authoritative engine. */
-import type { SparCard, SparRank, SparSuit } from "./types";
+import type { SparCard, SparRank, SparSuit } from "./types.js";
 export function sparSuit(card: SparCard): SparSuit {
   return card.slice(-1) as SparSuit;
 }
