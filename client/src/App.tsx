@@ -3453,6 +3453,7 @@ function handleLeaveSpectator() {
     classicState?.game ??
     wordArenaState?.game ??
     (ayoState ? "ayo" : null) ??
+    (sparState ? "spar" : null) ??
     (wordBoardState ? "word-board" : null) ??
     (connectFourState ? "connect-four" : null) ??
     (hiddenDictatorState ? "hidden-dictator" : null) ??
@@ -3544,6 +3545,23 @@ function handleLeaveSpectator() {
     </>;
   }
 
+  if (sparState) {
+    const respond = (action:string,payload:Record<string,unknown>,fallback:string) =>
+      socket.emit(`spar:${action}`,{code:sparState.code,...payload},(r:SparResponse)=>{if(!r.ok)setMessage(r.reason??fallback)});
+    return <SparScreen state={sparState} connectionStatus={connectionStatus} message={message}
+      darkMode={darkMode} theme={theme} soundEnabled={soundEnabled}
+      onToggleFullscreen={toggleFullscreen} onToggleDarkMode={toggleDarkMode}
+      onToggleSound={toggleSound}
+      onStart={()=>respond("start",{},"Unable to start Spar.")}
+      onAddAi={(difficulty:SparAiDifficulty)=>respond("add-ai",{difficulty},"Unable to add Spar CPU.")}
+      onRemoveAi={(playerId:string)=>respond("remove-ai",{playerId},"Unable to remove Spar CPU.")}
+      onBra={()=>respond("bra",{},"Unable to call Bra.")}
+      onPlay={(card:SparCard)=>respond("play",{card},"That Spar card cannot be played.")}
+      onForfeit={forfeitSpar} onEndGame={endSpar} onLeave={leaveSpar}
+      roomActivity={<RoomChatPanel embedded game="spar" code={sparState.code}
+        accent="#D6AB54" spectatorCount={sparState.spectatorCount}
+        gameLog={sparState.events.map(e=>({id:`spar-${e.id}`,at:e.at,label:e.description}))}/>}/>;
+  }
   if (ayoState) {
     return <AyoScreen state={ayoState} connectionStatus={connectionStatus} message={message} darkMode={darkMode} theme={theme} soundEnabled={soundEnabled} onToggleFullscreen={toggleFullscreen} onToggleDarkMode={toggleDarkMode} onToggleSound={toggleSound} onStart={()=>socket.emit("ayo:start",{code:ayoState.code},(r:AyoResponse)=>{if(!r.ok)setMessage(r.reason??"Unable to start Ayo.")})} onAddAi={(difficulty:AyoAiDifficulty)=>socket.emit("ayo:add-ai",{code:ayoState.code,difficulty},(r:AyoResponse)=>{if(!r.ok)setMessage(r.reason??"Unable to add Ayo AI.")})} onRemoveAi={(playerId)=>socket.emit("ayo:remove-ai",{code:ayoState.code,playerId},(r:AyoResponse)=>{if(!r.ok)setMessage(r.reason??"Unable to remove Ayo AI.")})} onSow={(pit)=>socket.emit("ayo:sow",{code:ayoState.code,pit},(r:AyoResponse)=>{if(!r.ok)setMessage(r.reason??"That Ayo move is unavailable.")})} onEndGame={endAyo} onForfeit={forfeitAyo} onLeave={leaveAyo} roomActivity={<RoomChatPanel embedded game="ayo" code={ayoState.code} accent="#b87938" spectatorCount={ayoState.spectatorCount} gameLog={ayoState.actionLog.map(e=>({id:`ayo-${e.sequence}`,at:e.at,label:e.detail}))}/>} />;
   }
@@ -4164,6 +4182,7 @@ function handleLeaveSpectator() {
       ludoRecoveryCode={ludoRecoveryCode}
       connectFourRecoveryCode={connectFourRecoveryCode}
       ayoRecoveryCode={ayoRecoveryCode}
+      sparRecoveryCode={sparRecoveryCode}
       wordBoardRecoveryCode={wordBoardRecoveryCode}
       hiddenDictatorRecoveryCode={hiddenDictatorRecoveryCode}
       savedSession={savedSession}
@@ -4173,6 +4192,7 @@ function handleLeaveSpectator() {
       ludoSavedSession={ludoSavedSession}
       connectFourSavedSession={connectFourSavedSession}
       ayoSavedSession={ayoSavedSession}
+      sparSavedSession={sparSavedSession}
       wordBoardSavedSession={wordBoardSavedSession}
       hiddenDictatorSavedSession={hiddenDictatorSavedSession}
       pokerStartingChips={pokerStartingChips}
@@ -4209,6 +4229,7 @@ function handleLeaveSpectator() {
       onLudoRecoveryCodeChange={setLudoRecoveryCode}
       onConnectFourRecoveryCodeChange={setConnectFourRecoveryCode}
       onAyoRecoveryCodeChange={setAyoRecoveryCode}
+      onSparRecoveryCodeChange={setSparRecoveryCode}
       onWordBoardRecoveryCodeChange={setWordBoardRecoveryCode}
       onHiddenDictatorRecoveryCodeChange={setHiddenDictatorRecoveryCode}
       onPokerStartingChipsChange={setPokerStartingChips}
@@ -4268,6 +4289,12 @@ function handleLeaveSpectator() {
       onForgetLudoSession={() => { clearCardSession(LUDO_SESSION_KEY); setLudoSavedSession(null); setLudoRecoveryCode(""); setMessage("Saved Ludo seat forgotten."); }}
       onCreateConnectFour={createConnectFour}
       onCreateAyo={createAyo}
+      onCreateSpar={createSpar}
+      onJoinSpar={joinSpar}
+      onSpectateSpar={spectateSpar}
+      onManualSparReconnect={() => recoverSpar({code:roomCode,playerName,reconnectToken:sparRecoveryCode})}
+      onResumeSparSession={() => { if(sparSavedSession) recoverSpar(sparSavedSession); }}
+      onForgetSparSession={() => { clearCardSession(SPAR_SESSION_KEY); setSparSavedSession(null);setSparRecoveryCode("");setMessage("Saved Spar seat forgotten."); }}
       onJoinAyo={joinAyo}
       onSpectateAyo={spectateAyo}
       onManualAyoReconnect={() => recoverAyo({ code: roomCode, playerName, reconnectToken: ayoRecoveryCode })}
