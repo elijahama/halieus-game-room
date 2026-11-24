@@ -57,8 +57,10 @@ import {
 /** A bound tournament host forfeits their seat rather than deleting the match. */
 function preserveTournamentHostAfterForfeit(room: import("../types/game.js").GameRoom, forfeiterId: string): void {
   if (!(getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)) || room.hostId !== forfeiterId) return;
+  // Ownership follows the surviving original seat, not the transient socket
+  // connection. A disconnected winner must retain host authority on return.
   const surviving = room.players.find(seat =>
-    seat.id !== forfeiterId && !seat.isAi && !seat.hasLeft && seat.isConnected &&
+    seat.id !== forfeiterId && !seat.isAi && !seat.hasLeft &&
     Boolean(seat.replayAccountId));
   if (!surviving) return;
   const former = room.players.find(seat => seat.id === forfeiterId);
