@@ -70,6 +70,12 @@ assert.ok(helper.includes('$env:HGR_UPDATE_NONINTERACTIVE -ne "1"'));
 assert.ok(helper.includes('$env:HGR_CONTROL_DEFER_REFRESH -ne "1"'));
 assert.match(helper, /npm\.cmd audit --audit-level=high/);
 assert.match(helper, /npm\.cmd run test:regression/);
+assert.match(helper, /\[System\.Diagnostics\.Stopwatch\]::StartNew\(\)/);
+assert.match(helper, /\[HGR-GATE-TIMING\]/);
+assert.match(helper, /elapsedMs = \$timer\.ElapsedMilliseconds/);
+assert.match(helper, /if \(\$LASTEXITCODE -ne 0\) \{ throw/);
+assert.match(helper, /\$outcome = "failed"[\s\S]*?\$outcome = "passed"[\s\S]*?finally \{/);
+
 assert.match(helper, /cloud-oracle-deploy\.ps1/);
 assert.match(helper, /Remove-Item -LiteralPath \$checkout -Recurse -Force/);
 assert.doesNotMatch(helper, /git (?:push|rebase|reset --hard|switch|checkout|remote set-url)/);
@@ -77,6 +83,38 @@ assert.doesNotMatch(helper, /ssh -o StrictHostKeyChecking=no|set-url https:\/\/.
 assert.doesNotMatch(helper, /\.openshard\/bridge\/prompt-journal|server\\data\\accounts/);
 
 if (process.platform === "win32") {
+  // Extract only the real function with PowerShell's parser, not the updater entry point.
+  // This test has no Git, SSH, service or owner-checkout side effects.
+  const gateFixture = mkdtempSync(path.join(os.tmpdir(), "hgr-gate-timing-"));
+  try {
+    const source = path.join(gateFixture, "helper.ps1");
+    const runner = path.join(gateFixture, "timing.ps1");
+    writeFileSync(source, helper);
+    writeFileSync(runner, [
+      '$ErrorActionPreference = "Stop"',
+      '$OperationId = "fixture-operation-123"',
+      '$tokens = $null; $errors = $null',
+      '$ast = [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot "helper.ps1"), [ref]$tokens, [ref]$errors)',
+      'if ($errors.Count -ne 0) { throw "Parse failed" }',
+      '$gate = $ast.Find({ param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq "Invoke-Gate" }, $true)',
+      'if ($null -eq $gate) { throw "Gate missing" }',
+      '. ([scriptblock]::Create($gate.Extent.Text))',
+      'Invoke-Gate "fixture-success" { & cmd.exe /d /c exit 0 }',
+      'try { Invoke-Gate "fixture-failure" { & cmd.exe /d /c exit 7 }; throw "Gate failed to reject" } catch { if ($_.Exception.Message -notlike "fixture-failure failed;*") { throw } }'
+    ].join("\r\n"));
+    const measured = spawnSync("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", runner],
+      { encoding: "utf8", timeout: 15000, windowsHide: true });
+    assert.equal(measured.status, 0, measured.stdout + measured.stderr);
+    const prefix = "[HGR-GATE-TIMING] ";
+    const receipts = measured.stdout.split(/\r?\n/).filter(line => line.startsWith(prefix)).map(line => JSON.parse(line.slice(prefix.length)));
+    assert.deepEqual(receipts.map(r => [r.gate, r.outcome]), [["fixture-success", "passed"], ["fixture-failure", "failed"]]);
+    for (const receipt of receipts) {
+      assert.equal(receipt.operationId, "fixture-operation-123");
+      assert.ok(Number.isSafeInteger(receipt.elapsedMs) && receipt.elapsedMs >= 0);
+    }
+  } finally {
+    rmSync(gateFixture, { recursive: true, force: true });
+  }
   // Exercise the real finalizer against a private throwaway fixture, never the
   // owner's installed HGR Control service or actual operation marker.
   const fixture = mkdtempSync(path.join(os.tmpdir(), "hgr-isolated-handoff-"));
