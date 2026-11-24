@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Milestone roadmap refresh — 24 November 2026
+
+Owner requests the milestones roadmap be updated and incremental deployments prioritised before 4.9 development. The roadmap now distinguishes the last verified production identity (4.8.1), merged 4.8.2 packaging, subsequent candidates 4.8.3–4.8.6 and paused 4.9.0. The Control Development and public project history source display exact release targets, including 4.8.5, 4.9.5 and 5.0.5, retain prior requirements and avoid hard-coded current badges or simulated progress. Actual publication/acceptance depends on the exact release identity and verified device/production evidence. This candidate is staged separately for integration after 4.8.2 production acceptance, so it cannot invalidate that in-flight fingerprint. No VERSION bump or deployment implied.
+
 ## 4.8.2 Control updater reliability candidate — 24 November 2026
 
 The owner greenlit the versioned delivery plan. PR #250 addresses the recorded Cloud Update failure caused by tracked live room state (data/rooms.json). The authenticated Control agent delegates tracked edits to the isolated canonical-main updater instead of rejecting them or mutating the owner's checkout. The isolated helper validates source integrity and treats an exact online HTTPS version/fingerprint match as a successful no-deploy result; unknown health retains full deployment checks. The ordinary clean-main local refresh workflow remains unchanged. Authentication, both idle-room checks and rollback stay mandatory. The isolated finalizer does not restart the existing owner Control agent.
