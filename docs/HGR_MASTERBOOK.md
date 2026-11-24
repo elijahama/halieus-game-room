@@ -1,5 +1,11 @@
 # Halieus Game Room Masterbook
 
+## 4.8.4 intro and Tournament Mode navigation candidate — 24 November 2026
+
+The approved delivery plan combines the independently reviewed intro viewport/glow fix (PR #248) and standalone Tournament Mode navigation (PR #249) in one release candidate. Preserve the canonical H mark, existing auto-enter/skip timing, phone intro layout, authenticated Solo/Guild APIs, guild permissions and five-item mobile navigation. Both original regression suites remain in the combined test chain. The previous separate CI passes are not evidence of the combined candidate; require fresh integrated Windows/Ubuntu validation and preceding 4.8.2/4.8.3 release gates before advancing VERSION.
+
+Owner deployment instruction: publish approved releases through authenticated HGR Control on the owner laptop Lagz, with the genuine update operation and progress notification, not an alternate direct Oracle or visible terminal workflow. Do not report a started update or notification until the Control action is accepted. Preserve active-room checks, release identity and rollback; if Control is unavailable or a candidate is not validated, stop deployment rather than bypassing the workflow. No deployment claimed here.
+
 ## 4.8.1 production stability patch — 11 November 2026
 
 4.8.0 was merged in PR #246 after Windows/Ubuntu CI passed and preserved as protected tag v4.8.0. Its Oracle activation failed and automatically restored 4.7.14. This 4.8.1 candidate preserves every 4.8 tournament, spectator-layout and gameplay fix while correcting the two findings below. Source validation is not a claim of successful production activation.
