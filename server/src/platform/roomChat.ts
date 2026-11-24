@@ -19,7 +19,7 @@ function normaliseCode(value: unknown): string {
 }
 
 function normaliseGame(value: unknown): RoomChatGame | null {
-  return value === "mega-board" || value === "poker" || value === "blackjack" || value === "whot" || value === "ludo" || value === "hidden-dictator" || value === "connect-four" || value === "word-game" || value === "password" || value === "anagrams-race" || value === "cheat" || value === "dominoes" || value === "ayo" || value === "word-board" ? value : null;
+  return value === "mega-board" || value === "poker" || value === "blackjack" || value === "whot" || value === "ludo" || value === "hidden-dictator" || value === "connect-four" || value === "word-game" || value === "password" || value === "anagrams-race" || value === "cheat" || value === "dominoes" || value === "ayo" || value === "spar" || value === "word-board" ? value : null;
 }
 
 function keyFor(game: RoomChatGame, code: string): string {
