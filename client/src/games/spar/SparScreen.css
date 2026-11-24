@@ -226,3 +226,7 @@
   .spar-current-plays.is-expanded .spar-playing-card { width: min(15vw,58px); height: clamp(64px,21vw,86px); }
   .spar-current-plays.is-expanded .spar-play small { max-width: 100%; }
 }
+
+/* Seven-card Custom hands wrap without cutting off cards on small screens. */
+.spar-hand-cards { flex-wrap: wrap; }
+.spar-bra-prompt .spar-hand-cards { width:100%; }
