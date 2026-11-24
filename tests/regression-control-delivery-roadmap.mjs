@@ -33,6 +33,13 @@ for (const version of ["4.6.x", "4.7.x", "4.8.x", "4.9.x", "5.0.0"]) {
   assert.ok(js.includes(`version: "${version}"`), `Tournament family missing ${version}`);
   assert.ok(history.includes(`version: "${version}"`), `Public timeline missing ${version}`);
 }
+for (const version of ["4.8.2","4.8.3","4.8.4","4.8.5","4.8.6","4.9.0","4.9.5","5.0.5"]) {
+  assert.ok(js.includes(`version: "${version}"`), `Control missing exact milestone ${version}`);
+  assert.ok(history.includes(`version: "${version}"`), `Public history missing exact milestone ${version}`);
+}
+for (const pr of [250,253,248,254,251,255]) assert.match(js, new RegExp(`pr: ${pr}\\b`));
+assert.match(historyUi, /exactCurrent/, "Exact build must take precedence over family");
+assert.match(historyUi, /milestone\.planned && !isCurrent/, "Do not mark skipped targets as delivered");
 assert.match(js, /pulls\.find\(pull => Number\(pull\.number\) === batch\.pr\)/,
   "PR state must come from actual GitHub returned data rather than hard-coded job assumptions");
 assert.match(js, /Status not in latest GitHub snapshot/, "Unknown source state must be visibly unknown");
@@ -43,7 +50,7 @@ assert.match(js, /Tournament feature gate still requires owner acceptance|owner 
 assert.match(history, /planned: true/, "5.0 roadmap must distinguish future work");
 assert.doesNotMatch(history, /current: true/, "Old 4.1.0 cannot be marked the current build");
 assert.match(historyUi, /currentVersion\.startsWith/, "Current badge must reflect actual running version");
-assert.match(historyUi, /milestone\.planned \? "Planned/, "Planned releases must be labelled visibly");
+assert.match(historyUi, /isPlanned \? "Target/, "Planned releases must be labelled visibly");
 assert.match(css, /\.development-delivery-track/, "Timeline needs a bounded in-flow track");
 assert.match(css, /\.development-roadmap-stages/, "Long range milestones need responsive layout");
 assert.match(versionPlan, /5\.0\.0.*reserved|5\.0\.0.*Complete Tournament Mode/i);
