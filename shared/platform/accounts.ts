@@ -133,7 +133,7 @@ export interface HalieusGameRequestSummary {
 }
 
 export interface HalieusGameStatLine {
-  game: "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "word-board";
+  game: "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "spar" | "word-board";
   gameTitle: string;
   played: number;
   wins: number;
