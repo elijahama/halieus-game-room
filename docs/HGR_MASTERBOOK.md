@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 Spar (Cha-Cha) Casual Beta hardening candidate — 24 November 2026
+
+PR #251 previously passed Windows/Ubuntu CI for the original stand-alone card table. Review identified duplicate socket seating, dual spectator/player state, disconnected seat actions, and an idle-room safety gap: a started hand with every human offline was incorrectly treated as idle. The candidate rejects duplicate joins, cross-seat recovery and seated spectator requests, clears spectator role on legitimate recovery, requires connected human seats before dealing, restricts actions to connected seats, and keeps every active hand counted even with no connected players. Empty waiting lobbies and completed tables remain non-blocking. Tests cover private hand restoration, replaced-socket denial, correct Bra turn and offline deployment protection, with the existing tie overtime rule explicitly handled in the test. Five-stone house rule, scoring, original artwork and Casual Beta status are unchanged. No restart persistence or physical-device acceptance claimed; those remain gates before broader promotion. Fresh CI and prior release integration required; VERSION and production unchanged. Deploy accepted releases via authenticated Control on Lagz.
+
 ## 4.8.1 production stability patch — 11 November 2026
 
 4.8.0 was merged in PR #246 after Windows/Ubuntu CI passed and preserved as protected tag v4.8.0. Its Oracle activation failed and automatically restored 4.7.14. This 4.8.1 candidate preserves every 4.8 tournament, spectator-layout and gameplay fix while correcting the two findings below. Source validation is not a claim of successful production activation.
