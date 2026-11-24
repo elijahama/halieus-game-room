@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.3 release preparation — 24 November 2026
+
+Integrated candidate `17a3d9c41474e5c83864d3b4d235e255b39e` passed Windows (49 successful stages, two platform-specific skips) and Ubuntu (51/51) in [CI run 45479556976](https://github.com/elijahama/halieus-game-room/actions/runs/45479556976). Set VERSION to 4.8.3 in the review branch only. The existing identity generator in fresh CI synchronizes generated consumers; require successful validation of this new versioned head before merging, then exact main release packaging and owner-authorized idle-room deployment. Production remains 4.8.2 until verified otherwise. No updater optimization, additional game feature, or branding change bundled into this patch.
+
 ## 4.8.3 integration — 24 November 2026
 
 4.8.2 verified online with exact fingerprint `hgr-4.8.2-fc3b4fa0ad4a8768`, updater exit 0, 100%, elapsed 11m19s. Reconcile #253 onto accepted source commit `81de46470507981f5f093ac3df7606c473658ac1` without replacing the newer Control fixes, release workflows, or shared archive barrier/Solo test (identical blobs on both sides). Carry the four Mega Board and Guild fixture changes only. Require fresh integrated validation before VERSION advancement; the next version remains 4.8.3. Update-speed, granular progress/notifications, mobile Control and infrastructure work remain independent reviewed batches. No deployment implied.
