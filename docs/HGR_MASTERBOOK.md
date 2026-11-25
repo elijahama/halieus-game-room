@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.4 short desktop Control launcher containment — 25 November 2026
+
+Official main release identity run 45516439220 passed Windows smoke and failed only final browser gate 14/14 Control branding after desktop 1440×900 passed, at short 1280×600 viewport. Preserve canonical approved artwork and static launcher. Compact the fixed desktop rail below 721px height, allow only navigation subsection overflow if needed, retain full-size Control icon and all nav items, leave mobile/tablet unchanged. Strengthen existing containment assertion with diagnostic coordinates and top boundary; do not bypass release checks. Fresh PR CI and main packaging required; production remains unchanged.
+
 ## 4.8.4 alternative bounded post-activation verification — 24 November 2026
 
 Retain the established independent exact Oracle `/health` probe and both version/fingerprint comparisons. PR #267's single-SSH design remains separate and has incompatible legacy coverage. For this candidate, the read-only final probe runs in a hidden noninteractive PowerShell worker with a 35-second wall-clock timeout, bounded pipe drain, scoped worker-process-tree cleanup and truthful unconfirmed identity on timeout. Existing SSH transport and curl deadlines remain. Do not retry deployment automatically, relax identity comparison, mark an uncertain release successful, or terminate unrelated processes. Generic isolated gate errors no longer claim deployment never started. New regression exercises the worker in Windows CI; no production changes until exact-head tests and packaging pass. This alternative prevents indefinite verification hangs but can still report an unconfirmed deployment if the independent probe cannot complete.

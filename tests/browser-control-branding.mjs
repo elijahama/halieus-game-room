@@ -47,7 +47,14 @@ try {
   const response=await context.request.get(base+imageUrl);
   assert.equal(createHash('sha256').update(await response.body()).digest('hex'),expectedHash);
   const box=await image.boundingBox();assert.ok(box.width>=30&&box.height>=30);
-  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y+box.height<=height);
+  assert.ok(box.x>=0&&box.x+box.width<=width&&box.y>=0&&box.y+box.height<=height,`${device}: Control image ${JSON.stringify(box)} outside ${width}×${height}`);
+  if(device==="short") {
+   const sidebar=page.locator(".halieus-sidebar:visible");
+   const nav=sidebar.getByRole("button",{name:"Tournaments",exact:true});
+   await nav.waitFor();
+   const rail=await sidebar.boundingBox();assert.ok(rail.y>=0&&rail.y+rail.height<=height,"Desktop rail must remain inside viewport");
+   assert.equal(await launcher.evaluate(e=>getComputedStyle(e).position),"static");
+  }
   if(process.env.HGR_SCREENSHOTS) await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-admin-control.png`)});
   role='admin';await page.reload();await page.locator('.halieus-shell').waitFor();
   if(await tools.isVisible()) await tools.click();
