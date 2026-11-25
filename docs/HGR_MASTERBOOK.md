@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Spar decision clock — 25 November 2026
+
+Server-authoritative 20-second decision maximum for Bra, opening exchange group and each card play across current match modes. Stable hand/trick/action key independent of socket IDs and spectator broadcasts. Timeout defaults (proposed HGR policy): keep original hand for unanswered exchange, auto Bra, play first legal card; no automatic forfeiture. Pause only when all humans disconnect, resume remaining time. Normal AI uses existing 620ms action schedule while humans online. Timer clears on room close/finish; late human decision rejected. Live countdown derives server deadline and indicates urgency at <=5s. Test clock math and handler broadcast/reconnect/pause; actual timeout callback integration remains to be exercised. Custom timer selection, cross-restart recovery, and Ranked multiplayer still separate. No production changes.
+
 ## Spar perimeter seating and observer hands — 25 November 2026
 
 Owner-approved Poker-derived round-table presentation replaces straight bands. Stable clockwise registration order, viewer (or first seat for spectator) anchors bottom, distinct eight perimeter positions, inward counts and existing played-card owner labels. Centre remains separate from hands. Casual/Custom observers receive an explicit current-hand read-only projection; participants and all Ranked observers receive no opponent hand faces, no undealt deck or reconnect secret. Full hands appear in scrollable Players workspace to protect centre readability on compact screens. Existing Ranked privacy and reconnect authority preserved. This intentionally changes Casual spectator visibility; spectators may relay information externally, so competitive rooms must remain Ranked. Existing tests extended for hand counts, exact projections, reconnect removal and ring position; fresh browser and actual device acceptance required. No timers or Ranked multiplayer changes yet.

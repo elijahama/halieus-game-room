@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { advanceSparDecisionClock, sparDecisionExpired, type SparDecisionClock } from "../../../../shared/games/spar/decisionClock.js";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
 import { sparSeatLimit, sparCustomCapacity, SPAR_DECK_SIZES, type SparCustomSettings, type SparTableFormat, type SparMatchMode } from "../../../../shared/games/spar/types.js";
@@ -46,10 +47,12 @@ interface Room {
   status: string;
   events: SparEvent[];
   eventSequence: number;
+  decisionClock: SparDecisionClock | null;
 }
 
 const rooms = new Map<string, Room>();
 const aiTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const decisionTimers = new Map<string, ReturnType<typeof setTimeout>>();
 function token() { return randomBytes(10).toString("base64url").slice(0, 13).toUpperCase(); }
 function cleanCode(value: unknown): string {
   return typeof value === "string" ? value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) : "";
@@ -78,6 +81,8 @@ function scoring(room: Room) { return room.customSettings?.scoring ?? "stones"; 
 function state(room: Room, viewerId: string | null, spectator: boolean): SparPublicState {
   return {
     game: "spar", gameTitle: "Spar (Cha-Cha)", code: room.code,
+    decisionDeadline: room.decisionClock?.deadline ?? null, decisionPaused: !!room.decisionClock && room.decisionClock.deadline===null,
+    serverNow: Date.now(),
     createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
     phase: room.phase, matchMode: room.matchMode,
     tableFormat: room.tableFormat, maximumPlayers: capacity(room),
@@ -109,6 +114,7 @@ function archive(room: Room) {
 }
 function emit(io: Server, room: Room) {
   room.updatedAt = Date.now();
+  scheduleDecision(io,room);
   recordWorkingSession("spar", room.code, room.createdAt, archive(room));
   for (const p of room.players) if (playerFor(room, p.id)) {
     io.to(p.id).emit("spar:state", state(room, p.id, false));
@@ -243,12 +249,47 @@ function play(io: Server, room: Room, player: Player, raw: unknown): string | nu
   startHand(io, room);
   return null;
 }
+/** Refresh only when the actual decision changes. Spectators, reconnects and
+ * optional bottom-card reveals cannot reset the clock. Pause only if no humans
+ * are online; resume the remaining time, not a new twenty seconds. */
+function decisionKey(room:Room):string|null{
+ if(room.phase!=="bra"&&room.phase!=="playing")return null;
+ const prefix=room.startedAt+":"+room.handNumber+":";
+ return room.pendingExchange.length?prefix+"exchange":prefix+room.phase+":"+room.trickNumber+":"+room.plays.length;
+}
+function scheduleDecision(io:Server,room:Room){
+ const prior=decisionTimers.get(room.code);if(prior)clearTimeout(prior);decisionTimers.delete(room.code);
+ const now=Date.now();
+ room.decisionClock=advanceSparDecisionClock(room.decisionClock,decisionKey(room),now,!room.players.some(p=>!p.isAi&&p.isConnected));
+ const clock=room.decisionClock;
+ if(!clock||clock.deadline===null)return;
+ const deadline=clock.deadline,key=clock.key;
+ const timeout=setTimeout(()=>{
+  decisionTimers.delete(room.code);
+  if(rooms.get(room.code)!==room||room.decisionClock?.key!==key||room.decisionClock.deadline!==deadline)return;
+  if(!sparDecisionExpired(room.decisionClock,Date.now())){scheduleDecision(io,room);return;}
+  if(room.pendingExchange.length){
+   const count=room.pendingExchange.length;room.pendingExchange=[];
+   log(room,"table",count+" opening exchange decision(s) expired; original hands kept.");emit(io,room);return;
+  }
+  const p=room.players.find(p=>p.id===room.currentTurnPlayerId);
+  if(!p)return;
+  if(room.phase==="bra"){log(room,"table",p.name+" timed out; Bra called automatically.");bra(io,room,p);return;}
+  if(room.phase==="playing"){
+   const lead=room.plays.length?sparSuit(room.plays[0].card):null;
+   const legal=legalSparCards(p.hand,lead);
+   if(!legal.length)return;
+   log(room,"table",p.name+" timed out; a legal card played automatically.");
+   play(io,room,p,legal[0]);
+  }
+ },Math.max(0,deadline-now));timeout.unref?.();decisionTimers.set(room.code,timeout);
+}
 function scheduleAi(io: Server, room: Room) {
   const prior = aiTimers.get(room.code);
   if (prior) clearTimeout(prior);
   aiTimers.delete(room.code);
   const player = room.players.find(p => p.id === room.currentTurnPlayerId);
-  if (!player?.isAi || room.phase === "finished" || room.pendingExchange.length) return;
+  if (!player?.isAi || room.phase === "finished" || room.pendingExchange.length || !room.players.some(p=>!p.isAi&&p.isConnected)) return;
   aiTimers.set(room.code, setTimeout(() => {
     aiTimers.delete(room.code);
     if (player.id !== room.currentTurnPlayerId || room.phase === "finished") return;
@@ -307,7 +348,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       trickNumber: 0, plays: [], lastTrick: null, lastAward: null,
       currentTurnPlayerId: null, leadPlayerId: null,
       stonesRemaining: customSettings ? (customSettings.scoring === "stones" ? customSettings.amount : 0) : SPAR_STONE_POOL, winnerPlayerId: null,
-      status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : matchMode === "custom" ? "Waiting for players. Custom table." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
+      decisionClock:null, status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : matchMode === "custom" ? "Waiting for players. Custom table." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
     };
     rooms.set(code, room);
     log(room, "join", `${name} opened the Spar table.`);
@@ -429,6 +470,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
     const room = roomFor(payload), p = playerFor(room, socket.id);
     if (!room || !p || room.phase !== "bra" || !room.pendingExchange.includes(p.id) || typeof payload?.exchange !== "boolean")
       return ackOk(ack, {ok:false,reason:"No opening hand exchange is available."});
+    if (sparDecisionExpired(room.decisionClock,Date.now())) return ackOk(ack,{ok:false,reason:"Decision time expired."});
     if (payload.exchange) {
       if (room.undealt.length < handSize(room) + (room.customSettings?.showBottom ? 1 : 0)) return ackOk(ack,{ok:false,reason:"Not enough undealt cards."});
       p.hand = room.undealt.splice(0, handSize(room));
@@ -447,12 +489,14 @@ export function registerSparHandlers(io: Server, socket: Socket) {
   socket.on("spar:bra", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload), p = playerFor(room, socket.id);
     if (!room || !p) return ackOk(ack, { ok: false, reason: "Your Spar seat was not found." });
+    if (sparDecisionExpired(room.decisionClock,Date.now())) return ackOk(ack,{ok:false,reason:"Decision time expired."});
     const reason = bra(io, room, p);
     ackOk(ack, reason ? { ok: false, reason } : { ok: true });
   });
   socket.on("spar:play", (payload: any, ack: (r: unknown) => void) => {
     const room = roomFor(payload), p = playerFor(room, socket.id);
     if (!room || !p) return ackOk(ack, { ok: false, reason: "Your Spar seat was not found." });
+    if (sparDecisionExpired(room.decisionClock,Date.now())) return ackOk(ack,{ok:false,reason:"Decision time expired."});
     const reason = play(io, room, p, payload?.card);
     ackOk(ack, reason ? { ok: false, reason } : { ok: true });
   });
@@ -524,6 +568,8 @@ export function closeAllSparRooms(): number {
   const count = getSparRoomCount();
   for (const timer of aiTimers.values()) clearTimeout(timer);
   aiTimers.clear();
+  for(const timer of decisionTimers.values())clearTimeout(timer);
+  decisionTimers.clear();
   rooms.clear();
   return count;
 }

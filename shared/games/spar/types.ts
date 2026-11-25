@@ -95,5 +95,9 @@ export interface SparPublicState {
   stonesTotal: number;
   winnerPlayerId: string | null;
   status: string;
+  /** Absolute server deadline; null for lobby/finished/paused. */
+  decisionDeadline?: number | null;
+  decisionPaused?: boolean;
+  serverNow?: number;
   events: SparEvent[];
 }

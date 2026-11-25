@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { SparAiDifficulty, SparCard, SparPlayer, SparPublicState, SparSuit } from "../../../../shared/games/spar/types";
 import { legalSparCards, sparRank, sparSuit } from "../../../../shared/games/spar/clientRules";
 import { GameBrandIcon } from "../../platform/components/GameBrandIcon";
@@ -84,6 +84,14 @@ export function SparScreen({
   onStart, onAddAi, onRemoveAi, onBra, onPlay, onExchange, onShowBottom,
   onForfeit, onEndGame, onLeave, roomActivity,
 }: Props) {
+  const [seconds,setSeconds]=useState<number|null>(null);
+  useEffect(()=>{
+    const deadline=state.decisionDeadline;
+    if(deadline==null){setSeconds(null);return;}
+    const offset=typeof state.serverNow==="number"?state.serverNow-Date.now():0;
+    const tick=()=>setSeconds(Math.min(20,Math.max(0,Math.ceil((deadline-Date.now()-offset)/1000))));
+    tick();const timer=window.setInterval(tick,200);return ()=>window.clearInterval(timer);
+  },[state.decisionDeadline,state.serverNow]);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState<"forfeit"|"end"|null>(null);
@@ -117,7 +125,7 @@ export function SparScreen({
     const active = p.id===state.currentTurnPlayerId;
     return <article key={p.id} className={`spar-table-seat ${active?"is-active":""} ${p.id===viewer?.id?"is-you":""}`} data-ring-slot={ringSlots[Math.round(i*8/orderedSeats.length)%8]} data-seat-order={i} aria-current={active?"true":undefined}>
       <span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span>
-      <div className="spar-table-seat-copy"><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit}{p.id===state.dealerPlayerId?" · D":""}{active?" · Turn":""}</small></div>
+      <div className="spar-table-seat-copy"><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit}{p.id===state.dealerPlayerId?" · D":""}{active?" · Turn":""}{active&&!state.exchangePending&&seconds!==null?" · "+seconds+"s":""}</small></div>
       <span className="spar-card-count" aria-label={`${p.handCount} cards remaining`} title={`${p.handCount} cards remaining`}><i aria-hidden="true"/><b>{p.handCount}</b></span>
     </article>;
   };
@@ -191,7 +199,7 @@ export function SparScreen({
     : <section className="spar-match hgr-card-room">
         <div className="spar-table-column hgr-card-room-table">
           <header className="spar-match-status" aria-live="polite">
-            <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize}</small><strong>{state.status}</strong></div>
+            <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize}</small><strong>{state.status}</strong>{(seconds!==null||state.decisionPaused)&&<span className={"spar-decision-clock"+(seconds!==null&&seconds<=5?" is-urgent":"")} role="timer" aria-label="Decision time remaining">{state.decisionPaused?"Paused · waiting for players":(state.exchangePending?"Exchange":"Decision")+" · "+seconds+"s"}</span>}</div>
             {state.scoring==="stones"?<StonePool remaining={state.stonesRemaining} total={state.stonesTotal}/>:<strong>{state.scoring==="target"?`Target: ${state.stonesTotal} points`:"Free play · Cumulative points"}</strong>}
           </header>
           <section className="spar-table" aria-label="Spar card table">

@@ -480,3 +480,5 @@
  .spar-match .spar-seat-ring .spar-play .spar-card-centre{font-size:1rem}
  .spar-match .spar-seat-ring .spar-play .spar-card-corner.is-bottom{display:none}
 }
+
+.spar-decision-clock{display:inline-block;width:fit-content;color:#ffe5a1;background:#143c31;border:1px solid #b58c4e;border-radius:5px;padding:2px 6px;font-size:.72rem;font-variant-numeric:tabular-nums;font-weight:800;line-height:1.15}.spar-decision-clock.is-urgent{color:#fff;border-color:#f98a79;background:#753a33}

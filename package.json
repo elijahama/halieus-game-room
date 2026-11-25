@@ -114,7 +114,7 @@
     "test:archive:memory": "node tests/runtime-archive-memory.mjs",
     "test:browser:intro:fit": "node tests/browser-intro-viewport-centering.mjs",
     "test:tournaments:independent-nav": "node tests/regression-tournaments-independent-nav.mjs",
-    "test:spar": "node --import tsx tests/runtime-spar-rules.mjs && node --import tsx tests/runtime-spar-room.mjs && node --import tsx tests/runtime-spar-ranked.mjs && node tests/regression-spar-poker-room.mjs && node tests/browser-spar-portrait-real.mjs"
+    "test:spar": "node --import tsx tests/runtime-spar-rules.mjs && node --import tsx tests/runtime-spar-room.mjs && node --import tsx tests/runtime-spar-ranked.mjs && node --import tsx tests/runtime-spar-decision-clock.mjs && node tests/regression-spar-poker-room.mjs && node tests/browser-spar-portrait-real.mjs"
   },
   "engines": {
     "node": ">=20.19.0"
