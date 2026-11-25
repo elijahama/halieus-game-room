@@ -1,5 +1,10 @@
 # Halieus Game Room Masterbook
 
+## Control targeted Spar room cancellation — 25 November 2026
+
+Owner reports six-AI Spar room persisting for an hour and missing Control close controls (#275). First isolated candidate: owner-only close action in existing Live section for non-Ranked Spar, exact game/code/creation identity, same-origin JSON confirmation, targeted timer/store cleanup, incomplete archive without winner or normal game-finished event, audit and explicit receipt. Existing all-game close route is not exposed yet: other games, active competitive fixtures, and broad closure require a separate lifecycle audit. Automatic abandoned-room expiry remains separate; preserve temporary disconnect/reconnect. Source candidate only, no live closure, CI or deployment claim.
+
+
 ## 4.8.4 short desktop Control launcher containment — 25 November 2026
 
 Official main release identity run 45516439220 passed Windows smoke and failed only final browser gate 14/14 Control branding after desktop 1440×900 passed, at short 1280×600 viewport. Preserve canonical approved artwork and static launcher. Compact the fixed desktop rail below 721px height, allow only navigation subsection overflow if needed, retain full-size Control icon and all nav items, leave mobile/tablet unchanged. Strengthen existing containment assertion with diagnostic coordinates and top boundary; do not bypass release checks. Fresh PR CI and main packaging required; production remains unchanged.
