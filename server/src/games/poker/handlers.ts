@@ -719,6 +719,11 @@ export function getPokerLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     }));
 }
 
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+export function getPokerBulkRoomState() {
+  const open = [...pokerRooms.values()].filter(room => !room.started || room.hand.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+}
 export function closeAllPokerRooms(): number {
   const count = pokerRooms.size;
   for (const timer of aiTimers.values()) clearTimeout(timer);
