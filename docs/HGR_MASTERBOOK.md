@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Control closed-app update availability alerts — 25 November 2026
+
+Owner reports test/operation notifications work but available updates do not notify. Existing release notice intentionally foreground-only, no background trigger. Add isolated public server worker on verified release availability using existing Control operations subscriptions, current owner/admin role recheck, durable per-device fingerprint deduplication, expiry removal, transient retry, approved Control worker icon and open-Control destination. No new subscriptions, no automatic update. CI and physical closed-app delivery pending. Existing unmerged 4.8.5 branches are not available updates.
+
 ## 4.8.4 short desktop Control launcher containment — 25 November 2026
 
 Official main release identity run 45516439220 passed Windows smoke and failed only final browser gate 14/14 Control branding after desktop 1440×900 passed, at short 1280×600 viewport. Preserve canonical approved artwork and static launcher. Compact the fixed desktop rail below 721px height, allow only navigation subsection overflow if needed, retain full-size Control icon and all nav items, leave mobile/tablet unchanged. Strengthen existing containment assertion with diagnostic coordinates and top boundary; do not bypass release checks. Fresh PR CI and main packaging required; production remains unchanged.

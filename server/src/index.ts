@@ -58,6 +58,7 @@ import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
+import { startControlReleaseAlerts } from "./platform/control-release-alerts.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
@@ -650,7 +651,7 @@ if (soloTournamentEnabled) {
   await loadSoloTournamentRegistration();
 }
 await loadFeedbackStore();
-await initializePushNotifications();
+const pushAvailable = await initializePushNotifications();
 
 const recoveredRoomCount =
   await loadRoomsFromDisk({ strict: soloTournamentEnabled });
@@ -823,6 +824,7 @@ if (canServeClient) {
 }
 
 httpServer.listen(PORT, () => {
+  if (pushAvailable && process.env.SERVE_CLIENT === "true") startControlReleaseAlerts(id => {const account=getAccountSummaryById(id);return account?.role==="owner"||account?.role==="admin";});
   console.log(
     "🎮 Halieus Game Room Server",
   );
