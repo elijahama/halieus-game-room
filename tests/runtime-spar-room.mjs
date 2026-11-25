@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerSparHandlers, getSparRoomCount, getSparLiveRoomSummaries, getSparChatIdentity, closeAllSparRooms } from "../server/src/games/spar/handlers.ts";
+import { registerSparHandlers, getSparRoomCount, getSparLiveRoomSummaries, getSparChatIdentity, closeAllSparRooms, closeSparRoom } from "../server/src/games/spar/handlers.ts";
 import { legalSparCards, sparSuit } from "../shared/games/spar/rules.ts";
 const handlers = new Map();
 const latest = new Map();
@@ -235,3 +235,17 @@ assert.equal(latest.get("watch").hand.length,0);
 assert.equal(latest.get(eight[0]).handNumber,2);
 closeAllSparRooms();
 console.log("PASS Spar Custom: ten-stone defaults, deck-derived capacity, seven tricks, bottom reveal and target scoring");
+
+// Owner targeted closure: stale six-AI hand, reused identity, unrelated room and recovery.
+const stale = await call("host","spar:create",{code:"STALE1",playerName:"Host"});
+for(let i=0;i<6;i++) assert.equal((await call("host","spar:add-ai",{code:"STALE1",difficulty:"normal"})).ok,true);
+assert.equal((await call("host","spar:start",{code:"STALE1"})).ok,true);
+await call("host","spar:leave",{code:"STALE1"});
+assert.equal((await call("guest","spar:create",{code:"OTHER1",playerName:"Guest"})).ok,true);
+assert.equal(await closeSparRoom(io,"STALE1",stale.state.createdAt-1,"Owner closed"),false);
+assert.equal(await closeSparRoom(io,"STALE1",stale.state.createdAt,"Owner closed"),true);
+assert.equal(await closeSparRoom(io,"STALE1",stale.state.createdAt,"Owner closed"),false);
+assert.equal((await call("host","spar:reconnect",{code:"STALE1",reconnectToken:stale.reconnectToken})).ok,false);
+assert.deepEqual(getSparLiveRoomSummaries().map(room=>room.code),["OTHER1"]);
+closeAllSparRooms();
+console.log("PASS targeted owner Spar cancellation: stale identity rejected; unrelated room preserved");
