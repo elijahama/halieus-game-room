@@ -8,7 +8,7 @@ const root=resolve(import.meta.dirname,".."), temp=mkdtempSync(join(tmpdir(),"hg
 let browser;
 try{
  const bundle=join(temp,"spar.js");
- await build({entryPoints:[resolve(root,"tests/fixtures/spar-portrait-real.tsx")],bundle:true,platform:"browser",format:"iife",jsx:"automatic",outfile:bundle,define:{"process.env.NODE_ENV":'"production"'},loader:{".svg":"dataurl",".png":"dataurl",".webp":"dataurl",".woff2":"dataurl"},logLevel:"silent"});
+ await build({entryPoints:[resolve(root,"tests/fixtures/spar-portrait-real.tsx")],bundle:true,platform:"browser",format:"iife",jsx:"automatic",outfile:bundle,define:{"import.meta.env":"{}","process.env.NODE_ENV":'"production"'},loader:{".svg":"dataurl",".png":"dataurl",".webp":"dataurl",".woff2":"dataurl"},logLevel:"silent"});
  const main=readFileSync(resolve(root,"client/src/main.tsx"),"utf8");
  const globalCss=[...main.matchAll(/import "\.\/([^"]+\.css)";/g)].map(m=>resolve(root,"client/src",m[1])).filter(existsSync).map(p=>readFileSync(p,"utf8")).join("\n");
  browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
@@ -38,13 +38,14 @@ try{
  ];
  for(const c of cases){
   const page=await browser.newPage({viewport:{width:c.width,height:c.height},reducedMotion:"reduce"});
+  const errors=[];page.on("pageerror",e=>{errors.push(e.message);console.error("Spar fixture page error",JSON.stringify(c),e.message);});
   try{
    await page.setContent('<!doctype html><html data-theme="dark"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div id="root"></div></body></html>');
    await page.addStyleTag({content:globalCss});
    await page.addStyleTag({path:join(temp,"spar.css")});
    await page.evaluate(c=>window.sparFixture={seats:c.seats,spectator:!!c.spectator,seven:!!c.seven,phase:c.phase??"playing"},c);
    await page.addScriptTag({path:bundle});
-   const table=page.getByRole("region",{name:"Spar card table"});await table.waitFor();
+   const table=page.getByRole("region",{name:"Spar card table"});await table.waitFor({timeout:10000}).catch(e=>{throw new Error("Spar render failed "+JSON.stringify({c,errors}),{cause:e})});
    const actions=page.getByRole("button",{name:/^Actions/}), players=page.getByRole("button",{name:/^Players/}), chat=page.getByRole("button",{name:"Chat",exact:true});
    assert.equal(await page.locator(".spar-table-seat").count(),c.seats);
    assert.equal(await page.locator(".spar-card-count").count(),c.seats);
@@ -71,6 +72,7 @@ try{
    }
    await chat.click();await page.getByRole("region",{name:"Fixture chat"}).waitFor();assert.equal(await page.locator(".spar-side-players").count(),0);assert.equal(await page.locator(".spar-hand-cards").count(),0);assert.ok(await table.isVisible());
    if(!c.spectator){await actions.click();assert.equal(await page.locator(".spar-hand-cards .spar-playing-card").count(),c.seven?7:5);}
+   assert.deepEqual(errors,[],"Browser runtime errors");
    console.log("PASS actual Spar room",JSON.stringify(c));
   }finally{await page.close();}
  }

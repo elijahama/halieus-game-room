@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Spar portrait browser harness repair — 25 November 2026
+
+CI 45534695901 passed Spar rules, room, Ranked and source-contract checks on the Ubuntu path, then timed out before rendering the actual table on both platforms. The standalone esbuild fixture was missing the Vite import.meta.env definition used by existing working browser fixtures; account API imports dereference it. Mirror the established fixture define and capture page errors with viewport context. Retain all geometry, privacy and action assertions. This is a likely harness fix, not yet a verified visual pass. No production or game rules changed.
+
 ## Card-room four-orientation device standard — 25 November 2026
 
 Phone portrait, phone landscape, tablet portrait and tablet landscape are independent layout classes, not scaled copies. Representative CSS-pixel fixtures: compact phone 320×568, S23 class 360×780, iPhone classes 390×844 / 393×852 / 430×932, Tab S7+ class 800×1280, iPad 768×1024, iPad Air 820×1180, iPad Pro 1024×1366, and respective landscape rotations. Values are test profiles, not promised device viewport measurements (browser chrome, display scaling and safe areas vary). Spar's public current trick occupies the centre, with stable upper/lower seat bands, a remaining-card counter per player and active-turn gold highlight plus explicit Turn text; viewers' hands stay private, seat order never sorted by score, own seat anchors lower band. Phone landscape uses side-by-side short-height layout; tablet portrait has larger cards and more table space; tablet landscape uses a wider table with dock alongside. Browser tests assert containment of actual played cards, count indicators and current turn, tab isolation and actions. Physical-device acceptance remains separate. No rating or game-rule change in this batch.
