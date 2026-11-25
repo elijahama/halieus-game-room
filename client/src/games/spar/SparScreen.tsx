@@ -159,7 +159,7 @@ export function SparScreen({
         <article className="card-game-lobby-card">
           <p className="modal-eyebrow">SPAR · CHA-CHA · GHANA</p>
           <h2>Take the last trick.</h2>
-          <p className="card-game-intro-copy">{state.handSize} cards each. Follow suit whenever possible. The highest card of the lead suit wins each trick. {state.customSettings?.doubleFinish ? "Double Finish may score both final tricks." : "Only the last trick scores."}</p>
+          <p className="card-game-intro-copy">{state.handSize} cards each. Follow suit whenever possible; an incorrect suit while holding the lead suit restarts the round. The highest card of the lead suit wins each trick. {state.customSettings?.doubleFinish ? "Double Finish may score both final tricks." : "Only the last trick scores."}</p>
           <div className="spar-rule-summary">
             <span><b>{state.deckSize}</b> cards</span><span><b>{state.handSize}</b> tricks per hand</span>
             <span><b>6</b> = 3 {scoreUnit}</span><span><b>7</b> = 2 {scoreUnit}</span>

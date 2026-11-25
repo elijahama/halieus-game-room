@@ -48,6 +48,7 @@ interface Room {
   events: SparEvent[];
   eventSequence: number;
   decisionClock: SparDecisionClock | null;
+  dealAttempt: number;
 }
 
 const rooms = new Map<string, Room>();
@@ -126,7 +127,8 @@ function nextPlayer(room: Room, playerId: string): Player | undefined {
   const index = room.players.findIndex(p => p.id === playerId);
   return index < 0 ? undefined : room.players[(index + 1) % room.players.length];
 }
-function startHand(io: Server, room: Room) {
+function startHand(io: Server, room: Room, restartReason?: string) {
+  room.dealAttempt++;
   const deck = shuffleSparDeck(makeSparDeck(room.players.length, room.customSettings?.deck));
   const dealt = dealSparHands(room.players.map(p => p.id), room.dealerSeat, deck, handSize(room));
   room.undealt = dealt.remaining; room.bottomCard = null; room.pendingExchange = [];
@@ -138,7 +140,7 @@ function startHand(io: Server, room: Room) {
     }
     trimExchange(room);
   }
-  room.handNumber++;
+  if(!restartReason)room.handNumber++;
   room.trickNumber = 1;
   room.plays = [];
   room.lastTrick = null;
@@ -147,7 +149,7 @@ function startHand(io: Server, room: Room) {
   const caller = room.players[(room.dealerSeat + 1) % room.players.length];
   room.leadPlayerId = caller.id;
   room.currentTurnPlayerId = caller.id;
-  room.status = `${caller.name} to call Bra. ${dealer.name} dealt the cards.`;
+  room.status = `${restartReason ? restartReason + " " : ""}${caller.name} to call Bra. ${dealer.name} dealt the cards.`;
   log(room, "table", `Hand ${room.handNumber}: ${handSize(room)} cards dealt. ${caller.name} calls Bra.`);
   emit(io, room);
 }
@@ -192,7 +194,12 @@ function play(io: Server, room: Room, player: Player, raw: unknown): string | nu
   }
   const card = raw as SparCard;
   const lead = room.plays.length ? sparSuit(room.plays[0].card) : null;
-  if (!legalSparCards(player.hand, lead).includes(card)) return "You must follow the leading suit if you can.";
+  if (!legalSparCards(player.hand, lead).includes(card)) {
+    const reason = `${player.name} did not follow suit. Round restarted.`;
+    log(room,"table",reason);
+    startHand(io,room,reason);
+    return reason;
+  }
   player.hand.splice(player.hand.indexOf(card), 1);
   room.plays.push({ playerId: player.id, playerName: player.name, card });
   log(room, "play", `${player.name} played ${card} on trick ${room.trickNumber}.`);
@@ -254,7 +261,7 @@ function play(io: Server, room: Room, player: Player, raw: unknown): string | nu
  * are online; resume the remaining time, not a new twenty seconds. */
 function decisionKey(room:Room):string|null{
  if(room.phase!=="bra"&&room.phase!=="playing")return null;
- const prefix=room.startedAt+":"+room.handNumber+":";
+ const prefix=room.startedAt+":"+room.handNumber+":"+room.dealAttempt+":";
  return room.pendingExchange.length?prefix+"exchange":prefix+room.phase+":"+room.trickNumber+":"+room.plays.length;
 }
 function scheduleDecision(io:Server,room:Room){
@@ -348,7 +355,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       trickNumber: 0, plays: [], lastTrick: null, lastAward: null,
       currentTurnPlayerId: null, leadPlayerId: null,
       stonesRemaining: customSettings ? (customSettings.scoring === "stones" ? customSettings.amount : 0) : SPAR_STONE_POOL, winnerPlayerId: null,
-      decisionClock:null, status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : matchMode === "custom" ? "Waiting for players. Custom table." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
+      decisionClock:null, dealAttempt:0, status: tableFormat === "duel" ? "Waiting for a 1v1 opponent." : matchMode === "custom" ? "Waiting for players. Custom table." : "Waiting for players. Casual 2–8 seats.", events: [], eventSequence: 0,
     };
     rooms.set(code, room);
     log(room, "join", `${name} opened the Spar table.`);

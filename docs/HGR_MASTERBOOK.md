@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Spar follow-suit restart — 25 November 2026
+
+Owner clarified: playing the wrong suit while holding the lead suit restarts the round. HGR interpretation: authoritative server detects an owned off-suit card on the correct player's turn when follow-suit is possible; rejects the illegal card, logs the violation and freshly redeals the current hand with the same dealer, hand number, prior earned stones and match settings; trick resets to one/Bra, decision clock gets a new deal generation. No invented point deduction. Out-of-turn and unowned cards remain rejection-only; legal off-suit play when void is unchanged. UI still prevents inadvertent illegal selection. Intentional malicious reset abuse in competitive play requires further policy review. Test server-generated deals and retained score. No production change, CI pending.
+
 ## Spar decision clock — 25 November 2026
 
 Server-authoritative 20-second decision maximum for Bra, opening exchange group and each card play across current match modes. Stable hand/trick/action key independent of socket IDs and spectator broadcasts. Timeout defaults (proposed HGR policy): keep original hand for unanswered exchange, auto Bra, play first legal card; no automatic forfeiture. Pause only when all humans disconnect, resume remaining time. Normal AI uses existing 620ms action schedule while humans online. Timer clears on room close/finish; late human decision rejected. Live countdown derives server deadline and indicates urgency at <=5s. Test clock math and handler broadcast/reconnect/pause; actual timeout callback integration remains to be exercised. Custom timer selection, cross-restart recovery, and Ranked multiplayer still separate. No production changes.
