@@ -1,0 +1,232 @@
+/* HGR Spar: original emerald felt + warm gold treatment. The existing
+   platform theme, HGR typography, canonical H and global chrome remain intact. */
+.spar-page {
+  --spar-green: #063b30;
+  --spar-felt: #07503b;
+  --spar-gold: #e6ba60;
+  --spar-ink: #1d2730;
+  min-height: 100dvh;
+  min-width: 0;
+  overflow-x: clip;
+  padding-bottom: max(25px,env(safe-area-inset-bottom));
+}
+.spar-header { gap: 12px; }
+.spar-header .card-game-brand-lockup h1 small { display: inline-block; font-size: .45em; color: var(--spar-gold); vertical-align: middle; }
+.spar-menu-toggle { flex: 0 0 auto; white-space: nowrap; min-height: 42px; }
+.spar-lobby { gap: 16px; }
+.spar-rule-summary {
+  margin: 16px 0;
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 8px;
+}
+.spar-rule-summary span {
+  padding: 10px 8px;
+  background: color-mix(in srgb,var(--spar-gold) 8%,transparent);
+  border: 1px solid color-mix(in srgb,var(--spar-gold) 18%,transparent);
+  border-radius: 10px;
+  font-size: .81rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.spar-rule-summary b { color: var(--spar-gold); font-family: "Unbounded",sans-serif; }
+.spar-rule-note { max-width: 680px; margin: 14px 0; font-size: .84rem; line-height: 1.6; opacity: .86; }
+.spar-avatar {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 36px; height: 36px; place-items: center;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb,var(--spar-gold) 60%,transparent);
+  color: var(--spar-gold);
+  background: color-mix(in srgb,var(--spar-gold) 9%,transparent);
+  font-weight: 900;
+}
+.spar-match {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(220px,290px);
+  align-items: start;
+  gap: clamp(12px,2vw,24px);
+  width: min(100%,1460px);
+  margin: 0 auto;
+}
+.spar-match:not(:has(.spar-room-stack)) { grid-template-columns: minmax(0,1fr); }
+.spar-table-column {
+  display: grid; gap: 13px; width: 100%; min-width: 0;
+}
+.spar-match-status {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  padding: 12px clamp(12px,2vw,22px);
+  border: 1px solid color-mix(in srgb,var(--spar-gold) 30%,var(--mm-border,transparent));
+  background: color-mix(in srgb,var(--spar-green) 15%,var(--mm-surface-1,#15232d));
+  border-radius: 15px;
+}
+.spar-match-status > div:first-child { flex: 1 1 250px; min-width: 0; display: grid; gap: 5px; }
+.spar-match-status small { color: var(--spar-gold); font-size: .69rem; letter-spacing: .12em; font-weight: 850; }
+.spar-match-status strong { font-size: clamp(.94rem,1.1vw,1.12rem); overflow-wrap: anywhere; }
+.spar-pool { display: grid; grid-template-columns: auto auto; gap: 2px 10px; align-items: center; }
+.spar-pool > span { color: var(--spar-gold); font-size: .65rem; font-weight: 900; letter-spacing: .1em; }
+.spar-pool > strong { font-size: .78rem; justify-self: end; }
+.spar-pool-stones { display: flex; grid-row: 2; gap: 5px; align-items: center; }
+.spar-pool-stones i {
+  display: block; width: 19px; height: 19px; border-radius: 46% 54% 53% 47%;
+  border: 1px solid #916b37;
+  background: #46504a; opacity: .36;
+  transform: rotate(-15deg);
+}
+.spar-pool-stones i.is-available {
+  opacity: 1; border-color: #ffe8a8;
+  background: radial-gradient(circle at 28% 26%,#fff2ba 3%,#ecc06a 42%,#aa722b 85%);
+  box-shadow: 0 2px 7px #0007, inset 0 1px 2px #fff9;
+}
+.spar-opponents {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 9px;
+}
+.spar-seat {
+  min-width: 0; display: flex; gap: 10px; align-items: center;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb,var(--spar-gold) 15%,var(--mm-border,#32404b));
+  border-radius: 12px;
+  background: color-mix(in srgb,var(--spar-green) 9%,var(--mm-surface-1,#192630));
+  transition: border-color .18s ease,background-color .18s ease;
+}
+.spar-seat.is-active { border-color: var(--spar-gold); box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--spar-gold) 40%,transparent); }
+.spar-seat.is-you { background: color-mix(in srgb,var(--spar-green) 24%,var(--mm-surface-1,#192630)); }
+.spar-seat-avatar {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 38px; height: 38px; border-radius: 11px;
+  color: #f6dda6; background: var(--spar-green);
+  border: 1px solid color-mix(in srgb,var(--spar-gold) 40%,transparent); font-weight: 900;
+}
+.spar-seat-details { display: grid; flex: 1; gap: 4px; min-width: 0; }
+.spar-seat-details strong { overflow-wrap: anywhere; font-size: .83rem; }
+.spar-seat-details small { opacity: .65; font-size: .72rem; }
+.spar-seat-score { display: grid; flex: 0 0 auto; align-items: center; justify-items: center; }
+.spar-seat-score b { color: var(--spar-gold); font-size: 1.16rem; font-weight: 900; }
+.spar-seat-score small { font-size: .62rem; opacity: .7; }
+.spar-table {
+  position: relative; isolation: isolate; overflow: hidden; min-width: 0;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+  min-height: clamp(230px,34dvh,340px);
+  border-radius: clamp(16px,2.3vw,32px);
+  padding: clamp(14px,2vw,28px);
+  background: radial-gradient(ellipse at 52% 42%,#0c684c 0%,#0b4739 54%,#062b23 100%);
+  border: clamp(5px,.6vw,9px) solid #83582f;
+  box-shadow: inset 0 0 0 2px #d4a85c,inset 0 0 24px #001d17a8,0 13px 28px #0004;
+}
+.spar-table-texture {
+  position: absolute; z-index: -1; inset: 0; pointer-events: none; opacity: .19;
+  background: repeating-linear-gradient(45deg,transparent 0 16px,#f1c66a3e 17px 18px,transparent 19px 32px),
+    repeating-linear-gradient(-45deg,transparent 0 16px,#f1c66a38 17px 18px,transparent 19px 32px);
+  mask-image: linear-gradient(to bottom,#000a,transparent 75%);
+}
+.spar-table-heading { display: grid; gap: 1px; text-align: center; color: #f8e3ae; }
+.spar-table-heading > span { font-family: "Unbounded",sans-serif; letter-spacing: .3em; font-size: clamp(1.05rem,2vw,1.65rem); font-weight: 850; }
+.spar-table-heading small { font-size: .6rem; letter-spacing: .16em; opacity: .8; font-weight: 800; }
+.spar-table-centre { display: grid; place-items: center; width: 100%; flex: 1; min-height: 130px; padding: 10px 0; }
+.spar-current-plays { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: clamp(4px,1.8vw,16px); width: 100%; }
+.spar-play { display: grid; gap: 5px; justify-items: center; min-width: 0; }
+.spar-play small { color: #ffecc0; font-size: .65rem; text-align: center; max-width: 108px; overflow-wrap: anywhere; }
+.spar-empty-centre { text-align: center; display: grid; gap: 8px; justify-items: center; color: #fff5d1; }
+.spar-empty-centre > span { letter-spacing: .4em; opacity: .45; }
+.spar-empty-centre strong { font-size: clamp(.88rem,1.3vw,1.1rem); }
+.spar-empty-centre small { opacity: .7; font-size: .75rem; line-height: 1.4; }
+.spar-last-trick {
+  width: fit-content; max-width: 100%; text-align: center; padding: 7px 12px;
+  border-radius: 999px; background: #031d17aa; color: #ffecc4;
+  font-size: .7rem; font-weight: 650; line-height: 1.4;
+}
+.spar-playing-card {
+  position: relative; display: grid; flex: 0 0 auto;
+  width: clamp(59px,7.2vw,88px); height: clamp(88px,10.5vw,124px);
+  padding: 6px; border-radius: 9px;
+  border: 1px solid #ddd1b8; color: #273242;
+  background: linear-gradient(142deg,#fffefa,#f3e9d8 95%);
+  box-shadow: 0 3px 8px #0005;
+  user-select: none;
+  overflow: hidden; font-family: "Alata",sans-serif;
+}
+.spar-playing-card.is-red { color: #b63c42; }
+.spar-card-corner { display: flex; flex-direction: column; align-items: flex-start; align-self: start; font-size: clamp(.92rem,1.2vw,1.25rem); line-height: 1; font-weight: 850; }
+.spar-card-corner span { font-size: .94em; }
+.spar-card-centre { display: grid; place-items: center; font-size: clamp(1.8rem,3.4vw,3.3rem); }
+.spar-card-corner.is-bottom { position: absolute; bottom: 5px; right: 5px; transform: rotate(180deg); font-size: .83em; }
+.spar-playing-card.is-hand {
+  cursor: pointer;
+  transition: transform .16s ease,box-shadow .16s ease,opacity .16s ease;
+  touch-action: manipulation;
+}
+.spar-playing-card.is-hand.is-legal { border-color: #c99b42; }
+.spar-playing-card.is-hand.is-legal:hover,
+.spar-playing-card.is-hand.is-legal:focus-visible { transform: translateY(-10px); box-shadow: 0 0 0 3px #ebc171,0 12px 20px #0006; outline: none; }
+.spar-playing-card.is-hand:disabled { opacity: .5; cursor: not-allowed; }
+.spar-hand,.spar-bra-prompt {
+  display: grid; gap: 14px; padding: clamp(12px,2vw,22px);
+  border: 1px solid color-mix(in srgb,var(--spar-gold) 26%,var(--mm-border,#36404c));
+  border-radius: 15px;
+  background: color-mix(in srgb,var(--spar-green) 11%,var(--mm-surface-1,#18242e));
+  min-width: 0;
+}
+.spar-hand-header { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; }
+.spar-hand-header strong { font-size: .97rem; }
+.spar-hand-header span { color: var(--spar-gold); font-size: .81rem; font-weight: 800; }
+.spar-hand-cards { display: flex; justify-content: center; gap: clamp(4px,1.7vw,13px); min-width: 0; }
+.spar-bra-prompt { justify-items: center; text-align: center; }
+.spar-bra-prompt strong { font-size: 1.15rem; }
+.spar-bra-prompt span { font-size: .84rem; opacity: .8; }
+.spar-bra-prompt button { min-height: 46px; }
+.spar-award { display: flex; gap: 9px; justify-content: space-between; flex-wrap: wrap; padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb,var(--spar-gold) 12%,transparent); border: 1px solid color-mix(in srgb,var(--spar-gold) 24%,transparent); font-size: .81rem; }
+.spar-award strong { color: var(--spar-gold); }
+.spar-spectator-note { text-align: center; opacity: .8; font-size: .82rem; }
+.spar-room-stack { min-width: 0; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 14px; max-height: calc(100dvh - 24px); overflow: auto; scrollbar-width: thin; }
+@media (max-width: 1024px) {
+  .spar-match { grid-template-columns: 1fr; }
+  .spar-room-stack { position: static; max-height: none; overflow: visible; }
+}
+@media (max-width: 640px) {
+  .spar-page { padding: 12px 9px max(90px,env(safe-area-inset-bottom)); }
+  .spar-header { padding-top: 5px !important; }
+  .spar-header .card-game-brand-lockup h1 { font-size: clamp(1.45rem,5vw,1.9rem); }
+  .spar-rule-summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .spar-opponents { gap: 6px; }
+  .spar-seat { padding: 8px 6px; gap: 5px; border-radius: 9px; }
+  .spar-seat-avatar { width: 29px; height: 29px; border-radius: 7px; }
+  .spar-seat-details strong { font-size: .71rem; }
+  .spar-seat-details small { font-size: .63rem; }
+  .spar-seat-score b { font-size: .91rem; }
+  .spar-seat-score small { font-size: .55rem; }
+  .spar-table { min-height: 245px; padding: 12px 7px; border-width: 5px; }
+  .spar-current-plays { gap: 5px; }
+  .spar-playing-card { width: clamp(46px,16vw,61px); height: clamp(70px,24vw,90px); padding: 4px; border-radius: 6px; }
+  .spar-card-corner { font-size: .9rem; }
+  .spar-card-centre { font-size: 1.9rem; }
+  .spar-card-corner.is-bottom { font-size: .64em; }
+  .spar-hand-cards { gap: min(1.3vw,6px); justify-content: space-between; }
+  .spar-hand-cards .spar-playing-card { flex: 0 1 auto; width: min(18vw,67px); height: clamp(81px,25vw,105px); }
+  .spar-match-status { gap: 8px; }
+  .spar-pool { width: 100%; display: flex; justify-content: space-between; flex-wrap: wrap; }
+  .spar-pool-stones i { width: 17px; height: 17px; }
+  .spar-last-trick { border-radius: 9px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .spar-playing-card,.spar-seat { transition:none!important;animation:none!important; }
+}
+
+/* Larger tables keep every seat and played card visible, without changing the small-table layout. */
+.spar-current-plays.is-expanded { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px 6px; }
+.spar-current-plays.is-expanded .spar-playing-card { width: clamp(42px,8vw,76px); height: clamp(65px,12vw,108px); }
+@media (min-width: 1100px) {
+  .spar-opponents.is-expanded { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .spar-opponents.is-expanded .spar-seat { padding: 8px 6px; gap: 5px; }
+  .spar-opponents.is-expanded .spar-seat-avatar { width: 28px; height: 28px; }
+}
+@media (max-width: 640px) {
+  .spar-current-plays.is-expanded { gap: 6px 3px; }
+  .spar-current-plays.is-expanded .spar-playing-card { width: min(15vw,58px); height: clamp(64px,21vw,86px); }
+  .spar-current-plays.is-expanded .spar-play small { max-width: 100%; }
+}
+
+/* Seven-card Custom hands wrap without cutting off cards on small screens. */
+.spar-hand-cards { flex-wrap: wrap; }
+.spar-bra-prompt .spar-hand-cards { width:100%; }

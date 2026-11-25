@@ -1,4 +1,4 @@
-export type RoomChatGame = "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "word-board";
+export type RoomChatGame = "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "spar" | "word-board";
 export type RoomChatRole = "player" | "spectator";
 
 export interface RoomChatMessage {

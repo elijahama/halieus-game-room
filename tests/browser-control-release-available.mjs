@@ -35,7 +35,7 @@ await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
 const browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try{
   const base="http://127.0.0.1:"+server.address().port;
-  for(const width of [390,1440]){
+  for(const width of [320,390,820,1440]){
     hits=0;
     const page=await browser.newPage({viewport:{width,height:850}});
     await page.goto(base+"/control/");
@@ -53,7 +53,8 @@ try{
     });
     await page.waitForFunction(()=>document.getElementById("controlReleaseNotice")?.hidden===true);
     assert.equal(await notice.isVisible(),false,"same installed version should not display a banner");
-    current={ok:true,status:"available",installedVersion:"4.7.13",candidateVersion:"4.7.14"};
+    await page.waitForTimeout(100);
+    current={ok:true,status:"available",installedVersion:"4.7.13",candidateVersion:"4.7.14",candidateFingerprint:"hgr-4.7.14-aaaaaaaaaaaaaaaa"};
     await page.evaluate(()=>window.dispatchEvent(new Event("hgr-control-authorized")));
     await notice.waitFor({state:"visible",timeout:7000});
     assert.match(await notice.innerText(),/UPDATE AVAILABLE/);
@@ -65,7 +66,22 @@ try{
     await page.locator("#controlReleaseReview").click();
     assert.equal(await page.locator('[data-panel="operations"]').evaluate(n=>n.classList.contains("is-active")),true);
     assert.equal(await page.locator("#operationPanelUpdate").evaluate(n=>!n.hidden),true);
-    assert.equal(await notice.isVisible(),true,"review navigation must never dismiss the release notice");
+    assert.equal(await notice.isVisible(),false,"review acknowledges drop-down without clearing availability");
+    assert.equal(await page.locator("#operationTabUpdate").evaluate(n=>n.classList.contains("has-release")),true);
+    await page.evaluate(()=>window.dispatchEvent(new Event("hgr-control-authorized")));
+    await page.waitForFunction(()=>document.getElementById("operationTabUpdate").classList.contains("has-release"));
+    assert.equal(await notice.isVisible(),false,"same fingerprint does not repeatedly drop down");
+    current={ok:true,status:"available",installedVersion:"4.7.13",candidateVersion:"4.7.15",candidateFingerprint:"hgr-4.7.15-bbbbbbbbbbbbbbbb"};
+    // Wait for the previous poll to finish before dispatching a new one.
+    await page.waitForTimeout(150);
+    await page.evaluate(()=>window.dispatchEvent(new Event("hgr-control-authorized")));
+    await notice.waitFor({state:"visible",timeout:7000});
+    assert.match(await notice.innerText(),/GREENLIGHT/);
+    assert.match(await notice.innerText(),/HGR 4\.7\.15 is ready/);
+    await page.locator("#controlReleaseDismiss").click();
+    assert.equal(await notice.isVisible(),false);
+    assert.equal(await page.locator("#operationTabUpdate").evaluate(n=>n.classList.contains("has-release")),true);
+    await page.waitForTimeout(100);
 
     current={ok:true,status:"unverified",installedVersion:"4.7.13",candidateVersion:"4.7.13"};
     await page.evaluate(()=>window.dispatchEvent(new Event("hgr-control-authorized")));

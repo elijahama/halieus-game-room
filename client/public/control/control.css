@@ -695,17 +695,30 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
   .operation-toast[data-action="update"] .operation-progress i{transition:none}
 }
 
-/* Owner-visible released-version notice. Uses the existing Control UI family,
-   never a new launcher symbol or a fake progress indicator. */
+/* Owner-approved greenlight drop-down. Existing Control mark; no new artwork.
+   Fixed overlay avoids reflow and stays below running-operation receipts. */
 .control-release-notice[hidden]{display:none!important}
-.control-release-notice{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 18px;padding:14px 18px;border:1px solid rgba(126,170,246,.44);border-radius:14px;background:rgba(34,54,88,.62);color:#edf4ff}
-.control-release-copy{flex:1 1 260px;min-width:0}
-.control-release-label{display:block;margin-bottom:5px;font-size:10px;letter-spacing:.09em;font-weight:700;color:#bdd5ff}
+.control-release-notice{
+  position:fixed;z-index:70;top:max(12px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right));
+  width:min(460px,calc(100vw - 28px));max-height:calc(100dvh - 90px);overflow:auto;
+  display:grid;grid-template-columns:36px minmax(0,1fr) 44px;align-items:start;gap:8px 10px;
+  margin:0;padding:13px;border:1px solid rgba(105,220,156,.5);border-radius:16px;
+  background:#11251f;color:#edf8f2;box-shadow:0 12px 40px rgba(0,0,0,.44);
+  animation:control-greenlight-drop .22s ease-out both
+}
+@keyframes control-greenlight-drop{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.control-release-icon{width:36px;height:36px;object-fit:contain;border-radius:9px}
+.control-release-copy{min-width:0;padding-top:2px}
+.control-release-label{display:block;margin-bottom:5px;font-size:10px;letter-spacing:.055em;font-weight:700;color:#8ee8af}
 .control-release-copy strong{display:block;font-size:15px;line-height:1.35;font-family:inherit}
-.control-release-copy p{margin:4px 0 0;color:#c6d8f3;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
-#controlReleaseReview{min-height:42px;flex:0 0 auto}
-#operationTabUpdate.has-release::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;vertical-align:middle;border-radius:50%;background:#9dc5ff;box-shadow:0 0 0 2px rgba(157,197,255,.15)}
-@media(max-width:720px){.control-release-notice{align-items:stretch;margin-bottom:14px;padding:13px 14px;gap:12px}.control-release-copy{flex-basis:100%}#controlReleaseReview{width:100%}}
+.control-release-copy p{margin:4px 0 0;color:#c6dbce;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#controlReleaseReview{grid-column:2/4;min-height:44px;justify-self:stretch;background:#24543b;color:#e9fff0;border-color:#4d9569}
+#controlReleaseDismiss{min-width:44px;min-height:44px;padding:0;font-size:20px;color:#d5e8dc}
+#operationTabUpdate.has-release::after{content:"";display:inline-block;width:7px;height:7px;margin-left:6px;vertical-align:middle;border-radius:50%;background:#77dda0;box-shadow:0 0 0 2px rgba(119,221,160,.15)}
+@media(max-width:720px){
+  .control-release-notice{inset:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) auto max(8px,env(safe-area-inset-left));width:auto;gap:8px;padding:12px}
+}
+@media(prefers-reduced-motion:reduce){.control-release-notice{animation:none}}
 
 /* HGR owner-approved laptop registration: visible from every Control section.
    Balanced site hierarchy: Unbounded headings, Righteous subsection, Varela

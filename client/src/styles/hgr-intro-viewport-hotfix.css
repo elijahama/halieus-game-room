@@ -1,0 +1,124 @@
+/* HGR intro: PC/tablet fit + logo-centred afterglow.
+   Keep the canonical HGR_H_PATH, logo component and short auto-enter untouched. */
+
+/* The old card's off-centre top halo looked like a second, misplaced ring.
+   The only logo halo now belongs to the logo box itself. */
+.halieus-intro-v4-card::before {
+  content: none !important;
+}
+
+.halieus-intro-v4-logo {
+  isolation: isolate;
+  flex: 0 0 auto;
+}
+
+.halieus-intro-v4-logo::before {
+  inset: auto !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 148%;
+  height: 148%;
+  translate: -50% -50%;
+  transform-origin: 50% 50%;
+  border-radius: 50% !important;
+  background: radial-gradient(circle at center,
+    color-mix(in srgb, var(--intro-accent) 34%, transparent),
+    transparent 68%) !important;
+  filter: blur(16px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.halieus-intro-v4-logo > .halieus-brand-mark {
+  position: relative;
+  z-index: 1;
+}
+
+/* On large phones the current mobile arrangement already fits. Fix only the
+   desktop/tablet card sizing and keep a scroll fallback for short screens. */
+@media (min-width: 621px) {
+  .halieus-intro-v4 {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: safe center;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    padding: clamp(14px, 2.4dvh, 30px) clamp(18px, 3.8vw, 46px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  .halieus-intro-v4-card {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: min(720px, 100%);
+    min-width: 0;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: clamp(26px, 4dvh, 54px) clamp(28px, 4vw, 58px)
+      clamp(36px, 5dvh, 58px) !important;
+  }
+
+  .halieus-intro-v4-logo {
+    width: clamp(72px, min(12dvh, 10vw), 110px);
+    margin-bottom: clamp(14px, 2.5dvh, 27px);
+  }
+
+  .halieus-intro-v4-kicker {
+    margin-bottom: clamp(8px, 1.4dvh, 13px);
+  }
+
+  .halieus-intro-v4-card h1 {
+    max-width: 100%;
+    font-size: clamp(2.3rem, min(5.3vw, 7.2dvh), 4.9rem);
+    line-height: .98;
+    overflow-wrap: anywhere;
+  }
+
+  .halieus-intro-v4-lede {
+    margin-top: clamp(10px, 2.2dvh, 22px);
+  }
+
+  .halieus-intro-v4-enter {
+    margin-top: clamp(14px, 2.5dvh, 28px);
+    min-height: 48px;
+  }
+
+  .halieus-intro-v4-meta {
+    margin-top: clamp(12px, 2dvh, 20px);
+  }
+}
+
+@media (min-width: 621px) and (max-width: 980px) {
+  .halieus-intro-v4 {
+    padding-top: max(58px, env(safe-area-inset-top)) !important;
+  }
+}
+
+/* Short and/or magnified browser windows still have access to all content.
+   Prefer fitting content; scrolling is the explicit fallback, not cropping. */
+@media (min-width: 621px) and (max-height: 650px) {
+  .halieus-intro-v4-card {
+    padding-block: 22px 34px !important;
+  }
+  .halieus-intro-v4-logo {
+    width: clamp(62px, 10dvh, 82px);
+    margin-bottom: 10px;
+  }
+  .halieus-intro-v4-card h1 {
+    font-size: clamp(2.15rem, min(5vw, 6.6dvh), 3.8rem);
+  }
+  .halieus-intro-v4-lede {
+    margin-top: 8px;
+  }
+  .halieus-intro-v4-enter {
+    margin-top: 12px;
+  }
+  .halieus-intro-v4-meta {
+    margin-top: 10px;
+  }
+}

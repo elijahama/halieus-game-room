@@ -43,6 +43,7 @@ import { closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDi
 import { closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
 import { closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
 import { closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
+import { closeAllSparRooms, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
 import { closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
 import { closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
 import { closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
@@ -514,7 +515,7 @@ const getMegaBoardLiveRoomSummaries = () => [...rooms.values()]
     spectatable: room.started,
   }));
 
-const authoritativeRoomCount = () => getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getWordBoardRoomCount();
+const authoritativeRoomCount = () => getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getSparRoomCount() + getWordBoardRoomCount();
 configureMaintenanceRoomCount(authoritativeRoomCount);
 configureAccountAdminRuntimeControls({
   getRoomCount: authoritativeRoomCount,
@@ -529,10 +530,11 @@ configureAccountAdminRuntimeControls({
     ...getHiddenDictatorLiveRoomSummaries(),
     ...getWordArenaLiveRoomSummaries(),
     ...getAyoLiveRoomSummaries(),
+    ...getSparLiveRoomSummaries(),
     ...getWordBoardLiveRoomSummaries(),
   ],
   closeAllRooms: async (actor) => {
-    const closed = getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getWordBoardRoomCount();
+    const closed = getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getSparRoomCount() + getWordBoardRoomCount();
     io.emit("platform:all-rooms-closed", {
       reason: `${actor.displayName} closed all live rooms from Player Management.`,
       at: Date.now(),
@@ -547,6 +549,7 @@ configureAccountAdminRuntimeControls({
     closeAllHiddenDictatorRooms();
     closeAllWordArenaRooms();
     closeAllAyoRooms();
+    closeAllSparRooms();
     closeAllWordBoardRooms();
     await flushRoomSave();
     return { closed };
@@ -600,6 +603,7 @@ io.on(
     cheat: (code, socketId) => getClassicChatIdentity("cheat", code, socketId),
     dominoes: (code, socketId) => getClassicChatIdentity("dominoes", code, socketId),
     ayo: getAyoChatIdentity,
+    spar: getSparChatIdentity,
     "word-board": getWordBoardChatIdentity,
   });
 
@@ -612,6 +616,7 @@ io.on(
   registerHiddenDictatorHandlers(io, socket);
   registerWordArenaHandlers(io, socket);
   registerAyoHandlers(io, socket);
+  registerSparHandlers(io, socket);
   registerWordBoardHandlers(io, socket);
   registerLobbyHandlers(io, socket);
   registerMegaSavedGameHandlers(io, socket);

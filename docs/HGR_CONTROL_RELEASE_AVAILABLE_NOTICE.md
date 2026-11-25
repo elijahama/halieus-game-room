@@ -1,5 +1,9 @@
 # Control: visible update-available notice
 
+## 24 November 2026 follow-up — greenlight drop-down candidate
+
+Owner requests automatic in-app top drop-down with established Control artwork, green verified readiness, review and dismissal. The new candidate additionally verifies pinned main release and successful exact-source packaging before returning available; the historical specification below describes the prior persistent banner, not the new acceptance contract. Acknowledgement is per fingerprint per page session; Update tab stays marked. No automatic execution, background push or deployment. Validate on 320/390/820/1440px, auth, current/unverified/failed packaging, repeat polling, new fingerprint, review, dismissal and active receipt suppression.
+
 **Source candidate only, 3 November 2026.** Does not alter the current public HGR 4.7.13 release, current updater, owner-PC agent or any canonical HGR/Control icon artwork.
 
 ## Contract

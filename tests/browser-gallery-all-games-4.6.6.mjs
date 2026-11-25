@@ -26,6 +26,7 @@ const fixtures = [
   { id: "ludo", cls: ".ludo-progress-list", html: roster("ludo-progress-list") },
   { id: "connect-four", cls: ".connect-four-page .card-game-roster", html: `<div class="connect-four-page"><div class="card-game-lobby">${roster("card-game-roster",card(1)+card(2)+card(3)+card(4))}</div></div>` },
   { id: "ayo", cls: ".ayo-page .card-game-roster", html: `<div class="ayo-page"><div class="card-game-lobby">${roster("card-game-roster",card(1)+card(2)+card(3)+card(4))}</div></div>` },
+  { id: "spar", cls: ".spar-page .card-game-roster", html: `<div class="spar-page card-game-page"><div class="card-game-lobby spar-lobby">${roster("card-game-roster",Array.from({length:8},(_,i)=>card(i+1)).join("")).replace("4/8","8/8")}</div></div>` },
   { id: "word-board", cls: ".word-board-page .card-game-roster", html: `<div class="word-board-page"><div class="card-game-lobby">${roster("card-game-roster",card(1)+card(2)+card(3)+card(4))}</div></div>` },
   { id: "poker", cls: ".poker-player-list", html: roster("poker-player-list",Array.from({length:4},(_,i)=>
       `<article class="poker-player-list-card"><span class="poker-avatar">P</span><div><strong>Player ${i+1}</strong><small>Connected</small></div><b>500 chips</b><button class="poker-remove-ai">×</button></article>`).join("")) },
@@ -43,7 +44,7 @@ const fixtures = [
   { id: "cheat", cls: ".classic-roster", html: roster("classic-roster") },
   { id: "dominoes", cls: ".classic-player-rail", html: roster("classic-player-rail") },
 ];
-assert.equal(gameIds.length, 14, "All 14 currently catalogued games are included");
+assert.equal(gameIds.length, 15, "Every current game, including Spar Beta, is covered");
 assert.deepEqual(new Set(fixtures.map(f=>f.id)), new Set(gameIds), "Gallery audit covers the entire current game catalog");
 assert.match(css, /HGR v4\.6\.6 · Gallery-first adaptive mobile/);
 
@@ -99,5 +100,28 @@ try {
     assert.equal(mega,2,"Mega Board property strips use a gallery");
     await page.close();
   }
+  const sparCss = await readFile(resolve(root,"client/src/games/spar/SparScreen.css"),"utf8");
+  for (const viewport of [{width:320,height:568},{width:390,height:844},{width:768,height:1024},{width:1280,height:720}]) {
+    const page=await browser.newPage({viewport});
+    const seats=Array.from({length:8},(_,i)=>`<article class="spar-seat"><div class="spar-seat-avatar">P</div><div class="spar-seat-details"><strong>Player ${i+1} long name</strong><small>Connected · 5 cards</small></div><span class="spar-seat-score"><b>0</b><small>stones</small></span></article>`).join("");
+    const plays=Array.from({length:8},(_,i)=>`<div class="spar-play"><span class="spar-playing-card"><span class="spar-card-corner"><strong>${i+5}</strong><span>♣</span></span><span class="spar-card-centre">♣</span></span><small>Player ${i+1} long name</small></div>`).join("");
+    await page.setContent(`<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><style>*,*::before,*::after{box-sizing:border-box}body{margin:0;padding:0}</style><main class="spar-page"><section class="spar-match"><div class="spar-table-column"><div class="spar-opponents is-expanded">${seats}</div><section class="spar-table"><div class="spar-table-centre"><div class="spar-current-plays is-expanded">${plays}</div></div></section></div><aside class="spar-room-stack">Room chat</aside></section></main>`);
+    await page.addStyleTag({content:sparCss});
+    assert.equal(await page.locator(".spar-seat").count(),8);
+    assert.equal(await page.locator(".spar-current-plays .spar-playing-card").count(),8);
+    const result=await page.locator(".spar-current-plays").evaluate(grid=>{
+      const b=grid.getBoundingClientRect();
+      const cards=[...grid.querySelectorAll(".spar-playing-card")].map(c=>c.getBoundingClientRect());
+      const columns=getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length;
+      const rowTops=new Set(cards.map(c=>Math.round(c.top)));
+      return {columns,rows:rowTops.size,inside:cards.every(c=>c.left>=b.left-1&&c.right<=b.right+1&&c.top>=b.top-1&&c.bottom<=b.bottom+1),pageOverflow:document.documentElement.scrollWidth>innerWidth+2};
+    });
+    assert.equal(result.columns,4,`Spar expanded grid @${viewport.width}`);
+    assert.equal(result.rows,2);
+    assert.equal(result.inside,true,JSON.stringify({viewport,result}));
+    assert.equal(result.pageOverflow,false,JSON.stringify({viewport,result}));
+    await page.close();
+  }
+  console.log("PASS Spar eight-seat lobby and four-by-two played-card layout at phone, tablet and desktop widths");
   console.log("PASS 4.6.6 gallery-first: every game in 14-game catalog, 320/390/600/768/900 phones & tablets, preserved actions, Mega asset gallery, no page horizontal overflow");
 } finally { await browser.close(); }

@@ -7,7 +7,7 @@ import { APP_VERSION } from "../../../shared/version.js";
 import { getSessionDataDirectory } from "./dataPaths.js";
 import { recordGuildSessionResult } from "./guilds.js";
 
-export type ArchiveGame = "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "word-board";
+export type ArchiveGame = "mega-board" | "poker" | "blackjack" | "whot" | "ludo" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "spar" | "word-board";
 export type ArchiveStatus = "completed" | "forfeit-completed" | "host-ended" | "incomplete";
 
 const dataRoot = getSessionDataDirectory();
