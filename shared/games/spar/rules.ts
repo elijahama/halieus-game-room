@@ -4,7 +4,7 @@
  * No code or original assets have been copied from other Spar applications.
  */
 import { randomInt } from "node:crypto";
-import { SPAR_MAX_PLAYERS, type SparCard, type SparRank, type SparSuit, type SparTrickPlay, type SparDeckVariant, type SparCustomSettings, DEFAULT_SPAR_CUSTOM } from "./types.js";
+import { SPAR_REVOKE_PENALTIES, SPAR_MAX_PLAYERS, type SparCard, type SparRank, type SparSuit, type SparTrickPlay, type SparDeckVariant, type SparCustomSettings, DEFAULT_SPAR_CUSTOM } from "./types.js";
 
 export const SPAR_SUITS: readonly SparSuit[] = ["C", "D", "H", "S"];
 export const SPAR_RANKS: readonly SparRank[] = ["5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
@@ -109,7 +109,7 @@ export function parseSparCustomSettings(raw: unknown): SparCustomSettings | null
   const c = {...DEFAULT_SPAR_CUSTOM,...v} as SparCustomSettings;
   if (![5,7].includes(c.handSize) || !["traditional","full","noaces","expanded"].includes(c.deck) ||
     !["stones","target","free"].includes(c.scoring) || ![5,10,15,20,30].includes(c.amount) ||
-    typeof c.underTen !== "boolean" || typeof c.showBottom !== "boolean" || typeof c.doubleFinish !== "boolean") return null;
+    typeof c.underTen !== "boolean" || typeof c.showBottom !== "boolean" || typeof c.doubleFinish !== "boolean" || !SPAR_REVOKE_PENALTIES.some(n=>n===c.revokePenalty)) return null;
   return c;
 }
 export function sparUnderTen(hand: readonly SparCard[]): boolean {

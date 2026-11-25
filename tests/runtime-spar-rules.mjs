@@ -93,3 +93,10 @@ assert.equal(sparHandPoints("7C","7D",true),4);
 assert.equal(sparHandPoints("8C","6D",true),1);
 assert.equal(sparHandPoints("6C","6D",false),3);
 console.log("PASS Custom Spar decks, hand sizes, capacity, validation and optional scoring rules");
+
+const {sparRevokePenalty,SPAR_RANKED_REVOKE_PENALTY}=await import("../shared/games/spar/types.ts");
+assert.equal(SPAR_RANKED_REVOKE_PENALTY,2);
+assert.equal(sparRevokePenalty("ranked",{...DEFAULT_SPAR_CUSTOM,revokePenalty:0}),2);
+for(const n of [0,1,2,3,4,5])assert.equal(sparRevokePenalty("custom",parseSparCustomSettings({revokePenalty:n})),n);
+for(const n of [-1,6,1.5,"2",null])assert.equal(parseSparCustomSettings({revokePenalty:n}),null);
+console.log("PASS fixed Ranked revoke penalty and validated Custom choices");

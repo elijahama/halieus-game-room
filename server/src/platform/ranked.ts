@@ -133,7 +133,7 @@ function processSpar(map: Map<string, WorkingEntry>, state: any): void {
   const players = rankedPlayers(state);
   if (state.tableFormat !== "duel" || state.phase !== "finished" || !Number.isFinite(state.startedAt) || state.startedAt <= 0 ||
     !Array.isArray(state.players) || state.players.length !== 2 || players.length !== 2 ||
-    players.some(p => p.isAi || !p.rankedAccountId || p.rankedAccountId !== p.progressionIdentity?.accountId || !Number.isInteger(p.stones) || p.stones < 0) ||
+    players.some(p => p.isAi || !p.rankedAccountId || p.rankedAccountId !== p.progressionIdentity?.accountId || !Number.isSafeInteger(p.stones) || !Number.isSafeInteger(p.penaltyStones??0) || (p.penaltyStones??0)<0 || (p.penaltyStones??0)%2!==0 || p.stones+(p.penaltyStones??0)<0) ||
     new Set(players.map(p => p.rankedAccountId)).size !== 2 ||
     !players.some(p => p.id === state.winnerPlayerId)) return;
   const first = ensure(map, players[0]), second = ensure(map, players[1]);

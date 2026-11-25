@@ -101,6 +101,7 @@ export function SparScreen({
   const expandedDeck = state.deckSize === 40;
   const custom = state.matchMode === "custom";
   const scoreUnit = state.scoring === "stones" ? "stones" : "points";
+  const revokePenalty=state.revokePenalty??(state.matchMode==="ranked"?2:state.customSettings?.revokePenalty??0);
   const duel = state.tableFormat === "duel";
   const ranked = state.matchMode === "ranked";
   const maximumPlayers = state.maximumPlayers;
@@ -159,7 +160,7 @@ export function SparScreen({
         <article className="card-game-lobby-card">
           <p className="modal-eyebrow">SPAR · CHA-CHA · GHANA</p>
           <h2>Take the last trick.</h2>
-          <p className="card-game-intro-copy">{state.handSize} cards each. Follow suit whenever possible; an incorrect suit while holding the lead suit restarts the round. The highest card of the lead suit wins each trick. {state.customSettings?.doubleFinish ? "Double Finish may score both final tricks." : "Only the last trick scores."}</p>
+          <p className="card-game-intro-copy">{state.handSize} cards each. Follow suit whenever possible; an incorrect suit while holding the lead suit restarts the round{revokePenalty?` and deducts ${revokePenalty} ${scoreUnit}`:""}. The highest card of the lead suit wins each trick. {state.customSettings?.doubleFinish ? "Double Finish may score both final tricks." : "Only the last trick scores."}</p>
           <div className="spar-rule-summary">
             <span><b>{state.deckSize}</b> cards</span><span><b>{state.handSize}</b> tricks per hand</span>
             <span><b>6</b> = 3 {scoreUnit}</span><span><b>7</b> = 2 {scoreUnit}</span>
@@ -191,8 +192,8 @@ export function SparScreen({
       <GameResultsScreen accent={GOLD} gameTitle="Spar (Cha-Cha)" roomCode={state.code}
         headline={state.winnerPlayerId?`${state.players.find(p=>p.id===state.winnerPlayerId)?.name??"Winner"} wins Spar`:"Spar match finished"}
         subtitle={state.status}
-        rows={ranks.map((p,i)=>({id:p.id,rank:i+1,name:p.name,detail:`${p.stones} ${scoreUnit}`,winner:p.id===state.winnerPlayerId,status:p.result??"Finished",accent:GOLD,
-          metrics:[{label:state.scoring==="stones"?"Stones earned":"Points earned",value:String(p.stones)}]}))}
+        rows={ranks.map((p,i)=>({id:p.id,rank:i+1,name:p.name,detail:`${p.stones} ${scoreUnit}${p.penaltyStones?` · −${p.penaltyStones} penalty`:""}`,winner:p.id===state.winnerPlayerId,status:p.result??"Finished",accent:GOLD,
+          metrics:[{label:state.scoring==="stones"?"Net stones":"Net points",value:String(p.stones)}]}))}
         stats={[{label:"Hands",value:String(state.handNumber)},{label:state.scoring==="stones"?"Pool":state.scoring==="target"?"Target":"Scoring",value:state.scoring==="free"?"Free play":String(state.stonesTotal)},{label:"Seats",value:String(state.players.length)}]}
         onDownloadReport={report} onBackToGameRoom={onLeave}
         onPlayAgain={isHost?onStart:undefined} playAgainLabel="Play another Spar match"/>

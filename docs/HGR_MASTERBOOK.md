@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Spar configurable follow-suit penalty — 25 November 2026
+
+Owner specifies Ranked always two stones, and penalty configurable before game. Ranked fixed server value 2, cannot override. Custom selectable 0–5 (0 = restart only), existing default 0 retained, locked by existing room creation contract. Casual retains restart-only default. Proposed scoring interpretation pending owner acceptance: deduct exact configured amount from offending player's net score, allowing negative net score even when none earned; do not add or remove central pool stones, and track cumulative penalty separately so the existing finite pool stays unchanged. Reset current hand with original dealer, same hand number and fresh decision clock. Target/free Custom uses points instead of stones. Ranked archive validation accepts negative net scores only with sufficient nonnegative even recorded penalty total, legacy nonnegative results remain valid. Rule and handler tests extended; actual device/CI and anti-abuse competitive review pending. No production change.
+
 ## Spar follow-suit restart — 25 November 2026
 
 Owner clarified: playing the wrong suit while holding the lead suit restarts the round. HGR interpretation: authoritative server detects an owned off-suit card on the correct player's turn when follow-suit is possible; rejects the illegal card, logs the violation and freshly redeals the current hand with the same dealer, hand number, prior earned stones and match settings; trick resets to one/Bra, decision clock gets a new deal generation. No invented point deduction. Out-of-turn and unowned cards remain rejection-only; legal off-suit play when void is unchanged. UI still prevents inadvertent illegal selection. Intentional malicious reset abuse in competitive play requires further policy review. Test server-generated deals and retained score. No production change, CI pending.

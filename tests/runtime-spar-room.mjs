@@ -244,10 +244,11 @@ console.log("PASS Spar Custom: ten-stone defaults, deck-derived capacity, seven 
 // An owned off-suit card played while the player holds the lead suit restarts
 // the hand, without advancing the round number or awarding stones. Find a
 // playable scenario from genuine server deals; never inject private state.
+for(const penalty of [0,3]){
 let exercised=false;
 for(let attempt=0;attempt<64&&!exercised;attempt++){
  const code="REVOKE";
- const h=await call("host","spar:create",{code,playerName:"Host",tableFormat:"duel"});
+ const h=await call("host","spar:create",{code,playerName:"Host",tableFormat:"duel",matchMode:"custom",customSettings:{revokePenalty:penalty}});
  assert.ok(h.ok);assert.ok((await call("guest","spar:join",{code,playerName:"Guest"})).ok);
  assert.ok((await call("host","spar:start",{code})).ok);
  const host=latest.get("host"),guest=latest.get("guest");
@@ -263,7 +264,9 @@ for(let attempt=0;attempt<64&&!exercised;attempt++){
   assert.equal(fresh.trickNumber,1);assert.deepEqual(fresh.plays,[]);
   assert.equal(fresh.dealerPlayerId,host.dealerPlayerId);
   assert.equal(fresh.stonesRemaining,host.stonesRemaining);
-  assert.deepEqual(fresh.players.map(p=>p.stones),host.players.map(p=>p.stones));
+  assert.equal(fresh.revokePenalty,penalty);
+  assert.deepEqual(fresh.players.map(p=>p.stones),host.players.map(p=>p.stones-(p.id==="host"?penalty:0)));
+  assert.equal(fresh.players.find(p=>p.id==="host").penaltyStones,penalty);
   assert.equal(fresh.hand.length,5);assert.equal(latest.get("guest").hand.length,5);
   assert.equal(new Set([...fresh.hand,...latest.get("guest").hand]).size,10);
   assert.match(fresh.status,/Round restarted/);
@@ -272,4 +275,5 @@ for(let attempt=0;attempt<64&&!exercised;attempt++){
  closeAllSparRooms();
 }
 assert.ok(exercised,"A legal lead with an off-suit violation was exercised");
-console.log("PASS Spar follow-suit violation: same round redealt, unchanged score and dealer, no invalid card accepted");
+}
+console.log("PASS Spar follow-suit violation: same round redealt, configured penalty, unchanged pool and dealer, no invalid card accepted");

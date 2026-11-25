@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { advanceSparDecisionClock, sparDecisionExpired, type SparDecisionClock } from "../../../../shared/games/spar/decisionClock.js";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
-import { sparSeatLimit, sparCustomCapacity, SPAR_DECK_SIZES, type SparCustomSettings, type SparTableFormat, type SparMatchMode } from "../../../../shared/games/spar/types.js";
+import { sparRevokePenalty, sparSeatLimit, sparCustomCapacity, SPAR_DECK_SIZES, type SparCustomSettings, type SparTableFormat, type SparMatchMode } from "../../../../shared/games/spar/types.js";
 import type {
   SparAiDifficulty, SparCard, SparEvent, SparHandAward, SparPhase,
   SparPlayer, SparPublicState, SparResolvedTrick, SparTrickPlay,
@@ -72,7 +72,7 @@ function publicPlayer(p: Player): SparPlayer {
   return {
     id: p.id, name: p.name, seat: p.seat, isHost: p.isHost, isAi: p.isAi,
     aiDifficulty: p.aiDifficulty, isConnected: p.isConnected, stones: p.stones,
-    handCount: p.hand.length, result: p.result,
+    handCount: p.hand.length, result: p.result, penaltyStones:p.penaltyStones??0,
   };
 }
 function capacity(room: Room): number { return Math.min(sparSeatLimit(room.tableFormat), room.customSettings ? sparCustomCapacity(room.customSettings) : 8); }
@@ -86,7 +86,7 @@ function state(room: Room, viewerId: string | null, spectator: boolean): SparPub
     serverNow: Date.now(),
     createdAt: room.createdAt, startedAt: room.startedAt, updatedAt: room.updatedAt,
     phase: room.phase, matchMode: room.matchMode,
-    tableFormat: room.tableFormat, maximumPlayers: capacity(room),
+    tableFormat: room.tableFormat, maximumPlayers: capacity(room), revokePenalty:sparRevokePenalty(room.matchMode,room.customSettings),
     customSettings: room.customSettings ? {...room.customSettings} : null, handSize: handSize(room), scoring: scoring(room),
     deckSize: room.customSettings ? SPAR_DECK_SIZES[room.customSettings.deck] : room.players.length === 8 ? 40 : 35,
     canExchange: !spectator && viewerId !== null && room.phase === "bra" && room.pendingExchange.includes(viewerId),
@@ -195,7 +195,10 @@ function play(io: Server, room: Room, player: Player, raw: unknown): string | nu
   const card = raw as SparCard;
   const lead = room.plays.length ? sparSuit(room.plays[0].card) : null;
   if (!legalSparCards(player.hand, lead).includes(card)) {
-    const reason = `${player.name} did not follow suit. Round restarted.`;
+    const penalty=sparRevokePenalty(room.matchMode,room.customSettings);
+    player.stones-=penalty;player.penaltyStones=(player.penaltyStones??0)+penalty;
+    const unit=scoring(room)==="stones"?"stone":"point";
+    const reason = `${player.name} did not follow suit.${penalty?` −${penalty} ${unit}${penalty===1?"":"s"}.`:""} Round restarted.`;
     log(room,"table",reason);
     startHand(io,room,reason);
     return reason;
@@ -462,7 +465,7 @@ export function registerSparHandlers(io: Server, socket: Socket) {
       return ackOk(ack, { ok: false, reason: "Wait for all human players to reconnect before dealing." });
     if (room.matchMode === "ranked" && (room.tableFormat !== "duel" || room.players.length !== 2 || new Set(room.players.map(p => p.rankedAccountId)).size !== 2 || room.players.some(p => p.isAi || !p.rankedAccountId || rankedAccount(p.id) !== p.rankedAccountId)))
       return ackOk(ack, { ok: false, reason: "Ranked requires two connected, distinct authenticated human accounts." });
-    room.players.forEach(p => { p.stones = 0; p.hand = []; p.result = null; });
+    room.players.forEach(p => { p.stones = 0; p.penaltyStones=0; p.hand = []; p.result = null; });
     room.stonesRemaining = scoring(room) === "stones" ? amount(room) : 0;
     room.lastAward = null;
     room.winnerPlayerId = null;

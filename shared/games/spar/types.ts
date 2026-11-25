@@ -6,8 +6,13 @@ export const SPAR_MAX_PLAYERS = 8;
 export type SparMatchMode = "casual" | "ranked" | "custom";
 export type SparDeckVariant = "traditional" | "full" | "noaces" | "expanded";
 export type SparScoringMode = "stones" | "target" | "free";
-export interface SparCustomSettings { handSize: 5 | 7; deck: SparDeckVariant; scoring: SparScoringMode; amount: number; underTen: boolean; showBottom: boolean; doubleFinish: boolean; }
-export const DEFAULT_SPAR_CUSTOM: Readonly<SparCustomSettings> = { handSize: 5, deck: "traditional", scoring: "stones", amount: 10, underTen: false, showBottom: false, doubleFinish: false };
+export interface SparCustomSettings { handSize: 5 | 7; deck: SparDeckVariant; scoring: SparScoringMode; amount: number; underTen: boolean; showBottom: boolean; doubleFinish: boolean; revokePenalty?: number; }
+export const DEFAULT_SPAR_CUSTOM: Readonly<SparCustomSettings> = { handSize: 5, deck: "traditional", scoring: "stones", amount: 10, underTen: false, showBottom: false, doubleFinish: false, revokePenalty: 0 };
+export const SPAR_RANKED_REVOKE_PENALTY = 2;
+export const SPAR_REVOKE_PENALTIES = [0,1,2,3,4,5] as const;
+export function sparRevokePenalty(mode: SparMatchMode, settings: SparCustomSettings|null): number {
+  return mode==="ranked"?SPAR_RANKED_REVOKE_PENALTY:mode==="custom"?(settings?.revokePenalty??0):0;
+}
 export const SPAR_DECK_SIZES: Record<SparDeckVariant,number> = { traditional:35, full:36, noaces:32, expanded:40 };
 export function sparCustomCapacity(settings: SparCustomSettings): number {
   const reserve = (settings.underTen ? settings.handSize : 0) + (settings.showBottom ? 1 : 0);
@@ -28,6 +33,7 @@ export interface SparPlayer {
   aiDifficulty: SparAiDifficulty | null;
   isConnected: boolean;
   stones: number;
+  penaltyStones?: number;
   handCount: number;
   result: string | null;
 }
@@ -96,6 +102,7 @@ export interface SparPublicState {
   winnerPlayerId: string | null;
   status: string;
   /** Absolute server deadline; null for lobby/finished/paused. */
+  revokePenalty?: number;
   decisionDeadline?: number | null;
   decisionPaused?: boolean;
   serverNow?: number;

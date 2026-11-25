@@ -26,7 +26,8 @@ try{
  assert.equal(call("guest","create",opts).ok,false);
  assert.equal(call("beta","create",opts).ok,false);
  assert.equal(call("alpha","create",{...opts,tableFormat:"multiplayer"}).ok,false);
- assert.equal(call("alpha","create",opts).ok,true);
+ assert.equal(call("alpha","create",{...opts,customSettings:{revokePenalty:0}}).ok,false,"Ranked settings cannot be overridden");
+ assert.equal(call("alpha","create",opts).state.revokePenalty,2);
  assert.equal(call("alpha","add-ai").ok,false);
  for(const id of ["guest","beta","duplicate"])assert.equal(call(id,"join",{playerName:id}).ok,false);
  const joined=call("bravo","join",{playerName:"Opponent"});assert.equal(joined.ok,true);
