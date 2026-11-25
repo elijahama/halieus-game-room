@@ -9,7 +9,8 @@ import { createHgrReplayStore } from "../server/src/platform/game-replay-store.t
 const root = await mkdtemp(path.join(os.tmpdir(), "hgr-universal-replays-"));
 try {
   const store = createHgrReplayStore(root);
-  assert.equal(REPLAY_GAME_IDS.length, 14);
+  assert.equal(REPLAY_GAME_IDS.length, 15);
+  assert.ok(REPLAY_GAME_IDS.includes("spar"));
   for (const gameId of REPLAY_GAME_IDS) {
     const record = createFinishedTimelineReplay({
       gameId, matchId: gameId + "-match-1", roomCode: "TEST001",
@@ -61,7 +62,7 @@ try {
   await assert.rejects(async () => createFinishedTimelineReplay({...p, phase:"finished", actions:p.events, finishedAt:0}), /date range/);
   // Archives are portable JSON and remain usable without any live game room.
   assert.equal(JSON.parse(await readFile(path.join(root,"poker",names[0]),"utf8")).gameId,"poker");
-  console.log("PASS HGR-wide replay envelope: all 14 game IDs, private-field allowlisting, timeline/text export, idempotent atomic archive, traversal safety and immutable finished records");
+  console.log("PASS HGR-wide replay envelope: all 15 game IDs, private-field allowlisting, timeline/text export, idempotent atomic archive, traversal safety and immutable finished records");
 } finally {
   await rm(root, { recursive:true, force:true });
 }
