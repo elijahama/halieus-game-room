@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="/control/control-icon.png?v=part26-control-approved2" />
   <link rel="stylesheet" href="/control/control.css?v=4.8.4-greenlight-dropdown-1" />
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/control/control.js?v=4.8.4-greenlight-dropdown-1" defer></script>
+  <script src="/control/control.js?v=4.8.4-room-close-1" defer></script>
   <script src="/control/development.js?v=development-roadmap-v1" defer></script>
   <script src="/control/release-notice.js?v=control-release-notice-2" defer></script>
   <link rel="stylesheet" href="/control-navigation.css?v=4.8.0-fonts-fullscreen-1" />
@@ -159,6 +159,7 @@
 
     <section class="control-section" data-panel="live">
       <div class="section-heading-large"><div><p class="eyebrow">LIVE HGR</p><h2>Everything happening now</h2><p>Rooms, players and spectators across the entire Game Room.</p></div><button class="secondary-action" id="refreshLive" type="button">Refresh</button></div>
+      <p id="roomClosureFeedback" role="status" aria-live="polite"></p>
       <div id="liveRoomGrid" class="room-grid"><div class="empty-state">Loading rooms…</div></div>
     </section>
 
