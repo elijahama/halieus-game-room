@@ -1,5 +1,5 @@
 /** HGR Spar / Cha-Cha — Ghanaian last-trick variant.
- * Server is authoritative; each viewer receives only their own private hand.
+ * Server is authoritative; live hands are private to participants. Casual/Custom spectators have an explicit read-only hand projection.
  */
 export type SparSuit = "C" | "D" | "H" | "S";
 export const SPAR_MAX_PLAYERS = 8;
@@ -79,8 +79,10 @@ export interface SparPublicState {
   isSpectator: boolean;
   spectatorCount: number;
   spectatorNames: string[];
-  // Server includes ONLY this viewer's own cards; no deck or other hands.
+  // Participant hand only. Never populated for spectators.
   hand: SparCard[];
+  /** Casual/Custom spectator-only current hands. Omitted for all Ranked viewers and participants. */
+  spectatorHands?: Record<string,SparCard[]>;
   dealerPlayerId: string | null;
   currentTurnPlayerId: string | null;
   leadPlayerId: string | null;

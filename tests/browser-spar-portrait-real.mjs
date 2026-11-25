@@ -49,6 +49,9 @@ try{
    const actions=page.getByRole("button",{name:/^Actions/}), players=page.getByRole("button",{name:/^Players/}), chat=page.getByRole("button",{name:"Chat",exact:true});
    assert.equal(await page.locator(".spar-table-seat").count(),c.seats);
    assert.equal(await page.locator(".spar-card-count").count(),c.seats);
+   const slots=await page.locator(".spar-table-seat").evaluateAll(els=>els.map(e=>e.dataset.ringSlot));
+   assert.equal(new Set(slots).size,c.seats,"Every player has a distinct perimeter position");assert.equal(slots[0],"bottom");
+   if(c.seats===8)assert.ok(slots.includes("left")&&slots.includes("right"));
    assert.equal(await page.locator(".spar-table-seat[aria-current=true]").count(),1);
    assert.match(await page.locator(".spar-table-seat[aria-current=true]").innerText(),/Turn/);
    assert.equal(await page.locator(".spar-card-count").first().getAttribute("aria-label"),(c.seven?7:5)+" cards remaining");
@@ -63,7 +66,7 @@ try{
    else {assert.ok(box.x+box.width<=dock.x+2&&box.y>=-1&&box.y+box.height<=c.height+2&&dock.x+dock.width<=c.width+2&&nav.y>=0&&nav.y+nav.height<=c.height+1,JSON.stringify({c,box,dock,nav}));}
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
 
-   if(c.spectator){assert.ok(await actions.isDisabled());assert.equal(await page.locator(".spar-hand-cards").count(),0);assert.equal(await page.locator(".spar-side-players .spar-seat").count(),c.seats);}
+   if(c.spectator){assert.ok(await actions.isDisabled());assert.equal(await page.locator(".spar-hand-cards").count(),0);assert.equal(await page.locator(".spar-side-players .spar-seat").count(),c.seats);assert.equal(await page.locator(".spar-spectator-hand").count(),c.seats);}
    else {
     assert.equal(await page.locator(".spar-hand-cards .spar-playing-card").count(),c.seven?7:5);
     if(c.phase==="bra"){await page.getByRole("button",{name:/Bra!.*Begin hand/}).click();assert.deepEqual(await page.evaluate(()=>window.sparActions),["bra"]);}

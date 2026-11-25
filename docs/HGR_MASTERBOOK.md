@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## Spar perimeter seating and observer hands — 25 November 2026
+
+Owner-approved Poker-derived round-table presentation replaces straight bands. Stable clockwise registration order, viewer (or first seat for spectator) anchors bottom, distinct eight perimeter positions, inward counts and existing played-card owner labels. Centre remains separate from hands. Casual/Custom observers receive an explicit current-hand read-only projection; participants and all Ranked observers receive no opponent hand faces, no undealt deck or reconnect secret. Full hands appear in scrollable Players workspace to protect centre readability on compact screens. Existing Ranked privacy and reconnect authority preserved. This intentionally changes Casual spectator visibility; spectators may relay information externally, so competitive rooms must remain Ranked. Existing tests extended for hand counts, exact projections, reconnect removal and ring position; fresh browser and actual device acceptance required. No timers or Ranked multiplayer changes yet.
+
 ## Spar portrait browser harness repair — 25 November 2026
 
 CI 45534695901 passed Spar rules, room, Ranked and source-contract checks on the Ubuntu path, then timed out before rendering the actual table on both platforms. The standalone esbuild fixture was missing the Vite import.meta.env definition used by existing working browser fixtures; account API imports dereference it. Mirror the established fixture define and capture page errors with viewport context. Retain all geometry, privacy and action assertions. This is a likely harness fix, not yet a verified visual pass. No production or game rules changed.

@@ -40,6 +40,8 @@ try{
  assert.equal(call("observer","play",{card:"6C"}).ok,false);
  assert.equal(call("observer","forfeit").ok,false);
  assert.equal(views.get("observer").hand.length,0);
+ assert.equal(views.get("observer").spectatorHands,undefined,"Ranked observers cannot receive hidden card faces");
+ assert.equal(views.get("alpha").spectatorHands,undefined);
  assert.deepEqual(views.get("observer").spectatorNames,["Observer"]);
  for(const secret of ["rank-account-a","rank-account-b","rankedAccountId","progressionIdentity","reconnectToken",'"deck"','"undealt"'])assert.ok(!JSON.stringify(views.get("observer")).includes(secret));
  const privateHand=[...views.get("bravo").hand];

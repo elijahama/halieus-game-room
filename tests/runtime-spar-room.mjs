@@ -42,7 +42,9 @@ let a=latest.get("host"),b=latest.get("guest"),w=latest.get("watch");
 assert.equal(a.phase,"bra");
 assert.equal(a.hand.length,5);
 assert.equal(b.hand.length,5);
-assert.equal(w.hand.length,0,"Spectator cannot see hands");
+assert.equal(w.hand.length,0,"Spectators never acquire a participant hand");
+assert.deepEqual(w.spectatorHands,{host:a.hand,guest:b.hand});
+assert.equal(a.spectatorHands,undefined);assert.equal(b.spectatorHands,undefined);
 assert.equal(w.players[0].handCount,5);
 assert.equal(JSON.stringify(w).includes(hostToken),false,"Reconnect tokens are private");
 assert.equal(JSON.stringify(w).includes(guestToken),false);
@@ -88,7 +90,9 @@ while(latest.get("host").phase!=="finished" && tries++<250){
    assert.equal(oldTrick,5,"Only trick five awards stones");
    observedProgress=true;
  }
- assert.equal(latest.get("watch").hand.length,0,"Public state cannot leak an opponent hand after play");
+ assert.equal(latest.get("watch").hand.length,0,"Observer must never receive a participant hand");
+ assert.equal(latest.get("host").spectatorHands,undefined);assert.equal(latest.get("guest").spectatorHands,undefined);
+ for(const p of latest.get("watch").players)assert.equal(latest.get("watch").spectatorHands[p.id].length,p.handCount);
 }
 assert.ok(observedProgress);
 assert.equal(latest.get("host").phase,"finished");
@@ -113,6 +117,7 @@ await call("returning","spar:spectate",{code:"SPAR02"});
 const returned=await call("returning","spar:reconnect",{code:"SPAR02",reconnectToken:secondGuest.reconnectToken});
 assert.equal(returned.ok,true);
 assert.deepEqual(returned.state.hand,originalHand,"Original private hand survives return");
+assert.equal(returned.state.spectatorHands,undefined,"Recovered participant cannot receive observer hands");
 assert.equal(returned.state.spectatorCount,0,"Recovery clears former spectator role");
 assert.equal(returned.state.currentTurnPlayerId,"returning");
 assert.equal((await call("guest","spar:bra",{code:"SPAR02"})).ok,false,"Replaced socket loses authority");

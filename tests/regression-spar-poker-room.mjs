@@ -8,7 +8,7 @@ assert.ok(source.includes('visibleTab==="actions"&&!state.isSpectator'));
 assert.ok(source.includes('visibleTab==="players"'));
 assert.ok(source.includes('visibleTab==="chat"'));
 assert.ok(source.includes('disabled={state.isSpectator}'));
-assert.ok(source.includes('spar-table-seats'));
+assert.ok(source.includes('spar-seat-ring'));assert.ok(source.includes('data-ring-slot'));
 assert.ok(source.includes('state.canExchange')&&source.includes('onExchange(false)')&&source.includes('onShowBottom'));
 assert.ok(css.includes('.spar-side-players .spar-opponents{grid-template-columns:minmax(0,1fr)}'));
 console.log("PASS Spar Poker-inspired single workspace, seat markers and spectator action exclusion (source contract)");

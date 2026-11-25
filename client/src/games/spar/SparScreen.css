@@ -439,3 +439,44 @@
   .spar-match .spar-hand-header strong,.spar-match .spar-hand-header span{font-size:.68rem}
   .spar-match .spar-bra-prompt button{min-height:36px}
 }
+
+/* Poker-inspired perimeter seating. The three-column ring is bounded by
+ * the live table, with a dedicated centre that never contains private hands. */
+.spar-match .spar-table{border-radius:clamp(24px,8%,64px)}
+.spar-match .spar-seat-ring{display:grid;grid-template-columns:minmax(48px,1fr) minmax(0,2.6fr) minmax(48px,1fr);grid-template-rows:auto minmax(0,1fr) auto;align-items:center;justify-items:center;gap:4px;flex:1 1 0;min-height:0;width:100%}
+.spar-match .spar-seat-ring .spar-table-seat{width:100%;max-width:150px;min-width:0;padding:4px;gap:3px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.spar-match .spar-seat-ring .spar-table-seat-avatar{display:none}
+.spar-match .spar-seat-ring .spar-table-seat-copy{width:100%;display:grid;gap:1px}
+.spar-match .spar-seat-ring .spar-table-seat-copy strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spar-match .spar-seat-ring .spar-table-seat-copy small{line-height:1.1}
+.spar-match .spar-seat-ring .spar-card-count{justify-content:center}
+.spar-match .spar-seat-ring [data-ring-slot="top-left"]{grid-area:1/1}
+.spar-match .spar-seat-ring [data-ring-slot="top"]{grid-area:1/2}
+.spar-match .spar-seat-ring [data-ring-slot="top-right"]{grid-area:1/3}
+.spar-match .spar-seat-ring [data-ring-slot="left"]{grid-area:2/1}
+.spar-match .spar-seat-ring [data-ring-slot="right"]{grid-area:2/3}
+.spar-match .spar-seat-ring [data-ring-slot="bottom-left"]{grid-area:3/1}
+.spar-match .spar-seat-ring [data-ring-slot="bottom"]{grid-area:3/2}
+.spar-match .spar-seat-ring [data-ring-slot="bottom-right"]{grid-area:3/3}
+.spar-match .spar-seat-ring [data-ring-slot^="bottom"] .spar-card-count{order:-1}
+.spar-match .spar-seat-ring .spar-table-centre{grid-area:2/2;align-self:stretch;justify-self:stretch;height:100%;width:100%;min-width:0;min-height:0;padding:0}
+.spar-match .spar-seat-ring .spar-current-plays.is-expanded{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}
+.spar-match .spar-seat-ring .spar-play .spar-playing-card{max-width:100%;height:min(120px,calc(100cqh - 14px));aspect-ratio:2/3;width:auto}
+.spar-match .spar-seat-ring .spar-current-plays.is-expanded .spar-playing-card{height:min(104px,calc((100cqh - 24px)/2));width:auto;max-width:100%;aspect-ratio:2/3}
+.spar-match .spar-roster-entry{min-width:0}
+.spar-match .spar-spectator-hand{display:flex;flex-wrap:wrap;gap:4px;padding:4px 5px 6px;justify-content:start}
+.spar-match .spar-spectator-hand .spar-playing-card{width:30px;height:43px;padding:2px;border-radius:4px}
+.spar-match .spar-spectator-hand .spar-card-corner{font-size:.65rem}
+.spar-match .spar-spectator-hand .spar-card-centre{font-size:1rem}
+.spar-match .spar-spectator-hand .spar-card-corner.is-bottom{display:none}
+@media(max-width:599px) and (orientation:portrait),(max-height:600px) and (orientation:landscape){
+ .spar-match .spar-seat-ring{gap:2px;grid-template-columns:minmax(48px,1fr) minmax(0,2.8fr) minmax(48px,1fr)}
+ .spar-match .spar-seat-ring .spar-table-seat{padding:2px;gap:1px}
+ .spar-match .spar-seat-ring .spar-table-seat strong{font-size:.61rem}
+ .spar-match .spar-seat-ring .spar-table-seat small{font-size:.51rem}
+ .spar-match .spar-seat-ring .spar-card-count{font-size:.63rem}
+ .spar-match .spar-seat-ring .spar-card-count i{width:7px;height:10px}
+ .spar-match .spar-seat-ring .spar-play .spar-card-corner{font-size:.60rem}
+ .spar-match .spar-seat-ring .spar-play .spar-card-centre{font-size:1rem}
+ .spar-match .spar-seat-ring .spar-play .spar-card-corner.is-bottom{display:none}
+}

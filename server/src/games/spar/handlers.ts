@@ -89,8 +89,10 @@ function state(room: Room, viewerId: string | null, spectator: boolean): SparPub
     players: room.players.map(publicPlayer),
     viewerPlayerId: spectator ? null : viewerId,
     isSpectator: spectator, spectatorCount: room.spectators.size, spectatorNames: [...room.spectators.values()],
-    // No player's hand other than the authenticated viewer's is ever exposed.
+    // Casual/Custom observer projection is separate from the participant hand.
+    // Ranked observers never receive private faces.
     hand: !spectator ? [...(room.players.find(p => p.id === viewerId)?.hand ?? [])] : [],
+    ...(spectator && room.matchMode !== "ranked" ? { spectatorHands:Object.fromEntries(room.players.map(p=>[p.id,[...p.hand]])) } : {}),
     dealerPlayerId: room.players[room.dealerSeat]?.id ?? null,
     currentTurnPlayerId: room.currentTurnPlayerId, leadPlayerId: room.leadPlayerId,
     handNumber: room.handNumber, trickNumber: room.trickNumber,
