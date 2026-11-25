@@ -106,6 +106,21 @@ export function SparScreen({
   const legal = useMemo(() => legalSparCards(state.hand, leading), [state.hand, leading]);
   const current = state.players.find(p => p.id === state.currentTurnPlayerId);
   const ranks = [...state.players].sort((a,b)=>b.stones-a.stones || a.seat-b.seat);
+  // Seat order is stable, never sorted by score or by the current turn.
+  // Rotate relative to the viewer so their own seat anchors the lower band.
+  const seatOrder = [...state.players].sort((a,b)=>a.seat-b.seat);
+  const viewerIndex = viewer ? seatOrder.findIndex(p=>p.id===viewer.id) : -1;
+  const orderedSeats = viewerIndex<0 ? seatOrder : [...seatOrder.slice(viewerIndex+1),...seatOrder.slice(0,viewerIndex+1)];
+  const upperSeats = orderedSeats.slice(0,Math.ceil(orderedSeats.length/2));
+  const lowerSeats = orderedSeats.slice(Math.ceil(orderedSeats.length/2));
+  const renderTableSeat = (p:SparPlayer) => {
+    const active = p.id===state.currentTurnPlayerId;
+    return <article key={p.id} className={`spar-table-seat ${active?"is-active":""} ${p.id===viewer?.id?"is-you":""}`} aria-current={active?"true":undefined}>
+      <span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span>
+      <div className="spar-table-seat-copy"><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit}{p.id===state.dealerPlayerId?" · D":""}{active?" · Turn":""}</small></div>
+      <span className="spar-card-count" aria-label={`${p.handCount} cards remaining`} title={`${p.handCount} cards remaining`}><i aria-hidden="true"/><b>{p.handCount}</b></span>
+    </article>;
+  };
   const report = () => {
     const content = [
       `HALIEUS SPAR (CHA-CHA) · ${state.code}`,
@@ -182,12 +197,13 @@ export function SparScreen({
           <section className="spar-table" aria-label="Spar card table">
             <div className="spar-table-texture" aria-hidden="true"/>
             <div className="spar-table-heading"><span>SPAR</span><small>THE LAST TRICK COUNTS</small></div>
-            <div className={`spar-table-seats${state.players.length>4?" is-many":""}`} aria-label="Table seats">{state.players.map(p=><article key={p.id} className={`spar-table-seat ${p.id===state.currentTurnPlayerId?"is-active":""} ${p.id===viewer?.id?"is-you":""}`}><span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span><div><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit} · {p.handCount} cards{p.id===state.dealerPlayerId?" · D":""}</small></div>{p.id===state.currentTurnPlayerId&&<i aria-label="Current turn"/>}</article>)}</div>
+            <div className="spar-table-seats spar-seat-band" aria-label="Upper table seats">{upperSeats.map(renderTableSeat)}</div>
             <div className="spar-table-centre">
               {state.plays.length ?
                 <div className={`spar-current-plays ${state.players.length > 4 ? "is-expanded" : ""}`}>{state.plays.map((p,i)=><div key={p.playerId} className="spar-play"><CardFace card={p.card}/><small>{p.playerName}{i===0?" · Lead":""}</small></div>)}</div>
                 : <div className="spar-empty-centre"><span>♠ ♥ ♣ ♦</span><strong>{state.phase==="bra"?"Bra — begin the hand":"Waiting for the lead"}</strong><small>Cards are revealed here as players follow suit</small></div>}
             </div>
+            <div className="spar-table-seats spar-seat-band" aria-label="Lower table seats">{lowerSeats.map(renderTableSeat)}</div>
             {state.lastTrick&&<div className="spar-last-trick">Last trick: {state.players.find(p=>p.id===state.lastTrick?.winnerPlayerId)?.name??"Player"} · {state.lastTrick.winningCard} {state.lastTrick.number===state.handSize? `· ${state.lastTrick.points} points`:"· no points"}</div>}
           </section>
         </div>

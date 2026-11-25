@@ -347,3 +347,95 @@
   .spar-match .spar-control-panel{max-height:40dvh}
   .spar-match .spar-table-seat small{font-size:.5rem}
 }
+
+/* Centre-first trick geometry: two small seat bands surround the actual cards.
+ * The remaining-card counter is public metadata only; no opponent hand faces. */
+.spar-match .spar-seat-band{display:flex;justify-content:center;gap:5px;flex:0 0 auto;width:100%}
+.spar-match .spar-seat-band .spar-table-seat{flex:1 1 0;max-width:180px;min-width:0}
+.spar-match .spar-table-seat-copy{min-width:0;flex:1;display:grid;gap:2px}
+.spar-match .spar-card-count{display:flex;align-items:center;gap:3px;flex:0 0 auto;min-width:0;color:#fff0ca;font-size:.78rem}
+.spar-match .spar-card-count i{width:10px;height:14px;border-radius:2px;background:#153f31;border:1px solid #e6ba60;box-shadow:-2px 2px 0 #052c24,-3px 3px 0 #c69d56}
+.spar-match .spar-card-count b{font-variant-numeric:tabular-nums;line-height:1}
+.spar-match .spar-table-seat.is-active{border-color:#ffe39c;box-shadow:0 0 0 1px #e6ba60,inset 0 0 14px #e6ba6024}
+.spar-match .spar-table-seat.is-active .spar-table-seat-copy small{color:#ffe39c;opacity:1;font-weight:800}
+.spar-match .spar-table-centre{container-type:size;min-height:0;flex:1 1 0;display:grid;place-items:center;overflow:hidden;padding:2px 0}
+.spar-match .spar-current-plays{max-width:100%;max-height:100%;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:5px}
+.spar-match .spar-current-plays.is-expanded{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:min(100%,420px);gap:4px}
+.spar-match .spar-play{min-width:0;min-height:0;gap:2px}
+.spar-match .spar-play .spar-playing-card{height:min(124px,calc(100cqh - 14px));width:auto;max-width:100%;aspect-ratio:2/3}
+.spar-match .spar-current-plays.is-expanded .spar-play .spar-playing-card{height:min(112px,calc((100cqh - 28px)/2));width:auto;max-width:100%;aspect-ratio:2/3}
+.spar-match .spar-play small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
+@media (orientation:portrait) and (max-width:599px){
+  .spar-match .spar-seat-band{gap:3px}
+  .spar-match .spar-seat-band .spar-table-seat{padding:3px;gap:3px}
+  .spar-match .spar-seat-band .spar-table-seat-avatar{display:none}
+  .spar-match .spar-table-seat strong{font-size:.62rem}
+  .spar-match .spar-table-seat small{font-size:.53rem}
+  .spar-match .spar-card-count{font-size:.67rem;gap:2px}
+  .spar-match .spar-card-count i{width:7px;height:10px}
+  .spar-match .spar-play .spar-card-centre{font-size:clamp(.9rem,3.7vw,1.7rem)}
+}
+@media (orientation:portrait) and (min-width:600px) and (max-width:1024px){
+  .spar-match .spar-table{padding:14px;gap:9px}
+  .spar-match .spar-table-seat{padding:8px;gap:7px}
+  .spar-match .spar-table-seat strong{font-size:.86rem}
+  .spar-match .spar-table-seat small{font-size:.72rem}
+  .spar-match .spar-card-count{font-size:1rem}
+  .spar-match .spar-table-seat-avatar{width:30px;height:30px;flex-basis:30px}
+  .spar-match .spar-current-plays.is-expanded{width:min(100%,560px)}
+  .spar-match .spar-play .spar-playing-card{height:min(150px,calc(100cqh - 16px))}
+  .spar-match .spar-current-plays.is-expanded .spar-play .spar-playing-card{height:min(140px,calc((100cqh - 32px)/2))}
+  .spar-match .spar-play .spar-card-centre{font-size:2.6rem}
+  .spar-match .spar-play small{font-size:.76rem}
+  .spar-match .spar-control-panel{padding:10px;gap:7px}
+  .spar-match .spar-side-tabs button{min-height:44px;font-size:.88rem}
+  .spar-match .spar-actions-workspace .spar-hand-cards .spar-playing-card{max-width:82px}
+}
+@media (orientation:landscape) and (max-width:1440px){
+  .spar-page.hgr-card-room-page .spar-header{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between;gap:6px!important;min-height:0!important;padding:0!important;margin:0!important}
+  .spar-page.hgr-card-room-page .card-game-brand-lockup{min-width:0;gap:6px}
+  .spar-page.hgr-card-room-page .card-game-brand-lockup>img{width:32px!important;height:32px!important;flex:0 0 32px}
+  .spar-page.hgr-card-room-page .card-game-brand-lockup p{display:none}
+  .spar-page.hgr-card-room-page .card-game-brand-lockup h1{font-size:clamp(1rem,2vw,1.4rem)!important;margin:0}
+  .spar-page.hgr-card-room-page .card-game-meta{display:flex!important;flex-wrap:wrap;gap:3px!important;min-width:0;margin:0!important;padding:0!important}
+  .spar-page.hgr-card-room-page .card-game-meta>span{font-size:.64rem!important;padding:3px 5px!important;min-height:0!important}
+  .spar-page.hgr-card-room-page .spar-menu-toggle{min-height:34px;padding:4px 8px!important;font-size:.72rem}
+  .spar-match .spar-table{flex:1 1 0;min-height:0;height:auto;gap:5px}
+  .spar-match .spar-match-status{flex:0 0 auto;flex-wrap:nowrap;padding:6px 8px;gap:6px}
+  .spar-match .spar-match-status>div:first-child{flex:1;gap:2px}
+  .spar-match .spar-match-status small{font-size:.65rem}
+  .spar-match .spar-match-status strong{font-size:.8rem}
+  .spar-match .spar-pool{width:auto;flex:0 0 auto}
+  .spar-match .spar-pool-stones{gap:3px;flex-wrap:wrap;max-width:120px}
+  .spar-match .spar-pool-stones i{width:13px;height:13px}
+}
+@media (orientation:landscape) and (max-height:600px) and (max-width:1100px){
+  .spar-match .spar-table-column{gap:4px}
+  .spar-match .spar-table{padding:4px;border-width:4px;border-radius:14px;gap:3px}
+  .spar-match .spar-table-heading{display:none}
+  .spar-match .spar-match-status{padding:4px 6px}
+  .spar-match .spar-match-status small{font-size:.56rem}
+  .spar-match .spar-match-status strong{font-size:.68rem}
+  .spar-match .spar-pool-stones i{width:9px;height:9px}
+  .spar-match .spar-pool>span,.spar-match .spar-pool>strong{font-size:.57rem}
+  .spar-match .spar-seat-band{gap:3px}
+  .spar-match .spar-seat-band .spar-table-seat{padding:3px;gap:3px}
+  .spar-match .spar-table-seat-avatar{display:none}
+  .spar-match .spar-table-seat strong{font-size:.62rem}
+  .spar-match .spar-table-seat small{font-size:.53rem}
+  .spar-match .spar-card-count{font-size:.66rem}
+  .spar-match .spar-card-count i{width:7px;height:10px}
+  .spar-match .spar-play .spar-card-centre{font-size:clamp(.9rem,3vh,1.7rem)}
+  .spar-match .spar-play .spar-card-corner{font-size:.66rem}
+  .spar-match .spar-play small{font-size:.53rem}
+  .spar-match .spar-last-trick{font-size:.57rem;padding:3px 5px}
+  .spar-match .spar-control-panel{padding:5px;gap:4px}
+  .spar-match .spar-control-heading h2{font-size:.83rem;margin:0}
+  .spar-match .spar-control-heading small{font-size:.55rem}
+  .spar-match .spar-turn-pill{font-size:.63rem;padding:3px 5px}
+  .spar-match .spar-side-tabs button{min-height:34px;font-size:.72rem}
+  .spar-match .spar-actions-workspace .spar-hand,.spar-match .spar-actions-workspace .spar-bra-prompt{padding:3px;gap:4px}
+  .spar-match .spar-actions-workspace .spar-hand-cards .spar-playing-card{max-width:50px;min-height:44px}
+  .spar-match .spar-hand-header strong,.spar-match .spar-hand-header span{font-size:.68rem}
+  .spar-match .spar-bra-prompt button{min-height:36px}
+}
