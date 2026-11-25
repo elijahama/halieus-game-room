@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.9.9 final site-wide audit — 25 November 2026
+
+Owner requires a comprehensive audit immediately before 5.0.0: entire codebase, aesthetics, UI, framing, scaling and all platform surfaces. 4.9.9 is now mandatory, following 4.9.5 integration and replacing the final contingency slot. Apply the full audit matrix in [Delivery Timeline and Tournament Roadmap](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md) and the [Version Roadmap](HGR_VERSION_ROADMAP.md). Record findings and fix them in small audited batches, preserve all existing fixes and canonical HGR assets, collect real responsive/device evidence, run final CI/release gates, preserve a verified restorable checkpoint and obtain owner sign-off. Do not launch 5.0 with unresolved serious or unaccepted visual findings. This is a durable planning decision only, not an audit result, code change or deployment.
+
 ## 4.8.4 short desktop Control launcher containment — 25 November 2026
 
 Official main release identity run 45516439220 passed Windows smoke and failed only final browser gate 14/14 Control branding after desktop 1440×900 passed, at short 1280×600 viewport. Preserve canonical approved artwork and static launcher. Compact the fixed desktop rail below 721px height, allow only navigation subsection overflow if needed, retain full-size Control icon and all nav items, leave mobile/tablet unchanged. Strengthen existing containment assertion with diagnostic coordinates and top boundary; do not bypass release checks. Fresh PR CI and main packaging required; production remains unchanged.

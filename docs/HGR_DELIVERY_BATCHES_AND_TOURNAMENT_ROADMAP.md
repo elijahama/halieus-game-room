@@ -21,7 +21,8 @@ The owner requested that delivery batches be allocated specific patch versions. 
 | 4.9.3 | Tournament interface refinement | Desktop/tablet/phone geometry and accessibility |
 | 4.9.4 | Security and recovery hardening | Permissions, abuse prevention, reconnect and failure recovery |
 | **4.9.5** | Production-readiness checkpoint | Integrated end-to-end regression, cross-device UX, deployment/rollback rehearsal and restorable protected checkpoint |
-| 4.9.6–4.9.9 | Unallocated contingency | Genuine launch-blocking corrections only |
+| 4.9.6–4.9.8 | Unallocated contingency | Genuine launch-blocking corrections only |
+| **4.9.9** | Mandatory site-wide pre-5.0 audit | Whole-platform code, visual, responsive, gameplay, accessibility and operational audit; findings resolved, full regression, restorable checkpoint and owner sign-off |
 | **5.0.0** | Fully realised Tournament Mode | All existing milestone contracts, real production Solo/Guild acceptance and explicit owner approval |
 | 5.0.1 | Conditional gameplay fixes | Real production findings |
 | 5.0.2 | Conditional scoring/integrity fixes | Real production findings |
@@ -30,6 +31,21 @@ The owner requested that delivery batches be allocated specific patch versions. 
 | **5.0.5** | Accepted post-launch stability | Preserve 5.0.0 baseline and independently restorable accepted checkpoint |
 
 The above allocation supersedes the old delivery ordering only where a batch is explicitly covered; earlier notification, security, scheduled-release and universal replay requirements remain tracked, not silently completed or dropped. New findings can change patch allocation before release; do not manufacture patches or skip an unmet milestone. No production deployment, code merge, version bump, or change to Control UI is authorized by this documentation alone.
+
+## 4.9.9 — mandatory site-wide pre-5.0 audit (owner direction, 25 November 2026)
+
+4.9.9 is a dedicated final quality and release-readiness milestone, not optional contingency. It follows the 4.9.5 integration checkpoint and must be accepted before 5.0.0. Audit the whole shipped HGR platform, not just Tournament Mode, against a frozen release candidate and approved reference assets. Preserve existing fixes and canonical branding.
+
+| Audit workstream | Required coverage and evidence |
+| --- | --- |
+| Code and architecture | Entire client/server/shared code, build and release paths; dead/duplicate code, type safety, dependencies, errors, security, privacy, race conditions and maintainability. No speculative wholesale rewrites. |
+| Visual consistency | Approved typography, canonical H family, game icons, themes, colour/contrast, component hierarchy, spacing, feedback and alignment across all screens. |
+| UI, framing and scaling | Every game, lobby, gallery, spectator, profile, ranking, tournament, replay, settings, notification and Control surface; portrait/landscape phones and tablets, short/wide desktop, fullscreen and installed PWA, safe areas, zoom and enlarged text. Record real screenshots and geometry regressions. |
+| Gameplay and data | Every supported game/mode, AI, rules, clocks, room lifecycle/recovery, ranked awards and histories, tournament scoring, replay privacy and persistence; no regressions or fabricated outcomes. |
+| Operations and performance | Oracle deployment/rollback, exact release identity, update progress, notifications, room closures/maintenance, storage, network, load and error recovery; no visible terminal interruptions on owner PC. |
+| Accessibility and acceptance | Keyboard/focus, touch targets, screen-reader labels, contrast and real-device journeys; Windows/Ubuntu CI, full regression/build/browser suite, production rehearsal and owner acceptance. |
+
+Maintain a findings register with screen/module, severity, reproduction, before/after evidence, fix PR, exact tested revision and status. Fix in small independently reviewed batches. Re-run impacted coverage and final full release gates after fixes; retain a restorable 4.9.9 checkpoint. No unresolved launch-blocking or serious defects, no silent waivers, and no known unaccepted visual inconsistencies may pass into 5.0. Lower-severity residuals require explicit owner review. Source, CI, deployment, and real-device acceptance remain separate. Do not change VERSION or declare the audit complete merely because this plan is recorded.
 
 ## Delivery mini-batches
 
