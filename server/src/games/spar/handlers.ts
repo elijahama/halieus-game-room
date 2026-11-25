@@ -636,6 +636,11 @@ export async function closeSparRoom(io: Server, code: string, createdAt: number,
   });
   return true;
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+export function getSparBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+}
 export function closeAllSparRooms(): number {
   const count = getSparRoomCount();
   for (const timer of aiTimers.values()) clearTimeout(timer);
