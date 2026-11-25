@@ -307,6 +307,34 @@ try {
    assert.equal(rankedShared.ok,true);
    assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:rankedCode,createdAt:rankedShared.state.createdAt}})).status,409);
  }
+ // Mega Board closure uses exact live identity and must not end other games.
+ const boardCode="MEGACLOSE";
+ const board=await emit(guest,"game:create",{code:boardCode,playerName:"MegaHost",ranked:false});
+ assert.equal(board.ok,true);
+ const otherTable=await emit(guest,"poker:create",{code:"OTHER1",playerName:"OtherHost",matchMode:"casual"});
+ assert.equal(otherTable.ok,true);
+ const boardInfo=(await request("/accounts/live-games",{cookie})).json.rooms.find(r=>r.game==="mega-board"&&r.code===boardCode);
+ assert.ok(boardInfo);
+ const boardBody={game:"mega-board",code:boardCode,createdAt:boardInfo.createdAt,confirmation:"CLOSE GAME ROOM"};
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...boardBody,createdAt:boardBody.createdAt-1}})).status,409);
+ let legacyEnded=false;guest.once("game:ended",()=>{legacyEnded=true;});
+ const boardNotice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:boardBody})).status,200);
+ assert.equal((await Promise.race([boardNotice,sleep(3000).then(()=>null)]))?.game,"mega-board");
+ assert.equal(legacyEnded,false,"Targeted cancellation must not trigger the legacy reset");
+ assert.equal((await emit(guest,"game:reconnect",{code:boardCode,reconnectToken:board.reconnectToken})).ok,false);
+ assert.equal((await emit(guest,"poker:reconnect",{code:"OTHER1",reconnectToken:otherTable.reconnectToken})).ok,true);
+ const boardArchive=(await readdir(join(dir,"sessions","finalized"))).find(n=>n.startsWith("mega-board-"+boardCode+"-")&&n.endsWith(".json"));
+ assert.ok(boardArchive);
+ const cancelledBoard=JSON.parse(await readFile(join(dir,"sessions","finalized",boardArchive),"utf8"));
+ assert.equal(cancelledBoard.status,"incomplete");assert.equal(cancelledBoard.summary.winner,null);
+ assert.equal(cancelledBoard.summary.cancellation,"owner-closed");
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:boardBody})).status,409);
+ const rankedMega=await emit(guest,"game:create",{code:"MEGARANK",playerName:"RankHost",ranked:true});
+ assert.equal(rankedMega.ok,true);
+ const rankedInfo=(await request("/accounts/live-games",{cookie})).json.rooms.find(r=>r.game==="mega-board"&&r.code==="MEGARANK");
+ assert.ok(rankedInfo);
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...boardBody,code:"MEGARANK",createdAt:rankedInfo.createdAt}})).status,409);
  guest.disconnect();
  console.log("PASS HGR 4.6.10 live local HTTP/Socket.io: owner-only auth, CSRF, typed confirmation, occupied room 409, 503 visitor page, Control continuity, owner socket bypass and reopening");
 } finally {

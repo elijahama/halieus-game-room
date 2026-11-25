@@ -47,7 +47,7 @@ import { getSparBulkRoomState, closeAllSparRooms, closeSparRoom, getSparChatIden
 import { closeWordBoardRoom, getWordBoardBulkRoomState, closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
 import { closeBlackjackRoom, getBlackjackBulkRoomState, closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
 import { closeWhotRoom, getWhotBulkRoomState, closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
-import { getSessionArchiveStatus } from "./platform/sessionArchive.js";
+import { finalizeSession, getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
@@ -529,6 +529,25 @@ const getBulkRoomState = () => {
     getPokerBulkRoomState(), getLudoBulkRoomState(), getConnectFourBulkRoomState(), getHiddenDictatorBulkRoomState(), getWordArenaBulkRoomState(), getClassicBulkRoomState(), getAyoBulkRoomState(), getSparBulkRoomState(), getWordBoardBulkRoomState(), getBlackjackBulkRoomState(), getWhotBulkRoomState() ];
   return states.reduce((total, state) => ({ count: total.count + state.count, protected: total.protected + state.protected }), { count: 0, protected: 0 });
 };
+async function closeMegaBoardRoom(code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.gameState?.phase === "finished" ||
+      room.ranked || getSoloTournamentBoundRoom(code) || getGuildFixtureBoundRoom(code)) return false;
+  const spectators = listSpectators(code);
+  const recipients = new Set([...room.players.filter(p => !p.isAi && p.isConnected && !p.hasLeft).map(p => p.id), ...spectators.map(s => s.id)]);
+  cancelHostGrace(code);
+  // The guarded lifecycle clears the auction and removes the room. Suppress the
+  // legacy global Mega reset; only the cancelled board's recipients are notified.
+  if (!endRoom(io, code, reason, { ownerCancellation: true })) return false;
+  for (const spectator of spectators) removeSpectator(code, spectator.id);
+  for (const id of recipients) io.to(id).emit("platform:room-closed", { game: "mega-board", code, createdAt, reason });
+  // Preserve the unfinished board as evidence, never call normal victory or ranking paths.
+  await Promise.all([
+    flushRoomSaveStrict(),
+    finalizeSession("mega-board", code, createdAt, "incomplete", { ...room, spectators }, { winner: null, mode: room.blitz ? "blitz" : "casual", cancellation: "owner-closed" }),
+  ]);
+  return true;
+}
 configureAccountAdminRuntimeControls({
   getRoomCount: authoritativeRoomCount,
   getBulkRoomState,
@@ -549,6 +568,7 @@ configureAccountAdminRuntimeControls({
   closeSparRoom: (actor, code, createdAt) => closeSparRoom(io, code, createdAt, `${actor.displayName} closed this Spar room from Control.`),
   closeIndividualRoom: (actor, game, code, createdAt) => {
     const reason = `${actor.displayName} closed this room from Control.`;
+    if (game === "mega-board") return closeMegaBoardRoom(code, createdAt, reason);
     if (game === "ludo") return closeLudoRoom(io, code, createdAt, reason);
     if (game === "connect-four") return closeConnectFourRoom(io, code, createdAt, reason);
     if (game === "poker") return closePokerRoom(io, code, createdAt, reason);

@@ -436,6 +436,8 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   // A parked Mega Board remains live/recoverable while the player browses the Halieus Game Room.
   const [megaBoardParked, setMegaBoardParked] = useState(false);
+  const currentMegaRoomCode = useRef<string | null>(null);
+  currentMegaRoomCode.current = lobby?.code ?? gameState?.roomCode ?? null;
 
   // Keep browser metadata aligned with the active game while the root portal remains branded as Halieus Game Room.
   useEffect(() => {
@@ -1175,6 +1177,21 @@ export default function App() {
     function handleIndividualRoomClosed(payload: { game: string; code: string; createdAt: number; reason: string }) {
       const game = payload.game;
       const code = payload.code;
+      if (game === "mega-board") {
+        if (readSavedSession()?.code === code) {
+          clearSession(); setSavedSession(null); setRecoveryCode("");
+        }
+        const active = readGameCodeFromPath() === code || readMegaSpectatorCodeFromPath() === code;
+        if (currentMegaRoomCode.current === code || active) {
+          setLobby(null); setGameState(null); setGameStarted(false); setMegaBoardParked(false);
+          setLiveTradePreview(null); setSpectators([]); setIsSpectator(false); setGameMenuOpen(false);
+          if (active) {
+            setInviteCode(null); setInvitePreview(null); updateBrowserPath("/");
+            setRoomCode(generateRoomCode()); setMessage(payload.reason);
+          }
+        }
+        return;
+      }
       if (game === "poker") {
         if (readPokerSavedSession()?.code === code) {
           clearPokerSession(); setPokerSavedSession(null); setPokerRecoveryCode("");

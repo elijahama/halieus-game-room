@@ -1674,7 +1674,7 @@ export function registerAccountRoutes(app: Express): void {
     }
     try {
       if (!await adminRuntimeControls.closeSparRoom(publicAccount(actor), code, createdAt)) {
-        response.status(409).json({ ok: false, reason: "Room is unavailable, changed, or protected Ranked play." }); return;
+        response.status(409).json({ ok: false, reason: "Room is unavailable, changed, or protected play." }); return;
       }
       addAudit(actor.id, "rooms.close-one", "system", null, `${actor.displayName} closed Spar room ${code}.`);
       await saveStore();
@@ -1694,7 +1694,7 @@ export function registerAccountRoutes(app: Express): void {
       response.status(403).json({ ok: false, reason: "Same-origin confirmed room closure is required." }); return;
     }
     const { game, code, createdAt } = request.body;
-    if (!["spar", "ludo", "connect-four", "poker", "blackjack", "whot", "ayo", "hidden-dictator", "word-board", "cheat", "dominoes", "word-game", "password", "anagrams-race"].includes(game) || typeof code !== "string" || !/^[A-Z0-9]{1,6}$/.test(code) || !Number.isSafeInteger(createdAt)) {
+    if (!["spar", "ludo", "connect-four", "poker", "blackjack", "whot", "ayo", "hidden-dictator", "word-board", "cheat", "dominoes", "word-game", "password", "anagrams-race", "mega-board"].includes(game) || typeof code !== "string" || !(game === "mega-board" ? /^[A-Z0-9]{1,12}$/ : /^[A-Z0-9]{1,6}$/).test(code) || !Number.isSafeInteger(createdAt) || createdAt <= 0) {
       response.status(400).json({ ok: false, reason: "Invalid or unsupported room identity." }); return;
     }
     if (!adminRuntimeControls?.closeIndividualRoom) {
@@ -1702,7 +1702,7 @@ export function registerAccountRoutes(app: Express): void {
     }
     try {
       if (!await adminRuntimeControls.closeIndividualRoom(publicAccount(actor), game, code, createdAt)) {
-        response.status(409).json({ ok: false, reason: "Room is unavailable, changed, or protected Ranked play." }); return;
+        response.status(409).json({ ok: false, reason: "Room is unavailable, changed, or protected play." }); return;
       }
       addAudit(actor.id, "rooms.close-one", "system", null, `${actor.displayName} closed ${game} room ${code}.`);
       await saveStore();
