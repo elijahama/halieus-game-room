@@ -134,7 +134,8 @@ const authAttempts = new Map<string, { count: number; resetAt: number }>();
 interface AccountAdminRuntimeControls {
   getRoomCount: () => number;
   getLiveRooms: () => HalieusLiveRoomSummary[];
-  closeAllRooms: (actor: HalieusAccountSummary) => Promise<{ closed: number }>;
+  getBulkRoomState?: () => { count: number; protected: number };
+  closeAllRooms: (actor: HalieusAccountSummary, expectedRooms?: number) => Promise<{ closed: number; reason?: string }>;
   closeSparRoom?: (actor: HalieusAccountSummary, code: string, createdAt: number) => Promise<boolean>;
 }
 
@@ -1683,10 +1684,49 @@ export function registerAccountRoutes(app: Express): void {
     }
   });
 
+  app.get("/admin/rooms/bulk-status", (request, response) => {
+    if (!requireOwner(request, response)) return;
+    if (!adminRuntimeControls?.getBulkRoomState) { response.status(503).json({ ok: false, reason: "Room controls are not ready." }); return; }
+    response.set("Cache-Control", "no-store");
+    response.json({ ok: true, ...adminRuntimeControls.getBulkRoomState() });
+  });
+
+  app.post("/admin/rooms/close-all-control", async (request, response) => {
+    const actor = requireOwner(request, response); if (!actor) return;
+    const origin = request.get("origin");
+    let sameOrigin = false;
+    try { sameOrigin = !!origin && new URL(origin).host === request.get("host"); } catch { /* reject */ }
+    if (!sameOrigin || !request.is("application/json") || request.body?.confirmation !== "CLOSE ALL GAME ROOMS") {
+      response.status(403).json({ ok: false, reason: "Same-origin confirmed closure is required." }); return;
+    }
+    const expectedRooms = request.body?.expectedRooms;
+    if (!Number.isSafeInteger(expectedRooms) || expectedRooms < 1) {
+      response.status(400).json({ ok: false, reason: "Invalid confirmed room count." }); return;
+    }
+    if (!adminRuntimeControls?.getBulkRoomState) { response.status(503).json({ ok: false, reason: "Room controls are not ready." }); return; }
+    try {
+      const result = await adminRuntimeControls.closeAllRooms(publicAccount(actor), expectedRooms);
+      if (result.reason) { response.status(409).json({ ok: false, reason: result.reason }); return; }
+      addAudit(actor.id, "rooms.close-all", "system", null, `${actor.displayName} closed ${result.closed} unfinished Halieus rooms from Control.`);
+      await saveStore();
+      response.json({ ok: true, closed: result.closed });
+    } catch (error) {
+      console.error("Bulk room closure persistence failed:", error);
+      response.status(500).json({ ok: false, reason: "Closure could not be confirmed. Refresh the room list before retrying." });
+    }
+  });
+
   app.post("/admin/rooms/close-all", async (request, response) => {
     const actor = requireAdmin(request, response); if (!actor) return;
     if (!adminRuntimeControls) { response.status(503).json({ ok: false, reason: "Room controls are not ready." }); return; }
+    const origin = request.get("origin");
+    if (origin) {
+      let sameOrigin = false;
+      try { sameOrigin = new URL(origin).host === request.get("host"); } catch { /* reject */ }
+      if (!sameOrigin) { response.status(403).json({ ok: false, reason: "Cross-site room closure rejected." }); return; }
+    }
     const result = await adminRuntimeControls.closeAllRooms(publicAccount(actor));
+    if (result.reason) { response.status(409).json({ ok: false, reason: result.reason }); return; }
     addAudit(actor.id, "rooms.close-all", "system", null, `${actor.displayName} closed ${result.closed} live Halieus room${result.closed === 1 ? "" : "s"}.`);
     await saveStore();
     response.json({ ok: true, closed: result.closed });
