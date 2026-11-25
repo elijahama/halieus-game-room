@@ -236,6 +236,29 @@ try {
  assert.equal((await emit(guest,"spar:reconnect",{code:"BULKSP",reconnectToken:casual.reconnectToken})).ok,false);
  assert.equal((await request("/health")).status,200,"Game closure never stops the server");
  console.log("PASS Control room HTTP: owner and Origin checks, targeted Spar, offline Ranked protection, count confirmation, guarded bulk closure");
+ // Card-table cancellations preserve archive status and reject Ranked tables.
+ for(const game of ["poker","blackjack","whot"]){
+   const code="CARD12";
+   const created=await emit(guest,game+":create",{code,playerName:"CardHost",matchMode:"casual"});
+   assert.equal(created.ok,true,game+" create");
+   assert.equal((await emit(guest,game+":add-ai",{code,difficulty:"normal"})).ok,true);
+   if(game==="poker")assert.equal((await emit(guest,game+":start",{code})).ok,true);
+   const body={game,code,createdAt:created.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   const notice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+   const result=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body});
+   assert.equal(result.status,200,game+" cancellation "+JSON.stringify(result.json));
+   assert.equal((await Promise.race([notice,sleep(3000).then(()=>null)]))?.game,game);
+   assert.equal((await emit(guest,game+":reconnect",{code,reconnectToken:created.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const filename=(await readdir(archiveDir)).find(name=>name.startsWith(game+"-"+code+"-")&&name.endsWith(".json"));
+   assert.ok(filename,game+" cancellation archive");
+   const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+   assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+   assert.equal(archived.summary.cancellation,"owner-closed");
+   const rankedCard=await emit(guest,game+":create",{code:"RANK12",playerName:"RankHost",matchMode:"ranked"});
+   assert.equal(rankedCard.ok,true);
+   assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:"RANK12",createdAt:rankedCard.state.createdAt}})).status,409);
+ }
  guest.disconnect();
  console.log("PASS HGR 4.6.10 live local HTTP/Socket.io: owner-only auth, CSRF, typed confirmation, occupied room 409, 503 visitor page, Control continuity, owner socket bypass and reopening");
 } finally {

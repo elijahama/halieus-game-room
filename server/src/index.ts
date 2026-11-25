@@ -36,7 +36,7 @@ import { registerMegaSavedGameHandlers } from "./games/mega-board/handlers/saved
 import { registerMegaSpaceHandlers } from "./games/mega-board/handlers/megaSpaceHandlers.js";
 import { registerOrderHandlers } from "./games/mega-board/handlers/orderHandlers.js";
 import { registerPurchaseHandlers } from "./games/mega-board/handlers/purchaseHandlers.js";
-import { getPokerBulkRoomState, closeAllPokerRooms, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
+import { closePokerRoom, getPokerBulkRoomState, closeAllPokerRooms, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
 import { closeLudoRoom, getLudoBulkRoomState, closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
 import { closeConnectFourRoom, getConnectFourBulkRoomState, closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
 import { getHiddenDictatorBulkRoomState, closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
@@ -45,8 +45,8 @@ import { getClassicBulkRoomState, closeAllClassicRooms, getClassicChatIdentity, 
 import { getAyoBulkRoomState, closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
 import { getSparBulkRoomState, closeAllSparRooms, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
 import { getWordBoardBulkRoomState, closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
-import { getBlackjackBulkRoomState, closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
-import { getWhotBulkRoomState, closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
+import { closeBlackjackRoom, getBlackjackBulkRoomState, closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
+import { closeWhotRoom, getWhotBulkRoomState, closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
 import { getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
@@ -551,6 +551,9 @@ configureAccountAdminRuntimeControls({
     const reason = `${actor.displayName} closed this room from Control.`;
     if (game === "ludo") return closeLudoRoom(io, code, createdAt, reason);
     if (game === "connect-four") return closeConnectFourRoom(io, code, createdAt, reason);
+    if (game === "poker") return closePokerRoom(io, code, createdAt, reason);
+    if (game === "blackjack") return closeBlackjackRoom(io, code, createdAt, reason);
+    if (game === "whot") return closeWhotRoom(io, code, createdAt, reason);
     if (game === "spar") return closeSparRoom(io, code, createdAt, reason);
     return Promise.resolve(false);
   },

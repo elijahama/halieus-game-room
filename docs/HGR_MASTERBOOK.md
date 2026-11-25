@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 card-table cancellation extension — 25 November 2026
+
+Lagz development batch extends owner-only individual closure to Poker, Blackjack and WHOT alongside Spar, Ludo and Connect Four. Cancel the selected room's AI, Poker next-hand and recovery timers, remove the room, notify only its participants and spectators, preserve unrelated recovery sessions and write an incomplete archive with no match winner. Existing competitive protection remains server-side. HTTP fixtures cover each card table, incomplete archives, reconnect refusal and Ranked denial. Previous nine-file batch 45b5a8bbc94e8f277b99d4aff4a251694b4d2565 passed local typecheck and HTTP/Control regression and was pushed from Lagz; independent CI is separate. No VERSION bump or deployment. Mega Board and remaining individual game adapters, offline recovery and bulk archival remain outstanding.
+
 ## 4.8.5 targeted cancellation extension — 25 November 2026
 
 Previous integrated head d646d06f51cda6e5d42698001f9c7aa52455cc19 passed GitHub workflow 45552382963. The new development batch extends individual cancellation to casual Ludo and Connect Four via an owner-only same-origin endpoint keyed by game, code and creation timestamp. It preserves the original Spar endpoint and the protected bulk action. It cancels the selected room's AI timer, emits a targeted cancellation to connected participants and spectators, archives incomplete with no winner, and clears only the corresponding local recovery session. Ranked rooms remain protected. Real HTTP regression cases cover same-code cross-game isolation, stale identities, guest and cross-origin denial, observer delivery, duplicate cancellation, reconnection and Ranked protection. Remaining game families, offline stale recovery cleanup, archive award audit and physical-device acceptance remain outstanding. Development is now staged on an isolated Lagz worktree; no version change or production deployment.

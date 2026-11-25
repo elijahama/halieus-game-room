@@ -1173,21 +1173,37 @@ export default function App() {
     function handleLiveTradePreview(nextPreview: LiveTradePreview | null) { setLiveTradePreview(nextPreview); }
     // A targeted cancellation must never reset the other games' recoverable seats.
     function handleIndividualRoomClosed(payload: { game: string; code: string; createdAt: number; reason: string }) {
-      if (payload.game !== "ludo" && payload.game !== "connect-four") return;
       const game = payload.game;
       const code = payload.code;
-      if (game === "ludo") {
+      if (game === "poker") {
+        if (readPokerSavedSession()?.code === code) {
+          clearPokerSession(); setPokerSavedSession(null); setPokerRecoveryCode("");
+        }
+        setPokerState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "blackjack") {
+        if (readCardSavedSession(BLACKJACK_SESSION_KEY)?.code === code) {
+          clearCardSession(BLACKJACK_SESSION_KEY); setBlackjackSavedSession(null); setBlackjackRecoveryCode("");
+        }
+        setBlackjackState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "whot") {
+        if (readCardSavedSession(WHOT_SESSION_KEY)?.code === code) {
+          clearCardSession(WHOT_SESSION_KEY); setWhotSavedSession(null); setWhotRecoveryCode("");
+        }
+        setWhotState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "ludo") {
         if (readCardSavedSession(LUDO_SESSION_KEY)?.code === code) {
           clearCardSession(LUDO_SESSION_KEY); setLudoSavedSession(null); setLudoRecoveryCode("");
         }
         setLudoState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
-      } else {
+      } else if (game === "connect-four") {
         if (readCardSavedSession(CONNECT_FOUR_SESSION_KEY)?.code === code) {
           clearCardSession(CONNECT_FOUR_SESSION_KEY); setConnectFourSavedSession(null); setConnectFourRecoveryCode("");
         }
         setConnectFourState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
-      }
-      const activeCode = game === "ludo" ? readLudoCodeFromPath() : readConnectFourCodeFromPath();
+      } else return;
+      const activeCode = game === "poker" ? readPokerCodeFromPath() :
+        game === "blackjack" ? readBlackjackCodeFromPath() : game === "whot" ? readWhotCodeFromPath() :
+        game === "ludo" ? readLudoCodeFromPath() : readConnectFourCodeFromPath();
       if (activeCode === code) {
         updateBrowserPath("/"); setRoomCode(generateRoomCode()); setMessage(payload.reason);
       }

@@ -256,7 +256,7 @@
 
   let roomClosureBusy = false;
   let roomListFresh = false;
-  const individuallyClosable = new Set(["spar", "ludo", "connect-four"]);
+  const individuallyClosable = new Set(["spar", "ludo", "connect-four", "poker", "blackjack", "whot"]);
   async function closeIndividualRoom(room) {
     if (state.account?.role !== "owner" || roomClosureBusy || !roomListFresh || !individuallyClosable.has(room.game) || room.matchMode === "ranked") return;
     if (!window.confirm(`Close ${room.gameTitle} room ${room.code}? This ends only this table, not the server. No winner or Ranked result will be awarded.`)) return;
