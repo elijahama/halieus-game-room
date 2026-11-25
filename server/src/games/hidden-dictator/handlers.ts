@@ -53,4 +53,9 @@ export function getHiddenDictatorLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && room.players.length < 10, spectatable: true,
     }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+export function getHiddenDictatorBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+}
 export function closeAllHiddenDictatorRooms(){const count=rooms.size;for(const t of timers.values())clearTimeout(t);timers.clear();rooms.clear();return count}
