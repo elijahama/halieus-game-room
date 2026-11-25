@@ -8,7 +8,7 @@
     "shared"
   ],
   "scripts": {
-    "test:replays:all": "node --import tsx tests/runtime-hgr-game-replay-archive-part37.mjs && node --import tsx tests/runtime-mega-tournament-ratings-part37.mjs",
+    "test:replays:all": "node --import tsx tests/runtime-hgr-game-replay-archive-part37.mjs && node --import tsx tests/runtime-mega-tournament-ratings-part37.mjs && node --import tsx tests/runtime-historical-match-catalogue.mjs",
     "test:browser:gallery-all": "node tests/browser-gallery-all-games-4.6.6.mjs",
     "test:browser:public-maintenance": "node --import tsx tests/browser-public-maintenance-4.6.10.mjs",
     "test:browser:public-maintenance-countdown": "node --import tsx tests/browser-public-maintenance-countdown.mjs",

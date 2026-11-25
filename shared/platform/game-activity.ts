@@ -1,4 +1,4 @@
-export type HalieusGameId = "mega-board" | "poker" | "whot" | "ludo" | "blackjack" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "word-board";
+export type HalieusGameId = "mega-board" | "poker" | "whot" | "ludo" | "blackjack" | "hidden-dictator" | "connect-four" | "word-game" | "password" | "anagrams-race" | "cheat" | "dominoes" | "ayo" | "word-board" | "spar";
 
 export interface HalieusFinishedResultRow {
   rank: number;

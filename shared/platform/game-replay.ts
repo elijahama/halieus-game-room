@@ -12,7 +12,7 @@ export const HGR_REPLAY_VERSION = 1 as const;
 export const REPLAY_GAME_IDS = [
   "mega-board", "poker", "blackjack", "whot", "ludo",
   "hidden-dictator", "connect-four", "word-game", "password",
-  "anagrams-race", "cheat", "dominoes", "ayo", "word-board",
+  "anagrams-race", "cheat", "dominoes", "ayo", "word-board", "spar",
 ] as const satisfies readonly HalieusGameId[];
 
 export interface HgrGameReplayEvent {
