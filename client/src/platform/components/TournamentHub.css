@@ -161,3 +161,17 @@
   .hgr-tournament-format-tabs button { padding: 12px 10px; }
   .hgr-tournament-format-tabs small { font-size: .7rem; }
 }
+
+.hgr-tournament-format-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.hgr-tournament-workshop{display:grid;gap:12px;min-width:0;padding:14px;border:1px solid var(--hgr-border);border-radius:14px;background:var(--hgr-surface-soft)}
+.hgr-tournament-workshop h2,.hgr-tournament-workshop p{margin:0}
+.hgr-tournament-workshop p,.hgr-tournament-workshop small{color:var(--hgr-muted);font-size:.82rem;line-height:1.45}
+.hgr-workshop-options,.hgr-workshop-bracket{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hgr-workshop-options label,.hgr-workshop-fixture{display:grid;gap:6px;min-width:0}
+.hgr-workshop-options select{min-height:42px;width:100%;padding:8px;background:var(--hgr-surface-raised);color:var(--hgr-text);border:1px solid var(--hgr-border);border-radius:8px}
+.hgr-workshop-fixture{padding:10px;border:1px solid var(--hgr-border);border-radius:10px;background:var(--hgr-surface-raised)}
+.hgr-workshop-fixture button{white-space:normal;min-height:36px}
+.hgr-workshop-fixture button[aria-pressed=true]{border-color:var(--hgr-brand);color:var(--hgr-brand)}
+@media(max-width:480px){.hgr-tournament-format-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.hgr-tournament-format-tabs button:last-child{grid-column:1/-1}.hgr-workshop-options,.hgr-workshop-bracket{grid-template-columns:minmax(0,1fr)}}
+
+.hgr-workshop-fixture>span{font-weight:800;color:var(--hgr-brand)}
