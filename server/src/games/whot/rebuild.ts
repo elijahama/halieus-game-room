@@ -530,6 +530,11 @@ export function getWhotLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && (room.players.length < 8 || room.players.some((player) => player.isAi)), spectatable: true,
     }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+export function getWhotBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+}
 export function closeAllWhotRooms(): number {
   const count = rooms.size;
   for (const timer of aiTimers.values()) clearTimeout(timer);
