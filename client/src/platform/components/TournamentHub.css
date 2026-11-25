@@ -173,3 +173,5 @@
 .hgr-workshop-fixture button{white-space:normal;min-height:36px}
 .hgr-workshop-fixture button[aria-pressed=true]{border-color:var(--hgr-brand);color:var(--hgr-brand)}
 @media(max-width:480px){.hgr-tournament-format-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.hgr-tournament-format-tabs button:last-child{grid-column:1/-1}.hgr-workshop-options,.hgr-workshop-bracket{grid-template-columns:minmax(0,1fr)}}
+
+.hgr-workshop-fixture>span{font-weight:800;color:var(--hgr-brand)}
