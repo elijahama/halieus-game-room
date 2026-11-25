@@ -54,6 +54,40 @@ interface Room {
 const rooms = new Map<string, Room>();
 const aiTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const decisionTimers = new Map<string, ReturnType<typeof setTimeout>>();
+export const SPAR_ABANDONMENT_GRACE_MS = 15 * 60 * 1000;
+const abandonmentTimers = new Map<string, { room: Room; deadline: number; timer: ReturnType<typeof setTimeout> }>();
+function canExpireAbandonedRoom(room: Room): boolean {
+  return room.matchMode !== "ranked" && (room.phase === "bra" || room.phase === "playing") &&
+    !room.players.some(p => !p.isAi && p.isConnected) && room.spectators.size === 0;
+}
+function cancelAbandonment(code: string) {
+  const pending = abandonmentTimers.get(code);
+  if (pending) clearTimeout(pending.timer);
+  abandonmentTimers.delete(code);
+}
+function scheduleAbandonment(io: Server, room: Room) {
+  const existing = abandonmentTimers.get(room.code);
+  if (!canExpireAbandonedRoom(room)) { cancelAbandonment(room.code); return; }
+  if (existing?.room === room) return;
+  cancelAbandonment(room.code);
+  const deadline = Date.now() + SPAR_ABANDONMENT_GRACE_MS;
+  const timer = setTimeout(() => {
+    void expireAbandonedSparRooms(io).catch(error => console.error("Spar abandonment archival failed:", error));
+  }, SPAR_ABANDONMENT_GRACE_MS);
+  timer.unref?.();
+  abandonmentTimers.set(room.code, { room, deadline, timer });
+}
+/** Server-only expiry sweep; never expose the clock parameter to clients. */
+export async function expireAbandonedSparRooms(io: Server, now = Date.now()): Promise<number> {
+  let closed = 0;
+  for (const [code, pending] of [...abandonmentTimers]) {
+    if (abandonmentTimers.get(code) !== pending || pending.deadline > now) continue;
+    const room = rooms.get(code);
+    if (room !== pending.room || !canExpireAbandonedRoom(room)) { cancelAbandonment(code); continue; }
+    if (await closeSparRoom(io, code, room.createdAt, "Spar room expired after 15 minutes without connected humans or spectators.", "abandoned")) closed++;
+  }
+  return closed;
+}
 function token() { return randomBytes(10).toString("base64url").slice(0, 13).toUpperCase(); }
 function cleanCode(value: unknown): string {
   return typeof value === "string" ? value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6) : "";
@@ -122,6 +156,7 @@ function emit(io: Server, room: Room) {
   }
   for (const id of room.spectators.keys()) io.to(id).emit("spar:state", state(room, null, true));
   scheduleAi(io, room);
+  scheduleAbandonment(io, room);
 }
 function nextPlayer(room: Room, playerId: string): Player | undefined {
   const index = room.players.findIndex(p => p.id === playerId);
@@ -575,7 +610,7 @@ export function getSparLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     }));
 }
 /** Owner cancellation is not a completed match. The creation timestamp protects reused codes. */
-export async function closeSparRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+export async function closeSparRoom(io: Server, code: string, createdAt: number, reason: string, cancellation: "owner-closed" | "abandoned" = "owner-closed"): Promise<boolean> {
   const room = rooms.get(code);
   if (!room || room.createdAt !== createdAt || !isLiveSparRoom(room) || room.matchMode === "ranked") return false;
   const timer = aiTimers.get(code);
@@ -585,6 +620,7 @@ export async function closeSparRoom(io: Server, code: string, createdAt: number,
   if (decisionTimer) clearTimeout(decisionTimer);
   decisionTimers.delete(code);
   room.decisionClock = null;
+  cancelAbandonment(code);
   rooms.delete(code);
   room.phase = "finished";
   room.currentTurnPlayerId = null;
@@ -596,7 +632,7 @@ export async function closeSparRoom(io: Server, code: string, createdAt: number,
   for (const p of room.players) if (playerFor(room, p.id)) io.to(p.id).emit("spar:state", state(room, p.id, false));
   for (const id of room.spectators.keys()) io.to(id).emit("spar:state", state(room, null, true));
   await finalizeSession("spar", code, createdAt, "incomplete", archive(room), {
-    winner: null, mode: room.matchMode, cancellation: "owner-closed",
+    winner: null, mode: room.matchMode, cancellation,
   });
   return true;
 }
@@ -606,6 +642,7 @@ export function closeAllSparRooms(): number {
   aiTimers.clear();
   for(const timer of decisionTimers.values())clearTimeout(timer);
   decisionTimers.clear();
+  for (const code of abandonmentTimers.keys()) cancelAbandonment(code);
   rooms.clear();
   return count;
 }
