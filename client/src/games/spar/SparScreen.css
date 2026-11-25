@@ -230,3 +230,40 @@
 /* Seven-card Custom hands wrap without cutting off cards on small screens. */
 .spar-hand-cards { flex-wrap: wrap; }
 .spar-bra-prompt .spar-hand-cards { width:100%; }
+
+/* Poker-derived match shell: table stays visible, one side workspace at a time. */
+.spar-match{grid-template-columns:minmax(0,1fr) minmax(300px,390px);align-items:start;gap:14px}
+.spar-table-column{gap:10px}
+.spar-table{min-height:clamp(300px,58dvh,610px);gap:8px}
+.spar-table-seats{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-items:center}
+.spar-table-seat{display:flex;align-items:center;gap:7px;min-width:0;padding:6px 8px;border:1px solid #d4a85c50;border-radius:10px;background:#052c24b8;color:#ffedcc}
+.spar-table-seat.is-active{border-color:#ffe39c;box-shadow:0 0 0 1px #e6ba60}
+.spar-table-seat.is-you{background:#124c39}
+.spar-table-seat-avatar{display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;border-radius:8px;background:#163d30;border:1px solid #e6ba6060;font-size:.76rem;font-weight:800}
+.spar-table-seat>div{min-width:0;display:grid;gap:2px;flex:1}
+.spar-table-seat strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.76rem}
+.spar-table-seat small{font-size:.64rem;opacity:.8;white-space:normal}
+.spar-table-seat>i,.spar-side-tabs button>i{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#ffe39c}
+.spar-control-panel{padding:12px;gap:10px;border:1px solid color-mix(in srgb,var(--spar-gold) 24%,var(--mm-border,#36404c));border-radius:16px;background:var(--mm-surface-1,#18242e)}
+.spar-control-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0}
+.spar-control-heading>div{min-width:0}.spar-control-heading small{font-size:.65rem;letter-spacing:.1em;color:var(--spar-gold)}
+.spar-control-heading h2{font-size:1.1rem;margin:3px 0;overflow-wrap:anywhere}
+.spar-turn-pill{font-size:.7rem;max-width:50%;text-align:center;padding:6px 8px;border-radius:10px;background:#063b30;color:#f6dda6;overflow-wrap:anywhere}
+.spar-turn-pill.is-you{background:#e6ba60;color:#18242e;font-weight:800}
+.spar-side-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:3px;border-radius:10px;background:#063b3033}
+.spar-side-tabs button{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:40px;border:1px solid transparent;border-radius:7px;background:transparent;color:inherit;font-size:.78rem;cursor:pointer}
+.spar-side-tabs button.is-active{border-color:#e6ba60;background:#e6ba6022;color:var(--spar-gold);font-weight:800}
+.spar-side-tabs button:disabled{opacity:.45;cursor:default}
+.spar-side-tabs button span{font-size:.66rem;opacity:.7}
+.spar-side-tab-panel,.spar-actions-workspace,.spar-side-players{display:grid;gap:8px;min-width:0}
+.spar-side-players header{display:grid;gap:3px}.spar-side-players header small{font-size:.72rem;opacity:.75}
+.spar-side-players .spar-opponents{grid-template-columns:minmax(0,1fr)}
+.spar-actions-workspace .spar-hand,.spar-actions-workspace .spar-bra-prompt{padding:8px;gap:8px;border:0;background:transparent}
+.spar-actions-workspace .spar-hand-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;width:100%;justify-items:center}
+.spar-actions-workspace .spar-hand-cards .spar-playing-card{width:100%;max-width:65px;height:auto;aspect-ratio:2/3;min-width:0;padding:4px}
+.spar-actions-workspace .spar-card-centre{font-size:clamp(1.2rem,2.2vw,2rem)}
+.spar-actions-workspace .spar-card-corner{font-size:.8rem}
+.spar-chat-slot{min-width:0;overflow-wrap:anywhere}
+@media(min-width:1150px){.spar-table-seats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:1024px){.spar-match{grid-template-columns:minmax(0,1fr)}.spar-table{min-height:320px}.spar-room-stack{position:static;max-height:none;overflow:visible}}
+@media(max-width:640px){.spar-table{min-height:280px;padding:8px 6px}.spar-table-seats{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.spar-table-seat{padding:4px;gap:4px}.spar-table-seat-avatar{width:22px;height:22px;flex-basis:22px}.spar-table-seat strong{font-size:.67rem}.spar-table-seat small{font-size:.59rem}.spar-control-panel{padding:9px}.spar-actions-workspace .spar-hand-cards .spar-playing-card{max-width:63px}.spar-match-status{padding:8px}.spar-pool{width:auto}}

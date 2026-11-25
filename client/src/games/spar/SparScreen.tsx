@@ -87,6 +87,8 @@ export function SparScreen({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState<"forfeit"|"end"|null>(null);
   const [aiDifficulty, setAiDifficulty] = useState<SparAiDifficulty>("normal");
+  const [sideTab, setSideTab] = useState<"actions" | "players" | "chat">(() => state.isSpectator ? "players" : "actions");
+  const visibleTab = state.isSpectator && sideTab === "actions" ? "players" : sideTab;
   const expandedDeck = state.deckSize === 40;
   const custom = state.matchMode === "custom";
   const scoreUnit = state.scoring === "stones" ? "stones" : "points";
@@ -176,12 +178,10 @@ export function SparScreen({
             <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize}</small><strong>{state.status}</strong></div>
             {state.scoring==="stones"?<StonePool remaining={state.stonesRemaining} total={state.stonesTotal}/>:<strong>{state.scoring==="target"?`Target: ${state.stonesTotal} points`:"Free play · Cumulative points"}</strong>}
           </header>
-          <div className={`spar-opponents ${state.players.length > 4 ? "is-expanded" : ""}`} aria-label="Player scores">
-            {state.players.map(p=><PlayerChip key={p.id} player={p} active={p.id===state.currentTurnPlayerId} isViewer={p.id===viewer?.id} scoreUnit={scoreUnit}/>)}
-          </div>
           <section className="spar-table" aria-label="Spar card table">
             <div className="spar-table-texture" aria-hidden="true"/>
             <div className="spar-table-heading"><span>SPAR</span><small>THE LAST TRICK COUNTS</small></div>
+            <div className="spar-table-seats" aria-label="Table seats">{state.players.map(p=><article key={p.id} className={`spar-table-seat ${p.id===state.currentTurnPlayerId?"is-active":""} ${p.id===viewer?.id?"is-you":""}`}><span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span><div><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit} · {p.handCount} cards{p.id===state.dealerPlayerId?" · D":""}</small></div>{p.id===state.currentTurnPlayerId&&<i aria-label="Current turn"/>}</article>)}</div>
             <div className="spar-table-centre">
               {state.plays.length ?
                 <div className={`spar-current-plays ${state.players.length > 4 ? "is-expanded" : ""}`}>{state.plays.map((p,i)=><div key={p.playerId} className="spar-play"><CardFace card={p.card}/><small>{p.playerName}{i===0?" · Lead":""}</small></div>)}</div>
@@ -189,6 +189,16 @@ export function SparScreen({
             </div>
             {state.lastTrick&&<div className="spar-last-trick">Last trick: {state.players.find(p=>p.id===state.lastTrick?.winnerPlayerId)?.name??"Player"} · {state.lastTrick.winningCard} {state.lastTrick.number===state.handSize? `· ${state.lastTrick.points} points`:"· no points"}</div>}
           </section>
+        </div>
+        <aside className="spar-room-stack spar-control-panel" aria-label="Spar room controls">
+          <header className="spar-control-heading"><div><small>{state.isSpectator?"LIVE TABLE":"YOUR SEAT"}</small><h2>{state.isSpectator?"Spectating":viewer?.name??"Spar"}</h2></div><span className={canAct||canCallBra||state.canExchange?"spar-turn-pill is-you":"spar-turn-pill"}>{canAct||canCallBra||state.canExchange?"Your decision":current?current.name+"'s turn":"Waiting"}</span></header>
+          <nav className="spar-side-tabs" aria-label="Spar side panel">
+            <button type="button" disabled={state.isSpectator} className={visibleTab==="actions"?"is-active":""} aria-pressed={visibleTab==="actions"} onClick={()=>setSideTab("actions")}>Actions{(canAct||canCallBra||state.canExchange)&&<i aria-label="Decision required"/>}</button>
+            <button type="button" className={visibleTab==="players"?"is-active":""} aria-pressed={visibleTab==="players"} onClick={()=>setSideTab("players")}>Players <span>{state.players.length}</span></button>
+            <button type="button" className={visibleTab==="chat"?"is-active":""} aria-pressed={visibleTab==="chat"} onClick={()=>setSideTab("chat")}>Chat</button>
+          </nav>
+          <div className="spar-side-tab-panel" data-tab={visibleTab}>
+            {visibleTab==="actions"&&!state.isSpectator&&<div className="spar-actions-workspace">
           {state.bottomCard && <div className="spar-last-trick">Bottom card: {state.bottomCard}</div>}
           {state.canShowBottom && <button type="button" className="button-outline" onClick={onShowBottom}>Show bottom card</button>}
           {state.lastAward&&<div className="spar-award" role="status"><strong>{state.lastAward.playerName} claimed {state.lastAward.awarded} {scoreUnit}</strong><span>Hand {state.lastAward.hand} · Winning card {state.lastAward.winningCard}</span></div>}
@@ -207,9 +217,13 @@ export function SparScreen({
                 {state.hand.map(card=><CardFace key={card} card={card} canPlay={canAct&&legal.includes(card)} disabled={!canAct} onPlay={onPlay}/>)}
               </div>:<p className="spar-spectator-note">Private hands remain concealed until each card is played.</p>}
             </div>}
+
+            </div>}
+            {visibleTab==="players"&&<section className="spar-side-players" aria-label="Spar players"><header><strong>Table players</strong><small>{state.players.length}/{maximumPlayers} seats · {state.spectatorCount} spectators</small></header><div className={`spar-opponents ${state.players.length>4?"is-expanded":""}`} aria-label="Player scores">{state.players.map(p=><PlayerChip key={p.id} player={p} active={p.id===state.currentTurnPlayerId} isViewer={p.id===viewer?.id} scoreUnit={scoreUnit}/>)}</div></section>}
+            {visibleTab==="chat"&&<div className="spar-chat-slot">{roomActivity??<p>Room chat is unavailable.</p>}</div>}
+          </div>
           {message&&<p className="status-toast" role="status">{message}</p>}
-        </div>
-        {roomActivity&&<aside className="spar-room-stack">{roomActivity}</aside>}
+        </aside>
       </section>}
 
     {inviteOpen&&<div className="modal-backdrop" role="presentation" onMouseDown={e=>e.target===e.currentTarget&&setInviteOpen(false)}>

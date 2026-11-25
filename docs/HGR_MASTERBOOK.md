@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 Spar room refinement — 25 November 2026
+
+Owner requested Poker's existing layout as the reference, less simultaneous information and distinct Ranked Multiplayer / Ranked 1v1. Initial room batch keeps Spar emerald/gold felt, stone and trick rules and private state; compact seat markers inside table, persistent table, single Actions / Players / Chat workspace, spectator defaults Players and cannot open Actions. Current decision indicator remains visible even while viewing another tab. No Poker bets, chip rules or autopilot imported. Ranked split is a separate server-authoritative batch: existing 1v1 Elo/history preserved; multiplayer proposed 3–8 authenticated human seats with separate placement rating, fixed rules, no AI, consistent tie/forfeit semantics, independent history and replay verification. Do not publish until both batches and browser acceptance pass. No artwork change.
+
 ## 4.8.4 short desktop Control launcher containment — 25 November 2026
 
 Official main release identity run 45516439220 passed Windows smoke and failed only final browser gate 14/14 Control branding after desktop 1440×900 passed, at short 1280×600 viewport. Preserve canonical approved artwork and static launcher. Compact the fixed desktop rail below 721px height, allow only navigation subsection overflow if needed, retain full-size Control icon and all nav items, leave mobile/tablet unchanged. Strengthen existing containment assertion with diagnostic coordinates and top boundary; do not bypass release checks. Fresh PR CI and main packaging required; production remains unchanged.
