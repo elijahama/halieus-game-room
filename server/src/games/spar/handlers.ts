@@ -574,6 +574,32 @@ export function getSparLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && room.players.length < capacity(room), spectatable: true,
     }));
 }
+/** Owner cancellation is not a completed match. The creation timestamp protects reused codes. */
+export async function closeSparRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || !isLiveSparRoom(room) || room.matchMode === "ranked") return false;
+  const timer = aiTimers.get(code);
+  if (timer) clearTimeout(timer);
+  aiTimers.delete(code);
+  const decisionTimer = decisionTimers.get(code);
+  if (decisionTimer) clearTimeout(decisionTimer);
+  decisionTimers.delete(code);
+  room.decisionClock = null;
+  rooms.delete(code);
+  room.phase = "finished";
+  room.currentTurnPlayerId = null;
+  room.pendingExchange = [];
+  room.winnerPlayerId = null;
+  room.status = reason;
+  room.players.forEach(p => { p.result = null; });
+  log(room, "finish", reason);
+  for (const p of room.players) if (playerFor(room, p.id)) io.to(p.id).emit("spar:state", state(room, p.id, false));
+  for (const id of room.spectators.keys()) io.to(id).emit("spar:state", state(room, null, true));
+  await finalizeSession("spar", code, createdAt, "incomplete", archive(room), {
+    winner: null, mode: room.matchMode, cancellation: "owner-closed",
+  });
+  return true;
+}
 export function closeAllSparRooms(): number {
   const count = getSparRoomCount();
   for (const timer of aiTimers.values()) clearTimeout(timer);
