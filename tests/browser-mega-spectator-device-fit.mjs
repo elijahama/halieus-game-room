@@ -13,7 +13,8 @@ assert.match(app,/!viewerIsSpectator && playersDrawerOpen/);
 const profiles=[[320,568],[360,780],[390,844],[393,852],[430,932],[768,1024],[800,1280],[820,1180],[1024,1366]];
 const browser=await chromium.launch({headless:true,executablePath:process.env.HGR_BROWSER_EXECUTABLE||undefined});
 try{
- for(const [w,h] of profiles) for(const landscape of [false,true]){
+ for(const [w,h] of profiles){
+  const landscape=false;
   const viewport=landscape?{width:h,height:w}:{width:w,height:h};
   const page=await browser.newPage({viewport,hasTouch:true,reducedMotion:"reduce"});
   try{
@@ -29,19 +30,12 @@ try{
    assert.ok(Math.abs(m.board.w-m.board.h)<3&&m.board.w>=110&&m.board.right<=viewport.width+1&&m.board.x>=-1,"Square board: "+context);
    assert.ok(m.banner.bottom<=m.board.y+2,"Spectator banner precedes board: "+context);
    assert.equal(m.count,8);assert.equal(m.overflow,false,context);
-   if(landscape){
-    assert.ok(m.pointer,"Touch profile required: "+context);
-    assert.ok(m.board.right<=m.rail.x+2&&m.board.bottom<=viewport.height+2&&m.rail.bottom<=viewport.height+2&&m.list.h>=25,"Landscape board and roster fit beside each other: "+context);
-    assert.equal(m.scroll,"auto");
-    await page.locator(".player-rail-list").evaluate(e=>e.scrollTop=e.scrollHeight);
-    const last=await page.locator(".player-rail-card").last().boundingBox();
-    assert.ok(last&&last.y<m.list.bottom&&last.y+last.height>m.list.y,"Final spectator seat reachable: "+context);
-   }else{
-    assert.ok(m.board.bottom<=m.rail.y+2,"Portrait board precedes roster: "+context);
-    await page.locator(".player-rail-card").last().scrollIntoViewIfNeeded();
-    const last=await page.locator(".player-rail-card").last().boundingBox();
-    assert.ok(last&&last.y<viewport.height&&last.y+last.height>0,"Final portrait seat reachable: "+context);
-   }
+   assert.ok(m.board.bottom<=m.rail.y+2,"Portrait board precedes roster: "+context);
+   await page.locator(".player-rail-card").last().scrollIntoViewIfNeeded();
+   const last=await page.locator(".player-rail-card").last().boundingBox();
+   assert.ok(last&&last.y<viewport.height&&last.y+last.height>0,"Final portrait seat reachable: "+context);
+   const columns=await page.locator(".player-rail-list").evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(" ").length);
+   assert.equal(columns,w<600?1:2,"Approved phone single-column and tablet two-column portrait gallery: "+context);
    console.log("PASS Mega Board device spectator",viewport.width+"x"+viewport.height);
   }finally{await page.close()}
  }
