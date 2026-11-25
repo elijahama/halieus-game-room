@@ -1,5 +1,22 @@
 # Halieus Game Room Masterbook
 
+## Integrated Control and Spar release candidate — 25 November 2026
+
+Candidate reconciles #270 (Spar workspace, decision clock, follow-suit penalty), #274 (Control background release alerts), #277 (owner-only non-Ranked Spar closure), and #276 (mandatory 4.9.9 audit). Targeted cancellation clears both AI and decision timers after integration. Keep Ranked penalty fixed at two and retain the documented proposed net-score interpretation pending owner acceptance; no unreviewed scoring adjustments. Mega Board orientation #271 failed CI and is excluded; archive and Tournament Workshop drafts remain independently tracked. All-game closure, automatic abandoned-room cleanup, HTTP owner-authorization coverage, physical-device acceptance, combined CI, and the 4.8.5 functional release gate remain pending. VERSION unchanged; no deployment greenlight.
+
+## Control closed-app update availability alerts — 25 November 2026
+
+Owner reports test/operation notifications work but available updates do not notify. Existing release notice intentionally foreground-only, no background trigger. Add isolated public server worker on verified release availability using existing Control operations subscriptions, current owner/admin role recheck, durable per-device fingerprint deduplication, expiry removal, transient retry, approved Control worker icon and open-Control destination. No new subscriptions, no automatic update. CI and physical closed-app delivery pending. Existing unmerged 4.8.5 branches are not available updates.
+
+## Control targeted Spar room cancellation — 25 November 2026
+
+Owner reports six-AI Spar room persisting for an hour and missing Control close controls (#275). First isolated candidate: owner-only close action in existing Live section for non-Ranked Spar, exact game/code/creation identity, same-origin JSON confirmation, targeted timer/store cleanup, incomplete archive without winner or normal game-finished event, audit and explicit receipt. Existing all-game close route is not exposed yet: other games, active competitive fixtures, and broad closure require a separate lifecycle audit. Automatic abandoned-room expiry remains separate; preserve temporary disconnect/reconnect. Source candidate only, no live closure, CI or deployment claim.
+
+
+## 4.9.9 final site-wide audit — 25 November 2026
+
+Owner requires a comprehensive audit immediately before 5.0.0: entire codebase, aesthetics, UI, framing, scaling and all platform surfaces. 4.9.9 is now mandatory, following 4.9.5 integration and replacing the final contingency slot. Apply the full audit matrix in [Delivery Timeline and Tournament Roadmap](HGR_DELIVERY_BATCHES_AND_TOURNAMENT_ROADMAP.md) and the [Version Roadmap](HGR_VERSION_ROADMAP.md). Record findings and fix them in small audited batches, preserve all existing fixes and canonical HGR assets, collect real responsive/device evidence, run final CI/release gates, preserve a verified restorable checkpoint and obtain owner sign-off. Do not launch 5.0 with unresolved serious or unaccepted visual findings. This is a durable planning decision only, not an audit result, code change or deployment.
+
 ## Spar configurable follow-suit penalty — 25 November 2026
 
 Owner specifies Ranked always two stones, and penalty configurable before game. Ranked fixed server value 2, cannot override. Custom selectable 0–5 (0 = restart only), existing default 0 retained, locked by existing room creation contract. Casual retains restart-only default. Proposed scoring interpretation pending owner acceptance: deduct exact configured amount from offending player's net score, allowing negative net score even when none earned; do not add or remove central pool stones, and track cumulative penalty separately so the existing finite pool stays unchanged. Reset current hand with original dealer, same hand number and fresh decision clock. Target/free Custom uses points instead of stones. Ranked archive validation accepts negative net scores only with sufficient nonnegative even recorded penalty total, legacy nonnegative results remain valid. Rule and handler tests extended; actual device/CI and anti-abuse competitive review pending. No production change.
