@@ -28,6 +28,8 @@ interface DeviceSubscription {
   keys: { p256dh: string; auth: string };
   topics: HgrPushTopic[];
   updatedAt: number;
+  /** Last verified release accepted by this device’s push gateway. */
+  lastReleaseFingerprint?: string;
 }
 interface StoredPush {
   version: 1;
@@ -71,7 +73,7 @@ const supportedTopic = (item: unknown): item is HgrPushTopic =>
 async function save(): Promise<void> {
   if (!state) return;
   const snapshot = JSON.stringify(state);
-  writes = writes.then(async () => {
+  writes = writes.catch(() => undefined).then(async () => {
     await mkdir(dir, {recursive:true});
     const temp = file + ".tmp";
     await writeFile(temp, snapshot, {encoding:"utf8",mode:0o600});
@@ -144,10 +146,11 @@ export function registerPushRoutes(app: Express, accountFor: AccountResolver): v
     const endpoint = sub.endpoint;
     // A browser subscription belongs to only one current account. Account
     // switching may not leak another player's messages to this device.
+    const previous=state.subscriptions.find(item=>item.endpoint===endpoint && item.accountId===account.id);
     state.subscriptions=state.subscriptions.filter(item=>item.endpoint!==endpoint);
     const duplicates=[...new Set(topicsInput as HgrPushTopic[])];
     state.subscriptions.push({accountId:account.id,endpoint,keys:sub.keys,
-      topics:duplicates,updatedAt:Date.now()});
+      topics:duplicates,updatedAt:Date.now(),lastReleaseFingerprint:previous?.lastReleaseFingerprint});
     const mine=state.subscriptions.filter(item=>item.accountId===account.id)
       .sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,5);
     state.subscriptions=state.subscriptions.filter(item=>item.accountId!==account.id).concat(mine);
@@ -247,4 +250,38 @@ export async function sendHgrPush(accountIds: readonly string[], notice: HgrPush
     state.subscriptions=state.subscriptions.filter(item=>!expired.has(item.endpoint));
     await save();
   }
+}
+
+/** Background verified-release delivery uses existing opted-in Control devices.
+ * An accepted gateway receipt is not proof of physical device delivery. */
+export async function sendControlReleaseAvailable(
+ release: import("./control-release-availability.js").ReleaseAvailability,
+ isAdmin:(id:string)=>boolean,
+ send: typeof webPush.sendNotification = webPush.sendNotification.bind(webPush),
+):Promise<number>{
+ const s=state;
+ if(!s||release.status!=="available"||!release.candidateVersion||!release.candidateFingerprint||!/^hgr-\d+\.\d+\.\d+-[a-f0-9]{16}$/.test(release.candidateFingerprint))return 0;
+ const fingerprint=release.candidateFingerprint;
+ const devices=s.subscriptions.filter(d=>d.topics.includes("operations")&&isAdmin(d.accountId)&&d.lastReleaseFingerprint!==fingerprint);
+ let accepted=0,changed=false;
+ for(const device of devices){
+  // Recheck current enrollment and role immediately before sending.
+  if(state!==s||!s.subscriptions.includes(device)||!isAdmin(device.accountId))continue;
+  try{
+   await send({endpoint:device.endpoint,keys:device.keys},JSON.stringify({
+     title:"HGR "+release.candidateVersion+" is ready",
+     body:"Verified update available. Tap to open HGR Control and review.",
+     url:"/control/",tag:"hgr-control-release-"+fingerprint,
+   }),{TTL:86400,urgency:"high",timeout:10000});
+   if(state===s&&s.subscriptions.includes(device)){
+    device.lastReleaseFingerprint=fingerprint;changed=true;accepted++;
+   }
+  }catch(e){
+   const status=typeof e==="object"&&e&&"statusCode" in e?Number((e as {statusCode:unknown}).statusCode):0;
+   if((status===404||status===410)&&state===s){s.subscriptions=s.subscriptions.filter(d=>d!==device);changed=true;}
+   // Other gateway failures remain eligible for the next poll.
+  }
+ }
+ if(changed&&state===s)await save();
+ return accepted;
 }
