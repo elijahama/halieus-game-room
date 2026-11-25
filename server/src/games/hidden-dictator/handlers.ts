@@ -58,4 +58,19 @@ export function getHiddenDictatorBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
   return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
 }
+/** Administrative cancellation is not a completed match. */
+export async function closeHiddenDictatorRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || room.matchMode === "ranked") return false;
+  const timer = timers.get(code); if (timer) clearTimeout(timer); timers.delete(code);
+  rooms.delete(code);
+  room.phase = "finished"; room.speakerPlayerId = null; room.nominatedDeputyId = null; room.winner = null;
+  room.status = reason; room.updatedAt = Date.now();
+  for (const player of room.players) player.result = null;
+  const payload = { game: "hidden-dictator", code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession("hidden-dictator", code, createdAt, "incomplete", archive(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
 export function closeAllHiddenDictatorRooms(){const count=rooms.size;for(const t of timers.values())clearTimeout(t);timers.clear();rooms.clear();return count}

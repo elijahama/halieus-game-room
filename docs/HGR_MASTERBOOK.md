@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 standalone room cancellation — 25 November 2026
+
+Extend the owner-only targeted cancellation route to Ayo, Hidden Dictator and Word Board. Each removes only the exact room, stops its AI timer, notifies participants/spectators and archives incomplete without a winner. Hidden roles and private hands are not broadcast by the cancellation notice. Existing Ranked safeguards and recovery-session isolation are preserved. The previous card-table batch 5fbad25a passed local validation and was pushed from Lagz through hidden Node execution without manual activation. New HTTP regression cases cover each added adapter; shared Classic/Word Arena stores and Mega Board tournament-specific cancellation remain separate. Independent CI, physical acceptance and production approval remain separate gates.
+
 ## 4.8.5 card-table cancellation extension — 25 November 2026
 
 Lagz development batch extends owner-only individual closure to Poker, Blackjack and WHOT alongside Spar, Ludo and Connect Four. Cancel the selected room's AI, Poker next-hand and recovery timers, remove the room, notify only its participants and spectators, preserve unrelated recovery sessions and write an incomplete archive with no match winner. Existing competitive protection remains server-side. HTTP fixtures cover each card table, incomplete archives, reconnect refusal and Ranked denial. Previous nine-file batch 45b5a8bbc94e8f277b99d4aff4a251694b4d2565 passed local typecheck and HTTP/Control regression and was pushed from Lagz; independent CI is separate. No VERSION bump or deployment. Mega Board and remaining individual game adapters, offline recovery and bulk archival remain outstanding.

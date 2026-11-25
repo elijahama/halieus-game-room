@@ -259,6 +259,27 @@ try {
    assert.equal(rankedCard.ok,true);
    assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:"RANK12",createdAt:rankedCard.state.createdAt}})).status,409);
  }
+ // Remaining standalone game adapters: protected mode, cancellation receipts and archive truth.
+ for(const game of ["ayo","hidden-dictator","word-board"]){
+   const code="BOARD9";
+   const created=await emit(guest,game+":create",{code,playerName:"BoardHost",matchMode:"casual"});
+   assert.equal(created.ok,true,game+" create");
+   const body={game,code,createdAt:created.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   const notice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+   const result=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body});
+   assert.equal(result.status,200,game+" cancellation "+JSON.stringify(result.json));
+   assert.equal((await Promise.race([notice,sleep(3000).then(()=>null)]))?.game,game);
+   assert.equal((await emit(guest,game+":reconnect",{code,reconnectToken:created.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const filename=(await readdir(archiveDir)).find(name=>name.startsWith(game+"-"+code+"-")&&name.endsWith(".json"));
+   assert.ok(filename,game+" cancellation archive");
+   const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+   assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+   assert.equal(archived.summary.cancellation,"owner-closed");
+   const rankedBoard=await emit(guest,game+":create",{code:"RANKB9",playerName:"RankHost",matchMode:"ranked"});
+   assert.equal(rankedBoard.ok,true);
+   assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:"RANKB9",createdAt:rankedBoard.state.createdAt}})).status,409);
+ }
  guest.disconnect();
  console.log("PASS HGR 4.6.10 live local HTTP/Socket.io: owner-only auth, CSRF, typed confirmation, occupied room 409, 503 visitor page, Control continuity, owner socket bypass and reopening");
 } finally {

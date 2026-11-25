@@ -1694,7 +1694,7 @@ export function registerAccountRoutes(app: Express): void {
       response.status(403).json({ ok: false, reason: "Same-origin confirmed room closure is required." }); return;
     }
     const { game, code, createdAt } = request.body;
-    if (!["spar", "ludo", "connect-four", "poker", "blackjack", "whot"].includes(game) || typeof code !== "string" || !/^[A-Z0-9]{1,6}$/.test(code) || !Number.isSafeInteger(createdAt)) {
+    if (!["spar", "ludo", "connect-four", "poker", "blackjack", "whot", "ayo", "hidden-dictator", "word-board"].includes(game) || typeof code !== "string" || !/^[A-Z0-9]{1,6}$/.test(code) || !Number.isSafeInteger(createdAt)) {
       response.status(400).json({ ok: false, reason: "Invalid or unsupported room identity." }); return;
     }
     if (!adminRuntimeControls?.closeIndividualRoom) {

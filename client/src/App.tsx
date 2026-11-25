@@ -1190,6 +1190,21 @@ export default function App() {
           clearCardSession(WHOT_SESSION_KEY); setWhotSavedSession(null); setWhotRecoveryCode("");
         }
         setWhotState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "ayo") {
+        if (readCardSavedSession(AYO_SESSION_KEY)?.code === code) {
+          clearCardSession(AYO_SESSION_KEY); setAyoSavedSession(null); setAyoRecoveryCode("");
+        }
+        setAyoState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "hidden-dictator") {
+        if (readCardSavedSession(HIDDEN_DICTATOR_SESSION_KEY)?.code === code) {
+          clearCardSession(HIDDEN_DICTATOR_SESSION_KEY); setHiddenDictatorSavedSession(null); setHiddenDictatorRecoveryCode("");
+        }
+        setHiddenDictatorState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "word-board") {
+        if (readCardSavedSession(WORD_BOARD_SESSION_KEY)?.code === code) {
+          clearCardSession(WORD_BOARD_SESSION_KEY); setWordBoardSavedSession(null); setWordBoardRecoveryCode("");
+        }
+        setWordBoardState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
       } else if (game === "ludo") {
         if (readCardSavedSession(LUDO_SESSION_KEY)?.code === code) {
           clearCardSession(LUDO_SESSION_KEY); setLudoSavedSession(null); setLudoRecoveryCode("");
@@ -1203,6 +1218,9 @@ export default function App() {
       } else return;
       const activeCode = game === "poker" ? readPokerCodeFromPath() :
         game === "blackjack" ? readBlackjackCodeFromPath() : game === "whot" ? readWhotCodeFromPath() :
+        game === "ayo" ? readAyoCodeFromPath() :
+        game === "hidden-dictator" ? readHiddenDictatorCodeFromPath() :
+        game === "word-board" ? readWordBoardCodeFromPath() :
         game === "ludo" ? readLudoCodeFromPath() : readConnectFourCodeFromPath();
       if (activeCode === code) {
         updateBrowserPath("/"); setRoomCode(generateRoomCode()); setMessage(payload.reason);
