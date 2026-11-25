@@ -427,6 +427,11 @@ export function getLudoLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && (room.players.length < 4 || room.players.some((player) => player.isAi)), spectatable: true,
     }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+export function getLudoBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+}
 export function closeAllLudoRooms(): number {
   const count = rooms.size;
   for (const timer of aiTimers.values()) clearTimeout(timer);
