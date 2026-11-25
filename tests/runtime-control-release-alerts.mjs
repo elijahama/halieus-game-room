@@ -1,0 +1,33 @@
+import assert from "node:assert/strict";
+import {mkdtemp,rm,readFile} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import express from "express";
+const root=await mkdtemp(join(tmpdir(),"hgr-release-alerts-"));
+process.env.HALIEUS_DATA_DIR=root;
+const {initializePushNotifications,registerPushRoutes,sendControlReleaseAvailable}=await import("../server/src/platform/pushNotifications.ts");
+const {createControlReleaseAlertCheck}=await import("../server/src/platform/control-release-alerts.ts");
+let server;
+try{
+ assert.equal(await initializePushNotifications(),true);
+ const app=express();app.use(express.json());
+ registerPushRoutes(app,req=>({id:String(req.headers["x-account"]),role:"owner"}));
+ server=app.listen(0,"127.0.0.1");await new Promise(r=>server.once("listening",r));
+ const endpoint=id=>"https://fcm.googleapis.com/fcm/send/fake-device-"+id;
+ const subscribe=async(id,topics=["operations"])=>{const res=await fetch("http://127.0.0.1:"+server.address().port+"/accounts/push/subscribe",{method:"POST",headers:{"content-type":"application/json","x-account":id},body:JSON.stringify({topics,subscription:{endpoint:endpoint(id),keys:{p256dh:"a".repeat(64),auth:"b".repeat(22)}}})});assert.equal(res.status,200)};
+ await subscribe("owner");await subscribe("admin");await subscribe("demoted");await subscribe("social",["messages"]);
+ const release={status:"available",installedVersion:"4.8.4",installedFingerprint:"hgr-4.8.4-"+"0".repeat(16),candidateVersion:"4.8.5",candidateFingerprint:"hgr-4.8.5-"+"1".repeat(16),checkedAt:new Date().toISOString(),source:"merged-main"};
+ const roles=id=>["owner","admin"].includes(id);const sent=[];let fail=true;
+ const fake=async(sub,payload)=>{sent.push({endpoint:sub.endpoint,payload:JSON.parse(payload)});if(sub.endpoint===endpoint("admin")&&fail)throw {statusCode:503};return {}};
+ const deliver=(r,admin)=>sendControlReleaseAvailable(r,admin,fake);
+ const check=createControlReleaseAlertCheck(roles,async()=>release,deliver);
+ assert.equal(await check(),1);assert.equal(sent.length,2);assert.ok(sent.every(x=>!x.endpoint.includes("demoted")&&!x.endpoint.includes("social")));
+ fail=false;assert.equal(await check(),1);assert.equal(sent.length,3);
+ assert.equal(await check(),0);assert.equal(sent.length,3);
+ assert.equal(await initializePushNotifications(),true);assert.equal(await check(),0);
+ await subscribe("owner");assert.equal(await check(),0,"re-enrollment preserves fingerprint");
+ const bad=createControlReleaseAlertCheck(roles,async()=>({...release,status:"unverified"}),deliver);assert.equal(await bad(),0);
+ const next=createControlReleaseAlertCheck(roles,async()=>({...release,candidateVersion:"4.8.6",candidateFingerprint:"hgr-4.8.6-"+"2".repeat(16)}),deliver);assert.equal(await next(),2);
+ assert.equal(sent[0].payload.url,"/control/");assert.match(sent[0].payload.title,/4\.8\.5/);
+ console.log("PASS verified release push: role filtering, retry, deduplication, restart and new release");
+}finally{if(server)await new Promise(r=>server.close(r));await rm(root,{recursive:true,force:true});}
