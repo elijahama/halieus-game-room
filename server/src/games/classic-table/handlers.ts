@@ -439,6 +439,11 @@ export function getClassicLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     joinable: room.phase === "lobby" && (room.players.length < MAX_PLAYERS[room.game] || room.players.some((player) => player.isAi)), spectatable: true,
   }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+export function getClassicBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+}
 export function closeAllClassicRooms(): number { const count = rooms.size; for (const timer of aiTimers.values()) clearTimeout(timer); aiTimers.clear(); rooms.clear(); return count; }
 
 export function registerClassicTableHandlers(io: Server, socket: Socket): void {
