@@ -36,17 +36,17 @@ import { registerMegaSavedGameHandlers } from "./games/mega-board/handlers/saved
 import { registerMegaSpaceHandlers } from "./games/mega-board/handlers/megaSpaceHandlers.js";
 import { registerOrderHandlers } from "./games/mega-board/handlers/orderHandlers.js";
 import { registerPurchaseHandlers } from "./games/mega-board/handlers/purchaseHandlers.js";
-import { closeAllPokerRooms, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
-import { closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
-import { closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
-import { closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
-import { closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
-import { closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
-import { closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
-import { closeAllSparRooms, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
-import { closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
-import { closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
-import { closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
+import { getPokerBulkRoomState, closeAllPokerRooms, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
+import { getLudoBulkRoomState, closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
+import { getConnectFourBulkRoomState, closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
+import { getHiddenDictatorBulkRoomState, closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
+import { getWordArenaBulkRoomState, closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
+import { getClassicBulkRoomState, closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
+import { getAyoBulkRoomState, closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
+import { getSparBulkRoomState, closeAllSparRooms, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
+import { getWordBoardBulkRoomState, closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
+import { getBlackjackBulkRoomState, closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
+import { getWhotBulkRoomState, closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
 import { getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
@@ -67,7 +67,9 @@ import { registerTradeHandlers } from "./games/mega-board/handlers/tradeHandlers
 import { registerTurnHandlers } from "./games/mega-board/handlers/turnHandlers.js";
 import { rooms } from "./games/mega-board/state/rooms.js";
 import { endRoom } from "./games/mega-board/utils/room-lifecycle.js";
-import { listSpectators } from "./games/mega-board/state/spectators.js";
+import { listSpectators, removeSpectator } from "./games/mega-board/state/spectators.js";
+import { getSoloTournamentBoundRoom } from "./platform/soloTournamentRegistration.js";
+import { getGuildFixtureBoundRoom } from "./platform/guildFixtures.js";
 import { syncAuctionTimer } from "./games/mega-board/utils/auction-timer.js";
 import { cancelHostGrace, restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
 import {
@@ -518,8 +520,18 @@ const getMegaBoardLiveRoomSummaries = () => [...rooms.values()]
 
 const authoritativeRoomCount = () => getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getSparRoomCount() + getWordBoardRoomCount();
 configureMaintenanceRoomCount(authoritativeRoomCount);
+const getBulkRoomState = () => {
+  const mega = [...rooms.values()];
+  const megaOpen = mega.filter(room => room.gameState?.phase !== "finished");
+  const megaProtected = mega.filter(room => (room.ranked && room.gameState?.phase !== "finished") ||
+    getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)).length;
+  const states = [ { count: megaOpen.length, protected: megaProtected },
+    getPokerBulkRoomState(), getLudoBulkRoomState(), getConnectFourBulkRoomState(), getHiddenDictatorBulkRoomState(), getWordArenaBulkRoomState(), getClassicBulkRoomState(), getAyoBulkRoomState(), getSparBulkRoomState(), getWordBoardBulkRoomState(), getBlackjackBulkRoomState(), getWhotBulkRoomState() ];
+  return states.reduce((total, state) => ({ count: total.count + state.count, protected: total.protected + state.protected }), { count: 0, protected: 0 });
+};
 configureAccountAdminRuntimeControls({
   getRoomCount: authoritativeRoomCount,
+  getBulkRoomState,
   getLiveRooms: () => [
     ...getMegaBoardLiveRoomSummaries(),
     ...getPokerLiveRoomSummaries(),
@@ -535,13 +547,19 @@ configureAccountAdminRuntimeControls({
     ...getWordBoardLiveRoomSummaries(),
   ],
   closeSparRoom: (actor, code, createdAt) => closeSparRoom(io, code, createdAt, `${actor.displayName} closed this Spar room from Control.`),
-  closeAllRooms: async (actor) => {
-    const closed = getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getSparRoomCount() + getWordBoardRoomCount();
-    io.emit("platform:all-rooms-closed", {
-      reason: `${actor.displayName} closed all live rooms from Player Management.`,
-      at: Date.now(),
-    });
-    rooms.clear();
+  closeAllRooms: async (actor, expectedRooms) => {
+    const snapshot = getBulkRoomState();
+    if (snapshot.protected) return { closed: 0, reason: "Ranked or unsettled tournament rooms are protected. No rooms were closed." };
+    if (expectedRooms !== undefined && snapshot.count !== expectedRooms) return { closed: 0, reason: "Room count changed. Refresh and confirm again." };
+    if (!snapshot.count) return { closed: 0 };
+    // Preflight and in-memory removals are synchronous. Use the normal guarded Mega lifecycle.
+    for (const room of [...rooms.values()]) {
+      const spectators = listSpectators(room.code);
+      cancelHostGrace(room.code);
+      if (!endRoom(io, room.code, "An administrator closed all game rooms."))
+        throw Error("Guarded Mega Board room closure unexpectedly refused.");
+      for (const spectator of spectators) removeSpectator(room.code, spectator.id);
+    }
     closeAllPokerRooms();
     closeAllBlackjackRooms();
     closeAllWhotRooms();
@@ -553,8 +571,12 @@ configureAccountAdminRuntimeControls({
     closeAllAyoRooms();
     closeAllSparRooms();
     closeAllWordBoardRooms();
+    io.emit("platform:all-rooms-closed", {
+      reason: `${actor.displayName} closed all live rooms.`,
+      at: Date.now(),
+    });
     await flushRoomSave();
-    return { closed };
+    return { closed: snapshot.count };
   },
 });
 
