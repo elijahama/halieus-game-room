@@ -69,4 +69,9 @@ export function getConnectFourLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && room.players.length < 2, spectatable: true,
     }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+export function getConnectFourBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+}
 export function closeAllConnectFourRooms(){ const count=getConnectFourRoomCount(); for(const timer of aiTimers.values())clearTimeout(timer);aiTimers.clear();rooms.clear();return count; }
