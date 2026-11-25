@@ -5,7 +5,7 @@ export type ClassicMatchMode = "casual" | "ranked";
 export type ClassicCompletionReason = "dominoes-empty-hand" | "dominoes-blocked" | "cheat-final-claim-accepted" | "last-player-remaining";
 export type ClassicOutcome = {
   kind: "cancelled";
-  reason: "host-closed";
+  reason: "host-closed" | "owner-closed";
   endedAt: number;
   countsAsCompletedPlay: false;
   winnerPlayerId: null;

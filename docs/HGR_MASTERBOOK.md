@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 shared-engine room cancellation — 25 November 2026
+
+Extend Control's targeted owner-only closure to Cheat, Dominoes, Word Game, Password and Anagrams Race. Classic Table shares a room-code map and therefore checks the requested game as well as code and creation time. It cancels only the matching AI timer, records an explicit owner-closed cancelled outcome that does not count as completed play, and archives incomplete. Word Arena uses separate per-game stores; old deferred callbacks are neutralised by the finished phase. A Daily Puzzle bound to an authenticated account is protected in individual and guarded bulk operations even if its lobby mode is casual; the daily-attempt ledger is not reset. All five adapters notify only their own participants and clear only matching recovery state. Regression fixtures cover exact-game identity, archive truth and Ranked refusal. The previous standalone batch 69018eb3 passed local validation and pushed successfully from Lagz. Mega Board is the remaining adapter; tournament protection and full release validation remain separate gates.
+
 ## 4.8.5 standalone room cancellation — 25 November 2026
 
 Extend the owner-only targeted cancellation route to Ayo, Hidden Dictator and Word Board. Each removes only the exact room, stops its AI timer, notifies participants/spectators and archives incomplete without a winner. Hidden roles and private hands are not broadcast by the cancellation notice. Existing Ranked safeguards and recovery-session isolation are preserved. The previous card-table batch 5fbad25a passed local validation and was pushed from Lagz through hidden Node execution without manual activation. New HTTP regression cases cover each added adapter; shared Classic/Word Arena stores and Mega Board tournament-specific cancellation remain separate. Independent CI, physical acceptance and production approval remain separate gates.

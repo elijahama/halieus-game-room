@@ -280,6 +280,33 @@ try {
    assert.equal(rankedBoard.ok,true);
    assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:"RANKB9",createdAt:rankedBoard.state.createdAt}})).status,409);
  }
+ // Shared engines must cancel the exact game, not another game's room.
+ for(const [game,code] of [["cheat","CLASS1"],["dominoes","CLASS2"],["word-game","WORDS1"],["password","WORDS1"],["anagrams-race","WORDS1"]]){
+   const created=await emit(guest,game+":create",{code,playerName:"SharedHost",matchMode:"casual",wordGameMode:"practice"});
+   assert.equal(created.ok,true,game+" create");
+   const body={game,code,createdAt:created.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   if(game==="cheat"){
+     const wrong=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,game:"dominoes"}});
+     assert.equal(wrong.status,409);
+   }
+   if(game==="word-game")assert.equal((await emit(guest,game+":start",{code})).ok,true);
+   const notice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+   const result=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body});
+   assert.equal(result.status,200,game+" cancellation "+JSON.stringify(result.json));
+   assert.equal((await Promise.race([notice,sleep(3000).then(()=>null)]))?.game,game);
+   assert.equal((await emit(guest,game+":reconnect",{code,reconnectToken:created.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const filename=(await readdir(archiveDir)).find(name=>name.startsWith(game+"-"+code+"-")&&name.endsWith(".json"));
+   assert.ok(filename,game+" cancellation archive");
+   const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+   assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+   assert.equal(archived.summary.cancellation,"owner-closed");
+   if(game==="cheat"||game==="dominoes")assert.equal(archived.summary.countsAsCompletedPlay,false);
+   const rankedCode=game==="cheat"?"RCLASS":game==="dominoes"?"RCLAS2":"RWORDS";
+   const rankedShared=await emit(guest,game+":create",{code:rankedCode,playerName:"RankHost",matchMode:"ranked",wordGameMode:"practice"});
+   assert.equal(rankedShared.ok,true);
+   assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:rankedCode,createdAt:rankedShared.state.createdAt}})).status,409);
+ }
  guest.disconnect();
  console.log("PASS HGR 4.6.10 live local HTTP/Socket.io: owner-only auth, CSRF, typed confirmation, occupied room 409, 503 visitor page, Control continuity, owner socket bypass and reopening");
 } finally {

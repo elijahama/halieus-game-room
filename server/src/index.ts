@@ -40,8 +40,8 @@ import { closePokerRoom, getPokerBulkRoomState, closeAllPokerRooms, getPokerChat
 import { closeLudoRoom, getLudoBulkRoomState, closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
 import { closeConnectFourRoom, getConnectFourBulkRoomState, closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
 import { closeHiddenDictatorRoom, getHiddenDictatorBulkRoomState, closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
-import { getWordArenaBulkRoomState, closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
-import { getClassicBulkRoomState, closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
+import { closeWordArenaRoom, getWordArenaBulkRoomState, closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
+import { closeClassicRoom, getClassicBulkRoomState, closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
 import { closeAyoRoom, getAyoBulkRoomState, closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
 import { getSparBulkRoomState, closeAllSparRooms, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
 import { closeWordBoardRoom, getWordBoardBulkRoomState, closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
@@ -557,6 +557,8 @@ configureAccountAdminRuntimeControls({
     if (game === "ayo") return closeAyoRoom(io, code, createdAt, reason);
     if (game === "hidden-dictator") return closeHiddenDictatorRoom(io, code, createdAt, reason);
     if (game === "word-board") return closeWordBoardRoom(io, code, createdAt, reason);
+    if (game === "cheat" || game === "dominoes") return closeClassicRoom(io, game, code, createdAt, reason);
+    if (game === "word-game" || game === "password" || game === "anagrams-race") return closeWordArenaRoom(io, game, code, createdAt, reason);
     if (game === "spar") return closeSparRoom(io, code, createdAt, reason);
     return Promise.resolve(false);
   },

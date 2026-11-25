@@ -1215,8 +1215,17 @@ export default function App() {
           clearCardSession(CONNECT_FOUR_SESSION_KEY); setConnectFourSavedSession(null); setConnectFourRecoveryCode("");
         }
         setConnectFourState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "cheat" || game === "dominoes") {
+        if (readCardSavedSession(CLASSIC_SESSION_KEYS[game])?.code === code) updateClassicSavedSession(game, null);
+        setClassicState(current => current?.game === game && current.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "word-game" || game === "password" || game === "anagrams-race") {
+        if (readCardSavedSession(WORD_ARENA_SESSION_KEYS[game])?.code === code) updateWordArenaSavedSession(game, null);
+        setWordArenaState(current => current?.game === game && current.code === code && current.createdAt === payload.createdAt ? null : current);
       } else return;
-      const activeCode = game === "poker" ? readPokerCodeFromPath() :
+      const classicRoute = readClassicRouteFromPath(), wordRoute = readWordArenaRouteFromPath();
+      const activeCode = game === "cheat" || game === "dominoes" ? (classicRoute?.game === game ? classicRoute.code : null) :
+        game === "word-game" || game === "password" || game === "anagrams-race" ? (wordRoute?.game === game ? wordRoute.code : null) :
+        game === "poker" ? readPokerCodeFromPath() :
         game === "blackjack" ? readBlackjackCodeFromPath() : game === "whot" ? readWhotCodeFromPath() :
         game === "ayo" ? readAyoCodeFromPath() :
         game === "hidden-dictator" ? readHiddenDictatorCodeFromPath() :
