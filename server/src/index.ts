@@ -43,7 +43,7 @@ import { closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDi
 import { closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
 import { closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
 import { closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
-import { closeAllSparRooms, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
+import { closeAllSparRooms, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
 import { closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
 import { closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
 import { closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
@@ -58,6 +58,7 @@ import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
+import { startControlReleaseAlerts } from "./platform/control-release-alerts.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
@@ -533,6 +534,7 @@ configureAccountAdminRuntimeControls({
     ...getSparLiveRoomSummaries(),
     ...getWordBoardLiveRoomSummaries(),
   ],
+  closeSparRoom: (actor, code, createdAt) => closeSparRoom(io, code, createdAt, `${actor.displayName} closed this Spar room from Control.`),
   closeAllRooms: async (actor) => {
     const closed = getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getSparRoomCount() + getWordBoardRoomCount();
     io.emit("platform:all-rooms-closed", {
@@ -650,7 +652,7 @@ if (soloTournamentEnabled) {
   await loadSoloTournamentRegistration();
 }
 await loadFeedbackStore();
-await initializePushNotifications();
+const pushAvailable = await initializePushNotifications();
 
 const recoveredRoomCount =
   await loadRoomsFromDisk({ strict: soloTournamentEnabled });
@@ -823,6 +825,7 @@ if (canServeClient) {
 }
 
 httpServer.listen(PORT, () => {
+  if (pushAvailable && process.env.SERVE_CLIENT === "true") startControlReleaseAlerts(id => {const account=getAccountSummaryById(id);return account?.role==="owner"||account?.role==="admin";});
   console.log(
     "🎮 Halieus Game Room Server",
   );
