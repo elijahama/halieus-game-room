@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerSparHandlers, getSparRoomCount, getSparLiveRoomSummaries, getSparChatIdentity, closeAllSparRooms, closeSparRoom } from "../server/src/games/spar/handlers.ts";
+import { registerSparHandlers, getSparRoomCount, getSparLiveRoomSummaries, getSparChatIdentity, closeAllSparRooms, closeSparRoom, expireAbandonedSparRooms, SPAR_ABANDONMENT_GRACE_MS } from "../server/src/games/spar/handlers.ts";
 import { legalSparCards, sparSuit } from "../shared/games/spar/rules.ts";
 const handlers = new Map();
 const latest = new Map();
@@ -291,3 +291,25 @@ assert.equal((await call("host","spar:reconnect",{code:"STALE1",reconnectToken:s
 assert.deepEqual(getSparLiveRoomSummaries().map(room=>room.code),["OTHER1"]);
 closeAllSparRooms();
 console.log("PASS targeted owner Spar cancellation: stale identity rejected; unrelated room preserved");
+
+ // An empty AI table is paused during its grace period, not left live forever.
+ const abandoned = await call("host","spar:create",{code:"ABAND1",playerName:"Host"});
+ for(let i=0;i<6;i++) assert.equal((await call("host","spar:add-ai",{code:"ABAND1",difficulty:"normal"})).ok,true);
+ assert.equal((await call("host","spar:start",{code:"ABAND1"})).ok,true);
+ await call("host","spar:leave",{code:"ABAND1"});
+ const graceStart=Date.now();
+ assert.equal(await expireAbandonedSparRooms(io,graceStart+SPAR_ABANDONMENT_GRACE_MS-1000),0);
+ assert.equal((await call("host","spar:reconnect",{code:"ABAND1",reconnectToken:abandoned.reconnectToken})).ok,true);
+ assert.equal(await expireAbandonedSparRooms(io,graceStart+SPAR_ABANDONMENT_GRACE_MS+1000),0,"Reconnected rooms are protected");
+ assert.equal((await call("watch","spar:spectate",{code:"ABAND1",playerName:"Watcher"})).ok,true);
+ await call("host","spar:leave",{code:"ABAND1"});
+ assert.equal(await expireAbandonedSparRooms(io,Date.now()+SPAR_ABANDONMENT_GRACE_MS+1000),0,"Spectated tables are protected");
+ await call("watch","spar:leave",{code:"ABAND1"});
+ const emptySince=Date.now();
+ assert.equal(await expireAbandonedSparRooms(io,emptySince+SPAR_ABANDONMENT_GRACE_MS-1000),0,"A fresh vacancy gets a full grace period");
+ assert.equal(await expireAbandonedSparRooms(io,emptySince+SPAR_ABANDONMENT_GRACE_MS+1000),1);
+ assert.equal((await call("host","spar:reconnect",{code:"ABAND1",reconnectToken:abandoned.reconnectToken})).ok,false);
+ assert.equal(getSparLiveRoomSummaries().some(r=>r.code==="ABAND1"),false);
+ assert.equal(await expireAbandonedSparRooms(io,emptySince+2*SPAR_ABANDONMENT_GRACE_MS),0,"Expiry is idempotent");
+ closeAllSparRooms();
+ console.log("PASS Spar abandonment: recovery grace, reconnect and spectator protection, incomplete cancellation, stale room removed");
