@@ -37,8 +37,8 @@ import { registerMegaSpaceHandlers } from "./games/mega-board/handlers/megaSpace
 import { registerOrderHandlers } from "./games/mega-board/handlers/orderHandlers.js";
 import { registerPurchaseHandlers } from "./games/mega-board/handlers/purchaseHandlers.js";
 import { getPokerBulkRoomState, closeAllPokerRooms, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
-import { getLudoBulkRoomState, closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
-import { getConnectFourBulkRoomState, closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
+import { closeLudoRoom, getLudoBulkRoomState, closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
+import { closeConnectFourRoom, getConnectFourBulkRoomState, closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
 import { getHiddenDictatorBulkRoomState, closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
 import { getWordArenaBulkRoomState, closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
 import { getClassicBulkRoomState, closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
@@ -547,6 +547,13 @@ configureAccountAdminRuntimeControls({
     ...getWordBoardLiveRoomSummaries(),
   ],
   closeSparRoom: (actor, code, createdAt) => closeSparRoom(io, code, createdAt, `${actor.displayName} closed this Spar room from Control.`),
+  closeIndividualRoom: (actor, game, code, createdAt) => {
+    const reason = `${actor.displayName} closed this room from Control.`;
+    if (game === "ludo") return closeLudoRoom(io, code, createdAt, reason);
+    if (game === "connect-four") return closeConnectFourRoom(io, code, createdAt, reason);
+    if (game === "spar") return closeSparRoom(io, code, createdAt, reason);
+    return Promise.resolve(false);
+  },
   closeAllRooms: async (actor, expectedRooms) => {
     const snapshot = getBulkRoomState();
     if (snapshot.protected) return { closed: 0, reason: "Ranked or unsettled tournament rooms are protected. No rooms were closed." };

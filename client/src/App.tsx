@@ -1171,6 +1171,27 @@ export default function App() {
     function handleWordArenaState(nextState: WordArenaPublicState) { setWordArenaState(nextState); setSelectedGame(nextState.game); setRoomCode(nextState.code); setMessage(""); if (nextState.phase === "finished") updateWordArenaSavedSession(nextState.game, null); }
     function handleClassicState(nextState: ClassicPublicState) { setClassicState(nextState); setClassicMatchModes((current) => ({ ...current, [nextState.game]: nextState.matchMode })); setSelectedGame(nextState.game); setRoomCode(nextState.code); setMessage(""); if (nextState.phase === "finished") updateClassicSavedSession(nextState.game, null); else if (nextState.viewerReconnectToken && nextState.viewerPlayerId) updateClassicSavedSession(nextState.game, { code: nextState.code, reconnectToken: nextState.viewerReconnectToken, playerName: nextState.players.find((player) => player.id === nextState.viewerPlayerId)?.name ?? "Player" }); }
     function handleLiveTradePreview(nextPreview: LiveTradePreview | null) { setLiveTradePreview(nextPreview); }
+    // A targeted cancellation must never reset the other games' recoverable seats.
+    function handleIndividualRoomClosed(payload: { game: string; code: string; createdAt: number; reason: string }) {
+      if (payload.game !== "ludo" && payload.game !== "connect-four") return;
+      const game = payload.game;
+      const code = payload.code;
+      if (game === "ludo") {
+        if (readCardSavedSession(LUDO_SESSION_KEY)?.code === code) {
+          clearCardSession(LUDO_SESSION_KEY); setLudoSavedSession(null); setLudoRecoveryCode("");
+        }
+        setLudoState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else {
+        if (readCardSavedSession(CONNECT_FOUR_SESSION_KEY)?.code === code) {
+          clearCardSession(CONNECT_FOUR_SESSION_KEY); setConnectFourSavedSession(null); setConnectFourRecoveryCode("");
+        }
+        setConnectFourState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      }
+      const activeCode = game === "ludo" ? readLudoCodeFromPath() : readConnectFourCodeFromPath();
+      if (activeCode === code) {
+        updateBrowserPath("/"); setRoomCode(generateRoomCode()); setMessage(payload.reason);
+      }
+    }
     function handleAllRoomsClosed(payload?: { reason?: string }) {
       clearSession(); clearPokerSession(); clearCardSession(BLACKJACK_SESSION_KEY); clearCardSession(WHOT_SESSION_KEY); clearCardSession(LUDO_SESSION_KEY); clearCardSession(CONNECT_FOUR_SESSION_KEY); clearCardSession(AYO_SESSION_KEY); clearCardSession(SPAR_SESSION_KEY); clearCardSession(WORD_BOARD_SESSION_KEY); clearCardSession(HIDDEN_DICTATOR_SESSION_KEY); WORD_ARENA_GAMES.forEach((game) => clearCardSession(WORD_ARENA_SESSION_KEYS[game])); CLASSIC_GAMES.forEach((game) => clearCardSession(CLASSIC_SESSION_KEYS[game]));
       setSavedSession(null); setPokerSavedSession(null); setBlackjackSavedSession(null); setWhotSavedSession(null); setLudoSavedSession(null); setConnectFourSavedSession(null); setAyoSavedSession(null); setSparSavedSession(null); setWordBoardSavedSession(null); setHiddenDictatorSavedSession(null); setWordArenaSavedSessions({ "word-game": null, password: null, "anagrams-race": null }); setClassicSavedSessions({ cheat: null, dominoes: null });
@@ -1206,6 +1227,7 @@ export default function App() {
       "game:session-replaced",
       handleSessionReplaced,
     );
+    socket.on("platform:room-closed", handleIndividualRoomClosed);
     socket.on("platform:all-rooms-closed", handleAllRoomsClosed);
     socket.connect();
 
@@ -1236,6 +1258,7 @@ export default function App() {
         "game:session-replaced",
         handleSessionReplaced,
       );
+      socket.off("platform:room-closed", handleIndividualRoomClosed);
       socket.off("platform:all-rooms-closed", handleAllRoomsClosed);
       socket.disconnect();
     };

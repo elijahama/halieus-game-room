@@ -74,4 +74,22 @@ export function getConnectFourBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
   return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
 }
+/** Cancel exactly one noncompetitive room without awarding a result. */
+export async function closeConnectFourRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || room.matchMode === "ranked") return false;
+  const timer = aiTimers.get(code); if (timer) clearTimeout(timer); aiTimers.delete(code);
+  rooms.delete(code);
+  room.phase = "finished";
+  room.currentTurnPlayerId = null; room.winnerPlayerId = null;
+  room.status = reason; room.updatedAt = Date.now();
+  room.roundWinnerPlayerId = null; room.draw = false;
+  for (const player of room.players) player.result = null;
+  const payload = { game: "connect-four", code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession("connect-four", code, createdAt, "incomplete", archive(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
+
 export function closeAllConnectFourRooms(){ const count=getConnectFourRoomCount(); for(const timer of aiTimers.values())clearTimeout(timer);aiTimers.clear();rooms.clear();return count; }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { io } from "socket.io-client";
@@ -177,8 +177,43 @@ try {
  assert.equal((await sparClose({...sparBody,createdAt:sparBody.createdAt-1})).status,409);
  assert.equal((await sparClose(sparBody)).json.closed,1);
  assert.equal((await sparClose(sparBody)).status,409);
+ // Individual cancellation must retain a different game's room with the same code.
+ const ludo=await emit(guest,"ludo:create",{code:"SAME12",playerName:"LudoHost",matchMode:"casual"});
+ const c4=await emit(guest,"connect-four:create",{code:"SAME12",playerName:"ConnectHost",matchMode:"casual"});
+ assert.equal(ludo.ok,true);assert.equal(c4.ok,true);
+ const observer=await connect();
+ try {
+   assert.equal((await emit(observer,"connect-four:spectate",{code:"SAME12",playerName:"Viewer"})).ok,true);
+   const oneBody={game:"connect-four",code:"SAME12",createdAt:c4.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   const closeOne=(body,origin=base)=>request("/admin/rooms/close-one",{cookie,origin,method:"POST",body});
+   assert.equal((await request("/admin/rooms/close-one",{origin:base,method:"POST",body:oneBody})).status,403);
+   assert.equal((await closeOne(oneBody,"https://evil.example")).status,403);
+   assert.equal((await closeOne({...oneBody,createdAt:oneBody.createdAt-1})).status,409);
+   const notice=new Promise(resolve=>observer.once("platform:room-closed",resolve));
+   const closed=await closeOne(oneBody);
+   assert.equal(closed.status,200,JSON.stringify(closed.json));
+   assert.equal(closed.json.game,"connect-four");
+   const event=await Promise.race([notice,sleep(3000).then(()=>null)]);
+   assert.equal(event?.code,"SAME12");assert.equal(event?.game,"connect-four");
+   assert.equal((await closeOne(oneBody)).status,409);
+   assert.equal((await emit(guest,"connect-four:reconnect",{code:"SAME12",reconnectToken:c4.reconnectToken})).ok,false);
+   assert.equal((await emit(guest,"ludo:reconnect",{code:"SAME12",reconnectToken:ludo.reconnectToken})).ok,true);
+   const ludoBody={...oneBody,game:"ludo",createdAt:ludo.state.createdAt};
+   assert.equal((await closeOne(ludoBody)).json.closed,1);
+   assert.equal((await emit(guest,"ludo:reconnect",{code:"SAME12",reconnectToken:ludo.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const archiveFiles=await readdir(archiveDir);
+   for(const game of ["connect-four","ludo"]){
+     const filename=archiveFiles.find(name=>name.startsWith(game+"-SAME12-")&&name.endsWith(".json"));
+     assert.ok(filename,"Cancelled room must have a durable archive");
+     const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+     assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+     assert.equal(archived.summary.cancellation,"owner-closed");
+   }
+ } finally { observer.disconnect(); }
  const ranked=await emit(guest,"connect-four:create",{code:"RANKCL",playerName:"RankHost",matchMode:"ranked"});
  assert.equal(ranked.ok,true);
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{game:"connect-four",code:"RANKCL",createdAt:ranked.state.createdAt,confirmation:"CLOSE GAME ROOM"}})).status,409);
  await emit(guest,"connect-four:leave",{code:"RANKCL"});
  const protectedRooms=await bulkStatus();
  assert(protectedRooms.json.protected>=1,"Disconnected Ranked recovery room must remain protected");

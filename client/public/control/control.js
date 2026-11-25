@@ -256,21 +256,22 @@
 
   let roomClosureBusy = false;
   let roomListFresh = false;
-  async function closeSparRoom(room) {
-    if (state.account?.role !== "owner" || roomClosureBusy || !roomListFresh || room.game !== "spar" || room.matchMode === "ranked") return;
-    if (!window.confirm(`Close Spar room ${room.code}? This ends only this table, not the server. No winner or Ranked result will be awarded.`)) return;
+  const individuallyClosable = new Set(["spar", "ludo", "connect-four"]);
+  async function closeIndividualRoom(room) {
+    if (state.account?.role !== "owner" || roomClosureBusy || !roomListFresh || !individuallyClosable.has(room.game) || room.matchMode === "ranked") return;
+    if (!window.confirm(`Close ${room.gameTitle} room ${room.code}? This ends only this table, not the server. No winner or Ranked result will be awarded.`)) return;
     roomClosureBusy = true;
     const feedback = $("roomClosureFeedback");
     feedback.textContent = `Closing room ${room.code}…`;
     renderRooms();
     try {
-      const response = await fetch("/admin/rooms/close-spar", {
+      const response = await fetch("/admin/rooms/close-one", {
         method: "POST", credentials: "include", cache: "no-store",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ code: room.code, createdAt: room.createdAt, confirmation: "CLOSE SPAR ROOM" }),
+        body: JSON.stringify({ game: room.game, code: room.code, createdAt: room.createdAt, confirmation: "CLOSE GAME ROOM" }),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok || result.closed !== 1 || result.code !== room.code || result.createdAt !== room.createdAt)
+      if (!response.ok || !result.ok || result.closed !== 1 || result.game !== room.game || result.code !== room.code || result.createdAt !== room.createdAt)
         throw Error(result.reason || "Room closure was not confirmed.");
       feedback.textContent = `Room ${room.code} closed.`;
     } catch (error) {
@@ -348,12 +349,12 @@
       const footer = element("div", "room-footer");
       footer.append(element("span", "", `${room.playerCount}/${room.maximumPlayers} seats · ${room.spectatorCount || 0} spectators`), element("span", "", roomDuration(room)));
       card.append(header, players, footer);
-      if (state.account?.role === "owner" && room.game === "spar" && room.matchMode !== "ranked") {
+      if (state.account?.role === "owner" && individuallyClosable.has(room.game) && room.matchMode !== "ranked") {
         const close = element("button", "secondary-action", "Close room");
         close.type = "button";
         close.disabled = roomClosureBusy || !roomListFresh;
-        close.setAttribute("aria-label", `Close Spar room ${room.code}`);
-        close.addEventListener("click", () => void closeSparRoom(room));
+        close.setAttribute("aria-label", `Close ${room.gameTitle} room ${room.code}`);
+        close.addEventListener("click", () => void closeIndividualRoom(room));
         card.appendChild(close);
       }
       grid.appendChild(card);

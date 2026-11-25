@@ -137,6 +137,7 @@ interface AccountAdminRuntimeControls {
   getBulkRoomState?: () => { count: number; protected: number };
   closeAllRooms: (actor: HalieusAccountSummary, expectedRooms?: number) => Promise<{ closed: number; reason?: string }>;
   closeSparRoom?: (actor: HalieusAccountSummary, code: string, createdAt: number) => Promise<boolean>;
+  closeIndividualRoom?: (actor: HalieusAccountSummary, game: string, code: string, createdAt: number) => Promise<boolean>;
 }
 
 let adminRuntimeControls: AccountAdminRuntimeControls | null = null;
@@ -1681,6 +1682,34 @@ export function registerAccountRoutes(app: Express): void {
     } catch (error) {
       console.error("Spar room closure persistence failed:", error);
       response.status(500).json({ ok: false, reason: "Closure or audit persistence could not be confirmed. Refresh the live room list before retrying." });
+    }
+  });
+
+  app.post("/admin/rooms/close-one", async (request, response) => {
+    const actor = requireOwner(request, response); if (!actor) return;
+    const origin = request.get("origin");
+    let sameOrigin = false;
+    try { sameOrigin = !!origin && new URL(origin).host === request.get("host"); } catch { /* reject */ }
+    if (!sameOrigin || !request.is("application/json") || request.body?.confirmation !== "CLOSE GAME ROOM") {
+      response.status(403).json({ ok: false, reason: "Same-origin confirmed room closure is required." }); return;
+    }
+    const { game, code, createdAt } = request.body;
+    if (!["spar", "ludo", "connect-four"].includes(game) || typeof code !== "string" || !/^[A-Z0-9]{1,6}$/.test(code) || !Number.isSafeInteger(createdAt)) {
+      response.status(400).json({ ok: false, reason: "Invalid or unsupported room identity." }); return;
+    }
+    if (!adminRuntimeControls?.closeIndividualRoom) {
+      response.status(503).json({ ok: false, reason: "Room controls are not ready." }); return;
+    }
+    try {
+      if (!await adminRuntimeControls.closeIndividualRoom(publicAccount(actor), game, code, createdAt)) {
+        response.status(409).json({ ok: false, reason: "Room is unavailable, changed, or protected Ranked play." }); return;
+      }
+      addAudit(actor.id, "rooms.close-one", "system", null, `${actor.displayName} closed ${game} room ${code}.`);
+      await saveStore();
+      response.json({ ok: true, closed: 1, game, code, createdAt });
+    } catch (error) {
+      console.error("Individual room closure persistence failed:", error);
+      response.status(500).json({ ok: false, reason: "Closure or audit persistence could not be confirmed. Refresh before retrying." });
     }
   });
 
