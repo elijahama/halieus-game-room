@@ -6,8 +6,9 @@ import { accountApi } from "../accounts/api";
 import { GuildFixturesPanel } from "./GuildFixturesPanel";
 import { SoloTournamentPanel } from "./SoloTournamentPanel";
 import "./TournamentHub.css";
+import { TournamentWorkshop } from "./TournamentWorkshop";
 
-type TournamentFormat = "solo" | "guild";
+type TournamentFormat = "solo" | "guild" | "workshop";
 
 interface TournamentHubProps {
   account: HalieusAccountSummary;
@@ -113,9 +114,13 @@ export function TournamentHub({
           <strong>Guild</strong>
           <small>Teams, fixtures and verified boards</small>
         </button>
+        <button type="button" aria-pressed={format === "workshop"} className={format === "workshop" ? "is-active" : ""} onClick={() => setFormat("workshop")}>
+          <strong>Workshop</strong><small>Practice bracket and fixture planning</small>
+        </button>
       </div>
 
-      <div className="hgr-tournament-format-panel" aria-label={format === "solo" ? "Solo tournament format" : "Guild tournament format"}>
+      <div className="hgr-tournament-format-panel" aria-label={format === "solo" ? "Solo tournament format" : format === "guild" ? "Guild tournament format" : "Tournament workshop"}>
+        {format === "workshop" && <TournamentWorkshop />}
         {format === "solo" && (soloAvailable
           ? <SoloTournamentPanel account={account} onCreateRoom={onCreateRoom}
               onOpenRoom={onOpenRoom} onOpenGuilds={() => setFormat("guild")} />
