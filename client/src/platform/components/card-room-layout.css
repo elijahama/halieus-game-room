@@ -1,0 +1,22 @@
+/* Poker-derived responsive card-room contract. Apply only to live rooms that
+ * opt in; lobbies/results and other games remain untouched until tested.
+ * Game-specific rules, private cards, visual identity and actions stay separate. */
+@media (max-width:1024px) and (orientation:portrait) {
+  .hgr-card-room-page {
+    display:flex!important;flex-direction:column;box-sizing:border-box;
+    height:100dvh!important;min-height:0!important;max-height:100dvh;
+    overflow:hidden!important;gap:6px!important;
+    padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))!important;
+  }
+  .hgr-card-room-page>header,.hgr-card-room-page>.mega-spectator-banner{flex:0 0 auto}
+  .hgr-card-room-page .hgr-card-room {
+    flex:1 1 0;min-height:0;min-width:0;width:100%;
+    display:grid;grid-template-columns:minmax(0,1fr);
+    grid-template-rows:minmax(0,1fr) auto;
+    gap:6px;align-items:stretch;overflow:hidden;margin:0 auto;
+  }
+  .hgr-card-room .hgr-card-room-table{min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  .hgr-card-room .hgr-card-room-dock{position:static;min-height:0;min-width:0;max-height:43dvh;overflow:hidden;display:flex;flex-direction:column}
+  .hgr-card-room .hgr-card-room-dock>header,.hgr-card-room .hgr-card-room-dock>nav{flex:0 0 auto}
+  .hgr-card-room .hgr-card-room-workspace{min-height:0;min-width:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;align-content:start}
+}

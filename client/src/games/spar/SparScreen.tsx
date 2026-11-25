@@ -8,6 +8,7 @@ import { GameResultsScreen } from "../../platform/components/GameResultsScreen";
 import { ConfirmDialog } from "../../platform/components/ConfirmDialog";
 import { ModalPortal } from "../../platform/components/ModalPortal";
 import "./SparScreen.css";
+import "../../platform/components/card-room-layout.css";
 
 const GOLD = "#E6BA60";
 const SUIT: Record<SparSuit, string> = { C:"♣", D:"♦", H:"♥", S:"♠" };
@@ -117,7 +118,7 @@ export function SparScreen({
     const link = document.createElement("a");
     link.href=url;link.download=`spar-${state.code}-report.txt`;link.click();URL.revokeObjectURL(url);
   };
-  return <main className="spar-page card-game-page page-enter"
+  return <main className={`spar-page card-game-page page-enter${state.phase==="playing"||state.phase==="bra"?" hgr-card-room-page":""}`}
     style={{ background:theme.pageBackground,color:theme.text,["--game-accent" as string]:GOLD }}>
     <header className="card-game-header card-game-header-polished spar-header">
       <div className="card-game-brand-lockup"><GameBrandIcon game="spar"/><div><p>GHANAIAN CARD TABLE</p><h1>Spar <small>Cha-Cha</small></h1></div></div>
@@ -172,8 +173,8 @@ export function SparScreen({
         stats={[{label:"Hands",value:String(state.handNumber)},{label:state.scoring==="stones"?"Pool":state.scoring==="target"?"Target":"Scoring",value:state.scoring==="free"?"Free play":String(state.stonesTotal)},{label:"Seats",value:String(state.players.length)}]}
         onDownloadReport={report} onBackToGameRoom={onLeave}
         onPlayAgain={isHost?onStart:undefined} playAgainLabel="Play another Spar match"/>
-    : <section className="spar-match">
-        <div className="spar-table-column">
+    : <section className="spar-match hgr-card-room">
+        <div className="spar-table-column hgr-card-room-table">
           <header className="spar-match-status" aria-live="polite">
             <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize}</small><strong>{state.status}</strong></div>
             {state.scoring==="stones"?<StonePool remaining={state.stonesRemaining} total={state.stonesTotal}/>:<strong>{state.scoring==="target"?`Target: ${state.stonesTotal} points`:"Free play · Cumulative points"}</strong>}
@@ -181,7 +182,7 @@ export function SparScreen({
           <section className="spar-table" aria-label="Spar card table">
             <div className="spar-table-texture" aria-hidden="true"/>
             <div className="spar-table-heading"><span>SPAR</span><small>THE LAST TRICK COUNTS</small></div>
-            <div className="spar-table-seats" aria-label="Table seats">{state.players.map(p=><article key={p.id} className={`spar-table-seat ${p.id===state.currentTurnPlayerId?"is-active":""} ${p.id===viewer?.id?"is-you":""}`}><span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span><div><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit} · {p.handCount} cards{p.id===state.dealerPlayerId?" · D":""}</small></div>{p.id===state.currentTurnPlayerId&&<i aria-label="Current turn"/>}</article>)}</div>
+            <div className={`spar-table-seats${state.players.length>4?" is-many":""}`} aria-label="Table seats">{state.players.map(p=><article key={p.id} className={`spar-table-seat ${p.id===state.currentTurnPlayerId?"is-active":""} ${p.id===viewer?.id?"is-you":""}`}><span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span><div><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit} · {p.handCount} cards{p.id===state.dealerPlayerId?" · D":""}</small></div>{p.id===state.currentTurnPlayerId&&<i aria-label="Current turn"/>}</article>)}</div>
             <div className="spar-table-centre">
               {state.plays.length ?
                 <div className={`spar-current-plays ${state.players.length > 4 ? "is-expanded" : ""}`}>{state.plays.map((p,i)=><div key={p.playerId} className="spar-play"><CardFace card={p.card}/><small>{p.playerName}{i===0?" · Lead":""}</small></div>)}</div>
@@ -190,14 +191,14 @@ export function SparScreen({
             {state.lastTrick&&<div className="spar-last-trick">Last trick: {state.players.find(p=>p.id===state.lastTrick?.winnerPlayerId)?.name??"Player"} · {state.lastTrick.winningCard} {state.lastTrick.number===state.handSize? `· ${state.lastTrick.points} points`:"· no points"}</div>}
           </section>
         </div>
-        <aside className="spar-room-stack spar-control-panel" aria-label="Spar room controls">
+        <aside className="spar-room-stack spar-control-panel hgr-card-room-dock" aria-label="Spar room controls">
           <header className="spar-control-heading"><div><small>{state.isSpectator?"LIVE TABLE":"YOUR SEAT"}</small><h2>{state.isSpectator?"Spectating":viewer?.name??"Spar"}</h2></div><span className={canAct||canCallBra||state.canExchange?"spar-turn-pill is-you":"spar-turn-pill"}>{canAct||canCallBra||state.canExchange?"Your decision":current?current.name+"'s turn":"Waiting"}</span></header>
           <nav className="spar-side-tabs" aria-label="Spar side panel">
             <button type="button" disabled={state.isSpectator} className={visibleTab==="actions"?"is-active":""} aria-pressed={visibleTab==="actions"} onClick={()=>setSideTab("actions")}>Actions{(canAct||canCallBra||state.canExchange)&&<i aria-label="Decision required"/>}</button>
             <button type="button" className={visibleTab==="players"?"is-active":""} aria-pressed={visibleTab==="players"} onClick={()=>setSideTab("players")}>Players <span>{state.players.length}</span></button>
             <button type="button" className={visibleTab==="chat"?"is-active":""} aria-pressed={visibleTab==="chat"} onClick={()=>setSideTab("chat")}>Chat</button>
           </nav>
-          <div className="spar-side-tab-panel" data-tab={visibleTab}>
+          <div className="spar-side-tab-panel hgr-card-room-workspace" data-tab={visibleTab}>
             {visibleTab==="actions"&&!state.isSpectator&&<div className="spar-actions-workspace">
           {state.bottomCard && <div className="spar-last-trick">Bottom card: {state.bottomCard}</div>}
           {state.canShowBottom && <button type="button" className="button-outline" onClick={onShowBottom}>Show bottom card</button>}
@@ -205,7 +206,7 @@ export function SparScreen({
           {state.phase==="bra" ?
             <div className="spar-bra-prompt">
               <strong>{state.exchangePending?"Opening hand exchange":canCallBra?"Your call":"Waiting for Bra"}</strong>
-              {viewer && <div className="spar-hand-cards" role="group" aria-label="Opening hand">{state.hand.map(card=><CardFace key={card} card={card}/>)}</div>}
+              {viewer && <div className={`spar-hand-cards${state.hand.length>5?" is-seven":""}`} role="group" aria-label="Opening hand">{state.hand.map(card=><CardFace key={card} card={card}/>)}</div>}
               {state.canExchange && <div className="card-game-host-actions"><button type="button" className="button-outline" onClick={()=>onExchange(false)}>Keep hand</button><button type="button" className="button-primary" onClick={()=>onExchange(true)}>Exchange hand</button></div>}
               <span>{state.exchangePending?"Waiting for eligible players to decide.":canCallBra?"You are next after the dealer. Call Bra to begin.":`${current?.name??"Next player"} begins the hand.`}</span>
               {canCallBra&&<button type="button" className="button-primary" onClick={onBra}>Bra! · Begin hand</button>}
@@ -213,7 +214,7 @@ export function SparScreen({
           : <div className="spar-hand">
               <div className="spar-hand-header"><strong>{viewer?"Your hand":state.isSpectator?"Spectator view":"Players' hands"} · {state.hand.length} cards</strong>
                 <span>{canAct?(leading?`Follow ${SUIT_NAME[leading]}`:"Lead any card"):(current?`${current.name}'s turn`:"Waiting")}</span></div>
-              {viewer?<div className="spar-hand-cards" role="group" aria-label="Your hand">
+              {viewer?<div className={`spar-hand-cards${state.hand.length>5?" is-seven":""}`} role="group" aria-label="Your hand">
                 {state.hand.map(card=><CardFace key={card} card={card} canPlay={canAct&&legal.includes(card)} disabled={!canAct} onPlay={onPlay}/>)}
               </div>:<p className="spar-spectator-note">Private hands remain concealed until each card is played.</p>}
             </div>}

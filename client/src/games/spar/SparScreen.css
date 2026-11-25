@@ -267,3 +267,83 @@
 @media(min-width:1150px){.spar-table-seats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:1024px){.spar-match{grid-template-columns:minmax(0,1fr)}.spar-table{min-height:320px}.spar-room-stack{position:static;max-height:none;overflow:visible}}
 @media(max-width:640px){.spar-table{min-height:280px;padding:8px 6px}.spar-table-seats{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.spar-table-seat{padding:4px;gap:4px}.spar-table-seat-avatar{width:22px;height:22px;flex-basis:22px}.spar-table-seat strong{font-size:.67rem}.spar-table-seat small{font-size:.59rem}.spar-control-panel{padding:9px}.spar-actions-workspace .spar-hand-cards .spar-playing-card{max-width:63px}.spar-match-status{padding:8px}.spar-pool{width:auto}}
+
+/* Spar-specific portrait geometry within the shared Poker-derived room shell. */
+@media(max-width:1024px) and (orientation:portrait){
+  .spar-page.hgr-card-room-page .spar-header{
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto;align-items:center!important;
+    min-height:0!important;padding:0!important;margin:0!important;gap:3px 6px!important;
+  }
+  .spar-page.hgr-card-room-page .card-game-brand-lockup{min-width:0;gap:6px;grid-column:1;grid-row:1}
+  .spar-page.hgr-card-room-page .card-game-brand-lockup>img{width:34px!important;height:34px!important;flex:0 0 34px}
+  .spar-page.hgr-card-room-page .card-game-brand-lockup p{display:none}
+  .spar-page.hgr-card-room-page .card-game-brand-lockup h1{font-size:clamp(1rem,4.4vw,1.5rem)!important;margin:0;line-height:1.1}
+  .spar-page.hgr-card-room-page .card-game-meta{grid-column:1/-1;grid-row:2;display:flex!important;flex-wrap:wrap;gap:3px!important;min-width:0;margin:0!important;padding:0!important}
+  .spar-page.hgr-card-room-page .card-game-meta>span{font-size:.62rem!important;padding:3px 5px!important;min-height:0!important;line-height:1.15}
+  .spar-page.hgr-card-room-page .spar-menu-toggle{grid-column:2;grid-row:1;min-height:38px;padding:5px 8px!important;font-size:.72rem}
+  .spar-page.hgr-card-room-page>.mega-spectator-banner{padding:4px 6px!important;gap:4px!important;font-size:.68rem}
+  .spar-page.hgr-card-room-page>.mega-spectator-banner button{font-size:.68rem;min-height:32px;padding:4px 6px!important}
+  .spar-match .spar-table-column{gap:5px}
+  .spar-match .spar-match-status{flex:0 0 auto;flex-wrap:nowrap;padding:5px 7px;gap:5px;border-radius:9px}
+  .spar-match .spar-match-status>div:first-child{flex:1;gap:2px}
+  .spar-match .spar-match-status small{font-size:.56rem;letter-spacing:.04em}
+  .spar-match .spar-match-status strong{font-size:.7rem;line-height:1.15}
+  .spar-match .spar-pool{display:grid;grid-template-columns:auto auto;width:auto;gap:2px 4px;flex:0 0 auto}
+  .spar-match .spar-pool>span{font-size:.55rem;letter-spacing:0}
+  .spar-match .spar-pool>strong{font-size:.62rem}
+  .spar-match .spar-pool-stones{gap:2px;max-width:85px;flex-wrap:wrap}
+  .spar-match .spar-pool-stones i{width:9px;height:9px}
+  .spar-match .spar-table{flex:1 1 0;min-height:0;height:100%;padding:6px;gap:4px;border-width:4px;border-radius:15px}
+  .spar-match .spar-table-heading>span{font-size:.85rem;letter-spacing:.12em}
+  .spar-match .spar-table-heading small{display:none}
+  .spar-match .spar-table-seats{gap:3px;grid-template-columns:repeat(2,minmax(0,1fr));flex:0 0 auto}
+  .spar-match .spar-table-seats.is-many{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .spar-match .spar-table-seat{padding:3px 4px;gap:3px;border-radius:6px}
+  .spar-match .spar-table-seat-avatar{width:20px;height:20px;flex-basis:20px;font-size:.62rem}
+  .spar-match .spar-table-seat strong{font-size:.64rem}
+  .spar-match .spar-table-seat small{font-size:.56rem;line-height:1.15}
+  .spar-match .spar-table-seats.is-many .spar-table-seat-avatar{display:none}
+  .spar-match .spar-table-seat>i{width:5px;height:5px;flex-basis:5px}
+  .spar-match .spar-table-centre{min-height:0;flex:1 1 auto;padding:0;overflow:hidden}
+  .spar-match .spar-current-plays{gap:3px;align-items:center}
+  .spar-match .spar-current-plays.is-expanded{gap:3px}
+  .spar-match .spar-play{gap:2px}
+  .spar-match .spar-play .spar-playing-card{width:clamp(34px,10vw,64px);height:clamp(44px,8.5dvh,90px);padding:3px;border-radius:5px}
+  .spar-match .spar-play .spar-card-corner{font-size:.7rem}
+  .spar-match .spar-play .spar-card-centre{font-size:clamp(1rem,3.8vw,1.8rem)}
+  .spar-match .spar-play small{font-size:.54rem;line-height:1;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .spar-match .spar-last-trick{font-size:.59rem;padding:3px 6px}
+  .spar-match .spar-empty-centre{gap:3px}
+  .spar-match .spar-empty-centre strong{font-size:.75rem}
+  .spar-match .spar-empty-centre small{font-size:.62rem}
+  .spar-match .spar-control-panel{padding:6px;gap:4px;border-radius:11px}
+  .spar-match .spar-control-heading h2{font-size:.83rem;margin:0}
+  .spar-match .spar-control-heading small{font-size:.53rem}
+  .spar-match .spar-turn-pill{font-size:.65rem;padding:4px 6px}
+  .spar-match .spar-side-tabs{padding:2px;gap:3px}
+  .spar-match .spar-side-tabs button{min-height:36px;font-size:.75rem}
+  .spar-match .spar-actions-workspace{gap:4px}
+  .spar-match .spar-actions-workspace .spar-hand,.spar-match .spar-actions-workspace .spar-bra-prompt{padding:3px;gap:4px}
+  .spar-match .spar-hand-header strong,.spar-match .spar-hand-header span{font-size:.7rem}
+  .spar-match .spar-actions-workspace .spar-hand-cards .spar-playing-card{width:100%;max-width:62px;min-height:44px;aspect-ratio:2/3}
+  .spar-match .spar-actions-workspace .spar-hand-cards.is-seven{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .spar-match .spar-actions-workspace .spar-hand-cards.is-seven .spar-playing-card{max-width:54px}
+  .spar-match .spar-award{padding:4px 6px;font-size:.65rem;gap:3px}
+  .spar-match .spar-bra-prompt strong{font-size:.86rem}
+  .spar-match .spar-bra-prompt span{font-size:.68rem}
+  .spar-match .spar-bra-prompt button{min-height:38px}
+  .spar-match .spar-control-panel>.status-toast{font-size:.68rem;margin:0;padding:3px;flex:0 0 auto}
+}
+@media(max-width:375px) and (orientation:portrait){
+  .spar-match .spar-table-seats.is-many .spar-table-seat small{font-size:.5rem}
+  .spar-match .spar-table-seats.is-many .spar-table-seat strong{font-size:.58rem}
+  .spar-match .spar-actions-workspace .spar-hand-cards.is-seven{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .spar-match .spar-actions-workspace .spar-hand-cards.is-seven .spar-playing-card{max-width:44px}
+}
+@media(max-width:1024px) and (orientation:portrait) and (max-height:660px){
+  .spar-match .spar-table-heading{display:none}
+  .spar-match .spar-play .spar-playing-card{height:clamp(40px,7.8dvh,55px)}
+  .spar-match .spar-actions-workspace .spar-hand-cards .spar-playing-card{max-width:49px}
+  .spar-match .spar-control-panel{max-height:40dvh}
+  .spar-match .spar-table-seat small{font-size:.5rem}
+}

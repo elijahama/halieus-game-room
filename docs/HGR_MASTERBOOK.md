@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 shared card-room portrait standard — 25 November 2026
+
+Owner explicitly selected Poker as the presentation reference for all card games (Spar, WHOT, Blackjack and later variants). This is a layout contract, NOT a shared game-rule engine: persistent public table; compact seat metadata; one Actions/Players/Chat workspace; private cards never visible to spectators; desktop landscape table beside dock; phone/tablet portrait table above bounded dock; safe-area insets; no whole-room horizontal scrolling or hidden required actions. Only dock content scrolls when necessary, including a seven-card hand on very narrow screens; no automatic tab stealing. Preserve each game's identity, authoritative mechanics and existing fixes. Spar is the first opt-in using shared card-room layout classes. Do not migrate Poker, WHOT or Blackjack until actual React viewport acceptance passes; each migration gets its own regression. No live deployment in this batch.
+
 ## 4.8.5 Spar room refinement — 25 November 2026
 
 Owner requested Poker's existing layout as the reference, less simultaneous information and distinct Ranked Multiplayer / Ranked 1v1. Initial room batch keeps Spar emerald/gold felt, stone and trick rules and private state; compact seat markers inside table, persistent table, single Actions / Players / Chat workspace, spectator defaults Players and cannot open Actions. Current decision indicator remains visible even while viewing another tab. No Poker bets, chip rules or autopilot imported. Ranked split is a separate server-authoritative batch: existing 1v1 Elo/history preserved; multiplayer proposed 3–8 authenticated human seats with separate placement rating, fixed rules, no AI, consistent tie/forfeit semantics, independent history and replay verification. Do not publish until both batches and browser acceptance pass. No artwork change.
