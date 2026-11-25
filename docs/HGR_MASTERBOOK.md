@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 Mega Board mobile and spectator orientation audit — 25 November 2026
+
+Owner requested the same centre-first device-aware approach for Mega Board as Spar. Board remains square and primary, never scale the entire page or disclose participant-only controls to spectators. Keep approved desktop spectator portfolio expansion and active-player board/action logic. Touch tablet landscape and short phone landscape spectator sessions use a bounded square board beside an independently scrollable full roster; phone/tablet portrait retain board-first vertical flow. Use representative CSS viewports for Galaxy S23, Tab S7+, standard/newer/large iPhones, iPad, iPad Air and iPad Pro, testing both rotations. Add a full-current-stylesheet spectator geometry fixture and extend real active-player integration rotation coverage (Properties, Trade, chat, roster, fullscreen, dice). Existing regression gates remain; fixture geometry is not physical-device acceptance. Separate draft batch, no production changes until validated and integrated.
+
 ## 4.8.4 short desktop Control launcher containment — 25 November 2026
 
 Official main release identity run 45516439220 passed Windows smoke and failed only final browser gate 14/14 Control branding after desktop 1440×900 passed, at short 1280×600 viewport. Preserve canonical approved artwork and static launcher. Compact the fixed desktop rail below 721px height, allow only navigation subsection overflow if needed, retain full-size Control icon and all nav items, leave mobile/tablet unchanged. Strengthen existing containment assertion with diagnostic coordinates and top boundary; do not bypass release checks. Fresh PR CI and main packaging required; production remains unchanged.
