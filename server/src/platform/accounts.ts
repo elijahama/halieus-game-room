@@ -135,6 +135,7 @@ interface AccountAdminRuntimeControls {
   getRoomCount: () => number;
   getLiveRooms: () => HalieusLiveRoomSummary[];
   closeAllRooms: (actor: HalieusAccountSummary) => Promise<{ closed: number }>;
+  closeSparRoom?: (actor: HalieusAccountSummary, code: string, createdAt: number) => Promise<boolean>;
 }
 
 let adminRuntimeControls: AccountAdminRuntimeControls | null = null;
@@ -1652,6 +1653,34 @@ export function registerAccountRoutes(app: Express): void {
   app.get("/admin/rooms/status", (request, response) => {
     if (!requireAdmin(request, response)) return;
     response.json({ ok: true, activeRooms: adminRuntimeControls?.getRoomCount() ?? 0 });
+  });
+
+  app.post("/admin/rooms/close-spar", async (request, response) => {
+    const actor = requireOwner(request, response); if (!actor) return;
+    const origin = request.get("origin");
+    let sameOrigin = false;
+    try { sameOrigin = !!origin && new URL(origin).host === request.get("host"); } catch { /* reject */ }
+    if (!sameOrigin || !request.is("application/json") || request.body?.confirmation !== "CLOSE SPAR ROOM") {
+      response.status(403).json({ ok: false, reason: "Same-origin confirmed room closure is required." }); return;
+    }
+    const { code, createdAt } = request.body;
+    if (typeof code !== "string" || !/^[A-Z0-9]{1,6}$/.test(code) || !Number.isSafeInteger(createdAt)) {
+      response.status(400).json({ ok: false, reason: "Invalid room identity." }); return;
+    }
+    if (!adminRuntimeControls?.closeSparRoom) {
+      response.status(503).json({ ok: false, reason: "Room controls are not ready." }); return;
+    }
+    try {
+      if (!await adminRuntimeControls.closeSparRoom(publicAccount(actor), code, createdAt)) {
+        response.status(409).json({ ok: false, reason: "Room is unavailable, changed, or protected Ranked play." }); return;
+      }
+      addAudit(actor.id, "rooms.close-one", "system", null, `${actor.displayName} closed Spar room ${code}.`);
+      await saveStore();
+      response.json({ ok: true, closed: 1, code, createdAt });
+    } catch (error) {
+      console.error("Spar room closure persistence failed:", error);
+      response.status(500).json({ ok: false, reason: "Closure or audit persistence could not be confirmed. Refresh the live room list before retrying." });
+    }
   });
 
   app.post("/admin/rooms/close-all", async (request, response) => {
