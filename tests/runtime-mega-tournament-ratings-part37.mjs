@@ -67,7 +67,7 @@ try {
   const downloaded = serializeHgrReplay(archive);
   assert.deepEqual(JSON.parse(downloaded).tournament.boardMatchId, firstRecord.boardMatchId);
   assert.match(replayAsPlainText(archive), /Alice rolls/);
-  assert.deepEqual(REPLAY_GAME_IDS, ["mega-board", "poker", "blackjack", "whot", "ludo", "hidden-dictator", "connect-four", "word-game", "password", "anagrams-race", "cheat", "dominoes", "ayo", "word-board"]);
+  assert.deepEqual(REPLAY_GAME_IDS, ["mega-board", "poker", "blackjack", "whot", "ludo", "hidden-dictator", "connect-four", "word-game", "password", "anagrams-race", "cheat", "dominoes", "ayo", "word-board", "spar"]);
   assert(!downloaded.includes("TOP-SECRET") && !downloaded.includes("never export") &&
     !downloaded.includes("must-not-leak"));
   assert(!downloaded.includes('"p1"') && !downloaded.includes('"p2"'),
