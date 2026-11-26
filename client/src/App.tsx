@@ -426,6 +426,7 @@ export default function App() {
   const [isUpdatingAutopilot, setIsUpdatingAutopilot] =
     useState(false);
   const [isUpdatingTurnTimer, setIsUpdatingTurnTimer] = useState(false);
+  const [isUpdatingMatchMode, setIsUpdatingMatchMode] = useState(false);
   const [tradeDraft, setTradeDraft] = useState<TradeDraft>(() => emptyTradeDraft());
   const [counterOfferTradeId, setCounterOfferTradeId] = useState<string | null>(null);
   const [liveTradePreview, setLiveTradePreview] = useState<LiveTradePreview | null>(null);
@@ -438,6 +439,8 @@ export default function App() {
   const [megaBoardParked, setMegaBoardParked] = useState(false);
   const currentMegaRoomCode = useRef<string | null>(null);
   currentMegaRoomCode.current = lobby?.code ?? gameState?.roomCode ?? null;
+  const currentMegaRoomParked = useRef(megaBoardParked);
+  currentMegaRoomParked.current = megaBoardParked;
 
   // Keep browser metadata aligned with the active game while the root portal remains branded as Halieus Game Room.
   useEffect(() => {
@@ -876,6 +879,9 @@ export default function App() {
             playerId: response.playerId,
             players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      createdAt: response.room.createdAt,
+      matchModeLocked: response.room.matchModeLocked,
+      ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
             hostDisconnectDeadline: response.room.hostDisconnectDeadline,
             freeParkingJackpotEnabled: response.room.freeParkingJackpotEnabled,
@@ -1095,13 +1101,20 @@ export default function App() {
           ...currentLobby,
           players: room.players,
           turnTimerSeconds: room.turnTimerSeconds,
+          createdAt: room.createdAt,
+          matchModeLocked: room.matchModeLocked,
+          ranked: room.ranked,
+          blitz: room.blitz,
+          freeParkingJackpotEnabled: room.freeParkingJackpotEnabled,
           boardStyle: room.boardStyle,
           hostDisconnectDeadline:
             room.hostDisconnectDeadline,
         };
       });
-      setRanked(room.ranked);
-      setBlitz(room.blitz);
+      if (!currentMegaRoomParked.current && currentMegaRoomCode.current === room.code) {
+        setRanked(room.ranked);
+        setBlitz(room.blitz);
+      }
     }
 
     function handleGameStarted(room: GameRoom) {
@@ -1112,8 +1125,10 @@ export default function App() {
 
     function handleGameState(payload: { state: GameState }) {
       setGameState(payload.state);
-      setRanked(payload.state.ranked);
-      setBlitz(payload.state.blitz);
+      if (!currentMegaRoomParked.current) {
+        setRanked(payload.state.ranked);
+        setBlitz(payload.state.blitz);
+      }
       setGameStarted(true);
       setIsResolvingPurchase(false);
       setIsBuilding(false);
@@ -1401,6 +1416,9 @@ export default function App() {
       playerId: response.playerId,
       players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      createdAt: response.room.createdAt,
+      matchModeLocked: response.room.matchModeLocked,
+      ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
       hostDisconnectDeadline:
         response.room.hostDisconnectDeadline,
@@ -1502,6 +1520,8 @@ export default function App() {
     // Returning from the Game Room does not need a reconnect when this socket
     // still owns the live seat; simply reveal the already-authoritative state.
     if (session && megaBoardParked && lobby?.code === session.code) {
+      setRanked(gameState?.ranked ?? lobby.ranked ?? ranked);
+      setBlitz(gameState?.blitz ?? lobby.blitz ?? blitz);
       setMegaBoardParked(false);
       setSelectedGame("mega-board");
       updateBrowserPath(`/game/${session.code}`);
@@ -1593,6 +1613,9 @@ function handleSpectateGame() {
         playerId: response.playerId,
         players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      createdAt: response.room.createdAt,
+      matchModeLocked: response.room.matchModeLocked,
+      ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
         hostDisconnectDeadline: response.room.hostDisconnectDeadline,
         blitz: response.room.blitz,
@@ -1697,6 +1720,9 @@ function handleLeaveSpectator() {
           playerId: response.playerId,
           players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      createdAt: response.room.createdAt,
+      matchModeLocked: response.room.matchModeLocked,
+      ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
           hostDisconnectDeadline:
             response.room.hostDisconnectDeadline,
@@ -1774,6 +1800,9 @@ function handleLeaveSpectator() {
           playerId: response.playerId,
           players: response.room.players,
       turnTimerSeconds: response.room.turnTimerSeconds,
+      createdAt: response.room.createdAt,
+      matchModeLocked: response.room.matchModeLocked,
+      ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
           hostDisconnectDeadline:
             response.room.hostDisconnectDeadline,
@@ -4196,8 +4225,8 @@ function handleLeaveSpectator() {
         <LobbyScreen
           lobby={lobby}
           connectionStatus={connectionStatus}
-          ranked={ranked}
-          blitz={blitz}
+          ranked={lobby.ranked ?? ranked}
+          blitz={lobby.blitz ?? blitz}
           message={message}
           darkMode={darkMode}
           theme={theme}
@@ -4230,8 +4259,23 @@ function handleLeaveSpectator() {
           onTurnTimerChange={handleTurnTimerChange}
           isUpdatingTurnTimer={isUpdatingTurnTimer}
           betaMode={betaMode}
+          isUpdatingMatchMode={isUpdatingMatchMode}
+          onMatchModeChange={(mode) => {
+            if (!socket.connected || !lobby.createdAt || isUpdatingMatchMode) return;
+            const code = lobby.code;
+            setIsUpdatingMatchMode(true);
+            socket.timeout(5000).emit("game:set-match-mode", { code, createdAt: lobby.createdAt, mode }, (error: Error | null, response?: GameResponse) => {
+              setIsUpdatingMatchMode(false);
+              if (currentMegaRoomCode.current !== code) return;
+              if (error || !response?.ok || !response.room) { setMessage(response?.reason ?? "Match mode change was not confirmed. Try again."); return; }
+              setRanked(response.room.ranked);
+              setBlitz(response.room.blitz);
+              setLobby(current => current?.code === code ? { ...current, ranked: response.room!.ranked, blitz: response.room!.blitz, freeParkingJackpotEnabled: response.room!.freeParkingJackpotEnabled, matchModeLocked: response.room!.matchModeLocked } : current);
+              setMessage("Match mode updated.");
+            });
+          }}
+          roomActivity={<RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" embedded defaultOpen={false} spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} />}
         />
-        <RoomChatPanel game="mega-board" code={lobby.code} accent="var(--hgr-brand)" spectatorCount={spectators.length} spectatorNames={spectators.map((spectator) => spectator.name)} gameLog={(gameState?.activityLog ?? []).map((entry) => ({ id: entry.id, at: entry.at, label: entry.message }))} />
       </>
     );
   }

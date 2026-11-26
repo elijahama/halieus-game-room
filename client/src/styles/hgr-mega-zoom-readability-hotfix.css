@@ -149,3 +149,64 @@
     font-size: clamp(13px, 4vw, 22px);
   }
 }
+
+/* Portrait-only follow-up: preserve the approved board-first scroll and full
+   portfolio disclosure. Match the stronger participant selector so the gallery
+   wins over legacy auto-fit (235px) and single-list overrides. */
+@media (max-width: 1180px) and (orientation: portrait) {
+  .mega-live-page.mega-mobile-participant-mode .mega-mobile-participant-layout .mega-mobile-participant-player-rail .player-rail-list,
+  .mega-live-page.mega-spectator-mode .mega-spectator-layout .mega-spectator-player-rail .player-rail-list {
+    display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    grid-auto-rows:auto !important; align-items:start !important; gap:7px !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-rail-card {
+    min-width:0 !important; min-height:0 !important; height:auto !important; align-self:start;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-rail-main-row {
+    display:grid !important; grid-template-columns:auto minmax(0,1fr) auto !important;
+    align-items:start !important; gap:4px !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-rail-copy {
+    min-width:0 !important; width:auto !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) :is(.player-rail-copy strong,.player-rail-copy small,.player-rail-location,.player-property-chip-name,.player-property-group-heading strong,.player-property-group-set,.player-held-cards span) {
+    white-space:normal !important; word-break:normal !important;
+    overflow-wrap:break-word !important; min-width:0 !important; max-width:100%;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-group-heading {
+    flex-wrap:wrap !important; gap:3px !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-rail-stats {
+    display:flex !important; flex-direction:column !important; align-items:flex-start !important; min-width:0 !important;
+  }
+  /* Deal sheet must be sized against the viewport, not the zero-width
+     sidebar placeholder. Keep header/close reachable, scroll the body only. */
+  .mega-live-page.mega-mobile-participant-mode .right-game-stack .turn-actions-popup-layer.is-trade {
+    position:fixed !important; inset:0 !important; width:100% !important;
+    height:100dvh !important; max-height:100dvh !important;
+    box-sizing:border-box !important; display:flex !important; align-items:center !important;
+    justify-content:center !important; padding: max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)) !important;
+    overflow:hidden !important; background:rgba(0,0,0,.30); pointer-events:auto !important;
+  }
+  .mega-live-page.mega-mobile-participant-mode .right-game-stack .turn-actions-popup-layer.is-trade .turn-actions-popup {
+    position:relative !important; inset:auto !important; display:flex !important;
+    flex-direction:column !important; width:min(100%,680px) !important; min-width:0 !important;
+    height:auto !important; max-height:100% !important; max-width:100% !important; margin:0 !important;
+    padding:12px !important; box-sizing:border-box !important; border-radius:16px !important;
+    overflow:hidden !important; pointer-events:auto !important;
+  }
+  .mega-live-page.mega-mobile-participant-mode .right-game-stack .turn-actions-popup-layer.is-trade .turn-actions-popup-header {
+    flex:0 0 auto !important; position:static !important; margin:0 !important; padding:0 0 8px !important;
+    min-width:0 !important;
+  }
+  .mega-live-page.mega-mobile-participant-mode .right-game-stack .turn-actions-popup-layer.is-trade .turn-actions-popup-scroll.has-detail {
+    flex:1 1 auto !important; min-height:0 !important; max-height:none !important;
+    min-width:0 !important; overflow-y:auto !important; overflow-x:hidden !important; overscroll-behavior:contain;
+  }
+  .mega-live-page .turn-actions-popup-layer.is-trade :is(.mega-trade-panel,.sidebar-tab-panel,.mega-trade-offer-grid,.mega-trade-party-editor,.mega-trade-cash-field,.mega-trade-section,.mega-trade-recipient-grid) {
+    min-width:0 !important; max-width:100% !important; box-sizing:border-box;
+  }
+  .mega-live-page .turn-actions-popup-layer.is-trade :is(.mega-trade-card-heading h3,.mega-trade-card-heading p,.mega-trade-asset-name,.mega-trade-recipient-copy strong,.mega-trade-summary-card,.mega-trade-submit small) {
+    white-space:normal !important; word-break:normal !important; overflow-wrap:break-word !important;
+  }
+}

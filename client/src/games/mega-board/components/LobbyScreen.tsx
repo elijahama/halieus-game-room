@@ -1,6 +1,6 @@
 import { SKIN_CATALOG, DEFAULT_SKIN_PREFERENCES } from "../../../../../shared/platform/skins";
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import type { AiDifficulty } from "../../../../../shared/games/mega-board/game-state";
 import type { LobbyState } from "../types/lobby";
@@ -40,6 +40,9 @@ interface LobbyScreenProps {
   onRemoveAi: (playerId: string) => void;
   onTurnTimerChange: (seconds: number) => void;
   isUpdatingTurnTimer: boolean;
+  isUpdatingMatchMode?: boolean;
+  onMatchModeChange?: (mode: "casual" | "ranked" | "blitz") => void;
+  roomActivity?: ReactNode;
   betaMode?: boolean;
   onBoardStyleChange?: (style: string) => Promise<void>;
 }
@@ -59,6 +62,9 @@ export function LobbyScreen({
   onRemoveAi,
   onTurnTimerChange,
   isUpdatingTurnTimer,
+  isUpdatingMatchMode = false,
+  onMatchModeChange,
+  roomActivity,
   betaMode = false,
   onBoardStyleChange,
 }: LobbyScreenProps) {
@@ -79,6 +85,9 @@ export function LobbyScreen({
   const roomIsFull = activePlayers.length >= 8;
   const host = activePlayers.find((player) => player.isHost);
   const turnTimerSeconds = lobby.turnTimerSeconds ?? (blitz ? 150 : 45);
+  const matchMode = blitz ? "blitz" : ranked ? "ranked" : "casual";
+  const hasAi = activePlayers.some(player => player.isAi);
+  const canChangeMode = isHost && !betaMode && lobby.matchModeLocked === false && !!lobby.createdAt && !!onMatchModeChange;
 
   return (
     <main
@@ -129,7 +138,14 @@ export function LobbyScreen({
 
           <dl className="poker-settings-summary">
             <div><dt>Room code</dt><dd>{lobby.code}</dd></div>
-            <div><dt>Match</dt><dd>{blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual"}</dd></div>
+            <div className="mega-poker-mode-setting"><dt>Match</dt><dd>{canChangeMode ? (
+              <select aria-label="Match mode" value={matchMode} disabled={isUpdatingMatchMode || connectionStatus !== "Connected"} onChange={event => onMatchModeChange?.(event.target.value as "casual" | "ranked" | "blitz")}>
+                <option value="casual">Casual</option><option value="ranked" disabled={hasAi}>Ranked</option><option value="blitz">Blitz</option>
+              </select>
+            ) : (blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual")}</dd>
+              {canChangeMode && hasAi && <small className="mega-mode-note">Remove AI seats for Ranked.</small>}
+              {isHost && !canChangeMode && (betaMode || lobby.matchModeLocked) && <small className="mega-mode-note">Mode locked for this room.</small>}
+            </div>
             <div><dt>Players</dt><dd>{activePlayers.length} / 8</dd></div>
             <div className="mega-poker-timer-setting">
               <dt>Turn timer</dt>
@@ -180,6 +196,7 @@ export function LobbyScreen({
           </section>
 
           <RecoveryKeyPanel recoveryKey={recoveryKey} />
+          {roomActivity && <div className="mega-lobby-activity">{roomActivity}</div>}
 
           {lobby.hostDisconnectDeadline && (
             <div className="host-warning">
@@ -213,7 +230,7 @@ export function LobbyScreen({
               <button
                 type="button"
                 className="button-primary"
-                disabled={activePlayers.length < 2}
+                disabled={activePlayers.length < 2 || isUpdatingMatchMode}
                 onClick={onStartGame}
               >
                 Start game

@@ -62,6 +62,30 @@ export function registerLobbyHandlers(
   socket: Socket,
   loadCosmetics = roomCosmeticState,
 ): void {
+  socket.on("game:set-match-mode", (payload: { code: string; createdAt: number; mode: string }, acknowledge: (response: GameResponse) => void) => {
+    if (typeof acknowledge !== "function") return;
+    const room = typeof payload?.code === "string" ? rooms.get(payload.code.trim().toUpperCase()) : undefined;
+    if (!room || room.createdAt !== payload?.createdAt || room.started || room.hostId !== socket.id ||
+        !room.players.some(player => player.id === socket.id && player.isHost && player.isConnected && !player.hasLeft)) {
+      acknowledge({ ok: false, reason: "Only the current host can change the mode of this waiting room." }); return;
+    }
+    if (room.betaTournamentTest || socket.data?.betaMode === true || getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)) {
+      acknowledge({ ok: false, reason: "Beta practice and tournament match modes are locked." }); return;
+    }
+    if (payload.mode !== "casual" && payload.mode !== "ranked" && payload.mode !== "blitz") {
+      acknowledge({ ok: false, reason: "Choose Casual, Ranked or Blitz." }); return;
+    }
+    if (payload.mode === "ranked" && room.players.some(player => player.isAi && !player.hasLeft)) {
+      acknowledge({ ok: false, reason: "Remove all AI seats before choosing Ranked." }); return;
+    }
+    room.ranked = payload.mode === "ranked";
+    room.blitz = payload.mode === "blitz";
+    if (room.ranked) room.freeParkingJackpotEnabled = false;
+    room.updatedAt = Date.now();
+    queueRoomSave();
+    emitLobby(io, room.code);
+    acknowledge({ ok: true, room: toPublicGameRoom(room) });
+  });
   socket.on("game:set-board-style", async (payload: { code: string; style: string }, acknowledge: (response: GameResponse) => void) => {
     if (typeof acknowledge !== "function") return;
     if (typeof payload?.code !== "string" || typeof payload?.style !== "string") { acknowledge({ ok: false, reason: "A room and board style are required." }); return; }

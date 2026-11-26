@@ -40,6 +40,8 @@ export interface GameRoom {
 
 export interface PublicGameRoom {
   code: string;
+  createdAt?: number;
+  matchModeLocked?: boolean;
   ranked: boolean;
   blitz: boolean;
   betaTournamentTest?: boolean;
