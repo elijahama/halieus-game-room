@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.5 release candidate preparation — 26 November 2026
+
+The candidate includes tournament safeguards, Spar rule and clock corrections, Control release notifications, fifteen-game individual closure, exact-set bulk cancellation and offline recovery reconciliation. Commit ede8bdcc passed local typecheck, HTTP integration and all four tournament format tests. Advance VERSION to 4.8.5 in the isolated candidate and regenerate canonical release identity before built browser acceptance. Spar remains Beta. Independent CI for the final candidate, targeted recovery browser acceptance, physical-device push/PWA receipt and Oracle activation remain distinct gates. Never claim production deployment from source validation alone.
+
 ## 4.8.5 offline recovery reconciliation — 26 November 2026
 
 On socket connect, check up to fifteen locally saved recovery seats against authoritative room maps and exact credentials, without taking over seats, starting matches, disclosing credentials in responses or changing game state. Only a definitive missing result clears the matching local saved code/token; a changed local key, old server, timeout, disconnect or unknown response preserves it. Account-specific Ranked and tournament authorization remains part of actual recovery rather than this read-only presence probe. The socket check runs once per connection after server restoration. HTTP/socket regression covers a closed Mega Board, closed Spar, valid unrelated Poker, wrong recovery token, unknown game and no mutation of room listings. Device/browser acceptance and independent CI remain required. Bulk cancellation parity was locally validated and pushed at b077d19a; it is not an atomic cross-store transaction.
