@@ -14,10 +14,13 @@ $updateOutputLog = Join-Path $runtimeDir "hgr-control-update.out.log"
 $finalizerPath = Join-Path $PSScriptRoot "control-update-finalize.ps1"
 $finalizerStdout = Join-Path $runtimeDir "hgr-control-update-finalize.out.log"
 $finalizerStderr = Join-Path $runtimeDir "hgr-control-update-finalize.err.log"
+$taskTelemetry = $null
+. (Join-Path $PSScriptRoot "control-update-task-progress.ps1")
 
 function Write-HgrUpdateResult {
     param([Parameter(Mandatory = $true)][hashtable]$Value)
-    $json = $Value | ConvertTo-Json
+    if ($null -ne $script:taskTelemetry) { $Value.taskTelemetry = $script:taskTelemetry }
+    $json = $Value | ConvertTo-Json -Depth 8
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($resultPath, $json, $utf8)
 }
@@ -53,6 +56,12 @@ function Write-HgrUpdateCheckpoint {
 function Update-HgrProgressFromLine {
     param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Line)
     if ([string]::IsNullOrWhiteSpace($Line)) { return }
+    if ($null -ne $script:taskTelemetry) {
+        if (Update-HgrIsolatedTaskProgress -Telemetry $script:taskTelemetry -Line $Line) {
+            Write-HgrUpdateCheckpoint -Progress (Get-HgrIsolatedTaskPercent $script:taskTelemetry) -Phase (Get-HgrIsolatedTaskPhase $script:taskTelemetry)
+        }
+        return
+    }
     foreach ($marker in $progressMarkers) {
         if ($Line -notlike "*$($marker.Match)*") { continue }
         $nextProgress = [int]$marker.Progress
@@ -169,6 +178,11 @@ if ($useIsolatedMain) {
     }
 }
 
+if ($useIsolatedMain) {
+    $taskTelemetry = New-HgrIsolatedTaskProgress -OperationId $OperationId
+    $currentProgress = 0
+    $currentPhase = Get-HgrIsolatedTaskPhase $taskTelemetry
+}
 New-Item -ItemType Directory -Path $runtimeDir -Force | Out-Null
 $startedAt = [DateTimeOffset]::UtcNow.ToString("o")
 Write-HgrUpdateResult -Value @{
@@ -226,8 +240,12 @@ try {
             # the validated Oracle-only handoff explicitly in its owned receipt
             # and use a matching process-local flag. Never restart the original
             # owner's feature-checkout Control from the isolated website release.
-            $script:currentProgress = 97
+            $script:currentProgress = Get-HgrIsolatedTaskPercent $script:taskTelemetry
             $script:currentPhase = "Finalizing isolated website release"
+            $taskTelemetry.tasks[10].state = "running"
+            $taskTelemetry.tasks[10].startedAt = [DateTimeOffset]::UtcNow.ToString("o")
+            $taskTelemetry.sequence++
+            $taskTelemetry.observedAt = $taskTelemetry.tasks[10].startedAt
             Write-HgrUpdateResult -Value @{
                 state = "running"
                 startedAt = $startedAt
@@ -235,7 +253,7 @@ try {
                 exitCode = $null
                 reason = $null
                 operationId = $OperationId
-                progress = 97
+                progress = $script:currentProgress
                 phase = $script:currentPhase
                 handoff = "isolated-main"
             }
