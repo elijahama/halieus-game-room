@@ -18,10 +18,12 @@ try{
   const page=await browser.newPage({viewport});const errors=[];page.on("pageerror",e=>{errors.push(e.message);console.error(e.message);});
   try{
    await page.goto(url);await page.locator(".mega-poker-lobby-actions").waitFor();
-   const mode=page.getByRole("combobox",{name:"Match mode"});
-   assert.equal(await mode.inputValue(),"casual");assert.equal(await mode.locator('option[value="ranked"]').isDisabled(),true,"Ranked disabled while AI remain");
-   await mode.selectOption("blitz");assert.equal(await mode.inputValue(),"blitz");
-   await mode.selectOption("casual");assert.equal(await mode.inputValue(),"casual");
+   const mode=page.getByRole("group",{name:"Match mode",exact:true});
+   const casual=mode.getByRole("button",{name:/Casual/}),ranked=mode.getByRole("button",{name:/Ranked/}),blitz=mode.getByRole("button",{name:/Blitz/});
+   assert.equal(await casual.getAttribute("aria-pressed"),"true");assert.equal(await ranked.getAttribute("aria-disabled"),"true","Ranked locked while AI remain");
+   await ranked.focus();await page.keyboard.press("Enter");assert.match(await page.locator(".mega-mode-picker-feedback").innerText(),/Remove AI/);
+   await blitz.click();assert.equal(await blitz.getAttribute("aria-pressed"),"true");
+   await casual.click();assert.equal(await casual.getAttribute("aria-pressed"),"true");
    assert.equal(await page.locator(".mega-lobby-activity .room-chat-shell.is-embedded").count(),1);
    assert.equal(await page.locator(".room-chat-shell.is-floating").count(),0);
    const end=page.getByRole("button",{name:"End room",exact:true});await end.scrollIntoViewIfNeeded();
@@ -66,7 +68,7 @@ try{
    await page.getByRole("button",{name:"Open Trade",exact:true}).click();await page.getByRole("button",{name:"Close panel",exact:true}).click();
    await page.getByRole("button",{name:/Roll Dice/}).click(); assert.equal(await page.evaluate(()=>window.hgrRolled),true);
    await page.setViewportSize(viewport);
-   await page.goto(url+"?humans");await page.getByRole("combobox",{name:"Match mode"}).selectOption("ranked");assert.equal(await page.getByRole("combobox",{name:"Match mode"}).inputValue(),"ranked");
+   await page.goto(url+"?humans");const humanRanked=page.getByRole("group",{name:"Match mode",exact:true}).getByRole("button",{name:/Ranked/});await humanRanked.click();assert.equal(await humanRanked.getAttribute("aria-pressed"),"true");
    await page.goto(url+"?compact=participant");await page.locator(".mega-mobile-participant-player-rail .player-rail-list").waitFor();
    const gallery=await page.locator(".mega-mobile-participant-player-rail .player-rail-list").evaluate(el=>{const cards=[...el.children];return {columns:getComputedStyle(el).gridTemplateColumns.split(" ").length,first:cards[0].getBoundingClientRect().toJSON(),second:cards[1].getBoundingClientRect().toJSON(),width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}});
    assert.equal(gallery.columns,2,JSON.stringify(gallery));assert.ok(gallery.second.x>gallery.first.x&&Math.abs(gallery.second.top-gallery.first.top)<=2,"Portrait players side by side");assert.ok(gallery.scroll<=gallery.width+1,"No horizontal overflow");

@@ -12,7 +12,7 @@ export function toPublicGameRoom(
   return {
     code: room.code,
     createdAt: room.createdAt,
-    matchModeLocked: room.started || room.betaTournamentTest === true || Boolean(getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)),
+    matchModeLocked: room.started || Boolean(getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)),
     boardStyle: room.boardStyle ?? "classic-board",
     ranked: room.ranked,
     blitz: room.blitz,

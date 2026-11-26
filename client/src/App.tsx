@@ -397,6 +397,8 @@ export default function App() {
 
   const [ranked, setRanked] = useState(false);
   const [blitz, setBlitz] = useState(false);
+  // Setup intent is independent of saved/live room snapshots and invite previews.
+  const [megaCreateMode, setMegaCreateMode] = useState<"casual" | "ranked" | "blitz">("casual");
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [pokerLeaderboardOpen, setPokerLeaderboardOpen] = useState(false);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
@@ -551,8 +553,7 @@ export default function App() {
     sessionStorage.setItem("halieus-beta-test-mode", "1");
     window.dispatchEvent(new CustomEvent<boolean>("halieus-beta-mode", { detail: true }));
     setBetaMode(true);
-    setRanked(false);
-    setBlitz(false);
+    setMegaCreateMode("casual");
     setPlayerName(testName);
     setMessage("Beta Test Lab active. New rooms use an isolated test identity and do not count toward your account stats.");
   }
@@ -881,6 +882,7 @@ export default function App() {
       turnTimerSeconds: response.room.turnTimerSeconds,
       createdAt: response.room.createdAt,
       matchModeLocked: response.room.matchModeLocked,
+      betaTournamentTest: response.room.betaTournamentTest,
       ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
             hostDisconnectDeadline: response.room.hostDisconnectDeadline,
@@ -1103,6 +1105,7 @@ export default function App() {
           turnTimerSeconds: room.turnTimerSeconds,
           createdAt: room.createdAt,
           matchModeLocked: room.matchModeLocked,
+          betaTournamentTest: room.betaTournamentTest,
           ranked: room.ranked,
           blitz: room.blitz,
           freeParkingJackpotEnabled: room.freeParkingJackpotEnabled,
@@ -1418,6 +1421,7 @@ export default function App() {
       turnTimerSeconds: response.room.turnTimerSeconds,
       createdAt: response.room.createdAt,
       matchModeLocked: response.room.matchModeLocked,
+      betaTournamentTest: response.room.betaTournamentTest,
       ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
       hostDisconnectDeadline:
@@ -1615,6 +1619,7 @@ function handleSpectateGame() {
       turnTimerSeconds: response.room.turnTimerSeconds,
       createdAt: response.room.createdAt,
       matchModeLocked: response.room.matchModeLocked,
+      betaTournamentTest: response.room.betaTournamentTest,
       ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
         hostDisconnectDeadline: response.room.hostDisconnectDeadline,
@@ -1689,11 +1694,11 @@ function handleLeaveSpectator() {
       "game:create",
       {
         playerName: trimmedName,
-        ranked: betaMode ? false : ranked,
-        blitz: betaMode ? false : blitz,
+        ranked: !betaMode && megaCreateMode === "ranked",
+        blitz: megaCreateMode === "blitz",
         betaTournamentTest: betaMode && (authStatus?.account?.role === "owner" || authStatus?.account?.role === "admin"),
         code: trimmedCode,
-        freeParkingJackpotEnabled,
+        freeParkingJackpotEnabled: (betaMode || megaCreateMode !== "ranked") && freeParkingJackpotEnabled,
       },
       (error: Error | null, response?: GameResponse) => {
         setIsCreating(false);
@@ -1722,6 +1727,7 @@ function handleLeaveSpectator() {
       turnTimerSeconds: response.room.turnTimerSeconds,
       createdAt: response.room.createdAt,
       matchModeLocked: response.room.matchModeLocked,
+      betaTournamentTest: response.room.betaTournamentTest,
       ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
           hostDisconnectDeadline:
@@ -1802,6 +1808,7 @@ function handleLeaveSpectator() {
       turnTimerSeconds: response.room.turnTimerSeconds,
       createdAt: response.room.createdAt,
       matchModeLocked: response.room.matchModeLocked,
+      betaTournamentTest: response.room.betaTournamentTest,
       ranked: response.room.ranked,
       boardStyle: response.room.boardStyle,
           hostDisconnectDeadline:
@@ -4261,16 +4268,18 @@ function handleLeaveSpectator() {
           betaMode={betaMode}
           isUpdatingMatchMode={isUpdatingMatchMode}
           onMatchModeChange={(mode) => {
-            if (!socket.connected || !lobby.createdAt || isUpdatingMatchMode) return;
+            if (isUpdatingMatchMode) return;
+            if (!socket.connected || !lobby.createdAt) { setMessage("Reconnect to the room before changing match mode."); return; }
             const code = lobby.code;
+            const createdAt = lobby.createdAt;
             setIsUpdatingMatchMode(true);
             socket.timeout(5000).emit("game:set-match-mode", { code, createdAt: lobby.createdAt, mode }, (error: Error | null, response?: GameResponse) => {
               setIsUpdatingMatchMode(false);
               if (currentMegaRoomCode.current !== code) return;
-              if (error || !response?.ok || !response.room) { setMessage(response?.reason ?? "Match mode change was not confirmed. Try again."); return; }
+              if (error || !response?.ok || !response.room || response.room.createdAt !== createdAt) { setMessage(response?.reason ?? "Match mode change was not confirmed. Try again."); return; }
               setRanked(response.room.ranked);
               setBlitz(response.room.blitz);
-              setLobby(current => current?.code === code ? { ...current, ranked: response.room!.ranked, blitz: response.room!.blitz, freeParkingJackpotEnabled: response.room!.freeParkingJackpotEnabled, matchModeLocked: response.room!.matchModeLocked } : current);
+              setLobby(current => current?.code === code && current.createdAt === createdAt ? { ...current, ranked: response.room!.ranked, blitz: response.room!.blitz, freeParkingJackpotEnabled: response.room!.freeParkingJackpotEnabled, matchModeLocked: response.room!.matchModeLocked } : current);
               setMessage("Match mode updated.");
             });
           }}
@@ -4346,8 +4355,8 @@ function handleLeaveSpectator() {
       selectedGame={selectedGame}
       playerName={playerName}
       roomCode={roomCode}
-      ranked={ranked}
-      blitz={blitz}
+      ranked={!betaMode && megaCreateMode === "ranked"}
+      blitz={megaCreateMode === "blitz"}
       freeParkingJackpotEnabled={freeParkingJackpotEnabled}
       message={message}
       recoveryCode={recoveryCode}
@@ -4423,10 +4432,11 @@ function handleLeaveSpectator() {
       onOpenLeaderboard={handleOpenLeaderboard}
       onOpenPokerLeaderboard={() => setPokerLeaderboardOpen(true)}
       onMatchModeChange={(mode) => {
-        setRanked(mode === "ranked");
-        setBlitz(mode === "blitz");
+        if (betaMode && mode === "ranked") return;
+        setMegaCreateMode(mode);
         if (mode === "ranked") setFreeParkingJackpotEnabled(false);
       }}
+      onExitBetaMode={exitBetaTestMode}
       onFreeParkingJackpotChange={setFreeParkingJackpotEnabled}
       onCreateGame={handleCreateGame}
       onJoinGame={handleJoinGame}

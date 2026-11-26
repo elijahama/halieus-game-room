@@ -88,7 +88,9 @@ try{
   assert.equal(choose(owner,"blitz").room.blitz,true);
   assert.equal(choose(owner,"casual").room.blitz,false);
   ordinary.betaTournamentTest=true;
-  assert.equal(choose(owner,"ranked").ok,false,"Beta locked");
+  assert.equal(choose(owner,"ranked").ok,false,"Beta Ranked locked");
+  assert.equal(choose(owner,"blitz").room.blitz,true,"Beta Blitz available");
+  assert.equal(choose(owner,"casual").room.blitz,false,"Beta Casual available");
   ordinary.betaTournamentTest=false;
   ordinary.started=true;
   assert.equal(choose(owner,"ranked").ok,false,"Started room locked");

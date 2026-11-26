@@ -17,6 +17,7 @@ export interface GameRoom {
   code: string;
   createdAt?: number;
   matchModeLocked?: boolean;
+  betaTournamentTest?: boolean;
   ranked: boolean;
   blitz: boolean;
   hostId: string;
@@ -67,6 +68,7 @@ export interface LobbyState {
   ranked?: boolean;
   createdAt?: number;
   matchModeLocked?: boolean;
+  betaTournamentTest?: boolean;
   playerId: string;
   players: LobbyPlayer[];
   hostDisconnectDeadline: number | null;
