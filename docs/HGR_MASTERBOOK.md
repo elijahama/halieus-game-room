@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 release candidate — 26 November 2026
+
+Prepare 4.8.6 from individually validated Beta Mega Board mode selection, Control verified-release wake, isolated task receipts and authenticated task transport, high-scaling navigation and room setup/lobby, and Spar presentation/cadence commits. Include actual setup tests in the existing mobile integration CI gate and parse the new PowerShell task helper during canonical packaging. Version changes only on the isolated development branch; canonical main packaging, full Windows/Ubuntu PR validation and explicit deployment approval are separate. Outstanding: provision matching optional release wake secret on GitHub/Oracle; physical PWA notification receipt, owner scaling and Spar playtest; comparable historical ETA and finer regression unit progress, legacy updater integration, and all-game interactive mode audit. Do not describe these as complete. No production restart/deploy during candidate preparation.
+
 ## 4.8.6 Spar presentation and cadence — 26 November 2026
 
 Issue #282: preserve clockwise authoritative turn order and viewer-anchored stable seating. Public state projects the next seat only when another play remains within the current trick; never predict the next trick winner. Highlight current and next seats distinctly, expose direction in the match status, and label CPU turns. Compact played-card dimensions and hand-card maximums without changing the approved board/controls shell or available card choices. CPU presentation delay increased from 620ms to 1050ms as an initial tunable choice, independent of the existing 20-second decision deadline; guard stale CPU callbacks against closed/replaced rooms and all-human disconnect. Ranked, custom revoke, scoring, deck, spectator and competitive rules remain unchanged. Browser geometry and real handler regression required; actual device and pacing owner acceptance pending.
