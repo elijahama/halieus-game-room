@@ -7,6 +7,8 @@ const cases = [
   ["4.4.9", "4.0", false],
   ["4.5.0", "4.5", true],
   ["4.9.9", "4.5", false],
+  ["4.8.5a", "4.5", false],
+  ["4.5.0a", "4.5", false],
   ["5.0.0", "5.0", true],
   ["5.4.2", "5.0", false],
   ["5.5.0", "5.5", true],
@@ -16,6 +18,7 @@ const cases = [
 
 for (const [version, baseline, milestone] of cases) {
   const actual = sourceBaselineForVersion(version);
+  assert.equal(actual.version, version);
   assert.equal(actual.baseline, baseline, `${version} should use source baseline ${baseline}`);
   assert.equal(actual.milestone, milestone, `${version} milestone state mismatch`);
 }

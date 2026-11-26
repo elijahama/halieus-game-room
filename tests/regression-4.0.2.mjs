@@ -14,9 +14,9 @@ const json=(p)=>JSON.parse(read(p));
 
 // Historical 4.0.2 contract: later HGR 4.x releases must retain the true
 // device-width mobile rules without pinning the current version to 4.0.2.
-assert.match(read('VERSION').trim(),/^4\.\d+\.\d+$/,'4.x product version expected');
+assert.match(read('VERSION').trim(),/^4\.\d+\.\d+[a-z]?$/,'4.x product version expected');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.match(json(file).version,/^4\.\d+\.\d+$/,`${file} must remain on the HGR 4.x line`);
+  assert.match(json(file).version,/^4\.\d+\.\d+(?:-[a-z])?$/,`${file} must remain on the HGR 4.x line`);
 }
 
 const rootPackage=json('package.json');
@@ -49,7 +49,7 @@ assert.doesNotMatch(html,/width=980/,'HTML viewport must never request the old d
 // follows the current canonical Halieus mark without resurrecting retired assets.
 assert.match(
   html,
-  /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg\?v=4\.\d+\.\d+(?:-[^"]+)?"/,
+  /id="halieus-dynamic-favicon"[^>]+href="\/halieus-mark\.svg\?v=4\.\d+\.\d+[a-z]?(?:-[^"]+)?"/,
   '4.0.2 browser asset cache identity missing',
 );
 

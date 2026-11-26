@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 const read=(p)=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
 const json=(p)=>JSON.parse(read(p));
 const displayVersion=read('VERSION').trim();
-assert.match(displayVersion,/^(?:3\.7\.0[a-z]?|4\.\d+\.\d+)$/,'3.7.0 invariant should survive later HGR 4.x releases');
+assert.match(displayVersion,/^(?:3\.7\.0[a-z]?|4\.\d+\.\d+[a-z]?)$/,'3.7.0 invariant should survive later HGR 4.x releases');
 const npmVersion=displayVersion.replace(/^(\d+\.\d+\.\d+)([a-z])$/,'$1-$2');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) assert.equal(json(file).version,npmVersion,`${file} version mismatch`);
 for(const file of ['shared/games/ayo/types.ts','server/src/games/ayo/handlers.ts','client/src/games/ayo/AyoScreen.tsx','client/public/game-icons/ayo.svg','shared/games/word-board/types.ts','server/src/games/word-board/handlers.ts','client/src/games/word-board/WordBoardScreen.tsx','client/public/game-icons/word-board.svg','client/public/sw.js']) assert.ok(existsSync(new URL(`../${file}`,import.meta.url)),`${file} missing`);
