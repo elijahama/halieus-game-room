@@ -639,6 +639,11 @@ export async function closeSparRoom(io: Server, code: string, createdAt: number,
   return true;
 }
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasSparRecoverySeat(code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
 export function getSparBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
   return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,

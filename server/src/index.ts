@@ -36,17 +36,17 @@ import { registerMegaSavedGameHandlers } from "./games/mega-board/handlers/saved
 import { registerMegaSpaceHandlers } from "./games/mega-board/handlers/megaSpaceHandlers.js";
 import { registerOrderHandlers } from "./games/mega-board/handlers/orderHandlers.js";
 import { registerPurchaseHandlers } from "./games/mega-board/handlers/purchaseHandlers.js";
-import { closePokerRoom, getPokerBulkRoomState, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
-import { closeLudoRoom, getLudoBulkRoomState, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
-import { closeConnectFourRoom, getConnectFourBulkRoomState, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
-import { closeHiddenDictatorRoom, getHiddenDictatorBulkRoomState, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
-import { closeWordArenaRoom, getWordArenaBulkRoomState, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
-import { closeClassicRoom, getClassicBulkRoomState, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
-import { closeAyoRoom, getAyoBulkRoomState, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
-import { getSparBulkRoomState, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
-import { closeWordBoardRoom, getWordBoardBulkRoomState, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
-import { closeBlackjackRoom, getBlackjackBulkRoomState, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
-import { closeWhotRoom, getWhotBulkRoomState, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
+import { closePokerRoom, hasPokerRecoverySeat, getPokerBulkRoomState, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
+import { closeLudoRoom, hasLudoRecoverySeat, getLudoBulkRoomState, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
+import { closeConnectFourRoom, hasConnectFourRecoverySeat, getConnectFourBulkRoomState, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
+import { closeHiddenDictatorRoom, hasHiddenDictatorRecoverySeat, getHiddenDictatorBulkRoomState, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
+import { closeWordArenaRoom, hasWordArenaRecoverySeat, getWordArenaBulkRoomState, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
+import { closeClassicRoom, hasClassicRecoverySeat, getClassicBulkRoomState, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
+import { closeAyoRoom, hasAyoRecoverySeat, getAyoBulkRoomState, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
+import { hasSparRecoverySeat, getSparBulkRoomState, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
+import { closeWordBoardRoom, hasWordBoardRecoverySeat, getWordBoardBulkRoomState, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
+import { closeBlackjackRoom, hasBlackjackRecoverySeat, getBlackjackBulkRoomState, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
+import { closeWhotRoom, hasWhotRecoverySeat, getWhotBulkRoomState, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
 import { finalizeSession, getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
@@ -626,6 +626,39 @@ io.on(
   const clearProgressionIdentity = registerProgressionIdentity(socket.id, () => { const account = getAuthenticatedAccount(socket.request as Request); return account ? { accountId: account.id, beta: progressionBeta } : null; });
   socket.on("platform:progression-mode", (value: { beta?: boolean }) => { progressionBeta = value?.beta === true; socket.data.betaMode = progressionBeta; });
   socket.once("disconnect", clearProgressionIdentity);
+  // One bounded, read-only check per connection; credentials are never returned
+  // or logged and do not change any game state or account binding.
+  let recoveryChecked = false;
+  socket.on("platform:recovery-check", (entries: unknown, ack: (response: unknown) => void) => {
+    if (typeof ack !== "function") return;
+    if (recoveryChecked || !Array.isArray(entries) || entries.length > 15) { ack({ ok: false }); return; }
+    recoveryChecked = true;
+    const statuses = entries.map(entry => {
+      if (!entry || typeof entry.game !== "string" || typeof entry.code !== "string" ||
+          typeof entry.token !== "string" || !entry.token.trim() || entry.token.length > 128 ||
+          !/^[A-Z0-9]{1,12}$/.test(entry.code)) return "unknown";
+      const { game, code } = entry;
+      const token = entry.token.trim().toUpperCase();
+      let exists: boolean;
+      switch (game) {
+        case "mega-board": exists = !!rooms.get(code)?.players.some(p => !p.isAi && p.reconnectToken === entry.token.trim()); break;
+        case "poker": exists = hasPokerRecoverySeat(code, token); break;
+        case "blackjack": exists = hasBlackjackRecoverySeat(code, token); break;
+        case "whot": exists = hasWhotRecoverySeat(code, token); break;
+        case "ludo": exists = hasLudoRecoverySeat(code, token); break;
+        case "connect-four": exists = hasConnectFourRecoverySeat(code, token); break;
+        case "ayo": exists = hasAyoRecoverySeat(code, token); break;
+        case "spar": exists = hasSparRecoverySeat(code, token); break;
+        case "hidden-dictator": exists = hasHiddenDictatorRecoverySeat(code, token); break;
+        case "word-board": exists = hasWordBoardRecoverySeat(code, token); break;
+        case "cheat": case "dominoes": exists = hasClassicRecoverySeat(game, code, token); break;
+        case "word-game": case "password": case "anagrams-race": exists = hasWordArenaRecoverySeat(game, code, token); break;
+        default: return "unknown";
+      }
+      return exists ? "present" : "missing";
+    });
+    ack({ ok: true, statuses });
+  });
   console.log(
     `Player connected: ${socket.id}`,
   );

@@ -817,7 +817,45 @@ export default function App() {
   ]);
 
   useEffect(() => {
+    let recoveryCheckGeneration = 0;
+    function reconcileSavedRecoverySeats() {
+      const generation = ++recoveryCheckGeneration;
+      const socketId = socket.id;
+      const slots: Array<{ game: string; read: () => SavedSession | null; clear: () => void }> = [
+        { game: "mega-board", read: readSavedSession, clear: () => { clearSession(); setSavedSession(null); setRecoveryCode(""); } },
+        { game: "poker", read: readPokerSavedSession, clear: () => { clearPokerSession(); setPokerSavedSession(null); setPokerRecoveryCode(""); } },
+        { game: "blackjack", read: () => readCardSavedSession(BLACKJACK_SESSION_KEY), clear: () => { clearCardSession(BLACKJACK_SESSION_KEY); setBlackjackSavedSession(null); setBlackjackRecoveryCode(""); } },
+        { game: "whot", read: () => readCardSavedSession(WHOT_SESSION_KEY), clear: () => { clearCardSession(WHOT_SESSION_KEY); setWhotSavedSession(null); setWhotRecoveryCode(""); } },
+        { game: "ludo", read: () => readCardSavedSession(LUDO_SESSION_KEY), clear: () => { clearCardSession(LUDO_SESSION_KEY); setLudoSavedSession(null); setLudoRecoveryCode(""); } },
+        { game: "connect-four", read: () => readCardSavedSession(CONNECT_FOUR_SESSION_KEY), clear: () => { clearCardSession(CONNECT_FOUR_SESSION_KEY); setConnectFourSavedSession(null); setConnectFourRecoveryCode(""); } },
+        { game: "ayo", read: () => readCardSavedSession(AYO_SESSION_KEY), clear: () => { clearCardSession(AYO_SESSION_KEY); setAyoSavedSession(null); setAyoRecoveryCode(""); } },
+        { game: "spar", read: () => readCardSavedSession(SPAR_SESSION_KEY), clear: () => { clearCardSession(SPAR_SESSION_KEY); setSparSavedSession(null); setSparRecoveryCode(""); } },
+        { game: "word-board", read: () => readCardSavedSession(WORD_BOARD_SESSION_KEY), clear: () => { clearCardSession(WORD_BOARD_SESSION_KEY); setWordBoardSavedSession(null); setWordBoardRecoveryCode(""); } },
+        { game: "hidden-dictator", read: () => readCardSavedSession(HIDDEN_DICTATOR_SESSION_KEY), clear: () => { clearCardSession(HIDDEN_DICTATOR_SESSION_KEY); setHiddenDictatorSavedSession(null); setHiddenDictatorRecoveryCode(""); } },
+        ...CLASSIC_GAMES.map(game => ({ game, read: () => readCardSavedSession(CLASSIC_SESSION_KEYS[game]), clear: () => updateClassicSavedSession(game, null) })),
+        ...WORD_ARENA_GAMES.map(game => ({ game, read: () => readCardSavedSession(WORD_ARENA_SESSION_KEYS[game]), clear: () => updateWordArenaSavedSession(game, null) })),
+      ];
+      const pending = slots.flatMap(slot => {
+        const saved = slot.read();
+        return saved ? [{ slot, saved }] : [];
+      });
+      if (!pending.length) return;
+      socket.timeout(5000).emit("platform:recovery-check", pending.map(({ slot, saved }) => ({
+        game: slot.game, code: saved.code, token: saved.reconnectToken,
+      })), (error: Error | null, response?: { ok: boolean; statuses: string[] }) => {
+        // Unknown/old server, maintenance, timeout or obsolete connection: keep all saves.
+        if (error || generation !== recoveryCheckGeneration || !socket.connected || socket.id !== socketId ||
+            !response?.ok || !Array.isArray(response.statuses) || response.statuses.length !== pending.length) return;
+        pending.forEach(({ slot, saved }, index) => {
+          if (response.statuses[index] !== "missing") return;
+          const current = slot.read();
+          // A newly saved seat must survive a delayed response about an old key.
+          if (current?.code === saved.code && current.reconnectToken === saved.reconnectToken) slot.clear();
+        });
+      });
+    }
     function handleConnect() {
+      reconcileSavedRecoverySeats();
       const megaSpectatorCode = readMegaSpectatorCodeFromPath();
       if (megaSpectatorCode) {
         setSelectedGame("mega-board");
@@ -1043,6 +1081,7 @@ export default function App() {
     }
 
     function handleDisconnect() {
+      recoveryCheckGeneration++;
       setConnectionStatus("Disconnected");
     }
 
@@ -1298,6 +1337,7 @@ export default function App() {
     socket.connect();
 
     return () => {
+      recoveryCheckGeneration++;
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("lobby:updated", handleLobbyUpdated);

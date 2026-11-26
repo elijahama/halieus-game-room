@@ -53,6 +53,11 @@ export function registerAyoHandlers(io:Server,socket:Socket){
 export function getAyoLiveRoomSummaries():HalieusLiveRoomSummary[]{return [...rooms.values()].filter((room)=>room.phase!=="finished"&&(room.players.some((p)=>!p.isAi&&p.isConnected)||room.spectators.size>0)).map((room)=>({game:"ayo",gameTitle:"Ayo",code:room.code,phase:room.phase,matchMode:room.matchMode,started:room.phase!=="lobby",createdAt:room.createdAt,startedAt:room.startedAt,updatedAt:room.updatedAt,playerCount:room.players.length,maximumPlayers:2,humanPlayers:room.players.filter((p)=>!p.isAi&&p.isConnected).map((p)=>p.name),
     verifiedAccountIds: verifiedRoomAccountIds(room.players),aiCount:room.players.filter((p)=>p.isAi).length,spectatorCount:room.spectators.size,joinable:room.phase==="lobby"&&room.players.length<2,spectatable:true}));}
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasAyoRecoverySeat(code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
 export function getAyoBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
   return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,

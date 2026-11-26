@@ -355,6 +355,22 @@ try {
  const rankedInfo=(await request("/accounts/live-games",{cookie})).json.rooms.find(r=>r.game==="mega-board"&&r.code==="MEGARANK");
  assert.ok(rankedInfo);
  assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...boardBody,code:"MEGARANK",createdAt:rankedInfo.createdAt}})).status,409);
+ // Recovery validation on a fresh offline client does not reconnect or expose credentials.
+ const probe=await connect();
+ try {
+   const before=(await request("/accounts/live-games",{cookie})).json.rooms;
+   const checked=await emit(probe,"platform:recovery-check",[
+     {game:"mega-board",code:boardCode,token:board.reconnectToken},
+     {game:"poker",code:"OTHER1",token:otherTable.reconnectToken},
+     {game:"poker",code:"OTHER1",token:"NOT-THE-KEY"},
+     {game:"spar",code:"VACANT",token:vacantSpar.reconnectToken},
+     {game:"not-a-game",code:"OTHER1",token:"UNKNOWN"},
+   ]);
+   assert.deepEqual(checked,{ok:true,statuses:["missing","present","missing","missing","unknown"]});
+   const after=(await request("/accounts/live-games",{cookie})).json.rooms;
+   assert.deepEqual(after,before,"Recovery check must not mutate live rooms or transfer seats");
+   assert.equal((await emit(probe,"platform:recovery-check",[])).ok,false,"One check per connection");
+ } finally { probe.disconnect(); }
  guest.disconnect();
  console.log("PASS HGR 4.6.10 live local HTTP/Socket.io: owner-only auth, CSRF, typed confirmation, occupied room 409, 503 visitor page, Control continuity, owner socket bypass and reopening");
 } finally {

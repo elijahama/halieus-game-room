@@ -440,6 +440,11 @@ export function getClassicLiveRoomSummaries(): HalieusLiveRoomSummary[] {
   }));
 }
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasClassicRecoverySeat(game: ClassicGameId, code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.game === game && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
 export function getClassicBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
   return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,

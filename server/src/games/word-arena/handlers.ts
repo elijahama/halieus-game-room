@@ -302,6 +302,11 @@ export async function closeWordArenaRoom(io: Server, game: WordArenaGameId, code
   await finalizeSession(game, code, createdAt, "incomplete", archive(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
   return true;
 }
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasWordArenaRecoverySeat(game: WordArenaGameId, code: string, token: string): boolean {
+  const room = roomsByGame[game].get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
 export function getWordArenaBulkRoomState() {
   const open = Object.values(roomsByGame).flatMap(store => [...store.values()]).filter(room => room.phase !== "finished");
   return { count: open.length, protected: open.filter(protectedWordArenaRoom).length,

@@ -720,6 +720,11 @@ export function getPokerLiveRoomSummaries(): HalieusLiveRoomSummary[] {
 }
 
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasPokerRecoverySeat(code: string, token: string): boolean {
+  const room = pokerRooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
 export function getPokerBulkRoomState() {
   const open = [...pokerRooms.values()].filter(room => !room.started || room.hand.phase !== "finished");
   return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
