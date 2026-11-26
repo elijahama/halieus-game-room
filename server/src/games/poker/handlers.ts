@@ -719,6 +719,34 @@ export function getPokerLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     }));
 }
 
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasPokerRecoverySeat(code: string, token: string): boolean {
+  const room = pokerRooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
+export function getPokerBulkRoomState() {
+  const open = [...pokerRooms.values()].filter(room => !room.started || room.hand.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "poker", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
+}
+/** Cancel a single casual table without invoking its normal finish/scoring path. */
+export async function closePokerRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = pokerRooms.get(code);
+  if (!room || room.createdAt !== createdAt || (room.started && room.hand.phase === "finished") || room.matchMode === "ranked") return false;
+  const timer = aiTimers.get(code); if (timer) clearTimeout(timer); aiTimers.delete(code);
+  pokerRooms.delete(code);
+  clearNextHandTimer(code); clearRecoveryExpiry(code); globalFinishNoticeKeys.delete(code);
+  room.hand.phase = "finished"; room.hand.currentTurnPlayerId = null; room.hand.status = reason;
+  room.updatedAt = Date.now();
+  const payload = { game: "poker", code, createdAt, reason };
+  io.in(`poker:${code}`).socketsLeave(`poker:${code}`);
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession("poker", code, createdAt, "incomplete", { ...room, spectators: [...room.spectators.entries()] }, { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
+
 export function closeAllPokerRooms(): number {
   const count = pokerRooms.size;
   for (const timer of aiTimers.values()) clearTimeout(timer);

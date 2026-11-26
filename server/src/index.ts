@@ -9,7 +9,7 @@ import express, {
   type Request,
   type Response,
 } from "express";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { networkInterfaces } from "node:os";
@@ -36,18 +36,18 @@ import { registerMegaSavedGameHandlers } from "./games/mega-board/handlers/saved
 import { registerMegaSpaceHandlers } from "./games/mega-board/handlers/megaSpaceHandlers.js";
 import { registerOrderHandlers } from "./games/mega-board/handlers/orderHandlers.js";
 import { registerPurchaseHandlers } from "./games/mega-board/handlers/purchaseHandlers.js";
-import { closeAllPokerRooms, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
-import { closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
-import { closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
-import { closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
-import { closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
-import { closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
-import { closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
-import { closeAllSparRooms, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
-import { closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
-import { closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
-import { closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
-import { getSessionArchiveStatus } from "./platform/sessionArchive.js";
+import { closePokerRoom, hasPokerRecoverySeat, getPokerBulkRoomState, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
+import { closeLudoRoom, hasLudoRecoverySeat, getLudoBulkRoomState, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
+import { closeConnectFourRoom, hasConnectFourRecoverySeat, getConnectFourBulkRoomState, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
+import { closeHiddenDictatorRoom, hasHiddenDictatorRecoverySeat, getHiddenDictatorBulkRoomState, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
+import { closeWordArenaRoom, hasWordArenaRecoverySeat, getWordArenaBulkRoomState, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
+import { closeClassicRoom, hasClassicRecoverySeat, getClassicBulkRoomState, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
+import { closeAyoRoom, hasAyoRecoverySeat, getAyoBulkRoomState, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
+import { hasSparRecoverySeat, getSparBulkRoomState, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
+import { closeWordBoardRoom, hasWordBoardRecoverySeat, getWordBoardBulkRoomState, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
+import { closeBlackjackRoom, hasBlackjackRecoverySeat, getBlackjackBulkRoomState, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
+import { closeWhotRoom, hasWhotRecoverySeat, getWhotBulkRoomState, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
+import { finalizeSession, getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
 import { RELEASE_FINGERPRINT } from "../../shared/release.js";
@@ -58,6 +58,7 @@ import { loadGuildStore, registerGuildRoutes } from "./platform/guilds.js";
 import { configureSoloRoomResetCloser, loadSoloTournamentRegistration, reconcileSoloTournamentResets, registerSoloTournamentRegistrationRoutes } from "./platform/soloTournamentRegistration.js";
 import { loadFeedbackStore, registerFeedbackRoutes } from "./platform/feedback.js";
 import { initializePushNotifications, registerPushRoutes } from "./platform/pushNotifications.js";
+import { startControlReleaseAlerts } from "./platform/control-release-alerts.js";
 import { getPublicAccessState, loadPublicAccessState, onPublicAccessChanged, renderPublicClosedPage, configureMaintenanceRoomCount, enableMaintenanceScheduler, reconcileDuePublicMaintenance } from "./platform/publicAccess.js";
 import { registerRankedHandlers } from "./games/mega-board/handlers/rankedHandlers.js";
 import { registerSpeedDieHandlers } from "./games/mega-board/handlers/speedDieHandlers.js";
@@ -66,7 +67,9 @@ import { registerTradeHandlers } from "./games/mega-board/handlers/tradeHandlers
 import { registerTurnHandlers } from "./games/mega-board/handlers/turnHandlers.js";
 import { rooms } from "./games/mega-board/state/rooms.js";
 import { endRoom } from "./games/mega-board/utils/room-lifecycle.js";
-import { listSpectators } from "./games/mega-board/state/spectators.js";
+import { listSpectators, removeSpectator } from "./games/mega-board/state/spectators.js";
+import { getSoloTournamentBoundRoom } from "./platform/soloTournamentRegistration.js";
+import { getGuildFixtureBoundRoom } from "./platform/guildFixtures.js";
 import { syncAuctionTimer } from "./games/mega-board/utils/auction-timer.js";
 import { cancelHostGrace, restoreHostGraceTimers } from "./games/mega-board/utils/host-grace.js";
 import {
@@ -517,8 +520,59 @@ const getMegaBoardLiveRoomSummaries = () => [...rooms.values()]
 
 const authoritativeRoomCount = () => getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getSparRoomCount() + getWordBoardRoomCount();
 configureMaintenanceRoomCount(authoritativeRoomCount);
+const getBulkRoomState = () => {
+  const mega = [...rooms.values()];
+  const megaOpen = mega.filter(room => room.gameState?.phase !== "finished");
+  const megaProtected = mega.filter(room => (room.ranked && room.gameState?.phase !== "finished") ||
+    getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)).length;
+  const states = [ { count: megaOpen.length, protected: megaProtected,
+    rooms: megaOpen.map(room => ({ game: "mega-board", code: room.code, createdAt: room.createdAt, startedAt: room.gameState?.gameStartedAt ?? null })) },
+    getPokerBulkRoomState(), getLudoBulkRoomState(), getConnectFourBulkRoomState(), getHiddenDictatorBulkRoomState(), getWordArenaBulkRoomState(), getClassicBulkRoomState(), getAyoBulkRoomState(), getSparBulkRoomState(), getWordBoardBulkRoomState(), getBlackjackBulkRoomState(), getWhotBulkRoomState() ];
+  const targets = states.flatMap(state => state.rooms);
+  const snapshotId = createHash("sha256").update(JSON.stringify(targets.map(room => JSON.stringify([room.game, room.code, room.createdAt, room.startedAt])).sort())).digest("hex");
+  return { count: targets.length, protected: states.reduce((total, state) => total + state.protected, 0), snapshotId, targets };
+};
+const publicBulkRoomState = () => {
+  const { count, protected: protectedCount, snapshotId } = getBulkRoomState();
+  return { count, protected: protectedCount, snapshotId };
+};
+async function closeMegaBoardRoom(code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.gameState?.phase === "finished" ||
+      room.ranked || getSoloTournamentBoundRoom(code) || getGuildFixtureBoundRoom(code)) return false;
+  const spectators = listSpectators(code);
+  const recipients = new Set([...room.players.filter(p => !p.isAi && p.isConnected && !p.hasLeft).map(p => p.id), ...spectators.map(s => s.id)]);
+  cancelHostGrace(code);
+  // The guarded lifecycle clears the auction and removes the room. Suppress the
+  // legacy global Mega reset; only the cancelled board's recipients are notified.
+  if (!endRoom(io, code, reason, { ownerCancellation: true })) return false;
+  for (const spectator of spectators) removeSpectator(code, spectator.id);
+  for (const id of recipients) io.to(id).emit("platform:room-closed", { game: "mega-board", code, createdAt, reason });
+  // Preserve the unfinished board as evidence, never call normal victory or ranking paths.
+  await Promise.all([
+    flushRoomSaveStrict(),
+    finalizeSession("mega-board", code, createdAt, "incomplete", { ...room, spectators }, { winner: null, mode: room.blitz ? "blitz" : "casual", cancellation: "owner-closed" }),
+  ]);
+  return true;
+}
+function closeRoomByIdentity(game: string, code: string, createdAt: number, reason: string): Promise<boolean> {
+    if (game === "mega-board") return closeMegaBoardRoom(code, createdAt, reason);
+    if (game === "ludo") return closeLudoRoom(io, code, createdAt, reason);
+    if (game === "connect-four") return closeConnectFourRoom(io, code, createdAt, reason);
+    if (game === "poker") return closePokerRoom(io, code, createdAt, reason);
+    if (game === "blackjack") return closeBlackjackRoom(io, code, createdAt, reason);
+    if (game === "whot") return closeWhotRoom(io, code, createdAt, reason);
+    if (game === "ayo") return closeAyoRoom(io, code, createdAt, reason);
+    if (game === "hidden-dictator") return closeHiddenDictatorRoom(io, code, createdAt, reason);
+    if (game === "word-board") return closeWordBoardRoom(io, code, createdAt, reason);
+    if (game === "cheat" || game === "dominoes") return closeClassicRoom(io, game, code, createdAt, reason);
+    if (game === "word-game" || game === "password" || game === "anagrams-race") return closeWordArenaRoom(io, game, code, createdAt, reason);
+    if (game === "spar") return closeSparRoom(io, code, createdAt, reason);
+    return Promise.resolve(false);
+}
 configureAccountAdminRuntimeControls({
   getRoomCount: authoritativeRoomCount,
+  getBulkRoomState: publicBulkRoomState,
   getLiveRooms: () => [
     ...getMegaBoardLiveRoomSummaries(),
     ...getPokerLiveRoomSummaries(),
@@ -533,26 +587,28 @@ configureAccountAdminRuntimeControls({
     ...getSparLiveRoomSummaries(),
     ...getWordBoardLiveRoomSummaries(),
   ],
-  closeAllRooms: async (actor) => {
-    const closed = getMegaBoardLiveRoomCount() + getPokerRoomCount() + getBlackjackRoomCount() + getWhotRoomCount() + getLudoRoomCount() + getConnectFourRoomCount() + getHiddenDictatorRoomCount() + getWordArenaRoomCount() + getClassicRoomCount() + getAyoRoomCount() + getSparRoomCount() + getWordBoardRoomCount();
-    io.emit("platform:all-rooms-closed", {
-      reason: `${actor.displayName} closed all live rooms from Player Management.`,
-      at: Date.now(),
-    });
-    rooms.clear();
-    closeAllPokerRooms();
-    closeAllBlackjackRooms();
-    closeAllWhotRooms();
-    closeAllClassicRooms();
-    closeAllLudoRooms();
-    closeAllConnectFourRooms();
-    closeAllHiddenDictatorRooms();
-    closeAllWordArenaRooms();
-    closeAllAyoRooms();
-    closeAllSparRooms();
-    closeAllWordBoardRooms();
-    await flushRoomSave();
-    return { closed };
+  closeSparRoom: (actor, code, createdAt) => closeSparRoom(io, code, createdAt, `${actor.displayName} closed this Spar room from Control.`),
+  closeIndividualRoom: (actor, game, code, createdAt) =>
+    closeRoomByIdentity(game, code, createdAt, `${actor.displayName} closed this room from Control.`),
+  closeAllRooms: async (actor, expectedRooms, expectedSnapshotId) => {
+    const snapshot = getBulkRoomState();
+    if (snapshot.protected) return { closed: 0, reason: "Ranked, Daily Puzzle or unsettled tournament rooms are protected. No rooms were closed." };
+    if (expectedRooms !== undefined && (snapshot.count !== expectedRooms || snapshot.snapshotId !== expectedSnapshotId))
+      return { closed: 0, reason: "The confirmed room set changed. Refresh and confirm again." };
+    if (!snapshot.count) return { closed: 0 };
+    const reason = `${actor.displayName} closed all unfinished rooms.`;
+    // All adapters synchronously detach before their first await. Do not await
+    // inside this loop: no newly created room may enter the confirmed batch.
+    const operations = snapshot.targets.map(room => closeRoomByIdentity(room.game, room.code, room.createdAt, reason));
+    const results = await Promise.allSettled(operations);
+    if (results.some(result => result.status !== "fulfilled" || result.value !== true))
+      throw Error("At least one room cancellation or archive was not confirmed.");
+    // The old account panel expects a global notice. New Control uses scoped
+    // notices exclusively, retaining completed and unrelated local sessions.
+    if (expectedRooms === undefined && getBulkRoomState().count === 0) {
+      io.emit("platform:all-rooms-closed", { reason, at: Date.now() });
+    }
+    return { closed: snapshot.count };
   },
 });
 
@@ -570,6 +626,39 @@ io.on(
   const clearProgressionIdentity = registerProgressionIdentity(socket.id, () => { const account = getAuthenticatedAccount(socket.request as Request); return account ? { accountId: account.id, beta: progressionBeta } : null; });
   socket.on("platform:progression-mode", (value: { beta?: boolean }) => { progressionBeta = value?.beta === true; socket.data.betaMode = progressionBeta; });
   socket.once("disconnect", clearProgressionIdentity);
+  // One bounded, read-only check per connection; credentials are never returned
+  // or logged and do not change any game state or account binding.
+  let recoveryChecked = false;
+  socket.on("platform:recovery-check", (entries: unknown, ack: (response: unknown) => void) => {
+    if (typeof ack !== "function") return;
+    if (recoveryChecked || !Array.isArray(entries) || entries.length > 15) { ack({ ok: false }); return; }
+    recoveryChecked = true;
+    const statuses = entries.map(entry => {
+      if (!entry || typeof entry.game !== "string" || typeof entry.code !== "string" ||
+          typeof entry.token !== "string" || !entry.token.trim() || entry.token.length > 128 ||
+          !/^[A-Z0-9]{1,12}$/.test(entry.code)) return "unknown";
+      const { game, code } = entry;
+      const token = entry.token.trim().toUpperCase();
+      let exists: boolean;
+      switch (game) {
+        case "mega-board": exists = !!rooms.get(code)?.players.some(p => !p.isAi && p.reconnectToken === entry.token.trim()); break;
+        case "poker": exists = hasPokerRecoverySeat(code, token); break;
+        case "blackjack": exists = hasBlackjackRecoverySeat(code, token); break;
+        case "whot": exists = hasWhotRecoverySeat(code, token); break;
+        case "ludo": exists = hasLudoRecoverySeat(code, token); break;
+        case "connect-four": exists = hasConnectFourRecoverySeat(code, token); break;
+        case "ayo": exists = hasAyoRecoverySeat(code, token); break;
+        case "spar": exists = hasSparRecoverySeat(code, token); break;
+        case "hidden-dictator": exists = hasHiddenDictatorRecoverySeat(code, token); break;
+        case "word-board": exists = hasWordBoardRecoverySeat(code, token); break;
+        case "cheat": case "dominoes": exists = hasClassicRecoverySeat(game, code, token); break;
+        case "word-game": case "password": case "anagrams-race": exists = hasWordArenaRecoverySeat(game, code, token); break;
+        default: return "unknown";
+      }
+      return exists ? "present" : "missing";
+    });
+    ack({ ok: true, statuses });
+  });
   console.log(
     `Player connected: ${socket.id}`,
   );
@@ -650,7 +739,7 @@ if (soloTournamentEnabled) {
   await loadSoloTournamentRegistration();
 }
 await loadFeedbackStore();
-await initializePushNotifications();
+const pushAvailable = await initializePushNotifications();
 
 const recoveredRoomCount =
   await loadRoomsFromDisk({ strict: soloTournamentEnabled });
@@ -823,6 +912,7 @@ if (canServeClient) {
 }
 
 httpServer.listen(PORT, () => {
+  if (pushAvailable && process.env.SERVE_CLIENT === "true") startControlReleaseAlerts(id => {const account=getAccountSummaryById(id);return account?.role==="owner"||account?.role==="admin";});
   console.log(
     "🎮 Halieus Game Room Server",
   );

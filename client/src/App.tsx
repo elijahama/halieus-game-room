@@ -436,6 +436,8 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   // A parked Mega Board remains live/recoverable while the player browses the Halieus Game Room.
   const [megaBoardParked, setMegaBoardParked] = useState(false);
+  const currentMegaRoomCode = useRef<string | null>(null);
+  currentMegaRoomCode.current = lobby?.code ?? gameState?.roomCode ?? null;
 
   // Keep browser metadata aligned with the active game while the root portal remains branded as Halieus Game Room.
   useEffect(() => {
@@ -815,7 +817,45 @@ export default function App() {
   ]);
 
   useEffect(() => {
+    let recoveryCheckGeneration = 0;
+    function reconcileSavedRecoverySeats() {
+      const generation = ++recoveryCheckGeneration;
+      const socketId = socket.id;
+      const slots: Array<{ game: string; read: () => SavedSession | null; clear: () => void }> = [
+        { game: "mega-board", read: readSavedSession, clear: () => { clearSession(); setSavedSession(null); setRecoveryCode(""); } },
+        { game: "poker", read: readPokerSavedSession, clear: () => { clearPokerSession(); setPokerSavedSession(null); setPokerRecoveryCode(""); } },
+        { game: "blackjack", read: () => readCardSavedSession(BLACKJACK_SESSION_KEY), clear: () => { clearCardSession(BLACKJACK_SESSION_KEY); setBlackjackSavedSession(null); setBlackjackRecoveryCode(""); } },
+        { game: "whot", read: () => readCardSavedSession(WHOT_SESSION_KEY), clear: () => { clearCardSession(WHOT_SESSION_KEY); setWhotSavedSession(null); setWhotRecoveryCode(""); } },
+        { game: "ludo", read: () => readCardSavedSession(LUDO_SESSION_KEY), clear: () => { clearCardSession(LUDO_SESSION_KEY); setLudoSavedSession(null); setLudoRecoveryCode(""); } },
+        { game: "connect-four", read: () => readCardSavedSession(CONNECT_FOUR_SESSION_KEY), clear: () => { clearCardSession(CONNECT_FOUR_SESSION_KEY); setConnectFourSavedSession(null); setConnectFourRecoveryCode(""); } },
+        { game: "ayo", read: () => readCardSavedSession(AYO_SESSION_KEY), clear: () => { clearCardSession(AYO_SESSION_KEY); setAyoSavedSession(null); setAyoRecoveryCode(""); } },
+        { game: "spar", read: () => readCardSavedSession(SPAR_SESSION_KEY), clear: () => { clearCardSession(SPAR_SESSION_KEY); setSparSavedSession(null); setSparRecoveryCode(""); } },
+        { game: "word-board", read: () => readCardSavedSession(WORD_BOARD_SESSION_KEY), clear: () => { clearCardSession(WORD_BOARD_SESSION_KEY); setWordBoardSavedSession(null); setWordBoardRecoveryCode(""); } },
+        { game: "hidden-dictator", read: () => readCardSavedSession(HIDDEN_DICTATOR_SESSION_KEY), clear: () => { clearCardSession(HIDDEN_DICTATOR_SESSION_KEY); setHiddenDictatorSavedSession(null); setHiddenDictatorRecoveryCode(""); } },
+        ...CLASSIC_GAMES.map(game => ({ game, read: () => readCardSavedSession(CLASSIC_SESSION_KEYS[game]), clear: () => updateClassicSavedSession(game, null) })),
+        ...WORD_ARENA_GAMES.map(game => ({ game, read: () => readCardSavedSession(WORD_ARENA_SESSION_KEYS[game]), clear: () => updateWordArenaSavedSession(game, null) })),
+      ];
+      const pending = slots.flatMap(slot => {
+        const saved = slot.read();
+        return saved ? [{ slot, saved }] : [];
+      });
+      if (!pending.length) return;
+      socket.timeout(5000).emit("platform:recovery-check", pending.map(({ slot, saved }) => ({
+        game: slot.game, code: saved.code, token: saved.reconnectToken,
+      })), (error: Error | null, response?: { ok: boolean; statuses: string[] }) => {
+        // Unknown/old server, maintenance, timeout or obsolete connection: keep all saves.
+        if (error || generation !== recoveryCheckGeneration || !socket.connected || socket.id !== socketId ||
+            !response?.ok || !Array.isArray(response.statuses) || response.statuses.length !== pending.length) return;
+        pending.forEach(({ slot, saved }, index) => {
+          if (response.statuses[index] !== "missing") return;
+          const current = slot.read();
+          // A newly saved seat must survive a delayed response about an old key.
+          if (current?.code === saved.code && current.reconnectToken === saved.reconnectToken) slot.clear();
+        });
+      });
+    }
     function handleConnect() {
+      reconcileSavedRecoverySeats();
       const megaSpectatorCode = readMegaSpectatorCodeFromPath();
       if (megaSpectatorCode) {
         setSelectedGame("mega-board");
@@ -1041,6 +1081,7 @@ export default function App() {
     }
 
     function handleDisconnect() {
+      recoveryCheckGeneration++;
       setConnectionStatus("Disconnected");
     }
 
@@ -1171,6 +1212,91 @@ export default function App() {
     function handleWordArenaState(nextState: WordArenaPublicState) { setWordArenaState(nextState); setSelectedGame(nextState.game); setRoomCode(nextState.code); setMessage(""); if (nextState.phase === "finished") updateWordArenaSavedSession(nextState.game, null); }
     function handleClassicState(nextState: ClassicPublicState) { setClassicState(nextState); setClassicMatchModes((current) => ({ ...current, [nextState.game]: nextState.matchMode })); setSelectedGame(nextState.game); setRoomCode(nextState.code); setMessage(""); if (nextState.phase === "finished") updateClassicSavedSession(nextState.game, null); else if (nextState.viewerReconnectToken && nextState.viewerPlayerId) updateClassicSavedSession(nextState.game, { code: nextState.code, reconnectToken: nextState.viewerReconnectToken, playerName: nextState.players.find((player) => player.id === nextState.viewerPlayerId)?.name ?? "Player" }); }
     function handleLiveTradePreview(nextPreview: LiveTradePreview | null) { setLiveTradePreview(nextPreview); }
+    // A targeted cancellation must never reset the other games' recoverable seats.
+    function handleIndividualRoomClosed(payload: { game: string; code: string; createdAt: number; reason: string }) {
+      const game = payload.game;
+      const code = payload.code;
+      if (game === "mega-board") {
+        if (readSavedSession()?.code === code) {
+          clearSession(); setSavedSession(null); setRecoveryCode("");
+        }
+        const active = readGameCodeFromPath() === code || readMegaSpectatorCodeFromPath() === code;
+        if (currentMegaRoomCode.current === code || active) {
+          setLobby(null); setGameState(null); setGameStarted(false); setMegaBoardParked(false);
+          setLiveTradePreview(null); setSpectators([]); setIsSpectator(false); setGameMenuOpen(false);
+          if (active) {
+            setInviteCode(null); setInvitePreview(null); updateBrowserPath("/");
+            setRoomCode(generateRoomCode()); setMessage(payload.reason);
+          }
+        }
+        return;
+      }
+      if (game === "poker") {
+        if (readPokerSavedSession()?.code === code) {
+          clearPokerSession(); setPokerSavedSession(null); setPokerRecoveryCode("");
+        }
+        setPokerState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "blackjack") {
+        if (readCardSavedSession(BLACKJACK_SESSION_KEY)?.code === code) {
+          clearCardSession(BLACKJACK_SESSION_KEY); setBlackjackSavedSession(null); setBlackjackRecoveryCode("");
+        }
+        setBlackjackState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "whot") {
+        if (readCardSavedSession(WHOT_SESSION_KEY)?.code === code) {
+          clearCardSession(WHOT_SESSION_KEY); setWhotSavedSession(null); setWhotRecoveryCode("");
+        }
+        setWhotState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "spar") {
+        if (readCardSavedSession(SPAR_SESSION_KEY)?.code === code) {
+          clearCardSession(SPAR_SESSION_KEY); setSparSavedSession(null); setSparRecoveryCode("");
+        }
+        setSparState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "ayo") {
+        if (readCardSavedSession(AYO_SESSION_KEY)?.code === code) {
+          clearCardSession(AYO_SESSION_KEY); setAyoSavedSession(null); setAyoRecoveryCode("");
+        }
+        setAyoState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "hidden-dictator") {
+        if (readCardSavedSession(HIDDEN_DICTATOR_SESSION_KEY)?.code === code) {
+          clearCardSession(HIDDEN_DICTATOR_SESSION_KEY); setHiddenDictatorSavedSession(null); setHiddenDictatorRecoveryCode("");
+        }
+        setHiddenDictatorState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "word-board") {
+        if (readCardSavedSession(WORD_BOARD_SESSION_KEY)?.code === code) {
+          clearCardSession(WORD_BOARD_SESSION_KEY); setWordBoardSavedSession(null); setWordBoardRecoveryCode("");
+        }
+        setWordBoardState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "ludo") {
+        if (readCardSavedSession(LUDO_SESSION_KEY)?.code === code) {
+          clearCardSession(LUDO_SESSION_KEY); setLudoSavedSession(null); setLudoRecoveryCode("");
+        }
+        setLudoState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "connect-four") {
+        if (readCardSavedSession(CONNECT_FOUR_SESSION_KEY)?.code === code) {
+          clearCardSession(CONNECT_FOUR_SESSION_KEY); setConnectFourSavedSession(null); setConnectFourRecoveryCode("");
+        }
+        setConnectFourState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "cheat" || game === "dominoes") {
+        if (readCardSavedSession(CLASSIC_SESSION_KEYS[game])?.code === code) updateClassicSavedSession(game, null);
+        setClassicState(current => current?.game === game && current.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "word-game" || game === "password" || game === "anagrams-race") {
+        if (readCardSavedSession(WORD_ARENA_SESSION_KEYS[game])?.code === code) updateWordArenaSavedSession(game, null);
+        setWordArenaState(current => current?.game === game && current.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else return;
+      const classicRoute = readClassicRouteFromPath(), wordRoute = readWordArenaRouteFromPath();
+      const activeCode = game === "cheat" || game === "dominoes" ? (classicRoute?.game === game ? classicRoute.code : null) :
+        game === "word-game" || game === "password" || game === "anagrams-race" ? (wordRoute?.game === game ? wordRoute.code : null) :
+        game === "poker" ? readPokerCodeFromPath() :
+        game === "blackjack" ? readBlackjackCodeFromPath() : game === "whot" ? readWhotCodeFromPath() :
+        game === "spar" ? readSparCodeFromPath() :
+        game === "ayo" ? readAyoCodeFromPath() :
+        game === "hidden-dictator" ? readHiddenDictatorCodeFromPath() :
+        game === "word-board" ? readWordBoardCodeFromPath() :
+        game === "ludo" ? readLudoCodeFromPath() : readConnectFourCodeFromPath();
+      if (activeCode === code) {
+        updateBrowserPath("/"); setRoomCode(generateRoomCode()); setMessage(payload.reason);
+      }
+    }
     function handleAllRoomsClosed(payload?: { reason?: string }) {
       clearSession(); clearPokerSession(); clearCardSession(BLACKJACK_SESSION_KEY); clearCardSession(WHOT_SESSION_KEY); clearCardSession(LUDO_SESSION_KEY); clearCardSession(CONNECT_FOUR_SESSION_KEY); clearCardSession(AYO_SESSION_KEY); clearCardSession(SPAR_SESSION_KEY); clearCardSession(WORD_BOARD_SESSION_KEY); clearCardSession(HIDDEN_DICTATOR_SESSION_KEY); WORD_ARENA_GAMES.forEach((game) => clearCardSession(WORD_ARENA_SESSION_KEYS[game])); CLASSIC_GAMES.forEach((game) => clearCardSession(CLASSIC_SESSION_KEYS[game]));
       setSavedSession(null); setPokerSavedSession(null); setBlackjackSavedSession(null); setWhotSavedSession(null); setLudoSavedSession(null); setConnectFourSavedSession(null); setAyoSavedSession(null); setSparSavedSession(null); setWordBoardSavedSession(null); setHiddenDictatorSavedSession(null); setWordArenaSavedSessions({ "word-game": null, password: null, "anagrams-race": null }); setClassicSavedSessions({ cheat: null, dominoes: null });
@@ -1206,10 +1332,12 @@ export default function App() {
       "game:session-replaced",
       handleSessionReplaced,
     );
+    socket.on("platform:room-closed", handleIndividualRoomClosed);
     socket.on("platform:all-rooms-closed", handleAllRoomsClosed);
     socket.connect();
 
     return () => {
+      recoveryCheckGeneration++;
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("lobby:updated", handleLobbyUpdated);
@@ -1236,6 +1364,7 @@ export default function App() {
         "game:session-replaced",
         handleSessionReplaced,
       );
+      socket.off("platform:room-closed", handleIndividualRoomClosed);
       socket.off("platform:all-rooms-closed", handleAllRoomsClosed);
       socket.disconnect();
     };
@@ -3486,7 +3615,7 @@ function handleLeaveSpectator() {
     document.title = "Halieus Game Room";
     favicon.type = "image/svg+xml";
     favicon.sizes = "any";
-    favicon.href = "/halieus-mark.svg?v=4.8.4-brand-h9";
+    favicon.href = "/halieus-mark.svg?v=4.8.5-brand-h9";
   }, [activeTabGameId]);
 
   const toggleSound = () =>

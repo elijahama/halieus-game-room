@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { registerSparHandlers, getSparRoomCount, getSparLiveRoomSummaries, getSparChatIdentity, closeAllSparRooms } from "../server/src/games/spar/handlers.ts";
+import { registerSparHandlers, getSparRoomCount, getSparLiveRoomSummaries, getSparChatIdentity, closeAllSparRooms, closeSparRoom, expireAbandonedSparRooms, SPAR_ABANDONMENT_GRACE_MS } from "../server/src/games/spar/handlers.ts";
 import { legalSparCards, sparSuit } from "../shared/games/spar/rules.ts";
 const handlers = new Map();
 const latest = new Map();
@@ -42,7 +42,9 @@ let a=latest.get("host"),b=latest.get("guest"),w=latest.get("watch");
 assert.equal(a.phase,"bra");
 assert.equal(a.hand.length,5);
 assert.equal(b.hand.length,5);
-assert.equal(w.hand.length,0,"Spectator cannot see hands");
+assert.equal(w.hand.length,0,"Spectators never acquire a participant hand");
+assert.deepEqual(w.spectatorHands,{host:a.hand,guest:b.hand});
+assert.equal(a.spectatorHands,undefined);assert.equal(b.spectatorHands,undefined);
 assert.equal(w.players[0].handCount,5);
 assert.equal(JSON.stringify(w).includes(hostToken),false,"Reconnect tokens are private");
 assert.equal(JSON.stringify(w).includes(guestToken),false);
@@ -88,7 +90,9 @@ while(latest.get("host").phase!=="finished" && tries++<250){
    assert.equal(oldTrick,5,"Only trick five awards stones");
    observedProgress=true;
  }
- assert.equal(latest.get("watch").hand.length,0,"Public state cannot leak an opponent hand after play");
+ assert.equal(latest.get("watch").hand.length,0,"Observer must never receive a participant hand");
+ assert.equal(latest.get("host").spectatorHands,undefined);assert.equal(latest.get("guest").spectatorHands,undefined);
+ for(const p of latest.get("watch").players)assert.equal(latest.get("watch").spectatorHands[p.id].length,p.handCount);
 }
 assert.ok(observedProgress);
 assert.equal(latest.get("host").phase,"finished");
@@ -113,6 +117,7 @@ await call("returning","spar:spectate",{code:"SPAR02"});
 const returned=await call("returning","spar:reconnect",{code:"SPAR02",reconnectToken:secondGuest.reconnectToken});
 assert.equal(returned.ok,true);
 assert.deepEqual(returned.state.hand,originalHand,"Original private hand survives return");
+assert.equal(returned.state.spectatorHands,undefined,"Recovered participant cannot receive observer hands");
 assert.equal(returned.state.spectatorCount,0,"Recovery clears former spectator role");
 assert.equal(returned.state.currentTurnPlayerId,"returning");
 assert.equal((await call("guest","spar:bra",{code:"SPAR02"})).ok,false,"Replaced socket loses authority");
@@ -235,3 +240,76 @@ assert.equal(latest.get("watch").hand.length,0);
 assert.equal(latest.get(eight[0]).handNumber,2);
 closeAllSparRooms();
 console.log("PASS Spar Custom: ten-stone defaults, deck-derived capacity, seven tricks, bottom reveal and target scoring");
+
+// An owned off-suit card played while the player holds the lead suit restarts
+// the hand, without advancing the round number or awarding stones. Find a
+// playable scenario from genuine server deals; never inject private state.
+for(const penalty of [0,3]){
+let exercised=false;
+for(let attempt=0;attempt<64&&!exercised;attempt++){
+ const code="REVOKE";
+ const h=await call("host","spar:create",{code,playerName:"Host",tableFormat:"duel",matchMode:"custom",customSettings:{revokePenalty:penalty}});
+ assert.ok(h.ok);assert.ok((await call("guest","spar:join",{code,playerName:"Guest"})).ok);
+ assert.ok((await call("host","spar:start",{code})).ok);
+ const host=latest.get("host"),guest=latest.get("guest");
+ const lead=guest.hand.find(c=>host.hand.some(d=>sparSuit(c)===sparSuit(d))&&host.hand.some(d=>sparSuit(c)!==sparSuit(d)));
+ if(lead){
+  assert.ok((await call("guest","spar:bra",{code})).ok);
+  assert.ok((await call("guest","spar:play",{code,card:lead})).ok);
+  const wrong=host.hand.find(c=>sparSuit(c)!==sparSuit(lead));
+  const result=await call("host","spar:play",{code,card:wrong});
+  assert.equal(result.ok,false);assert.match(result.reason,/Round restarted/);
+  const fresh=latest.get("host");
+  assert.equal(fresh.phase,"bra");assert.equal(fresh.handNumber,host.handNumber);
+  assert.equal(fresh.trickNumber,1);assert.deepEqual(fresh.plays,[]);
+  assert.equal(fresh.dealerPlayerId,host.dealerPlayerId);
+  assert.equal(fresh.stonesRemaining,host.stonesRemaining);
+  assert.equal(fresh.revokePenalty,penalty);
+  assert.deepEqual(fresh.players.map(p=>p.stones),host.players.map(p=>p.stones-(p.id==="host"?penalty:0)));
+  assert.equal(fresh.players.find(p=>p.id==="host").penaltyStones,penalty);
+  assert.equal(fresh.hand.length,5);assert.equal(latest.get("guest").hand.length,5);
+  assert.equal(new Set([...fresh.hand,...latest.get("guest").hand]).size,10);
+  assert.match(fresh.status,/Round restarted/);
+  exercised=true;
+ }
+ closeAllSparRooms();
+}
+assert.ok(exercised,"A legal lead with an off-suit violation was exercised");
+}
+console.log("PASS Spar follow-suit violation: same round redealt, configured penalty, unchanged pool and dealer, no invalid card accepted");
+
+// Owner targeted closure: stale six-AI hand, reused identity, unrelated room and recovery.
+const stale = await call("host","spar:create",{code:"STALE1",playerName:"Host"});
+for(let i=0;i<6;i++) assert.equal((await call("host","spar:add-ai",{code:"STALE1",difficulty:"normal"})).ok,true);
+assert.equal((await call("host","spar:start",{code:"STALE1"})).ok,true);
+await call("host","spar:leave",{code:"STALE1"});
+assert.equal((await call("guest","spar:create",{code:"OTHER1",playerName:"Guest"})).ok,true);
+assert.equal(await closeSparRoom(io,"STALE1",stale.state.createdAt-1,"Owner closed"),false);
+assert.equal(await closeSparRoom(io,"STALE1",stale.state.createdAt,"Owner closed"),true);
+assert.equal(await closeSparRoom(io,"STALE1",stale.state.createdAt,"Owner closed"),false);
+assert.equal((await call("host","spar:reconnect",{code:"STALE1",reconnectToken:stale.reconnectToken})).ok,false);
+assert.deepEqual(getSparLiveRoomSummaries().map(room=>room.code),["OTHER1"]);
+closeAllSparRooms();
+console.log("PASS targeted owner Spar cancellation: stale identity rejected; unrelated room preserved");
+
+ // An empty AI table is paused during its grace period, not left live forever.
+ const abandoned = await call("host","spar:create",{code:"ABAND1",playerName:"Host"});
+ for(let i=0;i<6;i++) assert.equal((await call("host","spar:add-ai",{code:"ABAND1",difficulty:"normal"})).ok,true);
+ assert.equal((await call("host","spar:start",{code:"ABAND1"})).ok,true);
+ await call("host","spar:leave",{code:"ABAND1"});
+ const graceStart=Date.now();
+ assert.equal(await expireAbandonedSparRooms(io,graceStart+SPAR_ABANDONMENT_GRACE_MS-1000),0);
+ assert.equal((await call("host","spar:reconnect",{code:"ABAND1",reconnectToken:abandoned.reconnectToken})).ok,true);
+ assert.equal(await expireAbandonedSparRooms(io,graceStart+SPAR_ABANDONMENT_GRACE_MS+1000),0,"Reconnected rooms are protected");
+ assert.equal((await call("watch","spar:spectate",{code:"ABAND1",playerName:"Watcher"})).ok,true);
+ await call("host","spar:leave",{code:"ABAND1"});
+ assert.equal(await expireAbandonedSparRooms(io,Date.now()+SPAR_ABANDONMENT_GRACE_MS+1000),0,"Spectated tables are protected");
+ await call("watch","spar:leave",{code:"ABAND1"});
+ const emptySince=Date.now();
+ assert.equal(await expireAbandonedSparRooms(io,emptySince+SPAR_ABANDONMENT_GRACE_MS-1000),0,"A fresh vacancy gets a full grace period");
+ assert.equal(await expireAbandonedSparRooms(io,emptySince+SPAR_ABANDONMENT_GRACE_MS+1000),1);
+ assert.equal((await call("host","spar:reconnect",{code:"ABAND1",reconnectToken:abandoned.reconnectToken})).ok,false);
+ assert.equal(getSparLiveRoomSummaries().some(r=>r.code==="ABAND1"),false);
+ assert.equal(await expireAbandonedSparRooms(io,emptySince+2*SPAR_ABANDONMENT_GRACE_MS),0,"Expiry is idempotent");
+ closeAllSparRooms();
+ console.log("PASS Spar abandonment: recovery grace, reconnect and spectator protection, incomplete cancellation, stale room removed");

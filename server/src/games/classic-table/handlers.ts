@@ -439,6 +439,34 @@ export function getClassicLiveRoomSummaries(): HalieusLiveRoomSummary[] {
     joinable: room.phase === "lobby" && (room.players.length < MAX_PLAYERS[room.game] || room.players.some((player) => player.isAi)), spectatable: true,
   }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasClassicRecoverySeat(game: ClassicGameId, code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.game === game && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
+export function getClassicBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: room.game, code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
+}
+export async function closeClassicRoom(io: Server, game: ClassicGameId, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.game !== game || room.createdAt !== createdAt || room.phase === "finished" || room.outcome || room.matchMode === "ranked") return false;
+  const key = `${game}:${code}`;
+  const timer = aiTimers.get(key); if (timer) clearTimeout(timer); aiTimers.delete(key);
+  rooms.delete(code);
+  room.phase = "finished"; room.currentTurnPlayerId = null; room.winnerPlayerId = null;
+  if (room.game === "cheat") { room.pendingClaim = null; room.pendingWinnerId = null; }
+  for (const player of room.players) player.result = null;
+  room.outcome = { kind: "cancelled", reason: "owner-closed", endedAt: Date.now(), countsAsCompletedPlay: false, winnerPlayerId: null };
+  addLog(room, reason); room.updatedAt = Date.now();
+  const payload = { game, code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession(game, code, archiveTime(room), "incomplete", archivePayload(room), { matchId: room.matchId, outcome: "cancelled", countsAsCompletedPlay: false, winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
 export function closeAllClassicRooms(): number { const count = rooms.size; for (const timer of aiTimers.values()) clearTimeout(timer); aiTimers.clear(); rooms.clear(); return count; }
 
 export function registerClassicTableHandlers(io: Server, socket: Socket): void {

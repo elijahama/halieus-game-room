@@ -254,7 +254,70 @@
     gamesCurrent.append(heading, description, action);
   }
 
+  let roomClosureBusy = false;
+  let roomListFresh = false;
+  const individuallyClosable = new Set(["spar", "ludo", "connect-four", "poker", "blackjack", "whot", "ayo", "hidden-dictator", "word-board", "cheat", "dominoes", "word-game", "password", "anagrams-race", "mega-board"]);
+  async function closeIndividualRoom(room) {
+    if (state.account?.role !== "owner" || roomClosureBusy || !roomListFresh || !individuallyClosable.has(room.game) || room.matchMode === "ranked") return;
+    if (!window.confirm(`Close ${room.gameTitle} room ${room.code}? This ends only this table, not the server. No winner or Ranked result will be awarded.`)) return;
+    roomClosureBusy = true;
+    const feedback = $("roomClosureFeedback");
+    feedback.textContent = `Closing room ${room.code}…`;
+    renderRooms();
+    try {
+      const response = await fetch("/admin/rooms/close-one", {
+        method: "POST", credentials: "include", cache: "no-store",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ game: room.game, code: room.code, createdAt: room.createdAt, confirmation: "CLOSE GAME ROOM" }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok || result.closed !== 1 || result.game !== room.game || result.code !== room.code || result.createdAt !== room.createdAt)
+        throw Error(result.reason || "Room closure was not confirmed.");
+      feedback.textContent = `Room ${room.code} closed.`;
+    } catch (error) {
+      feedback.textContent = error instanceof Error ? error.message : "Room closure was not confirmed.";
+    } finally {
+      roomListFresh = false;
+      try { await refreshCore(); } finally { roomClosureBusy = false; renderRooms(); }
+    }
+  }
+
+  async function closeAllGameRooms() {
+    if (state.account?.role !== "owner" || roomClosureBusy) return;
+    const feedback = $("roomClosureFeedback");
+    roomClosureBusy = true;
+    renderRooms();
+    try {
+      const summary = await api("/admin/rooms/bulk-status");
+      if (!summary?.ok || !Number.isSafeInteger(summary.count) || !Number.isSafeInteger(summary.protected) || typeof summary.snapshotId !== "string")
+        throw Error("Unable to verify the room count.");
+      if (summary.protected > 0) throw Error("Ranked, Daily Puzzle or tournament rooms are protected. No rooms were closed.");
+      if (summary.count === 0) { feedback.textContent = "No unfinished game rooms to close."; return; }
+      if (!window.confirm(`Close all ${summary.count} unfinished game rooms, including disconnected recovery rooms? This cancels play, not the HGR server. Ranked and unsettled tournaments are protected.`)) return;
+      feedback.textContent = "Closing game rooms…";
+      const response = await fetch("/admin/rooms/close-all-control", {
+        method: "POST", credentials: "include", cache: "no-store",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ expectedRooms: summary.count, expectedSnapshotId: summary.snapshotId, confirmation: "CLOSE ALL GAME ROOMS" }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok || result.closed !== summary.count)
+        throw Error(result.reason || "Bulk room closure was not confirmed.");
+      feedback.textContent = `${result.closed} unfinished game room(s) closed. HGR remains online.`;
+    } catch (error) {
+      feedback.textContent = error instanceof Error ? error.message : "Room closure was not confirmed.";
+    } finally {
+      roomListFresh = false;
+      try { await refreshCore(); } finally { roomClosureBusy = false; renderRooms(); }
+    }
+  }
+
   function renderRooms() {
+    const bulk = $("closeAllGameRooms");
+    if (bulk) {
+      bulk.hidden = state.account?.role !== "owner";
+      bulk.disabled = roomClosureBusy;
+    }
     const overview = $("overviewLiveGames");
     const grid = $("liveRoomGrid");
     clear(overview);
@@ -286,6 +349,14 @@
       const footer = element("div", "room-footer");
       footer.append(element("span", "", `${room.playerCount}/${room.maximumPlayers} seats · ${room.spectatorCount || 0} spectators`), element("span", "", roomDuration(room)));
       card.append(header, players, footer);
+      if (state.account?.role === "owner" && individuallyClosable.has(room.game) && room.matchMode !== "ranked") {
+        const close = element("button", "secondary-action", "Close room");
+        close.type = "button";
+        close.disabled = roomClosureBusy || !roomListFresh;
+        close.setAttribute("aria-label", `Close ${room.gameTitle} room ${room.code}`);
+        close.addEventListener("click", () => void closeIndividualRoom(room));
+        card.appendChild(close);
+      }
       grid.appendChild(card);
     });
   }
@@ -471,7 +542,8 @@
       api("/health"),
     ]);
     if (snapshotResult.status === "fulfilled") state.snapshot = snapshotResult.value;
-    if (roomsResult.status === "fulfilled") state.rooms = roomsResult.value.rooms || [];
+    roomListFresh = roomsResult.status === "fulfilled";
+    if (roomListFresh) state.rooms = roomsResult.value.rooms || [];
     if (statsResult.status === "fulfilled") state.stats = statsResult.value.stats || null;
     if (healthResult.status === "fulfilled") state.health = healthResult.value;
     $("cloudState").classList.toggle("is-live", healthResult.status === "fulfilled");
@@ -486,12 +558,15 @@
       state.health = await api("/health");
       const roomsResult = await api("/accounts/live-games");
       state.rooms = roomsResult.rooms || [];
+      roomListFresh = true;
       updateMetrics();
       renderNowPlaying();
       renderRooms();
       $("cloudState").classList.add("is-live");
       $("cloudState").querySelector("b").textContent = "HGR Cloud connected";
     } catch {
+      roomListFresh = false;
+      renderRooms();
       $("cloudState").classList.remove("is-live");
       $("cloudState").querySelector("b").textContent = "HGR Cloud unavailable";
     }
@@ -1002,6 +1077,7 @@
     $("publicAccessCancelSchedule")?.addEventListener("click", () => void cancelPublicAccessWindow());
     queryAll("[data-jump]").forEach((button) => button.addEventListener("click", () => setSection(button.dataset.jump)));
     $("refreshLive")?.addEventListener("click", () => void refreshCore());
+    $("closeAllGameRooms")?.addEventListener("click", () => void closeAllGameRooms());
     $("refreshAudit")?.addEventListener("click", () => void refreshCore());
     restoreOperationToastLayout();
     bindOperationToastDrag();

@@ -69,4 +69,33 @@ export function getConnectFourLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && room.players.length < 2, spectatable: true,
     }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasConnectFourRecoverySeat(code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
+export function getConnectFourBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "connect-four", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
+}
+/** Cancel exactly one noncompetitive room without awarding a result. */
+export async function closeConnectFourRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || room.matchMode === "ranked") return false;
+  const timer = aiTimers.get(code); if (timer) clearTimeout(timer); aiTimers.delete(code);
+  rooms.delete(code);
+  room.phase = "finished";
+  room.currentTurnPlayerId = null; room.winnerPlayerId = null;
+  room.status = reason; room.updatedAt = Date.now();
+  room.roundWinnerPlayerId = null; room.draw = false;
+  for (const player of room.players) player.result = null;
+  const payload = { game: "connect-four", code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession("connect-four", code, createdAt, "incomplete", archive(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
+
 export function closeAllConnectFourRooms(){ const count=getConnectFourRoomCount(); for(const timer of aiTimers.values())clearTimeout(timer);aiTimers.clear();rooms.clear();return count; }

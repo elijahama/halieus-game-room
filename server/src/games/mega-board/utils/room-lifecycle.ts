@@ -25,7 +25,7 @@ export function endRoom(
   io: Server,
   code: string,
   reason: string,
-  options: { soloResetMatchId?: string } = {},
+  options: { soloResetMatchId?: string; ownerCancellation?: boolean } = {},
 ): boolean {
   const room = rooms.get(code);
 
@@ -49,10 +49,9 @@ export function endRoom(
     reason,
   };
 
-  io.to(code).emit(
-    "game:ended",
-    payload,
-  );
+  if (!options.ownerCancellation) {
+    io.to(code).emit("game:ended", payload);
+  }
 
   rooms.delete(code);
   io.in(code).socketsLeave(code);

@@ -1,5 +1,9 @@
 # Control: visible update-available notice
 
+## 25 November 2026 — background release notification correction
+
+Previously the verified availability notice polled only while Control was open; the existing operations push transport was not connected to release discovery. Public HGR server now starts a five-minute worker after account and push stores load, sharing the verified canonical release check. Only existing opted-in owner/admin operations subscriptions receive a verified newer release alert; persistent per-device fingerprint receipt prevents repeat sends across polls/restarts, expired subscriptions are removed, transient failures retried. Gateway acceptance is not device receipt. Existing approved Control notification badge and click path retained. No automatic updater action. Physical PWA delivery and deployed release identity remain independent acceptance gates.
+
 ## 24 November 2026 follow-up — greenlight drop-down candidate
 
 Owner requests automatic in-app top drop-down with established Control artwork, green verified readiness, review and dismissal. The new candidate additionally verifies pinned main release and successful exact-source packaging before returning available; the historical specification below describes the prior persistent banner, not the new acceptance contract. Acknowledgement is per fingerprint per page session; Update tab stays marked. No automatic execution, background push or deployment. Validate on 320/390/820/1440px, auth, current/unverified/failed packaging, repeat polling, new fingerprint, review, dismissal and active receipt suppression.

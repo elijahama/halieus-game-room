@@ -105,6 +105,17 @@ try{
    const m=t.matches.find(x=>x.status==="awaiting-room");assert.ok(m,"ready Solo match");
    const board=await room(byId.get(m.homeAccountId),byId.get(m.awayAccountId));
    await post("/tournaments/solo/"+t.id+"/matches/"+m.id+"/bind-room",host,{roomCode:board.code});
+   if(matches===0){
+    const bulk=(await api("/admin/rooms/bulk-status",owner)).json;
+    assert.ok(bulk.protected>=1,"Unsettled tournament rooms must be protected even when not Ranked");
+    assert.equal((await api("/admin/rooms/close-all-control",owner,{expectedRooms:bulk.count,expectedSnapshotId:bulk.snapshotId,confirmation:"CLOSE ALL GAME ROOMS"})).status,409);
+    assert.equal((await api("/admin/rooms/close-all",owner,{})).status,409);
+    const live=(await api("/accounts/live-games",owner)).json.rooms;
+    const protectedBoard=live.find(r=>r.game==="mega-board"&&r.code===board.code);
+    assert.ok(protectedBoard);
+    assert.equal((await api("/admin/rooms/close-one",owner,{game:"mega-board",code:board.code,createdAt:protectedBoard.createdAt,confirmation:"CLOSE GAME ROOM"})).status,409);
+    assert.equal((await api("/admin/rooms/bulk-status",owner)).json.count,bulk.count,"No partial closure");
+   }
    const homeWins=m.id!=="grand-final"; // Force a genuine reset in double elimination.
    await finish(board,homeWins);
    t=await until(get,x=>x.matches.find(y=>y.id===m.id).status==="completed","Solo receipt");
@@ -137,6 +148,17 @@ try{
    const boards=[await room(home.members[0],away.members[0]),await room(home.members[1],away.members[1])];
    await post("/guild-fixtures/"+fixture.id+"/bind-rooms",home.lead,{roomCodes:boards.map(b=>b.code)});
    await post("/guild-tournaments/"+t.id+"/matches/"+m.id+"/link",home.lead,{fixtureId:fixture.id});
+   if(matches===0){
+    const bulk=(await api("/admin/rooms/bulk-status",owner)).json;
+    assert.ok(bulk.protected>=1,"Unsettled tournament rooms must be protected even when not Ranked");
+    assert.equal((await api("/admin/rooms/close-all-control",owner,{expectedRooms:bulk.count,expectedSnapshotId:bulk.snapshotId,confirmation:"CLOSE ALL GAME ROOMS"})).status,409);
+    assert.equal((await api("/admin/rooms/close-all",owner,{})).status,409);
+    const live=(await api("/accounts/live-games",owner)).json.rooms;
+    const protectedBoard=live.find(r=>r.game==="mega-board"&&r.code===boards[0].code);
+    assert.ok(protectedBoard);
+    assert.equal((await api("/admin/rooms/close-one",owner,{game:"mega-board",code:boards[0].code,createdAt:protectedBoard.createdAt,confirmation:"CLOSE GAME ROOM"})).status,409);
+    assert.equal((await api("/admin/rooms/bulk-status",owner)).json.count,bulk.count,"No partial closure");
+   }
    const homeWins=m.id!=="grand-final",tie=m.id==="semi-1";
    await finish(boards[0],tie?true:homeWins);await finish(boards[1],tie?false:homeWins);
    t=await until(get,x=>["completed","tied"].includes(x.matches.find(y=>y.id===m.id).status),"Guild fixture receipt");

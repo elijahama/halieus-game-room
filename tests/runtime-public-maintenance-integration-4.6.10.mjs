@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { io } from "socket.io-client";
@@ -163,6 +163,214 @@ try {
  assert.equal((await request("/")).status,200,"Public page restored after reopening");
  const guest=await connect();
  assert(guest.connected,"Game sockets allowed after reopen");
+ // Control room operations on the actual authenticated HTTP/socket server.
+ const bulkStatus=()=>request("/admin/rooms/bulk-status",{cookie});
+ const bulkClose=async(count,origin=base,confirmation="CLOSE ALL GAME ROOMS",snapshotId)=>request("/admin/rooms/close-all-control",{cookie,origin,method:"POST",body:{expectedRooms:count,expectedSnapshotId:snapshotId??(await bulkStatus()).json.snapshotId,confirmation}});
+ assert.equal((await request("/admin/rooms/bulk-status")).status,403);
+ assert.equal((await request("/admin/rooms/close-all-control",{method:"POST",origin:base,body:{expectedRooms:1,confirmation:"CLOSE ALL GAME ROOMS"}})).status,403);
+ const spar=await emit(guest,"spar:create",{code:"SPHTTP",playerName:"SparHost"});
+ assert.equal(spar.ok,true);
+ const sparBody={code:"SPHTTP",createdAt:spar.state.createdAt,confirmation:"CLOSE SPAR ROOM"};
+ const sparClose=(body,origin=base)=>request("/admin/rooms/close-spar",{cookie,origin,method:"POST",body});
+ assert.equal((await request("/admin/rooms/close-spar",{origin:base,method:"POST",body:sparBody})).status,403);
+ assert.equal((await sparClose(sparBody,"https://evil.example")).status,403);
+ assert.equal((await sparClose({...sparBody,createdAt:sparBody.createdAt-1})).status,409);
+ assert.equal((await sparClose(sparBody)).json.closed,1);
+ assert.equal((await sparClose(sparBody)).status,409);
+ // Individual cancellation must retain a different game's room with the same code.
+ const ludo=await emit(guest,"ludo:create",{code:"SAME12",playerName:"LudoHost",matchMode:"casual"});
+ const c4=await emit(guest,"connect-four:create",{code:"SAME12",playerName:"ConnectHost",matchMode:"casual"});
+ assert.equal(ludo.ok,true);assert.equal(c4.ok,true);
+ const observer=await connect();
+ try {
+   assert.equal((await emit(observer,"connect-four:spectate",{code:"SAME12",playerName:"Viewer"})).ok,true);
+   const oneBody={game:"connect-four",code:"SAME12",createdAt:c4.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   const closeOne=(body,origin=base)=>request("/admin/rooms/close-one",{cookie,origin,method:"POST",body});
+   assert.equal((await request("/admin/rooms/close-one",{origin:base,method:"POST",body:oneBody})).status,403);
+   assert.equal((await closeOne(oneBody,"https://evil.example")).status,403);
+   assert.equal((await closeOne({...oneBody,createdAt:oneBody.createdAt-1})).status,409);
+   const notice=new Promise(resolve=>observer.once("platform:room-closed",resolve));
+   const closed=await closeOne(oneBody);
+   assert.equal(closed.status,200,JSON.stringify(closed.json));
+   assert.equal(closed.json.game,"connect-four");
+   const event=await Promise.race([notice,sleep(3000).then(()=>null)]);
+   assert.equal(event?.code,"SAME12");assert.equal(event?.game,"connect-four");
+   assert.equal((await closeOne(oneBody)).status,409);
+   assert.equal((await emit(guest,"connect-four:reconnect",{code:"SAME12",reconnectToken:c4.reconnectToken})).ok,false);
+   assert.equal((await emit(guest,"ludo:reconnect",{code:"SAME12",reconnectToken:ludo.reconnectToken})).ok,true);
+   const ludoBody={...oneBody,game:"ludo",createdAt:ludo.state.createdAt};
+   assert.equal((await closeOne(ludoBody)).json.closed,1);
+   assert.equal((await emit(guest,"ludo:reconnect",{code:"SAME12",reconnectToken:ludo.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const archiveFiles=await readdir(archiveDir);
+   for(const game of ["connect-four","ludo"]){
+     const filename=archiveFiles.find(name=>name.startsWith(game+"-SAME12-")&&name.endsWith(".json"));
+     assert.ok(filename,"Cancelled room must have a durable archive");
+     const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+     assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+     assert.equal(archived.summary.cancellation,"owner-closed");
+   }
+ } finally { observer.disconnect(); }
+ const ranked=await emit(guest,"connect-four:create",{code:"RANKCL",playerName:"RankHost",matchMode:"ranked"});
+ assert.equal(ranked.ok,true);
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{game:"connect-four",code:"RANKCL",createdAt:ranked.state.createdAt,confirmation:"CLOSE GAME ROOM"}})).status,409);
+ await emit(guest,"connect-four:leave",{code:"RANKCL"});
+ const protectedRooms=await bulkStatus();
+ assert(protectedRooms.json.protected>=1,"Disconnected Ranked recovery room must remain protected");
+ assert.equal((await bulkClose(protectedRooms.json.count)).status,409);
+ assert.equal((await request("/admin/rooms/close-all",{cookie,origin:base,method:"POST"})).status,409,"Legacy path must also protect competitive rooms");
+ assert.equal((await emit(guest,"connect-four:reconnect",{code:"RANKCL",reconnectToken:ranked.reconnectToken})).ok,true);
+ assert.equal((await emit(guest,"connect-four:end-game",{code:"RANKCL"})).ok,true);
+ const casual=await emit(guest,"spar:create",{code:"BULKSP",playerName:"SparHost"});
+ assert.equal(casual.ok,true);
+ const vacantSpar=await emit(guest,"spar:create",{code:"VACANT",playerName:"VacantHost"});
+ assert.equal(vacantSpar.ok,true);
+ await emit(guest,"spar:leave",{code:"VACANT"});
+ const bulkLudo=await emit(guest,"ludo:create",{code:"BULKLD",playerName:"BulkHost"});
+ assert.equal(bulkLudo.ok,true);
+ await emit(guest,"ludo:leave",{code:"BULKLD"});
+ const beforeReplace=await bulkStatus();
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{game:"spar",code:"BULKSP",createdAt:casual.state.createdAt,confirmation:"CLOSE GAME ROOM"}})).status,200);
+ const replacement=await emit(guest,"spar:create",{code:"BULKSP",playerName:"NewHost"});
+ assert.equal(replacement.ok,true);
+ const snapshot=await bulkStatus();
+ assert.equal(snapshot.json.protected,0);
+ assert.equal(snapshot.json.count,beforeReplace.json.count);
+ assert.notEqual(snapshot.json.snapshotId,beforeReplace.json.snapshotId);
+ assert.equal((await bulkClose(snapshot.json.count,base,"CLOSE ALL GAME ROOMS",beforeReplace.json.snapshotId)).status,409,"Same count but changed room identity must refuse");
+ assert.equal((await bulkStatus()).json.count,snapshot.json.count);
+ assert(snapshot.json.count>=3);
+ assert.equal((await bulkClose(snapshot.json.count,"https://evil.example")).status,403);
+ assert.equal((await bulkClose(snapshot.json.count,base,"WRONG")).status,403);
+ assert.equal((await bulkClose(snapshot.json.count+1)).status,409);
+ const closedRooms=await bulkClose(snapshot.json.count,base,"CLOSE ALL GAME ROOMS",snapshot.json.snapshotId);
+ assert.equal(closedRooms.status,200,JSON.stringify(closedRooms.json));
+ assert.equal(closedRooms.json.closed,snapshot.json.count);
+ assert.equal((await bulkStatus()).json.count,0);
+ assert.equal((await emit(guest,"spar:reconnect",{code:"BULKSP",reconnectToken:replacement.reconnectToken})).ok,false);
+ assert.equal((await emit(guest,"spar:reconnect",{code:"VACANT",reconnectToken:vacantSpar.reconnectToken})).ok,false);
+ assert.equal((await emit(guest,"ludo:reconnect",{code:"BULKLD",reconnectToken:bulkLudo.reconnectToken})).ok,false);
+ for(const [game,code,createdAt] of [["spar","BULKSP",replacement.state.createdAt],["spar","VACANT",vacantSpar.state.createdAt],["ludo","BULKLD",bulkLudo.state.createdAt]]){
+   const archived=JSON.parse(await readFile(join(dir,"sessions","finalized",game+"-"+code+"-"+createdAt+".json"),"utf8"));
+   assert.equal(archived.status,"incomplete"); assert.equal(archived.summary.winner,null); assert.equal(archived.summary.cancellation,"owner-closed");
+ }
+ assert.equal((await request("/health")).status,200,"Game closure never stops the server");
+ console.log("PASS Control room HTTP: owner and Origin checks, targeted Spar, offline Ranked protection, count confirmation, guarded bulk closure");
+ // Card-table cancellations preserve archive status and reject Ranked tables.
+ for(const game of ["poker","blackjack","whot"]){
+   const code="CARD12";
+   const created=await emit(guest,game+":create",{code,playerName:"CardHost",matchMode:"casual"});
+   assert.equal(created.ok,true,game+" create");
+   assert.equal((await emit(guest,game+":add-ai",{code,difficulty:"normal"})).ok,true);
+   if(game==="poker")assert.equal((await emit(guest,game+":start",{code})).ok,true);
+   const body={game,code,createdAt:created.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   const notice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+   const result=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body});
+   assert.equal(result.status,200,game+" cancellation "+JSON.stringify(result.json));
+   assert.equal((await Promise.race([notice,sleep(3000).then(()=>null)]))?.game,game);
+   assert.equal((await emit(guest,game+":reconnect",{code,reconnectToken:created.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const filename=(await readdir(archiveDir)).find(name=>name.startsWith(game+"-"+code+"-")&&name.endsWith(".json"));
+   assert.ok(filename,game+" cancellation archive");
+   const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+   assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+   assert.equal(archived.summary.cancellation,"owner-closed");
+   const rankedCard=await emit(guest,game+":create",{code:"RANK12",playerName:"RankHost",matchMode:"ranked"});
+   assert.equal(rankedCard.ok,true);
+   assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:"RANK12",createdAt:rankedCard.state.createdAt}})).status,409);
+ }
+ // Remaining standalone game adapters: protected mode, cancellation receipts and archive truth.
+ for(const game of ["ayo","hidden-dictator","word-board"]){
+   const code="BOARD9";
+   const created=await emit(guest,game+":create",{code,playerName:"BoardHost",matchMode:"casual"});
+   assert.equal(created.ok,true,game+" create");
+   const body={game,code,createdAt:created.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   const notice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+   const result=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body});
+   assert.equal(result.status,200,game+" cancellation "+JSON.stringify(result.json));
+   assert.equal((await Promise.race([notice,sleep(3000).then(()=>null)]))?.game,game);
+   assert.equal((await emit(guest,game+":reconnect",{code,reconnectToken:created.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const filename=(await readdir(archiveDir)).find(name=>name.startsWith(game+"-"+code+"-")&&name.endsWith(".json"));
+   assert.ok(filename,game+" cancellation archive");
+   const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+   assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+   assert.equal(archived.summary.cancellation,"owner-closed");
+   const rankedBoard=await emit(guest,game+":create",{code:"RANKB9",playerName:"RankHost",matchMode:"ranked"});
+   assert.equal(rankedBoard.ok,true);
+   assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:"RANKB9",createdAt:rankedBoard.state.createdAt}})).status,409);
+ }
+ // Shared engines must cancel the exact game, not another game's room.
+ for(const [game,code] of [["cheat","CLASS1"],["dominoes","CLASS2"],["word-game","WORDS1"],["password","WORDS1"],["anagrams-race","WORDS1"]]){
+   const created=await emit(guest,game+":create",{code,playerName:"SharedHost",matchMode:"casual",wordGameMode:"practice"});
+   assert.equal(created.ok,true,game+" create");
+   const body={game,code,createdAt:created.state.createdAt,confirmation:"CLOSE GAME ROOM"};
+   if(game==="cheat"){
+     const wrong=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,game:"dominoes"}});
+     assert.equal(wrong.status,409);
+   }
+   if(game==="word-game")assert.equal((await emit(guest,game+":start",{code})).ok,true);
+   const notice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+   const result=await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body});
+   assert.equal(result.status,200,game+" cancellation "+JSON.stringify(result.json));
+   assert.equal((await Promise.race([notice,sleep(3000).then(()=>null)]))?.game,game);
+   assert.equal((await emit(guest,game+":reconnect",{code,reconnectToken:created.reconnectToken})).ok,false);
+   const archiveDir=join(dir,"sessions","finalized");
+   const filename=(await readdir(archiveDir)).find(name=>name.startsWith(game+"-"+code+"-")&&name.endsWith(".json"));
+   assert.ok(filename,game+" cancellation archive");
+   const archived=JSON.parse(await readFile(join(archiveDir,filename),"utf8"));
+   assert.equal(archived.status,"incomplete");assert.equal(archived.summary.winner,null);
+   assert.equal(archived.summary.cancellation,"owner-closed");
+   if(game==="cheat"||game==="dominoes")assert.equal(archived.summary.countsAsCompletedPlay,false);
+   const rankedCode=game==="cheat"?"RCLASS":game==="dominoes"?"RCLAS2":"RWORDS";
+   const rankedShared=await emit(guest,game+":create",{code:rankedCode,playerName:"RankHost",matchMode:"ranked",wordGameMode:"practice"});
+   assert.equal(rankedShared.ok,true);
+   assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...body,code:rankedCode,createdAt:rankedShared.state.createdAt}})).status,409);
+ }
+ // Mega Board closure uses exact live identity and must not end other games.
+ const boardCode="MEGACLOSE";
+ const board=await emit(guest,"game:create",{code:boardCode,playerName:"MegaHost",ranked:false});
+ assert.equal(board.ok,true);
+ const otherTable=await emit(guest,"poker:create",{code:"OTHER1",playerName:"OtherHost",matchMode:"casual"});
+ assert.equal(otherTable.ok,true);
+ const boardInfo=(await request("/accounts/live-games",{cookie})).json.rooms.find(r=>r.game==="mega-board"&&r.code===boardCode);
+ assert.ok(boardInfo);
+ const boardBody={game:"mega-board",code:boardCode,createdAt:boardInfo.createdAt,confirmation:"CLOSE GAME ROOM"};
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...boardBody,createdAt:boardBody.createdAt-1}})).status,409);
+ let legacyEnded=false;guest.once("game:ended",()=>{legacyEnded=true;});
+ const boardNotice=new Promise(resolve=>guest.once("platform:room-closed",resolve));
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:boardBody})).status,200);
+ assert.equal((await Promise.race([boardNotice,sleep(3000).then(()=>null)]))?.game,"mega-board");
+ assert.equal(legacyEnded,false,"Targeted cancellation must not trigger the legacy reset");
+ assert.equal((await emit(guest,"game:reconnect",{code:boardCode,reconnectToken:board.reconnectToken})).ok,false);
+ assert.equal((await emit(guest,"poker:reconnect",{code:"OTHER1",reconnectToken:otherTable.reconnectToken})).ok,true);
+ const boardArchive=(await readdir(join(dir,"sessions","finalized"))).find(n=>n.startsWith("mega-board-"+boardCode+"-")&&n.endsWith(".json"));
+ assert.ok(boardArchive);
+ const cancelledBoard=JSON.parse(await readFile(join(dir,"sessions","finalized",boardArchive),"utf8"));
+ assert.equal(cancelledBoard.status,"incomplete");assert.equal(cancelledBoard.summary.winner,null);
+ assert.equal(cancelledBoard.summary.cancellation,"owner-closed");
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:boardBody})).status,409);
+ const rankedMega=await emit(guest,"game:create",{code:"MEGARANK",playerName:"RankHost",ranked:true});
+ assert.equal(rankedMega.ok,true);
+ const rankedInfo=(await request("/accounts/live-games",{cookie})).json.rooms.find(r=>r.game==="mega-board"&&r.code==="MEGARANK");
+ assert.ok(rankedInfo);
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{...boardBody,code:"MEGARANK",createdAt:rankedInfo.createdAt}})).status,409);
+ // Recovery validation on a fresh offline client does not reconnect or expose credentials.
+ const probe=await connect();
+ try {
+   const before=(await request("/accounts/live-games",{cookie})).json.rooms;
+   const checked=await emit(probe,"platform:recovery-check",[
+     {game:"mega-board",code:boardCode,token:board.reconnectToken},
+     {game:"poker",code:"OTHER1",token:otherTable.reconnectToken},
+     {game:"poker",code:"OTHER1",token:"NOT-THE-KEY"},
+     {game:"spar",code:"VACANT",token:vacantSpar.reconnectToken},
+     {game:"not-a-game",code:"OTHER1",token:"UNKNOWN"},
+   ]);
+   assert.deepEqual(checked,{ok:true,statuses:["missing","present","missing","missing","unknown"]});
+   const after=(await request("/accounts/live-games",{cookie})).json.rooms;
+   assert.deepEqual(after,before,"Recovery check must not mutate live rooms or transfer seats");
+   assert.equal((await emit(probe,"platform:recovery-check",[])).ok,false,"One check per connection");
+ } finally { probe.disconnect(); }
  guest.disconnect();
  console.log("PASS HGR 4.6.10 live local HTTP/Socket.io: owner-only auth, CSRF, typed confirmation, occupied room 409, 503 visitor page, Control continuity, owner socket bypass and reopening");
 } finally {

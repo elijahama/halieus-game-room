@@ -106,4 +106,30 @@ export function registerWordBoardHandlers(io:Server,socket:Socket){
  socket.on("disconnect",()=>{for(const room of rooms.values()){const p=room.players.find((x)=>x.id===socket.id);if(p){p.isConnected=false;emit(io,room);}if(room.spectators.delete(socket.id))emit(io,room);}});
 }
 export function getWordBoardLiveRoomSummaries():HalieusLiveRoomSummary[]{return [...rooms.values()].filter((room)=>room.phase!=="finished"&&(room.players.some((p)=>!p.isAi&&p.isConnected)||room.spectators.size>0)).map((room)=>({game:"word-board",gameTitle:"Word Board",code:room.code,phase:room.phase,matchMode:room.matchMode,started:room.phase!=="lobby",createdAt:room.createdAt,startedAt:room.startedAt,updatedAt:room.updatedAt,playerCount:room.players.length,maximumPlayers:4,humanPlayers:room.players.filter((p)=>!p.isAi&&p.isConnected).map((p)=>p.name),verifiedAccountIds:verifiedRoomAccountIds(room.players),aiCount:room.players.filter((p)=>p.isAi).length,spectatorCount:room.spectators.size,joinable:room.phase==="lobby"&&room.players.length<4,spectatable:true}));}
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasWordBoardRecoverySeat(code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
+export function getWordBoardBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "word-board", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
+}
+/** Administrative cancellation is not a completed match. */
+export async function closeWordBoardRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || room.matchMode === "ranked") return false;
+  const timer = aiTimers.get(code); if (timer) clearTimeout(timer); aiTimers.delete(code);
+  rooms.delete(code);
+  room.phase = "finished"; room.currentPlayerId = null; room.winnerPlayerId = null; room.challenge = null;
+  room.status = reason; room.updatedAt = Date.now();
+  for (const player of room.players) player.result = null;
+  const payload = { game: "word-board", code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession("word-board", code, createdAt, "incomplete", archive(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
 export function closeAllWordBoardRooms(){const count=getWordBoardRoomCount();for(const timer of aiTimers.values())clearTimeout(timer);aiTimers.clear();rooms.clear();return count;}

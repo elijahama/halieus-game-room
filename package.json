@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room",
-  "version": "4.8.4",
+  "version": "4.8.5",
   "private": true,
   "workspaces": [
     "client",
@@ -81,7 +81,7 @@
     "test:browser:trade-decline-feedback": "node tests/browser-mega-trade-decline-feedback.mjs",
     "test:mega:counteroffers": "node --import tsx tests/runtime-mega-trade-counteroffers.mjs",
     "test:trade:intent": "node --import tsx tests/runtime-mega-trade-intent.mjs",
-    "test:control:release-notice": "node --import tsx tests/runtime-control-release-availability.mjs && node tests/browser-control-release-available.mjs",
+    "test:control:release-notice": "node --import tsx tests/runtime-control-release-availability.mjs && node tests/browser-control-release-available.mjs && node --import tsx tests/runtime-control-release-alerts.mjs",
     "test:control:mobile-lp": "node tests/browser-control-mobile-lp-layout.mjs",
     "test:control:mobile-dense": "node tests/browser-control-mobile-dense-pages.mjs",
     "test:browser:mega:portfolio-clip": "node tests/browser-mega-portfolio-clipping-hotfix.mjs",
@@ -114,7 +114,7 @@
     "test:archive:memory": "node tests/runtime-archive-memory.mjs",
     "test:browser:intro:fit": "node tests/browser-intro-viewport-centering.mjs",
     "test:tournaments:independent-nav": "node tests/regression-tournaments-independent-nav.mjs",
-    "test:spar": "node --import tsx tests/runtime-spar-rules.mjs && node --import tsx tests/runtime-spar-room.mjs && node --import tsx tests/runtime-spar-ranked.mjs"
+    "test:spar": "node --import tsx tests/runtime-spar-rules.mjs && node --import tsx tests/runtime-spar-room.mjs && node --import tsx tests/runtime-spar-ranked.mjs && node --import tsx tests/runtime-spar-decision-clock.mjs && node tests/regression-spar-poker-room.mjs && node tests/browser-spar-portrait-real.mjs"
   },
   "engines": {
     "node": ">=20.19.0"

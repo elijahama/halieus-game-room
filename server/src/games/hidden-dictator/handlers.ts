@@ -53,4 +53,30 @@ export function getHiddenDictatorLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && room.players.length < 10, spectatable: true,
     }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasHiddenDictatorRecoverySeat(code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
+export function getHiddenDictatorBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "hidden-dictator", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
+}
+/** Administrative cancellation is not a completed match. */
+export async function closeHiddenDictatorRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || room.matchMode === "ranked") return false;
+  const timer = timers.get(code); if (timer) clearTimeout(timer); timers.delete(code);
+  rooms.delete(code);
+  room.phase = "finished"; room.speakerPlayerId = null; room.nominatedDeputyId = null; room.winner = null;
+  room.status = reason; room.updatedAt = Date.now();
+  for (const player of room.players) player.result = null;
+  const payload = { game: "hidden-dictator", code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession("hidden-dictator", code, createdAt, "incomplete", archive(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
 export function closeAllHiddenDictatorRooms(){const count=rooms.size;for(const t of timers.values())clearTimeout(t);timers.clear();rooms.clear();return count}

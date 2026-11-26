@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { SparAiDifficulty, SparCard, SparPlayer, SparPublicState, SparSuit } from "../../../../shared/games/spar/types";
 import { legalSparCards, sparRank, sparSuit } from "../../../../shared/games/spar/clientRules";
 import { GameBrandIcon } from "../../platform/components/GameBrandIcon";
@@ -8,6 +8,7 @@ import { GameResultsScreen } from "../../platform/components/GameResultsScreen";
 import { ConfirmDialog } from "../../platform/components/ConfirmDialog";
 import { ModalPortal } from "../../platform/components/ModalPortal";
 import "./SparScreen.css";
+import "../../platform/components/card-room-layout.css";
 
 const GOLD = "#E6BA60";
 const SUIT: Record<SparSuit, string> = { C:"♣", D:"♦", H:"♥", S:"♠" };
@@ -83,13 +84,24 @@ export function SparScreen({
   onStart, onAddAi, onRemoveAi, onBra, onPlay, onExchange, onShowBottom,
   onForfeit, onEndGame, onLeave, roomActivity,
 }: Props) {
+  const [seconds,setSeconds]=useState<number|null>(null);
+  useEffect(()=>{
+    const deadline=state.decisionDeadline;
+    if(deadline==null){setSeconds(null);return;}
+    const offset=typeof state.serverNow==="number"?state.serverNow-Date.now():0;
+    const tick=()=>setSeconds(Math.min(20,Math.max(0,Math.ceil((deadline-Date.now()-offset)/1000))));
+    tick();const timer=window.setInterval(tick,200);return ()=>window.clearInterval(timer);
+  },[state.decisionDeadline,state.serverNow]);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState<"forfeit"|"end"|null>(null);
   const [aiDifficulty, setAiDifficulty] = useState<SparAiDifficulty>("normal");
+  const [sideTab, setSideTab] = useState<"actions" | "players" | "chat">(() => state.isSpectator ? "players" : "actions");
+  const visibleTab = state.isSpectator && sideTab === "actions" ? "players" : sideTab;
   const expandedDeck = state.deckSize === 40;
   const custom = state.matchMode === "custom";
   const scoreUnit = state.scoring === "stones" ? "stones" : "points";
+  const revokePenalty=state.revokePenalty??(state.matchMode==="ranked"?2:state.customSettings?.revokePenalty??0);
   const duel = state.tableFormat === "duel";
   const ranked = state.matchMode === "ranked";
   const maximumPlayers = state.maximumPlayers;
@@ -103,6 +115,21 @@ export function SparScreen({
   const legal = useMemo(() => legalSparCards(state.hand, leading), [state.hand, leading]);
   const current = state.players.find(p => p.id === state.currentTurnPlayerId);
   const ranks = [...state.players].sort((a,b)=>b.stones-a.stones || a.seat-b.seat);
+  // Stable clockwise order, anchored at the viewer (or first registered seat).
+  // Never rotate for a change of turn or sort by score.
+  const seatOrder = [...state.players].sort((a,b)=>a.seat-b.seat);
+  const viewerIndex = viewer ? seatOrder.findIndex(p=>p.id===viewer.id) : 0;
+  const anchor = Math.max(0,viewerIndex);
+  const orderedSeats = [...seatOrder.slice(anchor),...seatOrder.slice(0,anchor)];
+  const ringSlots = ["bottom","bottom-left","left","top-left","top","top-right","right","bottom-right"] as const;
+  const renderTableSeat = (p:SparPlayer,i:number) => {
+    const active = p.id===state.currentTurnPlayerId;
+    return <article key={p.id} className={`spar-table-seat ${active?"is-active":""} ${p.id===viewer?.id?"is-you":""}`} data-ring-slot={ringSlots[Math.round(i*8/orderedSeats.length)%8]} data-seat-order={i} aria-current={active?"true":undefined}>
+      <span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span>
+      <div className="spar-table-seat-copy"><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit}{p.id===state.dealerPlayerId?" · D":""}{active?" · Turn":""}{active&&!state.exchangePending&&seconds!==null?" · "+seconds+"s":""}</small></div>
+      <span className="spar-card-count" aria-label={`${p.handCount} cards remaining`} title={`${p.handCount} cards remaining`}><i aria-hidden="true"/><b>{p.handCount}</b></span>
+    </article>;
+  };
   const report = () => {
     const content = [
       `HALIEUS SPAR (CHA-CHA) · ${state.code}`,
@@ -115,7 +142,7 @@ export function SparScreen({
     const link = document.createElement("a");
     link.href=url;link.download=`spar-${state.code}-report.txt`;link.click();URL.revokeObjectURL(url);
   };
-  return <main className="spar-page card-game-page page-enter"
+  return <main className={`spar-page card-game-page page-enter${state.phase==="playing"||state.phase==="bra"?" hgr-card-room-page":""}`}
     style={{ background:theme.pageBackground,color:theme.text,["--game-accent" as string]:GOLD }}>
     <header className="card-game-header card-game-header-polished spar-header">
       <div className="card-game-brand-lockup"><GameBrandIcon game="spar"/><div><p>GHANAIAN CARD TABLE</p><h1>Spar <small>Cha-Cha</small></h1></div></div>
@@ -133,7 +160,7 @@ export function SparScreen({
         <article className="card-game-lobby-card">
           <p className="modal-eyebrow">SPAR · CHA-CHA · GHANA</p>
           <h2>Take the last trick.</h2>
-          <p className="card-game-intro-copy">{state.handSize} cards each. Follow suit whenever possible. The highest card of the lead suit wins each trick. {state.customSettings?.doubleFinish ? "Double Finish may score both final tricks." : "Only the last trick scores."}</p>
+          <p className="card-game-intro-copy">{state.handSize} cards each. Follow suit whenever possible; an incorrect suit while holding the lead suit restarts the round{revokePenalty?` and deducts ${revokePenalty} ${scoreUnit}`:""}. The highest card of the lead suit wins each trick. {state.customSettings?.doubleFinish ? "Double Finish may score both final tricks." : "Only the last trick scores."}</p>
           <div className="spar-rule-summary">
             <span><b>{state.deckSize}</b> cards</span><span><b>{state.handSize}</b> tricks per hand</span>
             <span><b>6</b> = 3 {scoreUnit}</span><span><b>7</b> = 2 {scoreUnit}</span>
@@ -165,37 +192,47 @@ export function SparScreen({
       <GameResultsScreen accent={GOLD} gameTitle="Spar (Cha-Cha)" roomCode={state.code}
         headline={state.winnerPlayerId?`${state.players.find(p=>p.id===state.winnerPlayerId)?.name??"Winner"} wins Spar`:"Spar match finished"}
         subtitle={state.status}
-        rows={ranks.map((p,i)=>({id:p.id,rank:i+1,name:p.name,detail:`${p.stones} ${scoreUnit}`,winner:p.id===state.winnerPlayerId,status:p.result??"Finished",accent:GOLD,
-          metrics:[{label:state.scoring==="stones"?"Stones earned":"Points earned",value:String(p.stones)}]}))}
+        rows={ranks.map((p,i)=>({id:p.id,rank:i+1,name:p.name,detail:`${p.stones} ${scoreUnit}${p.penaltyStones?` · −${p.penaltyStones} penalty`:""}`,winner:p.id===state.winnerPlayerId,status:p.result??"Finished",accent:GOLD,
+          metrics:[{label:state.scoring==="stones"?"Net stones":"Net points",value:String(p.stones)}]}))}
         stats={[{label:"Hands",value:String(state.handNumber)},{label:state.scoring==="stones"?"Pool":state.scoring==="target"?"Target":"Scoring",value:state.scoring==="free"?"Free play":String(state.stonesTotal)},{label:"Seats",value:String(state.players.length)}]}
         onDownloadReport={report} onBackToGameRoom={onLeave}
         onPlayAgain={isHost?onStart:undefined} playAgainLabel="Play another Spar match"/>
-    : <section className="spar-match">
-        <div className="spar-table-column">
+    : <section className="spar-match hgr-card-room">
+        <div className="spar-table-column hgr-card-room-table">
           <header className="spar-match-status" aria-live="polite">
-            <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize}</small><strong>{state.status}</strong></div>
+            <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize}</small><strong>{state.status}</strong>{(seconds!==null||state.decisionPaused)&&<span className={"spar-decision-clock"+(seconds!==null&&seconds<=5?" is-urgent":"")} role="timer" aria-label="Decision time remaining">{state.decisionPaused?"Paused · waiting for players":(state.exchangePending?"Exchange":"Decision")+" · "+seconds+"s"}</span>}</div>
             {state.scoring==="stones"?<StonePool remaining={state.stonesRemaining} total={state.stonesTotal}/>:<strong>{state.scoring==="target"?`Target: ${state.stonesTotal} points`:"Free play · Cumulative points"}</strong>}
           </header>
-          <div className={`spar-opponents ${state.players.length > 4 ? "is-expanded" : ""}`} aria-label="Player scores">
-            {state.players.map(p=><PlayerChip key={p.id} player={p} active={p.id===state.currentTurnPlayerId} isViewer={p.id===viewer?.id} scoreUnit={scoreUnit}/>)}
-          </div>
           <section className="spar-table" aria-label="Spar card table">
             <div className="spar-table-texture" aria-hidden="true"/>
             <div className="spar-table-heading"><span>SPAR</span><small>THE LAST TRICK COUNTS</small></div>
+            <div className="spar-table-seats spar-seat-ring" aria-label="Clockwise player seats">
+            {orderedSeats.map(renderTableSeat)}
             <div className="spar-table-centre">
               {state.plays.length ?
                 <div className={`spar-current-plays ${state.players.length > 4 ? "is-expanded" : ""}`}>{state.plays.map((p,i)=><div key={p.playerId} className="spar-play"><CardFace card={p.card}/><small>{p.playerName}{i===0?" · Lead":""}</small></div>)}</div>
                 : <div className="spar-empty-centre"><span>♠ ♥ ♣ ♦</span><strong>{state.phase==="bra"?"Bra — begin the hand":"Waiting for the lead"}</strong><small>Cards are revealed here as players follow suit</small></div>}
             </div>
+            </div>
             {state.lastTrick&&<div className="spar-last-trick">Last trick: {state.players.find(p=>p.id===state.lastTrick?.winnerPlayerId)?.name??"Player"} · {state.lastTrick.winningCard} {state.lastTrick.number===state.handSize? `· ${state.lastTrick.points} points`:"· no points"}</div>}
           </section>
+        </div>
+        <aside className="spar-room-stack spar-control-panel hgr-card-room-dock" aria-label="Spar room controls">
+          <header className="spar-control-heading"><div><small>{state.isSpectator?"LIVE TABLE":"YOUR SEAT"}</small><h2>{state.isSpectator?"Spectating":viewer?.name??"Spar"}</h2></div><span className={canAct||canCallBra||state.canExchange?"spar-turn-pill is-you":"spar-turn-pill"}>{canAct||canCallBra||state.canExchange?"Your decision":current?current.name+"'s turn":"Waiting"}</span></header>
+          <nav className="spar-side-tabs" aria-label="Spar side panel">
+            <button type="button" disabled={state.isSpectator} className={visibleTab==="actions"?"is-active":""} aria-pressed={visibleTab==="actions"} onClick={()=>setSideTab("actions")}>Actions{(canAct||canCallBra||state.canExchange)&&<i aria-label="Decision required"/>}</button>
+            <button type="button" className={visibleTab==="players"?"is-active":""} aria-pressed={visibleTab==="players"} onClick={()=>setSideTab("players")}>Players <span>{state.players.length}</span></button>
+            <button type="button" className={visibleTab==="chat"?"is-active":""} aria-pressed={visibleTab==="chat"} onClick={()=>setSideTab("chat")}>Chat</button>
+          </nav>
+          <div className="spar-side-tab-panel hgr-card-room-workspace" data-tab={visibleTab}>
+            {visibleTab==="actions"&&!state.isSpectator&&<div className="spar-actions-workspace">
           {state.bottomCard && <div className="spar-last-trick">Bottom card: {state.bottomCard}</div>}
           {state.canShowBottom && <button type="button" className="button-outline" onClick={onShowBottom}>Show bottom card</button>}
           {state.lastAward&&<div className="spar-award" role="status"><strong>{state.lastAward.playerName} claimed {state.lastAward.awarded} {scoreUnit}</strong><span>Hand {state.lastAward.hand} · Winning card {state.lastAward.winningCard}</span></div>}
           {state.phase==="bra" ?
             <div className="spar-bra-prompt">
               <strong>{state.exchangePending?"Opening hand exchange":canCallBra?"Your call":"Waiting for Bra"}</strong>
-              {viewer && <div className="spar-hand-cards" role="group" aria-label="Opening hand">{state.hand.map(card=><CardFace key={card} card={card}/>)}</div>}
+              {viewer && <div className={`spar-hand-cards${state.hand.length>5?" is-seven":""}`} role="group" aria-label="Opening hand">{state.hand.map(card=><CardFace key={card} card={card}/>)}</div>}
               {state.canExchange && <div className="card-game-host-actions"><button type="button" className="button-outline" onClick={()=>onExchange(false)}>Keep hand</button><button type="button" className="button-primary" onClick={()=>onExchange(true)}>Exchange hand</button></div>}
               <span>{state.exchangePending?"Waiting for eligible players to decide.":canCallBra?"You are next after the dealer. Call Bra to begin.":`${current?.name??"Next player"} begins the hand.`}</span>
               {canCallBra&&<button type="button" className="button-primary" onClick={onBra}>Bra! · Begin hand</button>}
@@ -203,13 +240,17 @@ export function SparScreen({
           : <div className="spar-hand">
               <div className="spar-hand-header"><strong>{viewer?"Your hand":state.isSpectator?"Spectator view":"Players' hands"} · {state.hand.length} cards</strong>
                 <span>{canAct?(leading?`Follow ${SUIT_NAME[leading]}`:"Lead any card"):(current?`${current.name}'s turn`:"Waiting")}</span></div>
-              {viewer?<div className="spar-hand-cards" role="group" aria-label="Your hand">
+              {viewer?<div className={`spar-hand-cards${state.hand.length>5?" is-seven":""}`} role="group" aria-label="Your hand">
                 {state.hand.map(card=><CardFace key={card} card={card} canPlay={canAct&&legal.includes(card)} disabled={!canAct} onPlay={onPlay}/>)}
               </div>:<p className="spar-spectator-note">Private hands remain concealed until each card is played.</p>}
             </div>}
+
+            </div>}
+            {visibleTab==="players"&&<section className="spar-side-players" aria-label="Spar players"><header><strong>{state.isSpectator&&state.spectatorHands?"Player hands":"Table players"}</strong><small>{state.players.length}/{maximumPlayers} seats · {state.spectatorCount} spectators</small></header><div className={`spar-opponents ${state.players.length>4?"is-expanded":""}`} aria-label="Player scores">{state.players.map(p=><div key={p.id} className="spar-roster-entry"><PlayerChip player={p} active={p.id===state.currentTurnPlayerId} isViewer={p.id===viewer?.id} scoreUnit={scoreUnit}/>{state.isSpectator&&state.spectatorHands?.[p.id]&&<div className="spar-spectator-hand" role="group" aria-label={p.name+"'s remaining cards"}>{state.spectatorHands[p.id].map(card=><CardFace key={card} card={card}/>)}</div>}</div>)}</div></section>}
+            {visibleTab==="chat"&&<div className="spar-chat-slot">{roomActivity??<p>Room chat is unavailable.</p>}</div>}
+          </div>
           {message&&<p className="status-toast" role="status">{message}</p>}
-        </div>
-        {roomActivity&&<aside className="spar-room-stack">{roomActivity}</aside>}
+        </aside>
       </section>}
 
     {inviteOpen&&<div className="modal-backdrop" role="presentation" onMouseDown={e=>e.target===e.currentTarget&&setInviteOpen(false)}>

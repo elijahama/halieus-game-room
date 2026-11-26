@@ -282,5 +282,35 @@ export function registerWordArenaHandlers(io:Server,socket:Socket){ (Object.keys
 export function getWordArenaChatIdentity(game:WordArenaGameId,c:string,socketId:string){const room=findRoom(game,c);if(!room)return null;const p=room.players.find(x=>x.id===socketId&&x.isConnected);if(p)return{name:p.name,role:"player" as const};const s=room.spectators.get(socketId);return s?{name:s,role:"spectator" as const}:null;}
 export function getWordArenaRoomCount(){let count=0;for(const game of Object.keys(roomsByGame) as WordArenaGameId[])count += [...roomsByGame[game].values()].filter(room=>room.phase!=="finished"&&(room.players.some(p=>p.isConnected)||room.spectators.size>0)).length;return count;}
 export function getWordArenaLiveRoomSummaries():HalieusLiveRoomSummary[]{const output:HalieusLiveRoomSummary[]=[];for(const game of Object.keys(roomsByGame) as WordArenaGameId[])for(const room of roomsByGame[game].values())if(room.phase!=="finished"&&(room.players.some(p=>p.isConnected)||room.spectators.size>0))output.push({game,gameTitle:TITLES[game],code:room.code,phase:room.phase,matchMode:room.matchMode,started:room.phase!=="lobby",createdAt:room.createdAt,startedAt:room.startedAt,updatedAt:room.updatedAt,playerCount:room.players.length,maximumPlayers:game==="word-game"?1:8,humanPlayers:room.players.filter(p=>p.isConnected&&!p.isAi).map(p=>p.name),verifiedAccountIds:verifiedRoomAccountIds(room.players),aiCount:room.players.filter(p=>p.isAi).length,spectatorCount:room.spectators.size,joinable:room.phase==="lobby"&&room.players.length<(game==="word-game"?1:8),spectatable:true});return output;}
-export function closeAllWordArenaRooms(){const count=getWordArenaRoomCount();for(const game of Object.keys(roomsByGame) as WordArenaGameId[])roomsByGame[game].clear();return count;}
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+function protectedWordArenaRoom(room: Room): boolean {
+  // A daily attempt bound to an authenticated account must not be cancelled by Control.
+  return room.matchMode === "ranked" || (room.game === "word-game" && room.wordGameMode === "daily" && room.wordDailyAccountId !== null);
+}
+export async function closeWordArenaRoom(io: Server, game: WordArenaGameId, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = roomsByGame[game].get(code);
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || protectedWordArenaRoom(room)) return false;
+  // Every delayed AI callback checks this phase before acting; deleting the room
+  // and marking its old instance finished also protects a replacement room.
+  room.phase = "finished"; roomsByGame[game].delete(code);
+  room.winnerPlayerId = null; room.roundWinnerPlayerId = null; room.clueGiverPlayerId = null;
+  room.status = reason; room.updatedAt = Date.now();
+  for (const player of room.players) player.result = null;
+  const payload = { game, code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession(game, code, createdAt, "incomplete", archive(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasWordArenaRecoverySeat(game: WordArenaGameId, code: string, token: string): boolean {
+  const room = roomsByGame[game].get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
+export function getWordArenaBulkRoomState() {
+  const open = Object.values(roomsByGame).flatMap(store => [...store.values()]).filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(protectedWordArenaRoom).length,
+    rooms: open.map(room => ({ game: room.game, code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
+}
+export function closeAllWordArenaRooms(){const count=getWordArenaRoomCount();for(const game of Object.keys(roomsByGame) as WordArenaGameId[]){for(const room of roomsByGame[game].values())room.phase="finished";roomsByGame[game].clear();}return count;}
 export const WORD_ARENA_ACCENTS=ACCENTS;

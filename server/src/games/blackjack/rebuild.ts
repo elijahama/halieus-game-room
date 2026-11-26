@@ -417,6 +417,33 @@ export function getBlackjackLiveRoomSummaries(): HalieusLiveRoomSummary[] {
       joinable: room.phase === "lobby" && (room.players.length < 6 || room.players.some((player) => player.isAi)), spectatable: true,
     }));
 }
+/** Administrative preflight includes disconnected recovery rooms, not just discovery. */
+/** Read-only credential existence check; never reconnect or replace a seat. */
+export function hasBlackjackRecoverySeat(code: string, token: string): boolean {
+  const room = rooms.get(code);
+  return !!room && room.players.some(player => !player.isAi && player.reconnectToken === token);
+}
+export function getBlackjackBulkRoomState() {
+  const open = [...rooms.values()].filter(room => room.phase !== "finished");
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "blackjack", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
+}
+/** Cancel a single casual table without invoking its normal finish/scoring path. */
+export async function closeBlackjackRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {
+  const room = rooms.get(code);
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || room.matchMode === "ranked") return false;
+  const timer = aiTimers.get(code); if (timer) clearTimeout(timer); aiTimers.delete(code);
+  rooms.delete(code);
+  room.phase = "finished"; room.currentTurnPlayerId = null; room.status = reason;
+  for (const player of room.players) player.result = null;
+  room.updatedAt = Date.now();
+  const payload = { game: "blackjack", code, createdAt, reason };
+  for (const player of room.players) if (!player.isAi && player.isConnected) io.to(player.id).emit("platform:room-closed", payload);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", payload);
+  await finalizeSession("blackjack", code, createdAt, "incomplete", archivePayload(room), { winner: null, mode: room.matchMode, cancellation: "owner-closed" });
+  return true;
+}
+
 export function closeAllBlackjackRooms(): number {
   const count = rooms.size;
   for (const timer of aiTimers.values()) clearTimeout(timer);

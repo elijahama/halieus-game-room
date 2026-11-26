@@ -1,0 +1,14 @@
+import React from "react";
+import {createRoot} from "react-dom/client";
+import {SparScreen} from "../../client/src/games/spar/SparScreen";
+import type {SparPublicState,SparCard} from "../../shared/games/spar/types";
+const w=window as typeof window & {sparFixture?:{seats:number;spectator:boolean;seven:boolean;phase:"playing"|"bra"};sparActions?:string[]};
+const config=w.sparFixture??{seats:8,spectator:false,seven:false,phase:"playing"};
+w.sparActions=[];
+const n=config.seats;const viewer=config.spectator?null:"p0";
+const players=Array.from({length:n},(_,i)=>({id:"p"+i,name:i===0?"You":i===1?"Alexandria Longname":"Player "+(i+1),seat:i,isHost:i===0,isAi:false,aiDifficulty:null,isConnected:true,stones:i%3,handCount:config.seven?7:5,result:null}));
+const hand:SparCard[]=config.seven?["6H","7H","8H","9H","10H","JH","QH"]:["6H","7S","9H","KD","AC"];
+const cards:SparCard[]=["AH","KH","QH","JH","10H","8H","7H"];
+const state:SparPublicState={game:"spar",gameTitle:"Spar (Cha-Cha)",code:"PORTRAIT",createdAt:1,startedAt:2,updatedAt:3,phase:config.phase,matchMode:config.seven?"custom":"casual",tableFormat:n===2?"duel":"multiplayer",maximumPlayers:n,customSettings:config.seven?{handSize:7,deck:"traditional",scoring:"stones",amount:10,underTen:false,showBottom:false,doubleFinish:false}:null,handSize:config.seven?7:5,scoring:"stones",deckSize:n===8?40:35,canExchange:false,exchangePending:false,bottomCard:null,canShowBottom:false,players,viewerPlayerId:viewer,isSpectator:config.spectator,spectatorCount:config.spectator?1:0,spectatorNames:config.spectator?["Viewer"]:[],hand:config.spectator?[]:hand,...(config.spectator?{spectatorHands:Object.fromEntries(players.map(p=>[p.id,[...hand]]))}:{}),dealerPlayerId:"p1",currentTurnPlayerId:"p0",leadPlayerId:"p1",handNumber:2,trickNumber:config.phase==="bra"?1:2,plays:config.phase==="bra"?[]:players.slice(1).map((p,i)=>({playerId:p.id,playerName:p.name,card:cards[i]!})),lastTrick:null,lastAward:null,stonesRemaining:4,stonesTotal:5,winnerPlayerId:null,status:"Follow hearts",events:[]};
+const log=(s:string)=>w.sparActions!.push(s);const noop=()=>{};
+createRoot(document.getElementById("root")!).render(<SparScreen state={state} connectionStatus="Connected" message="" darkMode={true} theme={{pageBackground:"#101923",secondaryBackground:"#14232d",cardBackground:"#1a2731",text:"#f8f8f8",mutedText:"#aebac3",border:"#52616d"}} soundEnabled={false} onToggleFullscreen={noop} onToggleDarkMode={noop} onToggleSound={noop} onStart={noop} onAddAi={noop} onRemoveAi={noop} onBra={()=>log("bra")} onExchange={b=>log("exchange:"+b)} onShowBottom={()=>log("bottom")} onPlay={c=>log(c)} onForfeit={noop} onEndGame={noop} onLeave={noop} roomActivity={<section aria-label="Fixture chat"><p>Room chat fixture</p><input aria-label="Message"/></section>}/>);
