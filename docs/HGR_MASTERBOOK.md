@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 Spar presentation and cadence — 26 November 2026
+
+Issue #282: preserve clockwise authoritative turn order and viewer-anchored stable seating. Public state projects the next seat only when another play remains within the current trick; never predict the next trick winner. Highlight current and next seats distinctly, expose direction in the match status, and label CPU turns. Compact played-card dimensions and hand-card maximums without changing the approved board/controls shell or available card choices. CPU presentation delay increased from 620ms to 1050ms as an initial tunable choice, independent of the existing 20-second decision deadline; guard stale CPU callbacks against closed/replaced rooms and all-human disconnect. Ranked, custom revoke, scoring, deck, spectator and competitive rules remain unchanged. Browser geometry and real handler regression required; actual device and pacing owner acceptance pending.
+
 ## 4.8.6 high display scaling — 26 November 2026
 
 Owner reports options inaccessible at 175% Windows display scaling. Source audit confirms the fixed desktop rail clips overflow, and the room modal has overlapping height constraints. Scoped short-height landscape fixes: independently scrollable navigation rail, bounded scrollable shared Create/Join dialogs, adaptable setup columns, and reflow/scroll for the Mega Board waiting lobby at narrow desktop widths. Use CSS viewport dimensions rather than DPI assumptions; never alter OS scaling, global font sizes or board geometry. Test actual setup and lobby at reduced CSS viewport sizes, mouse wheel reachability and action clicks. Real 100–200% Windows scaling/device acceptance remains required; issue #284 stays open and is a permanent 4.9.9 site-wide audit criterion. Exact original affected page not yet identified.

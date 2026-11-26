@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { registerSparHandlers, getSparRoomCount, getSparLiveRoomSummaries, getSparChatIdentity, closeAllSparRooms, closeSparRoom, expireAbandonedSparRooms, SPAR_ABANDONMENT_GRACE_MS } from "../server/src/games/spar/handlers.ts";
 import { legalSparCards, sparSuit } from "../shared/games/spar/rules.ts";
+import { SPAR_CPU_TURN_DELAY_MS } from "../shared/games/spar/types.ts";
+import { setTimeout as delay } from "node:timers/promises";
 const handlers = new Map();
 const latest = new Map();
 const socket = (id) => ({
@@ -69,6 +71,7 @@ while(latest.get("host").phase!=="finished" && tries++<250){
  }
  const id=state.currentTurnPlayerId;
  assert.ok(id==="host"||id==="guest");
+ assert.equal(state.nextTurnPlayerId,state.plays.length===0?(id==="host"?"guest":"host"):null,"Only project next clockwise seat within current trick");
  const view=latest.get(id);
  const leading=view.plays.length ? sparSuit(view.plays[0].card) : null;
  const legal=legalSparCards(view.hand,leading);
@@ -313,3 +316,20 @@ console.log("PASS targeted owner Spar cancellation: stale identity rejected; unr
  assert.equal(await expireAbandonedSparRooms(io,emptySince+2*SPAR_ABANDONMENT_GRACE_MS),0,"Expiry is idempotent");
  closeAllSparRooms();
  console.log("PASS Spar abandonment: recovery grace, reconnect and spectator protection, incomplete cancellation, stale room removed");
+
+// Actual AI turn timing, not a modification of the human deadline.
+try {
+ const cpu=await call("host","spar:create",{code:"PACE01",playerName:"Host",tableFormat:"duel"});assert.ok(cpu.ok);
+ assert.ok((await call("host","spar:add-ai",{code:"PACE01",difficulty:"normal"})).ok);
+ const began=Date.now();assert.ok((await call("host","spar:start",{code:"PACE01"})).ok);
+ assert.equal(latest.get("host").phase,"bra");
+ assert.equal(latest.get("host").currentTurnPlayerId,latest.get("host").players[1].id);
+ await delay(650);assert.equal(latest.get("host").phase,"bra","CPU must not use the old 620ms cadence");
+ while(latest.get("host").plays.length===0&&Date.now()-began<5000)await delay(30);
+ const view=latest.get("host");assert.equal(view.plays.length,1);assert.equal(view.currentTurnPlayerId,"host");
+ const events=view.events.filter(e=>e.type==="bra"||e.type==="play");
+ assert.ok(events.length>=2);assert.ok(events[0].at-began>=SPAR_CPU_TURN_DELAY_MS-30);assert.ok(events[1].at-events[0].at>=SPAR_CPU_TURN_DELAY_MS-30);
+ assert.equal(view.nextTurnPlayerId,null);
+ assert.ok(view.decisionDeadline-view.serverNow<=20000&&view.decisionDeadline-view.serverNow>=19000,"Human decision stays twenty seconds");
+ console.log("PASS Spar CPU cadence",events[0].at-began,events[1].at-events[0].at,"ms; independent human deadline");
+}finally{closeAllSparRooms();}
