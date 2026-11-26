@@ -1,5 +1,11 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 Control notification and progress contract — 26 November 2026
+
+Owner-approved next-release scope ([issue #279](https://github.com/elijahama/halieus-game-room/issues/279)), alongside the existing Spar Beta milestone. Successful canonical main packaging must trigger immediate system-level Control PWA release-ready Web Push, independently verified before delivery; retain the five-minute fallback, deduplication, authorization, existing approved H/cog assets and review-update click path. No automatic update. Physical-device background/locked/closed notification receipt is required for acceptance.
+
+Replace fixed updater percentage markers with a task manifest, analogous to GitHub Actions: each real validation, regression, build, transfer, activation and health-check task contributes a weight calibrated from measured durations. Use measured completed/total units for internal progress when available; otherwise show an indeterminate active segment and elapsed time. Report actual task state, count, elapsed time and explicitly estimated ETA when supportable; never fabricate completion from elapsed time. Smooth only confirmed progress transitions. Preserve operation identity, monotonic sequence, reconnect receipt, failure and rollback truth, no false 100%, hidden Windows execution and existing deployment protections. Intermediate push progress is throttled; start, ready, completion and failure dispatch promptly. No changes to 4.8.5 production. Implementation and test acceptance remain open.
+
 ## 4.8.5 release candidate preparation — 26 November 2026
 
 The candidate includes tournament safeguards, Spar rule and clock corrections, Control release notifications, fifteen-game individual closure, exact-set bulk cancellation and offline recovery reconciliation. Commit ede8bdcc passed local typecheck, HTTP integration and all four tournament format tests. Advance VERSION to 4.8.5 in the isolated candidate and regenerate canonical release identity before built browser acceptance. Spar remains Beta. Independent CI for the final candidate, targeted recovery browser acceptance, physical-device push/PWA receipt and Oracle activation remain distinct gates. Never claim production deployment from source validation alone.
