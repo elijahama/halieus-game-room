@@ -1,6 +1,6 @@
 {
   "name": "halieus-game-room-server",
-  "version": "4.8.5",
+  "version": "4.8.5-a",
   "private": true,
   "type": "module",
   "scripts": {

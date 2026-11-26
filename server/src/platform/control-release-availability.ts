@@ -17,16 +17,19 @@ export interface ReleaseAvailability {
 }
 
 function parts(version: string): number[] | null {
-  if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) return null;
-  const numbers = version.split(".").map(Number);
-  return numbers.every(n => Number.isSafeInteger(n) && n <= 99999) ? numbers : null;
+  const match = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)([a-z])?$/.exec(version);
+  if (!match) return null;
+  const numbers = match.slice(1, 4).map(Number);
+  if (!numbers.every(n => Number.isSafeInteger(n) && n <= 99999)) return null;
+  // HGR lettered hotfixes follow their numeric base, before the next patch.
+  return [...numbers, match[4] ? match[4].charCodeAt(0) - 96 : 0];
 }
 
 export function newerRelease(candidate: string, installed: string): boolean {
   const left = parts(candidate);
   const right = parts(installed);
   if (!left || !right) return false;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     if (left[i] !== right[i]) return left[i] > right[i];
   }
   return false;
