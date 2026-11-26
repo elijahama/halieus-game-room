@@ -1,0 +1,86 @@
+/* Desktop / landscape high display scaling: work in CSS viewport space.
+ * Do not shrink the typography, alter board geometry, or change portrait layout. */
+@media (min-width: 921px) and (max-height: 780px) {
+  .halieus-shell > .halieus-sidebar {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scroll-padding-block: 8px;
+    min-height: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .halieus-shell > .halieus-sidebar > :not(.halieus-side-spacer) {
+    flex-shrink: 0 !important;
+  }
+  .halieus-shell > .halieus-sidebar .halieus-side-nav {
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+  }
+  .halieus-shell > .halieus-sidebar > .halieus-side-spacer {
+    flex: 1 0 0 !important;
+    min-height: 0 !important;
+  }
+}
+@media (orientation: landscape) and (max-height: 780px) {
+  /* Short desktop windows (including those using the compact shell) retain
+   * a scroll owner in the foreground; the background stays modal-locked. */
+  .halieus-viewport-overlay {
+    padding: 12px !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+    overflow: hidden !important;
+  }
+  .halieus-viewport-overlay > :is(.halieus-create-modal,.halieus-join-modal) {
+    min-height: 0 !important;
+    max-height: calc(100dvh - 24px) !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scroll-padding-block: 12px;
+    scrollbar-gutter: stable;
+  }
+  .halieus-viewport-overlay > .pre-game-shell .halieus-create-form {
+    min-width: 0 !important;
+    grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)) !important;
+  }
+  .halieus-viewport-overlay > .pre-game-shell .halieus-create-form > * {
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+  .halieus-viewport-overlay :is(button,input,select,textarea,a[href]) {
+    scroll-margin-block: 8px;
+  }
+}
+@media (min-width: 981px) and (max-height: 780px) {
+  .mega-lobby-poker-standard.poker-page {
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: contain;
+    scroll-padding-block: 12px;
+    scrollbar-gutter: stable;
+  }
+  .mega-lobby-poker-standard .poker-lobby-shell {
+    min-width: 0 !important;
+    width: min(1420px,calc(100% - 32px)) !important;
+    grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    align-items: start;
+  }
+  .mega-lobby-poker-standard .poker-lobby-shell > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .mega-lobby-poker-standard .mega-poker-lobby-actions {
+    flex-wrap: wrap;
+  }
+}
+@media (min-width: 981px) and (max-width: 1240px) and (max-height: 780px) {
+  .mega-lobby-poker-standard .poker-lobby-shell {
+    grid-template-columns: minmax(0,1fr) !important;
+    max-width: 820px !important;
+  }
+}

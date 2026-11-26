@@ -1,5 +1,10 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 high display scaling — 26 November 2026
+
+Owner reports options inaccessible at 175% Windows display scaling. Source audit confirms the fixed desktop rail clips overflow, and the room modal has overlapping height constraints. Scoped short-height landscape fixes: independently scrollable navigation rail, bounded scrollable shared Create/Join dialogs, adaptable setup columns, and reflow/scroll for the Mega Board waiting lobby at narrow desktop widths. Use CSS viewport dimensions rather than DPI assumptions; never alter OS scaling, global font sizes or board geometry. Test actual setup and lobby at reduced CSS viewport sizes, mouse wheel reachability and action clicks. Real 100–200% Windows scaling/device acceptance remains required; issue #284 stays open and is a permanent 4.9.9 site-wide audit criterion. Exact original affected page not yet identified.
+
+
 ## 4.8.6 Control task receipt transport — 26 November 2026
 
 Expose the isolated updater's schema-1 task receipts via the already authenticated, operation-scoped cloud progress channel. Validate exact manifest labels, task ordering, timestamps and sequence; reject foreign or stale evidence, preserve terminal/unchanged receipts, use the shared estimator in count-based mode and stop legacy marker fallback once real task evidence exists. The first real receipt supersedes initial placeholder progress. Public administrator status includes bounded task metadata only; lock-screen push includes verified count, not raw output. Expand the existing operation details to display eleven task states, elapsed time, last checkpoint age and an explicitly unavailable/calculating ETA until comparable history exists. Elapsed clock must never increase verified percentage. No new update or authentication action; legacy clean-main progress and full historical duration/regression-unit integration remain separate. Physical device acceptance outstanding.

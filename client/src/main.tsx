@@ -42,6 +42,7 @@ import "./styles/hgr-mega-zoom-readability-hotfix.css";
 import "./platform/control/admin-control-launcher.css";
 import "./styles/hgr-intro-viewport-hotfix.css";
 import "./styles/hgr-mega-mode-picker.css";
+import "./styles/hgr-desktop-scaled-viewport.css";
 
 // Keep exact release identity available to diagnostics without permanently
 // stamping it onto the visible website. Players can open Build Info on demand.
