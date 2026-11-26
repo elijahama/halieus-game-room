@@ -1,5 +1,9 @@
 # Control: visible update-available notice
 
+## 26 November 2026 — next release requirement (4.8.6)
+
+Owner requests real system-level PWA push immediately upon verified release availability, including when Control is closed or backgrounded, and an actual task-based update progress bar comparable to GitHub Actions individual timed checks. Issue #279 tracks event-triggered verification, fallback polling, per-device deduplication, scoped delivery, measured task weights, completed/total subtask telemetry, elapsed time, honest indeterminate states and physical-device acceptance. Preserve the existing Control notification route, approved artwork and release safety gates. This supersedes the polling-only timing requirement for the next release; 4.8.5 remains unchanged. No implementation or production acceptance is claimed here.
+
 ## 25 November 2026 — background release notification correction
 
 Previously the verified availability notice polled only while Control was open; the existing operations push transport was not connected to release discovery. Public HGR server now starts a five-minute worker after account and push stores load, sharing the verified canonical release check. Only existing opted-in owner/admin operations subscriptions receive a verified newer release alert; persistent per-device fingerprint receipt prevents repeat sends across polls/restarts, expired subscriptions are removed, transient failures retried. Gateway acceptance is not device receipt. Existing approved Control notification badge and click path retained. No automatic updater action. Physical PWA delivery and deployed release identity remain independent acceptance gates.
