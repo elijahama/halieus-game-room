@@ -5,7 +5,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const json = (path) => JSON.parse(read(path));
 
 const displayVersion = read('VERSION').trim();
-assert.match(displayVersion, /^(?:3\.(?:6\.8e|7\.0[a-z]?)|4\.\d+\.\d+)$/, '3.6.8e invariant should survive later HGR releases');
+assert.match(displayVersion, /^(?:3\.(?:6\.8e|7\.0[a-z]?)|4\.\d+\.\d+[a-z]?)$/, '3.6.8e invariant should survive later HGR releases');
 const npmVersion = displayVersion.replace(/^(\d+\.\d+\.\d+)([a-z])$/, '$1-$2');
 for (const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
   assert.equal(json(file).version, npmVersion, `${file} version mismatch`);

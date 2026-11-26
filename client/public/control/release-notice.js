@@ -43,9 +43,9 @@
       const release = await response.json();
       if (release?.ok !== true || release.status !== "available" ||
           typeof release.candidateVersion !== "string" ||
-          !/^\d+\.\d+\.\d+$/.test(release.candidateVersion) ||
+          !/^\d+\.\d+\.\d+[a-z]?$/.test(release.candidateVersion) ||
           typeof release.installedVersion !== "string" ||
-          !/^\d+\.\d+\.\d+$/.test(release.installedVersion) ||
+          !/^\d+\.\d+\.\d+[a-z]?$/.test(release.installedVersion) ||
           typeof release.candidateFingerprint !== "string" ||
           !release.candidateFingerprint.startsWith("hgr-" + release.candidateVersion + "-") ||
           !/[a-f0-9]{16}$/.test(release.candidateFingerprint)) {

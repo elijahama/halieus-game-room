@@ -23,6 +23,13 @@ assert.equal(newerRelease("4.8.5","4.9.0"),false);
 assert.equal(newerRelease("5.0.0","5.0.5"),false);
 assert.equal(newerRelease("4.85","4.8.0"),false);
 assert.equal(newerRelease("abc","4.7.13"),false);
+assert.equal(newerRelease("4.8.5a","4.8.5"),true);
+assert.equal(newerRelease("4.8.5b","4.8.5a"),true);
+assert.equal(newerRelease("4.8.5","4.8.5a"),false);
+assert.equal(newerRelease("4.8.6","4.8.5a"),true);
+assert.equal(newerRelease("4.8.5aa","4.8.5"),false);
+assert.equal(classifyRelease(valid("4.8.5a"),"4.8.5",valid("4.8.5").fingerprint).status,"available");
+assert.equal(classifyRelease(valid("4.8.6"),"4.8.5a",valid("4.8.5a").fingerprint).status,"available");
 assert.equal(RELEASE_AVAILABILITY_TTL_MS,300000);
 const installedFingerprint="hgr-4.7.13-"+ "a".repeat(16);
 const options=(doc,version="4.7.13",fingerprint=installedFingerprint)=>

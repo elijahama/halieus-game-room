@@ -14,9 +14,9 @@ const json=(p)=>JSON.parse(read(p));
 
 // Historical 4.0.1 contract: later 4.x releases must preserve these UI
 // behaviours without forcing the current product version back to 4.0.1.
-assert.match(read('VERSION').trim(),/^4\.\d+\.\d+$/,'4.x product version expected');
+assert.match(read('VERSION').trim(),/^4\.\d+\.\d+[a-z]?$/,'4.x product version expected');
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.match(json(file).version,/^4\.\d+\.\d+$/,`${file} must remain on the 4.x line`);
+  assert.match(json(file).version,/^4\.\d+\.\d+(?:-[a-z])?$/,`${file} must remain on the 4.x line`);
 }
 
 const rootPackage=json('package.json');

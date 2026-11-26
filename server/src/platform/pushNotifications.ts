@@ -260,7 +260,7 @@ export async function sendControlReleaseAvailable(
  send: typeof webPush.sendNotification = webPush.sendNotification.bind(webPush),
 ):Promise<number>{
  const s=state;
- if(!s||release.status!=="available"||!release.candidateVersion||!release.candidateFingerprint||!/^hgr-\d+\.\d+\.\d+-[a-f0-9]{16}$/.test(release.candidateFingerprint))return 0;
+ if(!s||release.status!=="available"||!release.candidateVersion||!release.candidateFingerprint||!/^hgr-\d+\.\d+\.\d+[a-z]?-[a-f0-9]{16}$/.test(release.candidateFingerprint))return 0;
  const fingerprint=release.candidateFingerprint;
  const devices=s.subscriptions.filter(d=>d.topics.includes("operations")&&isAdmin(d.accountId)&&d.lastReleaseFingerprint!==fingerprint);
  let accepted=0,changed=false;

@@ -15,6 +15,8 @@ export interface LobbyPlayer {
 
 export interface GameRoom {
   code: string;
+  createdAt?: number;
+  matchModeLocked?: boolean;
   ranked: boolean;
   blitz: boolean;
   hostId: string;
@@ -62,6 +64,9 @@ export interface DiceResponse extends GameStateResponse {
 
 export interface LobbyState {
   code: string;
+  ranked?: boolean;
+  createdAt?: number;
+  matchModeLocked?: boolean;
   playerId: string;
   players: LobbyPlayer[];
   hostDisconnectDeadline: number | null;

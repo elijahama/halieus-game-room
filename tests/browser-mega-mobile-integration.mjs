@@ -18,7 +18,15 @@ try{
   const page=await browser.newPage({viewport});const errors=[];page.on("pageerror",e=>{errors.push(e.message);console.error(e.message);});
   try{
    await page.goto(url);await page.locator(".mega-poker-lobby-actions").waitFor();
-   const end=page.getByRole("button",{name:"End room",exact:true});await end.scrollIntoViewIfNeeded();await end.click();assert.equal(await page.evaluate(()=>window.hgrEnded),true);
+   const mode=page.getByRole("combobox",{name:"Match mode"});
+   assert.equal(await mode.inputValue(),"casual");assert.equal(await mode.locator('option[value="ranked"]').isDisabled(),true,"Ranked disabled while AI remain");
+   await mode.selectOption("blitz");assert.equal(await mode.inputValue(),"blitz");
+   await mode.selectOption("casual");assert.equal(await mode.inputValue(),"casual");
+   assert.equal(await page.locator(".mega-lobby-activity .room-chat-shell.is-embedded").count(),1);
+   assert.equal(await page.locator(".room-chat-shell.is-floating").count(),0);
+   const end=page.getByRole("button",{name:"End room",exact:true});await end.scrollIntoViewIfNeeded();
+   if(viewport.width<=680){const start=await page.getByRole("button",{name:"Start game",exact:true}).boundingBox();const finish=await end.boundingBox();assert.ok(Math.abs(start.width-finish.width)<=1,"Host action widths match");}
+   await end.click();assert.equal(await page.evaluate(()=>window.hgrEnded),true);
    assert.equal(await page.locator(".mega-poker-player-list .poker-player-list-card").count(),8);
    await page.getByRole("button",{name:"Start game",exact:true}).click();
    await page.getByRole("button",{name:"Open Players",exact:true}).click();
@@ -57,6 +65,15 @@ try{
    await page.getByRole("button",{name:"Close players",exact:true}).click();
    await page.getByRole("button",{name:"Open Trade",exact:true}).click();await page.getByRole("button",{name:"Close panel",exact:true}).click();
    await page.getByRole("button",{name:/Roll Dice/}).click(); assert.equal(await page.evaluate(()=>window.hgrRolled),true);
+   await page.setViewportSize(viewport);
+   await page.goto(url+"?humans");await page.getByRole("combobox",{name:"Match mode"}).selectOption("ranked");assert.equal(await page.getByRole("combobox",{name:"Match mode"}).inputValue(),"ranked");
+   await page.goto(url+"?compact=participant");await page.locator(".mega-mobile-participant-player-rail .player-rail-list").waitFor();
+   const gallery=await page.locator(".mega-mobile-participant-player-rail .player-rail-list").evaluate(el=>{const cards=[...el.children];return {columns:getComputedStyle(el).gridTemplateColumns.split(" ").length,first:cards[0].getBoundingClientRect().toJSON(),second:cards[1].getBoundingClientRect().toJSON(),width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}});
+   assert.equal(gallery.columns,2,JSON.stringify(gallery));assert.ok(gallery.second.x>gallery.first.x&&Math.abs(gallery.second.top-gallery.first.top)<=2,"Portrait players side by side");assert.ok(gallery.scroll<=gallery.width+1,"No horizontal overflow");
+   await page.getByRole("button",{name:"Open Trade",exact:true}).click();const deal=page.getByRole("dialog",{name:"Trade",exact:true});await deal.waitFor();
+   const bounds=await deal.boundingBox();assert.ok(bounds.x>=-1&&bounds.y>=-1&&bounds.x+bounds.width<=viewport.width+1&&bounds.y+bounds.height<=viewport.height+1,"Portrait Trade fits viewport "+JSON.stringify({viewport,bounds}));
+   const inner=deal.locator(".turn-actions-popup-scroll");assert.equal(await inner.evaluate(el=>getComputedStyle(el).overflowY),"auto");
+   await page.getByRole("button",{name:"Close panel",exact:true}).click();
    assert.deepEqual(errors,[],"Browser runtime errors");
    console.log("PASS real Lobby/Players/Properties/Trade/chat/unread/fullscreen/rotation "+viewport.width+"x"+viewport.height);
   }finally{await page.close();}

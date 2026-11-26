@@ -5,16 +5,16 @@ import { fileURLToPath } from "node:url";
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
 export function sourceBaselineForVersion(version) {
-  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(String(version).trim());
+  const match = /^(\d+)\.(\d+)\.(\d+)([a-z])?$/.exec(String(version).trim());
   if (!match) throw new Error(`Invalid HGR version: ${version}`);
   const major = Number(match[1]);
   const minor = Number(match[2]);
   const patch = Number(match[3]);
   const baselineMinor = Math.floor(minor / 5) * 5;
   return {
-    version: `${major}.${minor}.${patch}`,
+    version: `${major}.${minor}.${patch}${match[4] ?? ""}`,
     baseline: `${major}.${baselineMinor}`,
-    milestone: patch === 0 && minor % 5 === 0,
+    milestone: !match[4] && patch === 0 && minor % 5 === 0,
   };
 }
 
