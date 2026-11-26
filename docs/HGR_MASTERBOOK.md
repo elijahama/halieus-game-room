@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 task-progress calculation foundation — 26 November 2026
+
+Production 4.8.5 health confirmed exact hgr-4.8.5-64c4af3d9d27f41d. Start the next isolated worktree from approved main plus documented scope. The new pure task estimate model uses frozen task definitions and the median of at least three positive comparable successful durations per task; if any history is insufficient, progress uses equal task-count weights rather than mixing time and count. Sequential stages sum the maximum remaining estimate of their parallel members. Real unit fractions may contribute only before a task passes; final receipt plus all resolved tasks is required for 100%. ETA is independent of progress, recalculates on actual units and stage timings, may increase or become unavailable on overrun or stale telemetry, and never guarantees a deadline. Three comparable samples and stage grouping are initial design decisions for audit. Test fixture covers cold start, parallel stages, skip authorization, failure, stale samples, overrun and final receipt. Updater instrumentation, durable sample collection, monotonic operation-sequenced transport, UI/PWA consumption and release-ready event delivery are not implemented by this isolated foundation. 4.8.7 reserves Control visual overhaul (#280); no change to approved H or production.
+
 ## 4.8.6 Control notification and progress contract — 26 November 2026
 
 Owner-approved next-release scope ([issue #279](https://github.com/elijahama/halieus-game-room/issues/279)), alongside the existing Spar Beta milestone. Successful canonical main packaging must trigger immediate system-level Control PWA release-ready Web Push, independently verified before delivery; retain the five-minute fallback, deduplication, authorization, existing approved H/cog assets and review-update click path. No automatic update. Physical-device background/locked/closed notification receipt is required for acceptance.
