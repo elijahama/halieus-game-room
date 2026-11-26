@@ -81,7 +81,7 @@
     "test:browser:trade-decline-feedback": "node tests/browser-mega-trade-decline-feedback.mjs",
     "test:mega:counteroffers": "node --import tsx tests/runtime-mega-trade-counteroffers.mjs",
     "test:trade:intent": "node --import tsx tests/runtime-mega-trade-intent.mjs",
-    "test:control:release-notice": "node --import tsx tests/runtime-control-release-availability.mjs && node tests/browser-control-release-available.mjs && node --import tsx tests/runtime-control-release-alerts.mjs",
+    "test:control:release-notice": "node --import tsx tests/runtime-control-release-availability.mjs && node tests/browser-control-release-available.mjs && node --import tsx tests/runtime-control-release-alerts.mjs && node --import tsx tests/runtime-control-release-wake.mjs",
     "test:control:mobile-lp": "node tests/browser-control-mobile-lp-layout.mjs",
     "test:control:mobile-dense": "node tests/browser-control-mobile-dense-pages.mjs",
     "test:browser:mega:portfolio-clip": "node tests/browser-mega-portfolio-clipping-hotfix.mjs",

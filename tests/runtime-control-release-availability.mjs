@@ -79,6 +79,8 @@ assert.equal(response.status,"available");
 assert.equal(response.candidateVersion,"99.0.0");
 assert.equal((await currentReleaseAvailability(fetchFixture())).candidateVersion,"99.0.0");
 assert.equal(fetchCount,4,"cache avoids continuous upstream fetches");
+assert.equal((await currentReleaseAvailability(fetchFixture({packaging:{...run,status:"in_progress"}}),Date.now(),true)).status,"unverified","wake must bypass previous verified cache");
+assert.equal((await currentReleaseAvailability(fetchFixture(),Date.now(),true)).status,"available");
 
 const server=await readFile(new URL("../server/src/platform/control-cloud-ui-preload.ts",import.meta.url),"utf8");
 const page=await readFile(new URL("../client/public/control/index.html",import.meta.url),"utf8");
