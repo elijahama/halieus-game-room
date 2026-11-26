@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
+import { validateIsolatedTaskTelemetry, isolatedTaskPercent, type IsolatedTaskTelemetry } from "../../shared/platform/control-task-telemetry.js";
 import { loadLocalDevelopmentTimeline } from "./platform/control-development-timeline.js";
 import { validateRelaySnapshot, RELAY_MAX_EVENTS } from "./platform/control-development-relay.js";
 import { existsSync, readFileSync } from "node:fs";
@@ -47,6 +48,7 @@ interface UpdateResultMarker {
   progress?: number;
   phase?: string;
   operationId?: string;
+  taskTelemetry?: unknown;
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -266,6 +268,7 @@ async function reportProgress(
   phase: string,
   reason: string | null,
   localOperationId: string | null,
+  taskTelemetry?: IsolatedTaskTelemetry,
 ): Promise<boolean> {
   try {
     const response = await cloudRequest("/control/cloud/agent/progress", {
@@ -278,6 +281,7 @@ async function reportProgress(
       phase,
       reason,
       localOperationId,
+      ...(taskTelemetry ? {taskTelemetry} : {}),
     });
     if (!response.ok) throw new Error(`Progress report returned HTTP ${response.status}`);
     return true;
@@ -306,6 +310,8 @@ async function waitForUpdateResult(
   let lastProgress = 3;
   let lastPhase = "Starting approved updater";
   let terminalObserved = false;
+  let taskSequence = -1;
+  let taskEvidenceSeen = false;
   while (!stopping) {
     const marker = await readUpdateMarker();
     const markerHasOperationId = typeof marker?.operationId === "string" && marker.operationId.trim().length > 0;
@@ -313,12 +319,14 @@ async function waitForUpdateResult(
       ? marker?.operationId === localOperationId
       : Boolean(marker?.startedAt && marker.startedAt !== markerStartedBefore);
     if (markerIsCurrent) {
+      const taskTelemetry = marker?.taskTelemetry ? validateIsolatedTaskTelemetry(marker.taskTelemetry,localOperationId) : null;
+      if(taskTelemetry)taskEvidenceSeen=true;
       const markerLimit = marker?.state === "succeeded" ? 100 : 99;
-      const markerProgress = Math.max(lastProgress, Math.min(markerLimit, Number(marker?.progress) || lastProgress));
+      const markerProgress = taskTelemetry ? isolatedTaskPercent(taskTelemetry,marker?.state??"running") : Math.max(lastProgress, Math.min(markerLimit, Number(marker?.progress) || lastProgress));
       const markerPhase = typeof marker?.phase === "string" && marker.phase.trim() ? marker.phase.trim() : lastPhase;
       if (marker?.state === "succeeded") {
         terminalObserved = true;
-        if (await reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId)) return true;
+        if (await reportProgress(identity, requestId, "succeeded", 100, "Update complete", null, localOperationId, taskTelemetry??undefined)) return true;
         if (Date.now() >= deadline) break;
         await delay(2_000);
         continue;
@@ -326,19 +334,22 @@ async function waitForUpdateResult(
       if (marker?.state === "failed") {
         terminalObserved = true;
         const detailedReason = await localAuditFailureReason(localOperationId);
-        if (await reportProgress(identity, requestId, "failed", markerProgress, markerPhase || "Update failed", detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.", localOperationId)) return true;
+        if (await reportProgress(identity, requestId, "failed", markerProgress, markerPhase || "Update failed", detailedReason || marker.reason || "Approved HGR updater failed on the owner PC.", localOperationId, taskTelemetry??undefined)) return true;
         if (Date.now() >= deadline) break;
         await delay(2_000);
         continue;
       }
-      if (marker?.state === "running" && (markerProgress !== lastProgress || markerPhase !== lastPhase)) {
-        if (await reportProgress(identity, requestId, "running", markerProgress, markerPhase, null, localOperationId)) {
+      if (marker?.state === "running" && (markerProgress !== lastProgress || markerPhase !== lastPhase || (taskTelemetry && taskTelemetry.sequence > taskSequence))) {
+        if (await reportProgress(identity, requestId, "running", markerProgress, markerPhase, null, localOperationId, taskTelemetry??undefined)) {
+          if(taskTelemetry)taskSequence=taskTelemetry.sequence;
           lastProgress = markerProgress;
           lastPhase = markerPhase;
         }
       }
     }
     if (Date.now() >= deadline) break;
+    // The real task marker is authoritative; do not promote legacy log markers.
+    if(taskEvidenceSeen){await delay(2_000);continue;}
     const status = await localStatus();
     if (status?.activeOperation?.id === localOperationId) {
       const progress = Math.max(lastProgress, Math.min(99, Number(status.activeOperation.progress) || lastProgress));

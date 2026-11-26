@@ -105,6 +105,26 @@ try {
     await page.locator('#operationDismiss').click();
     assert.equal(await isVisible(page), false, 'toast is dismissed');
 
+    // Validate the actual task details and stale running evidence handling.
+    const labels=["Fetch canonical main","Verify published fingerprint","Install dependencies","Security audit","Client/server typecheck","Production build","Platform regressions","Oracle package preflight","Final fingerprint","Oracle deployment and verification","Final receipt"];
+    const taskAt=now();
+    const receipt={schema:1,operationId:"fixture-task-123",sequence:3,observedAt:taskAt,tasks:labels.map((label,i)=>({id:i+1,label,state:i===0?"passed":i===1?"running":"queued",startedAt:i<2?taskAt:null,finishedAt:i===0?taskAt:null}))};
+    const taskLive={...live,id:"task-"+width,startedAt:taskAt,updatedAt:taskAt,progress:9,phase:"Verify published fingerprint",taskTelemetry:receipt};
+    await emit(page,taskLive);
+    if(await page.locator("#operationDetails").isHidden())await page.locator("#operationToastToggle").click();
+    assert.equal(await page.locator("#operationTaskEvidence .operation-task-row").count(),11);
+    assert.equal(await page.locator('#operationTaskEvidence [data-task-state="running"]').count(),1);
+    assert.match(await page.locator("#operationTaskElapsed").innerText(),/Elapsed:/);
+    assert.match(await page.locator("#operationTaskEvidence").innerText(),/1 passed/);
+    await emit(page,{...taskLive,progress:88,taskTelemetry:undefined});
+    assert.equal(await page.locator("#operationPercent").innerText(),"9%");
+    const terminalReceipt={...receipt,sequence:22,tasks:receipt.tasks.map(t=>({...t,state:"passed",startedAt:taskAt,finishedAt:taskAt}))};
+    await emit(page,{...taskLive,state:"succeeded",progress:100,taskTelemetry:terminalReceipt});
+    if(await page.locator("#operationDetails").isHidden())await page.locator("#operationToastToggle").click();
+    assert.equal(await page.locator('#operationTaskEvidence [data-task-state="passed"]').count(),11);
+    await page.locator("#operationDismiss").click();
+    assert.equal(await isVisible(page),false);
+
     // Suppress socket, page, cross-tab, and reload replays after acknowledgement.
     await emit(page, complete);
     await emit(page, complete, 'page');

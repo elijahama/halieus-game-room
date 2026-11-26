@@ -586,6 +586,7 @@
       state: stateValue,
       startedAt: value.startedAt || null,
       updatedAt: value.updatedAt || null,
+      taskTelemetry: value.action==="update" && value.taskTelemetry?.schema===1 && Array.isArray(value.taskTelemetry.tasks) && value.taskTelemetry.tasks.length===11 ? value.taskTelemetry : null,
     };
   }
 
@@ -742,11 +743,50 @@
     summary.addEventListener("pointercancel", finishDrag);
   }
 
+  function renderTaskEvidence(operation) {
+    const details=$("operationTaskEvidence");
+    if(!details)return;
+    const snapshot=operation?.taskTelemetry;
+    details.hidden=!snapshot;
+    if(!snapshot){details.textContent="";return;}
+    details.textContent="";
+    const passed=snapshot.tasks.filter(t=>t.state==="passed").length;
+    const skipped=snapshot.tasks.filter(t=>t.state==="skipped").length;
+    const head=element("strong","",passed+" passed · "+skipped+" skipped · 11 tasks");
+    details.append(head);
+    const elapsed=element("small","","");
+    elapsed.id="operationTaskElapsed";
+    details.append(elapsed);
+    const estimate=element("small","",operation.state==="running"?"Estimated time remaining: calculating (no comparable history yet)":"");
+    details.append(estimate);
+    const list=element("ol","operation-task-list");
+    for(const task of snapshot.tasks){
+      const item=element("li","operation-task-row");
+      item.dataset.taskState=task.state;
+      item.append(element("span","",task.label),element("b","",task.state[0].toUpperCase()+task.state.slice(1)));
+      list.append(item);
+    }
+    details.append(list);
+    refreshTaskElapsed();
+  }
+  function refreshTaskElapsed(){
+    const node=$("operationTaskElapsed"), operation=state.activeOperation;
+    if(!node||!operation?.taskTelemetry)return;
+    const start=Date.parse(operation.startedAt),end=operation.state==="running"?Date.now():Date.parse(operation.updatedAt);
+    const seconds=Math.max(0,Math.floor((end-start)/1000));
+    const elapsed=Number.isFinite(seconds)?Math.floor(seconds/60)+"m "+seconds%60+"s":"Unavailable";
+    const last=Date.parse(operation.taskTelemetry.observedAt);
+    const age=Number.isFinite(last)?Math.max(0,Math.floor((Date.now()-last)/1000)):null;
+    node.textContent="Elapsed: "+elapsed+(operation.state==="running"&&age!==null?" · Last task checkpoint "+age+"s ago":"");
+  }
+
   function setOperation(value) {
     const operation = normaliseOperation(value);
     if (operationIsOldOrDismissed(operation)) return;
     const previous = state.activeOperation;
+    if(previous?.id===operation?.id&&previous?.taskTelemetry&&operation?.state==="running"&&(!operation.taskTelemetry||operation.taskTelemetry.sequence<previous.taskTelemetry.sequence))return;
     state.activeOperation = operation;
+    renderTaskEvidence(operation);
     if (!operation) {
       $("operationToast").hidden = true;
       syncOperationToastHost();
@@ -1139,6 +1179,7 @@
       }
       await refreshCore();
       window.setInterval(() => void refreshHealthOnly(), 2000);
+      window.setInterval(refreshTaskElapsed,1000);
       window.setInterval(() => void refreshCore(), 10000);
     } catch (error) {
       showAccess("HGR Control is unavailable", error instanceof Error ? error.message : "Unable to verify your Halieus account.");

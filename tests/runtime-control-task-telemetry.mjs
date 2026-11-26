@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import {ISOLATED_TASK_LABELS,validateIsolatedTaskTelemetry,acceptIsolatedTaskTelemetry,isolatedTaskPercent} from "../shared/platform/control-task-telemetry.ts";
+const op="fixture-123",at="2026-11-26T09:00:00.000Z";
+const snap={schema:1,operationId:op,sequence:2,observedAt:at,tasks:ISOLATED_TASK_LABELS.map((label,i)=>({id:i+1,label,state:i===0?"passed":"queued",startedAt:i===0?at:null,finishedAt:i===0?at:null}))};
+const check=s=>validateIsolatedTaskTelemetry(s,op);
+const valid=check(snap);assert.ok(valid);assert.equal(isolatedTaskPercent(valid,"running"),9);
+assert.equal(validateIsolatedTaskTelemetry(snap,"another-123"),null);
+for(const bad of [{...snap,sequence:1},{...snap,tasks:snap.tasks.slice(0,-1)},{...snap,tasks:snap.tasks.map((t,i)=>i===1?{...t,label:"private path"}:t)},{...snap,tasks:snap.tasks.map((t,i)=>i===3?{...t,state:"running",startedAt:at}:t)}])assert.equal(check(bad),null);
+const next=check({...snap,sequence:3,tasks:snap.tasks.map((t,i)=>i===1?{...t,state:"running",startedAt:at}:t)});assert.ok(next);assert.equal(acceptIsolatedTaskTelemetry(valid,next),true);assert.equal(acceptIsolatedTaskTelemetry(next,valid),false);assert.equal(isolatedTaskPercent(next,"running"),9);assert.equal(isolatedTaskPercent(next,"succeeded"),9,"Incomplete receipt cannot claim success");
+assert.equal(acceptIsolatedTaskTelemetry(valid,valid),true);assert.equal(acceptIsolatedTaskTelemetry(valid,{...valid,observedAt:"2026-11-26T09:01:00.000Z"}),false);
+const done=check({...snap,sequence:22,tasks:snap.tasks.map(t=>({...t,state:"passed",startedAt:at,finishedAt:at}))});assert.ok(done);assert.equal(isolatedTaskPercent(done,"running"),99);assert.equal(isolatedTaskPercent(done,"succeeded"),100);
+console.log("PASS exact isolated task receipt schema, bounded labels, ordering, monotonic sequence, estimator and final receipt");
