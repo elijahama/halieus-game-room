@@ -16,7 +16,7 @@ const json=(p)=>JSON.parse(read(p));
 
 const currentVersion = read('VERSION').trim();
 for(const file of ['package.json','client/package.json','server/package.json','shared/package.json','desktop/package.json']) {
-  assert.equal(json(file).version,currentVersion,`${file} version mismatch`);
+  assert.equal(json(file).version,currentVersion.replace(/^(\d+\.\d+\.\d+)([a-z])$/, '$1-$2'),`${file} version mismatch`);
 }
 
 const rootPackage=json('package.json');

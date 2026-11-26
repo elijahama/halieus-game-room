@@ -103,10 +103,11 @@ try {
   writeFileSync(binaryPath, corruptPng);
   assert.notEqual(run(fixture, '--verify').status, 0, 'Binary artwork corruption must remain detectable');
   writeFileSync(binaryPath, approvedPng);
+  const npmVersion = version.replace(/^(\d+\.\d+\.\d+)([a-z])$/, '$1-$2');
   const corruptions = [
     ['shared/version.ts', (s) => s.replace(version, '4.1.1')],
-    ['package.json', (s) => s.replace(version, '4.1.1')],
-    ['package-lock.json', (s) => s.replace(version, '4.1.1')],
+    ['package.json', (s) => s.replace(npmVersion, '4.1.1')],
+    ['package-lock.json', (s) => s.replace(npmVersion, '4.1.1')],
     ['RELEASE.json', (s) => s.replace(version, '4.1.1')],
     ['shared/release.ts', (s) => s.replace(version, '4.1.1')],
     ['client/public/sw.js', (s) => s.replace(`v${version.replaceAll('.', '-')}`, 'v4-1-1')],

@@ -3,11 +3,16 @@ import type {
   PublicGameRoom,
 } from "../types/game.js";
 
+import { getGuildFixtureBoundRoom } from "../../../platform/guildFixtures.js";
+import { getSoloTournamentBoundRoom } from "../../../platform/soloTournamentRegistration.js";
+
 export function toPublicGameRoom(
   room: GameRoom,
 ): PublicGameRoom {
   return {
     code: room.code,
+    createdAt: room.createdAt,
+    matchModeLocked: room.started || room.betaTournamentTest === true || Boolean(getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)),
     boardStyle: room.boardStyle ?? "classic-board",
     ranked: room.ranked,
     blitz: room.blitz,
