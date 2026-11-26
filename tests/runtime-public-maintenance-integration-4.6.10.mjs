@@ -165,7 +165,7 @@ try {
  assert(guest.connected,"Game sockets allowed after reopen");
  // Control room operations on the actual authenticated HTTP/socket server.
  const bulkStatus=()=>request("/admin/rooms/bulk-status",{cookie});
- const bulkClose=(count,origin=base,confirmation="CLOSE ALL GAME ROOMS")=>request("/admin/rooms/close-all-control",{cookie,origin,method:"POST",body:{expectedRooms:count,confirmation}});
+ const bulkClose=async(count,origin=base,confirmation="CLOSE ALL GAME ROOMS",snapshotId)=>request("/admin/rooms/close-all-control",{cookie,origin,method:"POST",body:{expectedRooms:count,expectedSnapshotId:snapshotId??(await bulkStatus()).json.snapshotId,confirmation}});
  assert.equal((await request("/admin/rooms/bulk-status")).status,403);
  assert.equal((await request("/admin/rooms/close-all-control",{method:"POST",origin:base,body:{expectedRooms:1,confirmation:"CLOSE ALL GAME ROOMS"}})).status,403);
  const spar=await emit(guest,"spar:create",{code:"SPHTTP",playerName:"SparHost"});
@@ -223,17 +223,37 @@ try {
  assert.equal((await emit(guest,"connect-four:end-game",{code:"RANKCL"})).ok,true);
  const casual=await emit(guest,"spar:create",{code:"BULKSP",playerName:"SparHost"});
  assert.equal(casual.ok,true);
+ const vacantSpar=await emit(guest,"spar:create",{code:"VACANT",playerName:"VacantHost"});
+ assert.equal(vacantSpar.ok,true);
+ await emit(guest,"spar:leave",{code:"VACANT"});
+ const bulkLudo=await emit(guest,"ludo:create",{code:"BULKLD",playerName:"BulkHost"});
+ assert.equal(bulkLudo.ok,true);
+ await emit(guest,"ludo:leave",{code:"BULKLD"});
+ const beforeReplace=await bulkStatus();
+ assert.equal((await request("/admin/rooms/close-one",{cookie,origin:base,method:"POST",body:{game:"spar",code:"BULKSP",createdAt:casual.state.createdAt,confirmation:"CLOSE GAME ROOM"}})).status,200);
+ const replacement=await emit(guest,"spar:create",{code:"BULKSP",playerName:"NewHost"});
+ assert.equal(replacement.ok,true);
  const snapshot=await bulkStatus();
  assert.equal(snapshot.json.protected,0);
- assert(snapshot.json.count>=1);
+ assert.equal(snapshot.json.count,beforeReplace.json.count);
+ assert.notEqual(snapshot.json.snapshotId,beforeReplace.json.snapshotId);
+ assert.equal((await bulkClose(snapshot.json.count,base,"CLOSE ALL GAME ROOMS",beforeReplace.json.snapshotId)).status,409,"Same count but changed room identity must refuse");
+ assert.equal((await bulkStatus()).json.count,snapshot.json.count);
+ assert(snapshot.json.count>=3);
  assert.equal((await bulkClose(snapshot.json.count,"https://evil.example")).status,403);
  assert.equal((await bulkClose(snapshot.json.count,base,"WRONG")).status,403);
  assert.equal((await bulkClose(snapshot.json.count+1)).status,409);
- const closedRooms=await bulkClose(snapshot.json.count);
+ const closedRooms=await bulkClose(snapshot.json.count,base,"CLOSE ALL GAME ROOMS",snapshot.json.snapshotId);
  assert.equal(closedRooms.status,200,JSON.stringify(closedRooms.json));
  assert.equal(closedRooms.json.closed,snapshot.json.count);
  assert.equal((await bulkStatus()).json.count,0);
- assert.equal((await emit(guest,"spar:reconnect",{code:"BULKSP",reconnectToken:casual.reconnectToken})).ok,false);
+ assert.equal((await emit(guest,"spar:reconnect",{code:"BULKSP",reconnectToken:replacement.reconnectToken})).ok,false);
+ assert.equal((await emit(guest,"spar:reconnect",{code:"VACANT",reconnectToken:vacantSpar.reconnectToken})).ok,false);
+ assert.equal((await emit(guest,"ludo:reconnect",{code:"BULKLD",reconnectToken:bulkLudo.reconnectToken})).ok,false);
+ for(const [game,code,createdAt] of [["spar","BULKSP",replacement.state.createdAt],["spar","VACANT",vacantSpar.state.createdAt],["ludo","BULKLD",bulkLudo.state.createdAt]]){
+   const archived=JSON.parse(await readFile(join(dir,"sessions","finalized",game+"-"+code+"-"+createdAt+".json"),"utf8"));
+   assert.equal(archived.status,"incomplete"); assert.equal(archived.summary.winner,null); assert.equal(archived.summary.cancellation,"owner-closed");
+ }
  assert.equal((await request("/health")).status,200,"Game closure never stops the server");
  console.log("PASS Control room HTTP: owner and Origin checks, targeted Spar, offline Ranked protection, count confirmation, guarded bulk closure");
  // Card-table cancellations preserve archive status and reject Ranked tables.

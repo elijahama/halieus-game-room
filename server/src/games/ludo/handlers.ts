@@ -430,7 +430,8 @@ export function getLudoLiveRoomSummaries(): HalieusLiveRoomSummary[] {
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
 export function getLudoBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
-  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "ludo", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
 }
 /** Cancel exactly one noncompetitive room without awarding a result. */
 export async function closeLudoRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {

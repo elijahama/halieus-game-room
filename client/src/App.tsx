@@ -1207,6 +1207,11 @@ export default function App() {
           clearCardSession(WHOT_SESSION_KEY); setWhotSavedSession(null); setWhotRecoveryCode("");
         }
         setWhotState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
+      } else if (game === "spar") {
+        if (readCardSavedSession(SPAR_SESSION_KEY)?.code === code) {
+          clearCardSession(SPAR_SESSION_KEY); setSparSavedSession(null); setSparRecoveryCode("");
+        }
+        setSparState(current => current?.code === code && current.createdAt === payload.createdAt ? null : current);
       } else if (game === "ayo") {
         if (readCardSavedSession(AYO_SESSION_KEY)?.code === code) {
           clearCardSession(AYO_SESSION_KEY); setAyoSavedSession(null); setAyoRecoveryCode("");
@@ -1244,6 +1249,7 @@ export default function App() {
         game === "word-game" || game === "password" || game === "anagrams-race" ? (wordRoute?.game === game ? wordRoute.code : null) :
         game === "poker" ? readPokerCodeFromPath() :
         game === "blackjack" ? readBlackjackCodeFromPath() : game === "whot" ? readWhotCodeFromPath() :
+        game === "spar" ? readSparCodeFromPath() :
         game === "ayo" ? readAyoCodeFromPath() :
         game === "hidden-dictator" ? readHiddenDictatorCodeFromPath() :
         game === "word-board" ? readWordBoardCodeFromPath() :

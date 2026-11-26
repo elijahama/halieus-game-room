@@ -304,7 +304,8 @@ export async function closeWordArenaRoom(io: Server, game: WordArenaGameId, code
 }
 export function getWordArenaBulkRoomState() {
   const open = Object.values(roomsByGame).flatMap(store => [...store.values()]).filter(room => room.phase !== "finished");
-  return { count: open.length, protected: open.filter(protectedWordArenaRoom).length };
+  return { count: open.length, protected: open.filter(protectedWordArenaRoom).length,
+    rooms: open.map(room => ({ game: room.game, code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
 }
 export function closeAllWordArenaRooms(){const count=getWordArenaRoomCount();for(const game of Object.keys(roomsByGame) as WordArenaGameId[]){for(const room of roomsByGame[game].values())room.phase="finished";roomsByGame[game].clear();}return count;}
 export const WORD_ARENA_ACCENTS=ACCENTS;

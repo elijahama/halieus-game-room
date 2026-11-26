@@ -9,7 +9,7 @@ import express, {
   type Request,
   type Response,
 } from "express";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { networkInterfaces } from "node:os";
@@ -36,17 +36,17 @@ import { registerMegaSavedGameHandlers } from "./games/mega-board/handlers/saved
 import { registerMegaSpaceHandlers } from "./games/mega-board/handlers/megaSpaceHandlers.js";
 import { registerOrderHandlers } from "./games/mega-board/handlers/orderHandlers.js";
 import { registerPurchaseHandlers } from "./games/mega-board/handlers/purchaseHandlers.js";
-import { closePokerRoom, getPokerBulkRoomState, closeAllPokerRooms, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
-import { closeLudoRoom, getLudoBulkRoomState, closeAllLudoRooms, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
-import { closeConnectFourRoom, getConnectFourBulkRoomState, closeAllConnectFourRooms, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
-import { closeHiddenDictatorRoom, getHiddenDictatorBulkRoomState, closeAllHiddenDictatorRooms, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
-import { closeWordArenaRoom, getWordArenaBulkRoomState, closeAllWordArenaRooms, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
-import { closeClassicRoom, getClassicBulkRoomState, closeAllClassicRooms, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
-import { closeAyoRoom, getAyoBulkRoomState, closeAllAyoRooms, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
-import { getSparBulkRoomState, closeAllSparRooms, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
-import { closeWordBoardRoom, getWordBoardBulkRoomState, closeAllWordBoardRooms, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
-import { closeBlackjackRoom, getBlackjackBulkRoomState, closeAllBlackjackRooms, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
-import { closeWhotRoom, getWhotBulkRoomState, closeAllWhotRooms, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
+import { closePokerRoom, getPokerBulkRoomState, getPokerChatIdentity, getPokerLiveRoomSummaries, getPokerRoomCount, registerPokerHandlers } from "./games/poker/handlers.js";
+import { closeLudoRoom, getLudoBulkRoomState, getLudoChatIdentity, getLudoLiveRoomSummaries, getLudoRoomCount, registerLudoHandlers } from "./games/ludo/handlers.js";
+import { closeConnectFourRoom, getConnectFourBulkRoomState, getConnectFourChatIdentity, getConnectFourLiveRoomSummaries, getConnectFourRoomCount, registerConnectFourHandlers } from "./games/connect-four/handlers.js";
+import { closeHiddenDictatorRoom, getHiddenDictatorBulkRoomState, getHiddenDictatorChatIdentity, getHiddenDictatorLiveRoomSummaries, getHiddenDictatorRoomCount, registerHiddenDictatorHandlers } from "./games/hidden-dictator/handlers.js";
+import { closeWordArenaRoom, getWordArenaBulkRoomState, getWordArenaChatIdentity, getWordArenaLiveRoomSummaries, getWordArenaRoomCount, registerWordArenaHandlers } from "./games/word-arena/handlers.js";
+import { closeClassicRoom, getClassicBulkRoomState, getClassicChatIdentity, getClassicLiveRoomSummaries, getClassicRoomCount, registerClassicTableHandlers } from "./games/classic-table/handlers.js";
+import { closeAyoRoom, getAyoBulkRoomState, getAyoChatIdentity, getAyoLiveRoomSummaries, getAyoRoomCount, registerAyoHandlers } from "./games/ayo/handlers.js";
+import { getSparBulkRoomState, closeSparRoom, getSparChatIdentity, getSparLiveRoomSummaries, getSparRoomCount, registerSparHandlers } from "./games/spar/handlers.js";
+import { closeWordBoardRoom, getWordBoardBulkRoomState, getWordBoardChatIdentity, getWordBoardLiveRoomSummaries, getWordBoardRoomCount, registerWordBoardHandlers } from "./games/word-board/handlers.js";
+import { closeBlackjackRoom, getBlackjackBulkRoomState, getBlackjackChatIdentity, getBlackjackLiveRoomSummaries, getBlackjackRoomCount, registerBlackjackHandlers } from "./games/blackjack/rebuild.js";
+import { closeWhotRoom, getWhotBulkRoomState, getWhotChatIdentity, getWhotLiveRoomSummaries, getWhotRoomCount, registerWhotHandlers } from "./games/whot/rebuild.js";
 import { finalizeSession, getSessionArchiveStatus } from "./platform/sessionArchive.js";
 import { APP_VERSION } from "../../shared/version.js";
 import { normaliseHgrPublicOrigin } from "./platform/publicOrigin.js";
@@ -525,9 +525,16 @@ const getBulkRoomState = () => {
   const megaOpen = mega.filter(room => room.gameState?.phase !== "finished");
   const megaProtected = mega.filter(room => (room.ranked && room.gameState?.phase !== "finished") ||
     getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)).length;
-  const states = [ { count: megaOpen.length, protected: megaProtected },
+  const states = [ { count: megaOpen.length, protected: megaProtected,
+    rooms: megaOpen.map(room => ({ game: "mega-board", code: room.code, createdAt: room.createdAt, startedAt: room.gameState?.gameStartedAt ?? null })) },
     getPokerBulkRoomState(), getLudoBulkRoomState(), getConnectFourBulkRoomState(), getHiddenDictatorBulkRoomState(), getWordArenaBulkRoomState(), getClassicBulkRoomState(), getAyoBulkRoomState(), getSparBulkRoomState(), getWordBoardBulkRoomState(), getBlackjackBulkRoomState(), getWhotBulkRoomState() ];
-  return states.reduce((total, state) => ({ count: total.count + state.count, protected: total.protected + state.protected }), { count: 0, protected: 0 });
+  const targets = states.flatMap(state => state.rooms);
+  const snapshotId = createHash("sha256").update(JSON.stringify(targets.map(room => JSON.stringify([room.game, room.code, room.createdAt, room.startedAt])).sort())).digest("hex");
+  return { count: targets.length, protected: states.reduce((total, state) => total + state.protected, 0), snapshotId, targets };
+};
+const publicBulkRoomState = () => {
+  const { count, protected: protectedCount, snapshotId } = getBulkRoomState();
+  return { count, protected: protectedCount, snapshotId };
 };
 async function closeMegaBoardRoom(code: string, createdAt: number, reason: string): Promise<boolean> {
   const room = rooms.get(code);
@@ -548,9 +555,24 @@ async function closeMegaBoardRoom(code: string, createdAt: number, reason: strin
   ]);
   return true;
 }
+function closeRoomByIdentity(game: string, code: string, createdAt: number, reason: string): Promise<boolean> {
+    if (game === "mega-board") return closeMegaBoardRoom(code, createdAt, reason);
+    if (game === "ludo") return closeLudoRoom(io, code, createdAt, reason);
+    if (game === "connect-four") return closeConnectFourRoom(io, code, createdAt, reason);
+    if (game === "poker") return closePokerRoom(io, code, createdAt, reason);
+    if (game === "blackjack") return closeBlackjackRoom(io, code, createdAt, reason);
+    if (game === "whot") return closeWhotRoom(io, code, createdAt, reason);
+    if (game === "ayo") return closeAyoRoom(io, code, createdAt, reason);
+    if (game === "hidden-dictator") return closeHiddenDictatorRoom(io, code, createdAt, reason);
+    if (game === "word-board") return closeWordBoardRoom(io, code, createdAt, reason);
+    if (game === "cheat" || game === "dominoes") return closeClassicRoom(io, game, code, createdAt, reason);
+    if (game === "word-game" || game === "password" || game === "anagrams-race") return closeWordArenaRoom(io, game, code, createdAt, reason);
+    if (game === "spar") return closeSparRoom(io, code, createdAt, reason);
+    return Promise.resolve(false);
+}
 configureAccountAdminRuntimeControls({
   getRoomCount: authoritativeRoomCount,
-  getBulkRoomState,
+  getBulkRoomState: publicBulkRoomState,
   getLiveRooms: () => [
     ...getMegaBoardLiveRoomSummaries(),
     ...getPokerLiveRoomSummaries(),
@@ -566,51 +588,26 @@ configureAccountAdminRuntimeControls({
     ...getWordBoardLiveRoomSummaries(),
   ],
   closeSparRoom: (actor, code, createdAt) => closeSparRoom(io, code, createdAt, `${actor.displayName} closed this Spar room from Control.`),
-  closeIndividualRoom: (actor, game, code, createdAt) => {
-    const reason = `${actor.displayName} closed this room from Control.`;
-    if (game === "mega-board") return closeMegaBoardRoom(code, createdAt, reason);
-    if (game === "ludo") return closeLudoRoom(io, code, createdAt, reason);
-    if (game === "connect-four") return closeConnectFourRoom(io, code, createdAt, reason);
-    if (game === "poker") return closePokerRoom(io, code, createdAt, reason);
-    if (game === "blackjack") return closeBlackjackRoom(io, code, createdAt, reason);
-    if (game === "whot") return closeWhotRoom(io, code, createdAt, reason);
-    if (game === "ayo") return closeAyoRoom(io, code, createdAt, reason);
-    if (game === "hidden-dictator") return closeHiddenDictatorRoom(io, code, createdAt, reason);
-    if (game === "word-board") return closeWordBoardRoom(io, code, createdAt, reason);
-    if (game === "cheat" || game === "dominoes") return closeClassicRoom(io, game, code, createdAt, reason);
-    if (game === "word-game" || game === "password" || game === "anagrams-race") return closeWordArenaRoom(io, game, code, createdAt, reason);
-    if (game === "spar") return closeSparRoom(io, code, createdAt, reason);
-    return Promise.resolve(false);
-  },
-  closeAllRooms: async (actor, expectedRooms) => {
+  closeIndividualRoom: (actor, game, code, createdAt) =>
+    closeRoomByIdentity(game, code, createdAt, `${actor.displayName} closed this room from Control.`),
+  closeAllRooms: async (actor, expectedRooms, expectedSnapshotId) => {
     const snapshot = getBulkRoomState();
-    if (snapshot.protected) return { closed: 0, reason: "Ranked or unsettled tournament rooms are protected. No rooms were closed." };
-    if (expectedRooms !== undefined && snapshot.count !== expectedRooms) return { closed: 0, reason: "Room count changed. Refresh and confirm again." };
+    if (snapshot.protected) return { closed: 0, reason: "Ranked, Daily Puzzle or unsettled tournament rooms are protected. No rooms were closed." };
+    if (expectedRooms !== undefined && (snapshot.count !== expectedRooms || snapshot.snapshotId !== expectedSnapshotId))
+      return { closed: 0, reason: "The confirmed room set changed. Refresh and confirm again." };
     if (!snapshot.count) return { closed: 0 };
-    // Preflight and in-memory removals are synchronous. Use the normal guarded Mega lifecycle.
-    for (const room of [...rooms.values()]) {
-      const spectators = listSpectators(room.code);
-      cancelHostGrace(room.code);
-      if (!endRoom(io, room.code, "An administrator closed all game rooms."))
-        throw Error("Guarded Mega Board room closure unexpectedly refused.");
-      for (const spectator of spectators) removeSpectator(room.code, spectator.id);
+    const reason = `${actor.displayName} closed all unfinished rooms.`;
+    // All adapters synchronously detach before their first await. Do not await
+    // inside this loop: no newly created room may enter the confirmed batch.
+    const operations = snapshot.targets.map(room => closeRoomByIdentity(room.game, room.code, room.createdAt, reason));
+    const results = await Promise.allSettled(operations);
+    if (results.some(result => result.status !== "fulfilled" || result.value !== true))
+      throw Error("At least one room cancellation or archive was not confirmed.");
+    // The old account panel expects a global notice. New Control uses scoped
+    // notices exclusively, retaining completed and unrelated local sessions.
+    if (expectedRooms === undefined && getBulkRoomState().count === 0) {
+      io.emit("platform:all-rooms-closed", { reason, at: Date.now() });
     }
-    closeAllPokerRooms();
-    closeAllBlackjackRooms();
-    closeAllWhotRooms();
-    closeAllClassicRooms();
-    closeAllLudoRooms();
-    closeAllConnectFourRooms();
-    closeAllHiddenDictatorRooms();
-    closeAllWordArenaRooms();
-    closeAllAyoRooms();
-    closeAllSparRooms();
-    closeAllWordBoardRooms();
-    io.emit("platform:all-rooms-closed", {
-      reason: `${actor.displayName} closed all live rooms.`,
-      at: Date.now(),
-    });
-    await flushRoomSave();
     return { closed: snapshot.count };
   },
 });

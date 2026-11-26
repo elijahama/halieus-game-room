@@ -108,7 +108,7 @@ try{
    if(matches===0){
     const bulk=(await api("/admin/rooms/bulk-status",owner)).json;
     assert.ok(bulk.protected>=1,"Unsettled tournament rooms must be protected even when not Ranked");
-    assert.equal((await api("/admin/rooms/close-all-control",owner,{expectedRooms:bulk.count,confirmation:"CLOSE ALL GAME ROOMS"})).status,409);
+    assert.equal((await api("/admin/rooms/close-all-control",owner,{expectedRooms:bulk.count,expectedSnapshotId:bulk.snapshotId,confirmation:"CLOSE ALL GAME ROOMS"})).status,409);
     assert.equal((await api("/admin/rooms/close-all",owner,{})).status,409);
     const live=(await api("/accounts/live-games",owner)).json.rooms;
     const protectedBoard=live.find(r=>r.game==="mega-board"&&r.code===board.code);
@@ -151,7 +151,7 @@ try{
    if(matches===0){
     const bulk=(await api("/admin/rooms/bulk-status",owner)).json;
     assert.ok(bulk.protected>=1,"Unsettled tournament rooms must be protected even when not Ranked");
-    assert.equal((await api("/admin/rooms/close-all-control",owner,{expectedRooms:bulk.count,confirmation:"CLOSE ALL GAME ROOMS"})).status,409);
+    assert.equal((await api("/admin/rooms/close-all-control",owner,{expectedRooms:bulk.count,expectedSnapshotId:bulk.snapshotId,confirmation:"CLOSE ALL GAME ROOMS"})).status,409);
     assert.equal((await api("/admin/rooms/close-all",owner,{})).status,409);
     const live=(await api("/accounts/live-games",owner)).json.rooms;
     const protectedBoard=live.find(r=>r.game==="mega-board"&&r.code===boards[0].code);

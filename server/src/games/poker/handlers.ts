@@ -722,7 +722,8 @@ export function getPokerLiveRoomSummaries(): HalieusLiveRoomSummary[] {
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
 export function getPokerBulkRoomState() {
   const open = [...pokerRooms.values()].filter(room => !room.started || room.hand.phase !== "finished");
-  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "poker", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
 }
 /** Cancel a single casual table without invoking its normal finish/scoring path. */
 export async function closePokerRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {

@@ -612,7 +612,8 @@ export function getSparLiveRoomSummaries(): HalieusLiveRoomSummary[] {
 /** Owner cancellation is not a completed match. The creation timestamp protects reused codes. */
 export async function closeSparRoom(io: Server, code: string, createdAt: number, reason: string, cancellation: "owner-closed" | "abandoned" = "owner-closed"): Promise<boolean> {
   const room = rooms.get(code);
-  if (!room || room.createdAt !== createdAt || !isLiveSparRoom(room) || room.matchMode === "ranked") return false;
+  if (!room || room.createdAt !== createdAt || room.phase === "finished" || room.matchMode === "ranked" ||
+      (cancellation === "abandoned" && !isLiveSparRoom(room))) return false;
   const timer = aiTimers.get(code);
   if (timer) clearTimeout(timer);
   aiTimers.delete(code);
@@ -629,8 +630,9 @@ export async function closeSparRoom(io: Server, code: string, createdAt: number,
   room.status = reason;
   room.players.forEach(p => { p.result = null; });
   log(room, "finish", reason);
-  for (const p of room.players) if (playerFor(room, p.id)) io.to(p.id).emit("spar:state", state(room, p.id, false));
-  for (const id of room.spectators.keys()) io.to(id).emit("spar:state", state(room, null, true));
+  const notice = { game: "spar", code, createdAt, reason };
+  for (const p of room.players) if (playerFor(room, p.id)) io.to(p.id).emit("platform:room-closed", notice);
+  for (const id of room.spectators.keys()) io.to(id).emit("platform:room-closed", notice);
   await finalizeSession("spar", code, createdAt, "incomplete", archive(room), {
     winner: null, mode: room.matchMode, cancellation,
   });
@@ -639,7 +641,8 @@ export async function closeSparRoom(io: Server, code: string, createdAt: number,
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
 export function getSparBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
-  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "spar", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
 }
 export function closeAllSparRooms(): number {
   const count = getSparRoomCount();

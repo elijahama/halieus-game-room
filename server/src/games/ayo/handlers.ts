@@ -55,7 +55,8 @@ export function getAyoLiveRoomSummaries():HalieusLiveRoomSummary[]{return [...ro
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
 export function getAyoBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
-  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "ayo", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
 }
 /** Administrative cancellation is not a completed match. */
 export async function closeAyoRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {

@@ -289,16 +289,16 @@
     renderRooms();
     try {
       const summary = await api("/admin/rooms/bulk-status");
-      if (!summary?.ok || !Number.isSafeInteger(summary.count) || !Number.isSafeInteger(summary.protected))
+      if (!summary?.ok || !Number.isSafeInteger(summary.count) || !Number.isSafeInteger(summary.protected) || typeof summary.snapshotId !== "string")
         throw Error("Unable to verify the room count.");
-      if (summary.protected > 0) throw Error("Ranked or tournament rooms are protected. No rooms were closed.");
+      if (summary.protected > 0) throw Error("Ranked, Daily Puzzle or tournament rooms are protected. No rooms were closed.");
       if (summary.count === 0) { feedback.textContent = "No unfinished game rooms to close."; return; }
       if (!window.confirm(`Close all ${summary.count} unfinished game rooms, including disconnected recovery rooms? This cancels play, not the HGR server. Ranked and unsettled tournaments are protected.`)) return;
       feedback.textContent = "Closing game rooms…";
       const response = await fetch("/admin/rooms/close-all-control", {
         method: "POST", credentials: "include", cache: "no-store",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ expectedRooms: summary.count, confirmation: "CLOSE ALL GAME ROOMS" }),
+        body: JSON.stringify({ expectedRooms: summary.count, expectedSnapshotId: summary.snapshotId, confirmation: "CLOSE ALL GAME ROOMS" }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok || result.closed !== summary.count)

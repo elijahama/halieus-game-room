@@ -420,7 +420,8 @@ export function getBlackjackLiveRoomSummaries(): HalieusLiveRoomSummary[] {
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
 export function getBlackjackBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
-  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: "blackjack", code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
 }
 /** Cancel a single casual table without invoking its normal finish/scoring path. */
 export async function closeBlackjackRoom(io: Server, code: string, createdAt: number, reason: string): Promise<boolean> {

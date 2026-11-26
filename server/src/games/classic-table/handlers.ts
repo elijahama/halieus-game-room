@@ -442,7 +442,8 @@ export function getClassicLiveRoomSummaries(): HalieusLiveRoomSummary[] {
 /** Administrative preflight includes disconnected recovery rooms, not just discovery. */
 export function getClassicBulkRoomState() {
   const open = [...rooms.values()].filter(room => room.phase !== "finished");
-  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length };
+  return { count: open.length, protected: open.filter(room => String(room.matchMode) === "ranked").length,
+    rooms: open.map(room => ({ game: room.game, code: room.code, createdAt: room.createdAt, startedAt: room.startedAt ?? null })) };
 }
 export async function closeClassicRoom(io: Server, game: ClassicGameId, code: string, createdAt: number, reason: string): Promise<boolean> {
   const room = rooms.get(code);
