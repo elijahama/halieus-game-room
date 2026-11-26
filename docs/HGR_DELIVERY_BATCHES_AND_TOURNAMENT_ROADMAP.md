@@ -12,7 +12,7 @@ The owner requested that delivery batches be allocated specific patch versions. 
 | 4.8.3 | Mega Board geometry and property readability | Centre board; compact grouped property presentation without redundant banners or wasted space; retain all gameplay and spectator fixes; responsive regression |
 | 4.8.4 | Intro viewport/glow and independent Tournament destination | Drafts #248 and #249; independently audit each slice; canonical H, desktop/tablet fit, Solo/Guild access and mobile navigation |
 | **4.8.5** | Tournament hardening checkpoint | Real authenticated Solo/Guild flows, tie/forfeit/reconnect/restart recovery, mobile/PWA acceptance and restorable protected checkpoint |
-| 4.8.6 | Spar (Cha-Cha) Casual Beta | Draft #251; rules, privacy, multiplayer, AI and responsive acceptance; separate from tournament milestone |
+| 4.8.6 | Spar (Cha-Cha) Casual Beta; Control PWA release alerts and task-based progress | Draft #251 and issue #279; Spar rules/privacy/multiplayer/AI/responsive acceptance; verified event-driven release-ready push, measured individual check progress, physical-device receipt and failure/recovery acceptance; separate from tournament milestone |
 | 4.8.7 | Spar beta follow-up | Conditional on actual balancing or regression findings |
 | 4.8.8–4.8.9 | Unallocated contingency | Only if meaningful corrections are needed |
 | **4.9.0** | Tournament experience milestone | Distinct ratings, leaderboards, Guild standings, reports, working Mega Board tournament replay/download/viewer, profiles, permissions and responsive presentation. Individually audited implementation slices precede the milestone; do not defer required functionality to later patches. |
