@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { advanceSparDecisionClock, sparDecisionExpired, type SparDecisionClock } from "../../../../shared/games/spar/decisionClock.js";
 import type { Server, Socket } from "socket.io";
 import type { HalieusLiveRoomSummary } from "../../../../shared/platform/live-games.js";
-import { sparRevokePenalty, sparSeatLimit, sparCustomCapacity, SPAR_DECK_SIZES, type SparCustomSettings, type SparTableFormat, type SparMatchMode } from "../../../../shared/games/spar/types.js";
+import { SPAR_CPU_TURN_DELAY_MS, sparRevokePenalty, sparSeatLimit, sparCustomCapacity, SPAR_DECK_SIZES, type SparCustomSettings, type SparTableFormat, type SparMatchMode } from "../../../../shared/games/spar/types.js";
 import type {
   SparAiDifficulty, SparCard, SparEvent, SparHandAward, SparPhase,
   SparPlayer, SparPublicState, SparResolvedTrick, SparTrickPlay,
@@ -135,6 +135,8 @@ function state(room: Room, viewerId: string | null, spectator: boolean): SparPub
     ...(spectator && room.matchMode !== "ranked" ? { spectatorHands:Object.fromEntries(room.players.map(p=>[p.id,[...p.hand]])) } : {}),
     dealerPlayerId: room.players[room.dealerSeat]?.id ?? null,
     currentTurnPlayerId: room.currentTurnPlayerId, leadPlayerId: room.leadPlayerId,
+    nextTurnPlayerId: room.phase === "playing" && room.currentTurnPlayerId && room.plays.length + 1 < room.players.length
+      ? nextPlayer(room, room.currentTurnPlayerId)?.id ?? null : null,
     handNumber: room.handNumber, trickNumber: room.trickNumber,
     plays: room.plays.map(p => ({ ...p })),
     lastTrick: room.lastTrick ? { ...room.lastTrick, plays: room.lastTrick.plays.map(p => ({ ...p })) } : null,
@@ -337,13 +339,13 @@ function scheduleAi(io: Server, room: Room) {
   if (!player?.isAi || room.phase === "finished" || room.pendingExchange.length || !room.players.some(p=>!p.isAi&&p.isConnected)) return;
   aiTimers.set(room.code, setTimeout(() => {
     aiTimers.delete(room.code);
-    if (player.id !== room.currentTurnPlayerId || room.phase === "finished") return;
+    if (rooms.get(room.code) !== room || player.id !== room.currentTurnPlayerId || room.phase === "finished" || room.pendingExchange.length || !room.players.some(p=>!p.isAi&&p.isConnected)) return;
     if (room.phase === "bra") { bra(io, room, player); return; }
     if (room.phase !== "playing") return;
     const lead = room.plays.length ? sparSuit(room.plays[0].card) : null;
     const card = chooseSparAiCard(player.hand, lead, room.trickNumber, player.aiDifficulty ?? "normal", handSize(room));
     play(io, room, player, card);
-  }, 620));
+  }, SPAR_CPU_TURN_DELAY_MS));
 }
 function ackOk(ack: unknown, result: unknown) {
   if (typeof ack === "function") (ack as (r: unknown) => void)(result);

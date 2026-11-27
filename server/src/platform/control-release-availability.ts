@@ -111,8 +111,12 @@ let pending: Promise<ReleaseAvailability> | null = null;
 export async function currentReleaseAvailability(
   fetcher: typeof fetch = fetch,
   now = Date.now(),
+  fresh = false,
 ): Promise<ReleaseAvailability> {
-  if (cached && now - cached.at < RELEASE_AVAILABILITY_TTL_MS) return cached.data;
+  // A completion event must not reuse a pre-completion cached or in-flight result.
+  if (fresh && pending) { try { await pending; } catch { /* retry with fresh evidence */ } }
+  if (!fresh && cached && now - cached.at < RELEASE_AVAILABILITY_TTL_MS) return cached.data;
+  if (fresh) cached = null;
   if (!pending) {
     pending = (async () => {
       const response = await fetcher(RELEASE_URL, {

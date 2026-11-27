@@ -69,8 +69,14 @@ export function registerLobbyHandlers(
         !room.players.some(player => player.id === socket.id && player.isHost && player.isConnected && !player.hasLeft)) {
       acknowledge({ ok: false, reason: "Only the current host can change the mode of this waiting room." }); return;
     }
-    if (room.betaTournamentTest || socket.data?.betaMode === true || getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)) {
-      acknowledge({ ok: false, reason: "Beta practice and tournament match modes are locked." }); return;
+    if (getSoloTournamentBoundRoom(room.code) || getGuildFixtureBoundRoom(room.code)) {
+      acknowledge({ ok: false, reason: "Tournament match modes are locked." }); return;
+    }
+    if (socket.data?.betaMode === true && !room.betaTournamentTest) {
+      acknowledge({ ok: false, reason: "Exit Beta Test Lab to change a normal room." }); return;
+    }
+    if (room.betaTournamentTest && payload.mode === "ranked") {
+      acknowledge({ ok: false, reason: "Ranked is not available in Beta practice." }); return;
     }
     if (payload.mode !== "casual" && payload.mode !== "ranked" && payload.mode !== "blitz") {
       acknowledge({ ok: false, reason: "Choose Casual, Ranked or Blitz." }); return;
@@ -207,7 +213,7 @@ export function registerLobbyHandlers(
         acknowledge({ ok: false, reason: "Only an owner or administrator can create a Beta tournament practice room." });
         return;
       }
-      const blitz = betaTournamentTest ? false : Boolean(payload.blitz);
+      const blitz = Boolean(payload.blitz);
       const ranked = betaTournamentTest ? false : Boolean(payload.ranked) && !blitz;
       const freeParkingJackpotEnabled = ranked ? false : payload.freeParkingJackpotEnabled ?? false;
 

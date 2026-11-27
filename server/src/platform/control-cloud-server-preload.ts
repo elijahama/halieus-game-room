@@ -1,4 +1,5 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
+import { validateIsolatedTaskTelemetry, acceptIsolatedTaskTelemetry, isolatedTaskPercent, type IsolatedTaskTelemetry } from "../../../shared/platform/control-task-telemetry.js";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import type { IncomingMessage, RequestListener, ServerResponse } from "node:http";
@@ -45,6 +46,7 @@ interface StoredRequest {
   progress: number;
   reason: string | null;
   localOperationId: string | null;
+  taskTelemetry?: IsolatedTaskTelemetry;
   /** Private actor identity; never copied to publicOperation(). */
   requestedByAccountId?: string;
   /** Last durable push milestone to avoid repeated background alerts. */
@@ -254,7 +256,7 @@ function notifyOperationUpdate(operation: StoredRequest): void {
     ? "The owner-PC update has completed. Open Control to verify the result."
     : terminal
       ? "The owner-PC update did not finish. Open Control to see the verified reason."
-      : `Owner-PC update reported ${operation.progress}%. Tap to see the current stage.`;
+      : operation.taskTelemetry ? `Owner-PC update reported ${operation.progress}% · ${operation.taskTelemetry.tasks.filter(t=>t.state==="passed").length} of 11 tasks passed. Open Control for details.` : `Owner-PC update reported ${operation.progress}%. Tap to see the current stage.`;
   void sendHgrPush([actor.id], {
     topic: "operations",
     title: `HGR Update · ${label}${terminal ? "" : ` ${operation.progress}%`}`,
@@ -275,6 +277,7 @@ function publicOperation(request: StoredRequest | null) {
     startedAt: request.requestedAt,
     updatedAt: request.updatedAt,
     localOperationId: request.localOperationId,
+    taskTelemetry: request.taskTelemetry,
     reason: request.reason,
   };
 }
@@ -438,14 +441,25 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
   const phase = boundedText(body.phase, 160) || (state === "succeeded" ? "Update complete" : "Updating HGR");
   const reason = boundedText(body.reason, 900) || null;
   const localOperationId = boundedText(body.localOperationId, 96) || null;
+  const taskTelemetry=body.taskTelemetry===undefined?null:validateIsolatedTaskTelemetry(body.taskTelemetry,localOperationId);
+  if(body.taskTelemetry!==undefined&&!taskTelemetry){sendJson(response,400,{ok:false,reason:"Invalid update task receipt."});return;}
 
   const result = await mutateStore((store) => {
     const operation = store.requests.find((entry) => entry.requestId === requestId && entry.deviceId === auth.device.deviceId);
     if (!operation) return { found: false, notification: null };
     // Late bridge reports must never reopen a completed or timed-out request.
     if (operation.state !== "running" && operation.state !== "queued") return { found: true, notification: null };
+    if(taskTelemetry&&(operation.action!=="update"||operation.localOperationId&&operation.localOperationId!==localOperationId||
+        !acceptIsolatedTaskTelemetry(operation.taskTelemetry,taskTelemetry)))return {found:true,conflict:true,notification:null};
+    if(operation.taskTelemetry&&operation.localOperationId!==localOperationId)return {found:true,conflict:true,notification:null};
+    if(state==="succeeded"&&(operation.taskTelemetry||taskTelemetry)&&(!taskTelemetry||isolatedTaskPercent(taskTelemetry,"succeeded")!==100))
+      return {found:true,conflict:true,notification:null};
+    // Never let an earlier log-based running report replace accepted task evidence.
+    if(operation.taskTelemetry&&!taskTelemetry&&state==="running")return {found:true,notification:null};
+    if(taskTelemetry)operation.taskTelemetry=taskTelemetry;
     operation.state = state;
-    operation.progress = state === "succeeded" ? 100 : Math.max(operation.progress, progress);
+    operation.progress = state === "succeeded" ? 100 : operation.taskTelemetry
+      ? isolatedTaskPercent(operation.taskTelemetry,state === "queued" ? "running" : state) : Math.min(99,Math.max(operation.progress,progress));
     operation.phase = phase;
     operation.reason = reason;
     operation.localOperationId = localOperationId ?? operation.localOperationId;
@@ -463,6 +477,7 @@ async function handleProgress(request: IncomingMessage, response: ServerResponse
     return { found: true, notification: { ...operation, milestone: terminal ? null : milestone } };
   });
   if (!result.found) { sendJson(response, 404, { ok: false, reason: "Unknown cloud Update request." }); return; }
+  if ("conflict" in result && result.conflict) { sendJson(response, 409, { ok:false, reason:"Conflicting or incomplete update task receipt." }); return; }
   sendJson(response, 200, { ok: true });
   if (result.notification) notifyOperationUpdate(result.notification);
 }

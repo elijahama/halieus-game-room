@@ -3,6 +3,8 @@
  */
 export type SparSuit = "C" | "D" | "H" | "S";
 export const SPAR_MAX_PLAYERS = 8;
+/** CPU presentation cadence, independent from the human decision clock. */
+export const SPAR_CPU_TURN_DELAY_MS = 1050;
 export type SparMatchMode = "casual" | "ranked" | "custom";
 export type SparDeckVariant = "traditional" | "full" | "noaces" | "expanded";
 export type SparScoringMode = "stones" | "target" | "free";
@@ -91,6 +93,8 @@ export interface SparPublicState {
   spectatorHands?: Record<string,SparCard[]>;
   dealerPlayerId: string | null;
   currentTurnPlayerId: string | null;
+  /** Server-projected successor within this trick only; null when the winner must lead. */
+  nextTurnPlayerId?: string | null;
   leadPlayerId: string | null;
   handNumber: number;
   trickNumber: number;

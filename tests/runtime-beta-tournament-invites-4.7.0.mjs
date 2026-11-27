@@ -88,7 +88,13 @@ try {
   assert.equal(created.ok, true, created.reason);
   assert.equal(created.room.betaTournamentTest, true);
   assert.equal(created.room.ranked, false);
-  assert.equal(created.room.blitz, false);
+  assert.equal(created.room.blitz, true, "Beta Blitz creation must preserve Blitz");
+  assert.equal(created.room.matchModeLocked, false);
+  const choose = (mode) => send(host, "game:set-match-mode", { code: "BETAW4", createdAt: created.room.createdAt, mode });
+  assert.equal((await choose("ranked")).ok, false);
+  assert.equal((await choose("casual")).room.blitz, false);
+  assert.equal((await choose("blitz")).room.blitz, true);
+  assert.equal((await send(member, "game:set-match-mode", { code: "BETAW4", createdAt: created.room.createdAt, mode: "casual" })).ok, false);
   assert.equal((await send(guest, "game:join", { code: "BETAW4", playerName: "Guest" })).ok, false);
   assert.equal((await send(outsider, "game:join", { code: "BETAW4", playerName: "No invite" })).ok, false);
   assert.equal((await api("/accounts/live-games", bystander.cookie)).body.rooms.some(r => r.code === "BETAW4"), false,
@@ -121,6 +127,8 @@ try {
   assert.equal((await send(outsider, "game:spectate", { code: "BETAW4", playerName: "Spy" })).ok, false,
     "A non-invited account cannot spectate a private Beta game.");
   assert.equal(practice.gameState.ranked, false);
+  assert.equal(practice.gameState.blitz, true);
+  assert.equal((await choose("casual")).ok, false, "Started practice cannot switch mode");
   assert.equal(practice.gameState.players.some(p => p.isAi), true);
   practice.gameState.phase = "finished";
   practice.gameState.turnPhase = "finished";

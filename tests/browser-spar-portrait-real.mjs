@@ -15,7 +15,7 @@ try{
  const cases=[
  // Representative CSS viewports, not fixed hardware resolution assumptions.
  {width:320,height:568,seats:8,device:"compact-phone-portrait"},
- {width:360,height:780,seats:8,device:"S23-class-portrait"},
+ {width:360,height:780,seats:8,next:true,device:"S23-class-portrait"},
  {width:780,height:360,seats:8,device:"S23-class-landscape"},
  {width:390,height:844,seats:2,device:"iPhone-class-portrait"},
  {width:844,height:390,seats:8,device:"iPhone-class-landscape"},
@@ -43,7 +43,7 @@ try{
    await page.setContent('<!doctype html><html data-theme="dark"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div id="root"></div></body></html>');
    await page.addStyleTag({content:globalCss});
    await page.addStyleTag({path:join(temp,"spar.css")});
-   await page.evaluate(c=>window.sparFixture={seats:c.seats,spectator:!!c.spectator,seven:!!c.seven,phase:c.phase??"playing"},c);
+   await page.evaluate(c=>window.sparFixture={seats:c.seats,spectator:!!c.spectator,seven:!!c.seven,next:!!c.next,phase:c.phase??"playing"},c);
    await page.addScriptTag({path:bundle});
    const table=page.getByRole("region",{name:"Spar card table"});await table.waitFor({timeout:10000}).catch(e=>{throw new Error("Spar render failed "+JSON.stringify({c,errors}),{cause:e})});
    const actions=page.getByRole("button",{name:/^Actions/}), players=page.getByRole("button",{name:/^Players/}), chat=page.getByRole("button",{name:"Chat",exact:true});
@@ -54,11 +54,14 @@ try{
    if(c.seats===8)assert.ok(slots.includes("left")&&slots.includes("right"));
    assert.equal(await page.locator(".spar-table-seat[aria-current=true]").count(),1);
    assert.match(await page.locator(".spar-table-seat[aria-current=true]").innerText(),/Turn/);
+   assert.equal(await page.locator('.spar-table-seat[data-turn-order="next"]').count(),c.next?1:0);
+   if(c.next)assert.match(await page.locator('.spar-table-seat[data-turn-order="next"]').innerText(),/Next/);
+   assert.equal(await page.getByLabel("Clockwise play direction").count(),1);
    assert.equal(await page.locator(".spar-card-count").first().getAttribute("aria-label"),(c.seven?7:5)+" cards remaining");
    const trick=await page.locator(".spar-table-centre").boundingBox();
    for(const card of await page.locator(".spar-current-plays .spar-playing-card").all()){
     const b=await card.boundingBox();
-    assert.ok(b&&b.width>=18&&b.height>=24&&b.y>=trick.y-2&&b.y+b.height<=trick.y+trick.height+2&&b.x>=trick.x-2&&b.x+b.width<=trick.x+trick.width+2,JSON.stringify({c,trick,b}));
+    assert.ok(b&&b.width>=18&&b.height>=24&&b.height<=(c.seats>4?81:93)&&b.y>=trick.y-2&&b.y+b.height<=trick.y+trick.height+2&&b.x>=trick.x-2&&b.x+b.width<=trick.x+trick.width+2,JSON.stringify({c,trick,b}));
    }
    const box=await table.boundingBox(), dock=await page.locator(".hgr-card-room-dock").boundingBox(), nav=await page.locator(".spar-side-tabs").boundingBox();
    assert.ok(box.width>100&&box.height>90&&box.x>=-1&&box.x+box.width<=c.width+1,JSON.stringify({c,box,dock,nav}));

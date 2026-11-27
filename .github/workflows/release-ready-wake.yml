@@ -1,0 +1,47 @@
+name: HGR release-ready wake
+
+on:
+  workflow_run:
+    workflows: ["HGR release identity"]
+    types: [completed]
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  wake-control:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Request independent verification of successful packaging
+        env:
+          HGR_RELEASE_WAKE_SECRET: ${{ secrets.HGR_RELEASE_WAKE_SECRET }}
+          HGR_RUN_ID: ${{ github.event.workflow_run.id }}
+          HGR_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          HGR_RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHmac } from 'node:crypto';
+          const secret = process.env.HGR_RELEASE_WAKE_SECRET;
+          if (!secret || secret.length < 32) {
+            console.log('Release wake not configured; five-minute verified polling remains available.');
+            process.exit(0);
+          }
+          const body = JSON.stringify({runId:process.env.HGR_RUN_ID,attempt:process.env.HGR_RUN_ATTEMPT,sha:process.env.HGR_RUN_SHA,sentAt:Date.now()});
+          const signature = createHmac('sha256',secret).update(body).digest('hex');
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const response = await fetch('https://halieus.remotewire.net/internal/hgr/release-ready', {
+                method:'POST',headers:{'content-type':'application/json','x-hgr-release-signature':signature},
+                body,redirect:'error',signal:AbortSignal.timeout(8000)
+              });
+              if(response.status === 202) { console.log('Release verification wake accepted.'); process.exit(0); }
+              if(response.status < 500) throw new Error('Wake rejected: HTTP '+response.status);
+            } catch(error) { console.warn('Release wake attempt '+(attempt+1)+' unavailable.'); }
+            if(attempt < 2) await new Promise(resolve=>setTimeout(resolve,2000*(attempt+1)));
+          }
+          console.warn('Release wake unavailable; verified polling remains active.');
+          process.exitCode = 1;
+          NODE

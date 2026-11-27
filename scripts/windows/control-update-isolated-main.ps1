@@ -17,10 +17,20 @@ $checkout = Join-Path $workspaceBase ("main-" + $OperationId)
 $previousPrompt = $env:GIT_TERMINAL_PROMPT
 $created = $false
 
-function Invoke-Gate([string]$Label, [scriptblock]$Command) {
+function Write-HgrTaskEvent([int]$Id,[string]$State) {
+    Write-Output "[HGR-TASK v1] $OperationId $Id $State"
+}
+function Invoke-Gate([int]$Id,[string]$Label, [scriptblock]$Command) {
+    Write-HgrTaskEvent $Id "running"
     Write-Output "[CHECK] $Label"
-    & $Command
-    if ($LASTEXITCODE -ne 0) { throw "$Label failed. Inspect the operation log and live release identity before retrying." }
+    try {
+        & $Command
+        if ($LASTEXITCODE -ne 0) { throw "$Label failed. Inspect the operation log and live release identity before retrying." }
+        Write-HgrTaskEvent $Id "passed"
+    } catch {
+        Write-HgrTaskEvent $Id "failed"
+        throw
+    }
 }
 try {
     if (Test-Path -LiteralPath $checkout) {
@@ -30,7 +40,7 @@ try {
     $env:GIT_TERMINAL_PROMPT = "0"
     Write-Output "STEP 1 - Fetching isolated main release from GitHub..."
     $created = $true
-    Invoke-Gate "Clone protected public HGR main" {
+    Invoke-Gate 1 "Clone protected public HGR main" {
         & git clone --no-tags --single-branch --depth 1 --branch main $repoUrl $checkout
     }
     $versionPath = Join-Path $checkout "VERSION"
@@ -60,7 +70,7 @@ try {
         Write-Output ("[SOURCE] Isolated main commit " + $commit.Substring(0, 12) +
             " / HGR " + $declaredVersion)
         Write-Output "STEP 2 - Verifying published release identity..."
-        Invoke-Gate "Exact GitHub main release fingerprint" {
+        Invoke-Gate 2 "Exact GitHub main release fingerprint" {
             & node "scripts\release-integrity.mjs" --verify
         }
         if ($AuditOnly) {
@@ -82,24 +92,25 @@ try {
             [string]$liveHealth.status -eq "online") {
             Write-Output "[OK] Already up to date: the public website serves the exact verified GitHub main release."
             Write-Output "[OK] No Oracle deployment, restart, dependency installation or owner-PC changes required."
+            foreach ($id in 3..10) { Write-HgrTaskEvent $id "skipped" }
             return
         }
         Write-Output "STEP 3 - Installing isolated release dependencies..."
-        Invoke-Gate "Dependency installation" { & npm.cmd ci --no-fund --no-audit }
+        Invoke-Gate 3 "Dependency installation" { & npm.cmd ci --no-fund --no-audit }
         Write-Output "STEP 4 - Checking security and HGR release..."
-        Invoke-Gate "Security audit" { & npm.cmd audit --audit-level=high }
-        Invoke-Gate "Client/server types" { & npm.cmd run typecheck }
-        Invoke-Gate "Release production build" { & npm.cmd run build }
-        Invoke-Gate "Full platform regression" { & npm.cmd run test:regression }
-        Invoke-Gate "Oracle release package preflight" {
+        Invoke-Gate 4 "Security audit" { & npm.cmd audit --audit-level=high }
+        Invoke-Gate 5 "Client/server types" { & npm.cmd run typecheck }
+        Invoke-Gate 6 "Release production build" { & npm.cmd run build }
+        Invoke-Gate 7 "Full platform regression" { & npm.cmd run test:regression }
+        Invoke-Gate 8 "Oracle release package preflight" {
             & powershell.exe -NoProfile -ExecutionPolicy Bypass -File "tests\package-oracle-4.0.0.ps1"
         }
-        Invoke-Gate "Final release fingerprint" { & node "scripts\release-integrity.mjs" --verify }
+        Invoke-Gate 9 "Final release fingerprint" { & node "scripts\release-integrity.mjs" --verify }
 
         Write-Output "STEP 9 - Publishing the validated HGR release to the website..."
         # Uses the existing owner-private key-path configuration outside the repo
         # and the exact release/fingerprint Oracle installer and rollback gates.
-        Invoke-Gate "Approved Oracle release helper" {
+        Invoke-Gate 10 "Approved Oracle release helper" {
             & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $deployPath
         }
         Write-Output "[OK] Oracle verified the isolated main release. Owner feature branch was not modified."

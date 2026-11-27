@@ -482,3 +482,27 @@
 }
 
 .spar-decision-clock{display:inline-block;width:fit-content;color:#ffe5a1;background:#143c31;border:1px solid #b58c4e;border-radius:5px;padding:2px 6px;font-size:.72rem;font-variant-numeric:tabular-nums;font-weight:800;line-height:1.15}.spar-decision-clock.is-urgent{color:#fff;border-color:#f98a79;background:#753a33}
+
+/* 4.8.6 compact table: keep a clear seat ring and readable ranks/suits.
+ * Only maximum card scale changes; short viewport constraints still apply. */
+.spar-match .spar-play-direction { letter-spacing:0; white-space:nowrap; }
+.spar-match .spar-seat-ring .spar-table-seat.is-next {
+  border-style:dashed; border-color:#e6ba60; background:#103e32;
+}
+.spar-match .spar-seat-ring .spar-table-seat.is-next .spar-table-seat-copy small { color:#ffe39c; opacity:1; }
+.spar-match .spar-seat-ring .spar-play .spar-playing-card {
+  height:min(92px,calc(100cqh - 14px));
+}
+.spar-match .spar-seat-ring .spar-current-plays.is-expanded .spar-playing-card {
+  height:min(80px,calc((100cqh - 24px)/2));
+}
+.spar-match .spar-seat-ring .spar-play .spar-card-centre {
+  font-size:clamp(1rem,2.2vw,2rem);
+}
+.spar-match .spar-actions-workspace .spar-hand-cards .spar-playing-card { max-width:56px; }
+@media (orientation:portrait) and (min-width:600px) and (max-width:1024px) {
+  .spar-match .spar-actions-workspace .spar-hand-cards .spar-playing-card { max-width:64px; }
+}
+@media (max-width:375px) and (orientation:portrait) {
+  .spar-match .spar-actions-workspace .spar-hand-cards.is-seven .spar-playing-card { max-width:44px; }
+}

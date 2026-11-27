@@ -25,7 +25,8 @@ function Write-HgrUpdateResult {
             throw "Cloud Update marker ownership changed; stale finalizer will not overwrite it."
         }
     }
-    $json = $Value | ConvertTo-Json
+    if ($null -ne $script:taskTelemetry) { $Value.taskTelemetry = $script:taskTelemetry }
+    $json = $Value | ConvertTo-Json -Depth 8
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($resultPath, $json, $utf8)
 }
@@ -47,10 +48,17 @@ if (($handoff -eq "isolated-main") -ne $isolatedFlag) {
     throw "Cloud Update handoff mode does not match its authenticated finalizer; cannot mark success."
 }
 $isIsolatedMain = $handoff -eq "isolated-main"
+$taskTelemetry = $null
+$telemetryProperty = $existing.PSObject.Properties["taskTelemetry"]
+if ($isIsolatedMain -and $telemetryProperty -and $telemetryProperty.Value.operationId -ceq $operationId -and
+    $telemetryProperty.Value.schema -eq 1 -and @($telemetryProperty.Value.tasks).Count -eq 11) {
+    $taskTelemetry = $telemetryProperty.Value
+}
 $currentProgress = 97
 try {
     if ($null -ne $existing.progress) { $currentProgress = [Math]::Max(97, [Math]::Min(99, [int]$existing.progress)) }
 } catch { $currentProgress = 97 }
+if ($null -ne $taskTelemetry) { $currentProgress = [Math]::Min(99,[int]$existing.progress) }
 $previousFinalizer = $env:HGR_CONTROL_UPDATE_FINALIZER
 $previousDeferRefresh = $env:HGR_CONTROL_DEFER_REFRESH
 $exitCode = 1
@@ -58,7 +66,7 @@ $failureReason = $null
 try {
     $env:HGR_CONTROL_UPDATE_FINALIZER = "1"
     Remove-Item Env:HGR_CONTROL_DEFER_REFRESH -ErrorAction SilentlyContinue
-    $currentProgress = [Math]::Max($currentProgress, 98)
+    if ($null -eq $taskTelemetry) { $currentProgress = [Math]::Max($currentProgress, 98) }
     $phase = "Restarting Control after update"
     if ($isIsolatedMain) { $phase = "Finalizing verified website release" }
     Write-HgrUpdateResult -Value @{
@@ -107,6 +115,12 @@ try {
 }
 
 if ($exitCode -eq 0 -and [string]::IsNullOrWhiteSpace($failureReason)) {
+    if ($null -ne $taskTelemetry) {
+        $taskTelemetry.tasks[10].state = "passed"
+        $taskTelemetry.tasks[10].finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
+        $taskTelemetry.sequence++
+        $taskTelemetry.observedAt = $taskTelemetry.tasks[10].finishedAt
+    }
     Write-HgrUpdateResult -Value @{
         state = "succeeded"
         startedAt = $startedAt
@@ -125,6 +139,12 @@ if ($exitCode -eq 0 -and [string]::IsNullOrWhiteSpace($failureReason)) {
     exit 0
 }
 
+if ($null -ne $taskTelemetry) {
+    $taskTelemetry.tasks[10].state = "failed"
+    $taskTelemetry.tasks[10].finishedAt = [DateTimeOffset]::UtcNow.ToString("o")
+    $taskTelemetry.sequence++
+    $taskTelemetry.observedAt = $taskTelemetry.tasks[10].finishedAt
+}
 $finalReason = if (-not [string]::IsNullOrWhiteSpace($failureReason)) { $failureReason } else { "HGR Control post-update finalization failed." }
 Write-HgrUpdateResult -Value @{
     state = "failed"

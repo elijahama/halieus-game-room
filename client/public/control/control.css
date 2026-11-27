@@ -748,3 +748,15 @@ html,body,.control-rail,.control-main,.control-mobile-nav,.operation-toast,
   .control-enrollment-device{padding:12px}
   .control-enrollment-device button{width:100%;flex:1 1 100%}
 }
+
+/* Task evidence is compact and scoped to expanded Control update details. */
+.operation-task-evidence { display:grid; gap:6px; width:100%; min-width:0; padding:8px 0; }
+.operation-task-evidence[hidden] { display:none!important; }
+.operation-task-evidence > small { display:block; font-size:.72rem; line-height:1.4; }
+.operation-task-list { list-style:none; padding:0; margin:0; display:grid; gap:3px; }
+.operation-task-row { display:flex; justify-content:space-between; align-items:start; gap:8px; min-width:0; padding:4px 0; font-size:.73rem; }
+.operation-task-row span { min-width:0; overflow-wrap:anywhere; }
+.operation-task-row b { flex:none; font-size:.68rem; font-weight:600; }
+.operation-task-row[data-task-state="passed"] b { color:#4ade80; }
+.operation-task-row[data-task-state="running"] b { color:#8da8ff; }
+.operation-task-row[data-task-state="failed"] b { color:#ff9d9d; }

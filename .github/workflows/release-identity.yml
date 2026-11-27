@@ -56,6 +56,7 @@ jobs:
             './scripts/windows/control-update.ps1',
             './scripts/windows/control-update-isolated-main.ps1',
             './scripts/windows/control-update-finalize.ps1',
+            './scripts/windows/control-update-task-progress.ps1',
             './scripts/windows/post-update-client.ps1',
             './scripts/windows/start-control.ps1',
             './scripts/windows/stop-control.ps1',

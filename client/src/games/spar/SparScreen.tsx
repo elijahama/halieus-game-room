@@ -114,6 +114,7 @@ export function SparScreen({
   const leading = state.plays.length ? sparSuit(state.plays[0].card) : null;
   const legal = useMemo(() => legalSparCards(state.hand, leading), [state.hand, leading]);
   const current = state.players.find(p => p.id === state.currentTurnPlayerId);
+  const next = state.phase === "playing" && !state.exchangePending ? state.players.find(p=>p.id===state.nextTurnPlayerId) : undefined;
   const ranks = [...state.players].sort((a,b)=>b.stones-a.stones || a.seat-b.seat);
   // Stable clockwise order, anchored at the viewer (or first registered seat).
   // Never rotate for a change of turn or sort by score.
@@ -124,9 +125,10 @@ export function SparScreen({
   const ringSlots = ["bottom","bottom-left","left","top-left","top","top-right","right","bottom-right"] as const;
   const renderTableSeat = (p:SparPlayer,i:number) => {
     const active = p.id===state.currentTurnPlayerId;
-    return <article key={p.id} className={`spar-table-seat ${active?"is-active":""} ${p.id===viewer?.id?"is-you":""}`} data-ring-slot={ringSlots[Math.round(i*8/orderedSeats.length)%8]} data-seat-order={i} aria-current={active?"true":undefined}>
+    const upNext = p.id===next?.id && !active;
+    return <article key={p.id} className={`spar-table-seat ${active?"is-active":""} ${upNext?"is-next":""} ${p.id===viewer?.id?"is-you":""}`} data-turn-order={active?"current":upNext?"next":undefined} data-ring-slot={ringSlots[Math.round(i*8/orderedSeats.length)%8]} data-seat-order={i} aria-current={active?"true":undefined}>
       <span className="spar-table-seat-avatar" aria-hidden="true">{p.name.slice(0,1).toUpperCase()}</span>
-      <div className="spar-table-seat-copy"><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit}{p.id===state.dealerPlayerId?" · D":""}{active?" · Turn":""}{active&&!state.exchangePending&&seconds!==null?" · "+seconds+"s":""}</small></div>
+      <div className="spar-table-seat-copy"><strong title={p.name}>{p.name}{p.id===viewer?.id?" · You":""}</strong><small>{p.stones} {scoreUnit}{p.id===state.dealerPlayerId?" · D":""}{active?" · Turn":upNext?" · Next":""}{active&&!state.exchangePending&&seconds!==null?" · "+seconds+"s":""}</small></div>
       <span className="spar-card-count" aria-label={`${p.handCount} cards remaining`} title={`${p.handCount} cards remaining`}><i aria-hidden="true"/><b>{p.handCount}</b></span>
     </article>;
   };
@@ -200,7 +202,7 @@ export function SparScreen({
     : <section className="spar-match hgr-card-room">
         <div className="spar-table-column hgr-card-room-table">
           <header className="spar-match-status" aria-live="polite">
-            <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize}</small><strong>{state.status}</strong>{(seconds!==null||state.decisionPaused)&&<span className={"spar-decision-clock"+(seconds!==null&&seconds<=5?" is-urgent":"")} role="timer" aria-label="Decision time remaining">{state.decisionPaused?"Paused · waiting for players":(state.exchangePending?"Exchange":"Decision")+" · "+seconds+"s"}</span>}</div>
+            <div><small>HAND {state.handNumber} · TRICK {state.trickNumber} / {state.handSize} <span className="spar-play-direction" aria-label="Clockwise play direction">· ↻ CLOCKWISE</span></small><strong>{state.status}</strong>{(seconds!==null||state.decisionPaused)&&<span className={"spar-decision-clock"+(seconds!==null&&seconds<=5?" is-urgent":"")} role="timer" aria-label="Decision time remaining">{state.decisionPaused?"Paused · waiting for players":(state.exchangePending?"Exchange":"Decision")+" · "+seconds+"s"}</span>}</div>
             {state.scoring==="stones"?<StonePool remaining={state.stonesRemaining} total={state.stonesTotal}/>:<strong>{state.scoring==="target"?`Target: ${state.stonesTotal} points`:"Free play · Cumulative points"}</strong>}
           </header>
           <section className="spar-table" aria-label="Spar card table">
@@ -218,7 +220,7 @@ export function SparScreen({
           </section>
         </div>
         <aside className="spar-room-stack spar-control-panel hgr-card-room-dock" aria-label="Spar room controls">
-          <header className="spar-control-heading"><div><small>{state.isSpectator?"LIVE TABLE":"YOUR SEAT"}</small><h2>{state.isSpectator?"Spectating":viewer?.name??"Spar"}</h2></div><span className={canAct||canCallBra||state.canExchange?"spar-turn-pill is-you":"spar-turn-pill"}>{canAct||canCallBra||state.canExchange?"Your decision":current?current.name+"'s turn":"Waiting"}</span></header>
+          <header className="spar-control-heading"><div><small>{state.isSpectator?"LIVE TABLE":"YOUR SEAT"}</small><h2>{state.isSpectator?"Spectating":viewer?.name??"Spar"}</h2></div><span className={canAct||canCallBra||state.canExchange?"spar-turn-pill is-you":"spar-turn-pill"}>{canAct||canCallBra||state.canExchange?"Your decision":current?current.name+(current.isAi?" · CPU turn":"'s turn"):"Waiting"}</span></header>
           <nav className="spar-side-tabs" aria-label="Spar side panel">
             <button type="button" disabled={state.isSpectator} className={visibleTab==="actions"?"is-active":""} aria-pressed={visibleTab==="actions"} onClick={()=>setSideTab("actions")}>Actions{(canAct||canCallBra||state.canExchange)&&<i aria-label="Decision required"/>}</button>
             <button type="button" className={visibleTab==="players"?"is-active":""} aria-pressed={visibleTab==="players"} onClick={()=>setSideTab("players")}>Players <span>{state.players.length}</span></button>

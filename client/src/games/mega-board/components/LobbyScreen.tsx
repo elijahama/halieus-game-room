@@ -12,6 +12,7 @@ import { RecoveryKeyPanel } from "../../../platform/components/RecoveryKeyPanel"
 import { GAME_BY_ID } from "../../../platform/games/catalog";
 import { SkinLibraryButton } from "../../../platform/components/SkinLibraryButton";
 import { accountApi } from "../../../platform/accounts/api";
+import { MegaMatchModePicker, type MegaMatchMode } from "../../../platform/components/MegaMatchModePicker";
 
 const MEGA_ACCENT = GAME_BY_ID["mega-board"].accent;
 const EMPTY_STATS: HalieusPersonalStats = { played: 0, wins: 0, winRate: 0, byGame: [], recent: [] };
@@ -87,7 +88,16 @@ export function LobbyScreen({
   const turnTimerSeconds = lobby.turnTimerSeconds ?? (blitz ? 150 : 45);
   const matchMode = blitz ? "blitz" : ranked ? "ranked" : "casual";
   const hasAi = activePlayers.some(player => player.isAi);
-  const canChangeMode = isHost && !betaMode && lobby.matchModeLocked === false && !!lobby.createdAt && !!onMatchModeChange;
+  const isPractice = lobby.betaTournamentTest === true;
+  const allModesLocked = !isHost ? "Only the host can change match mode."
+    : betaMode && !isPractice ? "Exit Beta to change a normal room."
+    : lobby.matchModeLocked === true ? "This tournament room has a fixed match mode."
+    : lobby.matchModeLocked !== false || !lobby.createdAt || !onMatchModeChange ? "Reconnect to refresh room settings."
+    : connectionStatus !== "Connected" ? "Reconnect to change match mode." : undefined;
+  const lockedModes: Partial<Record<MegaMatchMode,string>> = allModesLocked
+    ? { casual: allModesLocked, ranked: allModesLocked, blitz: allModesLocked }
+    : isPractice ? { ranked: "Ranked is unavailable in Beta practice. Casual and Blitz are available." }
+    : hasAi ? { ranked: "Remove AI seats before choosing Ranked." } : {};
 
   return (
     <main
@@ -138,14 +148,7 @@ export function LobbyScreen({
 
           <dl className="poker-settings-summary">
             <div><dt>Room code</dt><dd>{lobby.code}</dd></div>
-            <div className="mega-poker-mode-setting"><dt>Match</dt><dd>{canChangeMode ? (
-              <select aria-label="Match mode" value={matchMode} disabled={isUpdatingMatchMode || connectionStatus !== "Connected"} onChange={event => onMatchModeChange?.(event.target.value as "casual" | "ranked" | "blitz")}>
-                <option value="casual">Casual</option><option value="ranked" disabled={hasAi}>Ranked</option><option value="blitz">Blitz</option>
-              </select>
-            ) : (blitz ? "⚡ Blitz" : ranked ? "🏆 Ranked" : "Casual")}</dd>
-              {canChangeMode && hasAi && <small className="mega-mode-note">Remove AI seats for Ranked.</small>}
-              {isHost && !canChangeMode && (betaMode || lobby.matchModeLocked) && <small className="mega-mode-note">Mode locked for this room.</small>}
-            </div>
+            <div className="mega-poker-mode-setting"><dt>Match</dt><dd><MegaMatchModePicker label="Match mode" value={matchMode} onChange={mode=>onMatchModeChange?.(mode)} locked={lockedModes} busy={isUpdatingMatchMode}/></dd></div>
             <div><dt>Players</dt><dd>{activePlayers.length} / 8</dd></div>
             <div className="mega-poker-timer-setting">
               <dt>Turn timer</dt>

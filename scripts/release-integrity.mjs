@@ -74,7 +74,7 @@ const roots = [
   'tests/dev-tools/Oracle Quick Deploy',
 ];
 const singles = [
-  'tests/runtime-active-match.mjs', 'tests/browser-active-match-notice.mjs',
+  'tests/runtime-control-update-progress.mjs', 'tests/runtime-active-match.mjs', 'tests/browser-active-match-notice.mjs',
   'tests/regression-active-match-wiring.mjs', 'tests/fixtures/active-match-notice.tsx',
   'docs/HGR_ACTIVE_GAME_RETURN.md', 'docs/HGR_PWA_NOTIFICATIONS.md',
   'tests/browser-mega-compact-layout.mjs', 'tests/fixtures/mega-mobile-auction-real.tsx',
@@ -112,7 +112,8 @@ const singles = [
   'scripts/windows/control-restart.ps1',
   'scripts/windows/control-close.ps1',
   'scripts/windows/control-update.ps1', 'scripts/windows/control-update-isolated-main.ps1', 'tests/regression-control-isolated-cloud-update.mjs',
-  'scripts/windows/control-update-finalize.ps1',
+  'scripts/windows/control-update-finalize.ps1', 'scripts/windows/control-update-task-progress.ps1', 'tests/runtime-control-isolated-task-progress.mjs', 'tests/runtime-control-task-telemetry.mjs',
+  'tests/browser-mega-setup-mode-real.mjs', 'tests/fixtures/mega-setup-mode-real.tsx', '.github/workflows/release-ready-wake.yml', 'tests/runtime-control-release-wake.mjs',
   'tests/browser-intro-viewport-centering.mjs', 'tests/regression-tournaments-independent-nav.mjs',
   'docs/HGR_4.5.1_THEME_PROGRESSION_HOTFIX.md',
   'docs/HGR_4.5.1_PART19_NAVIGATION.md',
