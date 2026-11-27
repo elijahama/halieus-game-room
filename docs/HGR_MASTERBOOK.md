@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 candidate stylesheet ordering — 27 November 2026
+
+Both CI platforms passed the corrected game creation fixture and stopped at the protected intro stylesheet ordering assertion. Keep intro viewport hotfix last in main CSS imports, following the new mode picker and desktop scaling CSS. Retain the original safeguard unchanged. Validate actual intro centering and setup/lobby at the existing and reduced viewport sizes before publishing the next candidate.
+
 ## 4.8.6 candidate CI correction — 27 November 2026
 
 PR #285 initial Windows/Ubuntu validation stopped at the actual App creation-handler fixture because its captured React bindings lacked the new independent `megaCreateMode` draft. Correct the fixture, not the production mode contract; exercise all three modes with deliberately contradictory previous live-match state and preserve acknowledgement, timeout, privacy, cosmetics and retry assertions. Re-run exact candidate CI before release approval.
