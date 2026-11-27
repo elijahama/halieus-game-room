@@ -1,3 +1,4 @@
+import { GameMenu } from "../../client/src/games/mega-board/components/GameMenu";
 import React, {useState} from "react";
 import {createRoot} from "react-dom/client";
 import {PlayerRail} from "../../client/src/games/mega-board/components/PlayerRail";
@@ -41,4 +42,5 @@ function Fixture(){
  </div>;
 }
 declare global {interface Window {hgrBuilt?:boolean;hgrDebtPaid?:boolean;hgrRolled?:boolean;hgrEnded?:boolean;hgrTrade?:boolean;hgrMortgage?:boolean;hgrSelected?:string;}}
-createRoot(document.getElementById("fixture")!).render(<Fixture/>);
+function MenuFixture(){const [open,setOpen]=useState(true);const role=params.get("menu");const host=role==="host"||role==="paused";const spectator=role==="spectator";return <><button onClick={()=>setOpen(true)}>Open game menu</button><GameMenu open={open} isHost={host} gameStarted={true} roomCode="QAONLY" recoveryKey={spectator?null:"FIXTURE-ONLY-KEY"} playerName="Fixture" isSpectator={spectator} darkMode={true} soundEnabled={false} turnTimerSeconds={45} pausedAt={role==="paused"?1:null} onToggleDarkMode={noop} onToggleSound={noop} onToggleFullscreen={noop} onClose={()=>setOpen(false)} onLeave={()=>{document.body.dataset.menuAction="leave";setOpen(false)}} onForfeit={()=>{document.body.dataset.menuAction="forfeit";setOpen(false)}} onEndRoom={()=>{document.body.dataset.menuAction="end";setOpen(false)}} onOpenHistory={()=>{document.body.dataset.menuAction="history";setOpen(false)}} onExportReport={()=>{document.body.dataset.menuAction="export"}} onCopyReport={async()=>{document.body.dataset.menuAction="copy"}}/></>;}
+createRoot(document.getElementById("fixture")!).render(params.has("menu")?<MenuFixture/>:<Fixture/>);

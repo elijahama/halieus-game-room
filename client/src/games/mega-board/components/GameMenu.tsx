@@ -1,3 +1,4 @@
+import { GameMenuSubmenu } from "../../../platform/components/GameMenuSubmenu";
 import { ModalPortal } from "../../../platform/components/ModalPortal";
 import { ConfirmDialog } from "../../../platform/components/ConfirmDialog";
 import {
@@ -267,7 +268,7 @@ export function GameMenu({
         className="game-menu-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="game-menu-title"
+        aria-label={view === "menu" ? "Game menu" : view === "replay" ? "Recent Replay" : view === "saves" ? "Saved Games" : "Feedback"}
       >
         <div className="modal-handle" />
 
@@ -341,18 +342,6 @@ export function GameMenu({
               onToggleFullscreen={onToggleFullscreen}
             />
 
-            {gameStarted && turnTimerSeconds != null && (
-              <div className="turn-timer-settings-panel">
-                <div>
-                  <strong>⏱ Turn timer settings</strong>
-                  <small>Locked for this match. The host sets this in the waiting room.</small>
-                </div>
-                <span className="turn-timer-settings-value">
-                  {turnTimerSeconds < 60 ? `${turnTimerSeconds} sec` : `${Math.floor(turnTimerSeconds / 60)}:${String(turnTimerSeconds % 60).padStart(2, "0")}`}
-                </span>
-              </div>
-            )}
-
             {gameStarted && pausedAt != null && (
               <p role="status" className="mega-pause-indicator">⏸ Match paused since {new Date(pausedAt).toLocaleTimeString("en-GB")}. Game actions are locked until the host resumes.</p>
             )}
@@ -369,6 +358,7 @@ export function GameMenu({
                 <span>💾</span><span><strong>Saved Games</strong><small>Three private server checkpoints · host controls</small></span>
               </button>
             )}
+            {gameStarted && <GameMenuSubmenu label="Match records" icon="inbox">
             {gameStarted && (
               <button type="button" className="menu-action" onClick={() => setView("replay")}>
                 <span>⏪</span><span><strong>Recent Replay</strong><small>Review recorded board states without changing the game</small></span>
@@ -413,6 +403,8 @@ export function GameMenu({
               </button>
             )}
 
+            </GameMenuSubmenu>}
+
             <button
               type="button"
               className="menu-action menu-action-feedback"
@@ -432,6 +424,19 @@ export function GameMenu({
               </span>
             </button>
 
+            {(recoveryKey || (gameStarted && turnTimerSeconds != null)) && <GameMenuSubmenu label="Room information" icon="info">
+            {gameStarted && turnTimerSeconds != null && (
+              <div className="turn-timer-settings-panel">
+                <div>
+                  <strong>⏱ Turn timer settings</strong>
+                  <small>Locked for this match. The host sets this in the waiting room.</small>
+                </div>
+                <span className="turn-timer-settings-value">
+                  {turnTimerSeconds < 60 ? `${turnTimerSeconds} sec` : `${Math.floor(turnTimerSeconds / 60)}:${String(turnTimerSeconds % 60).padStart(2, "0")}`}
+                </span>
+              </div>
+            )}
+
             {recoveryKey && (
               <div className="recovery-key-panel">
                 <div>
@@ -448,6 +453,8 @@ export function GameMenu({
                 </button>
               </div>
             )}
+
+            </GameMenuSubmenu>}
 
             {gameStarted && !isSpectator && onForfeit && (
               <button

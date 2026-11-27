@@ -1,3 +1,4 @@
+import { GameMenuSubmenu } from "./GameMenuSubmenu";
 import { useState } from "react";
 
 interface RecoveryKeyPanelProps {
@@ -30,4 +31,10 @@ export function RecoveryKeyPanel({ recoveryKey, label = "Recovery key" }: Recove
       <button type="button" onClick={() => void copyKey()}>{copied ? "Copied" : "Copy"}</button>
     </div>
   );
+}
+
+/** Keep the private recovery credential off the root game menu. Lobby panels remain unchanged. */
+export function GameMenuRecoveryInfo(props:RecoveryKeyPanelProps) {
+ if(!props.recoveryKey)return null;
+ return <GameMenuSubmenu label="Room information" icon="info"><RecoveryKeyPanel {...props}/></GameMenuSubmenu>;
 }

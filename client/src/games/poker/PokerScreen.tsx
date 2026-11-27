@@ -1,3 +1,4 @@
+import { GameMenuSubmenu } from "../../platform/components/GameMenuSubmenu";
 import { ModalPortal } from "../../platform/components/ModalPortal";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
@@ -11,7 +12,7 @@ import { GameMenuDisplaySettings } from "../../platform/components/DisplaySettin
 import { InviteLobbyPanel } from "../../platform/components/InviteLobbyPanel";
 import { InviteLobbyBar } from "../../platform/components/InviteLobbyBar";
 import { FeedbackForm } from "../../platform/components/FeedbackForm";
-import { RecoveryKeyPanel } from "../../platform/components/RecoveryKeyPanel";
+import { RecoveryKeyPanel, GameMenuRecoveryInfo } from "../../platform/components/RecoveryKeyPanel";
 import { RoomTimeMeta } from "../../platform/components/RoomTimeMeta";
 import { downloadPokerGameReport } from "./utils/gameReport";
 
@@ -357,13 +358,13 @@ export function PokerScreen({
                   onToggleSound={onToggleSound}
                   onToggleFullscreen={onToggleFullscreen}
                 />
-                <button type="button" className="menu-action poker-menu-report" onClick={() => downloadPokerGameReport(state)}>
+                <GameMenuSubmenu label="Match records" icon="inbox"><button type="button" className="menu-action poker-menu-report" onClick={() => downloadPokerGameReport(state)}>
                   <span>📄</span><span><strong>Download Game Report</strong><small>Export a privacy-safe Poker table and hand diagnostic report</small></span>
-                </button>
+                </button></GameMenuSubmenu>
                 <button type="button" className="menu-action menu-action-feedback poker-menu-feedback" onClick={() => setMenuView("feedback")}>
                   <span>💬</span><span><strong>Send feedback</strong><small>Report a Poker bug, layout issue or suggestion</small></span>
                 </button>
-                <RecoveryKeyPanel recoveryKey={recoveryKey} />
+                <GameMenuRecoveryInfo recoveryKey={recoveryKey}/>
                 <button type="button" className="menu-action poker-menu-back" onClick={() => { setMenuOpen(false); setMenuView("menu"); onLeave(); }}>
                   <span>←</span><span><strong>Back to Game Room</strong><small>Keep this seat recoverable</small></span>
                 </button>
