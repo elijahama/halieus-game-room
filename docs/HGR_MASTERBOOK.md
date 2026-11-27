@@ -17,6 +17,10 @@ For pause/in-match menus, keep Resume/Continue immediately accessible; group rel
 
 **Owner-approved universal scope:** the shared pre-game hierarchy, emoji-and-outline selector and decluttered game-menu architecture apply to every shipped game and future game, including all card, board, word and social games. Where a game has no equivalent mode, lobby, pause, save or replay action, omit that action rather than manufacture functionality. Preserve each game’s distinct rules, live clocks, permissions, recovery and confirmed destructive actions. Use the approved shared components by default, with documented game-specific exceptions only. Audit every catalogue entry and supported role/device, and do not mark the migration complete until all applicable surfaces pass actual interaction and responsive validation.
 
+### Shared mode selector implementation slice — 27 November 2026
+
+Use one controlled presentation component in all 15 catalogue game setup forms, with existing mode/format/dictionary/puzzle callbacks and locks. Restore trophy and lightning, remove routine Selected/Available labels, retain 44px minimum touch height, outline, genuine lock explanations and pending feedback. Real setup and existing Mega lobby browser tests required; other waiting-lobby adapters and pause menus remain separate. No production or VERSION change.
+
 ### Initial source audit (4.8.6, f1e84b1c)
 
 HomeScreen.tsx:1161–1198 already uses PreGameShell but combines all game-specific settings before the identity/code/create form, with separate inline mode buttons and variable-length rule notes. Poker includes live variant plus planned variants and stack/blind controls; Spar Custom exposes hand size, deck, scoring, penalty, amount and three toggles together; Mega Board mixes beta explanation, mode, jackpot and board cosmetics. Group optional settings and planned information without removing actual choices. Preserve PreGameShell and current create payloads.

@@ -25,6 +25,9 @@ try{
     if(scroll.content>scroll.height+2){await dialog.hover();await page.mouse.wheel(0,600);await page.waitForFunction(()=>document.querySelector(".pre-game-shell").scrollTop>0);}
    }
    for(const label of ["Ranked","Blitz","Casual","Ranked"]){const button=tabs.getByRole("button",{name:new RegExp(label)});await button.click();assert.equal(await button.getAttribute("aria-pressed"),"true",label+" selects actual setup option");assert.equal(await tabs.locator('button[aria-pressed="true"]').count(),1);}
+   assert.match(await tabs.getByRole("button",{name:/Ranked/}).innerText(),/🏆/);
+   assert.match(await tabs.getByRole("button",{name:/Blitz/}).innerText(),/⚡/);
+   assert.doesNotMatch(await tabs.innerText(),/Selected|Available/);
    assert.equal(await dialog.getByText("Free Parking jackpot",{exact:true}).count(),0);
    await dialog.getByRole("button",{name:"Create Mega Board room",exact:true}).click();assert.equal(await page.locator("html").getAttribute("data-created-mode"),"ranked");
    await page.goto(url+"?beta");dialog=await open();tabs=dialog.getByRole("group",{name:"Mega Board match type"});
@@ -38,6 +41,19 @@ try{
    await dialog.getByRole("button",{name:"Create Mega Board room",exact:true}).click();assert.equal(await page.locator("html").getAttribute("data-created-mode"),"blitz");
    await dialog.getByRole("button",{name:"Exit Beta Test Lab"}).click();
    assert.equal(await tabs.getByRole("button",{name:/Ranked/}).getAttribute("aria-disabled"),"false");
+   if(viewport.width===390){
+    await page.goto(url);
+    await page.getByRole("button",{name:"Games",exact:true}).filter({visible:true}).first().click();
+    for(const [game,group,choices] of [["Poker","Poker match type",["Ranked","Casual"]],["WHOT","WHOT match type",["Ranked","Casual"]],["Ludo","Ludo match type",["Ranked","Casual"]],["Blackjack","Blackjack match type",["Ranked","Casual"]],["Ayo","Ayo match type",["Ranked","Casual"]],["Connect Four","Connect Four match type",["Ranked","Casual"]],["Hidden Dictator","Hidden Dictator match type",["Ranked","Casual"]],["Cheat","Cheat match type",["Ranked","Casual"]],["Dominoes","Dominoes match type",["Ranked","Casual"]],["Password","Password match type",["Ranked","Casual"]],["Anagrams Race","Anagrams Race match type",["Ranked","Casual"]],["Word Board","Word Board dictionary mode",["Challenge","Open / slang","Standard"]],["Word Game","Word Game puzzle type",["Practice","Daily Puzzle"]],["Spar (Cha-Cha)","Spar match mode",["Custom","Casual"]]]){
+     await page.locator(".halieus-library-card").filter({has:page.getByText(game,{exact:true})}).click();
+     const setup=page.getByRole("dialog",{name:"Create "+game+" room"}),groupEl=setup.getByRole("group",{name:group,exact:true});
+     for(const choice of choices){const b=groupEl.getByRole("button",{name:new RegExp(choice)});await b.click();assert.equal(await b.getAttribute("aria-pressed"),"true",game+" "+choice);assert.equal(await groupEl.locator('button[aria-pressed="true"]').count(),1);}
+     assert.doesNotMatch(await groupEl.innerText(),/Selected|Available/);
+     if(choices.includes("Ranked"))assert.match(await groupEl.getByRole("button",{name:/Ranked/}).innerText(),/🏆/);
+     if(game==="Spar (Cha-Cha)")assert.equal(await groupEl.getByRole("button",{name:/Ranked/}).getAttribute("aria-disabled"),"true");
+     await setup.getByRole("button",{name:"Close room setup"}).click();console.log("PASS shared setup selector "+game);
+    }
+   }
    assert.deepEqual(errors,[]);console.log("PASS actual HomeScreen normal and Beta Casual/Blitz selection "+viewport.width+"x"+viewport.height);
   }finally{await page.close();}
  }
