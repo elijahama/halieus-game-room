@@ -1,5 +1,9 @@
 # Halieus Game Room Masterbook
 
+## 4.8.6 candidate CI correction — 27 November 2026
+
+PR #285 initial Windows/Ubuntu validation stopped at the actual App creation-handler fixture because its captured React bindings lacked the new independent `megaCreateMode` draft. Correct the fixture, not the production mode contract; exercise all three modes with deliberately contradictory previous live-match state and preserve acknowledgement, timeout, privacy, cosmetics and retry assertions. Re-run exact candidate CI before release approval.
+
 ## 4.8.6 release candidate — 26 November 2026
 
 Prepare 4.8.6 from individually validated Beta Mega Board mode selection, Control verified-release wake, isolated task receipts and authenticated task transport, high-scaling navigation and room setup/lobby, and Spar presentation/cadence commits. Include actual setup tests in the existing mobile integration CI gate and parse the new PowerShell task helper during canonical packaging. Version changes only on the isolated development branch; canonical main packaging, full Windows/Ubuntu PR validation and explicit deployment approval are separate. Outstanding: provision matching optional release wake secret on GitHub/Oracle; physical PWA notification receipt, owner scaling and Spar playtest; comparable historical ETA and finer regression unit progress, legacy updater integration, and all-game interactive mode audit. Do not describe these as complete. No production restart/deploy during candidate preparation.

@@ -38,10 +38,10 @@ const ack = (s,payload) => s.timeout(5000).emitWithAck('game:create',payload);
 const app = await readFile(new URL('../client/src/App.tsx', import.meta.url),'utf8');
 const handler = app.slice(app.indexOf('  function handleCreateGame('),app.indexOf('  function handleJoinGame()'));
 const js = ts.transpile(handler, { target: ts.ScriptTarget.ES2022 });
-function submitHarness(socket, code) {
+function submitHarness(socket, code, megaCreateMode = 'ranked') {
   const values = {};
   const setters = ['setIsCreating','setMessage','setMegaBoardParked','setLobby','setRanked','setBlitz','setIsSpectator','saveSession','setSavedSession','setRecoveryCode','setInviteCode','setInvitePreview','updateBrowserPath'];
-  const args = { socket, isCreating:false, playerName:'Host', roomCode:code, ranked:true, blitz:false, betaMode:false, authStatus:null, freeParkingJackpotEnabled:true };
+  const args = { socket, isCreating:false, playerName:'Host', roomCode:code, megaCreateMode, ranked:megaCreateMode!=='ranked', blitz:megaCreateMode!=='blitz', betaMode:false, authStatus:null, freeParkingJackpotEnabled:true };
   for (const name of setters) args[name] = value => { values[name] = value; };
   const submit = new Function(...Object.keys(args), js+'; return handleCreateGame;')(...Object.values(args));
   return { values, submit: () => submit({preventDefault(){}}) };
@@ -58,6 +58,15 @@ try {
   assert.equal(good.values.updateBrowserPath,'/game/ACK001');
   assert.ok(good.values.saveSession.reconnectToken);
   assert.equal(rooms.get('ACK001').freeParkingJackpotEnabled,false,'ranked rules preserved');
+  assert.equal(good.values.setRanked,true);assert.equal(good.values.setBlitz,false);
+  for(const mode of ['casual','blitz']) {
+    const code=mode==='casual'?'ACK006':'ACK007';
+    const selected=submitHarness(host,code,mode);selected.submit();await settled(selected);
+    assert.equal(selected.values.setLobby.code,code);
+    assert.equal(selected.values.setRanked,false);
+    assert.equal(selected.values.setBlitz,mode==='blitz');
+    assert.equal(rooms.get(code).freeParkingJackpotEnabled,true);
+  }
   const retry=await ack(host,{code:'ACK001',playerName:'Host'});
   assert.equal(retry.reconnectToken,good.values.saveSession.reconnectToken);
   assert.equal(rooms.get('ACK001').players.length,1);
