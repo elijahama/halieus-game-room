@@ -1,5 +1,16 @@
 # Halieus Game Room Masterbook
 
+## Permanent engineering rule — build once, validate once, deploy the verified package (27 November 2026)
+
+Owner-approved efficiency policy: minimise elapsed release and deployment time without weakening correctness, security or recovery. Use Lagz for small audited development batches and affected-component tests, with hidden execution and resource limits. Use GitHub for parallel independent Windows and Linux checks against the exact candidate, dependency caches keyed by lockfile/toolchain/platform, and one reproducible production package. Retain full required regression/security/browser gates before release; reuse successful receipts only for identical relevant inputs, environment and source identity, never for changed or stale candidates. Do not run duplicate full suites or regenerate already verified assets just because a release changes stage. Rerun affected checks on changes; fail closed if evidence cannot be reused safely.
+
+Bind the immutable deployable artifact, source fingerprint, artifact digest, provenance, test receipts and rollback identity to the same approved source. Control must verify these before presenting a release-ready greenlight and Oracle must verify them again before activation. Build/package once per exact eligible candidate; deploy the same bytes, without rebuilding on the owner PC or Oracle. Separate build, approval, transfer, activation, health and rollback. Preserve all idle-room, permission, maintenance, health, exact-identity and rollback safeguards; no automatic production deployment. Keep a verified prior package and a tested recovery path. Do not require Lagz to be awake for an approved cloud deployment after the secure artifact route is implemented. No visible terminal windows.
+
+Measure actual stage durations, cache hit rates, bottlenecks, time from source freeze to release-ready and time from greenlight to healthy production. Report real completed work, measured ETA with uncertainty, and failures; never fabricate progress or repeatedly verify a proven result without a changed input. Initial engineering targets, not measurements or guarantees: targeted checks 1–3 minutes, full release preparation 5–10 minutes, approved activation 1–3 minutes and release-ready notification within seconds. Baseline and profile first; benchmark improvements and demonstrate equivalent safety before replacing existing gates.
+
+Implementation priority: 4.8.7 Control and Deployment Optimisation, alongside the approved Control visual overhaul. This rule is binding for future design decisions, not a claim that the new pipeline is already built. Keep 4.8.6 canonical packaging untouched; implement on a separate branch, review the current trust model, and retain existing deployment path until the new path passes acceptance. Preserve the 4.9 tournament and 4.9.9 audit commitments.
+
+
 ## 4.8.6 candidate stylesheet ordering — 27 November 2026
 
 Both CI platforms passed the corrected game creation fixture and stopped at the protected intro stylesheet ordering assertion. Keep intro viewport hotfix last in main CSS imports, following the new mode picker and desktop scaling CSS. Retain the original safeguard unchanged. Validate actual intro centering and setup/lobby at the existing and reduced viewport sizes before publishing the next candidate.
