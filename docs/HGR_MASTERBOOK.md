@@ -25,6 +25,10 @@ Use one controlled presentation component in all 15 catalogue game setup forms, 
 
 Keep essential mode, format, CPU count/difficulty, custom core settings, identity and create action visible. Use native disclosures for game rule detail, Mega cosmetics, upcoming Poker variants and optional Spar toggles. Retain Beta and human-only notices and unchanged eligibility guards; controlled settings remain mounted when sections close. Validate real HomeScreen across existing viewports and submitted Spar optional rule. Scope is setup; waiting lobbies and pause menus remain separate.
 
+### Shared game-menu settings destination — 27 November 2026
+
+C1 migrates all 12 game menu implementations serving 15 catalogue entries to a dedicated shared Settings subview using the existing nested ModalPortal lifecycle; account appearance remains inline. Preserve all theme/logo choices, preview cancellation, persistence, audio and fullscreen controls. Add explicit Resume to Ayo, Blackjack, Spar, WHOT and Word Board; add accessible dialog and close names to the ten previously unlabeled implementations. Resume closes the UI, not the server match clock. Preserve every existing room, recovery, forfeit, end and pause callback and condition. Test actual Spar menu with compact phone, landscape, spectator and desktop, nested Escape/focus/persistence, and existing table geometry. Mega history/report/recovery hierarchy and catalogue-wide real menu acceptance remain C2/F. No production or version promotion.
+
 ### Initial source audit (4.8.6, f1e84b1c)
 
 HomeScreen.tsx:1161–1198 already uses PreGameShell but combines all game-specific settings before the identity/code/create form, with separate inline mode buttons and variable-length rule notes. Poker includes live variant plus planned variants and stack/blind controls; Spar Custom exposes hand size, deck, scoring, penalty, amount and three toggles together; Mega Board mixes beta explanation, mode, jackpot and board cosmetics. Group optional settings and planned information without removing actual choices. Preserve PreGameShell and current create payloads.

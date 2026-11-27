@@ -7,7 +7,7 @@ import { ConfirmDialog } from "../../platform/components/ConfirmDialog";
 import { GameBrandIcon } from "../../platform/components/GameBrandIcon";
 import { GAME_BY_ID } from "../../platform/games/catalog";
 import { GameResultsScreen } from "../../platform/components/GameResultsScreen";
-import { DisplaySettingsPanel } from "../../platform/components/DisplaySettingsPanel";
+import { GameMenuDisplaySettings } from "../../platform/components/DisplaySettingsPanel";
 import { InviteLobbyPanel } from "../../platform/components/InviteLobbyPanel";
 import { InviteLobbyBar } from "../../platform/components/InviteLobbyBar";
 import { FeedbackForm } from "../../platform/components/FeedbackForm";
@@ -350,7 +350,7 @@ export function PokerScreen({
                 <button type="button" className="menu-action menu-action-primary" onClick={() => setMenuOpen(false)}>
                   <span>▶</span><span><strong>Resume game</strong><small>Return to the table</small></span>
                 </button>
-                <DisplaySettingsPanel
+                <GameMenuDisplaySettings
                   darkMode={darkMode}
                   soundEnabled={soundEnabled}
                   onToggleDarkMode={onToggleDarkMode}

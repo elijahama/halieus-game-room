@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 
-import { DisplaySettingsPanel } from "../../../platform/components/DisplaySettingsPanel";
+import { GameMenuDisplaySettings } from "../../../platform/components/DisplaySettingsPanel";
 import { accountApi } from "../../../platform/accounts/api";
 import { TURN_TIMER_PRESET_SECONDS } from "../../../../../shared/games/mega-board/game-rules";
 import type { MegaReplayFrame } from "../../../../../shared/games/mega-board/replay";
@@ -333,7 +333,7 @@ export function GameMenu({
             </button>
 
             {/* Secondary display controls live inside the menu so the persistent game bar stays uncluttered. */}
-            <DisplaySettingsPanel
+            <GameMenuDisplaySettings
               darkMode={darkMode}
               soundEnabled={soundEnabled}
               onToggleDarkMode={onToggleDarkMode}

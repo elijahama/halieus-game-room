@@ -140,11 +140,12 @@ try{
     if(game==="ludo")assert.ok(await page.locator(".ludo-status-panel").evaluate(el=>el.scrollHeight<=el.clientHeight+1),"Ludo race status panel clips or scrolls");
     if(process.env.HGR_SCREENSHOTS)await page.screenshot({path:resolve(process.env.HGR_SCREENSHOTS,`${device}-${game}-live.png`),fullPage:true});
     await menu.click();const dialog=page.locator(".game-menu-modal");await dialog.waitFor();const box=await dialog.boundingBox();assert.ok(box.y>=0&&box.y+box.height<=height+1,`${device} ${game} menu off viewport`);assert.equal(await page.evaluate(()=>document.body.style.overflow),"hidden");if(game==="poker") {
-      const group=dialog.getByRole("group",{name:"Text size",exact:true});const sizes=[];
+      await dialog.getByRole("button",{name:"Settings",exact:true}).click();const settings=page.getByRole("dialog",{name:"Settings",exact:true});await settings.waitFor();
+      const group=settings.getByRole("group",{name:"Text size",exact:true});const sizes=[];
       for(const size of ["Small","Standard","Large"]){await group.getByRole("button",{name:size,exact:true}).click();sizes.push(await group.getByRole("button",{name:size,exact:true}).evaluate(el=>parseFloat(getComputedStyle(el).fontSize)));}
       assert.ok(sizes[0]<sizes[1]&&sizes[1]<sizes[2],`Text scale ineffective: ${sizes}`);
       await group.getByRole("button",{name:"Standard",exact:true}).click();
-      await dialog.locator(".halieus-theme-trigger").click();await page.locator(".halieus-theme-popover").waitFor();assert.ok(await page.locator(".halieus-theme-popover").evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+20));}),"Theme modal is behind game menu");await page.keyboard.press("Escape");assert.ok(await dialog.isVisible(),"Closing nested dialog closed game menu");
+      await settings.locator(".halieus-theme-trigger").click();await page.locator(".halieus-theme-popover").waitFor();assert.ok(await page.locator(".halieus-theme-popover").evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+20));}),"Theme modal is behind game menu");await page.keyboard.press("Escape");assert.ok(await settings.isVisible(),"Closing nested theme dialog closed settings");await page.keyboard.press("Escape");await settings.waitFor({state:"hidden"});assert.ok(await dialog.isVisible(),"Closing settings closed game menu");
     }
     await page.keyboard.press("Escape");await dialog.waitFor({state:"hidden"});
     console.log(`PASS ${device} ${game}: live/recovery containment and reachable centered menu`);

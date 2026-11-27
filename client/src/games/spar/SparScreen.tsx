@@ -3,7 +3,8 @@ import type { SparAiDifficulty, SparCard, SparPlayer, SparPublicState, SparSuit 
 import { legalSparCards, sparRank, sparSuit } from "../../../../shared/games/spar/clientRules";
 import { GameBrandIcon } from "../../platform/components/GameBrandIcon";
 import { InviteLobbyPanel } from "../../platform/components/InviteLobbyPanel";
-import { DisplaySettingsPanel } from "../../platform/components/DisplaySettingsPanel";
+import { GameMenuResume } from "../../platform/components/GameMenuSubmenu";
+import { GameMenuDisplaySettings } from "../../platform/components/DisplaySettingsPanel";
 import { GameResultsScreen } from "../../platform/components/GameResultsScreen";
 import { ConfirmDialog } from "../../platform/components/ConfirmDialog";
 import { ModalPortal } from "../../platform/components/ModalPortal";
@@ -260,8 +261,9 @@ export function SparScreen({
         <InviteLobbyPanel roomCode={state.code} darkMode={darkMode} gameTitle="Spar (Cha-Cha)" invitePathPrefix="/spar" accent={GOLD} theme={theme}/>
       </section></div>}
     {menuOpen&&<ModalPortal onClose={()=>setMenuOpen(false)}><div className="modal-backdrop game-menu-top-layer" onMouseDown={e=>e.target===e.currentTarget&&setMenuOpen(false)}>
-      <section className="game-menu-modal card-game-menu-modal"><header className="modal-heading-row"><div><p className="modal-eyebrow">Spar · Room {state.code}</p><h2>Game menu</h2></div><button type="button" className="icon-button" onClick={()=>setMenuOpen(false)}>×</button></header>
-        <DisplaySettingsPanel darkMode={darkMode} soundEnabled={soundEnabled} onToggleDarkMode={onToggleDarkMode} onToggleSound={onToggleSound} onToggleFullscreen={onToggleFullscreen}/>
+      <section className="game-menu-modal card-game-menu-modal" role="dialog" aria-modal="true" aria-label="Game menu"><header className="modal-heading-row"><div><p className="modal-eyebrow">Spar · Room {state.code}</p><h2>Game menu</h2></div><button type="button" className="icon-button" aria-label="Close game menu" onClick={()=>setMenuOpen(false)}>×</button></header>
+        <GameMenuResume onClose={()=>setMenuOpen(false)}/>
+        <GameMenuDisplaySettings darkMode={darkMode} soundEnabled={soundEnabled} onToggleDarkMode={onToggleDarkMode} onToggleSound={onToggleSound} onToggleFullscreen={onToggleFullscreen}/>
         <button type="button" className="menu-action" onClick={onLeave}>← Back to Game Room</button>
         {viewer&&!state.isSpectator&&state.phase!=="finished"&&<button type="button" className="menu-action menu-action-danger" onClick={()=>{setMenuOpen(false);setConfirm("forfeit")}}>Forfeit Spar</button>}
         {isHost&&(!ranked||state.phase==="lobby"||state.phase==="finished")&&<button type="button" className="menu-action menu-action-danger" onClick={()=>{setMenuOpen(false);setConfirm("end")}}>End table</button>}

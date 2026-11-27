@@ -26,3 +26,8 @@
 .pre-game-shell .hgr-pregame-details > summary:focus-visible { outline:2px solid var(--hgr-brand,#5da6f1); outline-offset:2px; }
 .pre-game-shell .hgr-pregame-details-body { display:grid; gap:8px; padding:0 10px 10px; min-width:0; }
 .pre-game-shell .hgr-pregame-details-body > * { min-width:0; max-width:100%; }
+
+/* Dedicated secondary menu destinations remain within the existing modal system. */
+.game-menu-modal .hgr-menu-submenu-trigger { display:flex!important; align-items:center; gap:10px; min-height:44px!important; text-align:left; }
+.game-menu-modal .hgr-menu-submenu-arrow { margin-inline-start:auto; flex:none; font-size:1.25rem; }
+.modal-backdrop.hgr-menu-subview-backdrop > .hgr-menu-subview { width:min(520px,100%); max-height:calc(100dvh - 32px)!important; overflow-y:auto!important; overscroll-behavior:contain; }

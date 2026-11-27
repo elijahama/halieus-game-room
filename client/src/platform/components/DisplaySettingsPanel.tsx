@@ -1,3 +1,4 @@
+import { GameMenuSubmenu } from "./GameMenuSubmenu";
 import { ThemeButton } from "./ThemeButton";
 import { HalieusBrandMark } from "./HalieusBrandMark";
 import type { HgrLogoPreset } from "../../../../shared/platform/brand";
@@ -168,4 +169,9 @@ export function DisplaySettingsPanel({
       )}
     </section>
   );
+}
+
+/** In-game appearance is secondary; account appearance remains inline. */
+export function GameMenuDisplaySettings(props:DisplaySettingsPanelProps) {
+ return <GameMenuSubmenu label="Settings"><DisplaySettingsPanel {...props}/></GameMenuSubmenu>;
 }

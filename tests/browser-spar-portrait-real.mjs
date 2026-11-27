@@ -40,6 +40,8 @@ try{
   const page=await browser.newPage({viewport:{width:c.width,height:c.height},reducedMotion:"reduce"});
   const errors=[];page.on("pageerror",e=>{errors.push(e.message);console.error("Spar fixture page error",JSON.stringify(c),e.message);});
   try{
+   // Give the isolated component fixture a private HTTP origin for appearance storage.
+   await page.route("http://hgr-fixture.test/**",route=>route.request().url()==="http://hgr-fixture.test/"?route.fulfill({contentType:"text/html",body:"<!doctype html><title>Fixture</title>"}):route.fulfill({status:503,contentType:"application/json",body:"{}"}));await page.goto("http://hgr-fixture.test/");
    await page.setContent('<!doctype html><html data-theme="dark"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div id="root"></div></body></html>');
    await page.addStyleTag({content:globalCss});
    await page.addStyleTag({path:join(temp,"spar.css")});
@@ -78,6 +80,11 @@ try{
    }
    await chat.click();await page.getByRole("region",{name:"Fixture chat"}).waitFor();assert.equal(await page.locator(".spar-side-players").count(),0);assert.equal(await page.locator(".spar-hand-cards").count(),0);assert.ok(await table.isVisible());
    if(!c.spectator){await actions.click();assert.equal(await page.locator(".spar-hand-cards .spar-playing-card").count(),c.seven?7:5);}
+   if(["compact-phone-portrait","S23-class-landscape","large-phone-spectator","desktop"].includes(c.device)){
+    await page.getByRole("button",{name:"Game menu",exact:true}).click();const menu=page.getByRole("dialog",{name:"Game menu",exact:true});await menu.waitFor();const settingsTrigger=menu.getByRole("button",{name:"Settings",exact:true});assert.equal(await menu.locator(".halieus-display-settings").count(),0);const mb=await menu.boundingBox();assert.ok(mb&&mb.y>=-1&&mb.y+mb.height<=c.height+1);
+    if(c.spectator){assert.equal(await menu.getByRole("button",{name:/Forfeit Spar|End table/}).count(),0);}
+    await settingsTrigger.click();const settings=page.getByRole("dialog",{name:"Settings",exact:true});await settings.waitFor();const sb=await settings.boundingBox();assert.ok(sb&&sb.y>=-1&&sb.y+sb.height<=c.height+1);assert.equal(await settings.getByRole("group",{name:"Core styles"}).getByRole("button").count(),4);const sizes=settings.getByRole("group",{name:"Text size"});await sizes.getByRole("button",{name:"Large",exact:true}).click();assert.equal(await sizes.getByRole("button",{name:"Large",exact:true}).getAttribute("aria-pressed"),"true");await page.keyboard.press("Escape");await settings.waitFor({state:"hidden"});assert.equal(await menu.isVisible(),true);assert.equal(await settingsTrigger.evaluate(el=>document.activeElement===el),true);await settingsTrigger.click();assert.equal(await settings.getByRole("group",{name:"Text size"}).getByRole("button",{name:"Large",exact:true}).getAttribute("aria-pressed"),"true");await settings.getByRole("button",{name:"Back to game menu",exact:true}).first().click();await settings.waitFor({state:"hidden"});await menu.getByRole("button",{name:"Resume game",exact:true}).click();await menu.waitFor({state:"hidden"});assert.ok(await table.isVisible());assert.equal(await page.evaluate(()=>document.body.style.overflow),"");console.log("PASS shared menu settings and resume "+c.device);
+   }
    assert.deepEqual(errors,[],"Browser runtime errors");
    console.log("PASS actual Spar room",JSON.stringify(c));
   }finally{await page.close();}
