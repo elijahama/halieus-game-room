@@ -24,6 +24,8 @@ try{
     const scroll=await dialog.evaluate(el=>({height:el.clientHeight,content:el.scrollHeight,overflow:getComputedStyle(el).overflowY}));assert.ok(scroll.overflow==="auto"||scroll.overflow==="scroll");
     if(scroll.content>scroll.height+2){await dialog.hover();await page.mouse.wheel(0,600);await page.waitForFunction(()=>document.querySelector(".pre-game-shell").scrollTop>0);}
    }
+   const appearance=dialog.locator("details.hgr-pregame-details").filter({hasText:"Board appearance"});
+   assert.equal(await appearance.getAttribute("open"),null);await appearance.locator("summary").click();assert.notEqual(await appearance.getAttribute("open"),null);await appearance.locator("summary").click();
    for(const label of ["Ranked","Blitz","Casual","Ranked"]){const button=tabs.getByRole("button",{name:new RegExp(label)});await button.click();assert.equal(await button.getAttribute("aria-pressed"),"true",label+" selects actual setup option");assert.equal(await tabs.locator('button[aria-pressed="true"]').count(),1);}
    assert.match(await tabs.getByRole("button",{name:/Ranked/}).innerText(),/🏆/);
    assert.match(await tabs.getByRole("button",{name:/Blitz/}).innerText(),/⚡/);
@@ -49,6 +51,9 @@ try{
      const setup=page.getByRole("dialog",{name:"Create "+game+" room"}),groupEl=setup.getByRole("group",{name:group,exact:true});
      for(const choice of choices){const b=groupEl.getByRole("button",{name:new RegExp(choice)});await b.click();assert.equal(await b.getAttribute("aria-pressed"),"true",game+" "+choice);assert.equal(await groupEl.locator('button[aria-pressed="true"]').count(),1);}
      assert.doesNotMatch(await groupEl.innerText(),/Selected|Available/);
+     if(game==="Poker"){const upcoming=setup.locator("details").filter({hasText:"Upcoming Poker variants"});assert.equal(await upcoming.getAttribute("open"),null);await upcoming.locator("summary").click();assert.equal(await upcoming.getByText("Omaha").isVisible(),true);await upcoming.locator("summary").click();}
+     if(game==="Spar (Cha-Cha)"){await groupEl.getByRole("button",{name:"Custom",exact:true}).click();const optional=setup.locator("details").filter({hasText:"Optional Spar rules"});assert.equal(await optional.getAttribute("open"),null);await optional.locator("summary").click();const underTen=optional.getByRole("checkbox",{name:/Under-Ten/});await underTen.check();await optional.locator("summary").click();await optional.locator("summary").click();assert.equal(await underTen.isChecked(),true);await optional.locator("summary").click();await setup.getByRole("button",{name:"Create Spar (Cha-Cha) room",exact:true}).click();assert.equal(JSON.parse(await page.locator("html").getAttribute("data-spar-created")).custom.underTen,true);}
+
      if(choices.includes("Ranked"))assert.match(await groupEl.getByRole("button",{name:/Ranked/}).innerText(),/🏆/);
      if(game==="Spar (Cha-Cha)")assert.equal(await groupEl.getByRole("button",{name:/Ranked/}).getAttribute("aria-disabled"),"true");
      await setup.getByRole("button",{name:"Close room setup"}).click();console.log("PASS shared setup selector "+game);

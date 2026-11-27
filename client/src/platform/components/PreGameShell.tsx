@@ -12,3 +12,8 @@ export function PreGameShell({ game, onClose, children, style }: { game: GameId;
     {children}
   </section>;
 }
+
+/** Native disclosure keeps settings mounted and controlled values intact. */
+export function PreGameDetails({label,children}:{label:ReactNode;children:ReactNode}) {
+ return <details className="hgr-pregame-details"><summary>{label}</summary><div className="hgr-pregame-details-body">{children}</div></details>;
+}

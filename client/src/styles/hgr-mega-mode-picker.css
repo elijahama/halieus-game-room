@@ -19,3 +19,10 @@
 .mega-lobby-poker-standard .poker-settings-summary > .mega-poker-mode-setting { grid-column:1/-1; min-width:0; }
 .mega-lobby-poker-standard .mega-poker-mode-setting > dd { display:block!important; width:100%; margin:6px 0 0; min-width:0; }
 .mega-mode-configuration > .mega-mode-picker { padding:8px; }
+
+/* Compact pre-game disclosures; no changes to active game geometry. */
+.pre-game-shell .hgr-pregame-details { min-width:0; width:100%; align-self:stretch; box-sizing:border-box; border:1px solid var(--hgr-border,#526171); border-radius:9px; background:var(--hgr-surface-soft,transparent); }
+.pre-game-shell .hgr-pregame-details > summary { cursor:pointer; padding:10px 12px; min-height:44px; box-sizing:border-box; font-weight:650; font-size:.8rem; line-height:1.35; overflow-wrap:break-word; }
+.pre-game-shell .hgr-pregame-details > summary:focus-visible { outline:2px solid var(--hgr-brand,#5da6f1); outline-offset:2px; }
+.pre-game-shell .hgr-pregame-details-body { display:grid; gap:8px; padding:0 10px 10px; min-width:0; }
+.pre-game-shell .hgr-pregame-details-body > * { min-width:0; max-width:100%; }

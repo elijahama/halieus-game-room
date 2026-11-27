@@ -21,6 +21,10 @@ For pause/in-match menus, keep Resume/Continue immediately accessible; group rel
 
 Use one controlled presentation component in all 15 catalogue game setup forms, with existing mode/format/dictionary/puzzle callbacks and locks. Restore trophy and lightning, remove routine Selected/Available labels, retain 44px minimum touch height, outline, genuine lock explanations and pending feedback. Real setup and existing Mega lobby browser tests required; other waiting-lobby adapters and pause menus remain separate. No production or VERSION change.
 
+### Shared pre-game disclosure slice — 27 November 2026
+
+Keep essential mode, format, CPU count/difficulty, custom core settings, identity and create action visible. Use native disclosures for game rule detail, Mega cosmetics, upcoming Poker variants and optional Spar toggles. Retain Beta and human-only notices and unchanged eligibility guards; controlled settings remain mounted when sections close. Validate real HomeScreen across existing viewports and submitted Spar optional rule. Scope is setup; waiting lobbies and pause menus remain separate.
+
 ### Initial source audit (4.8.6, f1e84b1c)
 
 HomeScreen.tsx:1161–1198 already uses PreGameShell but combines all game-specific settings before the identity/code/create form, with separate inline mode buttons and variable-length rule notes. Poker includes live variant plus planned variants and stack/blind controls; Spar Custom exposes hand size, deck, scoring, penalty, amount and three toggles together; Mega Board mixes beta explanation, mode, jackpot and board cosmetics. Group optional settings and planned information without removing actual choices. Preserve PreGameShell and current create payloads.
