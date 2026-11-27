@@ -13,7 +13,7 @@ The owner requested that delivery batches be allocated specific patch versions. 
 | 4.8.4 | Intro viewport/glow and independent Tournament destination | Drafts #248 and #249; independently audit each slice; canonical H, desktop/tablet fit, Solo/Guild access and mobile navigation |
 | **4.8.5** | Tournament hardening checkpoint | Real authenticated Solo/Guild flows, tie/forfeit/reconnect/restart recovery, mobile/PWA acceptance and restorable protected checkpoint |
 | 4.8.6 | Spar (Cha-Cha) Casual Beta; Control PWA release alerts and task-based progress | Draft #251 and issue #279; Spar rules/privacy/multiplayer/AI/responsive acceptance; verified event-driven release-ready push, measured individual check progress, physical-device receipt and failure/recovery acceptance; separate from tournament milestone |
-| 4.8.7 | Control visual overhaul and Spar beta follow-up | Issue #280; audit reference assets and current screens before redesign, retain operation contracts; Spar corrections only for actual findings |
+| 4.8.7 | Control visual overhaul, build/deployment optimisation and Spar beta follow-up | Issue #280; audit reference assets and current screens before redesign, retain operation contracts; Spar corrections only for actual findings |
 | 4.8.8–4.8.9 | Unallocated contingency | Only if meaningful corrections are needed |
 | **4.9.0** | Tournament experience milestone | Distinct ratings, leaderboards, Guild standings, reports, working Mega Board tournament replay/download/viewer, profiles, permissions and responsive presentation. Individually audited implementation slices precede the milestone; do not defer required functionality to later patches. |
 | 4.9.1 | Competitive profile/statistics refinement | Preserve correct independent standings and scoring |
@@ -46,6 +46,10 @@ The above allocation supersedes the old delivery ordering only where a batch is 
 | Accessibility and acceptance | Keyboard/focus, touch targets, screen-reader labels, contrast and real-device journeys; Windows/Ubuntu CI, full regression/build/browser suite, production rehearsal and owner acceptance. |
 
 Maintain a findings register with screen/module, severity, reproduction, before/after evidence, fix PR, exact tested revision and status. Fix in small independently reviewed batches. Re-run impacted coverage and final full release gates after fixes; retain a restorable 4.9.9 checkpoint. No unresolved launch-blocking or serious defects, no silent waivers, and no known unaccepted visual inconsistencies may pass into 5.0. Lower-severity residuals require explicit owner review. Source, CI, deployment, and real-device acceptance remain separate. Do not change VERSION or declare the audit complete merely because this plan is recorded.
+
+## 4.8.7 — owner-approved efficiency policy (27 November 2026)
+
+The permanent Masterbook rule is **build once, validate once, deploy the verified package**. Profile existing timings, use targeted local tests and parallel independent CI, securely reuse exact-input receipts and caches, publish an immutable verified production artifact, and make approved cloud activation independent of Lagz. Preserve full required validation, explicit greenlight, idle-room, security, exact-identity, health and rollback safeguards. Track this implementation under #280; targets are engineering goals, not achieved timings. No changes to the 4.8.6 release currently being packaged.
 
 ## Delivery mini-batches
 
