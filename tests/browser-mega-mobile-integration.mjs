@@ -89,6 +89,25 @@ try{
    await page.goto(url+"?compact=participant");await page.locator(".mega-mobile-participant-player-rail .player-rail-list").waitFor();
    const gallery=await page.locator(".mega-mobile-participant-player-rail .player-rail-list").evaluate(el=>{const cards=[...el.children];return {columns:getComputedStyle(el).gridTemplateColumns.split(" ").length,first:cards[0].getBoundingClientRect().toJSON(),second:cards[1].getBoundingClientRect().toJSON(),width:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}});
    assert.equal(gallery.columns,2,JSON.stringify(gallery));assert.ok(gallery.second.x>gallery.first.x&&Math.abs(gallery.second.top-gallery.first.top)<=2,"Portrait players side by side");assert.ok(gallery.scroll<=gallery.width+1,"No horizontal overflow");
+   for(const role of ["participant","spectator"])for(const theme of ["dark","light"]){
+    await page.goto(url+"?compact="+role+"&portfolio=1"+(theme==="light"?"&light=1":""));
+    const rail=page.locator(role==="participant"?".mega-mobile-participant-player-rail":".mega-spectator-player-rail");await rail.waitFor();
+    const cards=rail.locator(".player-rail-card");assert.equal(await cards.count(),8);
+    const first=cards.first(),strip=first.locator(".player-property-strip");
+    assert.equal(await strip.evaluate(e=>getComputedStyle(e).display),"flex");
+    assert.match(await strip.getAttribute("aria-label"),/\d+ owned/);
+    assert.equal(await first.locator(".player-property-count").isVisible(),false);
+    assert.equal(await first.locator(".player-property-group").first().evaluate(e=>Math.abs(e.getBoundingClientRect().left-e.parentElement.getBoundingClientRect().left)<2),true);
+    for(const summary of await first.locator(".player-property-group-fold > summary").all()){await summary.click();assert.equal(await summary.evaluate(e=>e.parentElement.open),true);}
+    for(const name of ["Northumberland Avenue","Marylebone Station","Knightsbridge","Water Works","Electric Company"])assert.equal(await first.getByText(name,{exact:true}).isVisible(),true,name);
+    const result=await first.evaluate(e=>{const strip=e.querySelector(".player-property-strip"),sr=strip.getBoundingClientRect();const visible=[...strip.querySelectorAll(".player-property-chip")].filter(c=>c.getClientRects().length);return {groups:[...strip.querySelectorAll(".player-property-group")].every(c=>{const r=c.getBoundingClientRect();return Math.abs(r.left-sr.left)<2&&Math.abs(r.width-sr.width)<2}),chips:visible.every(c=>{const r=c.getBoundingClientRect(),n=c.querySelector(".player-property-chip-name"),nr=n.getBoundingClientRect();return r.x>=sr.x-1&&r.right<=sr.right+1&&nr.right<=r.right+1&&n.scrollWidth<=n.clientWidth+1&&nr.height<=r.height+1&&parseFloat(getComputedStyle(n).fontSize)>=10}),scroll:strip.scrollHeight,client:strip.clientHeight};});
+    assert.ok(result.groups&&result.chips&&result.scroll<=result.client+2,JSON.stringify(result));
+    assert.equal(await cards.nth(1).locator(".player-rail-cash").textContent(),role==="participant"?"£••••":"£2,500");
+    assert.equal(await first.locator(".player-rail-cash").textContent(),"£2,500");
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    console.log("PASS portrait portfolio "+role+" "+theme+" "+viewport.width);
+   }
+   await page.goto(url+"?compact=participant");
    await page.getByRole("button",{name:"Open Trade",exact:true}).click();const deal=page.getByRole("dialog",{name:"Trade",exact:true});await deal.waitFor();
    const bounds=await deal.boundingBox();assert.ok(bounds.x>=-1&&bounds.y>=-1&&bounds.x+bounds.width<=viewport.width+1&&bounds.y+bounds.height<=viewport.height+1,"Portrait Trade fits viewport "+JSON.stringify({viewport,bounds}));
    const inner=deal.locator(".turn-actions-popup-scroll");assert.equal(await inner.evaluate(el=>getComputedStyle(el).overflowY),"auto");

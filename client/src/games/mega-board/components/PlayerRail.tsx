@@ -219,7 +219,7 @@ export function PlayerRail({
                 <span className="player-rail-order">#{index + 1}</span>
               </div>
 
-              <div className="player-property-strip" aria-label={`${player.name} properties, ${orderedOwnedSpaces.length} owned`}>
+              <div className="player-property-strip" role="group" aria-label={`${player.name} properties, ${orderedOwnedSpaces.length} owned`}>
                 <span className="player-property-count">Owned · {orderedOwnedSpaces.length}</span>
                 {portfolioGroups.length === 0 ? (
                   <small style={{ color: theme.mutedText }}>No properties yet</small>

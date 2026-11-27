@@ -15,13 +15,17 @@ const params=new URLSearchParams(location.search);
 const compact=params.get("compact");
 const spectator=compact==="spectator";
 const desktop=params.has("desktop");
-const players=Array.from({length:Number(params.get("players")||8)},(_,i)=>({id:"player-"+i,name:compact ? "Alexandria Longpropertyname Seat "+(i+1) : "Seat "+(i+1),colour:"#2684db",tokenId:"car",position:i,properties:i===0?assets.slice(0,12):[],busTickets:0,busTicketIds:[],getOutOfJailCards:0,getOutOfJailCardIds:[],isBankrupt:false,isAi:!params.has("humans")&&i!==0,aiDifficulty:"normal",isConnected:true,isHost:i===0,hasLeft:false,cash:2500,inJail:false,autopilotEnabled:false}));
+const portfolio=params.has("portfolio");
+const light=params.has("light");
+if(light)document.documentElement.dataset.theme="light";
+const portfolioIds=BOARD_SPACES.filter(space=>isOwnableBoardSpace(space)&&(assets.slice(0,12).includes(space.id)||["Northumberland Avenue","Marylebone Station","Knightsbridge","Water Works","Electric Company"].includes(space.name))).map(space=>space.id);
+const players=Array.from({length:Number(params.get("players")||8)},(_,i)=>({id:"player-"+i,name:compact ? "Alexandria Longpropertyname Seat "+(i+1) : "Seat "+(i+1),colour:"#2684db",tokenId:"car",position:i,properties:i===0?(portfolio?portfolioIds:assets.slice(0,12)):[],busTickets:0,busTicketIds:[],getOutOfJailCards:0,getOutOfJailCardIds:[],isBankrupt:false,isAi:!params.has("humans")&&i!==0,aiDifficulty:"normal",isConnected:true,isHost:i===0,hasLeft:false,cash:2500,inJail:false,autopilotEnabled:false}));
 if(desktop) players.push({...players[0],id:"bankrupt-observer",name:"Lagz",isBankrupt:true,properties:[]});
 const lobby={code:"QAONLY",playerId:"player-0",players,turnTimerSeconds:45,boardStyle:"classic-board",hostDisconnectDeadline:null,createdAt:12345,matchModeLocked:false};
-const state={...createInitialGameState("QAONLY",players as any),players,currentPlayerIndex:0,mortgagedProperties:{},propertyDevelopments:{},propertyOwners:Object.fromEntries(assets.slice(0,12).map(id=>[id,"player-0"])),railroadDepots:{},phase:"playing",turnPhase:"roll",turnNumber:1,activityLog:[],bankInventory:{houses:32,hotels:12,skyscrapers:8,depots:4}};
+const state={...createInitialGameState("QAONLY",players as any),players,currentPlayerIndex:0,mortgagedProperties:{},propertyDevelopments:{},propertyOwners:Object.fromEntries(players[0].properties.map(id=>[id,"player-0"])),railroadDepots:{},phase:"playing",turnPhase:"roll",turnNumber:1,activityLog:[],bankInventory:{houses:32,hotels:12,skyscrapers:8,depots:4}};
 if(params.has("auction")){state.pendingAuction={id:"geometry-auction",spaceId:7,currentBid:150,minimumIncrement:10,highestBidderId:"player-2",activeBidderIds:players.map(p=>p.id),bidsByPlayerId:{"player-2":150},endsAt:Date.now()+90000} as any;state.turnPhase="auction";}
 if(params.has("debt")){state.pendingDebt={debtorId:"player-0",creditorId:null,amount:100,reason:"Fixture debt",resumeAction:"roll"} as any;state.turnPhase="debt";}
-const theme={pageBackground:"#081522",cardBackground:"#101d2b",secondaryBackground:"#0a1422",text:"#fff",mutedText:"#a4b0c1",border:"#3a536a"};
+const theme=light?{pageBackground:"#edf1f6",cardBackground:"#ffffff",secondaryBackground:"#e4eaf0",text:"#172437",mutedText:"#475569",border:"#a9b7c8"}:{pageBackground:"#081522",cardBackground:"#101d2b",secondaryBackground:"#0a1422",text:"#fff",mutedText:"#a4b0c1",border:"#3a536a"};
 const noop=()=>{};
 function Fixture(){
  const [mode,setMode]=useState<"casual"|"ranked"|"blitz">("casual");

@@ -210,3 +210,50 @@
     white-space:normal !important; word-break:normal !important; overflow-wrap:break-word !important;
   }
 }
+
+/* 4.8.7: the accepted portrait roster is a two-column PLAYER gallery,
+   not a second two-column grid inside each narrow property portfolio. */
+@media (max-width:1180px) and (orientation:portrait) {
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-strip {
+    display:flex !important; flex-direction:column !important; grid-template-columns:none !important;
+    align-items:stretch !important; gap:3px !important; width:100% !important;
+    min-width:0 !important; min-height:0 !important; height:auto !important; max-height:none !important;
+    overflow:visible !important; padding-inline:0 !important; box-sizing:border-box;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-count {
+    display:none !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) :is(.player-property-group,.player-property-group-fold,.player-property-group-chips) {
+    min-width:0 !important; width:100% !important; max-width:100% !important; box-sizing:border-box;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-group-chips {
+    display:grid !important; grid-template-columns:minmax(0,1fr) !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-group-chips .player-property-chip {
+    display:flex !important; align-items:center !important; gap:4px !important;
+    font-size:clamp(10px,2.7vw,12px) !important; line-height:1.3 !important;
+    padding:3px 5px !important; min-height:22px !important; max-width:100% !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-chip-name {
+    flex:1 1 auto; min-width:0 !important; word-break:normal !important;
+    overflow-wrap:break-word !important; hyphens:none !important; font-size:inherit !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-group-heading strong {
+    flex:1 1 auto !important; font-size:clamp(10px,2.7vw,12px) !important; overflow-wrap:break-word !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-property-group-set {
+    white-space:normal !important; font-size:10px !important; max-width:100%; line-height:1.2 !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) .player-rail-copy strong {
+    font-size:clamp(11px,3vw,14px) !important; line-height:1.25 !important;
+  }
+  .mega-live-page .game-layout :is(.mega-mobile-participant-player-rail,.mega-spectator-player-rail) :is(.player-rail-copy small,.player-rail-location,.player-rail-cash,.player-rail-order) {
+    font-size:clamp(10px,2.65vw,12px) !important; line-height:1.3 !important;
+  }
+}
+@media (max-width:600px) and (orientation:portrait) {
+  .mega-live-page .mega-game-meta > span small {font-size:8px !important; line-height:1.15 !important;}
+  .mega-live-page .mega-game-meta > span strong {font-size:11px !important; line-height:1.2 !important;}
+  .mega-live-page .mega-game-meta .halieus-autopilot-control {flex:0 0 auto !important; min-height:44px !important;}
+  .mega-live-page .board-grid .board-space-name {font-size:clamp(6.5px,1.85vw,8px) !important;}
+}
