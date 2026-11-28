@@ -45,11 +45,20 @@ export class CouchPairingRegistry {
     const pair = this.pending.get(code);
     return pair && pair.hostAccountId === hostAccountId ? {...pair} : null;
   }
-  approve(code, hostAccountId) {
+  approve(code, hostAccountId, bind = () => true) {
     const pair = this.inspect(code, hostAccountId);
     if (!pair || !pair.guestAccountId) return null;
+    const approved = {hostAccountId: pair.hostAccountId, guestAccountId: pair.guestAccountId, game: "connect-four"};
+    // The synchronous binder must either commit the whole room binding or do nothing.
+    // Consume before invoking it to prevent reentrant approval of the same code.
     this.pending.delete(code);
-    return {hostAccountId: pair.hostAccountId, guestAccountId: pair.guestAccountId, game: "connect-four"};
+    try {
+      if (bind(Object.freeze({...approved})) === true) return approved;
+    } catch {
+      // Do not expose internal exceptions or credentials to the caller.
+    }
+    // Fail closed: a rejected binding burns the invitation. Both users must re-pair.
+    return null;
   }
   cancel(code, accountId) {
     this.prune();
