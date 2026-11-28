@@ -37,6 +37,7 @@ export interface ConnectFourActionLogEntry {
 }
 
 export interface ConnectFourPublicState {
+  playStyle?: "couch-coop";
   code: string;
   createdAt: number;
   startedAt: number | null;
