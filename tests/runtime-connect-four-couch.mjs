@@ -49,6 +49,13 @@ try{
    assert.equal(call("returning","drop",{code,column,expectedActionSequence:latest.get("returning").actionLog.at(-1).sequence}).ok,true);
  }
  assert.equal(latest.get("returning").winnerPlayerId,red);assert.equal(latest.get("returning").phase,"finished");
+ await flushFinalSessionWrites();
+ const folder=join(data,"sessions","finalized");
+ const records=await Promise.all((await readdir(folder)).filter(f=>f.endsWith(".json")).map(async f=>JSON.parse(await readFile(join(folder,f),"utf8"))));
+ const completed=records.find(record=>record.game==="connect-four"&&record.status==="completed");
+ assert.ok(completed);assert.equal(completed.state.playStyle,"couch-coop");assert.equal(completed.state.winnerPlayerId,red);
+ assert.deepEqual(completed.state.players.map(p=>p.progressionIdentity.accountId),["account-host","account-guest"]);
+ assert.equal(JSON.stringify(completed).includes(reconnectToken),false);assert.equal(completed.state.couch,undefined);
  assert.equal(JSON.stringify(latest.get("watch")).includes("account-guest"),false);
  assert.equal(call("returning","start",{code}).ok,true);
  assert.equal(withdrawConnectFourCouchConsent(io,code,"account-other"),false);
