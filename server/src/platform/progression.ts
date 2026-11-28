@@ -156,6 +156,9 @@ async function rebuildFromArchive(accountId: string): Promise<PlayerProgression>
     sessions.add(record.sessionId);
 
     const state = record.state?.gameState ?? record.state;
+    // Shared-screen outcomes are recorded, but competitive and lifetime awards
+    // remain excluded until an explicit Couch Co-op rewards policy is approved.
+    if (state?.playStyle === "couch-coop") continue;
     const players = state?.players ?? [];
     if (!Array.isArray(players) || players.some((p: any) => p.progressionIdentity?.beta || /^\[BETA\]/i.test(String(p.name))) || state.outcome?.countsAsCompletedPlay === false) continue;
 
