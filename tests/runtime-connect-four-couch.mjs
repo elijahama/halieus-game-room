@@ -7,7 +7,7 @@ const data=await mkdtemp(join(tmpdir(),"hgr-couch-"));
 process.env.HALIEUS_DATA_DIR=data;
 const {registerConnectFourHandlers,bindConnectFourCouchRoom,withdrawConnectFourCouchConsent,getConnectFourLiveRoomSummaries,closeAllConnectFourRooms}=await import("../server/src/games/connect-four/handlers.ts");
 const {registerProgressionIdentity}=await import("../server/src/platform/progression.ts");
-const {flushSessionArchiveWrites}=await import("../server/src/platform/sessionArchive.ts");
+const {flushFinalSessionWrites}=await import("../server/src/platform/sessionArchive.ts");
 const handlers=new Map(), latest=new Map();
 const io={to(id){return {emit(event,state){if(event==="connect-four:state")latest.set(id,state)}}},emit(){}};
 const identities=new Map([["host","account-host"],["guest","account-guest"],["returning","account-host"],["other","account-other"]]);
@@ -67,6 +67,6 @@ try{
 } finally {
  closeAllConnectFourRooms();
  await delay(350);
- if(typeof flushSessionArchiveWrites==="function")await flushSessionArchiveWrites();
+ await flushFinalSessionWrites();
  await rm(data,{recursive:true,force:true});
 }
